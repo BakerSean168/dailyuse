@@ -1,304 +1,300 @@
-/**
- * createEditorModule — explicit composition root for the editor server runtime.
- * createEditorModule —— 编辑器模块服务端运行时的显式组合根。
- *
- * The outer app selects concrete adapters and passes them in here.
- * This module then assembles the application layer exactly once and exposes a
- * stable facade to HTTP / IPC transports.
- *
- * 外层应用负责选择具体适配器并传入这里。
- * 组合根只做一次组装，然后向 HTTP / IPC 等传输层暴露稳定门面。
- *
- * This file follows the governance canonical pattern:
- * one composition root per module, constructor injection only, no hidden service locator.
- *
- * 此文件遵循治理模块的规范模式：
- * 每个模块一个组合根，仅使用构造函数注入，不使用隐藏的服务定位器。
- */
-
-import type { IEditorWorkspaceRepository } from '../domain-server/repositories/IEditorWorkspaceRepository';
-import type { IDocumentRepository } from '../domain-server/repositories/IDocumentRepository';
-import type { IdentityId, EditorWorkspaceId } from '@dailyuse/contracts/primitives';
-import type {
-  WorkspaceLayoutServerDTO,
-  WorkspaceSettingsServerDTO,
-  DocumentMetadataServerDTO,
-} from '@dailyuse/contracts/editor';
-import { ok, type Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
-import { EditorWorkspace } from '../domain-server/aggregates/editor-workspace';
-import { Document } from '../domain-server/entities/document';
+import { ok, type Result } from '@dailyuse/contracts/result';
+import type {
+  SearchRequest,
+  CreateEditorWorkspaceReq,
+  UpdateEditorWorkspaceReq,
+  CreateEditorSessionRequest,
+  UpdateEditorSessionRequest,
+  CreateEditorGroupRequest,
+  UpdateEditorGroupRequest,
+  CreateEditorTabRequest,
+  UpdateEditorTabRequest,
+} from '@dailyuse/contracts/editor';
+import type { IEditorWorkspaceRepository } from '../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorSessionRepository } from '../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorGroupRepository } from '../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorTabRepository } from '../domain-server/repositories/IEditorTabRepository';
+import type { IRepositoryContentPort, IRepositorySearchPort } from '../application-server';
+import {
+  EditorWorkspaceApplicationService,
+  EditorSessionApplicationService,
+} from '../application-server';
 
-// ---------------------------------------------------------------------------
-// Dependencies — 外部依赖接口
-// ---------------------------------------------------------------------------
-
-/**
- * Everything the editor server runtime needs from the outside world.
- * 编辑器模块服务端运行时向外部索取的全部依赖。
- *
- * Refactor rule for other modules:
- * 重构规则：
- * - only put ports or runtime contributions here
- *   仅放端口或运行时贡献
- * - never put transport objects (Express req/res, ipcMain, Router) here
- *   不要放传输对象（Express req/res, ipcMain, Router）
- * - never hide these dependencies behind a singleton container
- *   不要将依赖藏在单例容器后面
- */
 export type EditorRuntimeContributionsInput =
   | EditorModuleRuntimeContribution
   | readonly EditorModuleRuntimeContribution[];
 
 export interface EditorModuleDependencies {
   readonly workspaceRepository: IEditorWorkspaceRepository;
-  readonly documentRepository: IDocumentRepository;
+  readonly sessionRepository: IEditorSessionRepository;
+  readonly groupRepository: IEditorGroupRepository;
+  readonly tabRepository: IEditorTabRepository;
+  readonly repositoryContentPort: IRepositoryContentPort;
+  readonly repositorySearchPort: IRepositorySearchPort;
   readonly runtimeContributions?: EditorRuntimeContributionsInput;
 }
 
-// ---------------------------------------------------------------------------
-// Runtime contribution — 运行时贡献
-// ---------------------------------------------------------------------------
-
-/**
- * Module-owned runtime side effects.
- * 模块拥有的运行时副作用。
- *
- * A contribution is the unit we start/stop together with the module instance.
- * This is the replacement for older global initialization hooks.
- *
- * 贡献是与模块实例一起启动/停止的最小单元。
- * 这是旧全局初始化钩子的替代方案。
- */
 export interface EditorModuleRuntimeContribution {
   start(): void;
   stop(): void;
 }
 
-// ---------------------------------------------------------------------------
-// Application port — 传输层无关的应用门面
-// ---------------------------------------------------------------------------
-
-/**
- * Request types for the editor application port.
- * 编辑器应用层门面的请求类型。
- */
-export interface CreateWorkspaceReq {
-  readonly name: string;
-  readonly description?: string | null;
-  readonly projectPath: string;
-  readonly projectType: string;
-  readonly layout?: unknown;
-  readonly settings?: unknown;
-}
-
-export interface UpdateWorkspaceReq {
-  readonly name?: string;
-  readonly description?: string | null;
-  readonly layout?: unknown;
-  readonly settings?: unknown;
-}
-
-export interface CreateDocumentReq {
-  readonly workspaceId: string;
-  readonly path: string;
-  readonly name: string;
-  readonly language: string;
-  readonly content: string;
-  readonly metadata?: unknown;
-}
-
-export interface UpdateDocumentReq {
-  readonly content?: string;
-  readonly metadata?: unknown;
-}
-
-export interface ListDocumentsQuery {
-  readonly workspaceId?: string;
-  readonly folderId?: string;
-}
-
-/** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
 export interface EditorApplicationPort {
-  createWorkspace(data: CreateWorkspaceReq, ctx: Context): Promise<Result<unknown>>;
+  createWorkspace(data: CreateEditorWorkspaceReq, ctx: Context): Promise<Result<unknown>>;
   listWorkspaces(ctx: Context): Promise<Result<unknown>>;
   getWorkspace(id: string): Promise<Result<unknown>>;
-  updateWorkspace(id: string, data: UpdateWorkspaceReq): Promise<Result<unknown>>;
+  updateWorkspace(id: string, data: UpdateEditorWorkspaceReq): Promise<Result<unknown>>;
   deleteWorkspace(id: string): Promise<Result<unknown>>;
-  createDocument(data: CreateDocumentReq, ctx: Context): Promise<Result<unknown>>;
-  listDocuments(params: ListDocumentsQuery, ctx: Context): Promise<Result<unknown>>;
-  getDocument(id: string): Promise<Result<unknown>>;
-  updateDocument(id: string, data: UpdateDocumentReq): Promise<Result<unknown>>;
-  deleteDocument(id: string): Promise<Result<unknown>>;
+  createSession(data: CreateEditorSessionRequest, ctx: Context): Promise<Result<unknown>>;
+  listSessions(workspaceId: string, ctx: Context): Promise<Result<unknown>>;
+  getSession(id: string, ctx: Context): Promise<Result<unknown>>;
+  updateSession(
+    id: string,
+    data: UpdateEditorSessionRequest,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  activateSession(workspaceId: string, sessionId: string, ctx: Context): Promise<Result<unknown>>;
+  deleteSession(id: string, ctx: Context): Promise<Result<unknown>>;
+  createGroup(
+    data: CreateEditorGroupRequest & { workspaceId: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  updateGroup(
+    id: string,
+    data: UpdateEditorGroupRequest & { workspaceId: string; sessionId: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  deleteGroup(
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  createTab(
+    data: CreateEditorTabRequest & { workspaceId: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  updateTab(
+    id: string,
+    data: UpdateEditorTabRequest & { workspaceId: string; sessionId: string; groupId: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  activateTab(
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
+    tabId: string,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  deleteTab(
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
+    tabId: string,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  getContent(resourceId: string, ctx: Context): Promise<Result<unknown>>;
+  saveContent(resourceId: string, content: string, ctx: Context): Promise<Result<unknown>>;
+  searchResources(request: SearchRequest, ctx: Context): Promise<Result<unknown>>;
 }
 
-// ---------------------------------------------------------------------------
-// Module instance — 模块实例返回类型
-// ---------------------------------------------------------------------------
-
-/**
- * Primary editor composition root return type.
- * 编辑器模块主组合根返回类型。
- *
- * `api` is the transport-facing surface.
- * `start` / `dispose` own runtime side effects.
- *
- * `api` 是面向传输层的表面。
- * `start` / `dispose` 拥有运行时副作用。
- */
 export interface EditorModuleInstance {
   readonly workspaceRepository: IEditorWorkspaceRepository;
-  readonly documentRepository: IDocumentRepository;
+  readonly sessionRepository: IEditorSessionRepository;
+  readonly groupRepository: IEditorGroupRepository;
+  readonly tabRepository: IEditorTabRepository;
   readonly api: EditorApplicationPort;
   start(): void;
   dispose(): void;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers — 辅助函数
-// ---------------------------------------------------------------------------
-
 function normalizeRuntimeContributions(
-  runtimeContributions?:
-    | EditorModuleRuntimeContribution
-    | ReadonlyArray<EditorModuleRuntimeContribution>,
+  runtimeContributions?: EditorRuntimeContributionsInput,
 ): readonly EditorModuleRuntimeContribution[] {
   if (!runtimeContributions) {
     return [];
   }
 
-  if (Array.isArray(runtimeContributions)) {
-    return Array.from(runtimeContributions);
-  }
-
-  return [runtimeContributions as EditorModuleRuntimeContribution];
+  return Array.isArray(runtimeContributions)
+    ? Array.from(runtimeContributions)
+    : [runtimeContributions as EditorModuleRuntimeContribution];
 }
 
-// ---------------------------------------------------------------------------
-// Composition Root — 规范化的编辑器模块主组合根
-// ---------------------------------------------------------------------------
-
-/**
- * Canonical composition root.
- * 规范化的编辑器模块主组合根。
- *
- * This follows the governance canonical pattern. The expected reading order is:
- * 此文件遵循治理模块的规范模式。预期的阅读顺序为：
- * 1. define `Dependencies` — 定义依赖
- * 2. define transport-neutral `ApplicationPort` — 定义传输层无关的应用门面
- * 3. assemble use cases once — 组装一次用例
- * 4. wrap them in `api` — 包装到 api 门面
- * 5. let the module instance own `start` / `dispose` — 模块实例拥有 start / dispose
- */
 export function createEditorModule(dependencies: EditorModuleDependencies): EditorModuleInstance {
-  const { workspaceRepository, documentRepository } = dependencies;
+  const {
+    workspaceRepository,
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+    repositoryContentPort,
+    repositorySearchPort,
+  } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+  const workspaceService = new EditorWorkspaceApplicationService(
+    workspaceRepository,
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+  const sessionService = new EditorSessionApplicationService(
+    sessionRepository,
+    workspaceRepository,
+    groupRepository,
+    tabRepository,
+    repositoryContentPort,
+  );
   let started = false;
 
-  // Build the transport-neutral application port.
-  // 构建传输层无关的应用门面。
-  // All business logic that was previously inline in api/module.ts
-  // is now encapsulated here, reusable by HTTP *and* Electron transports.
-  // 之前内联在 api/module.ts 中的所有业务逻辑现在封装在这里，
-  // 可被 HTTP *和* Electron 传输层复用。
   const api: EditorApplicationPort = {
-    createWorkspace: async (data, ctx) => {
-      const workspace = EditorWorkspace.create({
-        identityId: ctx.identityId as IdentityId,
-        name: data.name,
-        description: data.description ?? undefined,
-        projectPath: data.projectPath,
-        projectType: data.projectType as any,
-        layout: (data.layout as unknown as WorkspaceLayoutServerDTO) ?? undefined,
-        settings: (data.settings as unknown as WorkspaceSettingsServerDTO) ?? undefined,
-      });
-      await workspaceRepository.save(workspace);
-      return ok(workspace.toServerDTO());
-    },
+    createWorkspace: async (data, ctx) =>
+      ok(
+        await workspaceService.createWorkspace({
+          identityId: ctx.identityId,
+          name: data.name,
+          description: data.description ?? undefined,
+          projectPath: data.projectPath,
+          projectType: data.projectType,
+          layout: data.layout ?? undefined,
+          settings: data.settings ?? undefined,
+        }),
+      ),
 
-    listWorkspaces: async (ctx) => {
-      const workspaces = await workspaceRepository.findByIdentityId(ctx.identityId);
-      return ok({
-        workspaces: workspaces.map((w) => w.toServerDTO()),
-        total: workspaces.length,
-      });
-    },
+    listWorkspaces: async (ctx) =>
+      ok(await workspaceService.getWorkspacesByAccount(ctx.identityId)),
 
-    getWorkspace: async (id) => {
-      const workspace = await workspaceRepository.findById(id);
-      return ok(workspace?.toServerDTO() ?? null);
-    },
+    getWorkspace: async (id) => ok(await workspaceService.getWorkspace(id)),
 
-    updateWorkspace: async (id, data) => {
-      const workspace = await workspaceRepository.findById(id);
-      if (!workspace) return ok(null);
-      if (data.name !== undefined) workspace.updateName(data.name);
-      if (data.description !== undefined) workspace.updateDescription(data.description ?? null);
-      if (data.layout != null) workspace.updateLayout(data.layout);
-      if (data.settings != null) workspace.updateSettings(data.settings);
-      await workspaceRepository.save(workspace);
-      return ok(workspace.toServerDTO());
-    },
+    updateWorkspace: async (id, data) =>
+      ok(
+        await workspaceService.updateWorkspace({
+          id,
+          name: data.name,
+          description: data.description ?? undefined,
+        }),
+      ),
 
     deleteWorkspace: async (id) => {
-      await workspaceRepository.delete(id);
-      return ok(undefined);
+      await workspaceService.deleteWorkspace(id);
+      return ok(null);
     },
 
-    createDocument: async (data, ctx) => {
-      const doc = Document.create({
-        workspaceId: data.workspaceId as unknown as EditorWorkspaceId,
-        identityId: ctx.identityId as IdentityId,
-        path: data.path,
-        name: data.name,
-        language: data.language as any,
-        content: data.content,
-        metadata: (data.metadata as unknown as DocumentMetadataServerDTO) ?? undefined,
-      });
-      await documentRepository.save(doc);
-      return ok(doc.toServerDTO());
-    },
+    createSession: async (data, ctx) =>
+      ok(await sessionService.createSession(ctx.identityId, data)),
 
-    listDocuments: async (params, ctx) => {
-      // Note: findByWorkspaceId is used for both cases because the original
-      // DocumentPrismaRepository.findByIdentityId delegates to findByWorkspaceId.
-      // 注意：两种情况都使用 findByWorkspaceId，因为原始的
-      // DocumentPrismaRepository.findByIdentityId 实际委托给 findByWorkspaceId。
-      const documents = await documentRepository.findByWorkspaceId(
-        params.workspaceId ?? ctx.identityId,
-      );
-      return ok({
-        documents: documents.map((d: Document) => d.toServerDTO()),
-        total: documents.length,
-      });
-    },
+    listSessions: async (workspaceId) => ok(await workspaceService.getSessions(workspaceId)),
 
-    getDocument: async (id) => {
-      const doc = await documentRepository.findById(id);
-      return ok(doc?.toServerDTO() ?? null);
-    },
+    getSession: async (id) => ok(await workspaceService.getSession(id)),
 
-    updateDocument: async (id, data) => {
-      const doc = await documentRepository.findById(id);
-      if (!doc) return ok(null);
-      if (data.content !== undefined) doc.updateContent(data.content);
-      if (data.metadata != null) {
-        const merged = { ...doc.metadata, ...data.metadata } as DocumentMetadataServerDTO;
-        doc.updateMetadata(merged);
+    updateSession: async (id, data) => {
+      const session = await workspaceService.getSession(id);
+      if (!session) {
+        return ok(null);
       }
-      await documentRepository.save(doc);
-      return ok(doc.toServerDTO());
+
+      return ok(
+        await workspaceService.updateSession({
+          workspaceId: session.workspaceId,
+          sessionId: id,
+          name: data.name,
+          layout: data.layout ?? undefined,
+          isActive: undefined,
+        }),
+      );
     },
 
-    deleteDocument: async (id) => {
-      await documentRepository.delete(id);
-      return ok(undefined);
+    activateSession: async (workspaceId, sessionId) => {
+      await workspaceService.activateSession(workspaceId, sessionId);
+      return ok(await workspaceService.getSession(sessionId));
     },
+
+    deleteSession: async (id) => {
+      const session = await workspaceService.getSession(id);
+      if (session) {
+        await workspaceService.removeSession(session.workspaceId, id);
+      }
+      return ok(null);
+    },
+
+    createGroup: async (data) =>
+      ok(
+        await workspaceService.addGroup({
+          workspaceId: data.workspaceId,
+          sessionId: data.sessionId,
+          groupIndex: data.groupIndex,
+          name: data.name ?? undefined,
+        }),
+      ),
+
+    updateGroup: async (id, data) =>
+      ok(
+        await workspaceService.updateGroup({
+          workspaceId: data.workspaceId,
+          sessionId: data.sessionId,
+          groupId: id,
+          name: data.name ?? undefined,
+          activeTabIndex: data.activeTabIndex,
+        }),
+      ),
+
+    deleteGroup: async (workspaceId, sessionId, groupId) => {
+      await workspaceService.removeGroup(workspaceId, sessionId, groupId);
+      return ok(null);
+    },
+
+    createTab: async (data) =>
+      ok(
+        await workspaceService.addTab({
+          workspaceId: data.workspaceId,
+          sessionId: data.sessionId,
+          groupId: data.groupId,
+          resourceId: data.resourceId ?? undefined,
+          tabIndex: data.tabIndex,
+          tabType: data.tabType,
+          title: data.title,
+          viewState: data.viewState ?? undefined,
+        }),
+      ),
+
+    updateTab: async (id, data) =>
+      ok(
+        await workspaceService.updateTab({
+          workspaceId: data.workspaceId,
+          sessionId: data.sessionId,
+          groupId: data.groupId,
+          tabId: id,
+          title: data.title,
+          viewState: data.viewState ?? undefined,
+          isPinned: data.isPinned,
+          isDirty: data.isDirty,
+        }),
+      ),
+
+    activateTab: async (workspaceId, sessionId, groupId, tabId) => {
+      await workspaceService.activateTab(workspaceId, sessionId, groupId, tabId);
+      return ok(null);
+    },
+
+    deleteTab: async (workspaceId, sessionId, groupId, tabId) => {
+      await workspaceService.removeTab(workspaceId, sessionId, groupId, tabId);
+      return ok(null);
+    },
+
+    getContent: async (resourceId) => ok(await repositoryContentPort.getContent(resourceId)),
+
+    saveContent: async (resourceId, content) => {
+      await sessionService.saveContent(resourceId, content);
+      return ok(null);
+    },
+
+    searchResources: async (request, ctx) => ok(await repositorySearchPort.search(request, ctx)),
   };
 
   return {
     workspaceRepository,
-    documentRepository,
+    sessionRepository,
+    groupRepository,
+    tabRepository,
     api,
     start(): void {
       if (started) {

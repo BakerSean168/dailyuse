@@ -23,6 +23,12 @@ export class CompleteGoal {
       throw new Error(`Goal not found: ${id}`);
     }
 
+    if (goal.completedAt && goal.archivedAt) {
+      return {
+        goal: goal.toServerDTO(true),
+      };
+    }
+
     this.goalPolicy.ensureGoalCanBeModified(goal);
     goal.markAsCompleted();
     await this.goalRepository.save(goal);

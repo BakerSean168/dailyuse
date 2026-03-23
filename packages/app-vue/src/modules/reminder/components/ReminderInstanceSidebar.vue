@@ -1,10 +1,10 @@
 <template>
   <aside
     v-if="visible"
-    class="fixed right-0 top-0 h-screen w-96 border-l bg-background shadow-lg flex flex-col z-50"
+    class="fixed right-0 top-0 z-50 flex h-screen w-96 flex-col overflow-hidden border-l bg-background shadow-lg"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between bg-primary text-primary-foreground p-4">
+    <div class="shrink-0 bg-primary p-4 text-primary-foreground flex items-center justify-between">
       <div class="flex items-center gap-2">
         <BellRing class="h-5 w-5" />
         <h2 class="text-lg font-semibold">{{ title ?? t('reminder.sidebar.title') }}</h2>
@@ -31,7 +31,7 @@
     </div>
 
     <!-- Filters (Collapsible) -->
-    <div v-if="showFilters" class="border-b p-4 space-y-3">
+    <div v-if="showFilters" class="shrink-0 border-b p-4 space-y-3">
       <Select v-model="localFilters.days" @update:model-value="handleFiltersChange">
         <SelectTrigger>
           <SelectValue :placeholder="t('reminder.sidebar.selectTimeRange')" />
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Stats -->
-    <div v-if="stats" class="border-b p-4">
+    <div v-if="stats" class="shrink-0 border-b p-4">
       <div class="grid grid-cols-3 gap-4 text-center">
         <div>
           <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Reminders List -->
-    <ScrollArea class="flex-1">
+    <ScrollArea class="min-h-0 flex-1">
       <!-- Loading -->
       <div v-if="isLoading" class="p-4 space-y-3">
         <Skeleton v-for="i in 3" :key="i" class="h-20 w-full" />
@@ -146,7 +146,7 @@
     </ScrollArea>
 
     <!-- Footer Actions -->
-    <div class="border-t p-3 flex items-center justify-between">
+    <div class="shrink-0 border-t p-3 flex items-center justify-between">
       <Button variant="ghost" size="sm" @click="showFilters = !showFilters">
         <Filter class="h-4 w-4 mr-2" />
         {{ t('reminder.sidebar.filters') }}

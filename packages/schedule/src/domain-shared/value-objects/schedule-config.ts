@@ -12,6 +12,7 @@ import type {
   ScheduleConfigPersistenceDTO,
   Timezone,
 } from '@dailyuse/contracts/schedule';
+import { CronExpressionParser } from 'cron-parser';
 
 /**
  * ScheduleConfig 值对象实现
@@ -56,17 +57,20 @@ export class ScheduleConfig extends ValueObject<ScheduleConfigServerDTO> impleme
   // ================= 校验 =================
   
   private static validate(props: ScheduleConfigServerDTO): void {
-    if (!props.cronExpression || props.cronExpression.trim().length === 0) {
-      throw new Error('Cron expression is required');
-    }
     if (!props.timezone || props.timezone.trim().length === 0) {
       throw new Error('Timezone is required');
+    }
+    if (
+      (props.cronExpression === null || props.cronExpression.trim().length === 0) &&
+      props.startDate === null
+    ) {
+      throw new Error('Either cronExpression or startDate is required');
     }
   }
 
   // ================= Getters =================
 
-  public get cronExpression(): string {
+  public get cronExpression(): string | null {
     return this.props.cronExpression;
   }
 
@@ -84,6 +88,39 @@ export class ScheduleConfig extends ValueObject<ScheduleConfigServerDTO> impleme
 
   public get maxExecutions(): number | null {
     return this.props.maxExecutions;
+  }
+
+  public calculateNextRun(afterTime: number = Date.now()): number | null {
+    const earliestTime = this.startDate !== null ? Math.max(afterTime, this.startDate) : afterTime;
+
+    if (this.props.cronExpression) {
+      try {
+        const interval = CronExpressionParser.parse(this.props.cronExpression, {
+          currentDate: new Date(earliestTime),
+          tz: this.props.timezone,
+        });
+        const nextRunAt = interval.next().toDate().getTime();
+
+        if (this.endDate !== null && nextRunAt > this.endDate) {
+          return null;
+        }
+
+        return nextRunAt;
+      } catch (error) {
+        console.error(`Failed to parse cron expression "${this.props.cronExpression}":`, error);
+        return null;
+      }
+    }
+
+    if (this.startDate !== null && this.startDate >= afterTime) {
+      if (this.endDate !== null && this.startDate > this.endDate) {
+        return null;
+      }
+
+      return this.startDate;
+    }
+
+    return null;
   }
 
   // ================= 行为方法 =================

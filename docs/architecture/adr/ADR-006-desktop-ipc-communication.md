@@ -20,6 +20,10 @@ updated: 2025-12-06
 
 ## 背景
 
+> 注：本 ADR 中若干 `GoalContainer` / container-based 代码片段仅作为历史记录保留。
+> 当前桌面实现已迁移到 module composition roots、shared IPC channel contracts、
+> preload allowlists 与 transport-neutral module APIs。
+
 在 ADR-004 中，我们决定采用分层提取策略，将业务逻辑提取到共享包中。现在需要明确 Electron 主进程与渲染进程之间的通信架构，以及如何将 `@dailyuse/infrastructure-client` 和 `@dailyuse/infrastructure-server` 包集成到 Desktop 应用中。
 
 ### 现有基础设施
@@ -66,7 +70,7 @@ updated: 2025-12-06
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │                    Vue Application                            │   │
 │  │                                                               │   │
-│  │  Component → Composable → Service → Container → IpcAdapter   │   │
+│  │  Component → Composable → Service → injected adapter         │   │
 │  │                                                               │   │
 │  │  GoalView.vue                                                 │   │
 │  │      ↓                                                        │   │
@@ -74,7 +78,7 @@ updated: 2025-12-06
 │  │      ↓                                                        │   │
 │  │  GetAllGoalsService  (@dailyuse/application-client)           │   │
 │  │      ↓                                                        │   │
-│  │  GoalContainer.getApiClient()  (@dailyuse/infrastructure-client) │
+│  │  injected goal client adapter                                 │
 │  │      ↓                                                        │   │
 │  │  GoalIpcAdapter.getGoals()                                    │   │
 │  │      ↓                                                        │   │
@@ -99,9 +103,7 @@ updated: 2025-12-06
 │  │                                                               │   │
 │  │  ipcMain.handle('goal:list', async (event, params) => {      │   │
 │  │    try {                                                      │   │
-│  │      const container = GoalContainer.getInstance();           │   │
-│  │      const repo = container.getGoalRepository();              │   │
-│  │      return await repo.findAll(params);                       │   │
+│  │      return await goalModule.api.listGoals(params, ctx);      │   │
 │  │    } catch (error) {                                          │   │
 │  │      log.error('goal:list failed', error);                    │   │
 │  │      throw error;                                             │   │
@@ -110,11 +112,7 @@ updated: 2025-12-06
 │  └──────────────────────────────────┬───────────────────────────┘   │
 │                                     │                                │
 │  ┌──────────────────────────────────▼───────────────────────────┐   │
-│  │         Container (@dailyuse/infrastructure-server)           │   │
-│  │                                                               │   │
-│  │  GoalContainer.getInstance().getGoalRepository()              │   │
-│  │      ↓                                                        │   │
-│  │  PowerSyncGoalRepository                                      │   │
+│  │         module api + repository adapters                      │   │
 │  │      ↓                                                        │   │
 │  │  PowerSync local database runtime                             │   │
 │  └──────────────────────────────────────────────────────────────┘   │
@@ -214,49 +212,9 @@ contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
 ### 5. 主进程 Handler 注册模式
 
-```typescript
-// apps/desktop/src/main/ipc-handlers/goal.handler.ts
-import { ipcMain } from 'electron';
-import log from 'electron-log';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-export function registerGoalHandlers(): void {
-  const container = GoalContainer.getInstance();
-
-  // 统一错误处理包装器
-  const handle = <T>(channel: string, handler: (...args: unknown[]) => Promise<T>) => {
-    ipcMain.handle(channel, async (event, ...args) => {
-      try {
-        log.debug(`IPC ${channel}`, { args });
-        const result = await handler(...args);
-        log.debug(`IPC ${channel} success`);
-        return result;
-      } catch (error) {
-        log.error(`IPC ${channel} failed`, error);
-        throw error;
-      }
-    });
-  };
-
-  // 注册 handlers
-  handle('goal:list', async (params) => {
-    const repo = container.getGoalRepository();
-    return repo.findAll(params);
-  });
-
-  handle('goal:get', async (uuid: string, includeChildren: boolean) => {
-    const repo = container.getGoalRepository();
-    return repo.findById(uuid, includeChildren);
-  });
-
-  handle('goal:create', async (data) => {
-    const repo = container.getGoalRepository();
-    return repo.create(data);
-  });
-
-  // ... 更多 handlers
-}
-```
+旧的 `GoalContainer` handler 示例已删除。
+当前推荐模式：Electron entry 创建模块实例，IPC handlers 调用 module API，
+错误包装、认证上下文和参数验证都在 transport layer 中显式处理。
 
 **设计理由**:
 
@@ -273,7 +231,7 @@ Main Process:
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. app.whenReady()                                               │
 │ 2. openPowerSyncLocalOnly()       ← PowerSync 本地数据库连接     │
-│ 3. configureMainProcessDI()       ← Container 注册              │
+│ 3. create/start modules           ← composition root 装配       │
 │ 4. registerAllIpcHandlers()       ← IPC Handler 注册            │
 │ 5. createMainWindow()             ← 创建窗口                    │
 └─────────────────────────────────────────────────────────────────┘

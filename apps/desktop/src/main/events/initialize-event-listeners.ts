@@ -9,8 +9,10 @@
  */
 
 import { eventBus } from '@dailyuse/utils';
-import { GoalRecord, type KeyResult } from '@dailyuse/goal';
+import { CreateGoalRecord, GoalProgressCalculator } from '@dailyuse/goal';
 import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
+import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
+import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 let isInitialized = false;
 
@@ -43,7 +45,8 @@ function initializeTaskToGoalProgressListener(): void {
   const bus = eventBus as any;
   bus.on('task:instance:completed', async (event: any) => {
     try {
-      const identityId = event.identityId as string | undefined;
+      const payload = event?.payload ?? event;
+      const identityId = (event?.identityId ?? payload?.identityId) as string | undefined;
       if (!identityId) {
         console.error(
           '❌ [TaskToGoalProgress] Missing identityId in task:instance:completed event',
@@ -51,15 +54,27 @@ function initializeTaskToGoalProgressListener(): void {
         return;
       }
 
-      const { goalBinding, taskInstanceId, title } = event.payload as {
-        goalBinding?: {
-          goalId: string;
-          keyResultId?: string;
-          incrementValue: number;
-        };
+      const { taskInstanceId, taskTemplateId } = payload as {
         taskInstanceId: string;
-        title: string;
+        taskTemplateId: string;
       };
+
+      const taskInstanceRepository = getTaskInstanceRepository();
+      const taskInstance = await taskInstanceRepository.findById(taskInstanceId);
+      if (!taskInstance) {
+        console.error(`❌ [TaskToGoalProgress] Task instance not found: ${taskInstanceId}`);
+        return;
+      }
+
+      const taskTemplateRepository = getTaskTemplateRepository();
+      const template = await taskTemplateRepository.findById(taskTemplateId);
+      if (!template) {
+        console.error(`❌ [TaskToGoalProgress] Task template not found: ${taskTemplateId}`);
+        return;
+      }
+
+      const title = template.title;
+      const goalBinding = template.goalBinding;
 
       // If the task is not bound to a goal, ignore
       if (!goalBinding) {
@@ -69,65 +84,77 @@ function initializeTaskToGoalProgressListener(): void {
         return;
       }
 
+      const shouldCreateRecord =
+        goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
+          ? await shouldTriggerOnAllInstancesCompleted(taskTemplateId, taskInstance.instanceDate)
+          : true;
+
+      if (!shouldCreateRecord) {
+        console.log(
+          `ℹ️ [TaskToGoalProgress] Task ${taskInstanceId} completed, but template ${taskTemplateId} is not fully completed yet`,
+        );
+        return;
+      }
+
       console.log(`🎯 [TaskToGoalProgress] Task "${title}" completed, updating goal progress`, {
         goalId: goalBinding.goalId,
         keyResultId: goalBinding.keyResultId,
-        incrementValue: goalBinding.incrementValue,
+        incrementValue: goalBinding.goalRecordValue,
+        progressTrigger: goalBinding.progressTrigger,
       });
 
-      // If a Key Result is specified, add a progress record
-      if (goalBinding.keyResultId) {
-        const goalRepository = getGoalRepository();
+      const goalRepository = getGoalRepository();
+      const goalRecordRepository = getGoalRecordRepository();
+      const createGoalRecord = new CreateGoalRecord(
+        goalRepository,
+        goalRecordRepository,
+        new GoalProgressCalculator(goalRecordRepository),
+      );
 
-        // 1. Fetch goal with children (Key Results)
-        const goal = await goalRepository.findById(goalBinding.goalId, { includeChildren: true });
-        if (!goal) {
-          console.error(`❌ [TaskToGoalProgress] Goal not found: ${goalBinding.goalId}`);
-          return;
-        }
+      const recordResult = await createGoalRecord.execute(
+        String(goalBinding.goalId),
+        String(goalBinding.keyResultId),
+        {
+          value: goalBinding.goalRecordValue,
+          note:
+            goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
+              ? `模板实例全部完成: ${title}`
+              : `任务实例完成: ${title}`,
+        },
+        identityId,
+      );
 
-        // 2. Find the target Key Result
-        const keyResult = goal.keyResults.find(
-          (kr: KeyResult) => kr.id === goalBinding.keyResultId,
-        );
-        if (!keyResult) {
-          console.error(`❌ [TaskToGoalProgress] KeyResult not found: ${goalBinding.keyResultId}`);
-          return;
-        }
-
-        // 3. Create a new GoalRecord entity
-        const record = GoalRecord.create({
-          keyResultId: goalBinding.keyResultId as any,
-          identityId: identityId as any,
-          value: goalBinding.incrementValue,
-          note: `任务完成: ${title}`,
-          recordedAt: new Date(),
-        });
-
-        const goalRecordRepository = getGoalRecordRepository();
-
-        // 4. Add record to Key Result (triggers recalculation of current value)
-        keyResult.addRecord(record.toServerDTO());
-
-        // 5. Persist canonical goal_records row first, then persist recalculated aggregate state.
-        await goalRecordRepository.save(record);
-        await goalRepository.save(goal);
-
-        console.log(
-          `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultId} with value ${goalBinding.incrementValue}`,
-        );
-      } else {
-        // TODO: Handle goal-level progress update if no specific key result is targeted
-        console.log(
-          `ℹ️ [TaskToGoalProgress] Task completed for goal ${goalBinding.goalId}, but no key result specified`,
-        );
+      if (!recordResult.ok) {
+        console.error('❌ [TaskToGoalProgress] Failed to create goal record', recordResult.error);
+        return;
       }
+
+      console.log(
+        `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultId} with value ${goalBinding.goalRecordValue}`,
+      );
     } catch (error) {
       console.error('❌ [TaskToGoalProgress] Error handling task:instance:completed:', error);
     }
   });
 
   console.log('✅ [TaskToGoalProgress] Task completion → Goal progress listener registered');
+}
+
+async function shouldTriggerOnAllInstancesCompleted(
+  templateId: string,
+  completedThroughDate: number,
+): Promise<boolean> {
+  const taskInstanceRepository = getTaskInstanceRepository();
+  const instances = await taskInstanceRepository.findByTemplateId(templateId);
+  const relevantInstances = instances.filter(
+    (instance) => instance.instanceDate <= completedThroughDate,
+  );
+
+  if (relevantInstances.length === 0) {
+    return false;
+  }
+
+  return relevantInstances.every((instance) => instance.status === TaskInstanceStatus.Completed);
 }
 
 /**

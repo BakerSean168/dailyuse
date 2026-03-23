@@ -27,7 +27,6 @@ function makeTemplateState(overrides: Partial<ReminderTemplateState> = {}): Remi
     description: null,
     type: ReminderType.Recurring,
     trigger: TriggerConfig.createFixedTime('08:00'),
-    recurrence: null,
     activeTime: ActiveTimeConfig.createAt(now),
     activeHours: null,
     notificationConfig: ReminderNotificationConfig.createDefault(),

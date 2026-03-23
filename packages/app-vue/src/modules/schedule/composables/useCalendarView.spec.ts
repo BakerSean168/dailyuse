@@ -1,0 +1,120 @@
+import { describe, expect, it } from 'vitest';
+import { taskInstancesToEvents, toLocalDateKey } from './useCalendarView';
+import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+
+function makeTemplate(overrides: Partial<TaskTemplateClientDTO> = {}): TaskTemplateClientDTO {
+  return {
+    id: 'tpl-1',
+    identityId: 'acc-1',
+    name: 'Morning Task',
+    description: null,
+    timeConfig: {
+      timeType: 'AllDay',
+      startDate: null,
+      timePoint: null,
+      timeRange: null,
+    },
+    recurrenceRule: null,
+    reminderConfig: null,
+    importance: 'Moderate',
+    goalBinding: null,
+    folderId: null,
+    tags: [],
+    color: null,
+    status: 'Active',
+    lastGeneratedDate: null,
+    generateAheadDays: null,
+    version: 1,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    deletedAt: null,
+    parentTaskId: null,
+    startDate: null,
+    dueDate: null,
+    completedAt: null,
+    estimatedMinutes: null,
+    actualMinutes: null,
+    comment: null,
+    dependencyStatus: 'NONE',
+    isBlocked: false,
+    blockingReason: null,
+    instanceCount: 0,
+    completedInstanceCount: 0,
+    pendingInstanceCount: 0,
+    completionRate: 0,
+    history: [],
+    instances: [],
+    ...overrides,
+  };
+}
+
+function makeInstance(overrides: Partial<TaskInstanceClientDTO> = {}): TaskInstanceClientDTO {
+  return {
+    id: 'inst-1',
+    templateId: 'tpl-1',
+    identityId: 'acc-1',
+    instanceDate: new Date('2026-03-18T00:00:00+08:00').getTime(),
+    timeConfig: {
+      timeType: 'AllDay',
+      startDate: null,
+      timePoint: null,
+      timeRange: null,
+    },
+    importance: 'Moderate',
+    status: 'Pending',
+    actualStartTime: null,
+    actualEndTime: null,
+    comment: null,
+    version: 1,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    deletedAt: null,
+    ...overrides,
+  };
+}
+
+describe('useCalendarView helpers', () => {
+  it('maps all-day task instances to all-day calendar events', () => {
+    const [event] = taskInstancesToEvents([makeInstance()], [makeTemplate()]);
+
+    expect(event).toMatchObject({
+      id: 'task-inst-1',
+      title: 'Morning Task',
+      source: 'task',
+      displayMode: 'all-day',
+      originalId: 'inst-1',
+      instanceStatus: 'Pending',
+    });
+
+    expect(toLocalDateKey(event.startTime)).toBe('2026-03-18');
+    expect(toLocalDateKey(event.endTime)).toBe('2026-03-18');
+    expect(event.endTime).toBeGreaterThan(event.startTime);
+  });
+
+  it('maps timed task instances to timed calendar events', () => {
+    const [event] = taskInstancesToEvents(
+      [
+        makeInstance({
+          timeConfig: {
+            timeType: 'TimeRange',
+            startDate: null,
+            timePoint: null,
+            timeRange: { start: 9 * 60, end: 10 * 60 + 30 },
+          },
+        }),
+      ],
+      [makeTemplate()],
+    );
+
+    expect(event.displayMode).toBe('timed');
+    expect(new Date(event.startTime).getHours()).toBe(9);
+    expect(new Date(event.endTime).getHours()).toBe(10);
+    expect(new Date(event.endTime).getMinutes()).toBe(30);
+  });
+
+  it('formats local date keys without UTC day drift', () => {
+    const localMidnight = new Date(2026, 2, 18, 0, 0, 0, 0);
+    expect(toLocalDateKey(localMidnight)).toBe('2026-03-18');
+    expect(toLocalDateKey(localMidnight.getTime())).toBe('2026-03-18');
+  });
+});

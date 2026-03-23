@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { ResourceBookmarkClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { __test__ as composableTest } from './useRepository';
 import { __test__ as storeTest } from '../stores/repositoryStore';
@@ -111,5 +111,38 @@ describe('useRepository helpers', () => {
         .reorderBookmarkCollection([first, second, third], [third.id, first.id])
         .map((bookmark) => bookmark.id),
     ).toEqual([third.id, first.id, second.id]);
+  });
+
+  it('recovers desktop auth when repository request returns AUTH_REQUIRED', async () => {
+    const invoke = vi
+      .fn()
+      .mockResolvedValueOnce({ authenticated: false, runtimeState: 'RESTORING' })
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ authenticated: true });
+
+    const result = await composableTest.executeAuthRecovery(
+      () =>
+        Promise.resolve({ ok: false as const, error: { code: 'AUTH_REQUIRED', message: 'nope' } }),
+      { electronAPI: { invoke } },
+    );
+
+    expect(result).toBe(true);
+    expect(invoke).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not retry non-auth repository errors', async () => {
+    const invoke = vi.fn();
+
+    const result = await composableTest.executeAuthRecovery(
+      () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'INVALID_RESPONSE', message: 'bad dto' },
+        }),
+      { electronAPI: { invoke } },
+    );
+
+    expect(result).toBe(false);
+    expect(invoke).not.toHaveBeenCalled();
   });
 });

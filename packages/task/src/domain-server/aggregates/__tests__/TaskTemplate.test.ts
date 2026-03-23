@@ -23,7 +23,11 @@ import { TaskFolderId } from '../../../domain-shared/value-objects/task-folder-i
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { PriorityLevel } from '@dailyuse/contracts/shared';
-import { DayOfWeek, RecurrenceEndConditionType } from '@dailyuse/contracts/task';
+import {
+  DayOfWeek,
+  RecurrenceEndConditionType,
+  TaskGoalBindingTrigger,
+} from '@dailyuse/contracts/task';
 import { TaskType } from '../../value-objects';
 import {
   TaskTimeConfig,
@@ -60,8 +64,9 @@ function makeDailyRule(interval = 1): RecurrenceRule {
 
 function makeWeeklyRule(
   days: DayOfWeek[] = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday],
+  interval = 1,
 ): RecurrenceRule {
-  return RecurrenceRule.createWeekly(days);
+  return RecurrenceRule.createWeekly(days, interval);
 }
 
 function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateState {
@@ -388,7 +393,7 @@ describe('TaskTemplate Aggregate', () => {
         ).toThrow(InvalidTaskTemplateStateError);
       });
 
-      it('should emit task:create domain event', () => {
+      it('should emit task:create during aggregate construction', () => {
         const template = TaskTemplate.create({
           identityId: makeIdentityId(),
           title: 'Task',
@@ -397,10 +402,13 @@ describe('TaskTemplate Aggregate', () => {
         });
 
         const events = template.domainEvents;
-        expect(events.length).toBeGreaterThanOrEqual(1);
         const createEvent = events.find((e) => e.eventType === 'task:create');
         expect(createEvent).toBeDefined();
-        expect(createEvent!.payload).toHaveProperty('templateId', template.id);
+        expect(createEvent?.payload).toMatchObject({
+          identityId: template.identityId,
+          templateId: template.id,
+          goalId: null,
+        });
       });
     });
 
@@ -929,6 +937,24 @@ describe('TaskTemplate Aggregate', () => {
         expect(instances.length).toBe(3); // 15, 16, 17
       });
 
+      it('should respect occurrence limits when generating instances', () => {
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(),
+            recurrenceRule: makeDailyRule().setOccurrences(3),
+          }),
+        );
+
+        const from = new Date('2025-06-15T00:00:00Z').getTime();
+        const to = new Date('2025-06-30T00:00:00Z').getTime();
+        const instances = template.generateInstances(from, to);
+
+        expect(instances).toHaveLength(3);
+        expect(template.instances).toHaveLength(3);
+      });
+
       it('should generate weekly instances only on specified days', () => {
         // Wednesday June 18 and Friday June 20 are within range
         const rule = makeWeeklyRule([DayOfWeek.Wednesday, DayOfWeek.Friday]);
@@ -1105,6 +1131,50 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.shouldGenerateInstance(Date.now())).toBe(true);
       });
 
+      it('should respect daily recurrence interval from start date', () => {
+        const startDate = new Date('2025-06-15T00:00:00.000Z');
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeDailyRule(3),
+          }),
+        );
+
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-15T12:00:00.000Z').getTime()),
+        ).toBe(true);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-16T12:00:00.000Z').getTime()),
+        ).toBe(false);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-18T12:00:00.000Z').getTime()),
+        ).toBe(true);
+      });
+
+      it('should respect weekly recurrence interval and selected weekdays', () => {
+        const startDate = new Date('2025-06-16T00:00:00.000Z');
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeWeeklyRule([DayOfWeek.Monday], 2),
+          }),
+        );
+
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-16T12:00:00.000Z').getTime()),
+        ).toBe(true);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-23T12:00:00.000Z').getTime()),
+        ).toBe(false);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-30T12:00:00.000Z').getTime()),
+        ).toBe(true);
+      });
+
       it('should respect recurrence endDate', () => {
         const rule = makeDailyRule();
         const pastEndDate = new Date('2020-01-01');
@@ -1119,6 +1189,24 @@ describe('TaskTemplate Aggregate', () => {
         );
 
         expect(template.shouldGenerateInstance(Date.now())).toBe(false);
+      });
+
+      it('should return false when occurrence limit has been reached', () => {
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(),
+            recurrenceRule: makeDailyRule().setOccurrences(1),
+          }),
+        );
+
+        const today = new Date('2025-06-15T00:00:00Z').getTime();
+        template.generateInstances(today, new Date('2025-06-15T23:59:59Z').getTime());
+
+        expect(template.shouldGenerateInstance(new Date('2025-06-16T12:00:00Z').getTime())).toBe(
+          false,
+        );
       });
     });
 
@@ -1526,6 +1614,7 @@ describe('TaskTemplate Aggregate', () => {
           goalId: 'goal-123',
           keyResultId: 'kr-456',
           goalRecordValue: 10,
+          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
         });
         const template = TaskTemplate.load(
           makeState({
@@ -2009,9 +2098,9 @@ describe('TaskTemplate Aggregate', () => {
         timeConfig: makeAllDayTimeConfig(),
       });
 
-      // create() emits task:create
       const events = template.pullDomainEvents();
-      expect(events.length).toBeGreaterThanOrEqual(1);
+      expect(events).toHaveLength(1);
+      expect(events[0]?.eventType).toBe('task:create');
 
       // After pull, events should be cleared
       expect(template.domainEvents).toHaveLength(0);

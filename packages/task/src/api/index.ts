@@ -18,3 +18,4 @@
 
 export { TaskApiModule } from './module';
 export type { TaskApiModuleContext, TaskApiModuleOptions } from './module';
+export { createTaskScheduleRuntimeContribution } from './schedule-runtime';

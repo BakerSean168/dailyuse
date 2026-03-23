@@ -4,8 +4,8 @@ export interface EditorWorkspaceUpdatedDomainEvent {
   changedFields: string[];
 }
 
-export interface EditorDocumentSavedDomainEvent {
+export interface EditorResourceSavedDomainEvent {
   aggregateId: string;
   timestamp: number;
-  documentId: string;
+  resourceId: string;
 }

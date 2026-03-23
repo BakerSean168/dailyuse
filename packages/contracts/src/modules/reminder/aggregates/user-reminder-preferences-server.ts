@@ -26,6 +26,7 @@ export interface UserReminderPreferencesServerDTO {
   identityId: string;
   bestTimeSlots: TimeSlotDTO[]; // 最佳时间段
   worstTimeSlots: TimeSlotDTO[]; // 最差时间段
+  globalReminderEnabled: boolean; // 全局提醒总开关
   globalSmartFrequency: boolean; // 全局启用智能频率
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
@@ -39,12 +40,14 @@ export interface UserReminderPreferencesClientDTO {
   identityId: string;
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
+  globalReminderEnabled: boolean;
   globalSmartFrequency: boolean;
   createdAt: number;
   updatedAt: number;
   // UI 显示文本
   bestTimeSlotsText: string; // "09:00-10:00, 18:00-19:00"
   worstTimeSlotsText: string; // "12:00-13:00, 22:00-23:00"
+  summaryText?: string;
 }
 
 /**
@@ -55,6 +58,7 @@ export interface UserReminderPreferencesPersistenceDTO {
   identityId: string;
   bestTimeSlots: string; // JSON string
   worstTimeSlots: string; // JSON string
+  globalReminderEnabled: boolean;
   globalSmartFrequency: boolean;
   createdAt: Date;
   updatedAt: Date;

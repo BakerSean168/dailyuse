@@ -2,6 +2,7 @@ import type { IAccountRepository } from '../domain-server';
 import {
   GetAccountProfileUseCase,
   UpdateAccountProfileUseCase,
+  UpdateAccountSettingsUseCase,
   CloseAccountUseCase,
   CheckAvailabilityUseCase,
 } from '../application-server';
@@ -12,6 +13,8 @@ import type {
   CloseAccountReq,
   GetAccountRes,
   UpdateAccountReq,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
 } from '@dailyuse/contracts/account';
 
 /** Explicit dependencies required by the account runtime. */
@@ -32,6 +35,7 @@ export interface AccountModuleRuntimeContribution {
 export interface AccountModuleUseCases {
   readonly getProfile: GetAccountProfileUseCase;
   readonly updateProfile: UpdateAccountProfileUseCase;
+  readonly updateSettings: UpdateAccountSettingsUseCase;
   readonly closeAccount: CloseAccountUseCase;
   readonly checkAvailability: CheckAvailabilityUseCase;
 }
@@ -40,6 +44,10 @@ export interface AccountModuleUseCases {
 export interface AccountApplicationPort {
   getProfile(identityId: string): Promise<GetAccountRes | null>;
   updateProfile(identityId: string, data: UpdateAccountReq): Promise<UpdateProfileResult>;
+  updateSettings(
+    identityId: string,
+    data: UpdateAccountSettingsReq,
+  ): Promise<UpdateAccountSettingsRes>;
   checkAvailability(data: CheckAvailabilityReq): Promise<CheckAvailabilityRes>;
   closeAccount(identityId: string, data: CloseAccountReq): Promise<CloseAccountResult>;
 }
@@ -64,6 +72,7 @@ export function createAccountUseCases(
   return {
     getProfile: new GetAccountProfileUseCase(accountRepository),
     updateProfile: new UpdateAccountProfileUseCase(accountRepository),
+    updateSettings: new UpdateAccountSettingsUseCase(accountRepository),
     closeAccount: new CloseAccountUseCase(accountRepository),
     checkAvailability: new CheckAvailabilityUseCase(accountRepository),
   };
@@ -103,6 +112,10 @@ export function createAccountModule(
     api: {
       getProfile: (identityId) => useCases.getProfile.execute(identityId),
       updateProfile: (identityId, data) => useCases.updateProfile.execute(identityId, data),
+      updateSettings: async (identityId, data) => {
+        const result = await useCases.updateSettings.execute(identityId, data);
+        return result.settings;
+      },
       checkAvailability: (data) => useCases.checkAvailability.execute(data),
       closeAccount: (identityId, data) => useCases.closeAccount.execute(identityId, data),
     },

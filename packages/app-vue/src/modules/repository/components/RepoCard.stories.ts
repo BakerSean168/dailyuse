@@ -10,7 +10,7 @@ function mockRepository(overrides: Record<string, unknown> = {}) {
     name: '个人知识库',
     type: 'Personal',
     path: '/repos/personal',
-    description: '存储个人学习笔记和技术文档。',
+    description: '存储个人学习笔记和技术资料。',
     config: {},
     stats: {},
     status: 'Active',
@@ -38,9 +38,7 @@ const meta = {
   component: RepoCard,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
-  decorators: [
-    () => ({ template: '<div style="width: 360px;"><story /></div>' }),
-  ],
+  decorators: [() => ({ template: '<div style="width: 360px;"><story /></div>' })],
   argTypes: {
     repository: { description: '仓库数据对象 (RepositoryClientDTO)' },
   },
@@ -59,8 +57,8 @@ export const Archived: Story = {
   args: {
     repository: mockRepository({
       id: 'repo-2',
-      name: '旧项目文档',
-      description: '已归档的旧项目文档合集。',
+      name: '旧项目笔记',
+      description: '已归档的旧项目笔记合集。',
       status: 'Archived',
       isArchived: true,
       isActive: false,

@@ -70,6 +70,9 @@ export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
  */
 export class SessionManager {
   private static instance: SessionManager | null = null;
+  private static readonly GUEST_ID_PREFIX = 'IdentityId';
+  private static readonly LOCAL_ACCESS_TOKEN = 'local-token';
+  private static readonly GUEST_ACCESS_TOKEN = 'guest-local-token';
 
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
@@ -80,9 +83,6 @@ export class SessionManager {
   private passwordHasher: IPasswordHasher | null = null;
   // Maps email → server-side identityId for offline session creation
   // (No longer needed — local AuthIdentity is now stored with the server ID directly)
-
-  // Guest identity persistence (Phase 4)
-  private static readonly GUEST_ID_KEY = 'guest_identity_id';
 
   private currentSession: AuthSession | null = null;
   private deviceInfo: DeviceInfoClientDTO | null = null;
@@ -199,6 +199,17 @@ export class SessionManager {
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
         this.logger.info('No tokens found, no session to restore');
+        return { ok: false, needsReLogin: true };
+      }
+
+      const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
+      if (!tokenData.identityId.startsWith(expectedIdentityPrefix)) {
+        this.logger.warn('Discarding stored tokens with unsupported identity prefix', {
+          identityId: tokenData.identityId,
+          expectedPrefix: expectedIdentityPrefix,
+        });
+        await this.tokenManager.clearTokens();
+        this.currentSession = null;
         return { ok: false, needsReLogin: true };
       }
 
@@ -518,8 +529,8 @@ export class SessionManager {
     this.currentSession = session;
 
     await this.tokenManager.saveTokens({
-      accessToken: 'local-token',
-      refreshToken: 'local-token',
+      accessToken: SessionManager.LOCAL_ACCESS_TOKEN,
+      refreshToken: SessionManager.LOCAL_ACCESS_TOKEN,
       accessTokenExpiresIn: 3600,
       refreshTokenExpiresIn: 30 * 24 * 3600,
       identityId: session?.identityId,
@@ -537,7 +548,7 @@ export class SessionManager {
     return {
       ok: true,
       sessionId: session?.id,
-      accessToken: 'local-token',
+      accessToken: SessionManager.LOCAL_ACCESS_TOKEN,
       identityId: session?.identityId,
       expiresIn: 3600,
       authMode: AuthMode.OFFLINE_USER,
@@ -854,24 +865,42 @@ export class SessionManager {
 
   /**
    * Get or create a persistent guest identity ID.
-   *
-   * The guest ID is stored in auth_sessions metadata and persists across app restarts.
-   * Can be cleared via clearGuestIdentity() when the user upgrades to a cloud account.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
-    // Try to load existing guest ID from session repository metadata
-    const existingGuestSessions = await this.sessionRepository.findByIdentityId(
-      'guest' as unknown as IdentityId,
-    );
-    if (existingGuestSessions.length > 0) {
-      const guestSession = existingGuestSessions[0];
-      this.currentSession = guestSession;
-      this.logger.info('Restored existing guest identity', { sessionId: guestSession.id });
-      return guestSession.identityId;
+    const tokenData = this.tokenManager.getCachedTokenData();
+    const cachedGuestId = tokenData?.identityId;
+    const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
+
+    if (cachedGuestId && this.isGuestToken(tokenData)) {
+      if (!cachedGuestId.startsWith(expectedIdentityPrefix)) {
+        this.logger.warn('Discarding stale guest token with unsupported identity prefix', {
+          identityId: cachedGuestId,
+          expectedPrefix: expectedIdentityPrefix,
+        });
+        await this.tokenManager.clearTokens();
+      } else {
+        const existingGuestSessions = await this.sessionRepository.findByIdentityId(
+          cachedGuestId as unknown as IdentityId,
+        );
+        if (existingGuestSessions.length > 0) {
+          const guestSession = existingGuestSessions[0];
+          this.currentSession = guestSession;
+          this.logger.info('Restored existing guest identity', {
+            guestId: cachedGuestId,
+            sessionId: guestSession.id,
+          });
+          return guestSession.identityId;
+        }
+
+        this.logger.info('Reusing cached guest identity without stored session', {
+          guestId: cachedGuestId,
+        });
+        return cachedGuestId;
+      }
     }
 
     // Create new persistent guest identity
-    const guestId = `guest-${this.getDeviceInfo().deviceId.substring(0, 8)}`;
+    const guestId = `${SessionManager.GUEST_ID_PREFIX}_${generateUUID()}`;
 
     const deviceInfo = this.getDeviceInfo();
     const device = DeviceInfo.create(deviceInfo as any);
@@ -890,8 +919,8 @@ export class SessionManager {
 
     // Save guest tokens locally
     await this.tokenManager.saveTokens({
-      accessToken: 'local-token',
-      refreshToken: 'local-token',
+      accessToken: SessionManager.GUEST_ACCESS_TOKEN,
+      refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
       accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
       refreshTokenExpiresIn: 365 * 24 * 3600,
       identityId: guestId as unknown as IdentityId,
@@ -904,14 +933,27 @@ export class SessionManager {
 
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
-    const guestSessions = await this.sessionRepository.findByIdentityId(
-      'guest' as unknown as IdentityId,
-    );
-    for (const session of guestSessions) {
-      session.revoke();
-      await this.sessionRepository.save(session);
+    const tokenData = this.tokenManager.getCachedTokenData();
+    const cachedGuestId = tokenData?.identityId;
+
+    if (cachedGuestId && this.isGuestToken(tokenData)) {
+      const guestSessions = await this.sessionRepository.findByIdentityId(
+        cachedGuestId as unknown as IdentityId,
+      );
+      for (const session of guestSessions) {
+        session.revoke();
+        await this.sessionRepository.save(session);
+      }
     }
     this.logger.info('Guest identity cleared');
+  }
+
+  private isGuestToken(tokenData: { accessToken?: string; refreshToken?: string } | null): boolean {
+    if (!tokenData) return false;
+    return (
+      tokenData.accessToken === SessionManager.GUEST_ACCESS_TOKEN &&
+      tokenData.refreshToken === SessionManager.GUEST_ACCESS_TOKEN
+    );
   }
 
   // ============ Private Methods ============

@@ -108,7 +108,8 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
     deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
     countFutureInstances: vi.fn().mockResolvedValue(0),
     findByTemplateIdAndDateRange: vi.fn().mockResolvedValue([]),
-    deleteFuturePendingInstances: vi.fn().mockResolvedValue(undefined),
+    getTemplateStats: vi.fn().mockResolvedValue({}),
+    deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
   };
 }
 
@@ -165,10 +166,10 @@ export function createSmokeApp(): SmokeTestApp {
   // Wire use cases with mock repos (same as TaskModule constructor)
   const templateController = new TaskTemplateController({
     createTemplate: new CreateTaskTemplate(templateRepo, instanceRepo),
-    getTemplate: new GetTaskTemplate(templateRepo),
+    getTemplate: new GetTaskTemplate(templateRepo, instanceRepo),
     listTemplates: new ListTaskTemplates(templateRepo, instanceRepo),
     updateTemplate: new UpdateTaskTemplate(templateRepo),
-    deleteTemplate: new DeleteTaskTemplate(templateRepo),
+    deleteTemplate: new DeleteTaskTemplate(templateRepo, instanceRepo),
     activateTemplate: new ActivateTaskTemplate(templateRepo, instanceRepo),
     pauseTemplate: new PauseTaskTemplate(templateRepo, instanceRepo),
     archiveTemplate: new ArchiveTaskTemplate(templateRepo),
@@ -180,7 +181,7 @@ export function createSmokeApp(): SmokeTestApp {
     listByTemplate: new ListTaskInstancesByTemplate(instanceRepo),
     listByStatus: new ListTaskInstancesByStatus(instanceRepo),
     getByDateRange: new GetTaskInstancesByDateRange(instanceRepo),
-    complete: new CompleteTaskInstance(instanceRepo, templateRepo),
+    complete: new CompleteTaskInstance(instanceRepo),
     skip: new SkipTaskInstance(instanceRepo),
     start: new StartTaskInstance(instanceRepo),
     deleteInstance: new DeleteTaskInstance(instanceRepo),

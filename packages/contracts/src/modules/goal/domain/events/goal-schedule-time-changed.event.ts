@@ -1,3 +1,5 @@
+import type { GoalServerDTO } from '../../aggregates';
+
 /**
  * Goal Schedule Time Changed Event
  *
@@ -9,7 +11,7 @@ export interface GoalScheduleTimeChangedEvent {
   identityId: string;
 
   /** Updated goal snapshot */
-  goal: any;
+  goal: GoalServerDTO;
 
   /** Changed time fields */
   changes: string[];

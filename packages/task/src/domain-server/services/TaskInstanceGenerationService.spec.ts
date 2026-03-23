@@ -59,6 +59,19 @@ describe('TaskInstanceGenerationService', () => {
       expect(instances.length).toBeGreaterThan(0);
     });
 
+    it('should cap generated instances by recurrence occurrence limit', () => {
+      const template = aLoadedTaskTemplate({
+        taskType: TaskType.Recurring,
+        status: TaskTemplateStatus.Active,
+        timeConfig: anAllDayTimeConfig(),
+        recurrenceRule: aDailyRecurrenceRule().setOccurrences(3),
+      });
+
+      const instances = service.generateInstances(template);
+
+      expect(instances).toHaveLength(3);
+    });
+
     it('should return empty array when fromDate exceeds targetDate', () => {
       // Create a template where lastGeneratedDate is far in the future
       const farFuture = new Date(Date.now() + 200 * DAY_MS);

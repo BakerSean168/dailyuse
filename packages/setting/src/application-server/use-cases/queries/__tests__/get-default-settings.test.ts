@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getDefaultPreferences } from '@dailyuse/contracts/setting';
-import { GetDefaultSettings } from '../get-default-settings';
+import { DEFAULT_SETTINGS_IDENTITY_ID, GetDefaultSettings } from '../get-default-settings';
 
 describe('GetDefaultSettings', () => {
   const useCase = new GetDefaultSettings();
@@ -16,7 +16,7 @@ describe('GetDefaultSettings', () => {
     const result = useCase.execute();
 
     expect(result.id).toBeDefined();
-    expect(result.identityId).toBe('IdentityId_defaults');
+    expect(result.identityId).toBe(DEFAULT_SETTINGS_IDENTITY_ID);
     expect(result.preferences).toBeDefined();
     expect(result.version).toBe(1);
     expect(typeof result.createdAt).toBe('number');

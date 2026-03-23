@@ -19,11 +19,11 @@ export const repositoryRoutes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/document/:id',
-    name: 'document-edit',
+    path: '/note/:id',
+    name: 'note-edit',
     component: () => import('../../editor/views/EditorLinearView.vue'),
     meta: {
-      title: '编辑文档',
+      title: '编辑笔记',
       requiresAuth: true,
       hideSidebar: true,
     },

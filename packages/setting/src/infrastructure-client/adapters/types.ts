@@ -6,10 +6,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type {
-  UserSettingClientDTO,
-  PreferenceCategory,
-} from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 
 export type { IResultHttpClient };
 
@@ -22,8 +19,14 @@ export interface IResultIpcClient {
  */
 export interface ISettingApiClient {
   getUserSettings(): Promise<Result<UserSettingClientDTO>>;
-  patchCategory(category: PreferenceCategory, patch: Record<string, unknown>): Promise<Result<UserSettingClientDTO>>;
+  patchCategory(
+    category: PreferenceCategory,
+    patch: Record<string, unknown>,
+  ): Promise<Result<UserSettingClientDTO>>;
   resetUserSettings(category?: string): Promise<Result<UserSettingClientDTO>>;
   exportSettings(): Promise<Result<string>>;
-  importSettings(data: string): Promise<Result<UserSettingClientDTO>>;
+  importSettings(
+    data: string,
+    options?: { merge?: boolean },
+  ): Promise<Result<UserSettingClientDTO>>;
 }

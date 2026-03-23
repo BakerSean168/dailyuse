@@ -194,7 +194,7 @@ const kindFilters = computed(() => [
   { value: 'all' as const, label: t('common.all') },
   { value: 'image' as const, label: t('editor.resourcePicker.kinds.image') },
   { value: 'note' as const, label: t('editor.resourcePicker.kinds.note') },
-  { value: 'document' as const, label: t('editor.resourcePicker.kinds.document') },
+  { value: 'file' as const, label: t('editor.resourcePicker.kinds.document') },
   { value: 'media' as const, label: t('editor.resourcePicker.kinds.media') },
   { value: 'other' as const, label: t('editor.resourcePicker.kinds.other') },
 ]);
@@ -287,7 +287,7 @@ function getKindIcon(kind: ResourceInsertionKind) {
       return FileImage;
     case 'note':
       return FileText;
-    case 'document':
+    case 'file':
       return Link2;
     case 'media':
       return Film;

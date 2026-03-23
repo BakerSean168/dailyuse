@@ -3,9 +3,9 @@ import { brandedId } from '../../../primitives';
 import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../aggregates';
-import { TaskType } from '../value-objects';
+import { TaskGoalBindingTrigger, TaskType } from '../value-objects';
 import type { RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
-import type { TaskTimeConfigDTO } from '../value-objects';
+import type { TaskGoalBindingDTO, TaskTimeConfigDTO } from '../value-objects';
 
 export const TaskTimeConfigSchema = z
   .custom<TaskTimeConfigDTO>()
@@ -14,7 +14,19 @@ export const TaskTimeConfigSchema = z
 export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
 
 export const RecurrenceConfigSchema = z
-  .custom<RecurrenceRuleDTO>()
+  .custom<RecurrenceRuleDTO>((value) => {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const candidate = value as RecurrenceRuleDTO;
+    return !(
+      candidate.endDate !== null &&
+      candidate.endDate !== undefined &&
+      candidate.occurrences !== null &&
+      candidate.occurrences !== undefined
+    );
+  }, '重复规则不能同时设置结束日期和重复次数')
   .openapi({ type: 'object', description: '循环规则配置' });
 
 export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;
@@ -23,8 +35,15 @@ export const TaskReminderConfigSchema = z
   .custom<TaskReminderConfigDTO>()
   .openapi({ type: 'object', description: '任务提醒配置' });
 
+export const TaskGoalBindingSchema = z.object({
+  goalId: brandedId<GoalId>(),
+  keyResultId: brandedId<KeyResultId>(),
+  goalRecordValue: z.number().nonnegative(),
+  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
+});
+
+// Public transport schema - NO identityId (injected from Context)
 export const CreateTaskTemplateSchema = z.object({
-  identityId: brandedId<IdentityId>().optional(),
   name: z.string().min(1, '标题不能为空'),
   description: z.string().optional().nullable(),
   taskType: z.enum([TaskType.OneTime, TaskType.Recurring]).default(TaskType.Recurring),
@@ -35,9 +54,15 @@ export const CreateTaskTemplateSchema = z.object({
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).default([]).optional(),
   color: z.string().optional().nullable(),
+  goalBinding: TaskGoalBindingSchema.optional().nullable(),
 });
 
 export type CreateTaskTemplateReq = z.infer<typeof CreateTaskTemplateSchema>;
+
+// Internal input type (used by controller -> use case) with identityId
+export interface CreateTaskTemplateInput extends CreateTaskTemplateReq {
+  identityId: IdentityId;
+}
 export type CreateTaskTemplateRes = {
   template: TaskTemplateClientDTO;
   instanceCount: number;
@@ -49,6 +74,7 @@ export const UpdateTaskTemplateSchema = z.object({
   description: z.string().optional().nullable(),
   timeConfig: TaskTimeConfigSchema.optional().nullable(),
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
+  reminderConfig: TaskReminderConfigSchema.optional().nullable(),
   importance: z
     .custom<ImportanceLevel>()
     .openapi({
@@ -60,20 +86,30 @@ export const UpdateTaskTemplateSchema = z.object({
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),
+  goalBinding: TaskGoalBindingSchema.optional().nullable(),
 });
 
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;
 export type UpdateTaskTemplateRes = TaskTemplateClientDTO;
 
-export const QueryTaskTemplatesSchema = z.object({
-  identityId: brandedId<IdentityId>(),
+// Public transport schema - NO identityId (injected from Context)
+export const ListTaskTemplateFiltersSchema = z.object({
   status: z.array(z.string()).optional(),
   folderId: brandedId<TaskFolderId>().optional(),
   goalId: brandedId<GoalId>().optional(),
   tags: z.array(z.string()).optional(),
 });
 
-export type QueryTaskTemplatesReq = z.infer<typeof QueryTaskTemplatesSchema>;
+export type ListTaskTemplateFilters = z.infer<typeof ListTaskTemplateFiltersSchema>;
+
+// Internal query type (used by controller -> use case) with identityId
+export interface QueryTaskTemplatesInternal {
+  identityId: IdentityId;
+  status?: string[];
+  folderId?: TaskFolderId;
+  goalId?: GoalId;
+  tags?: string[];
+}
 export interface QueryTaskTemplatesRes {
   templates: TaskTemplateClientDTO[];
   total: number;
@@ -90,7 +126,8 @@ export type GenerateInstancesRes = TaskInstanceClientDTO[];
 export const BindToGoalSchema = z.object({
   goalId: brandedId<GoalId>(),
   keyResultId: brandedId<KeyResultId>(),
-  goalRecordValue: z.number(),
+  goalRecordValue: z.number().nonnegative(),
+  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
 });
 
 export type BindToGoalReq = z.infer<typeof BindToGoalSchema>;

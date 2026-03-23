@@ -62,12 +62,6 @@ export {
   type AIRuntimeContributionsInput,
   type AIModulePowerSyncOptions,
 
-  // -- Legacy classes (backward compatibility) --
-  /** @deprecated Use `createAIModule()` instead. 请使用 `createAIModule()` 替代。 */
-  AIModule,
-  /** @deprecated Use `createAIPowerSyncModule()` instead. 请使用 `createAIPowerSyncModule()` 替代。 */
-  AIPowerSyncModule,
-
   // -- Prisma Adapters --
   /** @internal Concrete Prisma implementation — use IAIConversationRepository interface instead. Prisma 具体实现 — 请使用 IAIConversationRepository 接口。 */
   AIConversationPrismaRepository,
@@ -79,12 +73,6 @@ export {
   PowerSyncAIConversationRepository,
   /** @internal Concrete PowerSync implementation — use IAIProviderConfigRepository interface instead. PowerSync 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
   PowerSyncAIProviderConfigRepository,
-
-  // -- Legacy DI --
-  /** @deprecated Use `createAIModule()` composition root instead. 请使用 `createAIModule()` 组合根替代。 */
-  AIRepositoryFactory,
-  /** @deprecated Use `createAIModule()` composition root instead. 请使用 `createAIModule()` 组合根替代。 */
-  AIContainer,
 } from './infrastructure-server';
 
 export * from './infrastructure-client';

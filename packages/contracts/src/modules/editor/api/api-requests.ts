@@ -5,15 +5,14 @@
 
 import type {
   ProjectType,
-  DocumentLanguage,
   TabType,
+  ResourceLanguage,
   LinkedSourceType,
   LinkedTargetType,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
   SessionLayoutServerDTO,
   TabViewStateServerDTO,
-  DocumentMetadataServerDTO,
 } from '../value-objects';
 
 import type {
@@ -21,10 +20,10 @@ import type {
   EditorSessionId,
   EditorGroupId,
   EditorTabId,
-  DocumentId,
-  DocumentVersionId,
+  ResourceVersionId,
   SearchEngineId,
   LinkedResourceId,
+  ResourceId,
 } from '../../../primitives';
 
 // ==================== EditorWorkspace API DTOs ====================
@@ -106,56 +105,15 @@ export interface ListEditorSessionsResponse {
   total: number;
 }
 
-// ==================== Document API DTOs ====================
+// ==================== ResourceVersion API DTOs ====================
 
 /**
- * 创建文档请求
+ * 资源版本列表响应
  */
-export interface CreateDocumentRequest {
-  workspaceId: EditorWorkspaceId;
-  path: string;
-  name: string;
-  language: DocumentLanguage;
-  content: string;
-  metadata?: Partial<DocumentMetadataServerDTO> | null;
-}
-
-/**
- * 更新文档请求
- */
-export interface UpdateDocumentRequest {
-  content?: string;
-  metadata?: Partial<DocumentMetadataServerDTO> | null;
-}
-
-/**
- * 文档列表响应
- */
-export interface ListDocumentsResponse {
-  documents: Array<{
-    id: DocumentId;
-    workspaceId: EditorWorkspaceId;
-    path: string;
-    name: string;
-    language: DocumentLanguage;
-    contentHash: string;
-    indexStatus: string;
-    lastModifiedAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
-  }>;
-  total: number;
-}
-
-// ==================== DocumentVersion API DTOs ====================
-
-/**
- * 文档版本列表响应
- */
-export interface ListDocumentVersionsResponse {
+export interface ListResourceVersionsResponse {
   versions: Array<{
-    id: DocumentVersionId;
-    documentId: DocumentId;
+    id: ResourceVersionId;
+    resourceId: ResourceId;
     versionNumber: number;
     changeType: string;
     contentHash: string;
@@ -209,7 +167,7 @@ export interface ListEditorGroupsResponse {
 export interface CreateEditorTabRequest {
   groupId: EditorGroupId;
   sessionId: EditorSessionId;
-  documentId?: DocumentId | null;
+  resourceId?: string | null;
   tabIndex: number;
   tabType: TabType;
   title: string;
@@ -234,7 +192,7 @@ export interface ListEditorTabsResponse {
     id: EditorTabId;
     groupId: EditorGroupId;
     sessionId: EditorSessionId;
-    documentId?: DocumentId | null;
+    resourceId?: string | null;
     tabIndex: number;
     tabType: TabType;
     title: string;
@@ -263,8 +221,8 @@ export interface CreateSearchEngineRequest {
  * 索引进度更新请求
  */
 export interface UpdateSearchEngineProgressRequest {
-  indexedDocumentCount: number;
-  totalDocumentCount: number;
+  indexedResourceCount: number;
+  totalResourceCount: number;
   indexProgress: number;
 }
 
@@ -272,13 +230,14 @@ export interface UpdateSearchEngineProgressRequest {
  * 搜索请求
  */
 export interface SearchRequest {
-  searchEngineId: SearchEngineId;
+  searchEngineId?: SearchEngineId;
+  workspaceId?: EditorWorkspaceId;
   query: string;
   limit?: number;
   offset?: number;
   filters?: {
-    documentIds?: string[];
-    languages?: DocumentLanguage[];
+    resourceIds?: string[];
+    languages?: ResourceLanguage[];
     tags?: string[];
   } | null;
 }
@@ -288,9 +247,9 @@ export interface SearchRequest {
  */
 export interface SearchResponse {
   results: Array<{
-    documentId: DocumentId;
-    documentPath: string;
-    documentName: string;
+    resourceId: string;
+    resourcePath: string;
+    resourceName: string;
     snippet: string;
     score: number;
     highlights: Array<{
@@ -308,13 +267,13 @@ export interface SearchResponse {
  */
 export interface CreateLinkedResourceRequest {
   workspaceId: EditorWorkspaceId;
-  sourceDocumentId: DocumentId;
+  sourceResourceId: ResourceId;
   sourceType: LinkedSourceType;
   sourceLine?: number | null;
   sourceColumn?: number | null;
   targetPath: string;
   targetType: LinkedTargetType;
-  targetDocumentId?: DocumentId | null;
+  targetResourceId?: ResourceId | null;
   targetAnchor?: string | null;
 }
 
@@ -323,7 +282,7 @@ export interface CreateLinkedResourceRequest {
  */
 export interface UpdateLinkedResourceRequest {
   targetPath?: string;
-  targetDocumentId?: DocumentId | null;
+  targetResourceId?: ResourceId | null;
   targetAnchor?: string | null;
   isValid?: boolean;
 }
@@ -334,7 +293,7 @@ export interface UpdateLinkedResourceRequest {
 export interface ListLinkedResourcesResponse {
   resources: Array<{
     id: LinkedResourceId;
-    sourceDocumentId: DocumentId;
+    sourceResourceId: ResourceId;
     sourceType: LinkedSourceType;
     targetPath: string;
     targetType: LinkedTargetType;
@@ -351,7 +310,7 @@ export interface ListLinkedResourcesResponse {
  */
 export interface ValidateLinksRequest {
   workspaceId: EditorWorkspaceId;
-  documentIds?: DocumentId[] | null; // 如果为空，验证所有文档
+  resourceIds?: ResourceId[] | null; // 如果为空，验证所有资源
 }
 
 /**
@@ -362,7 +321,7 @@ export interface ValidateLinksResponse {
   invalidCount: number;
   invalidLinks: Array<{
     resourceId: LinkedResourceId;
-    sourceDocumentId: DocumentId;
+    sourceResourceId: ResourceId;
     targetPath: string;
     reason: string;
   }>;

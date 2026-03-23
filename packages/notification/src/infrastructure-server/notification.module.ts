@@ -20,6 +20,7 @@ import type {
   INotificationPreferenceRepository,
   INotificationTemplateRepository,
 } from '../domain-server/repositories';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import {
   CreateNotification,
   MarkNotificationAsRead,
@@ -27,6 +28,11 @@ import {
   GetUnreadNotifications,
   GetNotificationPreference,
 } from '../application-server';
+import {
+  toNotificationClientDTO,
+  toNotificationPreferenceClientDTO,
+} from '../application-server/use-cases/commands/notification-dto-converters';
+import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 
@@ -72,6 +78,7 @@ export interface NotificationModuleDependencies {
   readonly notificationRepository: INotificationRepository;
   readonly preferenceRepository: INotificationPreferenceRepository;
   readonly templateRepository: INotificationTemplateRepository;
+  readonly db?: IElectronDatabase;
   readonly runtimeContributions?: NotificationRuntimeContributionsInput;
 }
 
@@ -212,7 +219,7 @@ function normalizeRuntimeContributions(
 export function createNotificationModule(
   dependencies: NotificationModuleDependencies,
 ): NotificationModuleInstance {
-  const { notificationRepository, preferenceRepository, templateRepository } = dependencies;
+  const { notificationRepository, preferenceRepository, templateRepository, db } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
   const useCases = createNotificationUseCases(dependencies);
   let started = false;
@@ -220,12 +227,10 @@ export function createNotificationModule(
   // Build the transport-neutral application port.
   // 构建传输层无关的应用端口。
   //
-  // Every method delegates to the assembled use cases or repository.
-  // Methods without a dedicated use case return NOT_IMPLEMENTED so callers
-  // never silently receive fake success.
+  // Every method delegates to assembled use cases, repositories, or
+  // direct persistence updates when a dedicated use case does not exist yet.
   //
-  // 每个方法都委托给已组装的用例或仓储。
-  // 没有专门用例的方法返回 NOT_IMPLEMENTED，以避免调用方静默收到假成功。
+  // 每个方法都委托给已组装的用例、仓储，或在缺少专门用例时直接执行持久化更新。
   const api: NotificationApplicationPort = {
     // Delegate to CreateNotification use case.
     // 委托给 CreateNotification 用例。
@@ -240,6 +245,7 @@ export function createNotificationModule(
       const q = (query ?? {}) as {
         identityId?: string;
         includeRead?: boolean;
+        page?: number;
         limit?: number;
         offset?: number;
       };
@@ -249,45 +255,106 @@ export function createNotificationModule(
           message: 'identityId is required for listing notifications / 列出通知需要 identityId',
         });
       }
-      const result = await useCases.getUserNotifications.execute(q.identityId, {
+      const limit = q.limit ?? 20;
+      const offset = q.offset ?? Math.max(((q.page ?? 1) - 1) * limit, 0);
+      const allNotifications = await useCases.getUserNotifications.execute(q.identityId, {
         includeRead: q.includeRead,
-        limit: q.limit,
-        offset: q.offset,
       });
-      return ok(result);
+      const notifications = await useCases.getUserNotifications.execute(q.identityId, {
+        includeRead: q.includeRead,
+        limit,
+        offset,
+      });
+      return ok({
+        notifications,
+        total: allNotifications.length,
+        page: q.page ?? 1,
+        pageSize: limit,
+        hasMore: offset + notifications.length < allNotifications.length,
+      });
     },
 
-    // Delegate to repository — no dedicated use case exists yet.
-    // 委托给仓储 — 尚无专门的用例。
+    // Read directly from the repository.
+    // 直接从仓储读取。
     getNotification: async (id) => {
       const notification = await notificationRepository.findById(id);
       return ok(notification);
     },
 
-    // No updateNotification use case exists yet — surface NOT_IMPLEMENTED.
-    // 尚无 updateNotification 用例 — 返回 NOT_IMPLEMENTED。
-    updateNotification: async (_id, _data) => {
-      return fail({
-        code: 'NOT_IMPLEMENTED',
-        message:
-          'updateNotification use case is not implemented yet / updateNotification 用例尚未实现',
-      });
+    // Update through the persistence layer until a dedicated use case exists.
+    // 在专门用例落地前，先通过持久化层完成更新。
+    updateNotification: async (id, data) => {
+      if (!db) {
+        return fail({
+          code: 'NOT_IMPLEMENTED',
+          message: 'Notification updates require database access',
+        });
+      }
+      const patch = (data ?? {}) as {
+        title?: string;
+        content?: string;
+        status?: string;
+        metadata?: Record<string, unknown>;
+        expiresAt?: number | null;
+      };
+      const notification = await notificationRepository.findById(id);
+      if (!notification) {
+        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
+      }
+
+      const current = notification.toServerDTO();
+      await db.execute(
+        `UPDATE notifications
+            SET title = ?,
+                content = ?,
+                status = ?,
+                metadata = ?,
+                expires_at = ?,
+                updated_at = ?
+          WHERE id = ?`,
+        [
+          patch.title ?? current.title,
+          patch.content ?? current.content,
+          patch.status ?? current.status,
+          JSON.stringify(patch.metadata ?? current.metadata ?? {}),
+          patch.expiresAt ? new Date(patch.expiresAt).toISOString() : null,
+          new Date().toISOString(),
+          id,
+        ],
+      );
+
+      const updated = await notificationRepository.findById(id);
+      if (!updated) {
+        return fail({ code: 'NOT_FOUND', message: 'notification not found after update' });
+      }
+
+      return ok(toNotificationClientDTO(updated.toServerDTO()));
     },
 
-    // Delegate to repository — no dedicated use case exists yet.
-    // 委托给仓储 — 尚无专门的用例。
+    // Delete directly through the repository.
+    // 直接通过仓储删除。
     deleteNotification: async (id) => {
-      await notificationRepository.delete(id);
+      const notification = await notificationRepository.findById(id);
+      if (!notification) {
+        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
+      }
+      notification.softDelete();
+      await notificationRepository.save(notification);
       return ok(undefined);
     },
 
     markAsRead: async (id) => {
       await useCases.markAsRead.execute(id);
-      return ok(undefined);
+      const notification = await notificationRepository.findById(id);
+      if (!notification) {
+        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
+      }
+      return ok(toNotificationClientDTO(notification.toServerDTO()));
     },
     markAllAsRead: async (identityId) => {
+      const count = await useCases.getUnreadNotifications.getCount(identityId);
       await useCases.markAsRead.executeAll(identityId);
-      return ok({ count: 0 });
+      return ok({ count });
     },
     getUnreadCount: async (identityId) => {
       const count = await useCases.getUnreadNotifications.getCount(identityId);
@@ -300,10 +367,14 @@ export function createNotificationModule(
       return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
     },
     batchDelete: async (data) => {
-      // Delegate deletion per-ID through repository directly.
-      // 通过仓储直接按 ID 委托删除。
       if (data.notificationIds?.length) {
-        await notificationRepository.deleteMany(data.notificationIds);
+        const notifications = (
+          await Promise.all(data.notificationIds.map((id) => notificationRepository.findById(id)))
+        ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
+        for (const notification of notifications) {
+          notification.softDelete();
+        }
+        await notificationRepository.saveMany(notifications);
       }
       return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
     },
@@ -324,14 +395,75 @@ export function createNotificationModule(
       return ok(pref);
     },
 
-    // No updatePreferences use case exists yet — surface NOT_IMPLEMENTED.
-    // 尚无 updatePreferences 用例 — 返回 NOT_IMPLEMENTED。
-    updatePreferences: async (_dto) => {
-      return fail({
-        code: 'NOT_IMPLEMENTED',
-        message:
-          'updatePreferences use case is not implemented yet / updatePreferences 用例尚未实现',
-      });
+    // Persist preference updates directly until a dedicated use case exists.
+    // 在专门用例落地前，直接持久化偏好更新。
+    updatePreferences: async (dto) => {
+      if (!db) {
+        return fail({
+          code: 'NOT_IMPLEMENTED',
+          message: 'Preference updates require database access',
+        });
+      }
+      const input = (dto ?? {}) as {
+        identityId?: string;
+        enabled?: boolean;
+        channels?: { inApp?: boolean; email?: boolean; push?: boolean; sms?: boolean };
+        categories?: Record<string, Record<string, boolean>>;
+        doNotDisturb?: unknown;
+        rateLimit?: unknown;
+      };
+      if (!input.identityId) {
+        return fail({ code: 'BAD_REQUEST', message: 'identityId is required' });
+      }
+
+      const preference = await preferenceRepository.getOrCreate(input.identityId);
+      const channelMap = {
+        inApp: NotificationChannelType.InApp,
+        email: NotificationChannelType.Email,
+        push: NotificationChannelType.Push,
+        sms: NotificationChannelType.Sms,
+      } as const;
+
+      const categories = input.categories ?? {};
+      for (const [moduleName, value] of Object.entries(categories)) {
+        const channels = Object.entries(channelMap)
+          .filter(([key]) => Boolean(value?.[key as keyof typeof value]))
+          .map(([, channel]) => channel);
+        preference.setModuleChannels(moduleName, input.enabled === false ? [] : channels);
+      }
+
+      if (input.channels && Object.keys(categories).length === 0) {
+        const fallbackChannels = Object.entries(channelMap)
+          .filter(([key]) => Boolean(input.channels?.[key as keyof typeof input.channels]))
+          .map(([, channel]) => channel);
+        for (const moduleName of ['task', 'goal', 'schedule', 'reminder', 'account', 'system']) {
+          preference.setModuleChannels(moduleName, input.enabled === false ? [] : fallbackChannels);
+        }
+      }
+
+      await preferenceRepository.save(preference);
+      await db.execute(
+        `UPDATE notification_preferences
+            SET enabled = ?,
+                channels = ?,
+                categories = ?,
+                do_not_disturb = ?,
+                rate_limit = ?,
+                updated_at = ?
+          WHERE identity_id = ?`,
+        [
+          input.enabled === false ? 0 : 1,
+          JSON.stringify(input.channels ?? null),
+          JSON.stringify(input.categories ?? null),
+          JSON.stringify(input.doNotDisturb ?? null),
+          JSON.stringify(input.rateLimit ?? null),
+          new Date().toISOString(),
+          input.identityId,
+        ],
+      );
+
+      const updated = await preferenceRepository.getOrCreate(input.identityId);
+      return ok(toNotificationPreferenceClientDTO(updated.toServerDTO()));
     },
   };
 

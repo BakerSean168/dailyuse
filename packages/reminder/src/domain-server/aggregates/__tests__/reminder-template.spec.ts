@@ -7,7 +7,6 @@ import {
   TriggerConfig,
   ActiveTimeConfig,
   ActiveHoursConfig,
-  RecurrenceConfig,
   ResponseMetrics,
   FrequencyAdjustment,
 } from '../../value-objects';
@@ -28,7 +27,6 @@ function makeState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemp
     description: null,
     type: ReminderType.Recurring,
     trigger: TriggerConfig.createFixedTime('08:00'),
-    recurrence: RecurrenceConfig.createDaily(),
     activeTime: ActiveTimeConfig.createAt(now - 60_000),
     activeHours: null,
     notificationConfig: ReminderNotificationConfig.createDefault(),
@@ -143,7 +141,8 @@ describe('ReminderTemplate aggregate', () => {
       expect(events.length).toBeGreaterThanOrEqual(1);
       const createdEvent = events.find((e) => e.eventType === 'reminder:template:created');
       expect(createdEvent).toBeDefined();
-      expect((createdEvent!.payload as any).title).toBe('Daily Standup');
+      expect((createdEvent!.payload as any).templateId).toBe(template.id);
+      expect((createdEvent!.payload as any).reminder?.name).toBe('Daily Standup');
     });
 
     it('should default smartFrequencyEnabled to true', () => {

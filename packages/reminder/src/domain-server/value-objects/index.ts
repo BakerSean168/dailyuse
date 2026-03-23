@@ -1,6 +1,6 @@
 /**
  * Reminder Module Value Objects - Domain Server
- * 
+ *
  * 从 @dailyuse/domain-shared 重新导出值对象
  */
 
@@ -18,8 +18,6 @@ export {
   ReminderType,
   ReminderStatus,
   TriggerType,
-  RecurrenceType,
-  WeekDay,
   ControlMode,
   ReminderNotificationChannel,
   ReminderResponseAction,
@@ -28,7 +26,6 @@ export {
 
 // Class-type Value Objects
 export {
-  RecurrenceConfig,
   ReminderNotificationConfig,
   TriggerConfig,
   ActiveTimeConfig,

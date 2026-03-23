@@ -5,12 +5,7 @@
  */
 
 // Port Interfaces
-export type {
-  IReminderApiClient,
-  ReminderTemplatesResponse,
-  ReminderGroupsResponse,
-  IResultIpcClient,
-} from './adapters/types';
+export type { IReminderApiClient, IResultIpcClient } from './adapters/types';
 
 // HTTP Adapters
 export {

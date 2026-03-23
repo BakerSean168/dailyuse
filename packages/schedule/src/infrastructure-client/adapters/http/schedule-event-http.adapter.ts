@@ -6,9 +6,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type {
-  IScheduleEventApiClient,
-} from '../types';
+import type { IScheduleEventApiClient } from '../types';
 import type {
   CalendarEntryClientDTO,
   CreateScheduleRequest,
@@ -45,10 +43,15 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
   ): Promise<Result<CalendarEntryClientDTO[]>> {
-    return this.httpClient.get(this.baseUrl, { params: params as unknown as Record<string, unknown> });
+    return this.httpClient.get(this.baseUrl, {
+      params: params as unknown as Record<string, unknown>,
+    });
   }
 
-  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
+  async updateSchedule(
+    id: string,
+    data: UpdateScheduleRequest,
+  ): Promise<Result<CalendarEntryClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/${id}`, data);
   }
 
@@ -63,7 +66,6 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
   }
 
   async detectConflicts(params: {
-    userId: string;
     startTime: number;
     endTime: number;
     excludeId?: string;
@@ -71,28 +73,30 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
     return this.httpClient.post(`${this.baseUrl}/conflicts/detect`, params);
   }
 
-  async createScheduleWithConflictDetection(
-    request: CreateScheduleRequest,
-  ): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts?: ConflictDetectionResult;
-  }>> {
+  async createScheduleWithConflictDetection(request: CreateScheduleRequest): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts?: ConflictDetectionResult;
+    }>
+  > {
     return this.httpClient.post(`${this.baseUrl}/with-conflict-detection`, request);
   }
 
   async resolveConflict(
     scheduleId: string,
     request: ResolveConflictRequest,
-  ): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts: ConflictDetectionResult;
-    applied: {
-      strategy: string;
-      previousStartTime?: number;
-      previousEndTime?: number;
-      changes: string[];
-    };
-  }>> {
+  ): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts: ConflictDetectionResult;
+      applied: {
+        strategy: string;
+        previousStartTime?: number;
+        previousEndTime?: number;
+        changes: string[];
+      };
+    }>
+  > {
     return this.httpClient.post(`${this.baseUrl}/${scheduleId}/resolve-conflict`, request);
   }
 }
@@ -100,6 +104,8 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
 /**
  * Factory function to create ScheduleEventHttpAdapter
  */
-export function createScheduleEventHttpAdapter(httpClient: IResultHttpClient): ScheduleEventHttpAdapter {
+export function createScheduleEventHttpAdapter(
+  httpClient: IResultHttpClient,
+): ScheduleEventHttpAdapter {
   return new ScheduleEventHttpAdapter(httpClient);
 }

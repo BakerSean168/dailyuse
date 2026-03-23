@@ -22,7 +22,7 @@ export interface IEditorTabRepository {
   /**
    * 鏍规嵁鏂囨。 UUID 鏌ユ壘鎵€鏈夋爣绛?
    */
-  findByDocumentId(documentId: string): Promise<EditorTab[]>;
+  findByResourceId(resourceId: string): Promise<EditorTab[]>;
 
   /**
    * 鏍规嵁鍒嗙粍 UUID 鍜屾爣绛剧储寮曟煡鎵炬爣绛?
@@ -67,7 +67,7 @@ export interface IEditorTabRepository {
   /**
    * 鍒犻櫎鏂囨。鐨勬墍鏈夋爣绛?
    */
-  deleteByDocumentId(documentId: string): Promise<void>;
+  deleteByResourceId(resourceId: string): Promise<void>;
 
   /**
    * 缁熻鍒嗙粍鐨勬爣绛炬暟閲?

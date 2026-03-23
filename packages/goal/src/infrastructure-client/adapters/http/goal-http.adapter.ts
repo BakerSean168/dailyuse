@@ -9,6 +9,7 @@ import type { IGoalApiClient, IResultHttpClient } from '../types';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type {
   GoalClientDTO,
+  GoalSystemView,
   KeyResultClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
@@ -40,12 +41,13 @@ export class GoalHttpAdapter implements IGoalApiClient {
 
   async getGoals(params?: {
     page?: number;
-    limit?: number;
+    pageSize?: number;
     query?: string;
-    status?: string;
-    dirId?: string;
-    startDate?: string;
-    endDate?: string;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
+    startDate?: number;
+    endDate?: number;
     includeChildren?: boolean;
   }): Promise<Result<QueryGoalsRes>> {
     const requestParams = {
@@ -67,14 +69,14 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
+  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
+    return this.httpClient.post(`${this.baseUrl}/archive-expired`);
+  }
+
   // ===== Goal Status =====
 
   async activateGoal(id: string): Promise<Result<GoalClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
-  }
-
-  async pauseGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/pause`);
   }
 
   async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
@@ -90,9 +92,10 @@ export class GoalHttpAdapter implements IGoalApiClient {
   async searchGoals(params: {
     query: string;
     page?: number;
-    limit?: number;
-    status?: string;
-    dirId?: string;
+    pageSize?: number;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.httpClient.get(`${this.baseUrl}/search`, { params });
   }
@@ -207,10 +210,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.get(`${this.baseUrl}/${goalId}/aggregate`);
   }
 
-  async cloneGoal(
-    goalId: string,
-    request: CloneGoalReq,
-  ): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${goalId}/clone`, request);
   }
 

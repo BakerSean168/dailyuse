@@ -89,14 +89,3 @@ export {
 } from './infrastructure-server';
 
 export * from './infrastructure-client';
-
-// ================= Legacy (deprecated) =================
-
-/** @deprecated Use `createAuthenticationModule()` instead. 请使用 `createAuthenticationModule()` 代替。 */
-export { Argon2Hasher } from './infrastructure-server';
-/** @deprecated Use `createAuthenticationModule()` instead. 请使用 `createAuthenticationModule()` 代替。 */
-export { AuthenticationModule } from './infrastructure-server';
-/** @deprecated Legacy DI container — use `createAuthenticationModule()` factory instead. 旧版 DI 容器 — 请使用 `createAuthenticationModule()` 工厂函数代替。 */
-export { AuthenticationContainer } from './infrastructure-server';
-/** @deprecated Legacy repository factory — pass repos directly to `createAuthenticationModule()`. 旧版仓储工厂 — 请直接将仓储传入 `createAuthenticationModule()`。 */
-export { AuthenticationRepositoryFactory } from './infrastructure-server';

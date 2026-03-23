@@ -25,11 +25,19 @@ export function createAppRouter(options?: {
   loginRoute?: string;
   authView?: RouteRecordRaw['component'];
   additionalRoutes?: RouteRecordRaw[];
+  additionalTopLevelRoutes?: RouteRecordRaw[];
 }) {
-  const { history = createWebHistory(), isAuthenticated, loginRoute, authView, additionalRoutes = [] } =
-    options ?? {};
+  const {
+    history = createWebHistory(),
+    isAuthenticated,
+    loginRoute,
+    authView,
+    additionalRoutes = [],
+    additionalTopLevelRoutes = [],
+  } = options ?? {};
 
   const routes: RouteRecordRaw[] = [
+    ...additionalTopLevelRoutes,
     {
       path: '/auth',
       name: 'auth',

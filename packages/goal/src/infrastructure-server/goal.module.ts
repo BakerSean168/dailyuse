@@ -28,6 +28,7 @@ import {
   UpdateGoal,
   DeleteGoal,
   ArchiveGoal,
+  ArchiveExpiredGoals,
   ActivateGoal,
   CompleteGoal,
   SearchGoals,
@@ -57,12 +58,14 @@ import type {
   UpdateGoalRes,
   DeleteGoalRes,
   GetGoalRes,
-  QueryGoalsReq,
+  ListGoalsQuery,
   QueryGoalsRes,
   GoalClientDTO,
+  GoalReviewClientDTO,
+  KeyResultClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
-  QueryGoalFoldersReq,
+  ListGoalFoldersQuery,
   QueryGoalFoldersRes,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
@@ -130,6 +133,7 @@ export interface GoalModuleUseCases {
   readonly deleteGoal: DeleteGoal;
   readonly permanentlyDeleteGoal: PermanentlyDeleteGoal;
   readonly archiveGoal: ArchiveGoal;
+  readonly archiveExpiredGoals: ArchiveExpiredGoals;
   readonly activateGoal: ActivateGoal;
   readonly completeGoal: CompleteGoal;
   readonly searchGoals: SearchGoals;
@@ -176,17 +180,22 @@ export interface GoalApplicationPort {
   // Goal CRUD / 目标增删改查
   createGoal(input: CreateGoalReq, context: Context): Promise<Result<CreateGoalRes>>;
   getGoal(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
-  listGoals(input: QueryGoalsReq): Promise<Result<QueryGoalsRes>>;
+  listGoals(input: ListGoalsQuery): Promise<Result<QueryGoalsRes>>;
   updateGoal(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
   deleteGoal(id: string): Promise<Result<DeleteGoalRes>>;
   permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
   archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
+  archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
   activateGoal(id: string): Promise<Result<GoalClientDTO>>;
   completeGoal(id: string): Promise<{ goal: GoalServerDTO }>;
-  searchGoals(identityId: string, query: string): Promise<Result<QueryGoalsRes>>;
+  searchGoals(
+    identityId: string,
+    query: string,
+    systemView?: string,
+  ): Promise<Result<QueryGoalsRes>>;
 
   // Folder CRUD / 文件夹增删改查
-  listGoalFolders(input: QueryGoalFoldersReq): Promise<QueryGoalFoldersRes>;
+  listGoalFolders(input: ListGoalFoldersQuery): Promise<QueryGoalFoldersRes>;
   createGoalFolder(
     identityId: IdentityId,
     input: CreateGoalFolderReq,
@@ -206,12 +215,13 @@ export interface GoalApplicationPort {
       title: string;
       valueType: string;
       aggregationMethod?: string;
+      startValue?: number;
       targetValue: number;
       currentValue?: number;
       unit?: string;
       weight: number;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResult(
     goalId: string,
     keyResultId: string,
@@ -219,17 +229,19 @@ export interface GoalApplicationPort {
       title?: string;
       description?: string;
       weight?: number;
+      startValue?: number;
+      currentValue?: number;
       targetValue?: number;
       unit?: string;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResultProgress(
     goalId: string,
     keyResultId: string,
     currentValue: number,
     note?: string,
-  ): Promise<Result<GoalClientDTO>>;
-  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<KeyResultClientDTO>>;
+  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<void>>;
 
   // Review / 复盘
   addReview(
@@ -243,7 +255,7 @@ export interface GoalApplicationPort {
       challenges?: string;
       nextActions?: string;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<GoalReviewClientDTO>>;
   listReviews(goalId: string): Promise<Result<ListGoalReviewsResult>>;
   updateReview(
     goalId: string,
@@ -256,7 +268,7 @@ export interface GoalApplicationPort {
       challenges?: string | null;
       nextActions?: string | null;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<GoalReviewClientDTO>>;
   deleteReview(goalId: string, reviewId: string): Promise<Result<void>>;
 
   // Record / 进度记录
@@ -311,6 +323,7 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deleteGoal: new DeleteGoal(goalRepository, goalPolicy),
     permanentlyDeleteGoal: new PermanentlyDeleteGoal(goalRepository, goalPolicy),
     archiveGoal: new ArchiveGoal(goalRepository, goalPolicy),
+    archiveExpiredGoals: new ArchiveExpiredGoals(goalRepository),
     activateGoal: new ActivateGoal(goalRepository, goalPolicy),
     completeGoal: new CompleteGoal(goalRepository, goalPolicy),
     searchGoals: new SearchGoals(goalRepository),
@@ -340,7 +353,7 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
       goalRecordRepository,
       goalProgressCalculator,
     ),
-    listRecords: new ListGoalRecords(goalRecordRepository),
+    listRecords: new ListGoalRecords(goalRecordRepository, goalRepository),
     deleteRecord: new DeleteGoalRecord(goalRecordRepository),
   };
 }
@@ -385,9 +398,11 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     deleteGoal: (id) => useCases.deleteGoal.execute(id),
     permanentlyDeleteGoal: (id) => useCases.permanentlyDeleteGoal.execute(id),
     archiveGoal: (id) => useCases.archiveGoal.execute(id),
+    archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
     activateGoal: (id) => useCases.activateGoal.execute(id),
     completeGoal: (id) => useCases.completeGoal.execute(id),
-    searchGoals: (identityId, query) => useCases.searchGoals.execute(identityId, query),
+    searchGoals: (identityId, query, systemView) =>
+      useCases.searchGoals.execute(identityId, query, systemView as any),
 
     // Folder CRUD / 文件夹增删改查
     listGoalFolders: (input) => useCases.listGoalFolders.execute(input),
@@ -442,97 +457,4 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       started = false;
     },
   };
-}
-
-// ---------------------------------------------------------------------------
-// Backward compatibility — legacy class facade.
-// 向后兼容 — 旧类门面。
-//
-// @deprecated Use `createGoalModule(deps)` instead.
-// @deprecated 请使用 `createGoalModule(deps)` 代替。
-// Retained temporarily so existing callers don't break during migration.
-// 临时保留以便迁移期间现有调用者不会中断。
-// ---------------------------------------------------------------------------
-
-/** @deprecated Use GoalModuleDependencies instead. 请使用 GoalModuleDependencies 代替。 */
-export type GoalModuleRepositories = Pick<
-  GoalModuleDependencies,
-  'goalRepository' | 'goalFolderRepository' | 'goalRecordRepository'
->;
-
-/** @deprecated Use createGoalModule(deps) factory instead. 请使用 createGoalModule(deps) 工厂函数代替。 */
-export class GoalModule {
-  public readonly goalRepository: IGoalRepository;
-  public readonly goalFolderRepository: IGoalFolderRepository;
-  public readonly goalRecordRepository: IGoalRecordRepository;
-
-  public readonly goalPolicy: GoalPolicy;
-  public readonly goalProgressCalculator: GoalProgressCalculator;
-
-  public readonly createGoal: CreateGoal;
-  public readonly getGoal: GetGoal;
-  public readonly listGoals: ListGoals;
-  public readonly updateGoal: UpdateGoal;
-  public readonly deleteGoal: DeleteGoal;
-  public readonly archiveGoal: ArchiveGoal;
-  public readonly activateGoal: ActivateGoal;
-  public readonly searchGoals: SearchGoals;
-
-  public readonly listGoalFolders: ListGoalFolders;
-  public readonly createGoalFolder: CreateGoalFolder;
-  public readonly getGoalFolder: GetGoalFolder;
-  public readonly updateGoalFolder: UpdateGoalFolder;
-  public readonly deleteGoalFolder: DeleteGoalFolder;
-
-  public readonly addKeyResult: AddGoalKeyResult;
-  public readonly updateKeyResult: UpdateGoalKeyResult;
-  public readonly updateKeyResultProgress: UpdateGoalKeyResultProgress;
-  public readonly deleteKeyResult: DeleteGoalKeyResult;
-  public readonly addReview: AddGoalReview;
-  public readonly listReviews: ListGoalReviews;
-  public readonly updateReview: UpdateGoalReview;
-  public readonly deleteReview: DeleteGoalReview;
-  public readonly createRecord: CreateGoalRecord;
-  public readonly listRecords: ListGoalRecords;
-  public readonly deleteRecord: DeleteGoalRecord;
-  public readonly completeGoal: CompleteGoal;
-
-  constructor(repositories: GoalModuleRepositories) {
-    const useCases = createGoalUseCases(repositories);
-
-    this.goalRepository = repositories.goalRepository;
-    this.goalFolderRepository = repositories.goalFolderRepository;
-    this.goalRecordRepository = repositories.goalRecordRepository;
-
-    this.goalPolicy = new GoalPolicy();
-    this.goalProgressCalculator = new GoalProgressCalculator(repositories.goalRecordRepository);
-
-    this.createGoal = useCases.createGoal;
-    this.getGoal = useCases.getGoal;
-    this.listGoals = useCases.listGoals;
-    this.updateGoal = useCases.updateGoal;
-    this.deleteGoal = useCases.deleteGoal;
-    this.archiveGoal = useCases.archiveGoal;
-    this.activateGoal = useCases.activateGoal;
-    this.searchGoals = useCases.searchGoals;
-
-    this.listGoalFolders = useCases.listGoalFolders;
-    this.createGoalFolder = useCases.createGoalFolder;
-    this.getGoalFolder = useCases.getGoalFolder;
-    this.updateGoalFolder = useCases.updateGoalFolder;
-    this.deleteGoalFolder = useCases.deleteGoalFolder;
-
-    this.addKeyResult = useCases.addKeyResult;
-    this.updateKeyResult = useCases.updateKeyResult;
-    this.updateKeyResultProgress = useCases.updateKeyResultProgress;
-    this.deleteKeyResult = useCases.deleteKeyResult;
-    this.addReview = useCases.addReview;
-    this.listReviews = useCases.listReviews;
-    this.updateReview = useCases.updateReview;
-    this.deleteReview = useCases.deleteReview;
-    this.createRecord = useCases.createRecord;
-    this.listRecords = useCases.listRecords;
-    this.deleteRecord = useCases.deleteRecord;
-    this.completeGoal = useCases.completeGoal;
-  }
 }

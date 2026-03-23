@@ -8,6 +8,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHistory } from 'vue-router';
+import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
 import {
   createAppRouter,
   useAuthenticationStore,
@@ -31,6 +32,11 @@ if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
 }
 
 async function startApp() {
+  applyDocumentIcons({
+    faviconHref: logoIco,
+    appleTouchIconHref: logo128,
+  });
+
   // MSW mock in development
   if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_API === 'true') {
     const { worker } = await import('./mocks/browser');

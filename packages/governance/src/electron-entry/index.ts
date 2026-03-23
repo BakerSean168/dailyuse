@@ -16,11 +16,11 @@ import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contract
 import { createGovernancePowerSyncModule } from '../infrastructure-server/powersync';
 import { GovernanceController } from '../controllers/governance.controller';
 import { createLogger } from '@dailyuse/utils';
-import type { Context } from '@dailyuse/contracts/shared';
 import type { ListRulesQuery, SearchRulesQuery, GetRuleRevisionsQuery } from '../contracts';
 import { createGovernanceTransportHandlers } from '../api/transport-handlers';
 import { createGovernanceRuntimeContribution } from '../api/runtime';
 import type { GovernanceModuleInstance } from '../infrastructure-server';
+import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('GovernanceElectron');
 
@@ -53,9 +53,7 @@ export const GovernanceElectronModule: IElectronModule = {
       createGovernanceTransportHandlers(governanceModule.api),
     );
 
-    // 3. IPC Handlers
-    const electronContext: Context = { identityId: 'desktop-user', deviceId: 'electron-app' };
-
+    // 3. IPC Handlers — Read operations (no auth context needed for queries)
     ipcMain.handle(Ch.LIST, (_event, query?: ListRulesQuery) =>
       controller.listRules({ page: query?.page ?? 1, pageSize: query?.pageSize ?? 20, ...query }),
     );
@@ -67,18 +65,29 @@ export const GovernanceElectronModule: IElectronModule = {
     });
 
     ipcMain.handle(Ch.SEARCH, (_event, query: SearchRulesQuery) =>
-      controller.searchRules(query, electronContext),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.searchRules(query, requestContext),
+      ),
     );
 
-    ipcMain.handle(Ch.CREATE, (_event, req) => controller.createRule(req, electronContext));
+    // Write operations — require authenticated identity for audit trail
+    ipcMain.handle(Ch.CREATE, (_event, req) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.createRule(req, requestContext),
+      ),
+    );
 
     ipcMain.handle(Ch.UPDATE, (_event, payload: { ruleId: string; [key: string]: unknown }) => {
       const { ruleId, ...data } = payload;
-      return controller.updateRule(ruleId, data, electronContext);
+      return withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.updateRule(ruleId, data, requestContext),
+      );
     });
 
     ipcMain.handle(Ch.DELETE, (_event, payload: { id: string }) =>
-      controller.deleteRule(payload.id, electronContext),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.deleteRule(payload.id, requestContext),
+      ),
     );
 
     ipcMain.handle(Ch.REVISIONS, (_event, payload: { ruleId: string } & GetRuleRevisionsQuery) =>

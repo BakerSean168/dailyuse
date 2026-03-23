@@ -1,7 +1,7 @@
 /**
  * Delete Folder
  *
- * Delete鏂囦欢澶癸紙绾ц仈锛?
+ * Deletes a folder tree from storage and persistence.
  */
 
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
@@ -52,17 +52,13 @@ export class DeleteFolder {
     };
 
     const foldersToDelete = await collectFolders(folder);
-    const resourcesToDelete = new Map<string, number>();
+    const resourcesToDelete: string[] = [];
 
     for (const current of foldersToDelete) {
       const resources = await this.resourceRepository.findByFolderId(String(current.id));
       for (const resource of resources) {
-        resourcesToDelete.set(String(resource.id), resource.size ?? 0);
-        if (resource.isFolder()) {
-          repository.recordFolderRemoved();
-        } else {
-          repository.recordResourceRemoved(resource.size ?? 0);
-        }
+        resourcesToDelete.push(String(resource.id));
+        repository.recordResourceRemoved(resource.size ?? 0);
       }
     }
 
@@ -72,7 +68,7 @@ export class DeleteFolder {
       isFolder: true,
     });
 
-    for (const resourceId of resourcesToDelete.keys()) {
+    for (const resourceId of resourcesToDelete) {
       await this.resourceRepository.delete(resourceId);
     }
 
@@ -84,4 +80,3 @@ export class DeleteFolder {
     await this.repositoryRepository.save(repository);
   }
 }
-

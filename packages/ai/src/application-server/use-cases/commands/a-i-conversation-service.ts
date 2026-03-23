@@ -130,8 +130,8 @@ export class AIConversationService {
         throw new Error('Conversation not found');
       }
 
-      // 软删?
-      await this.conversationRepository.delete(conversationId);
+      conversation.softDelete();
+      await this.conversationRepository.save(conversation);
 
       logger.info('Conversation deleted', { id: conversationId });
     } catch (error) {

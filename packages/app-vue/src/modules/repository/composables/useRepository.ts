@@ -8,15 +8,18 @@ import { computed, ref } from 'vue';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { AuthChannels } from '@dailyuse/contracts/electron';
 import type {
+  FileTreeResponse,
   ResourceBookmarkClientDTO,
   ResourceClientDTO,
   SearchRequest,
   SearchResponse,
+  TreeNode,
 } from '@dailyuse/contracts/repository';
 import type { Repository } from '@dailyuse/repository/domain-client';
 import { searchRepositoryResources } from './repositorySearch';
-import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -35,27 +38,56 @@ export interface RepositoryUploadProgress {
   currentFileName: string | null;
 }
 
+type DesktopAuthApi = {
+  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
+};
+
 interface RepositoryServiceLike {
   getCurrentRepository(): Promise<{
     ok: boolean;
     data?: Repository | null;
-    error?: { message?: string };
+    error?: { code?: string; message?: string };
   }>;
-  listResources(
-    repositoryId: string,
-  ): Promise<{ ok: boolean; data?: ResourceClientDTO[]; error?: { message?: string } }>;
+  listResources(repositoryId: string): Promise<{
+    ok: boolean;
+    data?: ResourceClientDTO[];
+    error?: { code?: string; message?: string };
+  }>;
   createResource(
     repositoryId: string,
     request: Record<string, unknown>,
-  ): Promise<{ ok: boolean; data?: ResourceClientDTO; error?: { message?: string } }>;
+  ): Promise<{
+    ok: boolean;
+    data?: ResourceClientDTO;
+    error?: { code?: string; message?: string };
+  }>;
   updateResource(
     resourceId: string,
     request: Record<string, unknown>,
-  ): Promise<{ ok: boolean; data?: ResourceClientDTO; error?: { message?: string } }>;
-  deleteResource(resourceId: string): Promise<{ ok: boolean; error?: { message?: string } }>;
+  ): Promise<{
+    ok: boolean;
+    data?: ResourceClientDTO;
+    error?: { code?: string; message?: string };
+  }>;
+  deleteResource(
+    resourceId: string,
+  ): Promise<{ ok: boolean; error?: { code?: string; message?: string } }>;
+  renameResource?(
+    resourceId: string,
+    name: string,
+  ): Promise<{
+    ok: boolean;
+    data?: ResourceClientDTO;
+    error?: { code?: string; message?: string };
+  }>;
+  getFileTree?(repositoryId: string): Promise<{
+    ok: boolean;
+    data?: FileTreeResponse;
+    error?: { code?: string; message?: string };
+  }>;
   search?(
     request: SearchRequest,
-  ): Promise<{ ok: boolean; data?: unknown; error?: { message?: string } }>;
+  ): Promise<{ ok: boolean; data?: unknown; error?: { code?: string; message?: string } }>;
   uploadResources?(
     repositoryId: string,
     request: {
@@ -64,27 +96,45 @@ interface RepositoryServiceLike {
       folderId?: string;
       overwritePolicy?: 'skip' | 'replace';
     },
-  ): Promise<{ ok: boolean; data?: unknown; error?: { message?: string } }>;
-  listBookmarks?(
-    repositoryId: string,
-  ): Promise<{ ok: boolean; data?: ResourceBookmarkClientDTO[]; error?: { message?: string } }>;
+  ): Promise<{ ok: boolean; data?: unknown; error?: { code?: string; message?: string } }>;
+  listBookmarks?(repositoryId: string): Promise<{
+    ok: boolean;
+    data?: ResourceBookmarkClientDTO[];
+    error?: { code?: string; message?: string };
+  }>;
   updateBookmark?(
     repositoryId: string,
     bookmarkId: string,
     payload: { aliasName: string | null },
-  ): Promise<{ ok: boolean; data?: ResourceBookmarkClientDTO; error?: { message?: string } }>;
+  ): Promise<{
+    ok: boolean;
+    data?: ResourceBookmarkClientDTO;
+    error?: { code?: string; message?: string };
+  }>;
   reorderBookmarks?(
     repositoryId: string,
     payload: { bookmarkIds: string[] },
-  ): Promise<{ ok: boolean; data?: ResourceBookmarkClientDTO[]; error?: { message?: string } }>;
+  ): Promise<{
+    ok: boolean;
+    data?: ResourceBookmarkClientDTO[];
+    error?: { code?: string; message?: string };
+  }>;
   deleteBookmark?(
     repositoryId: string,
     bookmarkId: string,
-  ): Promise<{ ok: boolean; error?: { message?: string } }>;
-  getResource?(
-    resourceId: string,
-  ): Promise<{ ok: boolean; data?: ResourceClientDTO; error?: { message?: string } }>;
+  ): Promise<{ ok: boolean; error?: { code?: string; message?: string } }>;
+  getResource?(resourceId: string): Promise<{
+    ok: boolean;
+    data?: ResourceClientDTO;
+    error?: { code?: string; message?: string };
+  }>;
 }
+
+type ResultLike<T = unknown> = {
+  ok: boolean;
+  data?: T;
+  error?: { code?: string; message?: string };
+};
 
 export function useRepository() {
   const service = useStrictInject(
@@ -104,10 +154,9 @@ export function useRepository() {
   const currentRepository = computed(() => store.currentRepository);
   const repositoryId = computed(() => store.repositoryId);
   const resources = computed(() => store.resources);
+  const treeNodes = computed(() => store.treeNodes);
   const resourcesByType = computed(() => store.resourcesByType);
-  const currentResource = computed(() => store.currentResource);
   const bookmarks = computed(() => store.bookmarks);
-  const recentInsertions = computed(() => store.recentInsertions);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const isSaving = computed(() => savingId.value !== null);
@@ -124,6 +173,28 @@ export function useRepository() {
     console.error(msg);
   }
 
+  async function ensureDesktopAuthReady(): Promise<boolean> {
+    return ensureDesktopAuthReadyWithApi((window as { electronAPI?: DesktopAuthApi }).electronAPI);
+  }
+
+  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
+    return shouldRecoverAuth(error)
+      ? ensureDesktopAuthReadyWithApi((window as { electronAPI?: DesktopAuthApi }).electronAPI)
+      : false;
+  }
+
+  async function executeWithAuthRecovery<T extends ResultLike>(
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    let result = await operation();
+
+    if (!result.ok && result.error && (await maybeRecoverAuth(result.error))) {
+      result = await operation();
+    }
+
+    return result;
+  }
+
   // ── Repository init ──
   /** Initialize repository context from the explicit single-repository boundary. */
   async function initRepository() {
@@ -132,10 +203,11 @@ export function useRepository() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getCurrentRepository();
+      const result = await executeWithAuthRecovery(() => service.getCurrentRepository());
       if (result.ok) {
         const repository = result.data ?? null;
         store.setCurrentRepository(repository ? repository.toDTO() : null);
+        await fetchTreeNodes();
       } else {
         store.setCurrentRepository(null);
         handleError(getResultErrorMessage(result, '加载仓库失败'));
@@ -149,12 +221,14 @@ export function useRepository() {
   // ── Resources ──
   async function fetchResources(): Promise<void> {
     if (!store.currentRepositoryId) return;
+    const repositoryId = store.currentRepositoryId;
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.listResources(store.currentRepositoryId);
+      const result = await executeWithAuthRecovery(() => service.listResources(repositoryId));
       if (result.ok) {
         store.setResources(result.data ?? []);
+        await fetchTreeNodes();
       } else {
         handleError(getResultErrorMessage(result, '加载资源失败'));
       }
@@ -171,14 +245,18 @@ export function useRepository() {
     folderId?: string;
   }): Promise<ResourceClientDTO | null> {
     if (!store.currentRepositoryId) return null;
+    const repositoryId = store.currentRepositoryId;
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createResource(store.currentRepositoryId, {
-        ...data,
-      });
+      const result = await executeWithAuthRecovery(() =>
+        service.createResource(repositoryId, {
+          ...data,
+        }),
+      );
       if (result.ok && result.data) {
         store.addResource(result.data);
+        await fetchTreeNodes();
         return result.data;
       } else {
         handleError(
@@ -195,9 +273,10 @@ export function useRepository() {
     savingId.value = resourceId;
     store.setError(null);
     try {
-      const result = await service.deleteResource(resourceId);
+      const result = await executeWithAuthRecovery(() => service.deleteResource(resourceId));
       if (result.ok) {
         store.removeResource(resourceId);
+        await fetchTreeNodes();
         return true;
       } else {
         handleError(getResultErrorMessage(result, '删除资源失败'));
@@ -217,49 +296,51 @@ export function useRepository() {
     }
 
     const mimeType = source.mimeType || guessMimeType(source.name);
-    const normalized = source.content.replace(/\s+/g, '');
+    const normalized = source.content.trim();
 
     if (normalized.startsWith('data:')) {
       return normalized;
     }
 
-    return `data:${mimeType};base64,${normalized}`;
+    return `data:${mimeType};base64,${normalized.replace(/\s+/g, '')}`;
   }
 
   async function getResourceById(resourceId: string): Promise<ResourceClientDTO | null> {
     if (typeof service.getResource !== 'function') {
-      return store.resources.find((resource) => resource.id === resourceId) ?? null;
+      const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
+      logEditorIssue('repository:get-resource:cache-only', {
+        resourceId,
+        resource: summarizeResourceForDebug(cached),
+      });
+      return cached;
     }
 
-    const result = await service.getResource(resourceId);
-    if (result.ok && result.data) {
-      store.updateResource(result.data);
-      return result.data;
-    }
-
-    return store.resources.find((resource) => resource.id === resourceId) ?? null;
-  }
-
-  function recordRecentInsertion(entry: ResourceInsertionRecentEntry): void {
-    store.recordRecentInsertion(entry);
-  }
-
-  async function saveResourceContent(resourceId: string, content: string) {
-    savingId.value = resourceId;
-    store.setError(null);
     try {
-      const result = await service.updateResource(resourceId, { content });
+      const result = await executeWithAuthRecovery(() => service.getResource!(resourceId));
       if (result.ok && result.data) {
         store.updateResource(result.data);
-        return true;
-      } else {
-        handleError(
-          result.ok ? '保存内容返回空数据' : getResultErrorMessage(result, '保存内容失败'),
-        );
-        return false;
+        logEditorIssue('repository:get-resource:service-hit', {
+          resourceId,
+          resource: summarizeResourceForDebug(result.data),
+        });
+        return result.data;
       }
-    } finally {
-      savingId.value = null;
+
+      const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
+      logEditorIssue('repository:get-resource:fallback-cache', {
+        resourceId,
+        errorCode: result.error?.code ?? null,
+        resource: summarizeResourceForDebug(cached),
+      });
+      return cached;
+    } catch (cause) {
+      const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
+      logEditorIssue('repository:get-resource:exception-fallback', {
+        resourceId,
+        cause: cause instanceof Error ? cause.message : String(cause),
+        resource: summarizeResourceForDebug(cached),
+      });
+      return cached;
     }
   }
 
@@ -267,9 +348,12 @@ export function useRepository() {
     savingId.value = resourceId;
     store.setError(null);
     try {
-      const result = await service.updateResource(resourceId, { metadata });
+      const result = await executeWithAuthRecovery(() =>
+        service.updateResource(resourceId, { metadata }),
+      );
       if (result.ok && result.data) {
         store.updateResource(result.data);
+        await fetchTreeNodes();
         return result.data;
       }
 
@@ -287,7 +371,11 @@ export function useRepository() {
     initialContent: string = '',
     folderId?: string,
   ): Promise<ResourceClientDTO | null> {
-    const noteName = normalizeNoteName(name ?? buildUntitledNoteName());
+    const requestedName = normalizeNoteName(name ?? buildUntitledNoteName());
+    const noteName = ensureUniqueNoteName(
+      requestedName,
+      store.resources.filter((resource) => resource.folderId === (folderId ?? null)),
+    );
 
     return createResource({
       name: noteName,
@@ -300,7 +388,7 @@ export function useRepository() {
 
   async function searchResources(request: SearchRequest): Promise<SearchResponse> {
     if (typeof service.search === 'function') {
-      const result = await service.search(request);
+      const result = await executeWithAuthRecovery(() => service.search!(request));
       if (result.ok && isSearchResponse(result.data)) {
         return result.data;
       }
@@ -314,12 +402,14 @@ export function useRepository() {
       return;
     }
 
+    const repositoryId = store.currentRepositoryId;
+
     const listBookmarks = service.listBookmarks;
     if (!listBookmarks) {
       return;
     }
 
-    const result = await listBookmarks(store.currentRepositoryId);
+    const result = await executeWithAuthRecovery(() => listBookmarks(repositoryId));
     if (result.ok) {
       store.setPersistedBookmarks(result.data ?? []);
       store.resetBookmarkUiState();
@@ -347,6 +437,8 @@ export function useRepository() {
       return { successes: [], failures: [] };
     }
 
+    const repositoryId = store.currentRepositoryId;
+
     isUploading.value = true;
     uploadProgress.value = {
       total: files.length,
@@ -356,11 +448,13 @@ export function useRepository() {
 
     try {
       if (typeof service.uploadResources === 'function') {
-        const remoteResult = await service.uploadResources(store.currentRepositoryId, {
-          files,
-          tags,
-          folderId,
-        });
+        const remoteResult = await executeWithAuthRecovery(() =>
+          service.uploadResources!(repositoryId, {
+            files,
+            tags,
+            folderId,
+          }),
+        );
         if (remoteResult.ok && isUploadResponse(remoteResult.data)) {
           const successes = remoteResult.data.successes.map(
             (item: { resource: ResourceClientDTO }) => item.resource,
@@ -470,6 +564,8 @@ export function useRepository() {
       return null;
     }
 
+    const repositoryId = store.currentRepositoryId;
+
     const normalizedAlias = aliasName.trim() || null;
 
     if (bookmarkCapabilities.value.canRename) {
@@ -478,9 +574,11 @@ export function useRepository() {
         return null;
       }
 
-      const result = await updateBookmark(store.currentRepositoryId, bookmark.id, {
-        aliasName: normalizedAlias,
-      });
+      const result = await executeWithAuthRecovery(() =>
+        updateBookmark(repositoryId, bookmark.id, {
+          aliasName: normalizedAlias,
+        }),
+      );
       if (result.ok && result.data) {
         store.upsertPersistedBookmark(result.data);
         store.clearTransientBookmarkAlias(bookmark.id);
@@ -502,6 +600,8 @@ export function useRepository() {
       return false;
     }
 
+    const repositoryId = store.currentRepositoryId;
+
     if (!bookmarkCapabilities.value.canReorder) {
       return false;
     }
@@ -515,7 +615,9 @@ export function useRepository() {
       return false;
     }
 
-    const result = await reorderBookmarks(store.currentRepositoryId, { bookmarkIds });
+    const result = await executeWithAuthRecovery(() =>
+      reorderBookmarks(repositoryId, { bookmarkIds }),
+    );
     if (result.ok) {
       if (result.data) {
         store.setPersistedBookmarks(result.data);
@@ -539,6 +641,8 @@ export function useRepository() {
       return false;
     }
 
+    const repositoryId = store.currentRepositoryId;
+
     if (!bookmarkCapabilities.value.canRemove) {
       return false;
     }
@@ -551,7 +655,7 @@ export function useRepository() {
       return false;
     }
 
-    const result = await deleteBookmark(store.currentRepositoryId, bookmarkId);
+    const result = await executeWithAuthRecovery(() => deleteBookmark(repositoryId, bookmarkId));
     if (result.ok) {
       store.removePersistedBookmark(bookmarkId);
       store.unmarkTransientBookmarkRemoved(bookmarkId);
@@ -565,9 +669,52 @@ export function useRepository() {
   }
 
   // ── Tabs convenience ──
-  function openResource(resource: ResourceClientDTO) {
-    store.setCurrentResource(resource);
-    store.openTab(resource.id);
+  async function fetchTreeNodes(): Promise<TreeNode[]> {
+    if (!store.currentRepositoryId || typeof service.getFileTree !== 'function') {
+      store.setTreeNodes([]);
+      return [];
+    }
+
+    const repositoryId = store.currentRepositoryId;
+    const result = await executeWithAuthRecovery(() => service.getFileTree!(repositoryId));
+    if (result.ok) {
+      const tree = result.data?.tree ?? [];
+      store.setTreeNodes(tree);
+      return tree;
+    }
+
+    handleError(getResultErrorMessage(result, '加载目录失败'));
+    return store.treeNodes;
+  }
+
+  async function renameResource(
+    resourceId: string,
+    name: string,
+  ): Promise<ResourceClientDTO | null> {
+    if (typeof service.renameResource !== 'function') {
+      handleError('当前环境不支持重命名资源');
+      return null;
+    }
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      handleError('资源名称不能为空');
+      return null;
+    }
+
+    const result = await executeWithAuthRecovery(() =>
+      service.renameResource!(resourceId, trimmedName),
+    );
+    if (result.ok && result.data) {
+      store.updateResource(result.data);
+      await fetchTreeNodes();
+      return result.data;
+    }
+
+    handleError(
+      result.ok ? '重命名资源返回空数据' : getResultErrorMessage(result, '重命名资源失败'),
+    );
+    return null;
   }
 
   return {
@@ -575,10 +722,9 @@ export function useRepository() {
     currentRepository,
     repositoryId,
     resources,
+    treeNodes,
     resourcesByType,
-    currentResource,
     bookmarks,
-    recentInsertions,
     isLoading,
     isSaving,
     isUploading,
@@ -595,15 +741,14 @@ export function useRepository() {
     deleteResource,
     readResourceAsDataUrl,
     getResourceById,
-    recordRecentInsertion,
-    saveResourceContent,
     updateResourceMetadata,
     uploadResources,
     searchResources,
+    fetchTreeNodes,
+    renameResource,
     renameBookmark,
     reorderBookmarks,
     removeBookmark,
-    openResource,
   };
 }
 
@@ -624,6 +769,23 @@ function buildUntitledNoteName(): string {
 function normalizeNoteName(name: string): string {
   const trimmedName = name.trim() || buildUntitledNoteName();
   return trimmedName.toLowerCase().endsWith('.md') ? trimmedName : `${trimmedName}.md`;
+}
+
+function ensureUniqueNoteName(name: string, resources: ResourceClientDTO[]): string {
+  const normalizedExistingNames = new Set(resources.map((resource) => resource.name.toLowerCase()));
+  if (!normalizedExistingNames.has(name.toLowerCase())) {
+    return name;
+  }
+
+  const extensionIndex = name.toLowerCase().lastIndexOf('.md');
+  const baseName = extensionIndex >= 0 ? name.slice(0, extensionIndex) : name;
+
+  let suffix = 2;
+  while (normalizedExistingNames.has(`${baseName} ${suffix}.md`.toLowerCase())) {
+    suffix += 1;
+  }
+
+  return `${baseName} ${suffix}.md`;
 }
 
 function isSearchResponse(value: unknown): value is SearchResponse {
@@ -693,4 +855,48 @@ function reorderBookmarkCollection(
 export const __test__ = {
   isUploadResponse,
   reorderBookmarkCollection,
+  ensureUniqueNoteName,
+  executeAuthRecovery: async (
+    operation: () => Promise<ResultLike>,
+    host?: { electronAPI?: DesktopAuthApi },
+  ) => {
+    const result = await operation();
+    if (!result.ok && result.error && shouldRecoverAuth(result.error)) {
+      return ensureDesktopAuthReadyWithApi(host?.electronAPI);
+    }
+    return false;
+  },
 };
+
+function shouldRecoverAuth(error: { code?: string }): boolean {
+  return error.code === 'AUTH_REQUIRED' || error.code === 'AUTH_RESTORING';
+}
+
+async function ensureDesktopAuthReadyWithApi(api?: DesktopAuthApi): Promise<boolean> {
+  if (!api?.invoke) {
+    return false;
+  }
+
+  try {
+    const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
+      authenticated?: boolean;
+      runtimeState?: string;
+    };
+
+    if (status?.authenticated) {
+      return true;
+    }
+
+    if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
+      await api.invoke(AuthChannels.INITIALIZE);
+      const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
+        authenticated?: boolean;
+      };
+      return Boolean(refreshed?.authenticated);
+    }
+  } catch (error) {
+    console.warn('[Repository] Failed to ensure desktop auth readiness', error);
+  }
+
+  return false;
+}

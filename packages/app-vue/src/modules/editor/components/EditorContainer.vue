@@ -16,7 +16,7 @@
           :model-value="activeTab.content ?? ''"
           :placeholder="
             t('editor.container.editingTitle', {
-              name: activeTab.title ?? t('editor.container.document'),
+              name: activeTab.title ?? t('editor.container.resource'),
             })
           "
           @update:model-value="handleContentChange"
@@ -44,6 +44,7 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileText } from 'lucide-vue-next';
+import { useConfirm } from '@dailyuse/ui-vue-shadcn';
 import EditorTabBar from './EditorTabBar.vue';
 import MarkdownEditor from './MarkdownEditor.vue';
 import MediaViewer from './MediaViewer.vue';
@@ -98,14 +99,20 @@ function openFile(file: EditorOpenFileInput) {
   return newTab;
 }
 
-function closeTab(tabId: string) {
+async function closeTab(tabId: string) {
   const index = tabs.value.findIndex((tab) => tab.id === tabId);
   if (index === -1) return;
 
   const tab = tabs.value[index];
 
   if (tab.isDirty) {
-    const confirmed = confirm(t('editor.container.unsavedCloseConfirm', { name: tab.title }));
+    const confirmed = await useConfirm({
+      title: t('editor.container.unsavedCloseTitle'),
+      description: t('editor.container.unsavedCloseConfirm', { name: tab.title }),
+      confirmText: t('common.close'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    });
     if (!confirmed) return;
   }
 
@@ -122,12 +129,16 @@ function closeTab(tabId: string) {
   }
 }
 
-function closeAllTabs() {
+async function closeAllTabs() {
   const dirtyTabs = tabs.value.filter((tab) => tab.isDirty);
   if (dirtyTabs.length > 0) {
-    const confirmed = confirm(
-      t('editor.container.unsavedCloseAllConfirm', { count: dirtyTabs.length }),
-    );
+    const confirmed = await useConfirm({
+      title: t('editor.container.unsavedCloseAllTitle'),
+      description: t('editor.container.unsavedCloseAllConfirm', { count: dirtyTabs.length }),
+      confirmText: t('common.close'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    });
     if (!confirmed) return;
   }
 
@@ -140,7 +151,7 @@ function handleTabClick(tab: EditorTab) {
 }
 
 function handleTabClose(tab: EditorTab) {
-  closeTab(tab.id);
+  void closeTab(tab.id);
 }
 
 function handleContentChange(newContent: string) {

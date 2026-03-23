@@ -120,12 +120,12 @@ model KnowledgeGenerationTask {
   id                   String    @id
   identityId           String    @map("identity_id")
   topic                String
-  documentCount        Int       @default(5) @map("document_count")
+  resourceCount        Int       @default(5) @map("resource_count")
   targetAudience       String?   @map("target_audience")
   folderPath           String    @map("folder_path")
   status               String // PENDING, GENERATING, COMPLETED, FAILED
   progress             Int       @default(0) // 0-100
-  generatedDocumentIds String[]  @map("generated_document_ids")
+  generatedResourceIds String[]  @map("generated_resource_ids")
   error                String?   @db.Text
   createdAt            DateTime  @default(now()) @map("created_at")
   completedAt          DateTime? @map("completed_at")

@@ -12,13 +12,19 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import {
+  type IElectronModule,
+  type IElectronModuleContext,
+  withAuthenticatedIdentity,
+  withAuthenticatedValue,
+} from '@dailyuse/contracts/electron';
+import { fail } from '@dailyuse/contracts/result';
 import { createNotificationPowerSyncModule } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import { createNotificationTransportHandlers } from '../api/transport-handlers';
 import { createNotificationRuntimeContribution } from '../api/runtime';
 import type { NotificationModuleInstance } from '../infrastructure-server';
-import { fail } from '@dailyuse/contracts/result';
+import type { INotificationRepository } from '../domain-server/repositories';
 
 const logger = createLogger('NotificationElectron');
 
@@ -33,8 +39,26 @@ const Ch = {
   GET_UNREAD_COUNT: 'notification:unread-count',
 } as const;
 
-const channels = Object.values(Ch);
+const RendererCh = {
+  CUSTOM_RECEIVE: 'notification:custom:receive',
+  CUSTOM_CLICK: 'notification:custom:click',
+  CUSTOM_CLOSE: 'notification:custom:close',
+  CUSTOM_RESIZE: 'notification:custom:resize',
+  CUSTOM_MOUSE_ENTER: 'notification:custom:mouse-enter',
+  CUSTOM_MOUSE_LEAVE: 'notification:custom:mouse-leave',
+  CUSTOM_RENDERER_READY: 'notification:custom:renderer-ready',
+} as const;
+
+const channels = [...Object.values(Ch), ...Object.values(RendererCh)];
 let activeNotificationModule: NotificationModuleInstance | null = null;
+
+export function getNotificationRepository(): INotificationRepository {
+  if (!activeNotificationModule) {
+    throw new Error('Notification module not registered yet');
+  }
+
+  return activeNotificationModule.notificationRepository;
+}
 
 export const NotificationElectronModule: IElectronModule = {
   name: 'Notification',
@@ -62,13 +86,19 @@ export const NotificationElectronModule: IElectronModule = {
 
     // 3. IPC Handlers — preserve all existing channels.
     // IPC 处理器 — 保留所有现有通道。
-    ipcMain.handle(Ch.LIST, (_, params) => handlers.listNotifications(params));
+    ipcMain.handle(Ch.LIST, async (_, params) => {
+      return withAuthenticatedValue(ctx, (requestContext) =>
+        handlers.listNotifications({
+          ...(params ?? {}),
+          identityId: requestContext.identityId,
+        }),
+      );
+    });
     ipcMain.handle(Ch.GET, (_, id) => handlers.getNotification(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => handlers.createNotification(dto));
     ipcMain.handle(Ch.MARK_READ, (_, id) => handlers.markAsRead(id));
     ipcMain.handle(Ch.MARK_ALL_READ, async () => {
-      const identityId = await ctx.auth.requireIdentityId();
-      return handlers.markAllAsRead(identityId);
+      return withAuthenticatedIdentity(ctx, (identityId) => handlers.markAllAsRead(identityId));
     });
     ipcMain.handle(Ch.DELETE, (_, id) => handlers.deleteNotification(id));
     ipcMain.handle(Ch.CLEAR_ALL, async (_, ids) => {
@@ -78,8 +108,7 @@ export const NotificationElectronModule: IElectronModule = {
       return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
     });
     ipcMain.handle(Ch.GET_UNREAD_COUNT, async () => {
-      const identityId = await ctx.auth.requireIdentityId();
-      return handlers.getUnreadCount(identityId);
+      return withAuthenticatedIdentity(ctx, (identityId) => handlers.getUnreadCount(identityId));
     });
     logger.info('Notification module registered');
   },

@@ -4,7 +4,7 @@ import type {
   RepositoryUploadFailure,
   RepositoryUploadResult,
 } from '../../repository/composables/useRepository';
-import { useRepository } from '../../repository/composables/useRepository';
+import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
 import { serializeMarkdownResourceReference } from '../utils/markdownResourceReferences';
 
 export interface EditorSelectionRange {
@@ -25,7 +25,7 @@ export type ResourceInsertionTemplate =
   | 'attachment-link'
   | 'media';
 
-export type ResourceInsertionKind = 'image' | 'note' | 'document' | 'media' | 'other';
+export type ResourceInsertionKind = 'image' | 'note' | 'file' | 'media' | 'other';
 
 export interface ResourceInsertionItem {
   resource: ResourceClientDTO;
@@ -356,14 +356,14 @@ export function createResourceInsertion(
 }
 
 export function useResourceInsertion() {
-  const repository = useRepository();
+  const repository = useRepositoryResourceGateway();
 
   return createResourceInsertion({
     resources: repository.resources,
     uploadResources: (files, tags = []) => repository.uploadResources(files, tags),
     readResourceAsDataUrl: (resource) => repository.readResourceAsDataUrl(resource),
-    recentEntries: repository.recentInsertions,
-    persistRecentEntry: (entry) => repository.recordRecentInsertion(entry),
+    recentEntries: repository.recentEntries,
+    persistRecentEntry: (entry) => repository.persistRecentEntry(entry),
   });
 }
 
@@ -420,7 +420,7 @@ export function classifyResourceInsertionKind(
     mimeType === 'application/pdf' ||
     ['.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx'].includes(extension)
   ) {
-    return 'document';
+    return 'file';
   }
 
   return 'other';
@@ -552,7 +552,7 @@ export function resolveInsertionTemplate(
       return 'image';
     case 'note':
       return 'note-link';
-    case 'document':
+    case 'file':
       return 'attachment-link';
     case 'media':
       return 'media';

@@ -27,6 +27,7 @@ import {
   SwitchGroupControlModeSchema,
   BatchGroupTemplatesSchema,
   ReminderGroupResponseSchema,
+  ReminderGroupListResponseSchema,
   ReminderBatchResultSchema,
 } from '@dailyuse/contracts/reminder';
 import { brandedId } from '@dailyuse/contracts/primitives';
@@ -82,13 +83,7 @@ export function registerReminderGroupRoutes(
       path: '/groups',
       summary: '获取提醒分组列表',
       responses: {
-        200: successResponse(
-          z.object({
-            groups: z.array(ReminderGroupResponseSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(ReminderGroupListResponseSchema, '获取成功'),
       },
     },
     [auth],
@@ -164,7 +159,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.switchGroupControlMode(req.params!.id, req.body),
+    (req, ctx) => controller.switchGroupControlMode(req.params!.id, req.body, ctx),
   );
 
   // POST /groups/:id/batch
@@ -183,7 +178,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.batchGroupTemplates(req.params!.id, req.body),
+    (req, ctx) => controller.batchGroupTemplates(req.params!.id, req.body, ctx),
   );
 
   // POST /groups/:id/toggle
@@ -199,7 +194,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.toggleGroup(req.params!.id),
+    (req, ctx) => controller.toggleGroup(req.params!.id, ctx),
   );
 
   return router;

@@ -177,6 +177,20 @@ export class KeyResult extends Entity<KeyResultId> {
   }
 
   /**
+   * ✅ 更新起始值
+   */
+  public updateInitialValue(initialValue: number): void {
+    if (!Number.isFinite(initialValue)) {
+      throw new Error('Initial value must be a finite number');
+    }
+    this._props.progress = {
+      ...this._props.progress,
+      initialValue,
+    };
+    this._props.updatedAt = new Date();
+  }
+
+  /**
    * ✅ 更新目标值
    */
   public updateTargetValue(targetValue: number): void {

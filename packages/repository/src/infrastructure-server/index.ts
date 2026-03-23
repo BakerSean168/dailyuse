@@ -42,6 +42,7 @@ export { FolderPrismaRepository } from './adapters/prisma/folder-prisma.reposito
 export { RepositoryPrismaRepository } from './adapters/prisma/repository-prisma.repository';
 export { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repository';
 export { ResourceBookmarkPrismaRepository } from './adapters/prisma/resource-bookmark-prisma.repository';
+export { FsStorageAdapter } from './adapters/fs/fs-storage.adapter';
 
 // PowerSync Adapters (Desktop — PowerSync 适配器)
 export { PowerSyncRepositoryRepository } from './adapters/powersync/repository-powersync.repository';

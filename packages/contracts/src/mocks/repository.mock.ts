@@ -66,13 +66,6 @@ export function createMockRepository(
   } as RepositoryClientDTO;
 }
 
-export function createMockRepositoryList(
-  count = 5,
-  overrides: Partial<RepositoryClientDTO> = {},
-): RepositoryClientDTO[] {
-  return Array.from({ length: count }, () => createMockRepository(overrides));
-}
-
 export function createMockResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   const now = Date.now();
   const id = faker.string.uuid();

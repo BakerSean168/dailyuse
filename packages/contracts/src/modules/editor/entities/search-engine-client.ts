@@ -21,8 +21,8 @@ export interface SearchEngineClientDTO {
   name: string;
   description: string | null;
   indexPath: string;
-  indexedDocumentCount: number;
-  totalDocumentCount: number;
+  indexedResourceCount: number;
+  totalResourceCount: number;
   lastIndexedAt: TransferDate | null;
   isIndexing: boolean;
   indexProgress: number | null;

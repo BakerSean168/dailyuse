@@ -1,34 +1,33 @@
 <template>
   <div class="border-b border-border bg-background">
-    <Tabs v-model="localActiveTab" class="w-full">
+    <Tabs :model-value="activeTabValue" @update:model-value="handleActiveTabChange" class="w-full">
       <TabsList class="h-9 w-full justify-start rounded-none border-b-0 bg-transparent p-0">
-        <TabsTrigger
+        <div
           v-for="tab in tabs"
           :key="tab.id"
-          :value="tab.id"
-          class="relative h-9 rounded-none border-b-2 border-transparent px-4 pb-2 pt-2 font-normal data-[state=active]:border-primary data-[state=active]:shadow-none"
-          @click="emit('switch-tab', tab.id)"
+          class="group relative flex h-9 items-stretch"
           @contextmenu.prevent="handleContextMenu($event, tab)"
         >
-          <component :is="tab.icon" class="mr-2 h-4 w-4" />
-          <span class="text-sm">{{ displayName(tab.name) }}</span>
+          <TabsTrigger
+            :value="tab.id"
+            class="h-9 rounded-none border-b-2 border-transparent px-4 pb-2 pt-2 pr-8 font-normal data-[state=active]:border-primary data-[state=active]:shadow-none"
+          >
+            <component :is="tab.icon" class="mr-2 h-4 w-4 shrink-0" />
+            <span class="text-sm">{{ displayName(tab.name) }}</span>
+            <div v-if="tab.isDirty" class="ml-2 h-2 w-2 rounded-full bg-warning" />
+            <component v-if="tab.isPinned" :is="PinIcon" class="ml-1 h-3 w-3 text-primary" />
+          </TabsTrigger>
 
-          <!-- Dirty indicator -->
-          <div v-if="tab.isDirty" class="ml-2 h-2 w-2 rounded-full bg-warning" />
-
-          <!-- Pin indicator -->
-          <component v-if="tab.isPinned" :is="PinIcon" class="ml-1 h-3 w-3 text-primary" />
-
-          <!-- Close button -->
-          <Button
-            variant="ghost"
-            size="icon"
-            class="ml-2 h-4 w-4 p-0 hover:bg-accent"
-            @click.stop="emit('close-tab', tab.id)"
+          <button
+            type="button"
+            class="absolute right-1 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-sm hover:bg-accent"
+            :aria-label="t('repository.tabs.close')"
+            @mousedown.stop.prevent
+            @click.stop.prevent="handleCloseTab(tab.id)"
           >
             <component :is="XIcon" class="h-3 w-3" />
-          </Button>
-        </TabsTrigger>
+          </button>
+        </div>
       </TabsList>
     </Tabs>
 
@@ -74,11 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileIcon, PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from 'lucide-vue-next';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -86,6 +84,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@dailyuse/ui-vue-shadcn';
+import { logEditorIssue } from '../../../shared/utils/editorIssueDebug';
 
 export interface ResourceTab {
   id: string;
@@ -114,12 +113,7 @@ const emit = defineEmits<{
   'close-all': [];
 }>();
 
-const localActiveTab = computed({
-  get: () => props.activeTabId || '',
-  set: (value) => {
-    if (value) emit('switch-tab', value);
-  },
-});
+const activeTabValue = computed(() => props.activeTabId || '');
 
 const { t } = useI18n();
 
@@ -134,10 +128,21 @@ function displayName(name: string): string {
   return name.endsWith('.md') ? name.slice(0, -3) : name;
 }
 
+function handleActiveTabChange(value: string | number) {
+  if (typeof value === 'string' && value && value !== props.activeTabId) {
+    emit('switch-tab', value);
+  }
+}
+
 function handleContextMenu(event: MouseEvent, tab: ResourceTab) {
   contextMenu.tab = tab;
   contextMenu.x = event.clientX;
   contextMenu.y = event.clientY;
   contextMenu.show = true;
+}
+
+function handleCloseTab(tabId: string) {
+  logEditorIssue('tabs:close-button-click', { tabId });
+  emit('close-tab', tabId);
 }
 </script>

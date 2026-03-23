@@ -3,12 +3,21 @@
  * 通知 API 客户端
  */
 
-// @ts-nocheck - Some types not yet defined in contracts
-import { apiClient } from '@/shared/api/instances';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
+import { createAxiosInstance } from '@dailyuse/http-client';
 import type {
-  NotificationClientDTO,
-  NotificationPreferenceClientDTO,
-} from '@dailyuse/contracts/notification';
+  CreateNotificationRequest,
+  NotificationListResponse,
+  QueryNotificationsRequest,
+  UnreadCountResponse,
+} from '../../../infrastructure-client/adapters/types';
+
+type BatchDeleteNotificationsRequest = {
+  ids: string[];
+};
+
+const apiClient = createAxiosInstance({ baseURL: '/api/v1' });
 
 export class NotificationApiClient {
   private readonly baseUrl = '/notifications';
@@ -16,7 +25,7 @@ export class NotificationApiClient {
   /**
    * 创建通知
    */
-  async createNotification(request: CreateNotificationRequestDTO): Promise<NotificationClientDTO> {
+  async createNotification(request: CreateNotificationRequest): Promise<NotificationClientDTO> {
     const response = await apiClient.post<NotificationClientDTO>(this.baseUrl, request);
     return response.data;
   }
@@ -26,8 +35,8 @@ export class NotificationApiClient {
    */
   async findNotifications(
     query: QueryNotificationsRequest = {},
-  ): Promise<NotificationListResponseDTO> {
-    const response = await apiClient.get<NotificationListResponseDTO>(this.baseUrl, {
+  ): Promise<NotificationListResponse> {
+    const response = await apiClient.get<NotificationListResponse>(this.baseUrl, {
       params: query,
     });
     return response.data;
@@ -52,26 +61,24 @@ export class NotificationApiClient {
   /**
    * 标记所有通知为已读
    */
-  async markAllAsRead(): Promise<{ success: boolean; count: number }> {
-    const response = await apiClient.patch<{ success: boolean; count: number }>(
-      `${this.baseUrl}/read-all`,
-    );
+  async markAllAsRead(): Promise<CountResult> {
+    const response = await apiClient.patch<CountResult>(`${this.baseUrl}/read-all`);
     return response.data;
   }
 
   /**
    * 删除通知
    */
-  async deleteNotification(id: string): Promise<{ success: boolean }> {
-    const response = await apiClient.delete<{ success: boolean }>(`${this.baseUrl}/${id}`);
+  async deleteNotification(id: string): Promise<ActionResult> {
+    const response = await apiClient.delete<ActionResult>(`${this.baseUrl}/${id}`);
     return response.data;
   }
 
   /**
    * 批量删除通知
    */
-  async batchDeleteNotifications(ids: string[]): Promise<{ success: boolean; count: number }> {
-    const response = await apiClient.delete<{ success: boolean; count: number }>(this.baseUrl, {
+  async batchDeleteNotifications(ids: string[]): Promise<CountResult> {
+    const response = await apiClient.delete<CountResult>(this.baseUrl, {
       data: { ids } as BatchDeleteNotificationsRequest,
     });
     return response.data;

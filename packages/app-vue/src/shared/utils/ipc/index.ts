@@ -1,0 +1,1 @@
+export { sanitizeForIpc } from './sanitizeForIpc';

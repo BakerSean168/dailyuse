@@ -64,10 +64,15 @@ export class UpdateGoal {
       goal.moveToFolder(input.folderId ? (input.folderId as any) : null);
     }
 
-    // 7. 持久化
+    // 7. 更新提醒配置
+    if (input.reminderConfig !== undefined) {
+      goal.updateReminderConfig(input.reminderConfig ?? null);
+    }
+
+    // 8. 持久化
     await this.goalRepository.save(goal);
 
-    // 8. 返回 Result
+    // 9. 返回 Result
     return ok(goal.toClientDTO(true));
   }
 }

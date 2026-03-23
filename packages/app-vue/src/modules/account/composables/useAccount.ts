@@ -17,11 +17,14 @@ import type {
   UpdateAccountSettingsReq,
 } from '@dailyuse/contracts/account';
 import { useAccountStore } from '../stores/accountStore';
+import { useAuthenticationStore } from '../../authentication/stores/authenticationStore';
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { AuthMode } from '@dailyuse/contracts/authentication';
 
 export function useAccount() {
   const accountStore = useAccountStore();
+  const authStore = useAuthenticationStore();
   const accountService = useStrictInject(ACCOUNT_SERVICE_KEY, 'AccountService');
   const { t } = useI18n();
 
@@ -32,10 +35,34 @@ export function useAccount() {
   const nickname = computed(() => accountStore.getNickname);
   const avatarUrl = computed(() => accountStore.getAvatarUrl);
   const email = computed(() => accountStore.getEmail);
+  const isGuest = computed(() => authStore.authMode === AuthMode.GUEST);
 
   // ========== 资料管理 ==========
 
   async function loadMyProfile(): Promise<boolean> {
+    if (authStore.authMode === AuthMode.GUEST) {
+      // Create a mock profile for guest
+      accountStore.setCurrentAccount({
+        id: authStore.currentIdentity?.id as any,
+        email: null,
+        profile: {
+          nickname: '本地访客',
+          bio: '访客模式',
+          avatarUrl: null,
+        },
+        settings: {
+          theme: 'system',
+          language: 'zh-CN',
+          timezone: 'Asia/Shanghai',
+          currency: 'CNY',
+        },
+        status: 'Active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      } as any);
+      return true;
+    }
+
     accountStore.setLoading(true);
     accountStore.setError(null);
     const result = await accountService.getMyProfile();
@@ -52,6 +79,11 @@ export function useAccount() {
   }
 
   async function updateMyProfile(req: UpdateAccountReq): Promise<boolean> {
+    if (authStore.authMode === AuthMode.GUEST) {
+      toast.error('访客模式下无法更新资料');
+      return false;
+    }
+
     accountStore.setLoading(true);
     accountStore.setError(null);
     const result = await accountService.updateMyProfile(req);
@@ -69,6 +101,9 @@ export function useAccount() {
   }
 
   async function checkAvailability(req: CheckAvailabilityReq): Promise<boolean> {
+    if (authStore.authMode === AuthMode.GUEST) {
+      return false;
+    }
     const result = await accountService.checkAvailability(req);
     if (result.ok) {
       return result.data.available;
@@ -79,16 +114,38 @@ export function useAccount() {
     }
   }
 
-  async function updateSettings(_req: UpdateAccountSettingsReq): Promise<boolean> {
+  async function updateSettings(req: UpdateAccountSettingsReq): Promise<boolean> {
+    if (authStore.authMode === AuthMode.GUEST) {
+      toast.error('访客模式下无法更新设置');
+      return false;
+    }
     accountStore.setLoading(true);
-    void _req;
-    // TODO: AccountClientService 尚未暴露 updateSettings，暂时通过 apiClient 调用
-    toast.success(t('account.toast.settingsUpdated'));
+    accountStore.setError(null);
+    const result = await accountService.updateSettings(req);
     accountStore.setLoading(false);
-    return true;
+    if (result.ok) {
+      const current = accountStore.currentAccount;
+      if (current) {
+        accountStore.setCurrentAccount({
+          ...current,
+          settings: result.data,
+        });
+      }
+      toast.success(t('account.toast.settingsUpdated'));
+      return true;
+    }
+
+    const message = result.error.message || t('account.toast.updateFailed');
+    accountStore.setError(message);
+    toast.error(t('account.toast.updateFailed'), { description: message });
+    return false;
   }
 
   async function closeAccount(req: CloseAccountReq): Promise<boolean> {
+    if (authStore.authMode === AuthMode.GUEST) {
+      toast.error('访客模式下无法注销账户');
+      return false;
+    }
     accountStore.setLoading(true);
     const result = await accountService.closeAccount(req);
     accountStore.setLoading(false);
@@ -112,6 +169,7 @@ export function useAccount() {
     nickname,
     avatarUrl,
     email,
+    isGuest,
 
     // Actions
     loadMyProfile,

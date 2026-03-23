@@ -302,7 +302,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.switchGroupControlMode(req.params!.id, req.body),
+    (req, ctx) => controller.switchGroupControlMode(req.params!.id, req.body, ctx),
   );
 
   // POST /groups/:id/batch — Batch group template operations
@@ -321,7 +321,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.batchGroupTemplates(req.params!.id, req.body),
+    (req, ctx) => controller.batchGroupTemplates(req.params!.id, req.body, ctx),
   );
 
   return router;

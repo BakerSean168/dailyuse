@@ -79,10 +79,6 @@ export {
   type GoalModuleInstance,
   type GoalModuleRuntimeContribution,
   type GoalModuleUseCases,
-  // Backward compatibility (deprecated)
-  GoalModule,
-  type GoalModuleRepositories,
-  GoalContainer,
 } from './infrastructure-server';
 export * from './infrastructure-client';
 export * from './electron-entry';

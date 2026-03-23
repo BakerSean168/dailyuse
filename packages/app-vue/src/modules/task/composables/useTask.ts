@@ -10,7 +10,14 @@ import { useI18n } from 'vue-i18n';
 import { useTaskStore } from '../stores/taskStore';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
+import { sanitizeForIpc } from '../../../shared/utils/ipc';
+import { AuthChannels } from '@dailyuse/contracts/electron';
+import type { ResultError } from '@dailyuse/contracts/result';
+import type {
+  CompleteTaskInstanceReq,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+} from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 
 type TaskTemplateListParams = {
@@ -41,16 +48,66 @@ export function useTask() {
     toast.error(t('task.error.operationFailed'), { description: message });
   }
 
+  async function ensureDesktopAuthReady(): Promise<boolean> {
+    const api = (window as any)?.electronAPI;
+    if (!api?.invoke) {
+      return false;
+    }
+
+    try {
+      const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
+        authenticated?: boolean;
+        runtimeState?: string;
+      };
+
+      if (status?.authenticated) {
+        return true;
+      }
+
+      if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
+        await api.invoke(AuthChannels.INITIALIZE);
+        const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
+          authenticated?: boolean;
+        };
+        return Boolean(refreshed?.authenticated);
+      }
+    } catch (error) {
+      console.warn('[Task] Failed to ensure desktop auth readiness', error);
+    }
+
+    return false;
+  }
+
+  async function maybeRecoverAuth(error: ResultError): Promise<boolean> {
+    if (error.code !== 'AUTH_REQUIRED' && error.code !== 'AUTH_RESTORING') {
+      return false;
+    }
+    return ensureDesktopAuthReady();
+  }
+
   // ========== Templates ==========
   async function fetchTemplates(query?: TaskTemplateListParams) {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.listTemplates({
-        ...query,
-        page: store.pagination.page,
-        limit: store.pagination.pageSize,
-      });
+      let result = await service.listTemplates(
+        sanitizeForIpc({
+          ...query,
+          page: store.pagination.page,
+          limit: store.pagination.pageSize,
+        }),
+      );
+
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.listTemplates(
+          sanitizeForIpc({
+            ...query,
+            page: store.pagination.page,
+            limit: store.pagination.pageSize,
+          }),
+        );
+      }
+
       if (result.ok) {
         store.setTemplates(
           (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),
@@ -68,7 +125,10 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getTemplate(id);
+      let result = await service.getTemplate(id);
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.getTemplate(id);
+      }
       if (result.ok) {
         const dto = result.data.toDTO();
         store.setCurrentTemplate(dto);
@@ -85,7 +145,10 @@ export function useTask() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createTemplate(req);
+      let result = await service.createTemplate(sanitizeForIpc(req));
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.createTemplate(sanitizeForIpc(req));
+      }
       if (result.ok) {
         const dto = result.data.toDTO();
         store.addTemplate(dto);
@@ -103,7 +166,10 @@ export function useTask() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.updateTemplate(id, req);
+      let result = await service.updateTemplate(id, sanitizeForIpc(req));
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.updateTemplate(id, sanitizeForIpc(req));
+      }
       if (result.ok) {
         const dto = result.data.toDTO();
         store.updateTemplate(dto);
@@ -121,7 +187,10 @@ export function useTask() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.deleteTemplate(id);
+      let result = await service.deleteTemplate(id);
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.deleteTemplate(id);
+      }
       if (result.ok) {
         store.removeTemplate(id);
         toast.success(t('task.error.deleteSuccess'));
@@ -135,7 +204,10 @@ export function useTask() {
   }
 
   async function activateTemplate(id: string) {
-    const result = await service.activateTemplate(id);
+    let result = await service.activateTemplate(id);
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.activateTemplate(id);
+    }
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
@@ -147,7 +219,10 @@ export function useTask() {
   }
 
   async function pauseTemplate(id: string) {
-    const result = await service.pauseTemplate(id);
+    let result = await service.pauseTemplate(id);
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.pauseTemplate(id);
+    }
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
@@ -159,7 +234,10 @@ export function useTask() {
   }
 
   async function archiveTemplate(id: string) {
-    const result = await service.archiveTemplate(id);
+    let result = await service.archiveTemplate(id);
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.archiveTemplate(id);
+    }
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
@@ -175,9 +253,16 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.listInstances(
-        query as Parameters<typeof service.listInstances>[0],
+      let result = await service.listInstances(
+        sanitizeForIpc(query) as Parameters<typeof service.listInstances>[0],
       );
+
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.listInstances(
+          sanitizeForIpc(query) as Parameters<typeof service.listInstances>[0],
+        );
+      }
+
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
       } else {
@@ -189,7 +274,10 @@ export function useTask() {
   }
 
   async function startInstance(id: string) {
-    const result = await service.startInstance(id);
+    let result = await service.startInstance(id);
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.startInstance(id);
+    }
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
@@ -199,8 +287,11 @@ export function useTask() {
     return null;
   }
 
-  async function completeInstance(id: string) {
-    const result = await service.completeInstance(id);
+  async function completeInstance(id: string, request?: CompleteTaskInstanceReq) {
+    let result = await service.completeInstance(id, sanitizeForIpc(request));
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.completeInstance(id, sanitizeForIpc(request));
+    }
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
@@ -212,7 +303,10 @@ export function useTask() {
   }
 
   async function skipInstance(id: string) {
-    const result = await service.skipInstance(id);
+    let result = await service.skipInstance(id);
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.skipInstance(id);
+    }
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);

@@ -5,9 +5,9 @@
 
 <template>
   <div class="tree-node-item">
-    <ActionableWrapper :actions="nodeActions" :show-more-button="false">
+    <ActionableWrapper :actions="nodeActions" :show-more-button="false" wrapper-class="w-full">
       <div
-        class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+        class="flex w-full min-w-0 items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
         :class="{ 'bg-accent': isSelected }"
         @click="handleClick"
         @dblclick="handleDoubleClick"

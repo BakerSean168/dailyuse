@@ -48,7 +48,7 @@
 
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium truncate">
-                {{ backlink.sourceDocument.title }}
+                {{ backlink.sourceNote.title }}
               </div>
 
               <div class="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -58,7 +58,7 @@
               <div class="flex items-center gap-2 mt-2">
                 <Badge variant="outline" class="text-xs">
                   <Clock class="h-3 w-3 mr-1" />
-                  {{ formatDate(backlink.sourceDocument.updatedAt) }}
+                  {{ formatDate(backlink.sourceNote.updatedAt) }}
                 </Badge>
                 <Badge v-if="backlink.link.isBroken" variant="destructive" class="text-xs">
                   {{ t('editor.backlink.broken') }}
@@ -115,7 +115,7 @@ const { ensureResourcesLoaded, getBacklinks } = useEditorLinkIndex();
 
 const props = withDefaults(
   defineProps<{
-    documentId: string;
+    noteId: string;
     autoLoad?: boolean;
   }>(),
   {
@@ -124,7 +124,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  navigate: [sourceDocumentId: string];
+  navigate: [sourceNoteId: string];
 }>();
 
 const loading = ref(false);
@@ -132,14 +132,14 @@ const backlinks = ref<BacklinkItem[]>([]);
 const error = ref<string | null>(null);
 
 async function loadBacklinks() {
-  if (!props.documentId) return;
+  if (!props.noteId) return;
 
   loading.value = true;
   error.value = null;
 
   try {
     await ensureResourcesLoaded();
-    backlinks.value = getBacklinks(props.documentId, 100);
+    backlinks.value = getBacklinks(props.noteId, 100);
   } catch (err: unknown) {
     console.error('Load backlinks failed:', err);
     error.value = err instanceof Error ? err.message : t('editor.backlink.loadFailed');
@@ -154,7 +154,7 @@ function refresh() {
 }
 
 function navigateToSource(backlink: BacklinkItem) {
-  const sourceId = backlink.sourceDocument.id;
+  const sourceId = backlink.sourceNote.id;
   emit('navigate', sourceId);
 }
 
@@ -172,7 +172,7 @@ function formatDate(timestamp: number): string {
 }
 
 watch(
-  () => props.documentId,
+  () => props.noteId,
   (newId) => {
     if (newId && props.autoLoad) {
       loadBacklinks();
@@ -181,7 +181,7 @@ watch(
 );
 
 onMounted(() => {
-  if (props.documentId && props.autoLoad) {
+  if (props.noteId && props.autoLoad) {
     loadBacklinks();
   }
 });

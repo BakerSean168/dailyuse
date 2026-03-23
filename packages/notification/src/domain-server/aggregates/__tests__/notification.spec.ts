@@ -77,6 +77,15 @@ describe('Notification Aggregate Root', () => {
 
       expect(notification.metadata).toBeNull();
     });
+
+    it('should emit notification:create domain event', () => {
+      const notification = aNotification();
+
+      expect(notification.domainEvents).toHaveLength(1);
+      expect(notification.domainEvents[0].eventType).toBe('notification:create');
+      expect(notification.domainEvents[0].payload.notificationId).toBe(String(notification.id));
+      expect(notification.domainEvents[0].payload.notification.title).toBe(notification.title);
+    });
   });
 
   describe('send()', () => {
@@ -102,6 +111,18 @@ describe('Notification Aggregate Root', () => {
       await notification.send();
 
       expect(notification.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    });
+
+    it('should emit sent and status-change events', async () => {
+      const notification = aNotification();
+      notification.clearDomainEvents();
+
+      await notification.send();
+
+      expect(notification.domainEvents.map((event) => event.eventType)).toEqual([
+        'notification:send',
+        'notification:status-change',
+      ]);
     });
   });
 
@@ -165,6 +186,20 @@ describe('Notification Aggregate Root', () => {
 
       expect(typeof notification.readAt).toBe('number');
       expect(notification.readAt).toBeGreaterThan(0);
+    });
+
+    it('should emit read and status-change events', async () => {
+      const notification = aNotification();
+      await notification.send();
+      notification.markAsDelivered();
+      notification.clearDomainEvents();
+
+      notification.markAsRead();
+
+      expect(notification.domainEvents.map((event) => event.eventType)).toEqual([
+        'notification:read',
+        'notification:status-change',
+      ]);
     });
   });
 
@@ -390,6 +425,19 @@ describe('Notification Aggregate Root', () => {
       expect(String(loaded.id)).toBe(String(original.id));
       expect(loaded.title).toBe('Test Notification');
       expect(loaded.status).toBe(NotificationStatus.Pending);
+    });
+  });
+
+  describe('softDelete()', () => {
+    it('should set deletedAt and emit notification:delete', () => {
+      const notification = aNotification();
+      notification.clearDomainEvents();
+
+      notification.softDelete();
+
+      expect(notification.deletedAt).toBeInstanceOf(Date);
+      expect(notification.domainEvents).toHaveLength(1);
+      expect(notification.domainEvents[0].eventType).toBe('notification:delete');
     });
   });
 });

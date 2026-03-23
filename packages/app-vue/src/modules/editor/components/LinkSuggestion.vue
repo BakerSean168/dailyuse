@@ -23,25 +23,25 @@
           </div>
         </CommandEmpty>
         <CommandList>
-          <CommandGroup :heading="t('editor.linkSuggestion.documents')">
+          <CommandGroup :heading="t('editor.linkSuggestion.notes')">
             <CommandItem
-              v-for="(doc, index) in documents"
-              :key="doc.id"
-              :value="doc.id"
+              v-for="(note, index) in notes"
+              :key="note.id"
+              :value="note.id"
               :data-selected="selectedIndex === index"
               @mouseenter="selectedIndex = index"
-              @select="selectDocument(doc)"
+              @select="selectNote(note)"
               class="cursor-pointer"
             >
               <FileText class="mr-2 h-4 w-4" />
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium truncate">{{ doc.title }}</div>
+                <div class="text-sm font-medium truncate">{{ note.title }}</div>
                 <div class="flex items-center gap-2 mt-1">
                   <span class="text-xs text-muted-foreground truncate">{{
-                    getFolderPath(doc.path) || '/'
+                    getFolderPath(note.path) || '/'
                   }}</span>
-                  <Badge v-if="doc.tags.length" variant="secondary" class="text-xs">
-                    {{ doc.tags[0] }}
+                  <Badge v-if="note.tags.length" variant="secondary" class="text-xs">
+                    {{ note.tags[0] }}
                   </Badge>
                 </div>
               </div>
@@ -73,7 +73,7 @@ import {
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { FileText, Keyboard } from 'lucide-vue-next';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
-import type { LinkIndexDocument } from '../utils/linkIndex';
+import type { LinkIndexNote } from '../utils/linkIndex';
 
 const { t } = useI18n();
 
@@ -82,27 +82,27 @@ const props = withDefaults(
     visible: boolean;
     searchQuery: string;
     position: { x: number; y: number };
-    excludeDocumentId?: string;
+    excludeNoteId?: string;
   }>(),
   {
     visible: false,
     searchQuery: '',
     position: () => ({ x: 0, y: 0 }),
-    excludeDocumentId: undefined,
+    excludeNoteId: undefined,
   },
 );
 
 const emit = defineEmits<{
-  select: [document: LinkIndexDocument | null];
+  select: [note: LinkIndexNote | null];
   close: [];
   createNew: [title: string];
 }>();
 
-const { ensureResourcesLoaded, searchDocuments: searchLinkDocuments } = useEditorLinkIndex();
+const { ensureResourcesLoaded, searchNotes: searchLinkNotes } = useEditorLinkIndex();
 
 const isVisible = ref(false);
 const loading = ref(false);
-const documents = ref<LinkIndexDocument[]>([]);
+const notes = ref<LinkIndexNote[]>([]);
 const selectedIndex = ref(0);
 
 function getFolderPath(path: string): string {
@@ -110,34 +110,34 @@ function getFolderPath(path: string): string {
   return lastSlash > 0 ? path.substring(0, lastSlash) : '/';
 }
 
-async function searchDocumentsImpl(query: string) {
+async function searchNotesImpl(query: string) {
   loading.value = true;
   try {
     await ensureResourcesLoaded();
-    documents.value = searchLinkDocuments(query, {
-      excludeId: props.excludeDocumentId,
+    notes.value = searchLinkNotes(query, {
+      excludeId: props.excludeNoteId,
       limit: 12,
     });
     selectedIndex.value = 0;
   } catch (error) {
-    console.error('Search documents failed:', error);
-    documents.value = [];
+    console.error('Search notes failed:', error);
+    notes.value = [];
   } finally {
     loading.value = false;
   }
 }
 
-const searchDocuments = useDebounceFn(searchDocumentsImpl, 300);
+const searchNotes = useDebounceFn(searchNotesImpl, 300);
 
-function selectDocument(doc: LinkIndexDocument) {
-  emit('select', doc);
+function selectNote(note: LinkIndexNote) {
+  emit('select', note);
   close();
 }
 
 function selectCurrent() {
-  if (documents.value.length > 0) {
-    const selected = documents.value[selectedIndex.value];
-    selectDocument(selected);
+  if (notes.value.length > 0) {
+    const selected = notes.value[selectedIndex.value];
+    selectNote(selected);
   } else if (props.searchQuery.trim()) {
     emit('createNew', props.searchQuery.trim());
     close();
@@ -146,14 +146,14 @@ function selectCurrent() {
 
 function close() {
   isVisible.value = false;
-  documents.value = [];
+  notes.value = [];
   emit('close');
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   if (!isVisible.value) return;
 
-  if (documents.value.length === 0) {
+  if (notes.value.length === 0) {
     if (event.key === 'Enter') {
       event.preventDefault();
       selectCurrent();
@@ -167,7 +167,7 @@ function handleKeyDown(event: KeyboardEvent) {
   switch (event.key) {
     case 'ArrowDown':
       event.preventDefault();
-      selectedIndex.value = Math.min(selectedIndex.value + 1, documents.value.length - 1);
+      selectedIndex.value = Math.min(selectedIndex.value + 1, notes.value.length - 1);
       break;
 
     case 'ArrowUp':
@@ -193,9 +193,9 @@ watch(
     isVisible.value = visible;
     if (visible) {
       selectedIndex.value = 0;
-      void searchDocumentsImpl(props.searchQuery);
+      void searchNotesImpl(props.searchQuery);
     } else {
-      documents.value = [];
+      notes.value = [];
     }
   },
 );
@@ -204,7 +204,7 @@ watch(
   () => props.searchQuery,
   (query) => {
     if (isVisible.value) {
-      searchDocuments(query);
+      searchNotes(query);
     }
   },
 );

@@ -32,5 +32,7 @@ export {
   ConflictDetectionResult,
 } from '../../domain-shared/value-objects';
 
+export { TaskMetadata } from './TaskMetadata';
+
 // ============ 领域服务器特有的错误类 ============
 export * from './errors';

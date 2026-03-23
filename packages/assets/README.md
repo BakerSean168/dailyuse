@@ -8,6 +8,7 @@
 - ✅ **零打包**：Vite 直接处理资源文件
 - ✅ **按需加载**：Tree-shaking 友好
 - ✅ **跨项目共享**：所有应用统一使用
+- ✅ **统一来源**：Web、Desktop 入口图标和共享媒体都从这里导出
 
 ## 📂 目录结构
 
@@ -45,11 +46,24 @@ const audio = new Audio(notificationSound);
 audio.play();
 ```
 
+### 初始化应用图标
+
+```typescript
+import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
+
+applyDocumentIcons({
+  faviconHref: logoIco,
+  appleTouchIconHref: logo128,
+});
+```
+
 ## 📝 添加新资源
 
 1. 将资源文件放入对应目录
 2. 在 `index.ts` 中导出
 3. 在消费项目中使用
+
+不要把共享资源放进工作区根 `public/`。该目录已经废弃，不再作为应用运行时资源来源。
 
 ## ⚙️ 技术细节
 

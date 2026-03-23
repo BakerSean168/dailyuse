@@ -20,6 +20,8 @@ import type {
   AuthResponseDTO,
   RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
+import { AuthMode } from '@dailyuse/contracts/authentication';
+import { WindowChannels } from '@dailyuse/contracts/electron';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -42,7 +44,7 @@ export function useAuth() {
     toast.success(title, { description });
 
     if (hasDesktopWindowBridge()) {
-      await (window as any).electronAPI!.invoke('window:transition-to-main');
+      await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
       return true;
     }
 
@@ -222,7 +224,7 @@ export function useAuth() {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
       if (hasDesktopWindowBridge()) {
-        await (window as any).electronAPI!.invoke('window:transition-to-login');
+        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_LOGIN);
       } else {
         await router.push('/auth');
       }
@@ -242,16 +244,21 @@ export function useAuth() {
     try {
       const result = await service.enterGuestMode();
       if (result.ok) {
-        const guestData = result.data;
-        // Set a synthetic identity so isAuthenticated becomes true
-        store.setCurrentIdentity({
-          id: guestData.identityId,
-          email: 'guest@local',
-          status: 'ACTIVE',
-        } as any);
+        const currentUser = await service.getCurrentUser();
+        if (!currentUser.ok) {
+          const message = currentUser.error?.message || '获取访客身份失败';
+          store.setError(message);
+          toast.error('访客模式失败', { description: message });
+          return false;
+        }
+
+        store.setCurrentIdentity(currentUser.data.identity);
+        store.setCurrentSession(currentUser.data.session);
+        store.setAuthMode(AuthMode.GUEST);
         store.setAccessToken('guest-local-token');
+        store.setRefreshToken('guest-local-token');
         toast.success('已进入访客模式', { description: '数据仅保存在本地' });
-        await (window as any).electronAPI!.invoke('window:transition-to-main');
+        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
         return true;
       }
       const message = result.error?.message || '进入访客模式失败';

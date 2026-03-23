@@ -43,32 +43,4 @@ export function createAIPowerSyncModule(
   });
 }
 
-/**
- * @deprecated Use `createAIPowerSyncModule()` instead.
- * @deprecated 请使用 `createAIPowerSyncModule()` 替代。
- *
- * Legacy class wrapper kept for backward compatibility.
- */
-export class AIPowerSyncModule {
-  private readonly _instance: AIModuleInstance;
-
-  public readonly conversationRepository;
-  public readonly providerConfigRepository;
-  public readonly conversationService;
-  public readonly providerConfigService;
-  public readonly chatService;
-  public readonly goalGenerationService;
-
-  constructor(dbConnection: IElectronDatabase) {
-    this._instance = createAIPowerSyncModule(dbConnection);
-
-    this.conversationRepository = this._instance.conversationRepository;
-    this.providerConfigRepository = this._instance.providerConfigRepository;
-    this.conversationService = this._instance.services.conversationService;
-    this.providerConfigService = this._instance.services.providerConfigService;
-    this.chatService = this._instance.services.chatService;
-    this.goalGenerationService = this._instance.services.goalGenerationService;
-  }
-}
-
 export { PowerSyncAIConversationRepository, PowerSyncAIProviderConfigRepository };

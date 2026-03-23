@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
-import type { KeyResultServerDTO } from '../entities';
+import type { KeyResultClientDTO } from '../entities';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 
@@ -24,6 +24,7 @@ export const AddKeyResultSchema = z.object({
   description: z.string().max(2000).optional(),
   valueType: z.enum(KeyResultValueType),
   calculationMethod: z.enum(KeyResultCalculationMethod),
+  startValue: z.number().optional(),
   targetValue: z.number().min(0, '目标值不能为负数'),
   currentValue: z.number().optional(),
   unit: z.string().max(50).optional(),
@@ -31,7 +32,7 @@ export const AddKeyResultSchema = z.object({
 });
 
 export type AddKeyResultReq = z.infer<typeof AddKeyResultSchema>;
-export type AddKeyResultRes = KeyResultServerDTO;
+export type AddKeyResultRes = KeyResultClientDTO;
 
 // ============================================================================
 // UPDATE Key Result
@@ -44,13 +45,14 @@ export const UpdateKeyResultSchema = z.object({
   title: z.string().min(1).max(256).optional(),
   description: z.string().max(2000).nullable().optional(),
   startValue: z.number().optional(),
+  currentValue: z.number().optional(),
   targetValue: z.number().optional(),
   unit: z.string().max(50).nullable().optional(),
   weight: z.number().int('权重必须为整数').min(1, '权重最小为 1').max(5, '权重最大为 5').optional(),
 });
 
 export type UpdateKeyResultReq = z.infer<typeof UpdateKeyResultSchema>;
-export type UpdateKeyResultRes = KeyResultServerDTO;
+export type UpdateKeyResultRes = KeyResultClientDTO;
 
 // ============================================================================
 // GET Key Results
@@ -66,7 +68,7 @@ export const GetKeyResultsSchema = z.object({
 export type GetKeyResultsReq = z.infer<typeof GetKeyResultsSchema>;
 
 export interface GetKeyResultsRes {
-  data: KeyResultServerDTO[];
+  data: KeyResultClientDTO[];
   total: number;
 }
 
@@ -84,4 +86,4 @@ export const UpdateKeyResultProgressSchema = z.object({
 });
 
 export type UpdateKeyResultProgressReq = z.infer<typeof UpdateKeyResultProgressSchema>;
-export type UpdateKeyResultProgressRes = KeyResultServerDTO;
+export type UpdateKeyResultProgressRes = KeyResultClientDTO;

@@ -6,7 +6,7 @@ import type {
   LinkedResourceId,
   EditorWorkspaceId,
   IdentityId,
-  DocumentId,
+  ResourceId,
   TransferDate,
   DomainDate,
 } from '../../../primitives';
@@ -21,13 +21,13 @@ export interface LinkedResourceClientDTO {
   id: string;
   workspaceId: string;
   identityId: string;
-  sourceDocumentId: string;
+  sourceResourceId: string;
   sourceType: LinkedSourceType;
   sourceLine: number | null;
   sourceColumn: number | null;
   targetPath: string;
   targetType: LinkedTargetType;
-  targetDocumentId: string | null;
+  targetResourceId: string | null;
   targetAnchor: string | null;
   isValid: boolean;
   lastValidatedAt: TransferDate | null;

@@ -14,8 +14,6 @@ import {
   TriggerType,
   NotificationChannel,
   NotificationAction,
-  RecurrenceType,
-  WeekDay,
 } from '../value-objects';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
@@ -76,19 +74,6 @@ export const CreateReminderTemplateSchema = z.object({
       .nullable(),
   }),
   description: z.string().max(1000).optional(),
-  recurrence: z
-    .object({
-      type: z.enum(RecurrenceType),
-      daily: z.object({ interval: z.number().min(1) }).nullable(),
-      weekly: z
-        .object({
-          interval: z.number().min(1),
-          weekDays: z.array(z.enum(WeekDay)),
-        })
-        .nullable(),
-      customDays: z.object({ dates: z.array(z.number()) }).nullable(),
-    })
-    .optional(),
   activeHours: z
     .object({
       startHour: z.number().min(0).max(23),
@@ -129,4 +114,12 @@ export type GetUpcomingRemindersReq = z.infer<typeof GetUpcomingRemindersSchema>
 export interface GetUpcomingRemindersRes {
   data: ReminderTemplateClientDTO[];
   total: number;
+}
+
+export interface ReminderTemplateListRes {
+  templates: ReminderTemplateClientDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
 }

@@ -12,7 +12,9 @@ import type {
   TaskGoalBinding as ITaskGoalBinding,
   TaskGoalBindingDTO,
   TaskGoalBindingPersistenceDTO,
+  TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@dailyuse/contracts/task';
+import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 
 /**
@@ -34,8 +36,9 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
    * 创建新的值对象（包含校验）
    */
   public static create(props: TaskGoalBindingDTO): TaskGoalBinding {
-    this.validate(props);
-    return new TaskGoalBinding(props);
+    const normalized = this.normalize(props);
+    this.validate(normalized);
+    return new TaskGoalBinding(normalized);
   }
 
   // ================= 工厂方法 2: 快速创建 =================
@@ -46,11 +49,13 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
     goalId: GoalId,
     keyResultId: KeyResultId,
     goalRecordValue: number = 1,
+    progressTrigger: TaskGoalBindingTriggerValue = TaskGoalBindingTrigger.PerInstance,
   ): TaskGoalBinding {
     return TaskGoalBinding.create({
       goalId,
       keyResultId,
       goalRecordValue,
+      progressTrigger,
     });
   }
 
@@ -59,7 +64,7 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
    * 从 DTO 恢复值对象
    */
   public static fromDTO(dto: TaskGoalBindingDTO): TaskGoalBinding {
-    return new TaskGoalBinding(dto);
+    return new TaskGoalBinding(TaskGoalBinding.normalize(dto));
   }
 
   // ================= 工厂方法 4: 从持久化 DTO 恢复 =================
@@ -67,11 +72,12 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
    * 从数据库持久化 DTO 恢复值对象
    */
   public static fromPersistenceDTO(dto: TaskGoalBindingPersistenceDTO): TaskGoalBinding {
-    return new TaskGoalBinding({
+    return new TaskGoalBinding(TaskGoalBinding.normalize({
       goalId: dto.goalId as GoalId,
       keyResultId: dto.keyResultId as KeyResultId,
       goalRecordValue: dto.goalRecordValue,
-    });
+      progressTrigger: dto.progressTrigger,
+    }));
   }
 
   // ================= 内部校验逻辑 =================
@@ -90,6 +96,21 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
     if (props.goalRecordValue < 0) {
       throw new Error('Goal record value must be non-negative');
     }
+
+    if (!Object.values(TaskGoalBindingTrigger).includes(props.progressTrigger)) {
+      throw new Error('Task goal binding trigger is invalid');
+    }
+  }
+
+  private static normalize(
+    props: Omit<TaskGoalBindingDTO, 'progressTrigger'> & {
+      progressTrigger?: TaskGoalBindingTriggerValue;
+    },
+  ): TaskGoalBindingDTO {
+    return {
+      ...props,
+      progressTrigger: props.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
+    };
   }
 
   // ================= Getters（只读暴露）=================
@@ -106,6 +127,10 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
     return this.props.goalRecordValue;
   }
 
+  public get progressTrigger(): TaskGoalBindingTriggerValue {
+    return this.props.progressTrigger;
+  }
+
   // ================= 行为方法（不可变变更）=================
 
   /**
@@ -113,6 +138,12 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
    */
   public updateGoalRecordValue(value: number): TaskGoalBinding {
     const newProps = { ...this.props, goalRecordValue: value };
+    TaskGoalBinding.validate(newProps);
+    return new TaskGoalBinding(newProps);
+  }
+
+  public updateProgressTrigger(progressTrigger: TaskGoalBindingTriggerValue): TaskGoalBinding {
+    const newProps = { ...this.props, progressTrigger };
     TaskGoalBinding.validate(newProps);
     return new TaskGoalBinding(newProps);
   }
@@ -130,7 +161,7 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
    * 获取显示文本
    */
   public getDisplayText(): string {
-    return `Goal: ${this.props.goalId}, KR: ${this.props.keyResultId}, Value: ${this.props.goalRecordValue}`;
+    return `Goal: ${this.props.goalId}, KR: ${this.props.keyResultId}, Value: ${this.props.goalRecordValue}, Trigger: ${this.props.progressTrigger}`;
   }
 
   // ================= 序列化方法 =================
@@ -143,6 +174,7 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
       goalId: this.props.goalId,
       keyResultId: this.props.keyResultId,
       goalRecordValue: this.props.goalRecordValue,
+      progressTrigger: this.props.progressTrigger,
     };
   }
 
@@ -154,6 +186,7 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
       goalId: this.props.goalId,
       keyResultId: this.props.keyResultId,
       goalRecordValue: this.props.goalRecordValue,
+      progressTrigger: this.props.progressTrigger,
     };
   }
 }

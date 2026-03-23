@@ -6,7 +6,7 @@ import { EditorSession } from '../../../domain-server/entities/editor-session';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
-import type { 
+import type {
   EditorWorkspaceServerDTO,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
@@ -238,6 +238,11 @@ export class EditorWorkspaceApplicationService {
     return true;
   }
 
+  async getSession(sessionId: string): Promise<EditorSessionServerDTO | null> {
+    const session = await this.loadSessionWithGroups(sessionId);
+    return session ? session.toServerDTO() : null;
+  }
+
   // ===== Group 管理 =====
 
   /**
@@ -273,6 +278,7 @@ export class EditorWorkspaceApplicationService {
     groupId: string;
     groupIndex?: number;
     name?: string;
+    activeTabIndex?: number;
     splitDirection?: SplitDirection;
   }): Promise<EditorGroupServerDTO> {
     const group = await this.groupRepository.findById(params.groupId);
@@ -286,6 +292,9 @@ export class EditorWorkspaceApplicationService {
     if (params.name !== undefined) {
       group.rename(params.name);
     }
+    if (params.activeTabIndex !== undefined && params.activeTabIndex >= 0) {
+      group.setActiveTab(params.activeTabIndex);
+    }
 
     await this.groupRepository.save(group);
 
@@ -295,11 +304,7 @@ export class EditorWorkspaceApplicationService {
   /**
    * 删除组
    */
-  async removeGroup(
-    workspaceId: string,
-    sessionId: string,
-    groupId: string,
-  ): Promise<boolean> {
+  async removeGroup(workspaceId: string, sessionId: string, groupId: string): Promise<boolean> {
     const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
@@ -319,7 +324,7 @@ export class EditorWorkspaceApplicationService {
     workspaceId: string;
     sessionId: string;
     groupId: string;
-    documentId?: string;
+    resourceId?: string;
     tabIndex: number;
     tabType: TabType;
     title: string;
@@ -331,7 +336,7 @@ export class EditorWorkspaceApplicationService {
       throw new Error(`Session not found: ${params.sessionId}`);
     }
 
-    const tab = session.openTab(params.documentId ?? '', {
+    const tab = session.openTab(params.resourceId ?? '', {
       groupId: params.groupId,
       tabType: params.tabType,
       viewState: params.viewState,
@@ -356,6 +361,7 @@ export class EditorWorkspaceApplicationService {
     title?: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
+    isDirty?: boolean;
   }): Promise<EditorTabServerDTO> {
     const tab = await this.tabRepository.findById(params.tabId);
     if (!tab) {
@@ -373,6 +379,13 @@ export class EditorWorkspaceApplicationService {
     }
     if (params.isPinned !== undefined && tab.isPinned !== params.isPinned) {
       tab.togglePinned();
+    }
+    if (params.isDirty !== undefined && tab.isDirty !== params.isDirty) {
+      if (params.isDirty) {
+        tab.markDirty();
+      } else {
+        tab.markClean();
+      }
     }
 
     await this.tabRepository.save(tab);
@@ -466,12 +479,38 @@ export class EditorWorkspaceApplicationService {
   private async persistSessionState(session: EditorSession): Promise<void> {
     await this.sessionRepository.save(session);
 
-    if (session.groups.length > 0) {
-      await this.groupRepository.saveBatch(session.groups);
-      const tabs = session.groups.flatMap((group) => group.tabs);
-      if (tabs.length > 0) {
-        await this.tabRepository.saveBatch(tabs);
+    const currentGroups = session.groups;
+    const persistedGroups = await this.groupRepository.findBySessionId(String(session.id));
+    const currentGroupIds = new Set(currentGroups.map((group) => String(group.id)));
+
+    for (const persistedGroup of persistedGroups) {
+      if (!currentGroupIds.has(String(persistedGroup.id))) {
+        await this.tabRepository.deleteByGroupId(String(persistedGroup.id));
+        await this.groupRepository.delete(String(persistedGroup.id));
       }
+    }
+
+    if (currentGroups.length === 0) {
+      return;
+    }
+
+    await this.groupRepository.saveBatch(currentGroups);
+
+    for (const group of currentGroups) {
+      const currentTabs = group.tabs;
+      const persistedTabs = await this.tabRepository.findByGroupId(String(group.id));
+      const currentTabIds = new Set(currentTabs.map((tab) => String(tab.id)));
+
+      for (const persistedTab of persistedTabs) {
+        if (!currentTabIds.has(String(persistedTab.id))) {
+          await this.tabRepository.delete(String(persistedTab.id));
+        }
+      }
+    }
+
+    const tabs = currentGroups.flatMap((group) => group.tabs);
+    if (tabs.length > 0) {
+      await this.tabRepository.saveBatch(tabs);
     }
   }
 
@@ -490,7 +529,3 @@ export class EditorWorkspaceApplicationService {
     return this.restorer.restore(session, groups);
   }
 }
-
-
-
-

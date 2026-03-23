@@ -111,19 +111,19 @@ import {
   CalendarOff,
 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 
 interface Props {
-  schedules: ScheduleJobClientDTO[];
+  schedules: CalendarEntryClientDTO[];
   loading?: boolean;
   error?: string | null;
 }
 
 interface Emits {
   (e: 'create'): void;
-  (e: 'schedule-click', schedule: ScheduleJobClientDTO): void;
+  (e: 'schedule-click', schedule: CalendarEntryClientDTO): void;
   (e: 'delete', id: string): void;
 }
 
@@ -136,7 +136,7 @@ const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
-function getScheduleActions(schedule: ScheduleJobClientDTO): MenuAction[] {
+function getScheduleActions(schedule: CalendarEntryClientDTO): MenuAction[] {
   return [
     {
       key: 'delete',

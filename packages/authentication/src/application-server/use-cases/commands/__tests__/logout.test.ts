@@ -55,7 +55,7 @@ function buildExpiredSession(identityId: IdentityId): AuthSession {
   });
 }
 
-function createContext(identityId = 'IdentityId_test-user-001'): Context {
+function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440001'): Context {
   return { identityId, deviceId: 'test-device-001' };
 }
 
@@ -74,7 +74,7 @@ describe('Logout (Application Command)', () => {
 
   describe('execute', () => {
     it('should revoke all valid sessions for the identity', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session1 = buildActiveSession(identityId);
       const session2 = buildActiveSession(identityId);
 
@@ -91,7 +91,7 @@ describe('Logout (Application Command)', () => {
     });
 
     it('should save each revoked session', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId);
 
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
@@ -102,7 +102,7 @@ describe('Logout (Application Command)', () => {
     });
 
     it('should skip already invalid sessions', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const activeSession = buildActiveSession(identityId);
       const expiredSession = buildExpiredSession(identityId);
 
@@ -123,13 +123,16 @@ describe('Logout (Application Command)', () => {
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       // Should not throw
-      await useCase.execute(undefined as any, createContext('IdentityId_test-user-001'));
+      await useCase.execute(
+        undefined as any,
+        createContext('IdentityId_550e8400-e29b-41d4-a716-446655440001'),
+      );
 
       expect(sessionRepo.save).not.toHaveBeenCalled();
     });
 
     it('should use identity id from context', async () => {
-      const identityId = 'IdentityId_test-user-002';
+      const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440002';
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       await useCase.execute(undefined as any, createContext(identityId));
@@ -138,7 +141,7 @@ describe('Logout (Application Command)', () => {
     });
 
     it('should skip sessions that are already revoked', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId);
       session.revoke(); // pre-revoke
 

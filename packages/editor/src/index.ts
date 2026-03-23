@@ -1,8 +1,8 @@
 /**
  * @dailyuse/editor
  *
- * 编辑器模块 - 文档编辑与协同
- * Editor module - document editing and collaboration
+ * 编辑器模块 - 资源编辑与工作区协同
+ * Editor module - resource editing and workspace collaboration
  *
  * 【分层架构 / Layered Architecture】
  *
@@ -30,7 +30,7 @@
  *
  * // 3. Use composition root / 使用组合根
  * import { createEditorModule } from '@dailyuse/editor/infrastructure-server';
- * const module = createEditorModule({ workspaceRepository, documentRepository });
+ * const module = createEditorModule({ workspaceRepository, sessionRepository, groupRepository, tabRepository });
  * const result = await module.api.createWorkspace(props, context);
  * ```
  */
@@ -49,10 +49,14 @@ export * from './application-server';
 export {
   /** @internal Concrete Prisma implementation — use IEditorWorkspaceRepository interface instead. Prisma 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
   EditorWorkspacePrismaRepository,
-  /** @internal Concrete Prisma implementation — use IDocumentRepository interface instead. Prisma 具体实现 — 请使用 IDocumentRepository 接口。 */
-  DocumentPrismaRepository,
+  EditorSessionPrismaRepository,
+  EditorGroupPrismaRepository,
+  EditorTabPrismaRepository,
   /** @internal Concrete PowerSync implementation — use IEditorWorkspaceRepository interface instead. PowerSync 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
   PowerSyncEditorWorkspaceRepository,
+  PowerSyncEditorSessionRepository,
+  PowerSyncEditorGroupRepository,
+  PowerSyncEditorTabRepository,
   createEditorModule,
   createEditorPowerSyncModule,
   type EditorApplicationPort,

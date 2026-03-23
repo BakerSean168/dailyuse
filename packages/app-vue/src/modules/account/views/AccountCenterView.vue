@@ -25,7 +25,7 @@ import { LOGOUT_HANDLER_KEY } from '../../../di/keys';
 const { t } = useI18n();
 const logout = inject(LOGOUT_HANDLER_KEY);
 
-const { currentAccount, isLoading, loadMyProfile, updateMyProfile } = useAccount();
+const { currentAccount, isLoading, isGuest, loadMyProfile, updateMyProfile } = useAccount();
 
 const form = reactive({
   nickname: '',
@@ -118,7 +118,9 @@ onMounted(() => {
 
           <div class="space-y-1">
             <div class="text-2xl font-semibold">{{ form.nickname }}</div>
-            <div class="text-sm text-muted-foreground">{{ currentAccount?.email?.address }}</div>
+            <div class="text-sm text-muted-foreground">
+              {{ currentAccount?.email?.address || '本地访客' }}
+            </div>
           </div>
         </div>
 
@@ -131,7 +133,7 @@ onMounted(() => {
               id="nickname"
               v-model="form.nickname"
               :placeholder="t('account.placeholder.nickname')"
-              :disabled="isLoading"
+              :disabled="isLoading || isGuest"
             />
           </div>
 
@@ -141,7 +143,7 @@ onMounted(() => {
               id="avatar"
               v-model="form.avatar"
               :placeholder="t('account.placeholder.avatarUrl')"
-              :disabled="isLoading"
+              :disabled="isLoading || isGuest"
             />
           </div>
 
@@ -151,7 +153,7 @@ onMounted(() => {
               id="bio"
               v-model="form.bio"
               :placeholder="t('account.placeholder.bio')"
-              :disabled="isLoading"
+              :disabled="isLoading || isGuest"
             />
           </div>
         </div>
@@ -162,7 +164,7 @@ onMounted(() => {
       }}</CardContent>
 
       <CardFooter class="justify-end border-t border-border/60 bg-muted/40 px-6 py-4">
-        <Button :disabled="isLoading || !hasAccount" @click="handleSave">
+        <Button :disabled="isLoading || !hasAccount || isGuest" @click="handleSave">
           {{ t('account.actions.saveProfile') }}
         </Button>
       </CardFooter>

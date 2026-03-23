@@ -4,7 +4,6 @@
 
 import type { IGoalRepository } from '@/domain-server';
 import { GoalPolicy } from '@/domain-server';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -14,16 +13,19 @@ export class DeleteGoalKeyResult {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(goalId: string, keyResultId: string): Promise<Result<GoalClientDTO>> {
+  async execute(goalId: string, keyResultId: string): Promise<Result<void>> {
     const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
-    goal.removeKeyResult(keyResultId);
+    const removedKeyResult = goal.removeKeyResult(keyResultId);
+    if (!removedKeyResult) {
+      return error('NOT_FOUND', `KeyResult not found: ${keyResultId}`);
+    }
     await this.goalRepository.save(goal);
 
-    return ok(goal.toClientDTO(true));
+    return ok(undefined);
   }
 }

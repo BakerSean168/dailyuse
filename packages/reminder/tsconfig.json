@@ -16,6 +16,10 @@
       "@dailyuse/contracts/primitives": ["../contracts/src/primitives/index.ts"],
       "@dailyuse/contracts/electron": ["../contracts/src/electron/index.ts"],
       "@dailyuse/contracts/schedule": ["../contracts/src/modules/schedule/index.ts"],
+      "@dailyuse/schedule": ["../schedule/src/index.ts"],
+      "@dailyuse/schedule/domain-server": ["../schedule/src/domain-server/index.ts"],
+      "@dailyuse/schedule/domain-shared": ["../schedule/src/domain-shared/index.ts"],
+      "@dailyuse/schedule/infrastructure-server": ["../schedule/src/infrastructure-server/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
       "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
       "@dailyuse/patterns": ["../patterns/src/index.ts"]

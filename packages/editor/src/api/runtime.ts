@@ -27,11 +27,11 @@ export type EditorRuntimeContribution = EditorModuleRuntimeContribution;
  * 创建实例级 runtime 贡献对象。
  *
  * Currently performs logging-only startup/shutdown. When the editor gains
- * domain events (e.g. document:saved, workspace:opened) the event
+ * domain events (e.g. resource:saved, workspace:opened) the event
  * subscriptions will be registered here with start() and torn down with stop().
  *
  * 当前仅执行日志记录的启动/关闭。当编辑器获得领域事件
- * （如 document:saved, workspace:opened）时，事件订阅将在
+ * （如 resource:saved, workspace:opened）时，事件订阅将在
  * start() 中注册，并在 stop() 中拆除。
  */
 export function createEditorRuntimeContribution(): EditorRuntimeContribution {

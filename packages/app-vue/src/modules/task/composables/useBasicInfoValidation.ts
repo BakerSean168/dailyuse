@@ -13,11 +13,11 @@ export function useBasicInfoValidation() {
   const validationErrors: Ref<BasicInfoValidationErrors> = ref({});
   const isValid = ref(false);
 
-  const validate = (title: string, description: string): boolean => {
+  const validate = (title: string, titleRequiredMessage: string): boolean => {
     const errors: BasicInfoValidationErrors = {};
 
     if (!title || title.trim().length === 0) {
-      errors.title = 'Title is required';
+      errors.title = titleRequiredMessage;
     }
 
     validationErrors.value = errors;

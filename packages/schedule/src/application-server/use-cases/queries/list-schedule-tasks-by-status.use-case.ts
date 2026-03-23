@@ -7,7 +7,7 @@
  * - DTO 转换
  */
 
-import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleTaskRepository } from '../../../domain-server';
 import type { ScheduleTaskClientDTO, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 
 /**

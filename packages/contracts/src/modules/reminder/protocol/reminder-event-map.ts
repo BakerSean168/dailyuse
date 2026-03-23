@@ -1,12 +1,20 @@
 import type {
   ReminderTemplateCreatedEvent,
   ReminderTemplateUpdatedEvent,
+  ReminderTemplateEnabledEvent,
+  ReminderTemplatePausedEvent,
+  ReminderTemplateMovedEvent,
   ReminderTemplateDeletedEvent,
   ReminderGroupCreatedEvent,
   ReminderGroupUpdatedEvent,
   ReminderGroupDeletedEvent,
   ReminderTriggeredEvent,
 } from '../domain/events';
+import type {
+  ReminderFrequencyAdjustedEvent,
+  ReminderFrequencyAdjustmentRejectedEvent,
+  ReminderResponseRecordedEvent,
+} from './reminder-analytics-events';
 
 /**
  * Reminder Module - Event Map
@@ -32,13 +40,13 @@ export type ReminderEventMap = {
    * Reminder template enabled event
    * Triggered when reminder template is enabled
    */
-  'reminder:template:enabled': ReminderTemplateUpdatedEvent;
+  'reminder:template:enabled': ReminderTemplateEnabledEvent;
 
   /**
    * Reminder template paused event
    * Triggered when reminder template is paused
    */
-  'reminder:template:paused': ReminderTemplateUpdatedEvent;
+  'reminder:template:paused': ReminderTemplatePausedEvent;
 
   /**
    * Reminder template deleted event
@@ -50,7 +58,7 @@ export type ReminderEventMap = {
    * Reminder template moved event
    * Triggered when reminder template is moved between groups
    */
-  'reminder:template:moved': ReminderTemplateUpdatedEvent;
+  'reminder:template:moved': ReminderTemplateMovedEvent;
 
   /**
    * Reminder group created event
@@ -95,20 +103,20 @@ export type ReminderEventMap = {
   'reminder:triggered': ReminderTriggeredEvent;
 
   /**
-   * Reminder response recorded event
-   * Triggered when a user responds to a reminder
+   * Reminder response recorded integration event
+   * Triggered when a reminder response entity is persisted
    */
-  'reminder:response:recorded': ReminderTriggeredEvent;
+  'reminder:response:recorded': ReminderResponseRecordedEvent;
 
   /**
-   * Reminder frequency adjusted event
-   * Triggered when reminder frequency is adjusted
+   * Reminder frequency adjusted integration event
+   * Triggered when the smart-frequency service applies an adjustment
    */
-  'reminder:frequency:adjusted': ReminderTriggeredEvent;
+  'reminder:frequency:adjusted': ReminderFrequencyAdjustedEvent;
 
   /**
-   * Reminder frequency adjustment rejected event
-   * Triggered when adjustment is rejected
+   * Reminder frequency adjustment rejected integration event
+   * Triggered when the user rejects a smart-frequency adjustment
    */
-  'reminder:frequency:adjustment-rejected': ReminderTriggeredEvent;
+  'reminder:frequency:adjustment-rejected': ReminderFrequencyAdjustmentRejectedEvent;
 };

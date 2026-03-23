@@ -6,7 +6,7 @@
  *
  * Routes:
  *   Workspaces — workspace.routes.ts
- *   Documents  — document.routes.ts
+ *   Search     — search.routes.ts
  */
 
 import { Router, type RequestHandler } from 'express';
@@ -14,7 +14,7 @@ import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import { EditorController } from '../../controllers/editor.controller';
 import type { EditorUseCases } from '../../controllers/editor.controller';
 import { registerWorkspaceRoutes } from './workspace.routes';
-import { registerDocumentRoutes } from './document.routes';
+import { registerSearchRoutes } from './search.routes';
 
 // ============ Types ============
 
@@ -40,12 +40,12 @@ export function registerEditorRoutes(
 
   // Each sub-route file returns its own Router
   const workspaceRouter = registerWorkspaceRoutes(controller, middleware, openApiRegistry);
-  const documentRouter = registerDocumentRoutes(controller, middleware, openApiRegistry);
+  const searchRouter = registerSearchRoutes(controller, middleware, openApiRegistry);
 
   // Merge all into a single parent router
   const router = Router();
   router.use(workspaceRouter);
-  router.use(documentRouter);
+  router.use(searchRouter);
 
   return router;
 }

@@ -6,6 +6,10 @@
 
 本文档展示 Desktop 应用如何从底层开始逐层依赖和组装 DailyUse 的五层架构。
 
+注：本文保留了较多容器时代的历史示例。当前代码主路径已经迁移到
+module composition roots、shared IPC contracts、preload allowlists、module-owned lifecycle。
+若文档与代码不一致，以代码为准。
+
 ---
 
 ## 核心观点：Desktop = 容器 + 组装
@@ -28,7 +32,7 @@ Desktop 应用
 ├─ L3: Infrastructure (infrastructure-server)
 │  ├─ SchedulePrismaRepository、ScheduleMemoryRepository
 │  ├─ TaskPrismaRepository、TaskMemoryRepository
-│  └─ 所有容器 (ScheduleContainer, TaskContainer, ...)
+│  └─ 模块装配与 repository adapters
 │
 ├─ L4: Application Services (application-server)
 │  ├─ ScheduleApplicationService、TaskApplicationService
@@ -94,7 +98,7 @@ Desktop 应用
 │  ║                             ▼                                 ║   │
 │  ║  ┌────────────────────────────────────────────────────────┐  ║   │
 │  ║  │  Infrastructure (L3) + Domain (L2) + Contracts (L1)   │  ║   │
-│  ║  │  ├─ ScheduleContainer, SchedulePrismaRepository       │  ║   │
+│  ║  │  ├─ module composition root, repository adapters     │  ║   │
 │  ║  │  ├─ ScheduleTask, ScheduleConfig (业务规则)          │  ║   │
 │  ║  │  └─ ScheduleTaskDTO, ScheduleTaskStatus (契约)       │  ║   │
 │  ║  └────────────────────────────────────────────────────────┘  ║   │
@@ -143,31 +147,8 @@ app.whenReady().then(async () => {
 
 ### 第 2 步：Composition Root 装配所有积木
 
-```typescript
-// src/main/di/desktop-main.composition-root.ts
-import {
-  ScheduleContainer, // L3: 容器
-  TaskContainer,
-} from '@dailyuse/infrastructure-server';
-
-import {
-  PowerSyncScheduleRepository, // L3: 实现
-  PowerSyncTaskRepository,
-} from './powersync-adapters';
-
-export function configureMainProcessDependencies(): void {
-  // 装配 Schedule 模块（L1-L3）
-  ScheduleContainer.getInstance().registerScheduleTaskRepository(new PowerSyncScheduleRepository());
-  // 👆 L3 实现依赖 L2（ScheduleTask）依赖 L1（ScheduleTaskDTO）
-
-  // 装配 Task 模块（L1-L3）
-  TaskContainer.getInstance().registerTaskRepository(new PowerSyncTaskRepository());
-
-  // ...其他模块
-
-  console.log('✅ All L1-L3 dependencies configured');
-}
-```
+当前实现中，Composition Root 会直接创建模块实例并注入仓储/运行时依赖，
+不再通过全局 Container 注册依赖。
 
 **这一步的意义：**
 
@@ -178,38 +159,12 @@ export function configureMainProcessDependencies(): void {
 
 ---
 
-### 第 3 步：IPC Handlers（调用 L4 应用服务）
+### 第 3 步：IPC Handlers（调用模块 API）
 
-```typescript
-// src/main/ipc/handlers/schedule.ipc-handler.ts
-import { ipcMain } from 'electron';
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-import type { ScheduleTaskDTO } from '@dailyuse/contracts';
-
-export function registerScheduleHandlers(): void {
-  // IPC 通道：'schedule:getActive'
-  // 依赖链：IPC → L4 应用服务 → L3 容器 → L2 领域模型 → L1 契约
-
-  ipcMain.handle('schedule:getActive', async (_, accountUuid: string) => {
-    // 从 L3 容器获取 L4 应用服务（这里用应用级编排）
-    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-
-    // 调用 L2 的业务逻辑
-    const tasks = await repository.findEnabled();
-
-    // 返回 L1 契约（ScheduleTaskDTO）给客户端
-    return tasks.map((task) => task.toClientDTO());
-  });
-
-  // 又例：触发任务执行（Desktop 特定的功能）
-  ipcMain.handle('schedule:executeTask', async (_, taskUuid: string) => {
-    // 1. 获取任务（L3 + L2）
-    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-    const task = await repository.findByUuid(taskUuid);
-
-    // 2. 执行任务（L5 特定的逻辑）
-    if (task.canExecute()) {
-      await executeScheduleTask(task);
+当前实现中，IPC handlers 直接调用模块实例暴露的 transport-neutral API，
+并通过共享 IPC contracts 保证命名、参数和返回值一致。
+if (task.canExecute()) {
+await executeScheduleTask(task);
 
       // 3. Desktop 特定：发送本地通知
       new Notification({
@@ -217,8 +172,10 @@ export function registerScheduleHandlers(): void {
         body: task.taskName,
       }).show();
     }
-  });
+
+});
 }
+
 ```
 
 **关键观察：**
@@ -235,176 +192,32 @@ export function registerScheduleHandlers(): void {
 
 #### 4.1 基础设施：DesktopScheduler
 
-```typescript
-// infrastructure/DesktopScheduler.ts
-import { powerMonitor } from 'electron';
-import {
-  ScheduleTaskQueue, // 来自 L4
-  type IScheduleTimer, // 来自 L4
-  type IScheduleMonitor, // 来自 L4
-} from '@dailyuse/application-server';
-
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-
-export class DesktopScheduler {
-  private queue: ScheduleTaskQueue;
-  private static instance: DesktopScheduler | null = null;
-
-  static createInstance(config: any): DesktopScheduler {
-    if (!this.instance) {
-      this.instance = new DesktopScheduler(config);
-    }
-    return this.instance;
-  }
-
-  private constructor(private config: any) {}
-
-  async start(): Promise<void> {
-    // 从 L3 获取仓储
-    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-
-    // 使用 L4 的 ScheduleTaskQueue
-    this.queue = new ScheduleTaskQueue({
-      taskLoader: {
-        loadActiveTasks: async () => {
-          const tasks = await repository.findEnabled();
-          // 转换为 L4 期望的格式
-          return tasks.map((t) => ({
-            taskUuid: t.uuid,
-            nextRunAt: t.nextRunAt?.getTime() ?? Date.now(),
-            cronExpression: t.schedule.cronExpression,
-            timezone: t.schedule.timezone,
-          }));
-        },
-      },
-      onExecuteTask: this.config.onExecuteTask,
-    });
-
-    // 👇 Desktop 特定：与 Electron powerMonitor 集成
-    powerMonitor.on('resume', () => {
-      console.log('System resumed, checking missed tasks...');
-      this.queue.checkMissedTasks();
-    });
-
-    powerMonitor.on('suspend', () => {
-      console.log('System suspended, pausing scheduler...');
-      this.queue.pause();
-    });
-
-    await this.queue.start();
-  }
-}
-```
+当前推荐做法：调度器和桌面生命周期对象由 bootstrap 持有，
+依赖通过构造参数或模块实例显式传入，而不是通过 Container 查找。
 
 **依赖链分析：**
 
 ```
+
 DesktopScheduler (L5)
 ├─ ScheduleTaskQueue (L4) ✓
 ├─ IScheduleTimer (L4) ✓
 ├─ IScheduleMonitor (L4) ✓
-├─ ScheduleContainer (L3) ✓
+├─ injected scheduler dependencies ✓
 ├─ IScheduleTaskRepository (L2) ✓
 └─ Electron's powerMonitor ✓ (Desktop 特定)
+
 ```
 
 #### 4.2 执行：executeScheduleTask
 
-```typescript
-// application/services/execute-task.ts
-import { Notification } from 'electron';
-import type { ScheduleTask } from '@dailyuse/domain-server';
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-
-export async function executeScheduleTask(task: ScheduleTask): Promise<void> {
-  try {
-    // 1. 检查业务约束（L2）
-    if (!task.canExecute()) {
-      console.log(`Task ${task.uuid} cannot execute now`);
-      return;
-    }
-
-    // 2. 执行任务（特定的业务逻辑）
-    console.log(`Executing task: ${task.taskName}`);
-    // ... 实际执行业务逻辑
-
-    // 3. 记录执行结果（L2）
-    task.recordExecution({
-      executedAt: new Date(),
-      status: 'SUCCESS',
-    });
-
-    // 4. 保存回数据库（L3）
-    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-    await repository.save(task);
-
-    // 5. Desktop 特定：发送本地通知
-    new Notification({
-      title: '任务已执行',
-      body: `${task.taskName} 执行成功`,
-      icon: 'path/to/icon.png',
-    }).show();
-
-    // 6. Desktop 特定：触发 IPC 事件给 Renderer
-    mainWindow?.webContents.send('schedule:task-executed', {
-      taskUuid: task.uuid,
-      taskName: task.taskName,
-      executedAt: new Date(),
-    });
-  } catch (error) {
-    console.error(`Task execution failed: ${task.uuid}`, error);
-    // Desktop 特定：错误通知
-    new Notification({
-      title: '任务执行失败',
-      body: error instanceof Error ? error.message : '未知错误',
-    }).show();
-  }
-}
-```
+旧的 `executeScheduleTask()` 示例依赖旧式容器回写仓储，
+现已删除。当前推荐把 persistence port、notification service、window event emitter 作为显式依赖传给执行器。
 
 #### 4.3 初始化：Module 启动
 
-```typescript
-// initialization/index.ts
-import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-import { DesktopScheduler } from '../infrastructure';
-import { executeScheduleTask } from '../application/services';
-
-export function registerScheduleInitializationTasks(): void {
-  const manager = InitializationManager.getInstance();
-
-  // 任务 1：模块初始化
-  manager.registerTask({
-    name: 'schedule-module-initialization',
-    phase: InitializationPhase.APP_STARTUP,
-    priority: 50,
-    dependencies: ['di-container-configuration'],
-    initialize: async () => {
-      console.log('[Schedule] Initializing Schedule module...');
-      // 任何模块级别的初始化
-    },
-  });
-
-  // 任务 2：启动任务队列
-  manager.registerTask({
-    name: 'schedule-task-queue',
-    phase: InitializationPhase.APP_STARTUP,
-    priority: 55,
-    dependencies: ['schedule-module-initialization'],
-    initialize: async () => {
-      console.log('[Schedule] Starting task queue...');
-
-      const scheduler = DesktopScheduler.createInstance({
-        onExecuteTask: executeScheduleTask,
-      });
-
-      await scheduler.start();
-      console.log('[Schedule] Task queue started ✓');
-    },
-  });
-}
-```
+旧的 `registerScheduleInitializationTasks()` 示例也已删除。
+当前 desktop 更推荐由 bootstrap 在单一入口统一启动模块与 runtime contribution。
 
 ---
 
@@ -415,23 +228,25 @@ export function registerScheduleInitializationTasks(): void {
 `@dailyuse/patterns` 是一个新的 L4 package，包含所有通用的、可复用的框架和数据结构。Desktop 应用通过继承这些通用类来实现特定功能。
 
 ```
+
 ┌─────────────────────────────────┐
-│  @dailyuse/patterns             │ (L4.5 - 通用框架)
+│ @dailyuse/patterns │ (L4.5 - 通用框架)
 ├─────────────────────────────────┤
-│ scheduler/                      │
-│  ├─ BaseTaskQueue               │ 通用任务队列基类
-│  ├─ MinHeap                     │ 优先级队列数据结构
-│  └─ IScheduleTimer 等接口       │ 可插拔接口
+│ scheduler/ │
+│ ├─ BaseTaskQueue │ 通用任务队列基类
+│ ├─ MinHeap │ 优先级队列数据结构
+│ └─ IScheduleTimer 等接口 │ 可插拔接口
 ├─────────────────────────────────┤
-│ repository/                     │
-│  ├─ BaseRepository              │ 通用仓储基类
-│  └─ QueryObject                 │ 查询对象基类
+│ repository/ │
+│ ├─ BaseRepository │ 通用仓储基类
+│ └─ QueryObject │ 查询对象基类
 ├─────────────────────────────────┤
-│ cache/                          │
-│  ├─ LRUCache                    │ LRU 缓存实现
-│  └─ TTLCache                    │ TTL 缓存实现
+│ cache/ │
+│ ├─ LRUCache │ LRU 缓存实现
+│ └─ TTLCache │ TTL 缓存实现
 └─────────────────────────────────┘
-```
+
+````
 
 ### Desktop 中使用 Patterns 的例子
 
@@ -442,7 +257,7 @@ export function registerScheduleInitializationTasks(): void {
 import { MinHeap } from '@dailyuse/application-server/schedule/scheduler';
 
 // MinHeap 混合在业务逻辑中，难以复用
-```
+````
 
 **After（清晰的通用框架）：**
 
@@ -625,10 +440,10 @@ class DesktopScheduler { ... }
    │
 2. openPowerSyncLocalOnly()         【初始化 PowerSync 本地数据库】
    │
-3. configureMainProcessDependencies() 【装配 L1-L3】
-   │   ├─ ScheduleContainer.getInstance()
-   │   ├─ .registerScheduleTaskRepository(new PowerSyncScheduleRepository())
-   │   └─ ...其他容器和仓储
+3. create/start module instances      【显式装配 L1-L4】
+   │   ├─ createXxxModule(...)
+   │   ├─ attach runtime contributions
+   │   └─ register IPC handlers
    │
 4. registerAllHandlers()              【注册 IPC】
    │   ├─ registerScheduleHandlers()

@@ -22,6 +22,7 @@ import {
 } from '@dailyuse/utils/result';
 import {
   UpdateAccountSchema,
+  UpdateAccountSettingsSchema,
   CheckAvailabilitySchema,
   CloseAccountSchema,
   AccountResponseSchema,
@@ -81,6 +82,23 @@ export function registerAccountRoutes(
     },
     [auth],
     (req, ctx) => controller.updateProfile(req.body, ctx),
+  );
+
+  r.route(
+    {
+      method: 'patch',
+      path: '/me/settings',
+      summary: '更新账户设置',
+      request: {
+        body: { content: { 'application/json': { schema: UpdateAccountSettingsSchema } } },
+      },
+      responses: {
+        200: successResponse(AccountResponseSchema.shape.settings, '更新成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.updateSettings(req.body, ctx),
   );
 
   // POST /availability — 检查可用性

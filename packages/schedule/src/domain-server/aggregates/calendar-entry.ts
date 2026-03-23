@@ -6,6 +6,7 @@ import type {
   ConflictDetectionResult,
   ConflictSuggestion,
 } from '@dailyuse/contracts/schedule';
+import { ConflictSeverity } from '@dailyuse/contracts/schedule';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
 /** Domain state interface for the CalendarEntry aggregate */
@@ -132,13 +133,17 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
       return { hasConflict: false, conflicts: [], suggestions: [] };
     }
 
-    const conflicts: ConflictDetail[] = conflictingEntries.map((entry) => ({
-      scheduleId: entry.id,
-      scheduleTitle: entry.title,
-      overlapStart: Math.max(this._props.startTime, entry.startTime),
-      overlapEnd: Math.min(this._props.endTime, entry.endTime),
-      overlapDuration: this.calculateOverlap(entry),
-    }));
+    const conflicts: ConflictDetail[] = conflictingEntries.map((entry) => {
+      const overlapDuration = this.calculateOverlap(entry);
+      return {
+        scheduleId: entry.id,
+        scheduleTitle: entry.title,
+        overlapStart: Math.max(this._props.startTime, entry.startTime),
+        overlapEnd: Math.min(this._props.endTime, entry.endTime),
+        overlapDuration,
+        severity: this.classifySeverity(overlapDuration),
+      };
+    });
 
     return {
       hasConflict: true,
@@ -159,6 +164,22 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
   private calculateDuration(startTime: number, endTime: number): number {
     return Math.round((endTime - startTime) / 60000);
+  }
+
+  /**
+   * Classify conflict severity based on overlap duration in minutes.
+   * - Minor: overlap < 15 minutes
+   * - Moderate: overlap 15-60 minutes
+   * - Severe: overlap > 60 minutes
+   */
+  private classifySeverity(overlapMinutes: number): ConflictSeverity {
+    if (overlapMinutes > 60) {
+      return ConflictSeverity.Severe;
+    }
+    if (overlapMinutes >= 15) {
+      return ConflictSeverity.Moderate;
+    }
+    return ConflictSeverity.Minor;
   }
 
   private generateSuggestions(conflicts: CalendarEntry[]): ConflictSuggestion[] {

@@ -2,19 +2,13 @@
  * LinkedResource 实体实现
  */
 
-import {
-  LinkedSourceType,
-  LinkedTargetType,
-} from '@dailyuse/contracts/editor';
-import type {
-  LinkedResourceClientDTO,
-  LinkedResourceServerDTO,
-} from '@dailyuse/contracts/editor';
+import { LinkedSourceType, LinkedTargetType } from '@dailyuse/contracts/editor';
+import type { LinkedResourceClientDTO, LinkedResourceServerDTO } from '@dailyuse/contracts/editor';
 import type {
   LinkedResourceId,
   EditorWorkspaceId,
   IdentityId,
-  DocumentId,
+  ResourceId,
   TransferDate,
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
@@ -28,13 +22,13 @@ export interface LinkedResourceState {
   id: LinkedResourceId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
-  sourceDocumentId: DocumentId;
+  sourceResourceId: ResourceId;
   sourceType: LinkedSourceType;
   sourceLine: number | null;
   sourceColumn: number | null;
   targetPath: string;
   targetType: LinkedTargetType;
-  targetDocumentId: DocumentId | null;
+  targetResourceId: ResourceId | null;
   targetAnchor: string | null;
   isValid: boolean;
   lastValidatedAt: Date | null;
@@ -62,8 +56,8 @@ export class LinkedResource extends Entity<LinkedResourceId> {
   public get identityId(): IdentityId {
     return this._props.identityId;
   }
-  public get sourceDocumentId(): DocumentId {
-    return this._props.sourceDocumentId;
+  public get sourceResourceId(): ResourceId {
+    return this._props.sourceResourceId;
   }
   public get sourceType(): LinkedSourceType {
     return this._props.sourceType;
@@ -80,8 +74,8 @@ export class LinkedResource extends Entity<LinkedResourceId> {
   public get targetType(): LinkedTargetType {
     return this._props.targetType;
   }
-  public get targetDocumentId(): DocumentId | null {
-    return this._props.targetDocumentId;
+  public get targetResourceId(): ResourceId | null {
+    return this._props.targetResourceId;
   }
   public get targetAnchor(): string | null {
     return this._props.targetAnchor;
@@ -114,13 +108,13 @@ export class LinkedResource extends Entity<LinkedResourceId> {
   public static create(params: {
     workspaceId: string;
     identityId: string;
-    sourceDocumentId: string;
+    sourceResourceId: string;
     sourceType: LinkedSourceType;
     sourceLine?: number | null;
     sourceColumn?: number | null;
     targetPath: string;
     targetType: LinkedTargetType;
-    targetDocumentId?: string | null;
+    targetResourceId?: string | null;
     targetAnchor?: string | null;
   }): LinkedResource {
     const id = generateUUID() as LinkedResourceId;
@@ -130,13 +124,13 @@ export class LinkedResource extends Entity<LinkedResourceId> {
       id,
       workspaceId: EditorWorkspaceIdType.of(params.workspaceId),
       identityId: IdentityIdType.of(params.identityId),
-      sourceDocumentId: params.sourceDocumentId as DocumentId,
+      sourceResourceId: params.sourceResourceId as ResourceId,
       sourceType: params.sourceType,
       sourceLine: params.sourceLine ?? null,
       sourceColumn: params.sourceColumn ?? null,
       targetPath: params.targetPath,
       targetType: params.targetType,
-      targetDocumentId: (params.targetDocumentId ?? null) as DocumentId | null,
+      targetResourceId: (params.targetResourceId ?? null) as ResourceId | null,
       targetAnchor: params.targetAnchor ?? null,
       isValid: false,
       lastValidatedAt: null,
@@ -175,15 +169,15 @@ export class LinkedResource extends Entity<LinkedResourceId> {
   }
 
   /**
-   * 更新目标文档 ID（当链接目标是内部文档时）
+   * 更新目标资源 ID（当链接目标是内部资源时）
    */
-  public updateTargetDocument(documentId: string | null): void {
-    this._props.targetDocumentId = documentId as DocumentId | null;
+  public updateTargetResource(resourceId: string | null): void {
+    this._props.targetResourceId = resourceId as ResourceId | null;
     this._props.updatedAt = new Date();
   }
 
   /**
-   * 更新源位置（当源文档编辑时）
+   * 更新源位置（当源资源编辑时）
    */
   public updateSourceLocation(line: number | null, column: number | null): void {
     this._props.sourceLine = line;
@@ -200,10 +194,10 @@ export class LinkedResource extends Entity<LinkedResourceId> {
   }
 
   /**
-   * 判断是否为内部链接（指向工作区内文档）
+   * 判断是否为内部链接（指向工作区内资源）
    */
   public isInternalLink(): boolean {
-    return this._props.targetType === LinkedTargetType.Document;
+    return this._props.targetType === LinkedTargetType.Resource;
   }
 
   /**
@@ -227,13 +221,13 @@ export class LinkedResource extends Entity<LinkedResourceId> {
       id: this.id,
       workspaceId: this._props.workspaceId,
       identityId: this._props.identityId,
-      sourceDocumentId: this._props.sourceDocumentId,
+      sourceResourceId: this._props.sourceResourceId,
       sourceType: this._props.sourceType,
       sourceLine: this._props.sourceLine,
       sourceColumn: this._props.sourceColumn,
       targetPath: this._props.targetPath,
       targetType: this._props.targetType,
-      targetDocumentId: this._props.targetDocumentId,
+      targetResourceId: this._props.targetResourceId,
       targetAnchor: this._props.targetAnchor,
       isValid: this._props.isValid,
       lastValidatedAt: this._props.lastValidatedAt?.getTime() as TransferDate | null,
@@ -247,13 +241,13 @@ export class LinkedResource extends Entity<LinkedResourceId> {
       id: this.id,
       workspaceId: this._props.workspaceId,
       identityId: this._props.identityId,
-      sourceDocumentId: this._props.sourceDocumentId,
+      sourceResourceId: this._props.sourceResourceId,
       sourceType: this._props.sourceType,
       sourceLine: this._props.sourceLine,
       sourceColumn: this._props.sourceColumn,
       targetPath: this._props.targetPath,
       targetType: this._props.targetType,
-      targetDocumentId: this._props.targetDocumentId,
+      targetResourceId: this._props.targetResourceId,
       targetAnchor: this._props.targetAnchor,
       isValid: this._props.isValid,
       lastValidatedAt: this._props.lastValidatedAt?.getTime() as TransferDate | null,
@@ -264,5 +258,4 @@ export class LinkedResource extends Entity<LinkedResourceId> {
       formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
     };
   }
-
 }

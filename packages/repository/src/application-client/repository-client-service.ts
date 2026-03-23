@@ -13,7 +13,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,
@@ -29,7 +29,6 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type {
   IRepositoryApiClient,
-  CreateRepositoryRequest,
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
@@ -43,46 +42,86 @@ import { IdentityId } from '@dailyuse/domain-shared';
 
 // ===== DTO-to-State Mapper =====
 
-function repositoryFromDTO(dto: RepositoryClientDTO): Repository {
-  return Repository.load({
-    id: RepositoryId.of(dto.id),
-    identityId: IdentityId.of(dto.identityId),
-    name: dto.name,
-    type: dto.type,
-    path: dto.path,
-    description: dto.description,
-    config: RepositoryConfig.fromDTO(dto.config),
-    stats: RepositoryStats.fromDTO(dto.stats),
-    status: dto.status,
-    version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-  });
+function validateRepositoryDTO(dto: RepositoryClientDTO): Result<RepositoryClientDTO> {
+  if (typeof dto.id !== 'string') {
+    return fail({
+      code: 'INVALID_RESPONSE',
+      message: 'Invalid RepositoryClientDTO: id must be a string',
+    });
+  }
+
+  if (typeof dto.identityId !== 'string') {
+    return fail({
+      code: 'INVALID_RESPONSE',
+      message: 'Invalid RepositoryClientDTO: identityId must be a string',
+    });
+  }
+
+  return ok(dto);
+}
+
+function repositoryFromDTO(dto: RepositoryClientDTO): Result<Repository> {
+  const validation = validateRepositoryDTO(dto);
+  if (!validation.ok) {
+    return validation;
+  }
+
+  return ok(
+    Repository.load({
+      id: RepositoryId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
+      name: dto.name,
+      type: dto.type,
+      path: dto.path,
+      description: dto.description,
+      config: RepositoryConfig.fromDTO(dto.config),
+      stats: RepositoryStats.fromDTO(dto.stats),
+      status: dto.status,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    }),
+  );
 }
 
 export class RepositoryClientService {
-  constructor(private readonly repositoryApi: IRepositoryApiClient) {}
-
-  // ===== Repository CRUD =====
-
-  async createRepository(request: CreateRepositoryRequest): Promise<Result<Repository>> {
-    const result = await this.repositoryApi.createRepository(request);
-    return mapResult(result, (dto) => repositoryFromDTO(dto));
+  constructor(private readonly repositoryApi: IRepositoryApiClient) {
+    this.getCurrentRepository = this.getCurrentRepository.bind(this);
+    this.createFolder = this.createFolder.bind(this);
+    this.getFolderContents = this.getFolderContents.bind(this);
+    this.renameFolder = this.renameFolder.bind(this);
+    this.moveFolder = this.moveFolder.bind(this);
+    this.deleteFolder = this.deleteFolder.bind(this);
+    this.getFileTree = this.getFileTree.bind(this);
+    this.search = this.search.bind(this);
+    this.listResources = this.listResources.bind(this);
+    this.createResource = this.createResource.bind(this);
+    this.getResource = this.getResource.bind(this);
+    this.updateResource = this.updateResource.bind(this);
+    this.renameResource = this.renameResource.bind(this);
+    this.moveResource = this.moveResource.bind(this);
+    this.deleteResource = this.deleteResource.bind(this);
+    this.uploadResources = this.uploadResources.bind(this);
+    this.listBookmarks = this.listBookmarks.bind(this);
+    this.createBookmark = this.createBookmark.bind(this);
+    this.updateBookmark = this.updateBookmark.bind(this);
+    this.reorderBookmarks = this.reorderBookmarks.bind(this);
+    this.deleteBookmark = this.deleteBookmark.bind(this);
   }
 
   async getCurrentRepository(): Promise<Result<Repository | null>> {
     const result = await this.repositoryApi.getCurrentRepository();
-    return mapResult(result, (dto) => (dto ? repositoryFromDTO(dto) : null));
-  }
+    if (!result.ok) {
+      return result;
+    }
 
-  async getRepositoryById(id: string): Promise<Result<Repository>> {
-    const result = await this.repositoryApi.getRepositoryById(id);
-    return mapResult(result, (dto) => repositoryFromDTO(dto));
-  }
+    if (result.data === null) {
+      return ok(null, result.meta);
+    }
 
-  async deleteRepository(id: string): Promise<Result<void>> {
-    return this.repositoryApi.deleteRepository(id);
+    const mapped = repositoryFromDTO(result.data);
+    return mapped.ok ? ok(mapped.data, result.meta) : mapped;
   }
 
   // ===== Folder Operations =====

@@ -57,27 +57,28 @@ describe('DeleteGoal', () => {
       expect(goalRepo.save).not.toHaveBeenCalled();
     });
 
-    it('should archive a completed goal', async () => {
+    it('should soft delete a completed goal', async () => {
       const goal = createCompletedGoal();
       vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
       const result = await useCase.execute(goal.id);
 
       expect(result).toBeOk();
-      expect(goal.archivedAt).not.toBeNull();
+      expect(goal.deletedAt).not.toBeNull();
       expect(goalRepo.save).toHaveBeenCalledWith(goal);
     });
 
-    it('should throw when trying to archive an active goal', async () => {
+    it('should soft delete an active goal', async () => {
       const goal = createTestGoal();
       vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
-      await expect(useCase.execute(goal.id)).rejects.toThrow(
-        'Active goals must be completed before archiving',
-      );
+      const result = await useCase.execute(goal.id);
+
+      expect(result).toBeOk();
+      expect(goal.deletedAt).not.toBeNull();
     });
 
-    it('should return the DTO before archiving', async () => {
+    it('should return the DTO after deleting', async () => {
       const goal = createCompletedGoal('My Goal');
       vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
@@ -86,6 +87,7 @@ describe('DeleteGoal', () => {
       expect(result).toBeOk();
       if (result.ok) {
         expect(result.data.name).toBe('My Goal');
+        expect(result.data.deletedAt).not.toBeNull();
       }
     });
   });

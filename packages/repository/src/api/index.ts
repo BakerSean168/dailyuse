@@ -14,7 +14,3 @@
 export { RepositoryApiModule } from './module';
 export type { RepositoryApiModuleContext, RepositoryApiModuleDef } from './module';
 export { RepositoryController, type RepositoryUseCases } from '../controllers';
-
-// Deprecated — kept for backward compat only
-// 已废弃 — 仅保留向后兼容
-export { registerRepositoryInitializationTasks } from './initialization';

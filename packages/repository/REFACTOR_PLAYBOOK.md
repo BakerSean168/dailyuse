@@ -10,13 +10,12 @@ now the canonical example for migrating large modules with broad transport surfa
 ## Read Order
 
 1. `packages/repository/src/infrastructure-server/repository.module.ts`
-   - the canonical `createRepositoryModule(deps)` shape (707 lines total)
+   - the canonical `createRepositoryModule(deps)` shape
    - `RepositoryModuleDependencies`: 4 repositories + 1 storage port + optional runtime contributions
    - `RepositoryModuleUseCases`: 25 assembled use-case instances
    - `RepositoryApplicationPort`: 25+ transport-neutral methods across 4 CRUD domains
    - `createRepositoryUseCases()`: pure assembly helper (extracted for testability)
    - `buildApplicationPort()`: maps use-case `.execute()` to `ok()`/`fail()` facade
-   - `RepositoryModule` class: deprecated backward-compatibility facade
 2. `packages/repository/src/api/module.ts`
    - shows how API transport chooses Prisma adapters and creates the module
    - 3-step pattern: composition root → transport handlers → route mounting
@@ -32,8 +31,7 @@ now the canonical example for migrating large modules with broad transport surfa
    - each receives handlers + middleware, creates controller, returns Router
 6. `packages/repository/src/electron-entry/index.ts`
    - shows the same module concept reused from IPC transport
-   - **note**: still uses `RepositoryPowerSyncModule` (legacy) + manual `ipcMain.handle()`
-   - candidate for future migration to the composition root pattern
+   - still uses manual `ipcMain.handle()` wiring and remains a future cleanup target
 7. `packages/repository/src/application-client/index.ts`
    - exports `RepositoryClientService` and `IRepositoryApiClient` port type
 
@@ -124,19 +122,14 @@ composition root readable and enables unit-testing use-case wiring independently
 
 ## What Was Deleted During Migration
 
-- `RepositoryContainer` singleton DI container (replaced by constructor injection in composition root)
 - Global `InitializationManager` registration (replaced by runtime contributions)
-- 397-line monolithic `api/module.ts` with inline use-case instantiation (replaced by 123-line
-  3-step module that delegates to the composition root)
+- 397-line monolithic `api/module.ts` with inline use-case instantiation
 - Manual handler wiring scattered across the API module (centralized in `buildApplicationPort`)
 
 ## What Still Uses Legacy Patterns
 
-- `RepositoryModule` class (deprecated, kept for `RepositoryPowerSyncModule` compatibility)
-- `RepositoryContainer` still used by the deprecated `RepositoryModule` class and by
-  `RepositoryElectronModule.destroy()` for cleanup
-- Electron entry still does manual `ipcMain.handle()` wiring with `RepositoryPowerSyncModule`
-  rather than using `createRepositoryModule()` + shared transport handlers
+- Electron entry still does manual `ipcMain.handle()` wiring rather than using
+  `createRepositoryModule()` + shared transport handlers end to end
 
 ## Correspondence With Governance
 
@@ -162,12 +155,9 @@ composition root readable and enables unit-testing use-case wiring independently
 - [x] Switch API entrypoint to the factory (397 lines → 123 lines)
 - [x] Add `createRepositoryTransportHandlers()` (direct pass-through)
 - [x] Split routes into 3 focused route files
-- [x] Deprecate legacy `RepositoryModule` class (kept for backward compatibility)
 - [x] Export hygiene — layered re-exports in `src/index.ts`
 - [x] Update docs (COMPOSITION_ROOT.md, REFACTOR_PLAYBOOK.md)
-- [ ] Migrate Electron entry to use `createRepositoryModule()` instead of `RepositoryPowerSyncModule`
-- [ ] Remove deprecated `RepositoryModule` class once all consumers updated
-- [ ] Remove `RepositoryContainer` singleton once deprecated class removed
+- [ ] Migrate Electron entry to use `createRepositoryModule()` end to end
 
 ## Success Criteria
 

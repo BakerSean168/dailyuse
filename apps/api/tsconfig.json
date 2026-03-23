@@ -78,10 +78,35 @@
       "@dailyuse/account/api": ["../../packages/account/dist/api/index.d.ts"],
       "@dailyuse/authentication": ["../../packages/authentication/dist/index.d.ts"],
       "@dailyuse/authentication/api": ["../../packages/authentication/dist/api/index.d.ts"],
+      "@dailyuse/editor": ["../../packages/editor/src/index.ts"],
+      "@dailyuse/editor/*": [
+        "../../packages/editor/src/*/index.ts",
+        "../../packages/editor/src/*.ts"
+      ],
       "@dailyuse/goal": ["../../packages/goal/dist/index.d.ts"],
       "@dailyuse/goal/api": ["../../packages/goal/dist/api/index.d.ts"],
+      "@dailyuse/dashboard": ["../../packages/dashboard/src/index.ts"],
+      "@dailyuse/dashboard/*": [
+        "../../packages/dashboard/src/*/index.ts",
+        "../../packages/dashboard/src/*.ts"
+      ],
       "@dailyuse/reminder": ["../../packages/reminder/dist/index.d.ts"],
       "@dailyuse/reminder/api": ["../../packages/reminder/dist/api/index.d.ts"],
+      "@dailyuse/notification": ["../../packages/notification/src/index.ts"],
+      "@dailyuse/notification/*": [
+        "../../packages/notification/src/*/index.ts",
+        "../../packages/notification/src/*.ts"
+      ],
+      "@dailyuse/repository": ["../../packages/repository/src/index.ts"],
+      "@dailyuse/repository/*": [
+        "../../packages/repository/src/*/index.ts",
+        "../../packages/repository/src/*.ts"
+      ],
+      "@dailyuse/schedule": ["../../packages/schedule/src/index.ts"],
+      "@dailyuse/schedule/*": [
+        "../../packages/schedule/src/*/index.ts",
+        "../../packages/schedule/src/*.ts"
+      ],
       "@dailyuse/setting": ["../../packages/setting/dist/index.d.ts"],
       "@dailyuse/setting/api": ["../../packages/setting/dist/api/index.d.ts"],
       "@dailyuse/task": ["../../packages/task/dist/index.d.ts"],
@@ -89,7 +114,9 @@
       "@dailyuse/ai": ["../../packages/ai/dist/index.d.ts"],
       "@dailyuse/ai/api": ["../../packages/ai/dist/api/index.d.ts"],
       "@dailyuse/ai/application-server": ["../../packages/ai/dist/application-server/index.d.ts"],
-      "@dailyuse/repository": ["../../packages/repository/dist/index.d.ts"]
+      "@dailyuse/repository/infrastructure-server": [
+        "../../packages/repository/src/infrastructure-server/index.ts"
+      ]
 
       // 其他 @dailyuse/* 仍优先通过 package.json exports → dist 解析
     }

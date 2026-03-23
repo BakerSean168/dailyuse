@@ -8,21 +8,16 @@ import { DeleteGoalKeyResult } from '../delete-goal-key-result';
 // ============================================================
 
 function createGoalFixture(overrides?: Record<string, any>) {
+  const keyResult1 = { id: 'kr-1', title: 'Key Result 1' };
+  const keyResult2 = { id: 'kr-2', title: 'Key Result 2' };
+
   return {
     id: 'goal-id-1',
     status: 'IN_PROGRESS',
     name: 'Test Goal',
     description: 'Test description',
-    keyResults: [
-      { id: 'kr-1', title: 'Key Result 1' },
-      { id: 'kr-2', title: 'Key Result 2' },
-    ],
-    removeKeyResult: vi.fn(),
-    toClientDTO: vi.fn().mockReturnValue({
-      id: 'goal-id-1',
-      name: 'Test Goal',
-      keyResults: [{ id: 'kr-2', title: 'Key Result 2' }],
-    }),
+    keyResults: [keyResult1, keyResult2],
+    removeKeyResult: vi.fn().mockReturnValue(keyResult1),
     ...overrides,
   } as any;
 }
@@ -40,9 +35,6 @@ describe('DeleteGoalKeyResult', () => {
     const result = await useCase.execute('goal-id-1', 'kr-1');
 
     expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.data.id).toBe('goal-id-1');
-    }
     expect(goal.removeKeyResult).toHaveBeenCalledWith('kr-1');
     expect(goalRepo.save).toHaveBeenCalledWith(goal);
     expect(goalPolicy.ensureGoalCanBeModified).toHaveBeenCalledWith(goal);
@@ -80,20 +72,6 @@ describe('DeleteGoalKeyResult', () => {
 
     await expect(useCase.execute('goal-id-1', 'kr-1')).rejects.toThrow('Goal cannot be modified');
     expect(goalRepo.save).not.toHaveBeenCalled();
-  });
-
-  it('should call toClientDTO with true for includeChildren', async () => {
-    const goal = createGoalFixture();
-    const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
-    const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
-      save: vi.fn().mockResolvedValue(undefined),
-    });
-    const useCase = new DeleteGoalKeyResult(goalRepo, goalPolicy);
-
-    await useCase.execute('goal-id-1', 'kr-1');
-
-    expect(goal.toClientDTO).toHaveBeenCalledWith(true);
   });
 
   it('should call findById with includeChildren option', async () => {

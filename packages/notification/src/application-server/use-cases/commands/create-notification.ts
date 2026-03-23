@@ -5,10 +5,11 @@
  */
 
 import { NotificationPolicy } from '../../../domain-server/services/NotificationPolicy';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger, eventBus } from '@dailyuse/utils';
 import type {
-  NotificationServerDTO,
   NotificationClientDTO,
+  NotificationDispatchDesktopEvent,
+  NotificationEventMap,
   NotificationType,
   NotificationCategory,
   RelatedEntityType,
@@ -107,15 +108,46 @@ export class CreateNotification {
     clientDTO: NotificationClientDTO,
   ): Promise<void> {
     try {
-      // TODO: Implement SSE notification delivery via event bus
-      // The SSE mechanism should be handled by the infrastructure layer
-      // This ensures application layer doesn't depend on infrastructure concerns
-      logger.debug('📬 [应用服务] Notification queued for SSE delivery', {
+      const resolvedChannels = channels ?? [ChannelTypeEnum.InApp];
+
+      // Emit in-app dispatch event so the Vue client (and any other subscriber)
+      // receives the notification in real-time via the shared event bus.
+      if (resolvedChannels.includes(ChannelTypeEnum.InApp)) {
+        const dispatchEvent: NotificationEventMap['notification:dispatch_in_app'] = {
+          id: clientDTO.id,
+          identityId,
+          title: clientDTO.title,
+          body: clientDTO.content,
+          category: clientDTO.category,
+          type: clientDTO.type,
+          importance: clientDTO.importance,
+          data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
+        };
+        eventBus.send('notification:dispatch_in_app', dispatchEvent);
+      }
+
+      if (resolvedChannels.includes(ChannelTypeEnum.Push)) {
+        const desktopEvent: NotificationDispatchDesktopEvent = {
+          id: clientDTO.id,
+          identityId,
+          title: clientDTO.title,
+          body: clientDTO.content,
+          category: clientDTO.category,
+          type: clientDTO.type,
+          importance: clientDTO.importance,
+          data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
+          sound: { enabled: true, name: null },
+        };
+        eventBus.send('notification:dispatch_desktop', desktopEvent);
+      }
+
+      logger.debug('📬 [应用服务] Notification dispatched via event bus', {
         identityId,
         notificationId: clientDTO.id,
-        channels,
+        channels: resolvedChannels,
       });
     } catch (error) {
+      // SSE delivery is best-effort — never let it fail the create operation.
       logger.error('❌ [SSE推送] SSE 推送失败', {
         error: error instanceof Error ? error.message : String(error),
         identityId,

@@ -5,7 +5,7 @@
  */
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { eventBus } from '@dailyuse/utils';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -13,7 +13,10 @@ import { ok } from '@dailyuse/contracts/result';
  * Delete Task Template Service
  */
 export class DeleteTaskTemplate {
-  constructor(private readonly templateRepository: ITaskTemplateRepository) {}
+  constructor(
+    private readonly templateRepository: ITaskTemplateRepository,
+    private readonly instanceRepository: ITaskInstanceRepository,
+  ) {}
 
   async execute(id: string, soft = false): Promise<Result<{ success: boolean }>> {
     const template = await this.templateRepository.findById(id);
@@ -22,21 +25,12 @@ export class DeleteTaskTemplate {
       return ok({ success: true });
     }
 
-    if (soft) {
-      await this.templateRepository.softDelete(id);
-    } else {
-      await this.templateRepository.delete(id);
-    }
+    template.softDelete();
+    await this.templateRepository.save(template);
+    await this.instanceRepository.deleteByTemplateId(id);
 
-    // 鍙戝竷鍒犻櫎浜嬩欢
-    try {
-      eventBus.send('task:template:deleted' as any, {
-        taskTemplateId: id,
-        identityId: template.identityId,
-        deletedAt: Date.now(),
-      });
-    } catch (error) {
-      console.error(`锟?[DeleteTaskTemplate] 鍙戝竷鍒犻櫎浜嬩欢澶辫触:`, error);
+    if (!soft) {
+      await this.templateRepository.delete(id);
     }
 
     return ok({ success: true });

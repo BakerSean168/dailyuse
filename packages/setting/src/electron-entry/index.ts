@@ -5,7 +5,11 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import {
+  type IElectronModule,
+  type IElectronModuleContext,
+  withAuthenticatedIdentity,
+} from '@dailyuse/contracts/electron';
 import { createSettingPowerSyncModule } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import type { SettingModuleInstance } from '../infrastructure-server';
@@ -14,8 +18,6 @@ const logger = createLogger('SettingElectron');
 
 const Ch = {
   GET_ALL: 'setting:all',
-  GET: 'setting:get',
-  UPDATE: 'setting:update',
   PATCH: 'setting:patch',
   RESET: 'setting:reset',
   IMPORT: 'setting:import',
@@ -33,48 +35,50 @@ export const SettingElectronModule: IElectronModule = {
     activeSettingModule = mod;
     mod.start();
 
-    const resolveIdentityId = (payload: unknown): string => {
-      if (typeof payload === 'string') return payload;
-      if (payload && typeof payload === 'object') {
-        const v = payload as Record<string, unknown>;
-        return String(v.identityId ?? v.accountId ?? v.id ?? '');
-      }
-      return '';
-    };
+    ipcMain.handle(Ch.GET_ALL, () =>
+      withAuthenticatedIdentity(ctx, (identityId) => mod.api.getUserSetting(identityId)),
+    );
 
-    ipcMain.handle(Ch.GET_ALL, (_, params) => mod.api.getUserSetting(resolveIdentityId(params)));
-    ipcMain.handle(Ch.GET, (_, params) => mod.api.getUserSetting(resolveIdentityId(params)));
-    ipcMain.handle(Ch.UPDATE, (_, dto) => {
-      const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
-      const identityId = resolveIdentityId(dto);
-      const category = payload.category as string;
-      const patch = (payload.patch as Record<string, unknown>) ?? payload;
-      return mod.api.patchUserSetting(identityId, category as any, patch);
-    });
     ipcMain.handle(Ch.PATCH, (_, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
-      const identityId = resolveIdentityId(dto);
       const category = payload.category as string;
       const patch = (payload.patch as Record<string, unknown>) ?? {};
-      return mod.api.patchUserSetting(identityId, category as any, patch);
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        mod.api.patchUserSetting(identityId, category as any, patch),
+      );
     });
+
     ipcMain.handle(Ch.RESET, (_, params) => {
       const payload = (params && typeof params === 'object' ? params : {}) as Record<
         string,
         unknown
       >;
       const category = typeof payload.category === 'string' ? payload.category : undefined;
-      return mod.api.resetUserSetting(resolveIdentityId(params), category);
-    });
-    ipcMain.handle(Ch.IMPORT, (_, dto) => {
-      const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
-      return mod.api.importSettings(
-        resolveIdentityId(dto),
-        (payload.data as Record<string, unknown>) ?? payload,
-        payload.options as { merge?: boolean; validate?: boolean } | undefined,
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        mod.api.resetUserSetting(identityId, category),
       );
     });
-    ipcMain.handle(Ch.EXPORT, (_, params) => mod.api.exportSettings(resolveIdentityId(params)));
+
+    ipcMain.handle(Ch.IMPORT, (_, dto) => {
+      const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
+      const raw = payload.data;
+      // The adapter sends a JSON string; parse it into the Record the use case expects.
+      const data: Record<string, unknown> =
+        typeof raw === 'string'
+          ? (JSON.parse(raw) as Record<string, unknown>)
+          : ((raw as Record<string, unknown>) ?? {});
+      const options = payload.options as { merge?: boolean } | undefined;
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        mod.api.importSettings(identityId, data, options),
+      );
+    });
+
+    ipcMain.handle(Ch.EXPORT, () =>
+      withAuthenticatedIdentity(ctx, async (identityId) => {
+        const exported = await mod.api.exportSettings(identityId);
+        return JSON.stringify(exported);
+      }),
+    );
 
     logger.info('Setting module registered');
   },

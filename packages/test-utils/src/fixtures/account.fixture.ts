@@ -28,4 +28,4 @@ export function anIdentityId(value?: string): IdentityId {
  * Well-known test identity for deterministic assertions.
  * Use this when you need the same identity across related test objects.
  */
-export const TEST_IDENTITY_ID = IdentityId.of('IdentityId_test-user-001');
+export const TEST_IDENTITY_ID = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');

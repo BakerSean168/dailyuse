@@ -255,14 +255,28 @@ export class NotificationDomainService {
    * 批量标记为已读
    */
   public async markManyAsRead(ids: string[]): Promise<void> {
-    await this.notificationRepo.markManyAsRead(ids);
+    const notifications = (
+      await Promise.all(ids.map((id) => this.notificationRepo.findById(id)))
+    ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
+
+    for (const notification of notifications) {
+      notification.markAsRead();
+    }
+
+    await this.notificationRepo.saveMany(notifications);
   }
 
   /**
    * 标记所有通知为已读
    */
   public async markAllAsRead(identityId: string): Promise<void> {
-    await this.notificationRepo.markAllAsRead(identityId);
+    const notifications = await this.notificationRepo.findUnread(identityId);
+
+    for (const notification of notifications) {
+      notification.markAsRead();
+    }
+
+    await this.notificationRepo.saveMany(notifications);
   }
 
   /**
@@ -270,7 +284,13 @@ export class NotificationDomainService {
    */
   public async deleteNotification(id: string, soft = true): Promise<void> {
     if (soft) {
-      await this.notificationRepo.softDelete(id);
+      const notification = await this.notificationRepo.findById(id);
+      if (!notification) {
+        throw new Error(`Notification not found: ${id}`);
+      }
+
+      notification.softDelete();
+      await this.notificationRepo.save(notification);
     } else {
       await this.notificationRepo.delete(id);
     }
@@ -281,10 +301,13 @@ export class NotificationDomainService {
    */
   public async deleteManyNotifications(ids: string[], soft = true): Promise<void> {
     if (soft) {
-      // 软删除需要逐个处理
-      for (const id of ids) {
-        await this.notificationRepo.softDelete(id);
+      const notifications = (
+        await Promise.all(ids.map((id) => this.notificationRepo.findById(id)))
+      ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
+      for (const notification of notifications) {
+        notification.softDelete();
       }
+      await this.notificationRepo.saveMany(notifications);
     } else {
       await this.notificationRepo.deleteMany(ids);
     }

@@ -1,11 +1,17 @@
-import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
+import type {
+  ITaskInstanceRepository,
+  TaskTemplateInstanceStats,
+} from '../../../domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import {
   PowerSyncTaskInstanceMapper,
   type PowerSyncTaskInstanceRow,
 } from './mappers/powersync-task-instance.mapper';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -14,10 +20,15 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository {
-  constructor(private readonly db: Queryable) {}
+export class PowerSyncTaskInstanceRepository
+  extends AggregateRepositoryBase<TaskInstance>
+  implements ITaskInstanceRepository
+{
+  constructor(private readonly db: Queryable) {
+    super(eventBusAdapter);
+  }
 
-  async save(instance: TaskInstance): Promise<void> {
+  protected async persist(instance: TaskInstance): Promise<void> {
     const data = PowerSyncTaskInstanceMapper.toPersistence(instance);
     const existing = await this.db.getOptional<{ id: string }>(
       'SELECT id FROM task_instances WHERE id = ? LIMIT 1',
@@ -83,10 +94,6 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
         ],
       );
     }
-
-    for (const evt of instance.pullDomainEvents()) {
-      eventBus.send(evt.eventType as any, evt.payload as any);
-    }
   }
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
@@ -105,14 +112,14 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
 
   async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
+      'SELECT * FROM task_instances WHERE template_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
       [templateId],
     );
   }
 
   async findByIdentityId(identityId: string): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE identity_id = ? ORDER BY instance_date DESC',
+      'SELECT * FROM task_instances WHERE identity_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
       [identityId],
     );
   }
@@ -123,21 +130,21 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
     endDate: number,
   ): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE identity_id = ? AND instance_date >= ? AND instance_date <= ? ORDER BY instance_date ASC`,
+      `SELECT * FROM task_instances WHERE identity_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [identityId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
     );
   }
 
   async findByStatus(identityId: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE identity_id = ? AND status = ? ORDER BY instance_date DESC',
+      'SELECT * FROM task_instances WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
       [identityId, status],
     );
   }
 
   async findOverdueInstances(identityId: string): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE identity_id = ? AND status IN ('Pending', 'InProgress') AND instance_date < ? ORDER BY instance_date ASC`,
+      `SELECT * FROM task_instances WHERE identity_id = ? AND status IN ('Pending', 'InProgress') AND instance_date < ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [identityId, new Date().toISOString()],
     );
   }
@@ -170,16 +177,89 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
     endDate: number,
   ): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE template_id = ? AND instance_date >= ? AND instance_date <= ? ORDER BY instance_date ASC`,
+      `SELECT * FROM task_instances WHERE template_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [templateId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
     );
   }
 
-  async deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void> {
-    await this.db.execute(
-      `DELETE FROM task_instances WHERE template_id = ? AND instance_date >= ? AND status = 'Pending'`,
+  async getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>> {
+    if (templateIds.length === 0) {
+      return {};
+    }
+
+    const placeholders = templateIds.map(() => '?').join(', ');
+    const rows = await this.db.getAll<{
+      templateId: string;
+      status: string;
+      count: number;
+    }>(
+      `SELECT template_id as templateId, status, COUNT(*) as count
+         FROM task_instances
+        WHERE template_id IN (${placeholders})
+          AND deleted_at IS NULL
+        GROUP BY template_id, status`,
+      templateIds,
+    );
+
+    const stats: Record<string, TaskTemplateInstanceStats> = {};
+
+    for (const templateId of templateIds) {
+      stats[templateId] = {
+        templateId,
+        instanceCount: 0,
+        completedInstanceCount: 0,
+        pendingInstanceCount: 0,
+        completionRate: 0,
+      };
+    }
+
+    for (const row of rows) {
+      const stat = stats[row.templateId];
+      if (!stat) {
+        continue;
+      }
+
+      const count = Number(row.count ?? 0);
+      stat.instanceCount += count;
+
+      if (row.status === 'Completed') {
+        stat.completedInstanceCount += count;
+      }
+
+      if (row.status === 'Pending') {
+        stat.pendingInstanceCount += count;
+      }
+    }
+
+    for (const stat of Object.values(stats)) {
+      stat.completionRate =
+        stat.instanceCount > 0
+          ? Math.round((stat.completedInstanceCount / stat.instanceCount) * 100)
+          : 0;
+    }
+
+    return stats;
+  }
+
+  async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {
+    const before = await this.db.get<{ count: number }>(
+      `SELECT COUNT(*) as count
+         FROM task_instances
+        WHERE template_id = ?
+          AND instance_date >= ?
+          AND status IN ('Pending', 'InProgress')`,
       [templateId, new Date(fromDate).toISOString()],
     );
+
+    await this.db.execute(
+      `DELETE FROM task_instances
+        WHERE template_id = ?
+          AND instance_date >= ?
+          AND status IN ('Pending', 'InProgress')`,
+      [templateId, new Date(fromDate).toISOString()],
+    );
+
+    return Number(before?.count ?? 0);
   }
 
   private async query(sql: string, params: unknown[]): Promise<TaskInstance[]> {

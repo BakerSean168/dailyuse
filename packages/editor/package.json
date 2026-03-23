@@ -45,6 +45,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/repository": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",
     "zod": "^4.3.6"

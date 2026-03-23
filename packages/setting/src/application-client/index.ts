@@ -40,7 +40,13 @@ export interface SettingClientPort {
  * Returns `Result<T>` (no throwing) so the caller keeps full control.
  */
 export class SettingClientService implements SettingClientPort {
-  constructor(private readonly apiClient: ISettingApiClient) {}
+  constructor(private readonly apiClient: ISettingApiClient) {
+    this.getUserSettings = this.getUserSettings.bind(this);
+    this.patchCategory = this.patchCategory.bind(this);
+    this.resetUserSettings = this.resetUserSettings.bind(this);
+    this.exportSettings = this.exportSettings.bind(this);
+    this.importSettings = this.importSettings.bind(this);
+  }
 
   getUserSettings(): Promise<Result<UserSettingClientDTO>> {
     return this.apiClient.getUserSettings();

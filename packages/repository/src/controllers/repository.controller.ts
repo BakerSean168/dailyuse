@@ -9,8 +9,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
-  CreateRepositorySchema,
-  UpdateRepositorySchema,
   CreateResourceSchema,
   UpdateResourceSchema,
   CreateResourceBookmarkSchema,
@@ -18,8 +16,6 @@ import {
   ReorderResourceBookmarksSchema,
 } from '@dailyuse/contracts/repository';
 import type {
-  CreateRepositoryZodReq,
-  UpdateRepositoryZodReq,
   CreateResourceZodReq,
   UpdateResourceZodReq,
   CreateResourceBookmarkRequestDTO,
@@ -33,18 +29,7 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 // ============ Use Case Port ============
 
 export interface RepositoryUseCases {
-  // Repository CRUD
-  createRepository(data: CreateRepositoryZodReq, ctx: Context): Promise<Result<unknown>>;
-  listRepositories(
-    filters: { status?: string; type?: string },
-    ctx: Context,
-  ): Promise<Result<unknown>>;
   getCurrentRepository(ctx: Context): Promise<Result<unknown>>;
-  getRepository(id: string): Promise<Result<unknown>>;
-  updateRepository(id: string, data: UpdateRepositoryZodReq): Promise<Result<unknown>>;
-  deleteRepository(id: string): Promise<Result<unknown>>;
-  archiveRepository(id: string): Promise<Result<unknown>>;
-  activateRepository(id: string): Promise<Result<unknown>>;
   updateRepositoryStats(id: string, data: Record<string, unknown>): Promise<Result<unknown>>;
   // Resource CRUD
   createResource(
@@ -105,55 +90,8 @@ export class RepositoryController {
 
   // ==================== Repository Operations ====================
 
-  async createRepository(input: unknown, ctx: Context): Promise<Result<unknown>> {
-    const parsed = CreateRepositorySchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: 'Invalid repository data',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.createRepository(parsed.data, ctx);
-  }
-
-  async listRepositories(
-    filters: { status?: string; type?: string },
-    ctx: Context,
-  ): Promise<Result<unknown>> {
-    return this.useCases.listRepositories(filters, ctx);
-  }
-
   async getCurrentRepository(ctx: Context): Promise<Result<unknown>> {
     return this.useCases.getCurrentRepository(ctx);
-  }
-
-  async getRepository(id: string): Promise<Result<unknown>> {
-    return this.useCases.getRepository(id);
-  }
-
-  async updateRepository(id: string, input: unknown): Promise<Result<unknown>> {
-    const parsed = UpdateRepositorySchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: 'Invalid repository update data',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.updateRepository(id, parsed.data);
-  }
-
-  async deleteRepository(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteRepository(id);
-  }
-
-  async archiveRepository(id: string): Promise<Result<unknown>> {
-    return this.useCases.archiveRepository(id);
-  }
-
-  async activateRepository(id: string): Promise<Result<unknown>> {
-    return this.useCases.activateRepository(id);
   }
 
   // ==================== Resource Operations ====================

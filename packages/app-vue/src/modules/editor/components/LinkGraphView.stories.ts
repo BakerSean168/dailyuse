@@ -8,7 +8,7 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   decorators: [() => ({ template: '<div style="height: 500px;"><story /></div>' })],
   argTypes: {
-    documentId: { description: '文档 ID', control: 'text' },
+    noteId: { description: '笔记 ID', control: 'text' },
     initialDepth: { description: '初始深度', control: { type: 'range', min: 1, max: 3 } },
   },
 } satisfies Meta<typeof LinkGraphView>;
@@ -17,9 +17,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { documentId: 'doc-1', initialDepth: 2 },
+  args: { noteId: 'doc-1', initialDepth: 2 },
 };
 
 export const ShallowDepth: Story = {
-  args: { documentId: 'doc-1', initialDepth: 1 },
+  args: { noteId: 'doc-1', initialDepth: 1 },
 };

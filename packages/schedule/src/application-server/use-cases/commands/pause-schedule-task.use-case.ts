@@ -8,7 +8,7 @@
  * - 持久化状态变更
  */
 
-import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleTaskRepository } from '../../../domain-server';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
 /**
@@ -32,8 +32,7 @@ export class PauseScheduleTaskUseCase {
       throw new Error(`Schedule task ${id} not found`);
     }
 
-    // 2. 调用聚合根的 disable 方法（业务逻辑在聚合根内）
-    task.disable();
+    task.pause();
 
     // 3. 持久化
     await this.scheduleTaskRepository.save(task);

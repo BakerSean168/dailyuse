@@ -24,8 +24,8 @@
         <Bot class="h-4 w-4" />
         <TooltipProvider
           ><Tooltip
-            ><TooltipTrigger as-child><span class="sr-only">AI 生成知识文档</span></TooltipTrigger
-            ><TooltipContent>AI 生成知识文档</TooltipContent></Tooltip
+            ><TooltipTrigger as-child><span class="sr-only">AI 生成知识笔记</span></TooltipTrigger
+            ><TooltipContent>AI 生成知识笔记</TooltipContent></Tooltip
           ></TooltipProvider
         >
       </Button>

@@ -14,10 +14,6 @@
           {{ t('schedule.calendar.today') }}
         </Button>
       </div>
-      <Button size="sm" @click="emit('create')">
-        <Plus class="mr-2 h-4 w-4" />
-        {{ t('schedule.calendar.createSchedule') }}
-      </Button>
     </div>
 
     <!-- Day Grid -->
@@ -27,6 +23,23 @@
       </div>
 
       <div v-else class="relative">
+        <div v-if="allDayEvents.length" class="border-b bg-muted/20 px-4 py-3">
+          <div class="mb-2 text-xs font-medium text-muted-foreground">
+            {{ t('schedule.calendar.allDay') }}
+          </div>
+          <div class="space-y-2">
+            <button
+              v-for="event in allDayEvents"
+              :key="event.id"
+              class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white"
+              :class="eventBgClass(event)"
+              @click="emit('event-click', event)"
+            >
+              <span class="truncate">{{ event.title }}</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Time slots -->
         <div class="grid grid-cols-[4rem_1fr]">
           <template v-for="hour in hours" :key="hour">
@@ -73,7 +86,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Plus, Loader2, AlertCircle } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
@@ -88,7 +101,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'day-change', date: Date): void;
-  (e: 'create'): void;
   (e: 'event-click', event: CalendarEventItem): void;
 }>();
 const { t, locale } = useI18n();
@@ -108,9 +120,16 @@ const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 
 const dayEvents = computed(() => {
   const dateStr = toDateStr(currentDate.value);
-  return props.schedules.filter((event) => {
-    return new Date(event.startTime).toISOString().split('T')[0] === dateStr;
-  });
+  return props.schedules.filter(
+    (event) => event.displayMode === 'timed' && toDateStr(event.startTime) === dateStr,
+  );
+});
+
+const allDayEvents = computed(() => {
+  const dateStr = toDateStr(currentDate.value);
+  return props.schedules.filter(
+    (event) => event.displayMode === 'all-day' && toDateStr(event.startTime) === dateStr,
+  );
 });
 
 const currentMinuteOffset = computed(() => {
@@ -118,8 +137,12 @@ const currentMinuteOffset = computed(() => {
   return (now.getMinutes() / 60) * 100;
 });
 
-function toDateStr(d: Date): string {
-  return d.toISOString().split('T')[0];
+function toDateStr(d: Date | number): string {
+  const value = typeof d === 'number' ? new Date(d) : d;
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function isCurrentHour(hour: number): boolean {
@@ -133,6 +156,7 @@ function formatHour(hour: number): string {
 }
 
 function formatEventTime(event: CalendarEventItem): string {
+  if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {
     const d = new Date(ts);
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;

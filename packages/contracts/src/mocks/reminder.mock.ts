@@ -34,7 +34,7 @@ export function createMockReminderTemplate(
         ? `${faker.number.int({ min: 0, max: 23 }).toString().padStart(2, '0')}:${faker.number.int({ min: 0, max: 59 }).toString().padStart(2, '0')}`
         : null,
       event: faker.datatype.boolean()
-        ? faker.helpers.arrayElement(['task_complete', 'goal_achieve', 'document_save'])
+        ? faker.helpers.arrayElement(['task_complete', 'goal_achieve', 'resource_save'])
         : null,
     },
     recurrence: faker.datatype.boolean()
@@ -112,6 +112,16 @@ export function createMockReminderTemplate(
       ? `${faker.number.int({ min: 1, max: 24 })} 小时前`
       : null,
     controlledByGroup: faker.datatype.boolean(),
+    lifecycleSource: faker.helpers.arrayElement(['global', 'group', 'template']),
+    effectiveEnabledReason: faker.helpers.arrayElement([
+      '未分组，使用模板自身状态',
+      '分组为组控制模式，分组已启用',
+      '全局提醒总开关已关闭',
+    ]),
+    groupControlMode: faker.helpers.arrayElement(['Group', 'Individual', null]),
+    groupEnabled: faker.helpers.arrayElement([true, false, null]),
+    globalReminderEnabled: faker.datatype.boolean(),
+    groupName: faker.datatype.boolean() ? faker.lorem.words({ min: 1, max: 2 }) : null,
     ...overrides,
   } as ReminderTemplateClientDTO;
 }
@@ -163,6 +173,11 @@ export function createMockReminderGroup(
     templateCountText: `${totalTemplates} 个提醒`,
     activeStatusText: `${activeTemplates} 个活跃`,
     controlDescription: faker.helpers.arrayElement(['所有提醒统一启用', '提醒独立控制']),
+    effectiveTemplatePolicyText: faker.helpers.arrayElement([
+      '组内提醒当前由分组统一启用',
+      '组内提醒当前由分组统一暂停',
+      '组内提醒当前保持各自独立控制',
+    ]),
     ...overrides,
   };
 }

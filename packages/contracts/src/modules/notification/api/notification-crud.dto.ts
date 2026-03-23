@@ -1,13 +1,12 @@
 /**
  * Notification CRUD Operations
- * 
+ *
  * This file contains DTOs for creating and updating notifications.
  * Handles the basic lifecycle operations for notification records.
  */
 
 import { z } from 'zod';
 import { brandedId, openApiJsonValue } from '../../../primitives';
-import type { IdentityId } from '../../../primitives';
 import type { NotificationServerDTO } from '../aggregates/notification-server';
 import {
   NotificationType,
@@ -22,7 +21,6 @@ import {
 // ============================================================================
 
 export const CreateNotificationSchema = z.object({
-  identityId: brandedId<IdentityId>(),
   title: z.string().min(1).max(200),
   content: z.string().min(1),
   type: z.enum(NotificationType),

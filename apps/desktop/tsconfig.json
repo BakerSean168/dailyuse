@@ -23,6 +23,7 @@
       ],
       "@dailyuse/ipc-client": ["../../packages/ipc-client/src/index.ts"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
+      "@dailyuse/dashboard": ["../../packages/dashboard/src/index.ts"],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"

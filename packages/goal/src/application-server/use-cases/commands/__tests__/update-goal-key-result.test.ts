@@ -8,24 +8,26 @@ import { UpdateGoalKeyResult } from '../update-goal-key-result';
 // ============================================================
 
 function createGoalFixture(overrides?: Record<string, any>) {
+  const keyResult1 = {
+    id: 'kr-1',
+    title: 'Key Result 1',
+    weight: 3,
+    toClientDTO: vi.fn().mockReturnValue({ id: 'kr-1', title: 'Updated KR', weight: 5 }),
+  };
+  const keyResult2 = {
+    id: 'kr-2',
+    title: 'Key Result 2',
+    weight: 2,
+    toClientDTO: vi.fn().mockReturnValue({ id: 'kr-2', title: 'Key Result 2', weight: 2 }),
+  };
+
   return {
     id: 'goal-id-1',
     status: 'IN_PROGRESS',
     name: 'Test Goal',
     description: 'Test description',
-    keyResults: [
-      { id: 'kr-1', title: 'Key Result 1', weight: 3 },
-      { id: 'kr-2', title: 'Key Result 2', weight: 2 },
-    ],
+    keyResults: [keyResult1, keyResult2],
     updateKeyResult: vi.fn(),
-    toClientDTO: vi.fn().mockReturnValue({
-      id: 'goal-id-1',
-      name: 'Test Goal',
-      keyResults: [
-        { id: 'kr-1', title: 'Updated KR', weight: 5 },
-        { id: 'kr-2', title: 'Key Result 2', weight: 2 },
-      ],
-    }),
     ...overrides,
   } as any;
 }
@@ -47,12 +49,14 @@ describe('UpdateGoalKeyResult', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.id).toBe('goal-id-1');
+      expect(result.data.id).toBe('kr-1');
     }
     expect(goal.updateKeyResult).toHaveBeenCalledWith('kr-1', {
       title: 'Updated KR',
       description: undefined,
       weight: 5,
+      startValue: undefined,
+      currentValue: undefined,
       targetValue: undefined,
       unit: undefined,
     });
@@ -130,12 +134,36 @@ describe('UpdateGoalKeyResult', () => {
       title: undefined,
       description: 'New desc',
       weight: undefined,
+      startValue: undefined,
+      currentValue: undefined,
       targetValue: undefined,
       unit: 'books',
     });
   });
 
-  it('should call toClientDTO with true for includeChildren', async () => {
+  it('should pass currentValue updates correctly', async () => {
+    const goal = createGoalFixture();
+    const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
+    const goalRepo = createMockRepo<IGoalRepository>({
+      findById: vi.fn().mockResolvedValue(goal),
+      save: vi.fn().mockResolvedValue(undefined),
+    });
+    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+
+    await useCase.execute('goal-id-1', 'kr-1', { currentValue: 11, startValue: 5 });
+
+    expect(goal.updateKeyResult).toHaveBeenCalledWith('kr-1', {
+      title: undefined,
+      description: undefined,
+      weight: undefined,
+      startValue: 5,
+      currentValue: 11,
+      targetValue: undefined,
+      unit: undefined,
+    });
+  });
+
+  it('should call key result toClientDTO', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
@@ -146,6 +174,6 @@ describe('UpdateGoalKeyResult', () => {
 
     await useCase.execute('goal-id-1', 'kr-1', { title: 'Updated' });
 
-    expect(goal.toClientDTO).toHaveBeenCalledWith(true);
+    expect(goal.keyResults[0].toClientDTO).toHaveBeenCalled();
   });
 });

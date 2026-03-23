@@ -1,6 +1,8 @@
 <template>
   <Dialog :open="visible" @update:open="setVisible">
-    <DialogContent class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex flex-col">
+    <DialogContent
+      class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex min-h-0 flex-col overflow-hidden"
+    >
       <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
         <component
           :is="mode === 'edit' ? Pencil : PlusCircle"
@@ -13,13 +15,13 @@
               ? t('task.templateDialog.editTitle')
               : t('task.templateDialog.createTitle')
           }}</DialogTitle>
-          <p class="text-sm text-muted-foreground mt-0">
+          <DialogDescription class="mt-0 text-sm text-muted-foreground">
             {{
               mode === 'edit'
                 ? t('task.templateDialog.editSubtitle')
                 : t('task.templateDialog.createSubtitle')
             }}
-          </p>
+          </DialogDescription>
         </div>
       </DialogHeader>
 
@@ -30,6 +32,9 @@
           :model-value="localTemplate"
           :is-edit-mode="mode === 'edit'"
           :readonly="saving"
+          :goals="goalOptions"
+          :key-results-by-goal="keyResultsByGoal"
+          :on-request-key-results="requestKeyResults"
           @update:model-value="handleTemplateUpdate"
           @update:validation="handleValidationUpdate"
           @close="handleCancel"
@@ -56,6 +61,7 @@ import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -65,8 +71,16 @@ import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
 import { TaskType } from '@dailyuse/contracts/task';
+import { defaultNamedColor } from '../../../../shared/constants/colorPalette';
+import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 
 const { t } = useI18n();
+const {
+  goals: goalOptions,
+  keyResultsByGoal,
+  loadGoals: loadGoalOptions,
+  loadKeyResults: loadGoalKeyResults,
+} = useTaskGoalBindingOptions();
 
 function createBlankTemplate(): TaskTemplateViewModel {
   return {
@@ -92,7 +106,7 @@ function createBlankTemplate(): TaskTemplateViewModel {
     instanceCount: 0,
     completionRate: 0,
     taskType: TaskType.Recurring,
-    color: null,
+    color: defaultNamedColor,
   };
 }
 
@@ -121,11 +135,27 @@ const localTemplate = ref<TaskTemplateViewModel | null>(
   props.template ? { ...props.template } : props.mode === 'create' ? createBlankTemplate() : null,
 );
 const isValid = ref(false);
-
 const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
 const saving = computed(() => props.saving);
 const canSave = computed(() => !!localTemplate.value && isValid.value && !saving.value);
+
+async function loadGoals() {
+  await loadGoalOptions();
+}
+
+async function requestKeyResults(goalId: string) {
+  return loadGoalKeyResults(goalId);
+}
+
+async function ensureBindingKeyResults(template: TaskTemplateViewModel | null) {
+  const goalId = template?.goalBinding?.goalId;
+  if (!goalId) {
+    return;
+  }
+
+  await requestKeyResults(goalId);
+}
 
 watch(
   () => props.template,
@@ -137,6 +167,30 @@ watch(
         : null;
   },
   { immediate: true, deep: true },
+);
+
+watch(
+  visible,
+  async (open) => {
+    if (!open) {
+      return;
+    }
+
+    await loadGoals();
+    await ensureBindingKeyResults(localTemplate.value);
+  },
+  { immediate: true },
+);
+
+watch(
+  () => localTemplate.value?.goalBinding?.goalId,
+  async (goalId) => {
+    if (!goalId) {
+      return;
+    }
+
+    await requestKeyResults(goalId);
+  },
 );
 
 const setVisible = (value: boolean) => {

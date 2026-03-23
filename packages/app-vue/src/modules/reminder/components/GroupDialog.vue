@@ -1,22 +1,19 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="max-w-2xl max-h-[600px] flex flex-col p-0">
-      <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b">
-        <Button variant="destructive" @click="close" :disabled="isSaving">
-          {{ t('reminder.groupDialog.btnCancel') }}
-        </Button>
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden p-0">
+      <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <DialogTitle class="text-xl">{{
           isEditMode ? t('reminder.groupDialog.titleEdit') : t('reminder.groupDialog.titleCreate')
         }}</DialogTitle>
-        <Button variant="default" @click="handleSave" :disabled="!formValid || isSaving">
-          {{ t('reminder.groupDialog.btnDone') }}
-        </Button>
-      </div>
+        <DialogDescription class="text-sm text-muted-foreground">
+          {{
+            isEditMode ? t('reminder.groupDialog.descEdit') : t('reminder.groupDialog.descCreate')
+          }}
+        </DialogDescription>
+      </DialogHeader>
 
-      <!-- Scrollable Content -->
-      <ScrollArea class="flex-1 px-6">
-        <div class="space-y-6 py-6">
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+        <div class="space-y-6 py-2">
           <!-- Basic Info -->
           <div class="space-y-3">
             <div class="flex items-center gap-2 mb-3">
@@ -111,7 +108,9 @@
                 </PopoverTrigger>
                 <PopoverContent class="w-80">
                   <div class="space-y-2">
-                    <h4 class="text-sm font-medium">{{ t('reminder.groupDialog.selectIcon') }}</h4>
+                    <h4 class="text-sm font-medium">
+                      {{ t('reminder.groupDialog.selectIcon') }}
+                    </h4>
                     <div class="grid grid-cols-6 gap-2">
                       <Button
                         v-for="icon in iconOptions"
@@ -181,14 +180,28 @@
             </RadioGroup>
           </div>
         </div>
-      </ScrollArea>
+      </div>
+
+      <DialogFooter class="shrink-0 border-t p-6 pt-4">
+        <Button variant="ghost" @click="close" :disabled="isSaving">
+          {{ t('reminder.groupDialog.btnCancel') }}
+        </Button>
+        <Button variant="default" @click="handleSave" :disabled="!formValid || isSaving">
+          {{ t('reminder.groupDialog.btnDone') }}
+        </Button>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type {
+  CreateReminderGroupReq,
+  ReminderGroupClientDTO,
+  UpdateReminderGroupReq,
+} from '@dailyuse/contracts/reminder';
 import {
   Info,
   Palette,
@@ -204,38 +217,44 @@ import {
   DollarSign,
   Users,
 } from 'lucide-vue-next';
-import { Dialog, DialogContent, DialogTitle } from '@dailyuse/ui-vue-shadcn';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { RadioGroup, RadioGroupItem } from '@dailyuse/ui-vue-shadcn';
-import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
-import type { ReminderGroupFormModel } from '../types';
 
 const props = defineProps<{
-  group?: ReminderGroupFormModel | null;
+  group?: ReminderGroupClientDTO | null;
+  saving?: boolean;
 }>();
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  save: [data: Omit<ReminderGroupFormModel, 'id'>];
-  update: [id: string, data: Omit<ReminderGroupFormModel, 'id'>];
+  save: [data: CreateReminderGroupReq];
+  update: [id: string, data: UpdateReminderGroupReq];
 }>();
 
 const visible = ref(false);
-const isSaving = ref(false);
 const showColorPicker = ref(false);
+const isSaving = computed(() => props.saving ?? false);
 
 const formData = reactive({
   name: '',
   description: '',
   icon: 'mdi-folder',
   color: '#2196F3',
-  controlMode: 'Individual' as string,
+  controlMode: 'Individual' as CreateReminderGroupReq['controlMode'],
   order: 0,
 });
 
@@ -280,7 +299,7 @@ const resetForm = () => {
   formData.order = 0;
 };
 
-const fillForm = (group: ReminderGroupFormModel) => {
+const fillForm = (group: ReminderGroupClientDTO) => {
   formData.name = group.name;
   formData.description = group.description || '';
   formData.icon = group.icon || 'mdi-folder';
@@ -294,7 +313,7 @@ const open = () => {
   visible.value = true;
 };
 
-const openForEdit = (group: ReminderGroupFormModel) => {
+const openForEdit = (group: ReminderGroupClientDTO) => {
   fillForm(group);
   visible.value = true;
 };
@@ -312,28 +331,21 @@ const handleVisibleChange = (value: boolean) => {
 };
 
 const handleSave = async () => {
-  if (!formValid.value) return;
+  if (!formValid.value || isSaving.value) return;
 
-  isSaving.value = true;
-  try {
-    const data: Omit<ReminderGroupFormModel, 'id'> = {
-      name: formData.name.trim(),
-      description: formData.description?.trim() || undefined,
-      color: formData.color,
-      icon: formData.icon,
-      controlMode: formData.controlMode,
-      order: formData.order,
-    };
+  const data: CreateReminderGroupReq = {
+    name: formData.name.trim(),
+    description: formData.description?.trim() || undefined,
+    color: formData.color,
+    icon: formData.icon,
+    controlMode: formData.controlMode,
+    order: formData.order,
+  };
 
-    if (isEditMode.value && props.group?.id) {
-      emit('update', props.group.id, data);
-    } else {
-      emit('save', data);
-    }
-
-    close();
-  } finally {
-    isSaving.value = false;
+  if (isEditMode.value && props.group?.id) {
+    emit('update', props.group.id, data);
+  } else {
+    emit('save', data);
   }
 };
 

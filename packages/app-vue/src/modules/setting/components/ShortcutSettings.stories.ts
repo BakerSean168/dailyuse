@@ -8,9 +8,27 @@ const mockCategories = [
     label: 'Global',
     iconComponent: Globe,
     shortcuts: [
-      { id: 'sc-1', label: 'Search', description: 'Open global search', key: 'Ctrl+K', defaultKey: 'Ctrl+K' },
-      { id: 'sc-2', label: 'Settings', description: 'Open settings panel', key: 'Ctrl+,', defaultKey: 'Ctrl+,' },
-      { id: 'sc-3', label: 'Command Palette', description: 'Show command palette', key: 'Ctrl+Shift+P', defaultKey: 'Ctrl+Shift+P' },
+      {
+        id: 'sc-1',
+        label: 'Search',
+        description: 'Open global search',
+        key: 'Ctrl+K',
+        defaultKey: 'Ctrl+K',
+      },
+      {
+        id: 'sc-2',
+        label: 'Settings',
+        description: 'Open settings panel',
+        key: 'Ctrl+,',
+        defaultKey: 'Ctrl+,',
+      },
+      {
+        id: 'sc-3',
+        label: 'Command Palette',
+        description: 'Show command palette',
+        key: 'Ctrl+Shift+P',
+        defaultKey: 'Ctrl+Shift+P',
+      },
     ],
   },
   {
@@ -18,9 +36,27 @@ const mockCategories = [
     label: 'Editor',
     iconComponent: FileEdit,
     shortcuts: [
-      { id: 'sc-4', label: 'Save', description: 'Save current document', key: 'Ctrl+S', defaultKey: 'Ctrl+S' },
-      { id: 'sc-5', label: 'Bold', description: 'Toggle bold text', key: 'Ctrl+B', defaultKey: 'Ctrl+B' },
-      { id: 'sc-6', label: 'Italic', description: 'Toggle italic text', key: 'Ctrl+I', defaultKey: 'Ctrl+I' },
+      {
+        id: 'sc-4',
+        label: 'Save',
+        description: 'Save current note',
+        key: 'Ctrl+S',
+        defaultKey: 'Ctrl+S',
+      },
+      {
+        id: 'sc-5',
+        label: 'Bold',
+        description: 'Toggle bold text',
+        key: 'Ctrl+B',
+        defaultKey: 'Ctrl+B',
+      },
+      {
+        id: 'sc-6',
+        label: 'Italic',
+        description: 'Toggle italic text',
+        key: 'Ctrl+I',
+        defaultKey: 'Ctrl+I',
+      },
     ],
   },
   {
@@ -28,8 +64,20 @@ const mockCategories = [
     label: 'Tasks',
     iconComponent: CheckSquare,
     shortcuts: [
-      { id: 'sc-7', label: 'New Task', description: 'Create a new task', key: 'Ctrl+N', defaultKey: 'Ctrl+N' },
-      { id: 'sc-8', label: 'Complete Task', description: 'Mark task as done', key: 'Ctrl+D', defaultKey: 'Ctrl+D' },
+      {
+        id: 'sc-7',
+        label: 'New Task',
+        description: 'Create a new task',
+        key: 'Ctrl+N',
+        defaultKey: 'Ctrl+N',
+      },
+      {
+        id: 'sc-8',
+        label: 'Complete Task',
+        description: 'Mark task as done',
+        key: 'Ctrl+D',
+        defaultKey: 'Ctrl+D',
+      },
     ],
   },
   {
@@ -37,7 +85,13 @@ const mockCategories = [
     label: 'Goals',
     iconComponent: Target,
     shortcuts: [
-      { id: 'sc-9', label: 'New Goal', description: 'Create a new goal', key: 'Ctrl+G', defaultKey: 'Ctrl+G' },
+      {
+        id: 'sc-9',
+        label: 'New Goal',
+        description: 'Create a new goal',
+        key: 'Ctrl+G',
+        defaultKey: 'Ctrl+G',
+      },
     ],
   },
 ];
@@ -75,8 +129,20 @@ export const CustomizedShortcuts: Story = {
       {
         ...mockCategories[0],
         shortcuts: [
-          { id: 'sc-1', label: 'Search', description: 'Open global search', key: 'Ctrl+F', defaultKey: 'Ctrl+K' },
-          { id: 'sc-2', label: 'Settings', description: 'Open settings panel', key: 'Alt+S', defaultKey: 'Ctrl+,' },
+          {
+            id: 'sc-1',
+            label: 'Search',
+            description: 'Open global search',
+            key: 'Ctrl+F',
+            defaultKey: 'Ctrl+K',
+          },
+          {
+            id: 'sc-2',
+            label: 'Settings',
+            description: 'Open settings panel',
+            key: 'Alt+S',
+            defaultKey: 'Ctrl+,',
+          },
           mockCategories[0].shortcuts[2],
         ],
       },

@@ -1,10 +1,9 @@
-/**
- * Focus Session Cancelled Event
- * 
- * Triggered when: Focus session is cancelled
- * Subscribers: Session audit log
- * 
- * Note: aggregateId (sessionId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
-export interface FocusSessionCancelledEvent {}
+import type { FocusSessionServerDTO } from '../../aggregates';
+
+export interface FocusSessionCancelledEvent {
+  identityId: string;
+  sessionId: string;
+  goalId: string | null;
+  session: FocusSessionServerDTO;
+  cancelledAt: number;
+}

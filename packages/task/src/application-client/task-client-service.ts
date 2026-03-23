@@ -132,6 +132,7 @@ function parseGoalBinding(dto: TaskGoalBindingDTO): TaskGoalBinding {
     goalId: dto.goalId as unknown as TaskGoalBinding['goalId'],
     keyResultId: dto.keyResultId as unknown as TaskGoalBinding['keyResultId'],
     goalRecordValue: dto.goalRecordValue,
+    progressTrigger: dto.progressTrigger,
   };
 }
 
@@ -140,7 +141,35 @@ export class TaskClientService {
     private readonly templateApi: ITaskTemplateApiClient,
     private readonly instanceApi: ITaskInstanceApiClient,
     private readonly dependencyApi: ITaskDependencyApiClient,
-  ) {}
+  ) {
+    this.createTemplate = this.createTemplate.bind(this);
+    this.listTemplates = this.listTemplates.bind(this);
+    this.getTemplate = this.getTemplate.bind(this);
+    this.updateTemplate = this.updateTemplate.bind(this);
+    this.deleteTemplate = this.deleteTemplate.bind(this);
+    this.getTemplatesWithPrioritySorting = this.getTemplatesWithPrioritySorting.bind(this);
+    this.activateTemplate = this.activateTemplate.bind(this);
+    this.pauseTemplate = this.pauseTemplate.bind(this);
+    this.archiveTemplate = this.archiveTemplate.bind(this);
+    this.generateInstances = this.generateInstances.bind(this);
+    this.getInstancesByDateRange = this.getInstancesByDateRange.bind(this);
+    this.bindToGoal = this.bindToGoal.bind(this);
+    this.unbindFromGoal = this.unbindFromGoal.bind(this);
+    this.listInstances = this.listInstances.bind(this);
+    this.getInstance = this.getInstance.bind(this);
+    this.deleteInstance = this.deleteInstance.bind(this);
+    this.startInstance = this.startInstance.bind(this);
+    this.completeInstance = this.completeInstance.bind(this);
+    this.skipInstance = this.skipInstance.bind(this);
+    this.checkExpiredInstances = this.checkExpiredInstances.bind(this);
+    this.createDependency = this.createDependency.bind(this);
+    this.getDependencies = this.getDependencies.bind(this);
+    this.getDependents = this.getDependents.bind(this);
+    this.getDependencyChain = this.getDependencyChain.bind(this);
+    this.validateDependency = this.validateDependency.bind(this);
+    this.updateDependency = this.updateDependency.bind(this);
+    this.deleteDependency = this.deleteDependency.bind(this);
+  }
 
   // ===== Task Template Operations =====
 

@@ -26,3 +26,4 @@ export {
   createGoalFolderTransportHandlers,
 } from './transport-handlers';
 export { createGoalRuntimeContribution } from './runtime';
+export { createGoalScheduleRuntimeContribution } from './schedule-runtime';

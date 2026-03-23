@@ -69,7 +69,7 @@ export class PowerSyncGoalMapper {
       description: row.description ? String(row.description) : null,
       progress: asJsonString(
         {
-          initialValue: 0,
+          initialValue: Number(row.initial_value ?? 0),
           currentValue: Number(row.current_value ?? 0),
           targetValue: Number(row.target_value ?? 100),
           valueType: row.value_type ? String(row.value_type) : 'Incremental',

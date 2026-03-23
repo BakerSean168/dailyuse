@@ -1,6 +1,6 @@
 <!--
   TypedFileTree - Type-based fixed resource navigation
-  Resources are grouped by type (Notes/Images/Videos/Audio/Documents/Other)
+  Resources are grouped by type (Notes/Images/Videos/Audio/Files/Other)
   for repository-first authoring instead of user-managed folders.
 -->
 
@@ -13,6 +13,7 @@
         size="icon"
         class="h-8 w-8"
         :title="t('repository.workspace.createNote')"
+        :disabled="isLoading"
         @click="$emit('create-note')"
       >
         <FilePlus class="h-4 w-4" />
@@ -80,22 +81,28 @@
       <div v-else class="space-y-0.5">
         <div v-for="group in typeGroups" :key="group.key">
           <!-- Group Header -->
-          <div
-            class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
-            @click="toggleGroup(group.key)"
+          <ActionableWrapper
+            :actions="getGroupActions(group.key)"
+            :show-more-button="false"
+            wrapper-class="w-full"
           >
-            <Button variant="ghost" size="icon" class="h-5 w-5 shrink-0 p-0">
-              <ChevronRight
-                class="h-4 w-4 transition-transform"
-                :class="{ 'rotate-90': expandedGroups.has(group.key) }"
-              />
-            </Button>
-            <component :is="group.icon" class="h-4 w-4 shrink-0" :class="group.iconClass" />
-            <span class="text-sm font-medium flex-1">{{ group.label }}</span>
-            <Badge v-if="group.count > 0" variant="secondary" class="text-xs h-5 px-1.5">
-              {{ group.count }}
-            </Badge>
-          </div>
+            <div
+              class="flex w-full items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+              @click="toggleGroup(group.key)"
+            >
+              <Button variant="ghost" size="icon" class="h-5 w-5 shrink-0 p-0">
+                <ChevronRight
+                  class="h-4 w-4 transition-transform"
+                  :class="{ 'rotate-90': expandedGroups.has(group.key) }"
+                />
+              </Button>
+              <component :is="group.icon" class="h-4 w-4 shrink-0" :class="group.iconClass" />
+              <span class="text-sm font-medium flex-1">{{ group.label }}</span>
+              <Badge v-if="group.count > 0" variant="secondary" class="text-xs h-5 px-1.5">
+                {{ group.count }}
+              </Badge>
+            </div>
+          </ActionableWrapper>
 
           <!-- Group Children (resources) -->
           <Transition
@@ -107,31 +114,37 @@
             leave-to-class="opacity-0 max-h-0"
           >
             <div v-show="expandedGroups.has(group.key)" class="ml-4">
-              <div
+              <ActionableWrapper
                 v-for="resource in group.resources"
                 :key="resource.id"
-                class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
-                :class="{ 'bg-accent': selectedId === resource.id }"
-                @click="$emit('select', resource)"
-                @dblclick="$emit('open', resource)"
+                :actions="getResourceActions(resource)"
+                :show-more-button="false"
+                wrapper-class="w-full"
               >
-                <span class="w-5" />
-                <component
-                  :is="getFileIcon(resource)"
-                  class="h-4 w-4 shrink-0"
-                  :class="getFileIconClass(resource)"
-                />
-                <span class="text-sm truncate flex-1" :title="resource.path">{{
-                  resource.displayName || resource.name
-                }}</span>
-                <span
-                  v-if="resource.metadata?.tags?.length"
-                  class="text-xs text-muted-foreground shrink-0"
+                <div
+                  class="flex w-full min-w-0 items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+                  :class="{ 'bg-accent': selectedId === resource.id }"
+                  @click="$emit('open', resource)"
+                  @dblclick.stop="$emit('open', resource)"
                 >
-                  <Tag class="h-3 w-3 inline" />
-                  {{ resource.metadata.tags.length }}
-                </span>
-              </div>
+                  <span class="w-5 shrink-0" />
+                  <component
+                    :is="getFileIcon(resource)"
+                    class="h-4 w-4 shrink-0"
+                    :class="getFileIconClass(resource)"
+                  />
+                  <span class="text-sm truncate flex-1" :title="resource.path">{{
+                    resource.displayName || resource.name
+                  }}</span>
+                  <span
+                    v-if="resource.metadata?.tags?.length"
+                    class="text-xs text-muted-foreground shrink-0"
+                  >
+                    <Tag class="h-3 w-3 inline" />
+                    {{ resource.metadata.tags.length }}
+                  </span>
+                </div>
+              </ActionableWrapper>
               <div
                 v-if="group.resources.length === 0"
                 class="px-2 py-2 ml-5 text-xs text-muted-foreground italic"
@@ -150,11 +163,13 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  BookOpen,
+  FolderOpen,
   FilePlus,
+  Pencil,
   Upload,
   RefreshCw,
   Loader2,
-  FolderOpen,
   ChevronRight,
   FileText,
   FileImage,
@@ -163,13 +178,18 @@ import {
   FileIcon,
   File,
   Tag,
+  Trash2,
 } from 'lucide-vue-next';
 import { Button, Badge } from '@dailyuse/ui-vue-shadcn';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
+import type { ResourceClientDTO, TreeNode } from '@dailyuse/contracts/repository';
+import { findNotesFolderId } from '../utils/noteFolder';
 
 const props = withDefaults(
   defineProps<{
     resourcesByType: Record<string, ResourceClientDTO[]>;
+    treeNodes?: TreeNode[];
     isLoading?: boolean;
     selectedId?: string | null;
   }>(),
@@ -179,17 +199,20 @@ const props = withDefaults(
   },
 );
 
-defineEmits<{
+const emit = defineEmits<{
   'create-note': [];
   import: [];
   refresh: [];
-  select: [resource: ResourceClientDTO];
   open: [resource: ResourceClientDTO];
+  rename: [resource: ResourceClientDTO];
+  delete: [resource: ResourceClientDTO];
 }>();
 
 const { t } = useI18n();
 
 const expandedGroups = ref(new Set<string>(['notes']));
+
+const rootNoteFolderId = computed(() => findNotesFolderId(props.treeNodes ?? []));
 
 const totalCount = computed(() =>
   Object.values(props.resourcesByType).reduce((sum, arr) => sum + arr.length, 0),
@@ -229,12 +252,12 @@ const typeGroups = computed(() => [
     count: (props.resourcesByType.audio || []).length,
   },
   {
-    key: 'documents',
-    label: t('repository.fileTypes.documents'),
+    key: 'files',
+    label: t('repository.fileTypes.files'),
     icon: FileIcon,
     iconClass: 'text-warning',
-    resources: props.resourcesByType.documents || [],
-    count: (props.resourcesByType.documents || []).length,
+    resources: props.resourcesByType.files || [],
+    count: (props.resourcesByType.files || []).length,
   },
   {
     key: 'other',
@@ -252,6 +275,65 @@ function toggleGroup(key: string) {
   } else {
     expandedGroups.value.add(key);
   }
+}
+
+function getResourceActions(resource: ResourceClientDTO): MenuAction[] {
+  return [
+    {
+      key: 'open',
+      label: menuLabel('open'),
+      icon: BookOpen,
+      handler: () => emit('open', resource),
+    },
+    {
+      key: 'rename',
+      label: menuLabel('rename'),
+      icon: Pencil,
+      handler: () => emit('rename', resource),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => emit('delete', resource),
+    },
+  ];
+}
+
+function getGroupActions(groupKey: string): MenuAction[] {
+  if (groupKey === 'notes') {
+    return [
+      {
+        key: 'create-note',
+        label: t('repository.workspace.createNote'),
+        icon: FilePlus,
+        handler: () => emit('create-note'),
+      },
+      {
+        key: 'refresh',
+        label: t('common.retry'),
+        icon: RefreshCw,
+        handler: () => emit('refresh'),
+      },
+    ];
+  }
+
+  return [
+    {
+      key: 'import',
+      label: t('repository.import.title'),
+      icon: Upload,
+      handler: () => emit('import'),
+    },
+    {
+      key: 'refresh',
+      label: t('common.retry'),
+      icon: RefreshCw,
+      handler: () => emit('refresh'),
+    },
+  ];
 }
 
 function getFileIcon(resource: ResourceClientDTO) {

@@ -42,8 +42,7 @@ export class DeleteResource {
       isFolder: resource.isFolder(),
     });
 
-    resource.delete();
-    await this.resourceRepository.save(resource);
+    await this.resourceRepository.delete(String(resource.id));
 
     if (resource.isFolder()) {
       repository.recordFolderRemoved();
@@ -53,4 +52,3 @@ export class DeleteResource {
     await this.repositoryRepository.save(repository);
   }
 }
-

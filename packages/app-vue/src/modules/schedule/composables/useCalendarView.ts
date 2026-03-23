@@ -6,7 +6,7 @@
  */
 
 import { computed, ref } from 'vue';
-import { startOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
@@ -18,6 +18,7 @@ export interface CalendarEventItem {
   title: string;
   startTime: number; // ms timestamp
   endTime: number; // ms timestamp
+  displayMode: 'timed' | 'all-day';
   source: 'schedule' | 'task' | 'goal';
   hasConflict?: boolean;
   originalId: string;
@@ -25,10 +26,18 @@ export interface CalendarEventItem {
   instanceStatus?: string;
 }
 
+export function toLocalDateKey(value: Date | number): string {
+  const date = typeof value === 'number' ? new Date(value) : value;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // ============ 转换工具函数 ============
 
 /** TaskInstance → CalendarEventItem（用 instanceDate + timeRange 分钟偏移） */
-function taskInstancesToEvents(
+export function taskInstancesToEvents(
   instances: TaskInstanceClientDTO[],
   templates: TaskTemplateClientDTO[],
 ): CalendarEventItem[] {
@@ -40,21 +49,23 @@ function taskInstancesToEvents(
     const dayBaseTs = startOfDay(new Date(baseTs)).getTime();
 
     const timeRange = inst.timeConfig?.timeRange;
+    const isAllDay = inst.timeConfig?.timeType === 'AllDay';
     let startTime: number;
     let endTime: number;
+    let displayMode: CalendarEventItem['displayMode'];
 
     if (timeRange && typeof timeRange.start === 'number' && typeof timeRange.end === 'number') {
-      // timeRange.start / end are minute offsets from midnight
       startTime = dayBaseTs + timeRange.start * 60 * 1000;
       endTime = dayBaseTs + timeRange.end * 60 * 1000;
+      displayMode = 'timed';
     } else if (inst.timeConfig?.timePoint != null) {
-      // single time point — use 30-minute slot
       startTime = dayBaseTs + inst.timeConfig.timePoint * 60 * 1000;
       endTime = startTime + 30 * 60 * 1000;
+      displayMode = 'timed';
     } else {
-      // all-day task: use day start + 1 hr window
       startTime = dayBaseTs;
-      endTime = dayBaseTs + 60 * 60 * 1000;
+      endTime = endOfDay(new Date(dayBaseTs)).getTime();
+      displayMode = isAllDay ? 'all-day' : 'timed';
     }
 
     const template = templateMap.get(inst.templateId);
@@ -63,6 +74,7 @@ function taskInstancesToEvents(
       title: template?.name ?? inst.id,
       startTime,
       endTime,
+      displayMode,
       source: 'task',
       hasConflict: false,
       originalId: inst.id,
@@ -91,6 +103,7 @@ export function useCalendarView() {
       title: entry.title,
       startTime: Number(entry.startTime),
       endTime: Number(entry.endTime),
+      displayMode: 'timed',
       source: 'schedule' as const,
       hasConflict: entry.hasConflict,
       originalId: entry.id,
@@ -103,7 +116,11 @@ export function useCalendarView() {
       Array.isArray(templatesRaw) ? templatesRaw : [],
     );
 
-    return [...scheduleEvents, ...taskEvents].sort((a, b) => a.startTime - b.startTime);
+    const merged = [...scheduleEvents, ...taskEvents]
+      .sort((a, b) => a.startTime - b.startTime)
+      .filter((event, index, items) => items.findIndex((item) => item.id === event.id) === index);
+
+    return merged;
   });
 
   const isLoading = computed(() => schedule.isLoading.value || task.isLoading.value);
@@ -115,7 +132,7 @@ export function useCalendarView() {
 
     await Promise.all([
       schedule.fetchCalendarEntries(startTime, endTime),
-      task.fetchInstances(),
+      task.fetchInstances({ startDate: startTime, endDate: endTime }),
       task.fetchTemplates(),
     ]);
   }

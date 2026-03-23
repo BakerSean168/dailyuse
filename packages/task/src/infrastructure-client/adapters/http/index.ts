@@ -33,15 +33,10 @@ export interface TaskHttpAdapters {
  * // apps/web/src/infrastructure/task.ts
  * const httpClient = createResultHttpClient({ baseURL: '/api' });
  * const adapters = createTaskHttpAdapters(httpClient);
- * TaskContainer.getInstance()
- *   .registerTemplateApiClient(adapters.template)
- *   .registerInstanceApiClient(adapters.instance)
- *   .registerDependencyApiClient(adapters.dependency)
+ * // register adapters in the app composition root
  * ```
  */
-export function createTaskHttpAdapters(
-  httpClient: IResultHttpClient,
-): TaskHttpAdapters {
+export function createTaskHttpAdapters(httpClient: IResultHttpClient): TaskHttpAdapters {
   return {
     template: new TaskTemplateHttpAdapter(httpClient),
     instance: new TaskInstanceHttpAdapter(httpClient),

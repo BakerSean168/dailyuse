@@ -107,28 +107,9 @@ class CreateGoalHandler {
 const goal = await applicationService.createGoal(accountUuid, data);
 ```
 
-#### 4. **DI Container 在 Infrastructure Package 中**
+#### 4. **Composition Root 在 Module / Runtime 中**
 
-```typescript
-// packages/infrastructure-server/src/goal/di/goal-container.ts
-export class GoalContainer {
-  static getInstance(): GoalContainer {
-    // 单例实现或 DI 框架集成
-  }
-
-  getGoalApplicationService(): GoalApplicationService {
-    return new GoalApplicationService(
-      this.getGoalRepository(),
-      this.getGoalFolderRepository(),
-      this.getGoalEventPublisher(),
-    );
-  }
-}
-
-// apps/api/src/main.ts
-const container = GoalContainer.getInstance();
-const goalService = container.getGoalApplicationService();
-```
+当前做法是显式的 module factory / composition root，而不是通过单例 `GoalContainer` 提供服务定位。
 
 ---
 
@@ -146,12 +127,12 @@ const goalService = container.getGoalApplicationService();
 
 ### ⚠️ 潜在挑战
 
-| 挑战              | 解决方案                                            |
-| ----------------- | --------------------------------------------------- |
-| **DI 容器复杂性** | 在 packages 中实现，App 直接用，无需复杂框架        |
-| **参数验证重复**  | 中间件统一验证（Zod/class-validator），DTO 类型保证 |
-| **错误处理分散**  | 全局 Express 错误处理器，统一映射异常               |
-| **异步事件处理**  | Event Emitter 在 packages，App 订阅即可             |
+| 挑战               | 解决方案                                            |
+| ------------------ | --------------------------------------------------- |
+| **依赖装配复杂性** | 通过 composition root 显式管理，避免服务定位器      |
+| **参数验证重复**   | 中间件统一验证（Zod/class-validator），DTO 类型保证 |
+| **错误处理分散**   | 全局 Express 错误处理器，统一映射异常               |
+| **异步事件处理**   | Event Emitter 在 packages，App 订阅即可             |
 
 ---
 
@@ -160,7 +141,7 @@ const goalService = container.getGoalApplicationService();
 ### Phase 1: 创建基础架构（同步进行）
 
 1. ✅ 检查现有 packages 结构
-2. ⏳ 创建 `packages/infrastructure-server` DI 容器架构
+2. ⏳ 创建统一 module composition root 装配模式
 3. ⏳ 定义 HTTP routes 文件结构规范
 
 ### Phase 2: 模块逐个提取（优先级：复杂 → 简单）
@@ -238,7 +219,7 @@ export class GoalApplicationService {
 // ❌ apps/api/src/modules/goal/interface/http/GoalController.ts
 export class GoalController {
   static async createGoal(req, res) {
-    const service = GoalContainer.getInstance().getService();
+    const service = goalModule.api;
     const result = await service.createGoal(...);
     res.json(result);
   }
@@ -256,23 +237,12 @@ export class GoalApplicationService {
   listGoals(...) { ... }
 }
 
-// ✅ packages/infrastructure-server/src/goal/di/goal-container.ts
-export class GoalContainer {
-  getGoalApplicationService(): GoalApplicationService {
-    return new GoalApplicationService(
-      this.getRepository(),
-      this.getEventPublisher()
-    );
-  }
-}
-
 // ✅ apps/api/src/modules/goal/routes.ts（极简）
 export const goalRoutes = (router: Router) => {
-  const goalService = GoalContainer.getInstance()
-    .getGoalApplicationService();
+  const goalModule = createGoalModule(...);
 
   router.post('/goals', async (req: AuthenticatedRequest, res: Response) => {
-    const goal = await goalService.createGoal(
+    const goal = await goalModule.api.createGoal(
       req.user.accountUuid,
       req.body
     );

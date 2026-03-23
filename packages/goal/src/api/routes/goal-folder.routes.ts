@@ -16,9 +16,10 @@ import {
   CreateGoalFolderSchema,
   UpdateGoalFolderSchema,
   GoalFolderClientDTOSchema,
+  ListGoalFolderFiltersSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
-import type { GoalFolderId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { GoalFolderId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderController } from '../../controllers/goal-folder.controller';
 
 // ============ Helpers ============
@@ -78,12 +79,7 @@ export function registerGoalFolderRoutes(
       path: '/',
       summary: '获取目标文件夹列表',
       request: {
-        query: z.object({
-          parentFolderId: brandedId<GoalFolderId>().optional(),
-          includeSystemFolders: z.string().optional(),
-          sortBy: z.enum(['name', 'createdAt', 'sortOrder']).optional(),
-          sortOrder: z.enum(['asc', 'desc']).optional(),
-        }),
+        query: ListGoalFolderFiltersSchema,
       },
       responses: {
         200: successResponse(
@@ -94,13 +90,16 @@ export function registerGoalFolderRoutes(
     },
     [auth],
     (req, ctx) =>
-      controller.list({
-        identityId: ctx.identityId as unknown as IdentityId,
-        parentFolderId: req.query?.parentFolderId as unknown as GoalFolderId | undefined,
-        includeSystemFolders: parseBoolean(req.query?.includeSystemFolders),
-        sortBy: req.query?.sortBy as 'name' | 'createdAt' | 'sortOrder' | undefined,
-        sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
-      }),
+      // Pass filters to controller - identityId is injected from ctx inside controller
+      controller.list(
+        {
+          parentFolderId: req.query?.parentFolderId as unknown as GoalFolderId | undefined,
+          includeSystemFolders: parseBoolean(req.query?.includeSystemFolders),
+          sortBy: req.query?.sortBy as 'name' | 'createdAt' | 'sortOrder' | undefined,
+          sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
+        },
+        ctx,
+      ),
   );
 
   // GET /:id — 获取文件夹详情

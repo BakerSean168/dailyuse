@@ -6,10 +6,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type {
-  ITaskDependencyApiClient,
-  IResultIpcClient,
-} from '../types';
+import { TaskChannels } from '@dailyuse/contracts/electron';
+import type { ITaskDependencyApiClient, IResultIpcClient } from '../types';
 import type {
   TaskDependencyClientDTO,
   CreateTaskDependencyRequest,
@@ -26,36 +24,36 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
     taskId: string,
     request: CreateTaskDependencyRequest,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    return this.ipcClient.invoke('task:dependency:create', { taskId, request });
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_CREATE, { taskId, request });
   }
 
   async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.ipcClient.invoke('task:dependency:list', { taskId });
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_LIST, { taskId });
   }
 
   async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.ipcClient.invoke('task:dependency:dependents', { taskId });
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_DEPENDENTS, { taskId });
   }
 
   async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
-    return this.ipcClient.invoke('task:dependency:chain', { taskId });
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_CHAIN, { taskId });
   }
 
   async validateDependency(
     request: ValidateDependencyRequest,
   ): Promise<Result<ValidateDependencyResponse>> {
-    return this.ipcClient.invoke('task:dependency:validate', request);
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_VALIDATE, request);
   }
 
   async deleteDependency(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke('task:dependency:delete', { id });
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_DELETE, { id });
   }
 
   async updateDependency(
     id: string,
     request: UpdateTaskDependencyRequest,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    return this.ipcClient.invoke('task:dependency:update', { id, request });
+    return this.ipcClient.invoke(TaskChannels.DEPENDENCY_UPDATE, { id, request });
   }
 }
 

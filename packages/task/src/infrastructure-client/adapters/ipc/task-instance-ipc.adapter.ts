@@ -6,10 +6,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type {
-  ITaskInstanceApiClient,
-  IResultIpcClient,
-} from '../types';
+import { TaskChannels } from '@dailyuse/contracts/electron';
+import type { ITaskInstanceApiClient, IResultIpcClient } from '../types';
 import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
@@ -27,40 +25,42 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     startDate?: number;
     endDate?: number;
   }): Promise<Result<TaskInstanceClientDTO[]>> {
-    return this.ipcClient.invoke('task:instance:list', params);
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_LIST, params);
   }
 
   async getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>> {
-    return this.ipcClient.invoke('task:instance:get', { id });
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_GET, { id });
   }
 
   async deleteTaskInstance(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke('task:instance:delete', { id });
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_DELETE, { id });
   }
 
   async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
-    return this.ipcClient.invoke('task:instance:create', { id });
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_CREATE, { id });
   }
 
   async completeTaskInstance(
     id: string,
     request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return this.ipcClient.invoke('task:instance:complete', { id, request });
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_COMPLETE, { id, request });
   }
 
   async skipTaskInstance(
     id: string,
     request?: SkipTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return this.ipcClient.invoke('task:instance:skip', { id, request });
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_SKIP, { id, request });
   }
 
-  async checkExpiredInstances(): Promise<Result<{
-    count: number;
-    instances: TaskInstanceClientDTO[];
-  }>> {
-    return this.ipcClient.invoke('task:instance:check-expired');
+  async checkExpiredInstances(): Promise<
+    Result<{
+      count: number;
+      instances: TaskInstanceClientDTO[];
+    }>
+  > {
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_CHECK_EXPIRED);
   }
 }
 

@@ -24,6 +24,11 @@ export function createAccountTransportHandlers(api: AccountApplicationPort): Acc
       return ok(result.account);
     },
 
+    updateSettings: async (data, ctx) => {
+      const result = await api.updateSettings(ctx.identityId, data);
+      return ok(result);
+    },
+
     checkAvailability: async (data) => {
       return ok(await api.checkAvailability(data));
     },

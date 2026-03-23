@@ -52,7 +52,9 @@ describe('CompleteGoal', () => {
 
     const result = await useCase.execute(goal.id);
 
-    expect(goal.status).toBe('Completed');
+    expect(goal.status).toBe('Archived');
+    expect(goal.completedAt).not.toBeNull();
+    expect(goal.archivedAt).not.toBeNull();
     expect(goalRepo.save).toHaveBeenCalledWith(goal);
     expect(result.goal).toBeDefined();
     expect(result.goal.name).toBe('Test Goal');
@@ -65,7 +67,7 @@ describe('CompleteGoal', () => {
 
     const result = await useCase.execute(goal.id);
 
-    expect(goal.status).toBe('Completed');
+    expect(goal.status).toBe('Archived');
     expect(result.goal).toBeDefined();
   });
 
@@ -75,7 +77,9 @@ describe('CompleteGoal', () => {
     goal.archive();
     vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id)).rejects.toThrow();
+    const result = await useCase.execute(goal.id);
+
+    expect(result.goal.status).toBe('Archived');
   });
 
   it('should return the server DTO with includeChildren', async () => {
@@ -91,6 +95,6 @@ describe('CompleteGoal', () => {
     const result = await useCase.execute(goal.id);
 
     expect(result.goal.name).toBe('Complete Me');
-    expect(result.goal.status).toBe('Completed');
+    expect(result.goal.status).toBe('Archived');
   });
 });

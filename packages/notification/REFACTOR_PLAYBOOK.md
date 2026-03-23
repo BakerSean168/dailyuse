@@ -99,7 +99,6 @@ This is the most complex part of the notification migration. The old `initializa
 
 - `NotificationClientService` wraps any `INotificationApiClient` (HTTP or IPC adapter)
 - Returns `Result<T>` — no throwing
-- Singleton proxy still exists in `application-client/index.ts` — not yet cleaned up
 
 ## What Was Deleted During Migration
 
@@ -110,7 +109,6 @@ This is the most complex part of the notification migration. The old `initializa
 
 - `NotificationContainer` singleton DI container (`infrastructure-server/di/notification-container.ts`) — exported with `@deprecated`
 - `NotificationRepositoryFactory` (`infrastructure-server/di/`) — exported with `@deprecated`
-- `notificationApplicationService` singleton proxy + `setNotificationApplicationService` helper (`application-client/index.ts`)
 - Missing `createNotificationClientService(adapter)` factory function
 
 ## Correspondence With Governance
@@ -144,9 +142,8 @@ This is the most complex part of the notification migration. The old `initializa
 - [x] Mark legacy `NotificationContainer` as `@deprecated`
 - [ ] Delete legacy `NotificationContainer` singleton
 - [ ] Delete legacy `NotificationRepositoryFactory`
-- [ ] Clean up client singleton proxy (`notificationApplicationService`)
 - [ ] Add `createNotificationClientService(adapter)` factory
-- [ ] Replace stub `api` methods with full domain service delegation
+- [ ] Continue removing compatibility facades after caller migration
 - [x] Update docs (COMPOSITION_ROOT.md, REFACTOR_PLAYBOOK.md)
 
 ## Success Criteria

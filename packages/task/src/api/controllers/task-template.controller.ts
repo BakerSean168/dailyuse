@@ -22,9 +22,12 @@ import type {
   TaskTemplateClientDTO,
   TaskTemplateStatus,
   TaskInstanceClientDTO,
-  CreateTaskTemplateReq,
-  QueryTaskTemplatesReq,
+  CreateTaskTemplateInput,
+  ListTaskTemplateFilters,
+  QueryTaskTemplatesInternal,
 } from '@dailyuse/contracts/task';
+import type { Context } from '@dailyuse/contracts/shared';
+import type { TaskFolderId, GoalId } from '@dailyuse/contracts/primitives';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CreateTaskTemplate } from '../../application-server/use-cases/commands/create-task-template';
@@ -68,8 +71,9 @@ export class TaskTemplateController {
 
   /**
    * Create new task template (with Zod validation)
+   * Identity is injected from Context, not from request payload
    */
-  async createTemplate(input: unknown, identityId: string): Promise<Result<TaskTemplateClientDTO>> {
+  async createTemplate(input: unknown, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
     const parsed = CreateTaskTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -79,8 +83,9 @@ export class TaskTemplateController {
       });
     }
 
-    const result = await this.useCases.createTemplate.execute({
-      identityId: identityId as CreateTaskTemplateReq['identityId'],
+    // Assemble internal input with identityId from Context
+    const createInput: CreateTaskTemplateInput = {
+      identityId: IdentityId.of(ctx.identityId),
       name: parsed.data.name,
       description: parsed.data.description,
       taskType: parsed.data.taskType,
@@ -91,7 +96,10 @@ export class TaskTemplateController {
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,
       color: parsed.data.color,
-    });
+      goalBinding: parsed.data.goalBinding,
+    };
+
+    const result = await this.useCases.createTemplate.execute(createInput);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO>;
@@ -118,25 +126,22 @@ export class TaskTemplateController {
 
   /**
    * List templates for account
+   * Identity is injected from Context, not from request payload
    */
   async listTemplates(
-    identityId: string,
-    filters?: {
-      status?: TaskTemplateStatus;
-      folderId?: QueryTaskTemplatesReq['folderId'];
-      goalId?: QueryTaskTemplatesReq['goalId'];
-      tags?: string[];
-    },
+    filters: ListTaskTemplateFilters | undefined,
+    ctx: Context,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
-    const request: QueryTaskTemplatesReq = {
-      identityId: IdentityId.of(identityId) as QueryTaskTemplatesReq['identityId'],
-      status: filters?.status ? [filters.status] : undefined,
-      folderId: filters?.folderId,
-      goalId: filters?.goalId,
+    // Assemble internal query with identityId from Context
+    const query: QueryTaskTemplatesInternal = {
+      identityId: IdentityId.of(ctx.identityId),
+      status: filters?.status,
+      folderId: filters?.folderId as TaskFolderId | undefined,
+      goalId: filters?.goalId as GoalId | undefined,
       tags: filters?.tags,
     };
 
-    const result = await this.useCases.listTemplates.execute(request);
+    const result = await this.useCases.listTemplates.execute(query);
 
     if (!isOk(result)) {
       return result as Result<{ templates: TaskTemplateClientDTO[]; total: number }>;
@@ -163,10 +168,12 @@ export class TaskTemplateController {
       description: parsed.data.description,
       timeConfig: parsed.data.timeConfig,
       recurrenceRule: parsed.data.recurrenceRule,
+      reminderConfig: parsed.data.reminderConfig,
       importance: parsed.data.importance,
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,
       color: parsed.data.color,
+      goalBinding: parsed.data.goalBinding,
     });
   }
 
@@ -216,12 +223,10 @@ export class TaskTemplateController {
 
   /**
    * List templates sorted by priority
+   * Identity is injected from Context, not from request payload
    */
-  async listByPriority(
-    identityId: string,
-    limit?: number,
-  ): Promise<Result<TaskTemplateClientDTO[]>> {
-    return await this.useCases.listByPriority.execute(identityId, limit);
+  async listByPriority(ctx: Context, limit?: number): Promise<Result<TaskTemplateClientDTO[]>> {
+    return await this.useCases.listByPriority.execute(ctx.identityId, limit);
   }
 
   /**

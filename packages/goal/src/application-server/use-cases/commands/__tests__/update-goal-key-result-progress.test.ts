@@ -8,18 +8,27 @@ import { UpdateGoalKeyResultProgress } from '../update-goal-key-result-progress'
 // ============================================================
 
 function createGoalFixture(overrides?: Record<string, any>) {
+  const keyResult = {
+    id: 'kr-1',
+    title: 'Key Result 1',
+    currentValue: 0,
+    targetValue: 100,
+    toClientDTO: vi.fn().mockReturnValue({
+      id: 'kr-1',
+      title: 'Key Result 1',
+      currentValue: 50,
+      targetValue: 100,
+    }),
+  };
+
   return {
     id: 'goal-id-1',
     status: 'IN_PROGRESS',
     name: 'Test Goal',
     description: 'Test description',
-    keyResults: [{ id: 'kr-1', title: 'Key Result 1', currentValue: 0, targetValue: 100 }],
+    keyResults: [keyResult],
     updateKeyResultProgress: vi.fn(),
-    toClientDTO: vi.fn().mockReturnValue({
-      id: 'goal-id-1',
-      name: 'Test Goal',
-      keyResults: [{ id: 'kr-1', title: 'Key Result 1', currentValue: 50, targetValue: 100 }],
-    }),
+    getKeyResult: vi.fn().mockImplementation((id: string) => (id === 'kr-1' ? keyResult : null)),
     ...overrides,
   } as any;
 }
@@ -38,7 +47,7 @@ describe('UpdateGoalKeyResultProgress', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.id).toBe('goal-id-1');
+      expect(result.data.id).toBe('kr-1');
     }
     expect(goal.updateKeyResultProgress).toHaveBeenCalledWith('kr-1', 50, undefined);
     expect(goalRepo.save).toHaveBeenCalledWith(goal);
@@ -114,7 +123,7 @@ describe('UpdateGoalKeyResultProgress', () => {
     expect(goalRepo.findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
   });
 
-  it('should call toClientDTO with true for includeChildren', async () => {
+  it('should call key result toClientDTO', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
@@ -125,6 +134,7 @@ describe('UpdateGoalKeyResultProgress', () => {
 
     await useCase.execute('goal-id-1', 'kr-1', 50);
 
-    expect(goal.toClientDTO).toHaveBeenCalledWith(true);
+    expect(goal.getKeyResult).toHaveBeenCalledWith('kr-1');
+    expect(goal.keyResults[0].toClientDTO).toHaveBeenCalled();
   });
 });

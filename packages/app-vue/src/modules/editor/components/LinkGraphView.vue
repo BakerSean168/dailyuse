@@ -65,11 +65,11 @@
       >
         <Badge variant="outline">
           <div class="w-2 h-2 rounded-full bg-primary mr-1.5"></div>
-          {{ t('editor.linkGraph.currentDoc') }}
+          {{ t('editor.linkGraph.currentNote') }}
         </Badge>
         <Badge variant="outline">
           <div class="w-2 h-2 rounded-full bg-muted-foreground mr-1.5"></div>
-          {{ t('editor.linkGraph.linkedDoc') }}
+          {{ t('editor.linkGraph.linkedNote') }}
         </Badge>
         <Badge variant="secondary">
           {{ t('editor.linkGraph.nodeCount') }} {{ graphData.nodes.length }} |
@@ -109,7 +109,7 @@ const { ensureResourcesLoaded, getGraph } = useEditorLinkIndex();
 
 const props = withDefaults(
   defineProps<{
-    documentId: string;
+    noteId: string;
     initialDepth?: number;
   }>(),
   {
@@ -137,13 +137,13 @@ let chartInstance: echarts.ECharts | null = null;
 const graphData = ref<LinkGraphData>({
   nodes: [],
   edges: [],
-  centerId: props.documentId,
+  centerId: props.noteId,
   depth: currentDepth.value,
   truncated: false,
 });
 
 async function loadLinkGraph() {
-  if (!props.documentId) return;
+  if (!props.noteId) return;
 
   loading.value = true;
   error.value = null;
@@ -152,12 +152,12 @@ async function loadLinkGraph() {
     graphData.value = {
       nodes: [],
       edges: [],
-      centerId: props.documentId,
+      centerId: props.noteId,
       depth: currentDepth.value,
       truncated: false,
     };
     await ensureResourcesLoaded();
-    graphData.value = getGraph(props.documentId, currentDepth.value, {
+    graphData.value = getGraph(props.noteId, currentDepth.value, {
       maxNodes: 40,
       maxEdges: 80,
     });
@@ -170,7 +170,7 @@ async function loadLinkGraph() {
     graphData.value = {
       nodes: [],
       edges: [],
-      centerId: props.documentId,
+      centerId: props.noteId,
       depth: currentDepth.value,
       truncated: false,
     };
@@ -283,7 +283,7 @@ function resizeChart() {
 }
 
 watch(
-  () => props.documentId,
+  () => props.noteId,
   () => {
     void loadLinkGraph();
   },

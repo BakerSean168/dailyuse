@@ -4,12 +4,15 @@ import type {
 } from '../../../domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import {
   PowerSyncTaskTemplateMapper,
   type PowerSyncTaskTemplateRow,
 } from './mappers/powersync-task-template.mapper';
 import { PowerSyncTaskInstanceMapper } from './mappers/powersync-task-instance.mapper';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -18,10 +21,15 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository {
-  constructor(private readonly db: Queryable) {}
+export class PowerSyncTaskTemplateRepository
+  extends AggregateRepositoryBase<TaskTemplate>
+  implements ITaskTemplateRepository
+{
+  constructor(private readonly db: Queryable) {
+    super(eventBusAdapter);
+  }
 
-  async save(template: TaskTemplate): Promise<void> {
+  protected async persist(template: TaskTemplate): Promise<void> {
     const data = PowerSyncTaskTemplateMapper.toPersistence(template);
     const existing = await this.db.getOptional<{ id: string }>(
       'SELECT id FROM task_templates WHERE id = ? LIMIT 1',
@@ -45,6 +53,9 @@ export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository 
              time_config_start_time = ?,
              time_config_end_time = ?,
              time_config_duration_minutes = ?,
+             time_config_time_point = ?,
+             time_config_time_range_start = ?,
+             time_config_time_range_end = ?,
              recurrence_rule_type = ?,
              recurrence_rule_interval = ?,
              recurrence_rule_days_of_week = ?,
@@ -82,6 +93,9 @@ export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository 
           data.timeConfigStartTime,
           data.timeConfigEndTime,
           data.timeConfigDurationMinutes,
+          data.timeConfigTimePoint,
+          data.timeConfigTimeRangeStart,
+          data.timeConfigTimeRangeEnd,
           data.recurrenceRuleType,
           data.recurrenceRuleInterval,
           data.recurrenceRuleDaysOfWeek,
@@ -111,13 +125,14 @@ export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository 
         `INSERT INTO task_templates (
           id, identity_id, name, description, status, importance, priority, color, tags, folder_id,
           parent_task_id, time_config_type, time_config_start_time, time_config_end_time,
-          time_config_duration_minutes, recurrence_rule_type, recurrence_rule_interval,
+          time_config_duration_minutes, time_config_time_point, time_config_time_range_start,
+          time_config_time_range_end, recurrence_rule_type, recurrence_rule_interval,
           recurrence_rule_days_of_week, recurrence_rule_day_of_month, recurrence_rule_month_of_year,
           recurrence_rule_end_date, recurrence_rule_count, reminder_config_enabled,
           reminder_config_time_offset_minutes, reminder_config_unit, reminder_config_channel,
           last_generated_date, generate_ahead_days, goal_binding, checklist, blocking_reason,
           dependency_status, is_blocked, version, created_at, updated_at, deleted_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
@@ -134,6 +149,9 @@ export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository 
           data.timeConfigStartTime,
           data.timeConfigEndTime,
           data.timeConfigDurationMinutes,
+          data.timeConfigTimePoint,
+          data.timeConfigTimeRangeStart,
+          data.timeConfigTimeRangeEnd,
           data.recurrenceRuleType,
           data.recurrenceRuleInterval,
           data.recurrenceRuleDaysOfWeek,
@@ -158,10 +176,6 @@ export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository 
           data.deletedAt,
         ],
       );
-    }
-
-    for (const evt of template.pullDomainEvents()) {
-      eventBus.send(evt.eventType as any, evt.payload as any);
     }
   }
 

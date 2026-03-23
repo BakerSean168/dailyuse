@@ -6,7 +6,7 @@ import {
   type WikiLinkMatch,
 } from './wikiLinks';
 
-export interface LinkIndexDocument {
+export interface LinkIndexNote {
   id: string;
   resourceId: string;
   title: string;
@@ -39,7 +39,7 @@ export interface LinkIndexLink {
 
 export interface BacklinkItem {
   link: LinkIndexLink;
-  sourceDocument: LinkIndexDocument;
+  sourceNote: LinkIndexNote;
   context: string;
 }
 
@@ -70,15 +70,15 @@ export interface LinkGraphData {
 }
 
 export interface EditorLinkIndex {
-  documents: LinkIndexDocument[];
-  documentsById: Map<string, LinkIndexDocument>;
+  notes: LinkIndexNote[];
+  notesById: Map<string, LinkIndexNote>;
   outgoingBySource: Map<string, LinkIndexLink[]>;
   incomingByTarget: Map<string, LinkIndexLink[]>;
   unresolvedLinks: LinkIndexLink[];
-  resolveDocument(input: string): LinkIndexDocument | null;
+  resolveNote(input: string): LinkIndexNote | null;
 }
 
-export interface SearchDocumentsOptions {
+export interface SearchNotesOptions {
   excludeId?: string;
   limit?: number;
 }
@@ -105,22 +105,22 @@ function toTimestamp(value: string | number | null | undefined): number {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
-function getDocumentTitle(resource: ResourceClientDTO): string {
+function getNoteTitle(resource: ResourceClientDTO): string {
   return stripMarkdownExtension(resource.displayName || resource.name);
 }
 
-function getLookupKeys(document: LinkIndexDocument): string[] {
-  const pathWithoutExtension = stripMarkdownExtension(document.path);
+function getLookupKeys(note: LinkIndexNote): string[] {
+  const pathWithoutExtension = stripMarkdownExtension(note.path);
   const relativePath = pathWithoutExtension.replace(/^\/+/, '');
 
   return Array.from(
     new Set(
       [
-        document.title,
-        document.name,
-        document.displayName,
-        stripMarkdownExtension(document.name),
-        document.path,
+        note.title,
+        note.name,
+        note.displayName,
+        stripMarkdownExtension(note.name),
+        note.path,
         pathWithoutExtension,
         relativePath,
       ]
@@ -130,12 +130,12 @@ function getLookupKeys(document: LinkIndexDocument): string[] {
   );
 }
 
-function rankDocument(document: LinkIndexDocument): number {
-  return document.tags.length * 10 + document.content.length;
+function rankNote(note: LinkIndexNote): number {
+  return note.tags.length * 10 + note.content.length;
 }
 
-function sortDocuments(a: LinkIndexDocument, b: LinkIndexDocument): number {
-  const scoreDiff = rankDocument(b) - rankDocument(a);
+function sortNotes(a: LinkIndexNote, b: LinkIndexNote): number {
+  const scoreDiff = rankNote(b) - rankNote(a);
   if (scoreDiff !== 0) {
     return scoreDiff;
   }
@@ -150,11 +150,11 @@ function extractLinkContext(content: string, match: WikiLinkMatch): string {
   return content.slice(lineStart, lineEnd).trim();
 }
 
-function buildDocument(resource: ResourceClientDTO): LinkIndexDocument {
+function buildNote(resource: ResourceClientDTO): LinkIndexNote {
   return {
     id: resource.id,
     resourceId: resource.id,
-    title: getDocumentTitle(resource),
+    title: getNoteTitle(resource),
     name: resource.name,
     displayName: resource.displayName || resource.name,
     path: resource.path,
@@ -168,9 +168,7 @@ function buildDocument(resource: ResourceClientDTO): LinkIndexDocument {
   };
 }
 
-function createResolver(
-  keyMap: Map<string, LinkIndexDocument[]>,
-): EditorLinkIndex['resolveDocument'] {
+function createResolver(keyMap: Map<string, LinkIndexNote[]>): EditorLinkIndex['resolveNote'] {
   return (input: string) => {
     const normalizedInput = normalizeWikiLinkValue(input);
     if (!normalizedInput) {
@@ -187,45 +185,45 @@ function createResolver(
       return candidates[0];
     }
 
-    return [...candidates].sort(sortDocuments)[0] ?? null;
+    return [...candidates].sort(sortNotes)[0] ?? null;
   };
 }
 
 export function buildEditorLinkIndex(resources: ResourceClientDTO[]): EditorLinkIndex {
-  const documents = resources.map(buildDocument).sort(sortDocuments);
-  const documentsById = new Map(documents.map((document) => [document.id, document]));
-  const keyMap = new Map<string, LinkIndexDocument[]>();
+  const notes = resources.map(buildNote).sort(sortNotes);
+  const notesById = new Map(notes.map((note) => [note.id, note]));
+  const keyMap = new Map<string, LinkIndexNote[]>();
 
-  for (const document of documents) {
-    for (const key of getLookupKeys(document)) {
+  for (const note of notes) {
+    for (const key of getLookupKeys(note)) {
       const existing = keyMap.get(key) ?? [];
-      existing.push(document);
+      existing.push(note);
       keyMap.set(key, existing);
     }
   }
 
-  const resolveDocument = createResolver(keyMap);
+  const resolveNote = createResolver(keyMap);
   const outgoingBySource = new Map<string, LinkIndexLink[]>();
   const incomingByTarget = new Map<string, LinkIndexLink[]>();
   const unresolvedLinks: LinkIndexLink[] = [];
 
-  for (const document of documents.filter((item) => item.isMarkdown)) {
-    const links = parseWikiLinks(document.content).map((match, index) => {
-      const targetDocument = resolveDocument(match.target);
+  for (const note of notes.filter((item) => item.isMarkdown)) {
+    const links = parseWikiLinks(note.content).map((match, index) => {
+      const targetNote = resolveNote(match.target);
 
       const link: LinkIndexLink = {
-        id: `${document.id}:${index}:${match.start}`,
-        sourceId: document.id,
-        targetId: targetDocument?.id ?? null,
+        id: `${note.id}:${index}:${match.start}`,
+        sourceId: note.id,
+        targetId: targetNote?.id ?? null,
         raw: match.raw,
         target: match.target,
         alias: match.alias,
         section: match.section,
         displayText: match.displayText,
-        context: extractLinkContext(document.content, match),
+        context: extractLinkContext(note.content, match),
         start: match.start,
         end: match.end,
-        isBroken: targetDocument == null,
+        isBroken: targetNote == null,
       };
 
       if (link.targetId) {
@@ -239,32 +237,32 @@ export function buildEditorLinkIndex(resources: ResourceClientDTO[]): EditorLink
       return link;
     });
 
-    outgoingBySource.set(document.id, links);
+    outgoingBySource.set(note.id, links);
   }
 
   return {
-    documents,
-    documentsById,
+    notes,
+    notesById,
     outgoingBySource,
     incomingByTarget,
     unresolvedLinks,
-    resolveDocument,
+    resolveNote,
   };
 }
 
-export function searchLinkIndexDocuments(
+export function searchLinkIndexNotes(
   index: EditorLinkIndex,
   query: string,
-  options: SearchDocumentsOptions = {},
-): LinkIndexDocument[] {
+  options: SearchNotesOptions = {},
+): LinkIndexNote[] {
   const normalizedQuery = normalizeWikiLinkValue(query);
   const limit = options.limit ?? 20;
 
-  const results = index.documents
-    .filter((document) => document.id !== options.excludeId)
-    .map((document) => {
-      const fields = [document.title, document.displayName, document.path, ...document.tags].map(
-        (field) => normalizeWikiLinkValue(field),
+  const results = index.notes
+    .filter((note) => note.id !== options.excludeId)
+    .map((note) => {
+      const fields = [note.title, note.displayName, note.path, ...note.tags].map((field) =>
+        normalizeWikiLinkValue(field),
       );
 
       const score = normalizedQuery
@@ -292,75 +290,75 @@ export function searchLinkIndexDocuments(
         : 10;
 
       return {
-        document,
-        score: score + rankDocument(document),
+        note,
+        score: score + rankNote(note),
       };
     })
     .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || a.document.path.localeCompare(b.document.path))
+    .sort((a, b) => b.score - a.score || a.note.path.localeCompare(b.note.path))
     .slice(0, limit)
-    .map((entry) => entry.document);
+    .map((entry) => entry.note);
 
   return results;
 }
 
-export function getBacklinksForDocument(
+export function getBacklinksForNote(
   index: EditorLinkIndex,
-  documentId: string,
+  noteId: string,
   limit = 100,
 ): BacklinkItem[] {
-  const links = index.incomingByTarget.get(documentId) ?? [];
+  const links = index.incomingByTarget.get(noteId) ?? [];
 
   return links
     .map((link) => {
-      const sourceDocument = index.documentsById.get(link.sourceId);
-      if (!sourceDocument) {
+      const sourceNote = index.notesById.get(link.sourceId);
+      if (!sourceNote) {
         return null;
       }
 
       return {
         link,
-        sourceDocument,
+        sourceNote,
         context: link.context,
       };
     })
     .filter((item): item is BacklinkItem => item !== null)
-    .sort((a, b) => b.sourceDocument.updatedAt - a.sourceDocument.updatedAt)
+    .sort((a, b) => b.sourceNote.updatedAt - a.sourceNote.updatedAt)
     .slice(0, limit);
 }
 
-function getAdjacentDocumentIds(index: EditorLinkIndex, documentId: string): string[] {
-  const outgoing = (index.outgoingBySource.get(documentId) ?? [])
+function getAdjacentNoteIds(index: EditorLinkIndex, noteId: string): string[] {
+  const outgoing = (index.outgoingBySource.get(noteId) ?? [])
     .map((link) => link.targetId)
     .filter((id): id is string => Boolean(id));
-  const incoming = (index.incomingByTarget.get(documentId) ?? []).map((link) => link.sourceId);
+  const incoming = (index.incomingByTarget.get(noteId) ?? []).map((link) => link.sourceId);
 
   return Array.from(new Set([...outgoing, ...incoming]));
 }
 
-export function getLinkGraphForDocument(
+export function getLinkGraphForNote(
   index: EditorLinkIndex,
-  documentId: string,
+  noteId: string,
   depth: number,
   options: GraphOptions = {},
 ): LinkGraphData {
   const maxNodes = options.maxNodes ?? 40;
   const maxEdges = options.maxEdges ?? 80;
-  const centerDocument = index.documentsById.get(documentId);
+  const centerNote = index.notesById.get(noteId);
 
-  if (!centerDocument) {
+  if (!centerNote) {
     return {
       nodes: [],
       edges: [],
-      centerId: documentId,
+      centerId: noteId,
       depth,
       truncated: false,
     };
   }
 
-  const visited = new Set<string>([documentId]);
-  const queue: Array<{ id: string; depth: number }> = [{ id: documentId, depth: 0 }];
-  const nodeDepth = new Map<string, number>([[documentId, 0]]);
+  const visited = new Set<string>([noteId]);
+  const queue: Array<{ id: string; depth: number }> = [{ id: noteId, depth: 0 }];
+  const nodeDepth = new Map<string, number>([[noteId, 0]]);
   let truncated = false;
 
   while (queue.length > 0) {
@@ -373,10 +371,10 @@ export function getLinkGraphForDocument(
       continue;
     }
 
-    const candidates = getAdjacentDocumentIds(index, current.id)
-      .map((id) => index.documentsById.get(id))
-      .filter((item): item is LinkIndexDocument => item !== undefined)
-      .sort(sortDocuments);
+    const candidates = getAdjacentNoteIds(index, current.id)
+      .map((id) => index.notesById.get(id))
+      .filter((item): item is LinkIndexNote => item !== undefined)
+      .sort(sortNotes);
 
     for (const candidate of candidates) {
       if (visited.has(candidate.id)) {
@@ -434,24 +432,23 @@ export function getLinkGraphForDocument(
   }
 
   const nodes: LinkGraphNode[] = Array.from(allowedNodeIds)
-    .map((id) => index.documentsById.get(id))
-    .filter((item): item is LinkIndexDocument => item !== undefined)
-    .sort(sortDocuments)
-    .map((document) => ({
-      id: document.id,
-      title: document.title,
-      isCenter: document.id === documentId,
-      isCurrent: document.id === documentId,
-      linkCount: (index.outgoingBySource.get(document.id) ?? []).filter((link) => link.targetId)
-        .length,
-      backlinkCount: (index.incomingByTarget.get(document.id) ?? []).length,
-      depth: nodeDepth.get(document.id) ?? depth,
+    .map((id) => index.notesById.get(id))
+    .filter((item): item is LinkIndexNote => item !== undefined)
+    .sort(sortNotes)
+    .map((note) => ({
+      id: note.id,
+      title: note.title,
+      isCenter: note.id === noteId,
+      isCurrent: note.id === noteId,
+      linkCount: (index.outgoingBySource.get(note.id) ?? []).filter((link) => link.targetId).length,
+      backlinkCount: (index.incomingByTarget.get(note.id) ?? []).length,
+      depth: nodeDepth.get(note.id) ?? depth,
     }));
 
   return {
     nodes,
     edges,
-    centerId: documentId,
+    centerId: noteId,
     depth,
     truncated,
   };

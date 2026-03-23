@@ -6,6 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { TaskChannels } from '@dailyuse/contracts/electron';
 import type { ITaskTemplateApiClient, IResultIpcClient, TaskTemplateListParams } from '../types';
 import type {
   TaskTemplateClientDTO,
@@ -20,56 +21,56 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:create', request);
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_CREATE, request);
   }
 
   async getTaskTemplates(
     params?: TaskTemplateListParams,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
-    return this.ipcClient.invoke('task:template:list', params);
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_LIST, params);
   }
 
   async getTaskTemplateById(
     id: string,
     includeChildren = false,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:get', { id, includeChildren });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GET, { id, includeChildren });
   }
 
   async updateTaskTemplate(
     id: string,
     request: UpdateTaskTemplateReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:update', { id, ...request });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_UPDATE, { id, request });
   }
 
   async deleteTaskTemplate(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke('task:template:delete', { id });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_DELETE, { id });
   }
 
   async getTasksWithPrioritySorting(params?: {
     limit?: number;
   }): Promise<Result<TaskTemplateClientDTO[]>> {
-    return this.ipcClient.invoke('task:template:get-by-priority', { params });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GET_BY_PRIORITY, { params });
   }
 
   async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:restore', { id });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_RESTORE, { id });
   }
 
   async pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:pause', { id });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_PAUSE, { id });
   }
 
   async archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:archive', { id });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_ARCHIVE, { id });
   }
 
   async generateInstances(
     templateId: string,
     request: GenerateInstancesReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    return this.ipcClient.invoke('task:template:generate-instances', {
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GENERATE_INSTANCES, {
       templateId,
       request,
     });
@@ -80,7 +81,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     from: number,
     to: number,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    return this.ipcClient.invoke('task:template:get-instances', {
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GET_INSTANCES, {
       templateId,
       from,
       to,
@@ -91,14 +92,14 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     templateId: string,
     request: BindToGoalReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:bind-goal', {
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_BIND_GOAL, {
       templateId,
       request,
     });
   }
 
   async unbindFromGoal(templateId: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.ipcClient.invoke('task:template:unbind-goal', { templateId });
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_UNBIND_GOAL, { templateId });
   }
 }
 

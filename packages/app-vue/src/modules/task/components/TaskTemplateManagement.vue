@@ -82,6 +82,7 @@
         @click="(id) => emit('click-template', id)"
         @edit="(id) => emit('edit-template', id)"
         @delete="(tpl) => emit('delete-template', tpl)"
+        @pause="(tpl) => emit('pause-template', tpl)"
         @resume="(tpl) => emit('resume-template', tpl)"
       />
     </div>
@@ -219,6 +220,7 @@ const emit = defineEmits<{
   (e: 'click-template', templateId: string): void;
   (e: 'edit-template', templateId: string): void;
   (e: 'delete-template', template: TaskTemplateViewModel): void;
+  (e: 'pause-template', template: TaskTemplateViewModel): void;
   (e: 'resume-template', template: TaskTemplateViewModel): void;
   (e: 'delete-all-templates'): void;
   (e: 'dependency-created', sourceId: string, targetId: string): void;

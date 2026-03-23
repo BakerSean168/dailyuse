@@ -54,18 +54,25 @@
                   class="h-4 w-4 rounded-full border"
                   :style="{ backgroundColor: draft.color || '#94a3b8' }"
                 />
-                <span class="text-sm">{{ draft.color || t('goal.folderDialog.selectColor') }}</span>
+                <span class="text-sm">{{
+                  selectedColorLabel || t('goal.folderDialog.selectColor')
+                }}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-3" align="start">
               <div class="grid grid-cols-4 gap-2">
                 <button
-                  v-for="c in colorOptions"
-                  :key="c"
+                  v-for="option in colorOptions"
+                  :key="option.value"
                   class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
-                  :class="draft.color === c ? 'border-foreground scale-110' : 'border-transparent'"
-                  :style="{ backgroundColor: c }"
-                  @click="draft.color = c"
+                  :class="
+                    draft.color === option.value
+                      ? 'border-foreground scale-110'
+                      : 'border-transparent'
+                  "
+                  :style="{ backgroundColor: option.value }"
+                  :title="option.label"
+                  @click="draft.color = option.value"
                 />
               </div>
               <Button
@@ -120,18 +127,18 @@ import { Popover, PopoverTrigger, PopoverContent } from '@dailyuse/ui-vue-shadcn
 const { t } = useI18n();
 
 const colorOptions = [
-  '#ef4444',
-  '#f97316',
-  '#f59e0b',
-  '#84cc16',
-  '#22c55e',
-  '#06b6d4',
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#f43f5e',
-  '#14b8a6',
-  '#6366f1',
+  { value: '#ef4444', label: t('common.colors.red') },
+  { value: '#f97316', label: t('common.colors.orange') },
+  { value: '#f59e0b', label: t('common.colors.amber') },
+  { value: '#84cc16', label: t('common.colors.lime') },
+  { value: '#22c55e', label: t('common.colors.green') },
+  { value: '#06b6d4', label: t('common.colors.cyan') },
+  { value: '#3b82f6', label: t('common.colors.blue') },
+  { value: '#8b5cf6', label: t('common.colors.violet') },
+  { value: '#ec4899', label: t('common.colors.pink') },
+  { value: '#f43f5e', label: t('common.colors.rose') },
+  { value: '#14b8a6', label: t('common.colors.teal') },
+  { value: '#6366f1', label: t('common.colors.indigo') },
 ];
 
 type GoalFolderDraft = {
@@ -170,6 +177,9 @@ const draft = ref<GoalFolderDraft>({
 });
 
 const isEditing = computed(() => !!editingFolder.value);
+const selectedColorLabel = computed(
+  () => colorOptions.find((option) => option.value === draft.value.color)?.label ?? '',
+);
 
 const nameError = computed(() => {
   const value = draft.value.name.trim();

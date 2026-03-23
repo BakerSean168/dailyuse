@@ -175,7 +175,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.detectConflicts(req.body),
+    (req, ctx) => controller.detectConflicts(req.body, ctx),
   );
 
   // POST /with-conflict-detection — 创建日程并检测冲突
@@ -221,7 +221,17 @@ export function registerScheduleEventRoutes(
       summary: '解决日程冲突',
       request: {
         params: z.object({ id: brandedId<ScheduleId>() }),
-        body: { content: { 'application/json': { schema: z.object({ strategy: z.enum(['reschedule', 'acknowledge']), startTime: z.unknown().optional(), endTime: z.unknown().optional() }) } } },
+        body: {
+          content: {
+            'application/json': {
+              schema: z.object({
+                strategy: z.enum(['reschedule', 'acknowledge']),
+                startTime: z.unknown().optional(),
+                endTime: z.unknown().optional(),
+              }),
+            },
+          },
+        },
       },
       responses: {
         200: successResponse(z.object({}).passthrough(), '冲突已解决'),

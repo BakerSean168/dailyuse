@@ -131,6 +131,30 @@
           </p>
         </div>
 
+        <div class="mb-3">
+          <Label class="mb-2 block">{{ t('task.krLinks.trigger.label') }}</Label>
+          <Select
+            :model-value="progressTrigger ?? undefined"
+            :disabled="!selectedGoalId || !selectedKeyResultId"
+            @update:model-value="handleTriggerChange"
+          >
+            <SelectTrigger>
+              <div class="flex items-center gap-2">
+                <Link2 class="h-4 w-4" />
+                <SelectValue :placeholder="t('task.krLinks.trigger.placeholder')" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="item in triggerItems" :key="item.value" :value="item.value">
+                <div>
+                  <div>{{ item.title }}</div>
+                  <div class="text-xs text-muted-foreground">{{ item.description }}</div>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <!-- 预览卡片 -->
         <Card
           v-if="hasCompleteBinding"
@@ -142,7 +166,7 @@
               <div class="flex-1">
                 <div class="text-sm font-medium mb-1">{{ t('task.krLinks.configPreview') }}</div>
                 <div class="text-xs text-muted-foreground">
-                  {{ t('task.krLinks.previewText', { value: incrementValue }) }}
+                  {{ t(`task.krLinks.previewText.${progressTrigger}`, { value: incrementValue }) }}
                 </div>
               </div>
             </div>
@@ -155,6 +179,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import {
+  TaskGoalBindingTrigger,
+  type TaskGoalBindingTriggerValue,
+} from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel, GoalBindingOption, KeyResultBindingOption } from '../../types';
 import {
   Card,
@@ -195,6 +223,7 @@ const linkEnabled = ref(false);
 const selectedGoalId = ref<string | null>(null);
 const selectedKeyResultId = ref<string | null>(null);
 const incrementValue = ref<number>(1);
+const progressTrigger = ref<TaskGoalBindingTriggerValue>(TaskGoalBindingTrigger.PerInstance);
 const loadingGoals = ref(false);
 const loadingKeyResults = ref(false);
 
@@ -218,7 +247,8 @@ const hasCompleteBinding = computed(() => {
     linkEnabled.value &&
     selectedGoalId.value &&
     selectedKeyResultId.value &&
-    incrementValue.value > 0
+    incrementValue.value > 0 &&
+    !!progressTrigger.value
   );
 });
 
@@ -253,6 +283,19 @@ const selectedKeyResultTitle = computed(() => {
   const kr = keyResults.value.find((k) => k.id === selectedKeyResultId.value);
   return kr?.title || '';
 });
+
+const triggerItems = computed(() => [
+  {
+    value: TaskGoalBindingTrigger.PerInstance,
+    title: t('task.krLinks.trigger.perInstance'),
+    description: t('task.krLinks.trigger.perInstanceDesc'),
+  },
+  {
+    value: TaskGoalBindingTrigger.AllInstancesCompleted,
+    title: t('task.krLinks.trigger.allInstancesCompleted'),
+    description: t('task.krLinks.trigger.allInstancesCompletedDesc'),
+  },
+]);
 
 // ===== UI 辅助方法 =====
 const getGoalStatusColorClass = (status: string): string => {
@@ -308,6 +351,7 @@ const handleLinkToggle = (enabled: boolean | null) => {
     selectedGoalId.value = null;
     selectedKeyResultId.value = null;
     incrementValue.value = 1;
+    progressTrigger.value = TaskGoalBindingTrigger.PerInstance;
   }
 
   validateAndEmit();
@@ -339,6 +383,13 @@ const handleIncrementChange = () => {
   validateAndEmit();
 };
 
+const handleTriggerChange = (value: string | null) => {
+  progressTrigger.value =
+    (value as typeof progressTrigger.value) ?? TaskGoalBindingTrigger.PerInstance;
+  updateBinding();
+  validateAndEmit();
+};
+
 const updateBinding = () => {
   if (
     !linkEnabled.value ||
@@ -355,6 +406,7 @@ const updateBinding = () => {
       goalId: selectedGoalId.value,
       keyResultId: selectedKeyResultId.value,
       incrementValue: incrementValue.value,
+      progressTrigger: progressTrigger.value,
       goalTitle: selectedGoalTitle.value,
       keyResultTitle: selectedKeyResultTitle.value,
     },
@@ -368,6 +420,7 @@ const validateAndEmit = () => {
     !linkEnabled.value ||
     (!!selectedGoalId.value &&
       !!selectedKeyResultId.value &&
+      !!progressTrigger.value &&
       incrementValue.value > 0 &&
       incrementValue.value <= 1000);
 
@@ -382,11 +435,13 @@ const initializeFromModel = () => {
     selectedGoalId.value = binding.goalId ?? null;
     selectedKeyResultId.value = binding.keyResultId ?? null;
     incrementValue.value = binding.incrementValue ?? 1;
+    progressTrigger.value = binding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance;
   } else {
     linkEnabled.value = false;
     selectedGoalId.value = null;
     selectedKeyResultId.value = null;
     incrementValue.value = 1;
+    progressTrigger.value = TaskGoalBindingTrigger.PerInstance;
   }
 };
 

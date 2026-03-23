@@ -33,10 +33,7 @@ export interface GoalHttpAdapters {
  * // apps/web/src/infrastructure/goal.ts
  * const httpClient = createResultHttpClient({ baseURL: '/api' });
  * const adapters = createGoalHttpAdapters(httpClient);
- * GoalContainer.getInstance()
- *   .registerApiClient(adapters.goal)
- *   .registerFolderApiClient(adapters.folder)
- *   .registerFocusApiClient(adapters.focus);
+ * // register adapters in the app composition root
  * ```
  */
 export function createGoalHttpAdapters(httpClient: IResultHttpClient): GoalHttpAdapters {

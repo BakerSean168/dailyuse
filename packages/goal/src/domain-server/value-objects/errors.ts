@@ -143,6 +143,6 @@ export class KeyResultWeightExceededError extends DomainError {
  */
 export class GoalReviewRatingInvalidError extends DomainError {
   constructor(rating: number) {
-    super('goal_review_rating_invalid', `目标回顾评分 ${rating} 无效（必须在 0-10 之间）`);
+    super('goal_review_rating_invalid', `目标回顾评分 ${rating} 无效（必须在 1-5 之间）`);
   }
 }

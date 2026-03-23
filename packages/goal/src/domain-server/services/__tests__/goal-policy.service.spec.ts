@@ -64,10 +64,10 @@ describe('GoalPolicy', () => {
       expect(() => policy.ensureGoalCanBeModified(goal)).not.toThrow();
     });
 
-    it('should pass for a completed goal', () => {
+    it('should treat completed goals as archived and reject modification', () => {
       const goal = createCompletedGoal();
 
-      expect(() => policy.ensureGoalCanBeModified(goal)).not.toThrow();
+      expect(() => policy.ensureGoalCanBeModified(goal)).toThrow(GoalArchivedError);
     });
 
     it('should throw GoalArchivedError when goal has archivedAt set', () => {
@@ -96,10 +96,10 @@ describe('GoalPolicy', () => {
   // ============================================================
 
   describe('ensureGoalCanBeArchived()', () => {
-    it('should pass for a completed goal', () => {
+    it('should reject a completed goal because it is already archived', () => {
       const goal = createCompletedGoal();
 
-      expect(() => policy.ensureGoalCanBeArchived(goal)).not.toThrow();
+      expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(GoalArchivedError);
     });
 
     it('should throw GoalArchivedError if goal is already archived', () => {
@@ -108,19 +108,17 @@ describe('GoalPolicy', () => {
       expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(GoalArchivedError);
     });
 
-    it('should throw Error for active goals (must complete first)', () => {
+    it('should allow active goals to be archived directly', () => {
       const goal = createTestGoal();
 
-      expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(
-        'Active goals must be completed before archiving',
-      );
+      expect(() => policy.ensureGoalCanBeArchived(goal)).not.toThrow();
     });
 
-    it('should not throw for completed goal without archivedAt', () => {
+    it('should mark completed goal as archived immediately', () => {
       const goal = createCompletedGoal();
-      expect(goal.archivedAt).toBeNull();
+      expect(goal.archivedAt).not.toBeNull();
 
-      expect(() => policy.ensureGoalCanBeArchived(goal)).not.toThrow();
+      expect(() => policy.ensureGoalCanBeArchived(goal)).toThrow(GoalArchivedError);
     });
   });
 
@@ -143,12 +141,10 @@ describe('GoalPolicy', () => {
       );
     });
 
-    it('should throw if goal is completed but not archived', () => {
+    it('should pass for a completed goal because it is archived', () => {
       const goal = createCompletedGoal();
 
-      expect(() => policy.ensureGoalCanBePermanentlyDeleted(goal)).toThrow(
-        'must be archived before it can be permanently deleted',
-      );
+      expect(() => policy.ensureGoalCanBePermanentlyDeleted(goal)).not.toThrow();
     });
 
     it('should include goal id in the error message', () => {
@@ -169,10 +165,10 @@ describe('GoalPolicy', () => {
       expect(() => policy.ensureGoalCanBeActivated(goal)).not.toThrow();
     });
 
-    it('should pass for a completed goal', () => {
+    it('should reject activating a completed goal because it is archived', () => {
       const goal = createCompletedGoal();
 
-      expect(() => policy.ensureGoalCanBeActivated(goal)).not.toThrow();
+      expect(() => policy.ensureGoalCanBeActivated(goal)).toThrow(GoalArchivedError);
     });
 
     it('should throw GoalArchivedError if goal is archived', () => {
@@ -207,10 +203,10 @@ describe('GoalPolicy', () => {
       expect(() => policy.ensureParentGoalValid(parent)).not.toThrow();
     });
 
-    it('should pass for a completed parent goal', () => {
+    it('should reject a completed parent goal because it is archived', () => {
       const parent = createCompletedGoal();
 
-      expect(() => policy.ensureParentGoalValid(parent)).not.toThrow();
+      expect(() => policy.ensureParentGoalValid(parent)).toThrow(GoalArchivedError);
     });
 
     it('should throw GoalArchivedError if parent is archived (by archivedAt)', () => {

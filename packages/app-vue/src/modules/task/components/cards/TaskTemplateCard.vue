@@ -3,6 +3,7 @@
     <Card
       class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
       :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
+      :style="template.color ? { borderTop: `3px solid ${template.color}` } : undefined"
       @click="handleCardClick"
     >
       <!-- 卡片头部 -->
@@ -25,6 +26,12 @@
               <CardTitle class="text-lg font-semibold line-clamp-1 min-h-[1.75rem]">{{
                 template.title
               }}</CardTitle>
+              <div
+                v-if="template.color"
+                class="h-3 w-3 rounded-full border"
+                :style="{ backgroundColor: template.color }"
+                :title="template.colorLabel"
+              />
             </div>
 
             <div class="flex flex-wrap gap-2 items-center">
@@ -42,7 +49,7 @@
                 class="text-xs"
               >
                 <Flag class="h-3 w-3 mr-1" />
-                {{ template.importanceText }}
+                {{ template.importanceText || template.importance }}
               </Badge>
               <!-- Priority Score Chip - Story 2.4 -->
               <Badge :class="getPriorityBadgeClass(template.priority ?? 0)" class="text-xs">
@@ -84,7 +91,7 @@
           <div class="flex items-center gap-2">
             <RefreshCw class="h-4 w-4 shrink-0 text-success" />
             <span class="text-sm text-muted-foreground">
-              {{ template.recurrenceText }}
+              {{ template.recurrenceText || t('task.templateCard.noRecurrence') }}
             </span>
           </div>
 
@@ -92,12 +99,7 @@
           <div class="flex items-center gap-2">
             <Tag class="h-4 w-4 shrink-0 text-purple-500" />
             <span class="text-sm text-muted-foreground">
-              <span v-if="template.tags && template.tags.length > 0" class="italic opacity-70">
-                · {{ template.tags.slice(0, 2).join(', ') }}
-                <span v-if="template.tags.length > 2">{{
-                  t('task.templateCard.moreTagsSuffix')
-                }}</span>
-              </span>
+              {{ template.tagSummaryText || t('task.templateCard.noTags') }}
             </span>
           </div>
 
@@ -119,21 +121,23 @@
         </div>
 
         <!-- 统计信息 -->
-        <div v-if="(template.instanceCount ?? 0) > 0" class="mt-3 rounded-lg bg-muted/30 p-3">
+        <div class="mt-3 rounded-lg bg-muted/30 p-3">
           <Separator class="mb-2" />
           <div class="flex justify-between gap-4 flex-wrap">
             <div class="flex flex-col items-center min-w-[60px]">
               <span class="text-xs text-muted-foreground mb-1">{{
                 t('task.templateCard.totalCount')
               }}</span>
-              <span class="text-sm font-semibold text-primary">{{ template.instanceCount }}</span>
+              <span class="text-sm font-semibold text-primary">{{
+                template.instanceCount ?? 0
+              }}</span>
             </div>
             <div class="flex flex-col items-center min-w-[60px]">
               <span class="text-xs text-muted-foreground mb-1">{{
                 t('task.templateCard.completionRate')
               }}</span>
               <span class="text-sm font-semibold text-primary"
-                >{{ Math.round((template.completionRate ?? 0) * 100) }}%</span
+                >{{ Math.round(template.completionRate ?? 0) }}%</span
               >
             </div>
           </div>
@@ -391,8 +395,8 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
 const timeLabel = computed(() => {
   const timeConfig = props.template.timeConfig;
 
-  if (timeConfig.timeType === 'AllDay') {
-    return t('task.templateCard.allDay');
+  if (timeConfig.displayText) {
+    return timeConfig.displayText;
   }
 
   if (timeConfig.timeType === 'TimePoint' && timeConfig.timePoint != null) {

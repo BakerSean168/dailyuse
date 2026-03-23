@@ -2,7 +2,7 @@ import type { ContentType as IContentType } from '@dailyuse/contracts/notificati
 
 /**
  * 📝 内容类型 - 通知内容的类型
- * 
+ *
  * Branded Type：运行时为 string，编译时具有类型安全性
  * 零序列化成本，内存开销极小
  */
@@ -12,18 +12,18 @@ export type ContentType = IContentType & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IContentType[] = ['Article', 'Video', 'Image', 'Document', 'Other'];
+const VALUES: IContentType[] = ['Article', 'Video', 'Image', 'Resource', 'Other'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
  */
 export const ContentType = {
   // ================= 常量定义 =================
-  
+
   Article: 'Article' as ContentType,
   Video: 'Video' as ContentType,
   Image: 'Image' as ContentType,
-  Document: 'Document' as ContentType,
+  Resource: 'Resource' as ContentType,
   Other: 'Other' as ContentType,
 
   // ================= 工厂方法 =================
@@ -57,9 +57,9 @@ export const ContentType = {
   },
 
   /**
-   * 判断是否为文档类内容
+   * 判断是否为文稿类内容
    */
   isDocumentation(value: ContentType): boolean {
-    return value === 'Article' || value === 'Document';
+    return value === 'Article' || value === 'Resource';
   },
 };

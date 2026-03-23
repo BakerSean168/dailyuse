@@ -1,7 +1,6 @@
 import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import type { CreateConversationReq, CreateConversationRes } from '@dailyuse/contracts/ai';
-import { eventBus } from '@dailyuse/utils';
 
 /**
  * Create Conversation Service
@@ -16,9 +15,6 @@ export class CreateConversation {
     });
 
     await this.conversationRepository.save(conversation);
-
-    // Publish event
-    // await eventBus.publish(new ConversationCreatedEvent(conversation));
 
     return conversation.toClientDTO();
   }

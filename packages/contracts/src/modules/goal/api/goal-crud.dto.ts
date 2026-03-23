@@ -9,13 +9,26 @@ import { brandedId } from '../../../primitives';
 import type { GoalId, IdentityId, GoalFolderId } from '../../../primitives';
 import type { GoalClientDTO } from '../aggregates';
 import { GoalStatus } from '../value-objects/goal-status';
+import { GoalSystemView } from '../value-objects/goal-system-view';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 
 const GoalNameSchema = z
   .string()
   .trim()
   .min(1, '目标名称不能为空')
   .max(256, '目标名称不能超过 256 字符');
+
+const ReminderTriggerSchema = z.object({
+  type: z.enum(ReminderTriggerType),
+  value: z.number().min(0),
+  enabled: z.boolean(),
+});
+
+const GoalReminderConfigSchema = z.object({
+  enabled: z.boolean(),
+  triggers: z.array(ReminderTriggerSchema).max(10),
+});
 
 // ============================================================================
 // CREATE Goal
@@ -41,6 +54,7 @@ export const CreateGoalSchema = z
     targetDate: z.number().int().optional(),
     folderId: brandedId<GoalFolderId>().optional(),
     parentGoalId: brandedId<GoalId>().optional(),
+    reminderConfig: GoalReminderConfigSchema.nullable().optional(),
   })
   .strict();
 
@@ -72,6 +86,7 @@ export const UpdateGoalSchema = z
     targetDate: z.number().int().nullable().optional(),
     folderId: brandedId<GoalFolderId>().nullable().optional(),
     parentGoalId: brandedId<GoalId>().nullable().optional(),
+    reminderConfig: GoalReminderConfigSchema.nullable().optional(),
   })
   .strict();
 
@@ -99,10 +114,11 @@ export type DeleteGoalRes = GoalClientDTO;
 // ============================================================================
 
 /**
- * 查询目标列表 Schema
+ * Public transport DTO for listing goals - excludes identityId
+ * 公共传输 DTO 用于列表目标 - 不包含 identityId
  */
-export const QueryGoalsSchema = z.object({
-  identityId: brandedId<IdentityId>(),
+export const ListGoalFiltersSchema = z.object({
+  systemView: z.enum(GoalSystemView).optional(),
   status: z.array(z.enum(GoalStatus)).optional(),
   importance: z.array(z.enum(ImportanceLevel)).optional(),
   category: z.string().optional(),
@@ -122,7 +138,15 @@ export const QueryGoalsSchema = z.object({
   includeReviews: z.boolean().default(false).optional(),
 });
 
-export type QueryGoalsReq = z.infer<typeof QueryGoalsSchema>;
+export type ListGoalFilters = z.infer<typeof ListGoalFiltersSchema>;
+
+/**
+ * Internal application query - used by controller/use case
+ * 内部应用查询 - 由控制器/用例使用
+ */
+export interface ListGoalsQuery extends ListGoalFilters {
+  identityId: IdentityId;
+}
 
 // QueryGoalsRes 由 response-schemas.ts 中 QueryGoalsResSchema 的 z.infer 导出
 
@@ -194,17 +218,25 @@ export type BatchDeleteGoalsRes = void;
 // ============================================================================
 
 /**
- * 导出目标 Schema
+ * Public transport DTO for export goals - excludes identityId (current-user operation)
+ * 公共传输 DTO 用于导出目标 - 不包含 identityId (当前用户操作)
  */
-export const ExportGoalsSchema = z.object({
-  identityId: brandedId<IdentityId>(),
+export const ExportGoalFiltersSchema = z.object({
   goalIds: z.array(brandedId<GoalId>()).optional(),
   format: z.enum(['json', 'csv', 'markdown']),
   includeKeyResults: z.boolean().default(true).optional(),
   includeReviews: z.boolean().default(true).optional(),
 });
 
-export type ExportGoalsReq = z.infer<typeof ExportGoalsSchema>;
+export type ExportGoalFilters = z.infer<typeof ExportGoalFiltersSchema>;
+
+/**
+ * Internal export query - used by controller/use case
+ * 内部导出查询 - 由控制器/用例使用
+ */
+export interface ExportGoalsQuery extends ExportGoalFilters {
+  identityId: IdentityId;
+}
 
 export interface ExportGoalsRes {
   data: string | Uint8Array;
@@ -213,17 +245,25 @@ export interface ExportGoalsRes {
 }
 
 /**
- * 导入目标 Schema
+ * Public transport DTO for import goals - excludes identityId (current-user operation)
+ * 公共传输 DTO 用于导入目标 - 不包含 identityId (当前用户操作)
  */
-export const ImportGoalsSchema = z.object({
-  identityId: brandedId<IdentityId>(),
+export const ImportGoalPayloadSchema = z.object({
   data: z.union([z.string(), z.custom<Uint8Array>((val) => val instanceof Uint8Array)]),
   format: z.enum(['json', 'csv']),
   folderId: brandedId<GoalFolderId>().optional(),
   overwriteExisting: z.boolean().default(false).optional(),
 });
 
-export type ImportGoalsReq = z.infer<typeof ImportGoalsSchema>;
+export type ImportGoalPayload = z.infer<typeof ImportGoalPayloadSchema>;
+
+/**
+ * Internal import command - used by controller/use case
+ * 内部导入命令 - 由控制器/用例使用
+ */
+export interface ImportGoalsCommand extends ImportGoalPayload {
+  identityId: IdentityId;
+}
 
 export interface ImportGoalsRes {
   importedCount: number;

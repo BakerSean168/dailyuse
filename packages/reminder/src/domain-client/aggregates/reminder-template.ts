@@ -13,8 +13,6 @@ import type {
   ReminderTemplateClientDTO,
   TriggerConfigClientDTO,
   TriggerConfigClient,
-  RecurrenceConfigClientDTO,
-  RecurrenceConfigClient,
   ActiveTimeConfigClientDTO,
   ActiveTimeConfigClient,
   ActiveHoursConfigClientDTO,
@@ -38,7 +36,6 @@ export interface ReminderTemplateState {
   description: string | null;
   type: ReminderType;
   trigger: TriggerConfigClient;
-  recurrence: RecurrenceConfigClient | null;
   activeTime: ActiveTimeConfigClient;
   activeHours: ActiveHoursConfigClient | null;
   notificationConfig: NotificationConfigClient;
@@ -59,7 +56,6 @@ export interface ReminderTemplateState {
   displayTitle: string;
   typeText: string;
   triggerText: string;
-  recurrenceText: string | null;
   statusText: string;
   importanceText: string;
   nextTriggerText: string | null;
@@ -67,6 +63,12 @@ export interface ReminderTemplateState {
   isPaused: boolean;
   lastTriggeredText: string | null;
   controlledByGroup: boolean;
+  lifecycleSource: 'global' | 'group' | 'template';
+  effectiveEnabledReason: string;
+  groupControlMode: 'Group' | 'Individual' | null;
+  groupEnabled: boolean | null;
+  globalReminderEnabled: boolean;
+  groupName?: string | null;
 }
 
 export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
@@ -96,10 +98,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
   get trigger(): TriggerConfigClient {
     return this._props.trigger;
-  }
-
-  get recurrence(): RecurrenceConfigClient | null {
-    return this._props.recurrence;
   }
 
   get activeTime(): ActiveTimeConfigClient {
@@ -183,10 +181,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     return this._props.triggerText;
   }
 
-  get recurrenceText(): string | null {
-    return this._props.recurrenceText;
-  }
-
   get statusText(): string {
     return this._props.statusText;
   }
@@ -234,7 +228,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: this._props.description,
       type: this._props.type,
       trigger: this._props.trigger as TriggerConfigClientDTO,
-      recurrence: this._props.recurrence as RecurrenceConfigClientDTO | null,
       activeTime: this._props.activeTime as ActiveTimeConfigClientDTO,
       activeHours: this._props.activeHours as ActiveHoursConfigClientDTO | null,
       notificationConfig: this._props.notificationConfig as NotificationConfigClientDTO,
@@ -257,7 +250,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       displayTitle: this._props.displayTitle,
       typeText: this._props.typeText,
       triggerText: this._props.triggerText,
-      recurrenceText: this._props.recurrenceText,
       statusText: this._props.statusText,
       importanceText: this._props.importanceText,
       nextTriggerText: this._props.nextTriggerText,
@@ -265,6 +257,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       isPaused: this._props.isPaused,
       lastTriggeredText: this._props.lastTriggeredText,
       controlledByGroup: this._props.controlledByGroup,
+      lifecycleSource: this._props.lifecycleSource,
+      effectiveEnabledReason: this._props.effectiveEnabledReason,
+      groupControlMode: this._props.groupControlMode,
+      groupEnabled: this._props.groupEnabled,
+      globalReminderEnabled: this._props.globalReminderEnabled,
+      groupName: this._props.groupName ?? null,
     };
   }
 }

@@ -122,6 +122,7 @@ model KeyResult {
   // ============ 度量配置 ============
   valueType         String  @map("value_type") /// 数值类型（numeric/boolean/percentage）
   aggregationMethod String  @map("aggregation_method") /// 聚合方法（sum/average/latest）
+  initialValue      Float   @default(0) @map("initial_value") /// 起始值
   targetValue       Float   @map("target_value") /// 目标值
   currentValue      Float   @default(0) @map("current_value") /// 当前值（冗余字段，提升查询性能）
   unit              String? /// 单位（如：个、%、小时）

@@ -116,9 +116,9 @@
           <Sparkles class="mr-2 h-4 w-4" />
           {{ t('repository.aiKnowledge.generate') }}
         </Button>
-        <Button v-if="isComplete" @click="handleOpenDocument">
+        <Button v-if="isComplete" @click="handleOpenNote">
           <ExternalLink class="mr-2 h-4 w-4" />
-          {{ t('repository.aiKnowledge.viewDocument') }}
+          {{ t('repository.aiKnowledge.viewNote') }}
         </Button>
         <Button v-if="isComplete" variant="outline" @click="$emit('update:open', false)">
           {{ t('repository.aiKnowledge.done') }}
@@ -174,7 +174,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:open': [value: boolean];
   generate: [options: GenerateOptions];
-  'open-document': [id: string];
+  'open-note': [id: string];
 }>();
 
 interface GenerateOptions {
@@ -256,9 +256,9 @@ function handleGenerate() {
   });
 }
 
-function handleOpenDocument() {
+function handleOpenNote() {
   if (generatedResourceId.value) {
-    emit('open-document', generatedResourceId.value);
+    emit('open-note', generatedResourceId.value);
   }
   emit('update:open', false);
 }

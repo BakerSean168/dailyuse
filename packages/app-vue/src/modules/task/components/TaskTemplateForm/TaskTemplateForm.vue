@@ -47,6 +47,9 @@
 
       <KeyResultLinksSection
         :model-value="taskTemplateBeingEdited!"
+        :goals="goals"
+        :key-results-by-goal="keyResultsByGoal"
+        :on-request-key-results="props.onRequestKeyResults"
         @update:model-value="handleTemplateUpdate"
       />
 
@@ -98,6 +101,8 @@ const {
 
 // ===== 计算属性 =====
 const taskTemplateBeingEdited = computed(() => props.modelValue);
+const goals = computed(() => props.goals ?? []);
+const keyResultsByGoal = computed(() => props.keyResultsByGoal ?? {});
 
 // ===== 方法 =====
 const handleTemplateUpdate = (updatedTemplate: TaskTemplateViewModel): void => {

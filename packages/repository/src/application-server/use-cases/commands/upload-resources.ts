@@ -10,6 +10,7 @@ import type { IRepositoryRepository } from '../../../domain-server/repositories/
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 import { PathCalculator } from '../../../domain-server/services/PathCalculator';
 import { CreateResource } from './create-resource';
+import { DeleteResource } from './delete-resource';
 
 export interface UploadResourcesInput {
   repositoryId: string;
@@ -21,6 +22,7 @@ export interface UploadResourcesInput {
 export class UploadResources {
   constructor(
     private readonly createResource: CreateResource,
+    private readonly deleteResource: DeleteResource,
     private readonly resourceRepository: IResourceRepository,
     private readonly repositoryRepository: IRepositoryRepository,
     private readonly folderRepository: IFolderRepository,
@@ -47,11 +49,13 @@ export class UploadResources {
     for (const file of input.files) {
       try {
         const normalizedName = normalizeFileName(file.name);
-        const resourcePath = PathCalculator.buildPath(folderPath, normalizedName);
         const existing = await this.resourceRepository.findByRepositoryIdAndPath(
           input.repositoryId,
-          resourcePath,
+          buildUploadResourcePath(folderPath, normalizedName, file.mimeType),
         );
+        const resourcePath = existing?.path
+          ? existing.path
+          : buildUploadResourcePath(folderPath, normalizedName, file.mimeType);
 
         if (existing && input.metadata?.overwritePolicy !== 'replace') {
           failures.push({
@@ -63,9 +67,7 @@ export class UploadResources {
         }
 
         if (existing && input.metadata?.overwritePolicy === 'replace') {
-          await this.resourceRepository.delete(String(existing.id));
-          repository.recordResourceRemoved(existing.size ?? 0);
-          await this.repositoryRepository.save(repository);
+          await this.deleteResource.execute({ id: String(existing.id) });
         }
 
         const binaryContent = Buffer.from(file.contentBase64, 'base64');
@@ -132,6 +134,32 @@ function normalizeMimeType(mimeType: string | undefined, fileName: string): stri
   if (lower.endsWith('.gif')) return 'image/gif';
   if (lower.endsWith('.svg')) return 'image/svg+xml';
   return 'application/octet-stream';
+}
+
+function buildUploadResourcePath(
+  folderPath: string | null,
+  fileName: string,
+  mimeType: string | undefined,
+): string {
+  if (folderPath) {
+    return PathCalculator.buildPath(folderPath, fileName);
+  }
+
+  const implicitParentPath = resolveImplicitUploadParentPath(mimeType, fileName);
+  return PathCalculator.buildPath(implicitParentPath, fileName);
+}
+
+function resolveImplicitUploadParentPath(
+  mimeType: string | undefined,
+  fileName: string,
+): string | null {
+  const normalizedMimeType = normalizeMimeType(mimeType, fileName);
+
+  if (normalizedMimeType.startsWith('image/')) {
+    return '/images';
+  }
+
+  return null;
 }
 
 function isTextLikeMimeType(mimeType: string): boolean {

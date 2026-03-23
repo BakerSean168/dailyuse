@@ -8,7 +8,6 @@ import type { IAIConversationRepository } from '../../../domain-server/repositor
 import { Message } from '../../../domain-server/entities/message';
 import type { SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
-import { eventBus } from '@dailyuse/utils';
 
 /**
  * Send Message Service
@@ -45,12 +44,6 @@ export class SendMessage {
 
     // 4. 保存
     await this.conversationRepository.save(conversation);
-
-    // 5. 发布事件
-    const events = conversation.pullDomainEvents();
-    for (const event of events) {
-      eventBus.send(event.eventType as any, event as any);
-    }
 
     return {
       userMessage: userMessage.toClientDTO(),

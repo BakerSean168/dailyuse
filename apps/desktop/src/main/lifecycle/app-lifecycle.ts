@@ -15,65 +15,27 @@
  * @module lifecycle/app-lifecycle
  */
 
-import { app, BrowserWindow, nativeTheme } from 'electron';
-import type { BrowserWindowConstructorOptions, TitleBarOverlay } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-features';
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
-import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
+import { createNativeWindowChromeOptions } from './desktopChrome';
 import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
 import { getDesktopAuthService } from '../auth/desktop-auth-context';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
+import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
-
-function getDesktopChromePalette() {
-  return nativeTheme.shouldUseDarkColors
-    ? {
-        background: '#0f172a',
-        foreground: '#e2e8f0',
-      }
-    : {
-        background: '#f8fafc',
-        foreground: '#0f172a',
-      };
-}
-
-function createNativeWindowChromeOptions(): Pick<
-  BrowserWindowConstructorOptions,
-  'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
-> {
-  const palette = getDesktopChromePalette();
-  const options: Pick<
-    BrowserWindowConstructorOptions,
-    'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
-  > = {
-    autoHideMenuBar: true,
-    backgroundColor: palette.background,
-    title: '',
-    titleBarStyle: 'hidden',
-  };
-
-  if (process.platform === 'win32' || process.platform === 'linux') {
-    options.titleBarOverlay = {
-      color: palette.background,
-      symbolColor: palette.foreground,
-      height: 36,
-    } satisfies TitleBarOverlay;
-  }
-
-  return options;
-}
 
 /**
  * Creates the main application window.
@@ -193,9 +155,11 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     // 直接进入主窗口
     win = windowManager.createMainWindow();
     mainWindow = win;
+    startScheduleRuntime();
     console.log('[Lifecycle] Created main window (auto-login)');
   } else {
     // 显示登录窗口
+    stopScheduleRuntime();
     win = windowManager.createLoginWindow({
       hasQuickLoginAccounts: quickLoginAccounts.length > 0,
       quickLoginAccounts,

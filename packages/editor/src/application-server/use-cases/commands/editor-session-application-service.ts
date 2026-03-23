@@ -7,7 +7,11 @@ import type { IEditorSessionRepository } from '../../../domain-server/repositori
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
-import type { CreateEditorSessionRequest, EditorSessionClientDTO, UpdateEditorSessionRequest } from '@dailyuse/contracts/editor';
+import type {
+  CreateEditorSessionRequest,
+  EditorSessionClientDTO,
+  UpdateEditorSessionRequest,
+} from '@dailyuse/contracts/editor';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
 import { EditorPolicy } from '../../../domain-server/services/EditorPolicy';
 import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
@@ -63,7 +67,10 @@ export class EditorSessionApplicationService {
   /**
    * 更新会话
    */
-  async updateSession(id: string, request: UpdateEditorSessionRequest): Promise<EditorSessionClientDTO> {
+  async updateSession(
+    id: string,
+    request: UpdateEditorSessionRequest,
+  ): Promise<EditorSessionClientDTO> {
     const session = await this.loadSessionWithGroups(id);
     if (!session) {
       throw new Error(`会话不存在: ${id}`);
@@ -258,7 +265,7 @@ export class EditorSessionApplicationService {
   }
 
   /**
-   * 保存文档内容
+   * 保存资源内容
    */
   async saveContent(resourceId: string, content: string): Promise<void> {
     await this.repositoryContentPort.saveContent({ resourceId, content });

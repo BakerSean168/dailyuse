@@ -1,11 +1,14 @@
+import type { NotificationServerDTO } from '../../aggregates';
+
 /**
  * Notification Deleted Event
- * 
- * Triggered when: Notification is deleted
- * Subscribers: Cleanup service
- * 
- * 【说明】
- * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
- * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
+ *
+ * Triggered when a notification is soft-deleted.
  */
-export interface NotificationDeletedEvent {}
+export interface NotificationDeletedEvent {
+  identityId: string;
+  notificationId: string;
+  notification: NotificationServerDTO;
+  isSoftDelete: boolean;
+  deletedAt: number;
+}

@@ -1,6 +1,6 @@
 /**
  * Reminder Group Operations
- * 
+ *
  * This file contains DTOs for managing reminder groups.
  * Reminder groups allow organizing and controlling multiple reminders together.
  */
@@ -69,6 +69,14 @@ export interface BatchGroupTemplatesRes {
     id: string;
     error: string;
   }>;
+}
+
+export interface ReminderGroupListRes {
+  groups: ReminderGroupClientDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
 }
 
 // ============================================================================

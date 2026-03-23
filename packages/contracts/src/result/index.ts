@@ -367,8 +367,7 @@ export const ResultErrors = {
 
   internal: (message = '服务器内部错误') => error(ResultCode.INTERNAL_ERROR, message),
 
-  serviceUnavailable: (message = '服务暂不可用') =>
-    error(ResultCode.SERVICE_UNAVAILABLE, message),
+  serviceUnavailable: (message = '服务暂不可用') => error(ResultCode.SERVICE_UNAVAILABLE, message),
 
   timeout: (message = '请求超时') => error(ResultCode.TIMEOUT, message),
 
@@ -414,12 +413,7 @@ export function okBatch<T, E = ResultError>(
 // IPC Adapter (Re-export)
 // ============================================================================
 
-export {
-  toIpcResult,
-  fromIpcResult,
-  createIpcClientWrapper,
-  type IpcResult,
-} from './ipc';
+export { toIpcResult, fromIpcResult, createIpcClientWrapper, type IpcResult } from './ipc';
 
 // ============================================================================
 // HTTP Adapter (Re-export)
@@ -442,13 +436,6 @@ export {
   // Types
   type HttpResponse,
   type HttpResponseOptions,
-  // Legacy compatibility
-  ResponseCode,
-  ResponseBuilder,
-  createResponseBuilder,
-  type ApiResponse,
-  type SuccessResponse,
-  type ErrorResponse,
 } from './http';
 
 // ============================================================================

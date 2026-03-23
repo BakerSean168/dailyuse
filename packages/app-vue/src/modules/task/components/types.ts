@@ -1,3 +1,5 @@
+import type { TaskGoalBindingTriggerValue } from '@dailyuse/contracts/task';
+
 export type UIPriority = 'high' | 'normal' | 'low' | 'urgent';
 
 export interface EditableTaskUI {
@@ -27,6 +29,7 @@ export interface TaskGoalBindingViewModel {
   goalId?: string;
   keyResultId?: string;
   incrementValue?: number;
+  progressTrigger?: TaskGoalBindingTriggerValue;
   goalTitle?: string;
   keyResultTitle?: string;
 }
@@ -86,23 +89,30 @@ export interface TaskTemplateViewModel {
   priority?: number;
   recurrenceText?: string;
   tags?: string[];
+  tagSummaryText?: string;
   goalBinding?: TaskGoalBindingViewModel | null;
   timeConfig: TaskTimeConfigViewModel;
   recurrenceRule?: any;
   reminderConfig?: any;
   instanceCount?: number;
+  completedInstanceCount?: number;
+  pendingInstanceCount?: number;
   completionRate?: number;
   formattedCreatedAt?: string;
   /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */
   taskType?: string;
   /** Colour swatch hex string */
   color?: string | null;
+  colorLabel?: string;
 }
 
 export interface TaskTemplateFormProps {
   modelValue?: TaskTemplateViewModel | null;
   isEditMode?: boolean;
   readonly?: boolean;
+  goals?: GoalBindingOption[];
+  keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
+  onRequestKeyResults?: (goalId: string) => Promise<KeyResultBindingOption[] | void> | void;
 }
 
 export interface TaskTemplateFormValidationState {

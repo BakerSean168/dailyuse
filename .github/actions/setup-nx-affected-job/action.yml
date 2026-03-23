@@ -29,8 +29,18 @@ runs:
       shell: bash
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          if [ -n "$BASE_SHA" ] && git rev-parse --verify "${BASE_SHA}^{commit}" >/dev/null 2>&1; then
+            NX_BASE_VALUE=$(git merge-base HEAD "$BASE_SHA")
+          else
+            if git fetch origin "${{ github.base_ref }}" --depth=1; then
+              NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
+            elif [ -n "$BASE_SHA" ]; then
+              NX_BASE_VALUE="$BASE_SHA"
+            else
+              NX_BASE_VALUE=$(git rev-parse HEAD~1)
+            fi
+          fi
         else
           NX_BASE_VALUE="${{ github.event.before }}"
           if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then

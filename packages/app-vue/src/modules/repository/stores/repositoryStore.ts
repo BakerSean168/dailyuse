@@ -10,9 +10,6 @@ import type {
   TreeNode,
   ResourceBookmarkClientDTO,
 } from '@dailyuse/contracts/repository';
-import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
-
-export type SidebarMode = 'files' | 'search' | 'bookmarks';
 
 interface BookmarkUiState {
   aliasById: Record<string, string | null>;
@@ -28,8 +25,6 @@ export interface RepositoryState {
 
   /** 资源列表 */
   resources: ResourceClientDTO[];
-  /** 当前打开的资源 */
-  currentResource: ResourceClientDTO | null;
 
   /** 文件树节点 */
   treeNodes: TreeNode[];
@@ -37,18 +32,6 @@ export interface RepositoryState {
   persistedBookmarks: ResourceBookmarkClientDTO[];
   /** 仅用于当前会话的书签 UI 回退态 */
   bookmarkUiState: BookmarkUiState;
-  /** 最近插入的资源 */
-  recentInsertions: ResourceInsertionRecentEntry[];
-
-  /** 侧边栏模式 */
-  sidebarMode: SidebarMode;
-  /** 侧边栏是否折叠 */
-  sidebarCollapsed: boolean;
-
-  /** 打开的标签页 IDs */
-  openTabIds: string[];
-  /** 当前激活的标签页 ID */
-  activeTabId: string | null;
 
   isLoading: boolean;
   error: string | null;
@@ -60,7 +43,6 @@ export const useRepositoryStore = defineStore('repository', {
     currentRepository: null,
     currentRepositoryId: null,
     resources: [],
-    currentResource: null,
     treeNodes: [],
     persistedBookmarks: [],
     bookmarkUiState: {
@@ -68,11 +50,6 @@ export const useRepositoryStore = defineStore('repository', {
       orderedIds: null,
       removedIds: [],
     },
-    recentInsertions: [],
-    sidebarMode: 'files',
-    sidebarCollapsed: false,
-    openTabIds: [],
-    activeTabId: null,
     isLoading: false,
     error: null,
     isInitialized: false,
@@ -90,7 +67,7 @@ export const useRepositoryStore = defineStore('repository', {
         images: [],
         videos: [],
         audio: [],
-        documents: [],
+        files: [],
         other: [],
       };
       for (const r of Array.isArray(this.resources) ? this.resources : []) {
@@ -98,11 +75,11 @@ export const useRepositoryStore = defineStore('repository', {
         const ext = r.extension || '';
         if (mime.startsWith('text/markdown') || ext === '.md') {
           groups.notes.push(r);
-        } else if (mime.startsWith('image/')) {
+        } else if (mime.startsWith('image/') || /\.(png|jpe?g|gif|svg|webp|bmp|avif)$/i.test(ext)) {
           groups.images.push(r);
-        } else if (mime.startsWith('video/')) {
+        } else if (mime.startsWith('video/') || /\.(mp4|mov|webm|mkv|avi)$/i.test(ext)) {
           groups.videos.push(r);
-        } else if (mime.startsWith('audio/')) {
+        } else if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac)$/i.test(ext)) {
           groups.audio.push(r);
         } else if (
           mime === 'application/pdf' ||
@@ -111,7 +88,7 @@ export const useRepositoryStore = defineStore('repository', {
           ext === '.docx' ||
           ext === '.txt'
         ) {
-          groups.documents.push(r);
+          groups.files.push(r);
         } else {
           groups.other.push(r);
         }
@@ -137,12 +114,8 @@ export const useRepositoryStore = defineStore('repository', {
     },
     clearRepositoryScopedState() {
       this.resources = [];
-      this.currentResource = null;
       this.treeNodes = [];
       this.persistedBookmarks = [];
-      this.recentInsertions = [];
-      this.openTabIds = [];
-      this.activeTabId = null;
       this.resetBookmarkUiState();
     },
 
@@ -159,19 +132,6 @@ export const useRepositoryStore = defineStore('repository', {
     },
     removeResource(id: string) {
       this.resources = this.resources.filter((r) => r.id !== id);
-      this.openTabIds = this.openTabIds.filter((tabId) => tabId !== id);
-      if (this.activeTabId === id) {
-        this.activeTabId = this.openTabIds[0] ?? null;
-      }
-      if (this.currentResource?.id === id) {
-        this.currentResource = null;
-      }
-    },
-    setCurrentResource(r: ResourceClientDTO | null) {
-      this.currentResource = r;
-      if (r) {
-        this.openTab(r.id);
-      }
     },
 
     // ── Tree Nodes ──
@@ -226,56 +186,6 @@ export const useRepositoryStore = defineStore('repository', {
         removedIds: [],
       };
     },
-    setRecentInsertions(items: ResourceInsertionRecentEntry[]) {
-      this.recentInsertions = items;
-    },
-    recordRecentInsertion(entry: ResourceInsertionRecentEntry) {
-      const deduped = this.recentInsertions.filter((item) => item.resourceId !== entry.resourceId);
-      this.recentInsertions = [entry, ...deduped].slice(0, 20);
-    },
-
-    // ── Sidebar ──
-    setSidebarMode(mode: SidebarMode) {
-      this.sidebarMode = mode;
-    },
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed;
-    },
-
-    // ── Tabs ──
-    openTab(resourceId: string) {
-      if (!this.openTabIds.includes(resourceId)) {
-        this.openTabIds.push(resourceId);
-      }
-      this.activeTabId = resourceId;
-    },
-    closeTab(resourceId: string) {
-      this.openTabIds = this.openTabIds.filter((id) => id !== resourceId);
-      if (this.activeTabId === resourceId) {
-        this.activeTabId = this.openTabIds[this.openTabIds.length - 1] ?? null;
-      }
-    },
-    closeOtherTabs(keepId: string) {
-      this.openTabIds = [keepId];
-      this.activeTabId = keepId;
-    },
-    closeTabsToRight(fromId: string) {
-      const idx = this.openTabIds.indexOf(fromId);
-      if (idx >= 0) {
-        this.openTabIds = this.openTabIds.slice(0, idx + 1);
-        if (!this.openTabIds.includes(this.activeTabId!)) {
-          this.activeTabId = fromId;
-        }
-      }
-    },
-    closeAllTabs() {
-      this.openTabIds = [];
-      this.activeTabId = null;
-    },
-    setActiveTab(id: string) {
-      this.activeTabId = id;
-    },
-
     // ── Common ──
     setLoading(v: boolean) {
       this.isLoading = v;
@@ -293,15 +203,7 @@ export const useRepositoryStore = defineStore('repository', {
   },
 
   persist: {
-    pick: [
-      'sidebarMode',
-      'sidebarCollapsed',
-      'currentRepositoryId',
-      'openTabIds',
-      'activeTabId',
-      'persistedBookmarks',
-      'recentInsertions',
-    ] as string[],
+    pick: ['currentRepositoryId', 'persistedBookmarks'] as string[],
   },
 });
 

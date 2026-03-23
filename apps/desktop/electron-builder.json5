@@ -22,7 +22,7 @@
     "category": "public.app-category.productivity" // 添加应用类别
   },
   "win": {
-    "icon": "public/DailyUse-256.png",
+    "icon": "../../packages/assets/src/images/logos/DailyUse-256.png",
     "target": [
       {
         "target": "nsis",

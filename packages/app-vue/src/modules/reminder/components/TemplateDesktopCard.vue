@@ -1,29 +1,40 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-      <DialogHeader>
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden p-0">
+      <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <div class="flex items-center gap-2">
           <component :is="getTemplateIcon()" class="h-6 w-6 text-primary" />
-          <DialogTitle>{{ template?.name || 'Template Details' }}</DialogTitle>
+          <DialogTitle>{{
+            template?.name || t('reminder.templateDetail.fallbackTitle')
+          }}</DialogTitle>
         </div>
+        <DialogDescription class="text-sm text-muted-foreground">
+          {{ t('reminder.templateDetail.description') }}
+        </DialogDescription>
         <div class="flex items-center gap-2 mt-2">
           <Badge :variant="template?.effectiveEnabled ? 'default' : 'secondary'">
-            {{ template?.effectiveEnabled ? 'Running' : 'Paused' }}
+            {{ effectiveStatusLabel }}
           </Badge>
           <Badge v-if="template?.groupId" variant="outline">
             <Folder class="h-3 w-3 mr-1" />
-            In Group
+            {{ template?.groupName || t('reminder.templateDetail.groupedFallback') }}
           </Badge>
+          <Badge v-if="template?.lifecycleSource === 'group'" variant="outline">
+            {{ t('reminder.templateDetail.badgeGroupControlled') }}
+          </Badge>
+          <Badge v-else-if="template?.lifecycleSource === 'global'" variant="secondary">{{
+            t('reminder.templateDetail.badgeGlobalPaused')
+          }}</Badge>
         </div>
       </DialogHeader>
 
-      <ScrollArea class="flex-1 pr-4">
-        <div v-if="template" class="space-y-6 py-4">
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+        <div v-if="template" class="space-y-6 py-2">
           <!-- Basic Info -->
           <div class="space-y-3">
             <h3 class="text-sm font-semibold flex items-center gap-2">
               <Info class="h-4 w-4" />
-              Basic Information
+              {{ t('reminder.templateDetail.sectionBasicInfo') }}
             </h3>
             <Separator />
 
@@ -31,7 +42,7 @@
               <div class="flex items-start gap-3">
                 <FileText class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">Title</p>
+                  <p class="text-sm font-medium">{{ t('reminder.templateDetail.fieldTitle') }}</p>
                   <p class="text-sm text-muted-foreground">{{ template.name }}</p>
                 </div>
               </div>
@@ -39,7 +50,9 @@
               <div v-if="template.description" class="flex items-start gap-3">
                 <AlignLeft class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">Description</p>
+                  <p class="text-sm font-medium">
+                    {{ t('reminder.templateDetail.fieldDescription') }}
+                  </p>
                   <p class="text-sm text-muted-foreground">{{ template.description }}</p>
                 </div>
               </div>
@@ -47,26 +60,40 @@
               <div class="flex items-start gap-3">
                 <Clock class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">Trigger</p>
-                  <Badge variant="outline" class="mt-1">
-                    {{ template.triggerText || 'Not set' }}
-                  </Badge>
+                  <p class="text-sm font-medium">
+                    {{ t('reminder.templateDetail.fieldTriggerType') }}
+                  </p>
+                  <Badge variant="outline" class="mt-1">{{ triggerLabel }}</Badge>
                 </div>
               </div>
 
               <div v-if="template.trigger" class="flex items-start gap-3">
                 <Settings class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">Trigger Configuration</p>
+                  <p class="text-sm font-medium">
+                    {{ t('reminder.templateDetail.fieldTriggerConfig') }}
+                  </p>
                   <div class="flex flex-wrap gap-1 mt-1">
-                    <Badge variant="secondary"
-                      >Type: {{ template.trigger.type || 'unknown' }}</Badge
-                    >
+                    <Badge variant="secondary">
+                      {{
+                        t('reminder.templateDetail.triggerConfigType', {
+                          value: template.trigger.type || t('common.unknown'),
+                        })
+                      }}
+                    </Badge>
                     <Badge v-if="template.trigger.interval" variant="secondary">
-                      Interval: {{ template.trigger.interval.minutes }} min
+                      {{
+                        t('reminder.templateDetail.triggerConfigInterval', {
+                          minutes: template.trigger.interval.minutes,
+                        })
+                      }}
                     </Badge>
                     <Badge v-if="template.trigger.fixedTime" variant="secondary">
-                      Time: {{ template.trigger.fixedTime.time }}
+                      {{
+                        t('reminder.templateDetail.triggerConfigTime', {
+                          time: template.trigger.fixedTime.time,
+                        })
+                      }}
                     </Badge>
                   </div>
                 </div>
@@ -78,22 +105,28 @@
           <div class="space-y-3">
             <h3 class="text-sm font-semibold flex items-center gap-2">
               <BarChart3 class="h-4 w-4" />
-              Statistics
+              {{ t('reminder.templateDetail.sectionStats') }}
             </h3>
             <Separator />
 
             <div class="grid grid-cols-3 gap-4">
               <Card class="p-4 text-center">
                 <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
-                <div class="text-xs text-muted-foreground">Total Instances</div>
+                <div class="text-xs text-muted-foreground">
+                  {{ t('reminder.templateDetail.statTotal') }}
+                </div>
               </Card>
               <Card class="p-4 text-center">
                 <div class="text-2xl font-bold text-success">{{ stats.completed }}</div>
-                <div class="text-xs text-muted-foreground">Completed</div>
+                <div class="text-xs text-muted-foreground">
+                  {{ t('reminder.templateDetail.statCompleted') }}
+                </div>
               </Card>
               <Card class="p-4 text-center">
                 <div class="text-2xl font-bold text-warning">{{ stats.pending }}</div>
-                <div class="text-xs text-muted-foreground">Pending</div>
+                <div class="text-xs text-muted-foreground">
+                  {{ t('reminder.templateDetail.statPending') }}
+                </div>
               </Card>
             </div>
           </div>
@@ -102,7 +135,7 @@
           <div class="space-y-3">
             <h3 class="text-sm font-semibold flex items-center gap-2">
               <Calendar class="h-4 w-4" />
-              Time Information
+              {{ t('reminder.templateDetail.sectionTimeInfo') }}
             </h3>
             <Separator />
 
@@ -110,55 +143,132 @@
               <div class="flex items-start gap-3">
                 <CalendarPlus class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">Created At</p>
-                  <p class="text-sm text-muted-foreground">{{ formatDate(template.createdAt) }}</p>
+                  <p class="text-sm font-medium">
+                    {{ t('reminder.templateDetail.fieldCreatedAt') }}
+                  </p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ formatDate(template.createdAt) }}
+                  </p>
                 </div>
               </div>
 
               <div class="flex items-start gap-3">
                 <CalendarCheck class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">Updated At</p>
-                  <p class="text-sm text-muted-foreground">{{ formatDate(template.updatedAt) }}</p>
+                  <p class="text-sm font-medium">
+                    {{ t('reminder.templateDetail.fieldUpdatedAt') }}
+                  </p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ formatDate(template.updatedAt) }}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Status Toggle -->
-          <div class="flex items-center justify-between p-4 border rounded-lg">
+          <div class="flex items-center justify-between rounded-lg border p-4">
             <div class="flex items-center gap-3">
               <Power
-                :class="['h-5 w-5', template.effectiveEnabled ? 'text-success' : 'text-muted-foreground']"
+                :class="[
+                  'h-5 w-5',
+                  template.effectiveEnabled ? 'text-success' : 'text-muted-foreground',
+                ]"
               />
               <div>
-                <p class="text-sm font-medium">Template Status</p>
+                <p class="text-sm font-medium">
+                  {{ t('reminder.templateDetail.selfSwitchTitle') }}
+                </p>
                 <p class="text-xs text-muted-foreground">
-                  {{ template.effectiveEnabled ? 'Currently active' : 'Currently paused' }}
+                  {{ selfSwitchLabel }}
+                </p>
+                <p class="text-xs text-muted-foreground mt-1">
+                  {{
+                    t('reminder.templateDetail.effectiveStatusLine', {
+                      status: effectiveStatusLabel,
+                    })
+                  }}
                 </p>
               </div>
             </div>
             <Switch
-              :checked="template.effectiveEnabled"
+              :checked="template.selfEnabled"
               :disabled="isTogglingStatus"
               @update:checked="handleToggleStatus"
             />
           </div>
+
+          <div
+            v-if="template.lifecycleSource !== 'template'"
+            class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            <p class="font-medium">{{ t('reminder.templateDetail.overrideTitle') }}</p>
+            <p class="mt-1 text-xs text-amber-800">
+              {{
+                t('reminder.templateDetail.overrideDescription', {
+                  reason: template.effectiveEnabledReason,
+                  controller:
+                    template.lifecycleSource === 'global'
+                      ? t('reminder.templateDetail.overrideControllerGlobal')
+                      : t('reminder.templateDetail.overrideControllerGroup'),
+                })
+              }}
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold flex items-center gap-2">
+              <Power class="h-4 w-4" />
+              {{ t('reminder.templateDetail.sectionLifecycle') }}
+            </h3>
+            <Separator />
+
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <Card class="p-3">
+                <p class="font-medium">{{ t('reminder.templateDetail.selfSwitchTitle') }}</p>
+                <p class="text-muted-foreground mt-1">
+                  {{ selfSwitchShortLabel }}
+                </p>
+              </Card>
+              <Card class="p-3">
+                <p class="font-medium">{{ t('reminder.templateDetail.fieldEffectiveResult') }}</p>
+                <p class="text-muted-foreground mt-1">
+                  {{ effectiveResultLabel }}
+                </p>
+              </Card>
+              <Card class="p-3">
+                <p class="font-medium">{{ t('reminder.templateDetail.fieldGlobalSwitch') }}</p>
+                <p class="text-muted-foreground mt-1">
+                  {{ globalSwitchLabel }}
+                </p>
+              </Card>
+              <Card class="p-3">
+                <p class="font-medium">{{ t('reminder.templateDetail.fieldGroupControlMode') }}</p>
+                <p class="text-muted-foreground mt-1">
+                  {{ groupControlModeLabel }}
+                </p>
+              </Card>
+              <Card class="p-3">
+                <p class="font-medium">{{ t('reminder.templateDetail.fieldGroupSwitch') }}</p>
+                <p class="text-muted-foreground mt-1">
+                  {{ groupSwitchLabel }}
+                </p>
+              </Card>
+            </div>
+          </div>
         </div>
-      </ScrollArea>
+      </div>
 
-      <Separator />
-
-      <DialogFooter>
+      <DialogFooter class="shrink-0 border-t p-6 pt-4">
         <Button variant="default" @click="handleEdit">
           <Pencil class="h-4 w-4 mr-2" />
-          Edit Template
+          {{ t('reminder.templateDetail.actionEdit') }}
         </Button>
         <Button variant="outline" @click="handleViewInstances">
           <Eye class="h-4 w-4 mr-2" />
-          View Instances
+          {{ t('reminder.templateDetail.actionViewInstances') }}
         </Button>
-        <Button variant="ghost" @click="close">Close</Button>
+        <Button variant="ghost" @click="close">{{ t('common.close') }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -167,6 +277,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { format } from 'date-fns';
+import { useI18n } from 'vue-i18n';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import {
   Bell,
   Info,
@@ -186,28 +298,38 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card } from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
-import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
-import type { ReminderTemplateCardModel } from '../types';
+import {
+  getGlobalSwitchLabel,
+  getGroupControlModeLabel,
+  getGroupSwitchLabel,
+  getTemplateEffectiveResultLabel,
+  getTemplateEffectiveStatusLabel,
+  getTemplateTriggerLabel,
+  getTemplateSelfSwitchLabel,
+  getTemplateSelfSwitchShortLabel,
+} from '../presentation/lifecyclePresentation';
 
 const props = defineProps<{
-  template?: ReminderTemplateCardModel | null;
+  template?: ReminderTemplateClientDTO | null;
 }>();
 
 const emit = defineEmits<{
-  'edit-template': [template: ReminderTemplateCardModel];
+  'edit-template': [template: ReminderTemplateClientDTO];
   'view-instances': [templateId: string];
-  'status-changed': [template: ReminderTemplateCardModel, enabled: boolean];
+  'status-changed': [template: ReminderTemplateClientDTO, enabled: boolean];
 }>();
 
+const { t } = useI18n();
 const visible = ref(false);
 const isTogglingStatus = ref(false);
 
@@ -217,6 +339,46 @@ const stats = computed(() => ({
   completed: 0,
   pending: 0,
 }));
+
+const selfSwitchLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getTemplateSelfSwitchLabel(t, props.template);
+});
+
+const selfSwitchShortLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getTemplateSelfSwitchShortLabel(t, props.template);
+});
+
+const effectiveStatusLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getTemplateEffectiveStatusLabel(t, props.template);
+});
+
+const effectiveResultLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getTemplateEffectiveResultLabel(t, props.template);
+});
+
+const triggerLabel = computed(() => {
+  if (!props.template) return t('reminder.templateDetail.notConfigured');
+  return getTemplateTriggerLabel(t, props.template);
+});
+
+const globalSwitchLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getGlobalSwitchLabel(t, props.template);
+});
+
+const groupControlModeLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getGroupControlModeLabel(t, props.template);
+});
+
+const groupSwitchLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getGroupSwitchLabel(t, props.template);
+});
 
 const open = () => {
   visible.value = true;
@@ -260,11 +422,11 @@ const getTemplateIcon = () => {
 };
 
 const formatDate = (timestamp: number | undefined): string => {
-  if (!timestamp) return 'Unknown';
+  if (!timestamp) return t('common.unknown');
   try {
     return format(new Date(timestamp), 'yyyy-MM-dd HH:mm:ss');
   } catch {
-    return 'Invalid date';
+    return t('reminder.templateDetail.invalidTime');
   }
 };
 

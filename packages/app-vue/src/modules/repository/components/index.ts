@@ -17,11 +17,7 @@ export { default as TagsPanel } from './TagsPanel.vue';
 export { default as BookmarksPanel } from './BookmarksPanel.vue';
 export { default as FileExplorer } from './FileExplorer.vue';
 export { default as FileTreeItem } from './FileTreeItem.vue';
-// Legacy folder-first panels kept for compatibility only.
-export { default as FileTreePanel } from './FileTreePanel.vue';
-export { default as FilesPanel } from './FilesPanel.vue';
 export { default as LinkPreviewPopover } from './LinkPreviewPopover.vue';
-export { default as ResourcesPanel } from './ResourcesPanel.vue';
 export { default as ObsidianEditor } from './ObsidianEditor.vue';
 export { default as ResourceEditor } from './ResourceEditor.vue';
 export { default as TreeNodeItem } from './TreeNodeItem.vue';

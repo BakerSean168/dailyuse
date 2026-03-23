@@ -6,10 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type {
-  IResultIpcClient,
-  IScheduleEventApiClient,
-} from '../types';
+import type { IResultIpcClient, IScheduleEventApiClient } from '../types';
 import type {
   CalendarEntryClientDTO,
   CreateScheduleRequest,
@@ -60,7 +57,10 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params);
   }
 
-  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
+  async updateSchedule(
+    id: string,
+    data: UpdateScheduleRequest,
+  ): Promise<Result<CalendarEntryClientDTO>> {
     return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, id, data);
   }
 
@@ -75,7 +75,6 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   }
 
   async detectConflicts(params: {
-    userId: string;
     startTime: number;
     endTime: number;
     excludeId?: string;
@@ -83,39 +82,36 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params);
   }
 
-  async createScheduleWithConflictDetection(
-    request: CreateScheduleRequest,
-  ): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts?: ConflictDetectionResult;
-  }>> {
-    return this.ipcClient.invoke(
-      SCHEDULE_EVENT_CHANNELS.CREATE_WITH_CONFLICT_DETECTION,
-      request,
-    );
+  async createScheduleWithConflictDetection(request: CreateScheduleRequest): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts?: ConflictDetectionResult;
+    }>
+  > {
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_WITH_CONFLICT_DETECTION, request);
   }
 
   async resolveConflict(
     scheduleId: string,
     request: ResolveConflictRequest,
-  ): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts: ConflictDetectionResult;
-    applied: {
-      strategy: string;
-      previousStartTime?: number;
-      previousEndTime?: number;
-      changes: string[];
-    };
-  }>> {
-    return this.ipcClient.invoke(
-      SCHEDULE_EVENT_CHANNELS.RESOLVE_CONFLICT,
-      scheduleId,
-      request,
-    );
+  ): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts: ConflictDetectionResult;
+      applied: {
+        strategy: string;
+        previousStartTime?: number;
+        previousEndTime?: number;
+        changes: string[];
+      };
+    }>
+  > {
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.RESOLVE_CONFLICT, scheduleId, request);
   }
 }
 
-export function createScheduleEventIpcAdapter(ipcClient: IResultIpcClient): ScheduleEventIpcAdapter {
+export function createScheduleEventIpcAdapter(
+  ipcClient: IResultIpcClient,
+): ScheduleEventIpcAdapter {
   return new ScheduleEventIpcAdapter(ipcClient);
 }

@@ -10,6 +10,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHashHistory } from 'vue-router';
+import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
 
 import {
   createAppRouter,
@@ -114,6 +115,11 @@ async function syncRendererAuthState(): Promise<void> {
 }
 
 async function startApp() {
+  applyDocumentIcons({
+    faviconHref: logoIco,
+    appleTouchIconHref: logo128,
+  });
+
   const app = createApp(App);
 
   app.config.errorHandler = (error) => {
@@ -149,7 +155,7 @@ async function startApp() {
     history: createWebHashHistory(),
     isAuthenticated: () => useAuthenticationStore().isAuthenticated,
     authView: DesktopAuthView,
-    additionalRoutes: [
+    additionalTopLevelRoutes: [
       {
         path: '/custom-notification',
         name: 'custom-notification',

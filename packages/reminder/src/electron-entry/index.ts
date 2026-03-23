@@ -16,13 +16,18 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { createReminderPowerSyncModule } from '../infrastructure-server/powersync';
+import {
+  createReminderPowerSyncModule,
+  ReminderTemplatePowerSyncRepository,
+} from '../infrastructure-server/powersync';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
 import { ReminderController } from '../controllers/reminder.controller';
 import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../infrastructure-server';
-import { fail } from '@dailyuse/contracts/result';
+import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
+import { createReminderScheduleRuntimeContribution } from '../api/schedule-runtime';
 
 const logger = createLogger('ReminderElectron');
 
@@ -35,8 +40,6 @@ const Ch = {
   TEMPLATE_TOGGLE_ENABLED: 'reminder:template:toggle-enabled',
   TEMPLATE_MOVE_TO_GROUP: 'reminder:template:move-to-group',
   TEMPLATE_GET_BY_USER: 'reminder:template:get-by-user',
-  TEMPLATE_SEARCH: 'reminder:template:search',
-  TEMPLATE_SCHEDULE_STATUS: 'reminder:template:schedule-status',
   UPCOMING_GET: 'reminder:upcoming:get',
   GROUP_LIST: 'reminder:group:list',
   GROUP_GET: 'reminder:group:get',
@@ -45,11 +48,21 @@ const Ch = {
   GROUP_DELETE: 'reminder:group:delete',
   GROUP_GET_BY_USER: 'reminder:group:get-by-user',
   GROUP_TOGGLE_STATUS: 'reminder:group:toggle-status',
-  GROUP_TOGGLE_CONTROL_MODE: 'reminder:group:toggle-control-mode',
+  GROUP_SWITCH_CONTROL_MODE: 'reminder:group:switch-control-mode',
+  PREFERENCES_GET: 'reminder:preferences:get',
+  PREFERENCES_UPDATE: 'reminder:preferences:update',
 } as const;
 
 const channels = Object.values(Ch);
 let activeReminderModule: ReminderModuleInstance | null = null;
+
+export function getReminderTemplateRepository(): IReminderTemplateRepository {
+  if (!activeReminderModule) {
+    throw new Error('Reminder module not registered yet');
+  }
+
+  return activeReminderModule.reminderTemplateRepository;
+}
 
 export const ReminderElectronModule: IElectronModule = {
   name: 'Reminder',
@@ -57,7 +70,14 @@ export const ReminderElectronModule: IElectronModule = {
   register(ctx: IElectronModuleContext): void {
     // 1. Composition Root — same factory as API, different adapters
     //    组合根 — 与 API 相同的工厂，不同的适配器
-    const reminderModule = createReminderPowerSyncModule(ctx.db);
+    const reminderTemplateRepository = new ReminderTemplatePowerSyncRepository(ctx.db);
+    const reminderModule = createReminderPowerSyncModule(
+      ctx.db,
+      createReminderScheduleRuntimeContribution({
+        reminderTemplateRepository,
+        scheduleTaskRepository: new PowerSyncScheduleTaskRepository(ctx.db),
+      }),
+    );
     activeReminderModule = reminderModule;
     reminderModule.start();
 
@@ -107,14 +127,10 @@ export const ReminderElectronModule: IElectronModule = {
         controller.toggleTemplate(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, groupId) =>
-      withAuthenticatedValue(ctx, async () => controller.moveTemplate(id, { groupId })),
-    );
-    ipcMain.handle(Ch.TEMPLATE_SEARCH, async () =>
-      fail({ code: 'NOT_IMPLEMENTED', message: 'Template search is not implemented' }),
-    );
-    ipcMain.handle(Ch.TEMPLATE_SCHEDULE_STATUS, async () =>
-      fail({ code: 'NOT_IMPLEMENTED', message: 'Template schedule status is not implemented' }),
+    ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.moveTemplate(id, payload ?? {}, requestContext),
+      ),
     );
     ipcMain.handle(Ch.UPCOMING_GET, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
@@ -152,13 +168,23 @@ export const ReminderElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(Ch.GROUP_TOGGLE_STATUS, async (_event, id) =>
-      withAuthenticatedValue(ctx, async () => controller.toggleGroup(id)),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.toggleGroup(id, requestContext),
+      ),
     );
-    ipcMain.handle(Ch.GROUP_TOGGLE_CONTROL_MODE, async (_event, id, mode) =>
-      withAuthenticatedValue(ctx, async () =>
-        controller.switchGroupControlMode(id, {
-          mode: typeof mode === 'string' ? mode : mode?.mode,
-        }),
+    ipcMain.handle(Ch.GROUP_SWITCH_CONTROL_MODE, async (_event, id, data) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.switchGroupControlMode(id, data, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.PREFERENCES_GET, async () =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.getPreferences(requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.PREFERENCES_UPDATE, async (_event, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.updatePreferences(dto ?? {}, requestContext),
       ),
     );
 

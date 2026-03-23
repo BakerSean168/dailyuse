@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorPreview from './EditorPreview.vue';
 
-const sampleMarkdown = `# 示例文档
+const sampleMarkdown = `# 示例笔记
 
 这是一段 **加粗** 和 *斜体* 文本。
 
@@ -44,5 +44,7 @@ export const Empty: Story = {
 };
 
 export const WithLinks: Story = {
-  args: { content: '# 链接测试\n\n查看 [[项目文档]] 获取更多信息。\n\n也可以参考 [[API指南|接口文档]]。' },
+  args: {
+    content: '# 链接测试\n\n查看 [[项目笔记]] 获取更多信息。\n\n也可以参考 [[API指南|接口指南]]。',
+  },
 };

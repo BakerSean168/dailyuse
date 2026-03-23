@@ -6,11 +6,16 @@ import type {
   AIConversationQueryOptions,
   IAIConversationRepository,
 } from '../../../domain-server/repositories/IAIConversationRepository';
+import { eventBus } from '@dailyuse/utils';
 import {
   PowerSyncAIConversationMapper,
   type PowerSyncAIConversationRow,
   type PowerSyncAIMessageRow,
 } from './mappers';
+
+const untypedEventBus = eventBus as unknown as {
+  send(eventType: string, payload: unknown): void;
+};
 
 export class PowerSyncAIConversationRepository implements IAIConversationRepository {
   constructor(private readonly db: IElectronDatabase) {}
@@ -88,6 +93,10 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
         );
       }
     });
+
+    for (const event of conversation.pullDomainEvents()) {
+      untypedEventBus.send(event.eventType, event.payload);
+    }
   }
 
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {

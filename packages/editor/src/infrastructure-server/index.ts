@@ -15,14 +15,20 @@
 // ============ Adapters - Prisma ============
 /** @internal Concrete Prisma implementation — use IEditorWorkspaceRepository interface instead. Prisma 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
 export { EditorWorkspacePrismaRepository } from './adapters/prisma';
-/** @internal Concrete Prisma implementation — use IDocumentRepository interface instead. Prisma 具体实现 — 请使用 IDocumentRepository 接口。 */
-export { DocumentPrismaRepository } from './adapters/prisma';
+export {
+  EditorSessionPrismaRepository,
+  EditorGroupPrismaRepository,
+  EditorTabPrismaRepository,
+} from './adapters/prisma';
 
 // ============ Adapters - PowerSync ============
 /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
 export { PowerSyncEditorWorkspaceRepository } from './adapters/powersync';
-/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-export { PowerSyncDocumentRepository } from './adapters/powersync';
+export {
+  PowerSyncEditorSessionRepository,
+  PowerSyncEditorGroupRepository,
+  PowerSyncEditorTabRepository,
+} from './adapters/powersync';
 
 // ============ Composition Root ============
 export {

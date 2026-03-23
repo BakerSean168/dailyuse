@@ -8,6 +8,26 @@ import { AddGoalReview } from '../add-goal-review';
 // ============================================================
 
 function createGoalFixture(overrides?: Record<string, any>) {
+  const reviewDto = {
+    id: 'review-id-1',
+    goalId: 'goal-id-1',
+    type: 'Quarterly',
+    rating: 4,
+    summary: 'Good progress on all fronts',
+    achievements: null,
+    challenges: null,
+    improvements: null,
+    keyResultSnapshots: [],
+    version: 1,
+    reviewedAt: Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    deletedAt: null,
+  };
+  const createdReview = {
+    toClientDTO: vi.fn().mockReturnValue(reviewDto),
+  };
+
   return {
     id: 'goal-id-1',
     status: 'IN_PROGRESS',
@@ -15,13 +35,8 @@ function createGoalFixture(overrides?: Record<string, any>) {
     description: 'Test description',
     keyResults: [],
     reviews: [],
-    createAndAddReview: vi.fn(),
-    toClientDTO: vi.fn().mockReturnValue({
-      id: 'goal-id-1',
-      name: 'Test Goal',
-      keyResults: [],
-      reviews: [{ title: 'Q1 Review', content: 'Good progress' }],
-    }),
+    createAndAddReview: vi.fn().mockReturnValue(createdReview),
+    _createdReview: createdReview,
     ...overrides,
   } as any;
 }
@@ -50,7 +65,7 @@ describe('AddGoalReview', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.id).toBe('goal-id-1');
+      expect(result.data.id).toBe('review-id-1');
     }
     expect(goal.createAndAddReview).toHaveBeenCalledWith(params);
     expect(goalRepo.save).toHaveBeenCalledWith(goal);
@@ -114,7 +129,7 @@ describe('AddGoalReview', () => {
     expect(goal.createAndAddReview).toHaveBeenCalledWith(params);
   });
 
-  it('should call toClientDTO without includeChildren argument', async () => {
+  it('should return the created review DTO', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
@@ -125,7 +140,7 @@ describe('AddGoalReview', () => {
 
     await useCase.execute('goal-id-1', aReviewInput());
 
-    expect(goal.toClientDTO).toHaveBeenCalledWith();
+    expect(goal._createdReview.toClientDTO).toHaveBeenCalledWith();
   });
 
   it('should call findById with includeChildren option', async () => {

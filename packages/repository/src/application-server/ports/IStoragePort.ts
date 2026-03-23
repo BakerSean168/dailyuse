@@ -18,8 +18,14 @@ export interface StorageDeleteRequest {
   isFolder?: boolean;
 }
 
+export interface StorageReadRequest {
+  repositoryId: string;
+  path: string;
+}
+
 export interface IStoragePort {
   write(request: StorageWriteRequest): Promise<void>;
   move(request: StorageMoveRequest): Promise<void>;
   delete(request: StorageDeleteRequest): Promise<void>;
+  read(request: StorageReadRequest): Promise<Uint8Array | null>;
 }

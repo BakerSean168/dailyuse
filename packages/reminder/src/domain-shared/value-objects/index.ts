@@ -14,8 +14,6 @@ export { ReminderResponseId } from './reminder-response-id';
 export { ReminderType } from './reminder-type';
 export { ReminderStatus } from './reminder-status';
 export { TriggerType } from './trigger-type';
-export { RecurrenceType } from './recurrence-type';
-export { WeekDay } from './week-day';
 export { ControlMode } from './control-mode';
 export { NotificationChannel as ReminderNotificationChannel } from './notification-channel';
 // 重命名以避免与 notification 模块的 NotificationAction 冲突
@@ -23,7 +21,6 @@ export { NotificationAction as ReminderResponseAction } from './notification-act
 export { TriggerResult } from './trigger-result';
 
 // Class-type Value Objects
-export { RecurrenceConfig } from './recurrence-config';
 export { ReminderNotificationConfig } from './reminder-notification-config';
 export { TriggerConfig } from './trigger-config';
 export { ActiveTimeConfig } from './active-time-config';

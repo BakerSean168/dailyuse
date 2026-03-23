@@ -129,8 +129,8 @@ export class GoalReview extends Entity<IGoalReviewId> {
     keyResultSnapshots?: KeyResultSnapshotDTO[];
     reviewedAt?: Date;
   }): GoalReview {
-    if (params.rating < 0 || params.rating > 10) {
-      throw new Error('Rating must be between 0 and 10');
+    if (params.rating < 1 || params.rating > 5) {
+      throw new Error('Rating must be between 1 and 5');
     }
     if (!params.summary || params.summary.trim().length === 0) {
       throw new Error('Summary is required');
@@ -170,8 +170,8 @@ export class GoalReview extends Entity<IGoalReviewId> {
    * 更新评分
    */
   public updateRating(rating: number): void {
-    if (rating < 0 || rating > 10) {
-      throw new Error('Rating must be between 0 and 10');
+    if (rating < 1 || rating > 5) {
+      throw new Error('Rating must be between 1 and 5');
     }
     this._props.rating = rating;
     this._props.updatedAt = new Date();

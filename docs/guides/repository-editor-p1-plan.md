@@ -28,7 +28,7 @@ P1 focuses on:
 
 - Repository uploads are already structurally supported through `useRepository.uploadResources` and backend upload endpoints.
 - The current editor toolbar in `packages/app-vue/src/modules/editor/components/EditorToolbar.vue` only supports literal markdown insertion, including a placeholder `![...](url)` action.
-- There is no generalized insertion surface for images, documents, notes, audio, or video.
+- There is no generalized insertion surface for images, files, notes, audio, or video.
 - There is no current parsing or transform layer for path-reference versus base64 image handling.
 - There is no export action in `RepositoryWorkspaceView.vue`, `EditorToolbar.vue`, or `EditorLinearView.vue`.
 - `EditorPreview.vue` and current editor flows assume ordinary Markdown content, which is good for path-based storage but not yet optimized for explicit sharing/export flows.
@@ -36,8 +36,8 @@ P1 focuses on:
 ### Existing assets that P1 should reuse
 
 - shared repository state from `useRepository.ts`
-- frontend document indexing from `useEditorLinkIndex.ts`
-- direct document route in `packages/app-vue/src/modules/repository/router/index.ts`
+- frontend note indexing from `useEditorLinkIndex.ts`
+- direct note route in `packages/app-vue/src/modules/repository/router/index.ts`
 - toolbar and split-view shells in:
   - `packages/app-vue/src/modules/editor/components/EditorToolbar.vue`
   - `packages/app-vue/src/modules/editor/components/EditorSplitView.vue`
@@ -50,7 +50,7 @@ P1 focuses on:
 - Introduce a unified resource insertion layer and user-facing picker.
 - Expand insertion beyond existing images to include at least:
   - note links
-  - document links
+  - note links
   - media links/embed references where current viewer semantics allow it
 - Add explicit image reference mode handling:
   - repository path reference as default
@@ -76,7 +76,7 @@ P1 focuses on:
 4. User chooses one of:
    - image
    - note link
-   - document attachment
+   - file attachment
    - media file
 5. System inserts the correct Markdown template for that resource type.
 
@@ -101,7 +101,7 @@ P1 focuses on:
 
 ### Flow 4: Insert recently used resources
 
-1. User inserts several related images/documents in sequence.
+1. User inserts several related images/files in sequence.
 2. Insertion surface shows recently uploaded or recently inserted resources first.
 3. User avoids repeated repository browsing and inserts faster.
 
@@ -113,7 +113,7 @@ P1 should grow the same insertion orchestration introduced in P0. Recommended re
 
 - `insertExistingResource(resource, mode, template)`
 - `insertUploadedResource(file, mode)`
-- `exportMarkdownAsSelfContained(documentId | markdown)`
+- `exportMarkdownAsSelfContained(resourceId | markdown)`
 - `listRecentInsertions()`
 
 The insertion layer should remain the only place that knows how to:
@@ -230,7 +230,7 @@ Instead of separate image picker, note picker, and attachment picker, P1 should 
 
 ### P1-D. Self-contained export workflow
 
-1. Add export/share action to toolbar or document actions.
+1. Add export/share action to toolbar or note actions.
 2. Parse note content for supported repository-backed references.
 3. Read referenced resource binaries.
 4. Produce a temporary self-contained Markdown artifact.
@@ -310,7 +310,7 @@ Instead of separate image picker, note picker, and attachment picker, P1 should 
 ## Acceptance criteria
 
 - Users have one clear insertion surface for repository resources instead of multiple disconnected flows.
-- Insertion surface can insert existing images and at least note/document links using repository data.
+- Insertion surface can insert existing images and at least note/file links using repository data.
 - Path references remain the default insertion behavior.
 - Users can explicitly choose self-contained/base64 behavior for supported image-sharing scenarios.
 - Users can export a note as self-contained Markdown without altering the stored repository note.
@@ -340,7 +340,7 @@ Instead of separate image picker, note picker, and attachment picker, P1 should 
 ### Manual verification
 
 1. Open a note and insert an image via the unified insertion panel.
-2. Insert a note link and a document attachment from the same panel.
+2. Insert a note link and a file attachment from the same panel.
 3. Export a note with repository images as self-contained Markdown.
 4. Reopen the original repository note and confirm it still uses path references.
 5. Verify recent insertions appear first after repeated insert operations.

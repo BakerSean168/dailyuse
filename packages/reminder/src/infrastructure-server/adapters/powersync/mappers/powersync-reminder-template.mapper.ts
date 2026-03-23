@@ -14,7 +14,6 @@ import {
   TriggerConfig,
   ActiveTimeConfig,
   NotificationConfig,
-  RecurrenceConfig,
   ActiveHoursConfig,
   ResponseMetrics,
   FrequencyAdjustment,
@@ -39,7 +38,6 @@ export type PowerSyncReminderTemplateRow = {
   updated_at: string;
   deleted_at: string | null;
   trigger: string;
-  recurrence: string | null;
   active_time: string;
   active_hours: string | null;
   notification_config: string;
@@ -130,7 +128,6 @@ export class PowerSyncReminderTemplateMapper {
       description: data.description ?? null,
       type: data.type as ReminderType,
       trigger: TriggerConfig.fromDTO(JSON.parse(data.trigger)),
-      recurrence: data.recurrence ? RecurrenceConfig.fromDTO(JSON.parse(data.recurrence)) : null,
       activeTime: ActiveTimeConfig.fromDTO(JSON.parse(data.active_time)),
       activeHours: data.active_hours
         ? ActiveHoursConfig.fromDTO(JSON.parse(data.active_hours))
@@ -182,7 +179,6 @@ export class PowerSyncReminderTemplateMapper {
       updatedAt: new Date(dto.updatedAt).toISOString(),
       deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt).toISOString() : null,
       trigger: JSON.stringify(dto.trigger),
-      recurrence: dto.recurrence ? JSON.stringify(dto.recurrence) : null,
       activeTime: JSON.stringify(dto.activeTime),
       activeHours: dto.activeHours ? JSON.stringify(dto.activeHours) : null,
       notificationConfig: JSON.stringify(dto.notificationConfig),

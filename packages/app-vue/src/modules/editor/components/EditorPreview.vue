@@ -1,6 +1,7 @@
 <template>
   <div class="w-full h-full overflow-auto bg-background">
     <div
+      ref="previewContentRef"
       v-html="renderedHtml"
       class="preview-content px-6 py-6 max-w-3xl mx-auto"
       @click="handleClick"
@@ -9,12 +10,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
 import type Token from 'markdown-it/lib/token.mjs';
+import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
+import { resolveMarkdownResourceReferences } from '../utils/markdownResourceReferences';
 
 const { t } = useI18n();
+const repository = useRepositoryResourceGateway();
 
 const props = defineProps<{
   content: string;
@@ -27,7 +31,9 @@ const emit = defineEmits<{
 }>();
 
 const renderedHtml = ref('');
+const previewContentRef = ref<HTMLElement | null>(null);
 let md: MarkdownIt;
+let renderRunId = 0;
 
 function initializeMarkdownIt() {
   md = new MarkdownIt({
@@ -105,40 +111,131 @@ function initializeMarkdownIt() {
   });
 }
 
-function renderMarkdown() {
+function decodeDestination(destination: string): string {
+  try {
+    return decodeURI(destination);
+  } catch {
+    return destination;
+  }
+}
+
+function appendBrokenClass(element: Element) {
+  const currentClass = element.getAttribute('class');
+  element.setAttribute(
+    'class',
+    currentClass ? `${currentClass} broken-resource-reference` : 'broken-resource-reference',
+  );
+}
+
+async function resolveImageSourceMap(markdown: string): Promise<Map<string, string>> {
+  await repository.ensureReady();
+
+  const references = resolveMarkdownResourceReferences(markdown, repository.resources.value).filter(
+    (reference) => reference.kind === 'image' && reference.isRepositoryReference && reference.resource,
+  );
+  const sourceMap = new Map<string, string>();
+
+  for (const reference of references) {
+    const resource = reference.resource;
+    if (!resource || sourceMap.has(reference.destination)) {
+      continue;
+    }
+
+    try {
+      sourceMap.set(reference.destination, await repository.readResourceAsDataUrl(resource));
+    } catch {
+      // Broken-state styling is handled separately; keep the original destination when unreadable.
+    }
+  }
+
+  return sourceMap;
+}
+
+async function renderMarkdown() {
   if (!md) return;
+
+  const currentRunId = ++renderRunId;
 
   try {
     const html = md.render(props.content);
+    const resolvedReferences = resolveMarkdownResourceReferences(
+      props.content,
+      repository.resources.value,
+    );
     const brokenDestinations = new Set(
       (props.brokenResourceReferences ?? []).map((reference) => reference.destination),
     );
 
-    renderedHtml.value = html.replace(
-      /(<(?:img|a)[^>]+(?:src|href)="([^"]+)"[^>]*>)/g,
-      (match, tag, destination) => {
-        const decodedDestination = (() => {
-          try {
-            return decodeURI(destination);
-          } catch {
-            return destination;
-          }
-        })();
+    const template = document.createElement('template');
+    template.innerHTML = html;
 
-        if (!brokenDestinations.has(destination) && !brokenDestinations.has(decodedDestination)) {
-          return match;
+    for (const element of template.content.querySelectorAll('img, a')) {
+      const attribute = element.tagName === 'IMG' ? 'src' : 'href';
+      const destination = element.getAttribute(attribute);
+      if (!destination) {
+        continue;
+      }
+
+      const decodedDestination = decodeDestination(destination);
+      if (element.tagName === 'IMG') {
+        const imageReference = resolvedReferences.find(
+          (reference) =>
+            reference.kind === 'image' &&
+            (reference.destination === destination || reference.destination === decodedDestination),
+        );
+        if (imageReference?.isRepositoryReference) {
+          element.setAttribute(
+            'data-repository-destination',
+            imageReference.destination || decodedDestination,
+          );
         }
+      }
 
-        if (/class="([^"]*)"/.test(tag)) {
-          return tag.replace(/class="([^"]*)"/, 'class="$1 broken-resource-reference"');
-        }
+      if (brokenDestinations.has(destination) || brokenDestinations.has(decodedDestination)) {
+        appendBrokenClass(element);
+      }
+    }
 
-        return tag.replace(/>$/, ' class="broken-resource-reference">');
-      },
-    );
+    renderedHtml.value = template.innerHTML;
+    await nextTick();
+
+    if (currentRunId !== renderRunId) {
+      return;
+    }
+
+    void hydratePreviewImages(currentRunId);
   } catch (error) {
     console.error('Markdown render error:', error);
     renderedHtml.value = '<p>' + t('editor.preview.renderError') + '</p>';
+  }
+}
+
+async function hydratePreviewImages(runId: number) {
+  const container = previewContentRef.value;
+  if (!container) {
+    return;
+  }
+
+  const imageSourceMap = await resolveImageSourceMap(props.content);
+  if (runId !== renderRunId) {
+    return;
+  }
+
+  for (const image of container.querySelectorAll('img')) {
+    const destination =
+      image.getAttribute('data-repository-destination') ??
+      image.getAttribute('src') ??
+      image.getAttribute('data-src');
+    if (!destination) {
+      continue;
+    }
+
+    const decodedDestination = decodeDestination(destination);
+    const resolvedSource =
+      imageSourceMap.get(destination) ?? imageSourceMap.get(decodedDestination) ?? null;
+    if (resolvedSource) {
+      image.setAttribute('src', resolvedSource);
+    }
   }
 }
 
@@ -155,17 +252,14 @@ function handleClick(event: MouseEvent) {
   }
 }
 
-onMounted(() => {
-  initializeMarkdownIt();
-  renderMarkdown();
-});
+initializeMarkdownIt();
 
 watch(
   () => [props.content, props.brokenResourceReferences],
   () => {
-    renderMarkdown();
+    void renderMarkdown();
   },
-  { immediate: false },
+  { immediate: true },
 );
 </script>
 

@@ -6,7 +6,7 @@ import type {
   LinkedResourceId,
   EditorWorkspaceId,
   IdentityId,
-  DocumentId,
+  ResourceId,
   TransferDate,
   DomainDate,
   PersistenceDate,
@@ -22,13 +22,13 @@ export interface LinkedResourceServerDTO {
   id: LinkedResourceId;
   workspaceId: EditorWorkspaceId; // Parent workspace ID (aggregate root FK)
   identityId: IdentityId;
-  sourceDocumentId: DocumentId; // Source document ID
+  sourceResourceId: ResourceId; // Source resource ID
   sourceType: LinkedSourceType;
   sourceLine: number | null; // Source position (line number)
   sourceColumn: number | null; // Source position (column number)
   targetPath: string; // Target path (relative or absolute)
   targetType: LinkedTargetType;
-  targetDocumentId: DocumentId | null; // Target document ID (if internal document)
+  targetResourceId: ResourceId | null; // Target resource ID (if internal resource)
   targetAnchor: string | null; // Target anchor (e.g. #heading-id)
   isValid: boolean; // Whether the link target exists
   lastValidatedAt: TransferDate | null;
@@ -43,13 +43,13 @@ export interface LinkedResourcePersistenceDTO {
   id: LinkedResourceId;
   workspace_id: EditorWorkspaceId;
   identityId: IdentityId;
-  source_document_id: DocumentId;
+  source_resource_id: ResourceId;
   source_type: LinkedSourceType;
   source_line: number | null;
   source_column: number | null;
   target_path: string;
   target_type: LinkedTargetType;
-  target_document_id: DocumentId | null;
+  target_resource_id: ResourceId | null;
   target_anchor: string | null;
   is_valid: boolean;
   last_validated_at: PersistenceDate | null;

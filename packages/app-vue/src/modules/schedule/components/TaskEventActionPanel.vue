@@ -75,6 +75,7 @@ const { t } = useI18n();
 const completing = ref(false);
 
 function formatTimeRange(event: CalendarEventItem): string {
+  if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {
     const d = new Date(ts);
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;

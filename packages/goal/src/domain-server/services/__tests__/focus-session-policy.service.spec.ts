@@ -15,8 +15,8 @@ import { IdentityId } from '@dailyuse/domain-shared';
 // Helpers
 // ============================================================
 
-const TEST_IDENTITY = IdentityId.of('IdentityId_test-user-001');
-const OTHER_IDENTITY = IdentityId.of('IdentityId_other-user-002');
+const TEST_IDENTITY = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
+const OTHER_IDENTITY = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440002');
 
 function createActiveFocusSession(): FocusSession {
   return FocusSession.create({
@@ -152,11 +152,13 @@ describe('FocusSessionPolicy', () => {
       expect(() => policy.ensureGoalIsValid(goal, TEST_IDENTITY)).not.toThrow();
     });
 
-    it('should pass for a valid completed goal belonging to the user', () => {
+    it('should reject a completed goal because it is auto-archived', () => {
       const goal = createTestGoal(TEST_IDENTITY);
       goal.markAsCompleted();
 
-      expect(() => policy.ensureGoalIsValid(goal, TEST_IDENTITY)).not.toThrow();
+      expect(() => policy.ensureGoalIsValid(goal, TEST_IDENTITY)).toThrow(
+        '不能关联已归档或已删除的目标',
+      );
     });
   });
 });

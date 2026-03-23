@@ -2,7 +2,14 @@ import type {
   TaskCreatedEvent,
   TaskUpdatedEvent,
   TaskDeletedEvent,
-  TaskCompletedEvent,
+  TaskInstanceCompletedEvent,
+  TaskInstanceSkippedEvent,
+  TaskInstanceDeletedEvent,
+  TaskInstancesGeneratedEvent,
+  TaskTemplatePausedEvent,
+  TaskTemplateResumedEvent,
+  TaskTemplateScheduleTimeChangedEvent,
+  TaskTemplateRecurrenceChangedEvent,
   TaskUncompletedEvent,
   TaskRescheduledEvent,
 } from '../domain/events';
@@ -33,11 +40,14 @@ export type TaskEventMap = {
    */
   'task:delete': TaskDeletedEvent;
 
-  /**
-   * Task completed event
-   * Triggered when task is marked complete
-   */
-  'task:complete': TaskCompletedEvent;
+  'task:instance:completed': TaskInstanceCompletedEvent;
+  'task:instance:skipped': TaskInstanceSkippedEvent;
+  'task:instance:deleted': TaskInstanceDeletedEvent;
+  'task:instances:generated': TaskInstancesGeneratedEvent;
+  'task:template:paused': TaskTemplatePausedEvent;
+  'task:template:resumed': TaskTemplateResumedEvent;
+  'task:template:schedule-time-changed': TaskTemplateScheduleTimeChangedEvent;
+  'task:template:recurrence-changed': TaskTemplateRecurrenceChangedEvent;
 
   /**
    * Task uncompleted event

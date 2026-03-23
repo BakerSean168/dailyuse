@@ -7,7 +7,6 @@
 // Port Interfaces
 export type {
   IRepositoryApiClient,
-  CreateRepositoryRequest,
   CreateFolderRequest,
   IResultIpcClient,
   UploadResourcesRequest,

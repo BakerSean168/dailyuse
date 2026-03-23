@@ -15,10 +15,8 @@
 
 import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
-import { RecurrenceType, TriggerResult, TriggerType } from '@dailyuse/contracts/reminder';
+import { TriggerResult, TriggerType } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateControlService } from './ReminderTemplateControlService';
-
-
 
 /**
  * 触发参数
@@ -189,10 +187,7 @@ export class ReminderTriggerService {
     beforeTime: number = Date.now(),
     identityId?: string,
   ): Promise<ReminderTemplate[]> {
-    const templates = await this.templateRepository.findByNextTriggerBefore(
-      beforeTime,
-      identityId,
-    );
+    const templates = await this.templateRepository.findByNextTriggerBefore(beforeTime, identityId);
 
     // 过滤出真正启用的模板
     const effectivelyEnabled: ReminderTemplate[] = [];
@@ -201,7 +196,7 @@ export class ReminderTriggerService {
       if (!template) {
         continue;
       }
-      
+
       try {
         const isEnabled = await this.controlService.isTemplateEffectivelyEnabled(template);
         if (isEnabled) {

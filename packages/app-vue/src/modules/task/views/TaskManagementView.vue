@@ -34,6 +34,7 @@
         @click-template="handleClickTemplate"
         @edit-template="handleEdit"
         @delete-template="handleDelete"
+        @pause-template="handlePause"
         @resume-template="handleResume"
         @delete-all-templates="handleDeleteAll"
       />
@@ -67,12 +68,14 @@ import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { Search } from 'lucide-vue-next';
-import { Input } from '@dailyuse/ui-vue-shadcn';
+import { Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
-import { TaskType, type TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
+import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
+import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -86,6 +89,7 @@ const {
   updateTemplate,
   deleteTemplate,
   activateTemplate,
+  pauseTemplate,
 } = useTask();
 
 const searchQuery = ref('');
@@ -93,55 +97,9 @@ const showCreateDialog = ref(false);
 const showEditDialog = ref(false);
 const editViewModel = ref<TaskTemplateViewModel | null>(null);
 
-const timeTypeMap: Record<string, TaskTemplateViewModel['timeConfig']['timeType']> = {
-  AllDay: 'AllDay',
-  TimePoint: 'TimePoint',
-  TimeRange: 'TimeRange',
-};
-
-const statusMap: Record<string, string> = {
-  Active: 'ACTIVE',
-  Paused: 'PAUSED',
-  Archived: 'ARCHIVED',
-  Deleted: 'DELETED',
-};
-
-function mapToViewModel(dto: TaskTemplateClientDTO): TaskTemplateViewModel {
-  const status = statusMap[dto.status] ?? dto.status;
-  return {
-    id: dto.id,
-    title: dto.name,
-    description: dto.description ?? undefined,
-    status,
-    isActive: status === 'ACTIVE',
-    isPaused: status === 'PAUSED',
-    isArchived: status === 'ARCHIVED',
-    priority: dto.priority,
-    tags: dto.tags,
-    goalBinding: dto.goalBinding
-      ? {
-          goalId: dto.goalBinding.goalId,
-          keyResultId: dto.goalBinding.keyResultId,
-          incrementValue: dto.goalBinding.goalRecordValue,
-        }
-      : null,
-    timeConfig: {
-      timeType:
-        timeTypeMap[dto.timeConfig?.timeType] ??
-        (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
-      timePoint: dto.timeConfig?.timePoint ?? undefined,
-      timeRange: dto.timeConfig?.timeRange ?? undefined,
-      startDate: dto.timeConfig?.startDate ?? undefined,
-    },
-    recurrenceRule: dto.recurrenceRule ?? null,
-    reminderConfig: dto.reminderConfig ?? null,
-    instanceCount: dto.instanceCount,
-    completionRate: dto.completionRate,
-    formattedCreatedAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString() : undefined,
-  };
-}
-
-const viewModels = computed(() => templates.value.map(mapToViewModel));
+const viewModels = computed(() =>
+  templates.value.map((dto) => mapTaskTemplateDtoToViewModel(dto, t)),
+);
 
 const filteredViewModels = computed(() => {
   if (!searchQuery.value.trim()) return viewModels.value;
@@ -153,6 +111,19 @@ const filteredViewModels = computed(() => {
       t.tags?.some((tag) => tag.toLowerCase().includes(q)),
   );
 });
+
+function toGoalBindingPayload(template: TaskTemplateViewModel) {
+  if (!template.goalBinding?.goalId || !template.goalBinding?.keyResultId) {
+    return null;
+  }
+
+  return {
+    goalId: template.goalBinding.goalId as GoalId,
+    keyResultId: template.goalBinding.keyResultId as KeyResultId,
+    goalRecordValue: template.goalBinding.incrementValue ?? 1,
+    progressTrigger: template.goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
+  };
+}
 
 function handleCreate() {
   showCreateDialog.value = true;
@@ -168,10 +139,12 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     importance: (template.importance as any) ?? 'Moderate',
     tags: template.tags ?? [],
     color: template.color ?? null,
+    goalBinding: toGoalBindingPayload(template),
   });
   if (result) {
     showCreateDialog.value = false;
     toast.success(t('task.management.createSuccess'));
+    await fetchTemplates();
   }
 }
 
@@ -196,6 +169,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
     color: vm.color ?? null,
+    goalBinding: toGoalBindingPayload(vm),
   });
   if (result) {
     showEditDialog.value = false;
@@ -206,7 +180,15 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
 }
 
 async function handleDelete(template: TaskTemplateViewModel) {
-  if (!window.confirm(t('task.management.confirmDelete', { name: template.title }))) return;
+  const confirmed = await useConfirm({
+    title: t('task.management.deleteTemplate'),
+    description: t('task.management.confirmDelete', { name: template.title }),
+    confirmText: t('common.confirm'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
   await deleteTemplate(template.id);
 }
 
@@ -214,8 +196,31 @@ async function handleResume(template: TaskTemplateViewModel) {
   await activateTemplate(template.id);
 }
 
+async function handlePause(template: TaskTemplateViewModel) {
+  const confirmed = await useConfirm({
+    title: t('task.management.pauseTitle'),
+    description: t('task.management.pauseDescription', { name: template.title }),
+    confirmText: t('task.templateCard.pause'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
+
+  await pauseTemplate(template.id);
+}
+
 async function handleDeleteAll() {
-  if (!window.confirm(t('task.management.confirmDeleteAll'))) return;
+  const confirmed = await useConfirm({
+    title: t('task.templateMgmt.confirmDeleteAll'),
+    description: t('task.management.confirmDeleteAll'),
+    confirmText: t('common.confirm'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
+
   for (const t_ of templates.value) {
     await deleteTemplate(t_.id);
   }

@@ -67,7 +67,7 @@ function generateDashboardStats() {
     id: faker.string.uuid(),
     name: faker.lorem.words({ min: 2, max: 4 }),
     progress: faker.number.int({ min: 5, max: 95 }),
-    status: faker.helpers.arrayElement(['Active', 'Active', 'Active', 'Paused']),
+    status: 'Active',
     dueDate: now + faker.number.int({ min: 7 * DAY, max: 90 * DAY }),
     keyResultCount: faker.number.int({ min: 1, max: 5 }),
   }));

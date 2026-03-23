@@ -7,7 +7,7 @@ import type { LinkedTargetType as ILinkedTargetType } from '@dailyuse/contracts/
 export type LinkedTargetType = ILinkedTargetType & { readonly __brand: unique symbol };
 
 const VALUES: ILinkedTargetType[] = [
-  'Document',
+  'Resource',
   'Image',
   'Video',
   'Audio',
@@ -17,7 +17,7 @@ const VALUES: ILinkedTargetType[] = [
 ];
 
 export const LinkedTargetType = {
-  Document: 'Document' as LinkedTargetType,
+  Resource: 'Resource' as LinkedTargetType,
   Image: 'Image' as LinkedTargetType,
   Video: 'Video' as LinkedTargetType,
   Audio: 'Audio' as LinkedTargetType,

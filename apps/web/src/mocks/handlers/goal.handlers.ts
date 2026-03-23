@@ -109,16 +109,6 @@ export const goalHandlers = [
     });
   }),
 
-  http.post(`${GOALS}/:id/pause`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Paused',
-      data: createMockGoal({ id: toGoalId(params['id']), status: 'Archived' }),
-      timestamp: Date.now(),
-    });
-  }),
-
   http.post(`${GOALS}/:id/complete`, ({ params }) => {
     return HttpResponse.json({
       ok: true,

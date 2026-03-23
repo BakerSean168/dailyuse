@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type {
   IStoragePort,
+  StorageReadRequest,
   StorageWriteRequest,
   StorageMoveRequest,
   StorageDeleteRequest,
@@ -81,5 +82,20 @@ export class FsStorageAdapter implements IStoragePort {
     } else {
       await fs.promises.unlink(fullPath);
     }
+  }
+
+  async read(request: StorageReadRequest): Promise<Uint8Array | null> {
+    const fullPath = this.getAbsolutePath(request.repositoryId, request.path);
+
+    if (!fs.existsSync(fullPath)) {
+      return null;
+    }
+
+    const stats = await fs.promises.stat(fullPath);
+    if (stats.isDirectory()) {
+      return null;
+    }
+
+    return new Uint8Array(await fs.promises.readFile(fullPath));
   }
 }

@@ -24,17 +24,29 @@ import type {
 } from '../infrastructure-client/adapters/types';
 
 export class NotificationClientService {
-  constructor(
-    private readonly notificationApi: INotificationApiClient,
-  ) {}
+  constructor(private readonly notificationApi: INotificationApiClient) {
+    this.createNotification = this.createNotification.bind(this);
+    this.findNotifications = this.findNotifications.bind(this);
+    this.findNotificationById = this.findNotificationById.bind(this);
+    this.markAsRead = this.markAsRead.bind(this);
+    this.markAllAsRead = this.markAllAsRead.bind(this);
+    this.deleteNotification = this.deleteNotification.bind(this);
+    this.batchDeleteNotifications = this.batchDeleteNotifications.bind(this);
+    this.dismissAll = this.dismissAll.bind(this);
+    this.getUnreadCount = this.getUnreadCount.bind(this);
+  }
 
   // ===== Notification Operations =====
 
-  async createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>> {
+  async createNotification(
+    request: CreateNotificationRequest,
+  ): Promise<Result<NotificationClientDTO>> {
     return this.notificationApi.createNotification(request);
   }
 
-  async findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>> {
+  async findNotifications(
+    query?: QueryNotificationsRequest,
+  ): Promise<Result<NotificationListResponse>> {
     return this.notificationApi.findNotifications(query);
   }
 
@@ -55,6 +67,10 @@ export class NotificationClientService {
   }
 
   async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
+    return this.notificationApi.batchDeleteNotifications(ids);
+  }
+
+  async dismissAll(ids: string[]): Promise<Result<CountResult>> {
     return this.notificationApi.batchDeleteNotifications(ids);
   }
 

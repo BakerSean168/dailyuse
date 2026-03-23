@@ -1,6 +1,8 @@
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
+import { createLogger, eventBus } from '@dailyuse/utils';
 import {
   PowerSyncReminderTemplateMapper,
   type PowerSyncReminderTemplateRow,
@@ -14,11 +16,27 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
+const logger = createLogger('ReminderTemplatePowerSyncRepo');
+
 export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRepository {
   constructor(private readonly db: Queryable) {}
 
   async save(template: ReminderTemplate): Promise<void> {
     const data = PowerSyncReminderTemplateMapper.toPersistence(template);
+    const pendingDomainEvents = template.domainEvents.map((event) => event.eventType);
+
+    logger.info('[Reminder][Repo] Saving template', {
+      templateId: String(template.id),
+      identityId: String(template.identityId),
+      title: template.title,
+      status: template.status,
+      selfEnabled: template.selfEnabled,
+      effectiveEnabled: template.isEffectivelyEnabled(),
+      nextTriggerAt: template.nextTriggerAt,
+      historyCount: template.getAllHistory().length,
+      pendingDomainEvents,
+    });
+
     const existingTemplate = await this.db.getOptional<{ id: string }>(
       'SELECT id FROM reminder_templates WHERE id = ? LIMIT 1',
       [data.id],
@@ -42,7 +60,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
              updated_at = ?,
              deleted_at = ?,
              trigger = ?,
-             recurrence = ?,
              active_time = ?,
              active_hours = ?,
              notification_config = ?,
@@ -78,7 +95,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           data.updatedAt,
           data.deletedAt,
           data.trigger,
-          data.recurrence,
           data.activeTime,
           data.activeHours,
           data.notificationConfig,
@@ -105,11 +121,11 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
         `INSERT INTO reminder_templates (
           id, identity_id, name, description, type, self_enabled, status, reminder_group_id,
           importance_level, tags, color, icon, next_trigger_at, version, created_at, updated_at,
-          deleted_at, trigger, recurrence, active_time, active_hours, notification_config, stats,
+          deleted_at, trigger, active_time, active_hours, notification_config, stats,
           click_rate, ignore_rate, avg_response_time, snooze_count, effectiveness_score, sample_size,
           last_analysis_time, original_interval, adjusted_interval, adjustment_reason, adjustment_time,
           is_auto_adjusted, user_confirmed, smart_frequency_enabled
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
@@ -129,7 +145,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           data.updatedAt,
           data.deletedAt,
           data.trigger,
-          data.recurrence,
           data.activeTime,
           data.activeHours,
           data.notificationConfig,
@@ -193,6 +208,25 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           ],
         );
       }
+    }
+
+    if (pendingDomainEvents.length > 0) {
+      for (const event of template.pullDomainEvents()) {
+        const eventType = event.eventType as keyof AppEventRegistry;
+        eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
+      }
+
+      logger.info('[Reminder][Repo] Published domain events after PowerSync save', {
+        templateId: String(template.id),
+        publishedDomainEvents: pendingDomainEvents,
+      });
+    } else {
+      logger.warn(
+        '[Reminder][Repo] PowerSync save completed without domain events to publish',
+        {
+          templateId: String(template.id),
+        },
+      );
     }
   }
 

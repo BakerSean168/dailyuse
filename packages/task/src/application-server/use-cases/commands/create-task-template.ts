@@ -10,9 +10,9 @@ import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITask
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '@/domain-server/value-objects';
 import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
-import type { TaskTemplateClientDTO, CreateTaskTemplateReq } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, CreateTaskTemplateInput } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { eventBus, createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -31,7 +31,7 @@ export class CreateTaskTemplate {
   }
 
   async execute(
-    request: CreateTaskTemplateReq,
+    request: CreateTaskTemplateInput,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
     const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
     const recurrenceRule = request.recurrenceRule
@@ -42,7 +42,7 @@ export class CreateTaskTemplate {
       : undefined;
 
     const template = TaskTemplate.create({
-      identityId: request.identityId!,
+      identityId: request.identityId,
       title: request.name,
       description: request.description ?? undefined,
       taskType: request.taskType,
@@ -53,6 +53,14 @@ export class CreateTaskTemplate {
       folderId: request.folderId ?? undefined,
       tags: request.tags,
       color: request.color ?? undefined,
+      goalBinding: request.goalBinding
+        ? {
+            goalId: request.goalBinding.goalId,
+            keyResultId: request.goalBinding.keyResultId,
+            goalRecordValue: request.goalBinding.goalRecordValue,
+            progressTrigger: request.goalBinding.progressTrigger,
+          }
+        : null,
     });
 
     // Save to repository
@@ -79,21 +87,6 @@ export class CreateTaskTemplate {
       if (instances.length > 0) {
         await this.instanceRepository.saveMany(instances);
         await this.templateRepository.save(template);
-
-        // Publish event
-        eventBus.send('task:instances:generated' as any, {
-          eventType: 'task:instances:generated',
-          version: '1.0',
-          aggregateId: template.id,
-          occurredOn: new Date(),
-          identityId: template.identityId,
-          payload: {
-            templateId: template.id,
-            templateTitle: template.title,
-            instanceCount: instances.length,
-            strategy: instances.length <= 20 ? 'full' : 'summary',
-          },
-        });
       }
 
       return instances.length;

@@ -77,7 +77,7 @@ export class PrismaGoalMapper {
    */
   static mapKeyResult(row: PrismaKeyResult): KeyResultPersistenceDTO {
     const progress = JSON.stringify({
-      initialValue: 0,
+      initialValue: row.initialValue ?? 0,
       currentValue: row.currentValue ?? 0,
       targetValue: row.targetValue ?? 100,
       valueType: row.valueType ?? 'Incremental',
@@ -151,6 +151,7 @@ export class PrismaGoalMapper {
     return {
       valueType: progress.valueType ?? 'Incremental',
       aggregationMethod: progress.aggregationMethod ?? 'Last',
+      initialValue: progress.initialValue ?? 0,
       targetValue: progress.targetValue ?? 100,
       currentValue: progress.currentValue ?? 0,
       unit: progress.unit ?? null,

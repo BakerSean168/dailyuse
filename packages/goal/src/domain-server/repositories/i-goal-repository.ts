@@ -54,6 +54,7 @@ export interface IGoalRepository {
       includeChildren?: boolean;
       status?: string;
       folderId?: string;
+      systemView?: 'active' | 'completed' | 'expired' | 'deleted';
     },
   ): Promise<Goal[]>;
 

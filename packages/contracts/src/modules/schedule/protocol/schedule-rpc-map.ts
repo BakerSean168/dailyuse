@@ -15,10 +15,16 @@ export type ScheduleRpcMap = {
   'schedule:create': [CreateScheduleRequest, CalendarEntryClientDTO];
   'schedule:update': [UpdateScheduleRequest, CalendarEntryClientDTO];
   'schedule:delete': [{ scheduleId: string }, ScheduleOperationSuccessResponseDTO];
-  'schedule:get-by-range': [{ startTime: number; endTime: number; identityId?: string }, CalendarEntryClientDTO[]];
-  'schedule:detect-conflicts': [{ userId: string; startTime: number; endTime: number; excludeId?: string }, ConflictDetectionResult];
-  'schedule:resolve-conflict': [{ resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number }, CalendarEntryClientDTO];
-  
+  'schedule:get-by-range': [{ startTime: number; endTime: number }, CalendarEntryClientDTO[]];
+  'schedule:detect-conflicts': [
+    { startTime: number; endTime: number; excludeId?: string },
+    ConflictDetectionResult,
+  ];
+  'schedule:resolve-conflict': [
+    { resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number },
+    CalendarEntryClientDTO,
+  ];
+
   // === Schedule Task Operations ===
   'schedule-task:create': [unknown, ScheduleTaskClientDTO];
   'schedule-task:update': [unknown, ScheduleTaskClientDTO];
@@ -28,9 +34,11 @@ export type ScheduleRpcMap = {
   'schedule-task:disable': [{ taskId: string }, ScheduleTaskClientDTO];
   'schedule-task:update-config': [unknown, ScheduleTaskClientDTO];
   'schedule-task:update-metadata': [unknown, ScheduleTaskClientDTO];
-  
+
   // === Schedule Execution Records ===
-  'schedule-execution:query': [ScheduleExecutionQueryParamsDTO, { items: ScheduleExecutionClientDTO[]; total: number; page: number; limit: number }];
+  'schedule-execution:query': [
+    ScheduleExecutionQueryParamsDTO,
+    { items: ScheduleExecutionClientDTO[]; total: number; page: number; limit: number },
+  ];
   'schedule-execution:get-stats': [{ taskId: string }, unknown];
 };
-

@@ -11,6 +11,14 @@
 import type { TaskInstance } from '../aggregates';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
+export interface TaskTemplateInstanceStats {
+  templateId: string;
+  instanceCount: number;
+  completedInstanceCount: number;
+  pendingInstanceCount: number;
+  completionRate: number;
+}
+
 /**
  * TaskInstance 仓储接口
  */
@@ -87,8 +95,13 @@ export interface ITaskInstanceRepository {
   ): Promise<TaskInstance[]>;
 
   /**
-   * 删除模板的未来待处理实例
-   * 用于重新生成实例时清理旧数据
+   * 批量统计模板实例聚合数据
    */
-  deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void>;
+  getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>>;
+
+  /**
+   * 删除模板从指定时点开始的未完成实例
+   * 用于暂停模板时清理当前及未来无意义的实例
+   */
+  deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number>;
 }

@@ -19,8 +19,8 @@
   （`createScheduleModule(deps)` 现为服务端运行时的唯一组合根）
 - Old `InitializationManager` global hooks replaced by `ScheduleModuleRuntimeContribution` with explicit `start()` / `stop()`
   （旧的全局 `InitializationManager` 钩子已被显式的 `start()` / `stop()` 运行时贡献取代）
-- `ScheduleEventPublisher.configure()` + `initialize()` moved into `createScheduleRuntimeContribution()` in `runtime.ts`
-  （`ScheduleEventPublisher` 的配置和初始化收入 `runtime.ts` 中的 `createScheduleRuntimeContribution()`）
+- `createScheduleRuntimeContribution()` now owns queue loading, due-task execution, and task lifecycle subscriptions
+  （`createScheduleRuntimeContribution()` 现在负责队列加载、到期执行和任务生命周期订阅）
 - `src/api/initialization.ts` deprecated — kept only for backward compatibility
   （`initialization.ts` 已标记 `@deprecated`，仅保留用于向后兼容）
 - Transport layer (`routes`, `transport-handlers`) only consumes `module.api`, never directly constructs repositories or use cases

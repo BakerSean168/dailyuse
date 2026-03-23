@@ -36,7 +36,7 @@ export const WithParent: Story = {
     name: '',
     icon: '',
     parentId: 'folder-1',
-    parentName: '技术文档',
+    parentName: '技术笔记',
     loading: false,
   },
 };

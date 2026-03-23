@@ -5,6 +5,7 @@
  */
 
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
+import type { ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -52,35 +53,39 @@ export class AdjustReminderFrequency {
       throw new Error(`Template ${request.templateId} not found`);
     }
 
-    // Get current recurrence details for comparison
-    const originalInterval = template.recurrence?.daily?.interval || 0;
-
-    // Apply adjustment using domain update method
-    if (template.recurrence?.daily) {
-      template.update({
-        recurrence: template.recurrence.with({
-          daily: {
-            ...template.recurrence.daily,
-            interval: request.newInterval,
-          },
-        }),
-      });
+    const trigger = {
+      type: template.trigger.type,
+      fixedTime: template.trigger.fixedTime,
+      interval: template.trigger.interval,
+    };
+    if (trigger.type !== 'Interval' || !trigger.interval) {
+      throw new Error(`Template ${request.templateId} does not use interval trigger`);
     }
+
+    const originalInterval = trigger.interval.minutes;
+
+    template.update({
+      trigger: {
+        ...trigger,
+        interval: {
+          ...trigger.interval,
+          minutes: request.newInterval,
+        },
+      },
+    });
 
     await this.templateRepository.save(template);
 
     // Publish event
-    eventBus.send(
-      'reminder:frequency:adjusted' as any,
-      {
-        templateId: request.templateId,
-        originalInterval,
-        adjustedInterval: request.newInterval,
-        reason: request.reason,
-        identityId: request.identityId,
-        adjustedAt: Date.now(),
-      } as any,
-    );
+    const adjustedEvent: ReminderEventMap['reminder:frequency:adjusted'] = {
+      templateId: request.templateId,
+      originalInterval,
+      adjustedInterval: request.newInterval,
+      reason: request.reason,
+      identityId: request.identityId,
+      adjustedAt: Date.now(),
+    };
+    eventBus.send('reminder:frequency:adjusted', adjustedEvent);
 
     return {
       templateId: request.templateId,
@@ -104,13 +109,11 @@ export class AdjustReminderFrequency {
       throw new Error(`Template ${templateId} not found`);
     }
 
-    eventBus.send(
-      'reminder:frequency:adjustment-rejected' as any,
-      {
-        templateId,
-        identityId,
-        rejectedAt: Date.now(),
-      } as any,
-    );
+    const rejectedEvent: ReminderEventMap['reminder:frequency:adjustment-rejected'] = {
+      templateId,
+      identityId,
+      rejectedAt: Date.now(),
+    };
+    eventBus.send('reminder:frequency:adjustment-rejected', rejectedEvent);
   }
 }

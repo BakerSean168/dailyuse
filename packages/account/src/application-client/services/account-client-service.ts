@@ -13,6 +13,8 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
   AccountClientDTO,
 } from '@dailyuse/contracts/account';
 import { Account } from '../../domain-client';
@@ -41,7 +43,13 @@ function accountFromDTO(dto: AccountClientDTO): Account {
 }
 
 export class AccountClientService {
-  constructor(private readonly apiClient: IAccountApiClient) {}
+  constructor(private readonly apiClient: IAccountApiClient) {
+    this.getMyProfile = this.getMyProfile.bind(this);
+    this.updateMyProfile = this.updateMyProfile.bind(this);
+    this.checkAvailability = this.checkAvailability.bind(this);
+    this.updateSettings = this.updateSettings.bind(this);
+    this.closeAccount = this.closeAccount.bind(this);
+  }
 
   async getMyProfile(): Promise<Result<Account>> {
     const result = await this.apiClient.getMyProfile();
@@ -55,6 +63,12 @@ export class AccountClientService {
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
     return this.apiClient.checkAvailability(request);
+  }
+
+  async updateSettings(
+    request: UpdateAccountSettingsReq,
+  ): Promise<Result<UpdateAccountSettingsRes>> {
+    return this.apiClient.updateSettings(request);
   }
 
   async closeAccount(request: CloseAccountReq): Promise<Result<void>> {

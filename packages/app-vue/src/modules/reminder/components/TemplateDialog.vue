@@ -1,24 +1,23 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="max-w-3xl max-h-[700px] flex flex-col p-0">
-      <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b">
-        <Button variant="destructive" @click="close" :disabled="saving">{{
-          t('reminder.templateDialog.btnCancel')
-        }}</Button>
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-3xl flex-col overflow-hidden p-0">
+      <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <DialogTitle class="text-xl">{{
           isEditMode
             ? t('reminder.templateDialog.titleEdit')
             : t('reminder.templateDialog.titleCreate')
         }}</DialogTitle>
-        <Button variant="default" @click="handleSave" :disabled="!formValid || saving">{{
-          t('reminder.templateDialog.btnDone')
-        }}</Button>
-      </div>
+        <DialogDescription class="text-sm text-muted-foreground">
+          {{
+            isEditMode
+              ? t('reminder.templateDialog.descEdit')
+              : t('reminder.templateDialog.descCreate')
+          }}
+        </DialogDescription>
+      </DialogHeader>
 
-      <!-- Content -->
-      <ScrollArea class="flex-1 px-6">
-        <div class="space-y-6 py-6">
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+        <div class="space-y-6 py-2">
           <!-- Basic Info -->
           <div class="space-y-3">
             <div class="flex items-center gap-2 mb-3">
@@ -39,32 +38,13 @@
                 />
               </div>
               <div class="flex flex-col items-center justify-start pt-6">
-                <div
-                  class="w-10 h-10 rounded-full cursor-pointer border-2"
-                  :style="{ backgroundColor: formData.color }"
-                  @click="showColorPicker = !showColorPicker"
+                <ColorPickerField
+                  :model-value="formData.color"
+                  button-class="h-10 w-[132px] justify-start gap-2"
+                  :empty-label="t('reminder.templateDialog.btnPick')"
+                  :clear-label="t('reminder.templateDialog.clearColor')"
+                  @update:model-value="formData.color = $event ?? formData.color"
                 />
-                <Popover v-model:open="showColorPicker">
-                  <PopoverTrigger as-child>
-                    <Button variant="ghost" size="sm" class="mt-1 h-6 text-xs">{{
-                      t('reminder.templateDialog.btnPick')
-                    }}</Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-3">
-                    <div class="grid grid-cols-4 gap-2">
-                      <div
-                        v-for="color in colorOptions"
-                        :key="color"
-                        class="w-8 h-8 rounded-full cursor-pointer"
-                        :style="{ backgroundColor: color }"
-                        @click="
-                          formData.color = color;
-                          showColorPicker = false;
-                        "
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
               </div>
             </div>
 
@@ -86,11 +66,17 @@
                     <SelectValue :placeholder="t('reminder.templateDialog.placeholderGroup')" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__root__">
+                      {{ t('reminder.templateDialog.rootOption') }}
+                    </SelectItem>
                     <SelectItem v-for="group in groupOptions" :key="group.id" :value="group.id">
                       {{ group.name }}
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <p class="mt-1 text-xs text-muted-foreground">
+                  {{ currentGroupHint }}
+                </p>
               </div>
               <div>
                 <Label>{{ t('reminder.templateDialog.labelImportance') }}</Label>
@@ -117,23 +103,6 @@
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div>
-              <Label>{{ t('reminder.templateDialog.labelReminderType') }}</Label>
-              <Select v-model="formData.type">
-                <SelectTrigger class="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="OneTime">{{
-                    t('reminder.templateDialog.optionOneTime')
-                  }}</SelectItem>
-                  <SelectItem value="Recurring">{{
-                    t('reminder.templateDialog.optionRecurring')
-                  }}</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -185,161 +154,10 @@
               </p>
             </div>
 
-            <!-- Active Time (start / end date) -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelStartDate') }}</Label>
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="mt-1.5 h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !formData.startDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        formData.startDate
-                          ? formatDate(formData.startDate)
-                          : t('reminder.templateDialog.pickStartDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="startDateValue"
-                      @update:model-value="handleStartDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelEndDate') }}</Label>
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="mt-1.5 h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !formData.endDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        formData.endDate
-                          ? formatDate(formData.endDate)
-                          : t('reminder.templateDialog.noEndDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="endDateValue"
-                      @update:model-value="handleEndDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  v-if="formData.endDate"
-                  variant="ghost"
-                  size="sm"
-                  class="mt-1 h-6 text-xs text-muted-foreground"
-                  @click="formData.endDate = null"
-                >
-                  {{ t('reminder.templateDialog.clearEndDate') }}
-                </Button>
-              </div>
-            </div>
+            <p class="text-xs text-muted-foreground">
+              {{ t('reminder.templateDialog.hintLongLived') }}
+            </p>
           </div>
-
-          <!-- Recurrence (only for Recurring type) -->
-          <Collapsible v-if="formData.type === 'Recurring'" v-model:open="showRecurrence">
-            <CollapsibleTrigger as-child>
-              <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
-                <span class="flex items-center gap-2">
-                  <Repeat class="h-4 w-4" />
-                  {{ t('reminder.templateDialog.sectionRecurrence') }}
-                  <Badge variant="secondary" class="ml-1">{{
-                    t('reminder.templateDialog.badgeOptional')
-                  }}</Badge>
-                </span>
-                <ChevronDown
-                  class="h-4 w-4 transition-transform"
-                  :class="{ 'rotate-180': showRecurrence }"
-                />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent class="mt-3 space-y-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelRecurrenceType') }}</Label>
-                <Select v-model="formData.recurrenceType">
-                  <SelectTrigger class="mt-1.5">
-                    <SelectValue
-                      :placeholder="t('reminder.templateDialog.placeholderRecurrenceType')"
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Daily">{{
-                      t('reminder.templateDialog.recurrenceDaily')
-                    }}</SelectItem>
-                    <SelectItem value="Weekly">{{
-                      t('reminder.templateDialog.recurrenceWeekly')
-                    }}</SelectItem>
-                    <SelectItem value="CustomDays">{{
-                      t('reminder.templateDialog.recurrenceCustomDays')
-                    }}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <!-- Daily interval -->
-              <div v-if="formData.recurrenceType === 'Daily'">
-                <Label>{{ t('reminder.templateDialog.labelDailyInterval') }}</Label>
-                <Input
-                  v-model.number="formData.dailyInterval"
-                  type="number"
-                  min="1"
-                  placeholder="1"
-                  class="mt-1.5"
-                />
-              </div>
-
-              <!-- Weekly -->
-              <div v-if="formData.recurrenceType === 'Weekly'" class="space-y-3">
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelWeeklyInterval') }}</Label>
-                  <Input
-                    v-model.number="formData.weeklyInterval"
-                    type="number"
-                    min="1"
-                    placeholder="1"
-                    class="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelDaysOfWeek') }}</Label>
-                  <div class="flex flex-wrap gap-2 mt-1.5">
-                    <Button
-                      v-for="day in weekDayOptions"
-                      :key="day.value"
-                      size="sm"
-                      :variant="formData.weekDays.includes(day.value) ? 'default' : 'outline'"
-                      class="h-8 px-3"
-                      @click="toggleWeekDay(day.value)"
-                    >
-                      {{ day.label }}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CustomDays info -->
-              <div v-if="formData.recurrenceType === 'CustomDays'">
-                <p class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDialog.hintCustomDays') }}
-                </p>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
 
           <!-- Active Hours -->
           <Collapsible v-model:open="showActiveHours">
@@ -472,32 +290,37 @@
             </AccordionItem>
           </Accordion>
         </div>
-      </ScrollArea>
+      </div>
+
+      <DialogFooter class="shrink-0 border-t p-6 pt-4">
+        <Button variant="ghost" @click="close" :disabled="saving">
+          {{ t('reminder.templateDialog.btnCancel') }}
+        </Button>
+        <Button variant="default" @click="handleSave" :disabled="!formValid || saving">
+          {{ t('reminder.templateDialog.btnDone') }}
+        </Button>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Info, Clock, Palette, Settings, Bell, ChevronDown, Timer } from 'lucide-vue-next';
 import {
-  Info,
-  Clock,
-  Palette,
-  Settings,
-  Bell,
-  Calendar as CalendarIcon,
-  ChevronDown,
-  Repeat,
-  Timer,
-} from 'lucide-vue-next';
-import { Dialog, DialogContent, DialogTitle } from '@dailyuse/ui-vue-shadcn';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import {
   Select,
@@ -513,25 +336,30 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { Calendar } from '@dailyuse/ui-vue-shadcn';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@dailyuse/ui-vue-shadcn';
 import type {
   CreateReminderTemplateReq,
+  ReminderGroupClientDTO,
   UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import type { ReminderGroupOption } from '../types';
+import { ColorPickerField } from '../../../shared/components';
+import { defaultNamedColor } from '../../../shared/constants/colorPalette';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
     template?: ReminderTemplateClientDTO | null;
-    groupOptions?: ReminderGroupOption[];
+    groupOptions?: ReminderGroupClientDTO[];
+    saving?: boolean;
+    defaultGroupId?: string | null;
   }>(),
   {
     template: null,
     groupOptions: () => [],
+    saving: false,
+    defaultGroupId: null,
   },
 );
 
@@ -541,109 +369,40 @@ const emit = defineEmits<{
 }>();
 
 const visible = ref(false);
-const saving = ref(false);
-const showColorPicker = ref(false);
-const showRecurrence = ref(false);
 const showActiveHours = ref(false);
 const tagsInput = ref('');
+const saving = computed(() => props.saving);
+const currentGroupHint = computed(() => {
+  if (formData.groupId === '__root__' || !formData.groupId) {
+    return t('reminder.templateDialog.currentGroupHintRoot');
+  }
+  const group = props.groupOptions.find((item) => item.id === formData.groupId);
+  return group
+    ? t('reminder.templateDialog.currentGroupHintNamed', { name: group.name })
+    : t('reminder.templateDialog.currentGroupHintSelected');
+});
 
 const formData = reactive({
   title: '',
   description: '',
-  type: 'Recurring' as string,
-  importanceLevel: 'Moderate' as string,
-  triggerType: 'FixedTime' as string,
+  importanceLevel: 'Moderate' as NonNullable<CreateReminderTemplateReq['importanceLevel']>,
+  triggerType: 'FixedTime' as CreateReminderTemplateReq['trigger']['type'],
   fixedTime: '09:00',
   intervalMinutes: 60,
-  startDate: Date.now() as number | null,
-  endDate: null as number | null,
-  // Recurrence
-  recurrenceType: '' as string,
-  dailyInterval: 1,
-  weeklyInterval: 1,
-  weekDays: [] as string[],
-  // Active hours
   activeStartHour: null as number | null,
   activeEndHour: null as number | null,
-  // Notification
   notificationTitle: '',
   notificationBody: '',
-  // Appearance
-  color: '#2196F3',
+  color: defaultNamedColor,
   icon: 'mdi-bell',
-  tags: [] as string[],
-  groupId: undefined as string | undefined,
+  tags: [] as NonNullable<CreateReminderTemplateReq['tags']>,
+  groupId: undefined as CreateReminderTemplateReq['groupId'] | '__root__' | undefined,
 });
 
-const colorOptions = [
-  '#2196F3',
-  '#4CAF50',
-  '#FF9800',
-  '#F44336',
-  '#9C27B0',
-  '#E91E63',
-  '#00BCD4',
-  '#9E9E9E',
-];
-
-const weekDayOptions = computed(() => [
-  { label: t('reminder.templateDialog.dayMon'), value: 'Monday' },
-  { label: t('reminder.templateDialog.dayTue'), value: 'Tuesday' },
-  { label: t('reminder.templateDialog.dayWed'), value: 'Wednesday' },
-  { label: t('reminder.templateDialog.dayThu'), value: 'Thursday' },
-  { label: t('reminder.templateDialog.dayFri'), value: 'Friday' },
-  { label: t('reminder.templateDialog.daySat'), value: 'Saturday' },
-  { label: t('reminder.templateDialog.daySun'), value: 'Sunday' },
-]);
-
 const isEditMode = computed(() => !!props.template?.id);
-const formValid = computed(() => formData.title.trim().length > 0 && formData.startDate !== null);
-
-/** Convert epoch timestamp to a Date for the Calendar component */
-const startDateValue = computed(() =>
-  formData.startDate ? new Date(formData.startDate) : undefined,
-);
-const endDateValue = computed(() => (formData.endDate ? new Date(formData.endDate) : undefined));
+const formValid = computed(() => formData.title.trim().length > 0);
 
 // ── Helpers ────────────────────────────────────────────────────────────
-
-function formatDate(ts: number): string {
-  const dateLocale = locale.value === 'zh-CN' ? 'zh-CN' : 'en-US';
-  return new Date(ts).toLocaleDateString(dateLocale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function handleStartDateSelect(date: unknown) {
-  if (date instanceof Date) {
-    formData.startDate = date.getTime();
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    formData.startDate = (date as { toDate: () => Date }).toDate().getTime();
-  } else {
-    formData.startDate = null;
-  }
-}
-
-function handleEndDateSelect(date: unknown) {
-  if (date instanceof Date) {
-    formData.endDate = date.getTime();
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    formData.endDate = (date as { toDate: () => Date }).toDate().getTime();
-  } else {
-    formData.endDate = null;
-  }
-}
-
-function toggleWeekDay(day: string) {
-  const idx = formData.weekDays.indexOf(day);
-  if (idx >= 0) {
-    formData.weekDays.splice(idx, 1);
-  } else {
-    formData.weekDays.push(day);
-  }
-}
 
 const updateTags = () => {
   formData.tags = tagsInput.value
@@ -656,28 +415,20 @@ const resetForm = () => {
   Object.assign(formData, {
     title: '',
     description: '',
-    type: 'Recurring',
     importanceLevel: 'Moderate',
     triggerType: 'FixedTime',
     fixedTime: '09:00',
     intervalMinutes: 60,
-    startDate: Date.now(),
-    endDate: null,
-    recurrenceType: '',
-    dailyInterval: 1,
-    weeklyInterval: 1,
-    weekDays: [],
     activeStartHour: null,
     activeEndHour: null,
     notificationTitle: '',
     notificationBody: '',
-    color: '#2196F3',
+    color: defaultNamedColor,
     icon: 'mdi-bell',
     tags: [],
-    groupId: undefined,
+    groupId: props.defaultGroupId ?? undefined,
   });
   tagsInput.value = '';
-  showRecurrence.value = false;
   showActiveHours.value = false;
 };
 
@@ -685,18 +436,10 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
   Object.assign(formData, {
     title: template.name,
     description: template.description || '',
-    type: template.type || 'Recurring',
     importanceLevel: template.importanceLevel || 'Moderate',
     triggerType: template.trigger?.type || 'FixedTime',
     fixedTime: template.trigger?.fixedTime?.time || '09:00',
     intervalMinutes: template.trigger?.interval?.minutes || 60,
-    startDate: template.activeTime?.activatedAt ?? Date.now(),
-    endDate: null,
-    // Recurrence
-    recurrenceType: template.recurrence?.type || '',
-    dailyInterval: template.recurrence?.daily?.interval || 1,
-    weeklyInterval: template.recurrence?.weekly?.interval || 1,
-    weekDays: template.recurrence?.weekly?.weekDays ? [...template.recurrence.weekly.weekDays] : [],
     // Active hours
     activeStartHour: template.activeHours?.startHour ?? null,
     activeEndHour: template.activeHours?.endHour ?? null,
@@ -704,15 +447,13 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
     notificationTitle: template.notificationConfig?.title || '',
     notificationBody: template.notificationConfig?.body || '',
     // Appearance
-    color: template.color || '#2196F3',
+    color: template.color || defaultNamedColor,
     icon: template.icon || 'mdi-bell',
     tags: template.tags ? [...template.tags] : [],
     groupId: template.groupId ?? undefined,
   });
   tagsInput.value = (template.tags || []).join(', ');
 
-  // Expand collapsible sections if data exists
-  showRecurrence.value = !!template.recurrence;
   showActiveHours.value = !!template.activeHours;
 };
 
@@ -744,29 +485,26 @@ const handleVisibleChange = (value: boolean) => {
 // ── Build payload ──────────────────────────────────────────────────────
 
 function buildPayload(): CreateReminderTemplateReq {
-  // Build trigger
-  const trigger =
+  const trigger: CreateReminderTemplateReq['trigger'] =
     formData.triggerType === 'FixedTime'
       ? {
-          type: 'FixedTime' as const,
+          type: 'FixedTime',
           fixedTime: { time: formData.fixedTime, timezone: null },
           interval: null,
         }
       : {
-          type: 'Interval' as const,
+          type: 'Interval',
           interval: { minutes: formData.intervalMinutes, startTime: null },
           fixedTime: null,
         };
 
-  // Build activeTime
-  const activeTime = {
-    startDate: formData.startDate ?? Date.now(),
-    endDate: formData.endDate,
+  const activeTime: CreateReminderTemplateReq['activeTime'] = {
+    startDate: Date.now(),
+    endDate: null,
   };
 
-  // Build notificationConfig
-  const notificationConfig = {
-    channels: ['Push' as const, 'InApp' as const],
+  const notificationConfig: CreateReminderTemplateReq['notificationConfig'] = {
+    channels: ['Push', 'InApp'],
     title: formData.notificationTitle || null,
     body: formData.notificationBody || null,
     sound: { enabled: true, soundName: 'default' },
@@ -774,76 +512,40 @@ function buildPayload(): CreateReminderTemplateReq {
     actions: null,
   };
 
-  // Build recurrence (optional)
-  let recurrence: CreateReminderTemplateReq['recurrence'] | undefined;
-  if (formData.type === 'Recurring' && formData.recurrenceType) {
-    if (formData.recurrenceType === 'Daily') {
-      recurrence = {
-        type: 'Daily' as const,
-        daily: { interval: formData.dailyInterval || 1 },
-        weekly: null,
-        customDays: null,
-      };
-    } else if (formData.recurrenceType === 'Weekly') {
-      recurrence = {
-        type: 'Weekly' as const,
-        daily: null,
-        weekly: { interval: formData.weeklyInterval || 1, weekDays: formData.weekDays as any },
-        customDays: null,
-      };
-    } else if (formData.recurrenceType === 'CustomDays') {
-      recurrence = {
-        type: 'CustomDays' as const,
-        daily: null,
-        weekly: null,
-        customDays: { dates: [] },
-      };
-    }
-  }
-
-  // Build activeHours (optional)
-  let activeHours: CreateReminderTemplateReq['activeHours'] | undefined;
-  if (formData.activeStartHour !== null && formData.activeEndHour !== null) {
-    activeHours = {
-      startHour: formData.activeStartHour,
-      endHour: formData.activeEndHour,
-      timezone: null,
-    };
-  }
+  const activeHours: CreateReminderTemplateReq['activeHours'] =
+    formData.activeStartHour !== null && formData.activeEndHour !== null
+      ? {
+          startHour: formData.activeStartHour,
+          endHour: formData.activeEndHour,
+          timezone: null,
+        }
+      : undefined;
 
   return {
-    title: formData.title,
-    type: formData.type as any,
+    title: formData.title.trim(),
+    type: 'Recurring',
     trigger,
     activeTime,
     notificationConfig,
-    description: formData.description || undefined,
-    recurrence,
+    description: formData.description.trim() || undefined,
     activeHours,
-    importanceLevel: formData.importanceLevel as any,
+    importanceLevel: formData.importanceLevel,
     tags: formData.tags.length > 0 ? formData.tags : undefined,
     color: formData.color || undefined,
     icon: formData.icon || undefined,
-    groupId: formData.groupId as any,
+    groupId: formData.groupId === '__root__' ? undefined : formData.groupId,
   };
 }
 
 const handleSave = async () => {
-  if (!formValid.value) return;
+  if (!formValid.value || saving.value) return;
 
-  saving.value = true;
-  try {
-    const data = buildPayload();
+  const data = buildPayload();
 
-    if (isEditMode.value && props.template?.id) {
-      emit('update', props.template.id, data);
-    } else {
-      emit('save', data);
-    }
-
-    close();
-  } finally {
-    saving.value = false;
+  if (isEditMode.value && props.template?.id) {
+    emit('update', props.template.id, data);
+  } else {
+    emit('save', data);
   }
 };
 

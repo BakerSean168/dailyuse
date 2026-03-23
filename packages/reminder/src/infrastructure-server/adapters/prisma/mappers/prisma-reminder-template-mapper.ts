@@ -9,7 +9,12 @@ import type {
   ReminderTemplate as PrismaReminderTemplate,
   ReminderHistory as PrismaReminderHistory,
 } from '@dailyuse/database';
-import type { ReminderType, ReminderStatus, TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderType,
+  ReminderStatus,
+  TriggerResult,
+  NotificationChannel,
+} from '@dailyuse/contracts/reminder';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 import { ReminderHistory } from '@/domain-server/entities/reminder-history';
@@ -20,7 +25,6 @@ import {
   TriggerConfig,
   ActiveTimeConfig,
   NotificationConfig,
-  RecurrenceConfig,
   ActiveHoursConfig,
   ResponseMetrics,
   FrequencyAdjustment,
@@ -37,13 +41,13 @@ export class PrismaReminderTemplateMapper {
   /**
    * Prisma record → ReminderTemplate aggregate root (with optional history)
    */
-  static toDomain(data: PrismaReminderTemplate, historyRecords?: PrismaReminderHistory[]): ReminderTemplate {
+  static toDomain(
+    data: PrismaReminderTemplate,
+    historyRecords?: PrismaReminderHistory[],
+  ): ReminderTemplate {
     const trigger = TriggerConfig.fromDTO(JSON.parse(data.trigger));
     const activeTime = ActiveTimeConfig.fromDTO(JSON.parse(data.activeTime));
     const notificationConfig = NotificationConfig.fromDTO(JSON.parse(data.notificationConfig));
-    const recurrence = data.recurrence
-      ? RecurrenceConfig.fromDTO(JSON.parse(data.recurrence))
-      : null;
     const activeHours = data.activeHours
       ? ActiveHoursConfig.fromDTO(JSON.parse(data.activeHours))
       : null;
@@ -98,7 +102,6 @@ export class PrismaReminderTemplateMapper {
       description: data.description ?? null,
       type: data.type as ReminderType,
       trigger,
-      recurrence,
       activeTime,
       activeHours,
       notificationConfig,
@@ -157,7 +160,6 @@ export class PrismaReminderTemplateMapper {
       description: dto.description,
       type: dto.type,
       trigger: JSON.stringify(dto.trigger),
-      recurrence: dto.recurrence ? JSON.stringify(dto.recurrence) : null,
       activeTime: JSON.stringify(dto.activeTime),
       activeHours: dto.activeHours ? JSON.stringify(dto.activeHours) : null,
       notificationConfig: JSON.stringify(dto.notificationConfig),
@@ -178,13 +180,17 @@ export class PrismaReminderTemplateMapper {
       snoozeCount: responseMetrics?.snoozeCount ?? 0,
       effectivenessScore: responseMetrics?.effectivenessScore ?? null,
       sampleSize: responseMetrics?.sampleSize ?? 0,
-      lastAnalysisTime: responseMetrics?.lastAnalysisTime ? new Date(responseMetrics.lastAnalysisTime) : null,
+      lastAnalysisTime: responseMetrics?.lastAnalysisTime
+        ? new Date(responseMetrics.lastAnalysisTime)
+        : null,
 
       // Smart Frequency: Frequency Adjustment
       originalInterval: frequencyAdjustment?.originalInterval ?? null,
       adjustedInterval: frequencyAdjustment?.adjustedInterval ?? null,
       adjustmentReason: frequencyAdjustment?.adjustmentReason ?? null,
-      adjustmentTime: frequencyAdjustment?.adjustmentTime ? new Date(frequencyAdjustment.adjustmentTime) : null,
+      adjustmentTime: frequencyAdjustment?.adjustmentTime
+        ? new Date(frequencyAdjustment.adjustmentTime)
+        : null,
       isAutoAdjusted: frequencyAdjustment?.isAutoAdjusted ?? false,
       userConfirmed: frequencyAdjustment?.userConfirmed ?? false,
       smartFrequencyEnabled: template.smartFrequencyEnabled ?? true,

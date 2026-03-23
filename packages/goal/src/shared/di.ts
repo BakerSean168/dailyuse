@@ -1,9 +1,9 @@
 /**
  * DI Container - Generic dependency injection utilities
  *
- * Note: The Goal module uses GoalContainer (infrastructure-server/di/goal-container.ts)
- * as its concrete DI container. This file provides generic base classes
- * that can be used for extension or testing purposes.
+ * This file provides generic base classes that can still be used for extension
+ * or testing purposes. The canonical Goal runtime path now goes through the
+ * module composition root rather than this helper layer.
  */
 
 /**

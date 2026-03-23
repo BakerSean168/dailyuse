@@ -51,7 +51,9 @@ function getRegisteredRoute(
   method: string,
   path: string,
 ): RegisteredRoute {
-  const route = registry.paths.find((candidate) => candidate.method === method && candidate.path === path);
+  const route = registry.paths.find(
+    (candidate) => candidate.method === method && candidate.path === path,
+  );
 
   expect(route).toBeDefined();
   return route!;
@@ -60,15 +62,19 @@ function getRegisteredRoute(
 function getJsonBodySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
-  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
-    | Record<string, unknown>
-    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+  return (
+    (
+      (route.request?.body as Record<string, unknown> | undefined)?.content as
+        | Record<string, unknown>
+        | undefined
+    )?.['application/json'] as Record<string, unknown> | undefined
+  )?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
 
 describe('repository route contracts', () => {
-  it('registers an explicit current-repository boundary for single-repository mode', () => {
+  it('registers an explicit current-repository boundary for repository workspace bootstrapping', () => {
     const registry = new TestOpenApiRegistry();
 
     registerRepositoryCrudRoutes(
@@ -94,11 +100,7 @@ describe('repository route contracts', () => {
     );
 
     const reorderSchema = getJsonBodySchema(
-      getRegisteredRoute(
-        registry,
-        'post',
-        '/api/v1/repositories/{repoId}/bookmarks/reorder',
-      ),
+      getRegisteredRoute(registry, 'post', '/api/v1/repositories/{repoId}/bookmarks/reorder'),
     );
 
     expect(reorderSchema.safeParse({ bookmarkIds: ['bookmark-1', 'bookmark-2'] }).success).toBe(

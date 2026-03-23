@@ -174,6 +174,7 @@ const key_results = new Table({
   description: column.text,
   value_type: column.text,
   aggregation_method: column.text,
+  initial_value: column.real,
   target_value: column.real,
   current_value: column.real,
   unit: column.text,
@@ -309,6 +310,9 @@ const task_templates = new Table({
   time_config_start_time: column.text,
   time_config_end_time: column.text,
   time_config_duration_minutes: column.integer,
+  time_config_time_point: column.integer,
+  time_config_time_range_start: column.integer,
+  time_config_time_range_end: column.integer,
   recurrence_rule_type: column.text,
   recurrence_rule_interval: column.integer,
   recurrence_rule_days_of_week: column.text,
@@ -609,6 +613,7 @@ const user_reminder_preferences = new Table({
   identity_id: column.text,
   best_time_slots: column.text, // JSON
   worst_time_slots: column.text, // JSON
+  global_reminder_enabled: column.integer, // boolean
   global_smart_frequency: column.integer, // boolean
   created_at: column.text,
   updated_at: column.text,
@@ -741,7 +746,7 @@ const editor_workspace_session_group_tabs = new Table({
   session_id: column.text, // FK
   workspace_id: column.text, // FK
   identity_id: column.text,
-  document_id: column.text,
+  resource_id: column.text,
   tab_index: column.integer,
   tab_type: column.text,
   title: column.text,
@@ -750,6 +755,8 @@ const editor_workspace_session_group_tabs = new Table({
   is_active: column.integer, // boolean
   version: column.integer,
   created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
 });
 
 // ──────────────────────────────────────────────

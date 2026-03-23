@@ -6,17 +6,27 @@
  * 对标 `packages/governance/src/infrastructure-server/powersync.ts`。
  */
 
-import { createGoalModule, type GoalModuleInstance } from './goal.module';
+import {
+  createGoalModule,
+  type GoalModuleInstance,
+  type GoalRuntimeContributionsInput,
+} from './goal.module';
 import { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.repository';
 import { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
 import { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
-export function createGoalPowerSyncModule(db: IElectronDatabase): GoalModuleInstance {
+export function createGoalPowerSyncModule(
+  db: IElectronDatabase,
+  options?: {
+    runtimeContributions?: GoalRuntimeContributionsInput;
+  },
+): GoalModuleInstance {
   return createGoalModule({
     goalRepository: new GoalPowerSyncRepository(db),
     goalFolderRepository: new GoalFolderPowerSyncRepository(db),
     goalRecordRepository: new GoalRecordPowerSyncRepository(db),
+    runtimeContributions: options?.runtimeContributions,
   });
 }
 

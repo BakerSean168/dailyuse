@@ -63,6 +63,7 @@ export class CreateGoalRecord {
       await this.goalRepository.save(goal);
     }
 
-    return ok(record.toClientDTO(goalId));
+    const valueAfter = goal.getKeyResult(keyResultId)?.progress.currentValue ?? params.value;
+    return ok(record.toClientDTO(goalId, valueAfter));
   }
 }

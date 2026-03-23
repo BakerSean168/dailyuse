@@ -12,14 +12,20 @@ import { useReminderStore } from '../stores/reminderStore';
 import { REMINDER_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
+  ControlMode,
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
+  UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
+import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { ResultError } from '@dailyuse/contracts/result';
+import type { Result } from '@dailyuse/contracts/result';
 
 export function useReminder() {
   const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
@@ -30,11 +36,9 @@ export function useReminder() {
 
   const templates = computed(() => store.templates);
   const groups = computed(() => store.groups);
-  const currentTemplate = computed(() => store.currentTemplate);
-  const currentGroup = computed(() => store.currentGroup);
+  const preferences = computed(() => store.preferences);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
-  const pagination = computed(() => store.pagination);
   const isSaving = computed(() => savingId.value !== null);
 
   function handleError(msg: string): void {
@@ -49,7 +53,7 @@ export function useReminder() {
     }
 
     try {
-      const status = (await api.invoke('auth:get-status')) as {
+      const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
         authenticated?: boolean;
         runtimeState?: string;
       };
@@ -59,8 +63,10 @@ export function useReminder() {
       }
 
       if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
-        await api.invoke('auth:initialize');
-        const refreshed = (await api.invoke('auth:get-status')) as { authenticated?: boolean };
+        await api.invoke(AuthChannels.INITIALIZE);
+        const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
+          authenticated?: boolean;
+        };
         return Boolean(refreshed?.authenticated);
       }
     } catch (error) {
@@ -77,45 +83,37 @@ export function useReminder() {
     return ensureDesktopAuthReady();
   }
 
+  async function executeWithOptionalAuthRecovery<T>(
+    action: () => Promise<Result<T>>,
+  ): Promise<Result<T>> {
+    let result = await action();
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await action();
+    }
+    return result;
+  }
+
+  async function reloadReminderScene() {
+    await Promise.all([fetchTemplates(), fetchGroups(), fetchPreferences()]);
+  }
+
   // ── Templates ──
 
   async function fetchTemplates() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.getReminderTemplates({
-        page: store.pagination.page,
-        limit: store.pagination.pageSize,
-      });
+      let result: Result<ReminderTemplateListRes> = await service.getReminderTemplates();
 
       if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.getReminderTemplates({
-          page: store.pagination.page,
-          limit: store.pagination.pageSize,
-        });
+        result = await service.getReminderTemplates();
       }
 
       if (result.ok) {
-        store.setTemplates(result.data.templates ?? [], result.data.total ?? 0);
+        const templates = result.data.templates;
+        store.setTemplates(templates, templates.length);
       } else {
         handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
-      }
-    } finally {
-      store.setLoading(false);
-    }
-  }
-
-  async function fetchTemplate(id: string): Promise<ReminderTemplateClientDTO | null> {
-    store.setLoading(true);
-    store.setError(null);
-    try {
-      const result = await service.getReminderTemplate(id);
-      if (result.ok) {
-        store.setCurrentTemplate(result.data);
-        return result.data;
-      } else {
-        handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
-        return null;
       }
     } finally {
       store.setLoading(false);
@@ -128,9 +126,11 @@ export function useReminder() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createReminderTemplate(data);
+      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
+        service.createReminderTemplate(data),
+      );
       if (result.ok) {
-        store.addTemplate(result.data);
+        await reloadReminderScene();
         return result.data;
       } else {
         handleError(result.error.message || t('reminder.error.createTemplateFailed'));
@@ -148,9 +148,11 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.updateReminderTemplate(id, data);
+      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
+        service.updateReminderTemplate(id, data),
+      );
       if (result.ok) {
-        store.updateTemplate(result.data);
+        await reloadReminderScene();
         return result.data;
       } else {
         handleError(result.error.message || t('reminder.error.updateTemplateFailed'));
@@ -165,14 +167,55 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.deleteReminderTemplate(id);
+      const result = await executeWithOptionalAuthRecovery(() =>
+        service.deleteReminderTemplate(id),
+      );
       if (result.ok) {
-        store.removeTemplate(id);
+        await reloadReminderScene();
         return true;
       } else {
         handleError(result.error.message || t('reminder.error.deleteTemplateFailed'));
         return false;
       }
+    } finally {
+      savingId.value = null;
+    }
+  }
+
+  async function toggleTemplate(id: string): Promise<ReminderTemplateClientDTO | null> {
+    savingId.value = id;
+    store.setError(null);
+    try {
+      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
+        service.toggleTemplateEnabled(id),
+      );
+      if (result.ok) {
+        await reloadReminderScene();
+        return result.data;
+      }
+      handleError(result.error.message || t('reminder.error.toggleTemplateFailed'));
+      return null;
+    } finally {
+      savingId.value = null;
+    }
+  }
+
+  async function moveTemplateToGroup(
+    id: string,
+    groupId: string | null,
+  ): Promise<ReminderTemplateClientDTO | null> {
+    savingId.value = id;
+    store.setError(null);
+    try {
+      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
+        service.moveTemplateToGroup(id, groupId),
+      );
+      if (result.ok) {
+        await reloadReminderScene();
+        return result.data;
+      }
+      handleError(result.error.message || t('reminder.error.moveTemplateFailed'));
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -184,14 +227,15 @@ export function useReminder() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.getReminderGroups();
+      let result: Result<ReminderGroupListRes> = await service.getReminderGroups();
 
       if (!result.ok && (await maybeRecoverAuth(result.error))) {
         result = await service.getReminderGroups();
       }
 
       if (result.ok) {
-        store.setGroups(result.data.groups ?? []);
+        const groups = result.data.groups;
+        store.setGroups(groups);
       } else {
         handleError(result.error.message || t('reminder.error.loadGroupsFailed'));
       }
@@ -204,9 +248,11 @@ export function useReminder() {
     savingId.value = 'new-group';
     store.setError(null);
     try {
-      const result = await service.createReminderGroup(data);
+      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
+        service.createReminderGroup(data),
+      );
       if (result.ok) {
-        store.addGroup(result.data);
+        await reloadReminderScene();
         return result.data;
       } else {
         handleError(result.error.message || t('reminder.error.createGroupFailed'));
@@ -224,9 +270,11 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.updateReminderGroup(id, data);
+      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
+        service.updateReminderGroup(id, data),
+      );
       if (result.ok) {
-        store.updateGroup(result.data);
+        await reloadReminderScene();
         return result.data;
       } else {
         handleError(result.error.message || t('reminder.error.updateGroupFailed'));
@@ -241,9 +289,9 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.deleteReminderGroup(id);
+      const result = await executeWithOptionalAuthRecovery(() => service.deleteReminderGroup(id));
       if (result.ok) {
-        store.removeGroup(id);
+        await reloadReminderScene();
         return true;
       } else {
         handleError(result.error.message || t('reminder.error.deleteGroupFailed'));
@@ -254,29 +302,108 @@ export function useReminder() {
     }
   }
 
-  function setPage(p: number) {
-    store.setPage(p);
-    fetchTemplates();
+  async function toggleGroup(id: string): Promise<ReminderGroupClientDTO | null> {
+    savingId.value = id;
+    store.setError(null);
+    try {
+      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
+        service.toggleReminderGroupStatus(id),
+      );
+      if (result.ok) {
+        await reloadReminderScene();
+        return result.data;
+      }
+      handleError(result.error.message || t('reminder.error.toggleGroupFailed'));
+      return null;
+    } finally {
+      savingId.value = null;
+    }
+  }
+
+  async function switchGroupControlMode(
+    id: string,
+    mode: ControlMode,
+  ): Promise<ReminderGroupClientDTO | null> {
+    savingId.value = id;
+    store.setError(null);
+    try {
+      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
+        service.switchReminderGroupControlMode(id, mode),
+      );
+      if (result.ok) {
+        await reloadReminderScene();
+        return result.data;
+      }
+      handleError(result.error.message || t('reminder.error.updateGroupFailed'));
+      return null;
+    } finally {
+      savingId.value = null;
+    }
+  }
+
+  async function fetchPreferences(): Promise<UserReminderPreferencesClientDTO | null> {
+    const anyService = service as any;
+    if (typeof anyService.getPreferences !== 'function') {
+      return null;
+    }
+
+    const result = await executeWithOptionalAuthRecovery<UserReminderPreferencesClientDTO>(() =>
+      anyService.getPreferences(),
+    );
+    if (result.ok) {
+      store.setPreferences(result.data);
+      return result.data;
+    }
+    handleError(result.error.message || t('reminder.error.loadPreferencesFailed'));
+    return null;
+  }
+
+  async function updatePreferences(
+    data: Record<string, unknown>,
+  ): Promise<UserReminderPreferencesClientDTO | null> {
+    const anyService = service as any;
+    if (typeof anyService.updatePreferences !== 'function') {
+      return null;
+    }
+
+    savingId.value = 'preferences';
+    store.setError(null);
+    try {
+      const result = await executeWithOptionalAuthRecovery<UserReminderPreferencesClientDTO>(() =>
+        anyService.updatePreferences(data),
+      );
+      if (result.ok) {
+        await reloadReminderScene();
+        return result.data;
+      }
+      handleError(result.error.message || t('reminder.error.updatePreferencesFailed'));
+      return null;
+    } finally {
+      savingId.value = null;
+    }
   }
 
   return {
     templates,
     groups,
-    currentTemplate,
-    currentGroup,
+    preferences,
     isLoading,
     isSaving,
     error,
-    pagination,
     fetchTemplates,
-    fetchTemplate,
     createTemplate,
     updateTemplate,
     deleteTemplate,
+    toggleTemplate,
+    moveTemplateToGroup,
     fetchGroups,
     createGroup,
     updateGroup,
     deleteGroup,
-    setPage,
+    toggleGroup,
+    switchGroupControlMode,
+    fetchPreferences,
+    updatePreferences,
+    reloadReminderScene,
   };
 }

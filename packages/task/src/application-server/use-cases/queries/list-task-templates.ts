@@ -10,12 +10,11 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import type { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
 import type {
-  QueryTaskTemplatesReq,
+  QueryTaskTemplatesInternal,
   QueryTaskTemplatesRes,
   TaskTemplateStatus as TaskTemplateStatusType,
 } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -32,7 +31,7 @@ export class ListTaskTemplates {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(request: QueryTaskTemplatesReq): Promise<Result<QueryTaskTemplatesRes>> {
+  async execute(request: QueryTaskTemplatesInternal): Promise<Result<QueryTaskTemplatesRes>> {
     let templates: TaskTemplate[];
 
     // Query by different conditions
@@ -60,8 +59,27 @@ export class ListTaskTemplates {
       }
     }
 
+    const statsByTemplateId =
+      (await this.instanceRepository.getTemplateStats(templates.map((template) => template.id))) ??
+      {};
+
     return ok({
-      templates: templates.map((t) => t.toClientDTO()),
+      templates: templates.map((template) => {
+        const dto = template.toClientDTO();
+        const stats = statsByTemplateId[template.id];
+
+        if (!stats) {
+          return dto;
+        }
+
+        return {
+          ...dto,
+          instanceCount: stats.instanceCount,
+          completedInstanceCount: stats.completedInstanceCount,
+          pendingInstanceCount: stats.pendingInstanceCount,
+          completionRate: stats.completionRate,
+        };
+      }),
       total: templates.length,
     });
   }
@@ -75,17 +93,6 @@ export class ListTaskTemplates {
         if (instances.length > 0) {
           await this.instanceRepository.saveMany(instances);
           await this.templateRepository.save(template);
-
-          eventBus.send('task:instances:generated' as any, {
-            eventType: 'task:instances:generated',
-            aggregateId: template.id,
-            identityId: template.identityId,
-            payload: {
-              templateId: template.id,
-              templateTitle: template.title,
-              instanceCount: instances.length,
-            },
-          });
         }
       }
     } catch (error) {

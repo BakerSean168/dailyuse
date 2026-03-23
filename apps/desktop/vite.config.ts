@@ -15,6 +15,11 @@ const desktopRendererDevWorkspaceEntries = [
   ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
   ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
+  ['@dailyuse/reminder/application-client', 'packages/reminder/src/application-client/index.ts'],
+  [
+    '@dailyuse/reminder/infrastructure-client',
+    'packages/reminder/src/infrastructure-client/index.ts',
+  ],
   ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
 ] as const;
 
@@ -58,6 +63,7 @@ const workspacePkgs = [
   '@dailyuse/utils',
   '@dailyuse/contracts',
   '@dailyuse/app-vue',
+  '@dailyuse/dashboard',
   '@dailyuse/ui-vue-shadcn',
   '@dailyuse/ipc-client',
   '@dailyuse/assets',

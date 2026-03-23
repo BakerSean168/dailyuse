@@ -1,14 +1,14 @@
+import type { NotificationServerDTO } from '../../aggregates';
+
 /**
  * Notification Sent Event
- * 
- * Triggered when: Notification is sent via channel
- * Subscribers: Delivery tracking, Delivery history
- * 
- * 【说明】
- * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
- * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
+ *
+ * Triggered when a notification transitions to the sent state.
  */
 export interface NotificationSentEvent {
-  /** Channel used (email, push, sms, etc) */
-  channel: string;
+  identityId: string;
+  notificationId: string;
+  notification: NotificationServerDTO;
+  channelTypes: string[];
+  sentAt: number;
 }

@@ -207,9 +207,22 @@ export function useGovernance() {
   }
 
   async function fetchRevisions(ruleId: string): Promise<void> {
-    void ruleId;
-    console.warn('[governance] fetchRevisions not yet available in GovernanceClientService');
-    store.setRevisions([] as RuleRevisionClientDTO[]);
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const result = await service.getRevisions({
+        ruleId: ruleId as any,
+        page: 1,
+        pageSize: 50,
+      });
+      if (result.ok) {
+        store.setRevisions(result.data.items ?? ([] as RuleRevisionClientDTO[]));
+      } else {
+        store.setError(result.error.message || t('governance.error.loadRevisionFailed'));
+      }
+    } finally {
+      store.setLoading(false);
+    }
   }
 
   function setFilterStatus(status: RuleStatus | null): void {

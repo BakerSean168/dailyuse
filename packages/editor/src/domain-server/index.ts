@@ -1,30 +1,29 @@
 /**
  * Editor Module - Domain Server
  * 编辑器模块 - 领域服务端
- * 
+ *
  * 【模块职责】
- * 管理富文本编辑器的核心业务逻辑，包括文档管理、协同编辑、版本控制等
- * 
+ * 管理编辑器工作区、会话、标签、资源元数据与搜索索引等核心业务逻辑
+ *
  * 【包含内容】
- * - 聚合根（Aggregates）：Document, EditorSession
- * - 实体（Entities）：Block, TextNode, EditorCursor
- * - 值对象（Value Objects）：EditorState, SelectionRange, Format 等
- * - 仓储接口（Repositories）：IDocumentRepository, IEditorSessionRepository
- * - 领域服务（Domain Services）：CollaborativeEditingService, VersionControlService
- * 
+ * - 聚合根（Aggregates）：EditorWorkspace, EditorSession
+ * - 实体（Entities）：EditorTab, SearchEngine, ResourceVersion, LinkedResource
+ * - 值对象（Value Objects）：TabType, ResourceMetadata, SearchQuery 等
+ * - 仓储接口（Repositories）：工作区 / 会话 / 分组 / 标签 / 资源关联仓储
+ * - 领域服务（Domain Services）：编辑器会话与资源协作相关服务
+ *
  * 【业务特性】
- * - 文档管理：创建、编辑、删除、复制文档
- * - 块级编辑：基于 Block 的结构化内容
- * - 实时协同：多用户同时编辑、冲突解决
- * - 版本历史：变更跟踪、历史回溯、Undo/Redo
- * - 格式化：文本样式、段落格式、富媒体
- * 
+ * - 工作区布局：会话、分组、标签的创建与激活
+ * - 资源关联：标签与仓储资源之间的映射和元数据维护
+ * - 搜索索引：资源索引状态、进度与检索能力
+ * - 协作扩展：为后续协同编辑与历史能力保留清晰边界
+ *
  * 【依赖规则】
  * ✅ 允许依赖：
  * - @dailyuse/utils（基类：AggregateRoot, Entity）
  * - @dailyuse/contracts（DTO 接口、事件 Map）
  * - @dailyuse/domain-shared（值对象、枚举）
- * 
+ *
  * ❌ 禁止依赖：
  * - @dailyuse/domain-client（客户端领域模型）
  * - @dailyuse/infrastructure-*（基础设施层）

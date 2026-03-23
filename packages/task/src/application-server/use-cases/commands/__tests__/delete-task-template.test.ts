@@ -1,24 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/test-utils/fixtures';
+import { aOneTimeTask } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { DeleteTaskTemplate } from '../delete-task-template';
-
-// Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
-  return {
-    ...actual,
-    eventBus: { send: vi.fn() },
-  };
-});
-
-import { eventBus } from '@dailyuse/utils';
 
 describe('DeleteTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
+  let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
   let useCase: DeleteTaskTemplate;
 
   beforeEach(() => {
@@ -26,10 +16,13 @@ describe('DeleteTaskTemplate', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findById: vi.fn(),
+      save: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
-      softDelete: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new DeleteTaskTemplate(templateRepo);
+    instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
+    });
+    useCase = new DeleteTaskTemplate(templateRepo, instanceRepo);
   });
 
   afterEach(() => {
@@ -46,7 +39,8 @@ describe('DeleteTaskTemplate', () => {
       expect(result.data.success).toBe(true);
     }
     expect(templateRepo.delete).not.toHaveBeenCalled();
-    expect(templateRepo.softDelete).not.toHaveBeenCalled();
+    expect(templateRepo.save).not.toHaveBeenCalled();
+    expect(instanceRepo.deleteByTemplateId).not.toHaveBeenCalled();
   });
 
   it('should hard-delete when soft=false (default)', async () => {
@@ -56,8 +50,9 @@ describe('DeleteTaskTemplate', () => {
     const result = await useCase.execute(template.id);
 
     expect(result).toBeOk();
+    expect(templateRepo.save).toHaveBeenCalledWith(template);
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
     expect(templateRepo.delete).toHaveBeenCalledWith(template.id);
-    expect(templateRepo.softDelete).not.toHaveBeenCalled();
   });
 
   it('should soft-delete when soft=true', async () => {
@@ -67,44 +62,9 @@ describe('DeleteTaskTemplate', () => {
     const result = await useCase.execute(template.id, true);
 
     expect(result).toBeOk();
-    expect(templateRepo.softDelete).toHaveBeenCalledWith(template.id);
+    expect(templateRepo.save).toHaveBeenCalledWith(template);
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
     expect(templateRepo.delete).not.toHaveBeenCalled();
-  });
-
-  it('should publish task:template:deleted event', async () => {
-    const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
-
-    await useCase.execute(template.id);
-
-    expect(eventBus.send).toHaveBeenCalledWith(
-      'task:template:deleted',
-      expect.objectContaining({
-        taskTemplateId: template.id,
-        identityId: template.identityId,
-        deletedAt: expect.any(Number),
-      }),
-    );
-  });
-
-  it('should not publish event when template not found', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
-
-    await useCase.execute('non-existent');
-
-    expect(eventBus.send).not.toHaveBeenCalled();
-  });
-
-  it('should not fail if event publishing throws', async () => {
-    const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(eventBus.send).mockImplementation(() => {
-      throw new Error('Event bus down');
-    });
-
-    const result = await useCase.execute(template.id);
-
-    expect(result).toBeOk();
   });
 
   it('should return success:true after delete', async () => {

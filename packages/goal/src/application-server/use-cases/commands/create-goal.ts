@@ -6,7 +6,7 @@
  */
 
 import type { IGoalRepository } from '@/domain-server';
-import { Goal, GoalPolicy } from '@/domain-server';
+import { Goal, GoalPolicy, GoalReminderConfig } from '@/domain-server';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { CreateGoalReq, CreateGoalRes } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -60,7 +60,7 @@ export class CreateGoal {
         targetDate: input.targetDate ? new Date(input.targetDate) : null,
         folderId: input.folderId ? (input.folderId as any) : null,
         parentGoalId: input.parentGoalId ? (input.parentGoalId as any) : null,
-        reminderConfig: null,
+        reminderConfig: input.reminderConfig ? GoalReminderConfig.fromDTO(input.reminderConfig) : null,
       },
       parentGoal,
     );

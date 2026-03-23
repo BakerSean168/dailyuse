@@ -384,10 +384,10 @@ export function getIpcCache(): IpcCache {
     });
 
     // Configure specific channel TTLs
-    ipcCacheInstance.setChannelTTL('goal:list', 10000);     // 10 seconds
-    ipcCacheInstance.setChannelTTL('task-template:list', 10000);
-    ipcCacheInstance.setChannelTTL('dashboard:get-all', 30000); // 30 seconds
-    ipcCacheInstance.setChannelTTL('reminder:list', 5000);   // 5 seconds
+    ipcCacheInstance.setChannelTTL('goal:list', 10000); // 10 seconds
+    ipcCacheInstance.setChannelTTL('task:template:list', 10000);
+    ipcCacheInstance.setChannelTTL('dashboard:get-stats', 30000); // 30 seconds
+    ipcCacheInstance.setChannelTTL('reminder:template:list', 5000); // 5 seconds
   }
   return ipcCacheInstance;
 }
@@ -417,7 +417,7 @@ export function getIpcCache(): IpcCache {
  */
 export function withCache<T>(
   handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>,
-  options?: { ttl?: number; channel?: string }
+  options?: { ttl?: number; channel?: string },
 ): (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T> {
   return async (event: IpcMainInvokeEvent, ...args: unknown[]) => {
     const cache = getIpcCache();
@@ -461,7 +461,7 @@ export function withCache<T>(
  */
 export function invalidatesCache<T>(
   handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>,
-  channelsToInvalidate: string[]
+  channelsToInvalidate: string[],
 ): (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T> {
   return async (event: IpcMainInvokeEvent, ...args: unknown[]) => {
     const result = await handler(event, ...args);

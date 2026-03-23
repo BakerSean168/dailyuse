@@ -82,7 +82,7 @@ function setTokenPayload(
   });
 }
 
-function createContext(identityId = 'IdentityId_test-user-001'): Context {
+function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440001'): Context {
   return { identityId, deviceId: 'test-device-001' };
 }
 
@@ -130,7 +130,7 @@ describe('RefreshToken (Application Command)', () => {
 
   describe('execute', () => {
     it('should return new auth tokens on successful refresh', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
@@ -150,7 +150,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should update the session refresh token hash', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
@@ -166,7 +166,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should throw when no matching session found', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       // No sessions at all
       setTokenPayload(tokenProvider, identityId, AuthSessionId.generate());
       (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
@@ -177,7 +177,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should throw when refresh token hash does not match', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       // Session has a different hash
       const session = buildActiveSession(identityId, 'different-hash');
 
@@ -190,7 +190,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should throw when session is expired', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const expiredSession = AuthSession.load({
         id: AuthSessionId.generate(),
         identityId,
@@ -212,7 +212,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should throw when session is revoked', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const revokedSession = AuthSession.load({
         id: AuthSessionId.generate(),
         identityId,
@@ -234,7 +234,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should throw when identity not found after session match', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
 
       setTokenPayload(tokenProvider, identityId, session.id);
@@ -247,7 +247,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should generate new auth tokens via token provider', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
@@ -264,7 +264,7 @@ describe('RefreshToken (Application Command)', () => {
     });
 
     it('should return session marked as current session', async () => {
-      const identityId = IdentityId.of('IdentityId_test-user-001');
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 

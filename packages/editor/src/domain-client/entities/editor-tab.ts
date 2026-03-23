@@ -14,7 +14,6 @@ import type {
   TabViewStateClientDTO,
   TabType,
 } from '@dailyuse/contracts/editor';
-import type { DocumentId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorTabId } from '../../domain-shared/value-objects/editor-tab-id';
 import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
@@ -28,7 +27,7 @@ export interface EditorTabState {
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
-  documentId: DocumentId | null;
+  resourceId: string | null;
   tabIndex: number;
   tabType: TabType;
   name: string;
@@ -67,8 +66,8 @@ export class EditorTab extends Entity<EditorTabId> {
     return this._props.identityId;
   }
 
-  get documentId(): DocumentId | null {
-    return this._props.documentId;
+  get resourceId(): string | null {
+    return this._props.resourceId;
   }
 
   get tabIndex(): number {
@@ -120,12 +119,13 @@ export class EditorTab extends Entity<EditorTabId> {
       sessionId: String(this._props.sessionId),
       workspaceId: String(this._props.workspaceId),
       identityId: String(this._props.identityId),
-      documentId: this._props.documentId ? String(this._props.documentId) : null,
+      resourceId: this._props.resourceId,
       tabIndex: this._props.tabIndex,
       tabType: this._props.tabType,
       name: this._props.name,
       viewState: this._props.viewState,
       isPinned: this._props.isPinned,
+      isActive: false,
       isDirty: this._props.isDirty,
       lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
       createdAt: this._props.createdAt.getTime(),

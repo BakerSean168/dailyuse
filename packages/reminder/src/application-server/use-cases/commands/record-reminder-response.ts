@@ -5,7 +5,7 @@
  */
 
 import type { IReminderResponseRepository } from '@/domain-server/repositories/IReminderResponseRepository';
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderEventMap, ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { createLogger, eventBus } from '@dailyuse/utils';
 import { ReminderResponse } from '@/domain-server/entities/reminder-response';
 
@@ -89,17 +89,15 @@ export class RecordReminderResponse {
       });
 
       // 发布响应记录事件
-      eventBus.send(
-        'reminder:response:recorded' as any,
-        {
-          responseId: savedRecord.id,
-          templateId: dto.templateId,
-          action: dto.action,
-          responseTime: dto.responseTime || null,
-          identityId: dto.identityId,
-          recordedAt: Date.now(),
-        } as any,
-      );
+      const recordedEvent: ReminderEventMap['reminder:response:recorded'] = {
+        responseId: savedRecord.id,
+        templateId: dto.templateId,
+        action: dto.action,
+        responseTime: dto.responseTime || null,
+        identityId: dto.identityId,
+        recordedAt: Date.now(),
+      };
+      eventBus.send('reminder:response:recorded', recordedEvent);
 
       return {
         id: savedRecord.id,

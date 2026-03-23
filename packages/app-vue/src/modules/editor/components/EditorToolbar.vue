@@ -118,11 +118,11 @@
 
     <!-- View Mode Toggle -->
     <ToggleGroup v-model="viewMode" type="single" @update:model-value="handleViewModeChange">
-      <ToggleGroupItem value="edit" aria-label="Edit mode" class="h-8 w-8">
-        <Pencil class="h-4 w-4" />
+      <ToggleGroupItem value="source" aria-label="Source mode" class="h-8 w-8">
+        <Code2 class="h-4 w-4" />
       </ToggleGroupItem>
-      <ToggleGroupItem value="split" aria-label="Split mode" class="h-8 w-8">
-        <PanelLeftClose class="h-4 w-4" />
+      <ToggleGroupItem value="live" aria-label="Live mode" class="h-8 w-8">
+        <Pencil class="h-4 w-4" />
       </ToggleGroupItem>
       <ToggleGroupItem value="preview" aria-label="Preview mode" class="h-8 w-8">
         <Eye class="h-4 w-4" />
@@ -139,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
@@ -167,7 +167,6 @@ import {
   Minus,
   Table,
   Pencil,
-  PanelLeftClose,
   Eye,
   Save,
   Share2,
@@ -175,20 +174,27 @@ import {
 
 const { t } = useI18n();
 
-defineProps<{
-  saving?: boolean;
-}>();
-
 const emit = defineEmits<{
   'insert-text': [text: string];
   'wrap-selection': [prefix: string, suffix: string];
   'insert-resource': [];
   'export-self-contained': [];
-  'view-mode-change': [mode: 'edit' | 'split' | 'preview'];
+  'view-mode-change': [mode: 'source' | 'live' | 'preview'];
   save: [];
 }>();
 
-const viewMode = ref<'edit' | 'split' | 'preview'>('split');
+const props = withDefaults(
+  defineProps<{
+    saving?: boolean;
+    viewMode?: 'source' | 'live' | 'preview';
+  }>(),
+  {
+    saving: false,
+    viewMode: 'live',
+  },
+);
+
+const viewMode = ref<'source' | 'live' | 'preview'>(props.viewMode);
 
 function insertHeading(level: number) {
   emit('insert-text', '#'.repeat(level) + ' ');
@@ -231,7 +237,7 @@ function exportSelfContained() {
 }
 
 function handleViewModeChange(value: string | string[]) {
-  if (value === 'edit' || value === 'split' || value === 'preview') {
+  if (value === 'source' || value === 'live' || value === 'preview') {
     viewMode.value = value;
     emit('view-mode-change', value);
   }
@@ -265,4 +271,11 @@ function insertTable() {
     `\n| ${col}1 | ${col}2 | ${col}3 |\n|-----|-----|-----|\n| ${content} | ${content} | ${content} |\n`,
   );
 }
+
+watch(
+  () => props.viewMode,
+  (nextMode) => {
+    viewMode.value = nextMode;
+  },
+);
 </script>

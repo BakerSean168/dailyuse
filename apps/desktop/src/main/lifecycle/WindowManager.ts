@@ -11,55 +11,20 @@
  * 3. 否 → 显示登录窗口，登录成功后切换到主窗口
  */
 
-import { BrowserWindow, screen, ipcMain, app, nativeTheme } from 'electron';
-import type { BrowserWindowConstructorOptions, TitleBarOverlay } from 'electron';
+import { BrowserWindow, screen, ipcMain, app } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils';
+import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
+import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktopChrome';
+import type { DesktopChromeTheme } from './desktopChrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const logger = createLogger('WindowManager');
-
-function getDesktopChromePalette() {
-  return nativeTheme.shouldUseDarkColors
-    ? {
-        background: '#0f172a',
-        foreground: '#e2e8f0',
-      }
-    : {
-        background: '#f8fafc',
-        foreground: '#0f172a',
-      };
-}
-
-function createNativeWindowChromeOptions(): Pick<
-  BrowserWindowConstructorOptions,
-  'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
-> {
-  const palette = getDesktopChromePalette();
-  const options: Pick<
-    BrowserWindowConstructorOptions,
-    'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
-  > = {
-    autoHideMenuBar: true,
-    backgroundColor: palette.background,
-    title: '',
-    titleBarStyle: 'hidden',
-  };
-
-  if (process.platform === 'win32' || process.platform === 'linux') {
-    options.titleBarOverlay = {
-      color: palette.background,
-      symbolColor: palette.foreground,
-      height: 36,
-    } satisfies TitleBarOverlay;
-  }
-
-  return options;
-}
 
 // ============ Types ============
 
@@ -87,6 +52,13 @@ export interface QuickLoginAccount {
   email: string;
   avatarUrl?: string;
   lastLoginAt?: number;
+}
+
+interface WindowControlsState {
+  isMaximized: boolean;
+  isMinimizable: boolean;
+  isMaximizable: boolean;
+  isClosable: boolean;
 }
 
 // ============ Window Manager ============
@@ -192,7 +164,8 @@ export class WindowManager {
     this.loginWindow.setMenuBarVisibility(false);
     this.loginWindow.removeMenu();
 
-    this.attachWindowDiagnostics(this.loginWindow, 'login');
+    this.attachWindowDiagnostics();
+    this.attachWindowControlStateSync(this.loginWindow);
 
     // 准备好后显示
     this.loginWindow.once('ready-to-show', () => {
@@ -248,7 +221,8 @@ export class WindowManager {
     this.mainWindow.setMenuBarVisibility(false);
     this.mainWindow.removeMenu();
 
-    this.attachWindowDiagnostics(this.mainWindow, 'main');
+    this.attachWindowDiagnostics();
+    this.attachWindowControlStateSync(this.mainWindow);
 
     // 准备好后显示
     this.mainWindow.once('ready-to-show', () => {
@@ -301,6 +275,7 @@ export class WindowManager {
 
       // 3. 显示主窗口
       mainWin.show();
+      startScheduleRuntime();
 
       // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
       setTimeout(() => {
@@ -328,6 +303,7 @@ export class WindowManager {
     logger.info('Transitioning from main to login window');
 
     try {
+      stopScheduleRuntime();
       // 1. 创建登录窗口
       const loginWin = this.createLoginWindow();
 
@@ -414,33 +390,33 @@ export class WindowManager {
     }
   }
 
-  private attachWindowDiagnostics(window: BrowserWindow, windowType: WindowType): void {
-    window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-      logger.error('Window failed to load content', {
-        windowType,
-        errorCode,
-        errorDescription,
-        validatedURL,
-      });
-    });
+  private attachWindowDiagnostics(): void {
+    // window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    //   logger.error('Window failed to load content', {
+    //     windowType,
+    //     errorCode,
+    //     errorDescription,
+    //     validatedURL,
+    //   });
+    // });
 
-    window.webContents.on('render-process-gone', (_event, details) => {
-      logger.error('Renderer process exited unexpectedly', {
-        windowType,
-        reason: details.reason,
-        exitCode: details.exitCode,
-      });
-    });
+    // window.webContents.on('render-process-gone', (_event, details) => {
+    //   logger.error('Renderer process exited unexpectedly', {
+    //     windowType,
+    //     reason: details.reason,
+    //     exitCode: details.exitCode,
+    //   });
+    // });
 
-    window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-      logger.info('Renderer console message', {
-        windowType,
-        level,
-        message,
-        line,
-        sourceId,
-      });
-    });
+    // window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    //   logger.info('Renderer console message', {
+    //     windowType,
+    //     level,
+    //     message,
+    //     line,
+    //     sourceId,
+    //   });
+    // });
   }
 
   private getWindowForSender(webContentsId?: number): BrowserWindow | null {
@@ -456,26 +432,59 @@ export class WindowManager {
     return this.getActiveWindow();
   }
 
+  private getWindowControlsState(window: BrowserWindow): WindowControlsState {
+    return {
+      isMaximized: window.isMaximized() || window.isFullScreen(),
+      isMinimizable: window.isMinimizable(),
+      isMaximizable: window.isMaximizable() || window.isFullScreenable(),
+      isClosable: window.isClosable(),
+    };
+  }
+
+  private emitWindowControlsState(window: BrowserWindow): WindowControlsState | null {
+    if (window.isDestroyed()) {
+      return null;
+    }
+
+    const state = this.getWindowControlsState(window);
+    window.webContents.send(RendererEventChannels.WINDOW_STATE_CHANGED, state);
+    return state;
+  }
+
+  private attachWindowControlStateSync(window: BrowserWindow): void {
+    const emitState = () => {
+      this.emitWindowControlsState(window);
+    };
+
+    window.on('maximize', emitState);
+    window.on('unmaximize', emitState);
+    window.on('enter-full-screen', emitState);
+    window.on('leave-full-screen', emitState);
+    window.on('restore', emitState);
+    window.once('ready-to-show', emitState);
+    window.webContents.on('did-finish-load', emitState);
+  }
+
   /**
    * 注册 IPC 处理器
    */
   private registerIpcHandlers(): void {
     // 登录成功 → 切换到主窗口
-    ipcMain.handle('window:transition-to-main', async () => {
+    ipcMain.handle(WindowChannels.TRANSITION_TO_MAIN, async () => {
       logger.info('IPC window:transition-to-main received');
       await this.transitionToMainWindow();
       return { success: true };
     });
 
     // 登出 → 切换到登录窗口
-    ipcMain.handle('window:transition-to-login', async () => {
+    ipcMain.handle(WindowChannels.TRANSITION_TO_LOGIN, async () => {
       logger.info('IPC window:transition-to-login received');
       await this.transitionToLoginWindow();
       return { success: true };
     });
 
     // 获取当前窗口类型
-    ipcMain.handle('window:get-type', (event) => {
+    ipcMain.handle(WindowChannels.GET_TYPE, (event) => {
       const webContents = event.sender;
       if (this.loginWindow?.webContents === webContents) {
         return 'login';
@@ -484,6 +493,70 @@ export class WindowManager {
         return 'main';
       }
       return 'unknown';
+    });
+
+    ipcMain.handle(WindowChannels.SYNC_CHROME_THEME, (event, theme: DesktopChromeTheme) => {
+      if (theme !== 'light' && theme !== 'dark') {
+        throw new Error(`Invalid chrome theme: ${String(theme)}`);
+      }
+
+      const window = BrowserWindow.fromWebContents(event.sender);
+      if (!window || window.isDestroyed()) {
+        return { success: false };
+      }
+
+      applyWindowChromeTheme(window, theme);
+      return { success: true };
+    });
+
+    ipcMain.handle(WindowChannels.MINIMIZE, (event) => {
+      const window = this.getWindowForSender(event.sender.id);
+      if (!window || window.isDestroyed() || !window.isMinimizable()) {
+        return { success: false };
+      }
+
+      window.minimize();
+      return { success: true };
+    });
+
+    ipcMain.handle(WindowChannels.TOGGLE_MAXIMIZE, (event) => {
+      const window = this.getWindowForSender(event.sender.id);
+      if (!window || window.isDestroyed()) {
+        return null;
+      }
+
+      if (!window.isMaximizable() && !window.isFullScreen()) {
+        return this.getWindowControlsState(window);
+      }
+
+      if (window.isFullScreen()) {
+        window.setFullScreen(false);
+      } else if (window.isMaximized()) {
+        window.unmaximize();
+      } else {
+        window.maximize();
+      }
+
+      return this.getWindowControlsState(window);
+    });
+
+    ipcMain.handle(WindowChannels.CLOSE, (event) => {
+      const window = this.getWindowForSender(event.sender.id);
+      if (!window || window.isDestroyed() || !window.isClosable()) {
+        return { success: false };
+      }
+
+      window.close();
+      return { success: true };
+    });
+
+    ipcMain.handle(WindowChannels.GET_CONTROLS_STATE, (event) => {
+      const window = this.getWindowForSender(event.sender.id);
+      if (!window || window.isDestroyed()) {
+        return null;
+      }
+
+      return this.getWindowControlsState(window);
     });
   }
 

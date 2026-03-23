@@ -1,5 +1,6 @@
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
+import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 import {
   AccountPowerSyncMapper,
@@ -112,7 +113,8 @@ export class PowerSyncAccountRepository implements IAccountRepository {
 
     const domainEvents = account.pullDomainEvents();
     for (const evt of domainEvents) {
-      eventBus.send(evt.eventType as any, evt.payload as any);
+      const eventType = evt.eventType as keyof AppEventRegistry;
+      eventBus.send(eventType, evt.payload as AppEventRegistry[typeof eventType]);
     }
   }
 

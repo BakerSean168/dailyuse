@@ -15,7 +15,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/contracts/dist"],
       "options": {
-        "command": "tsup",
+        "command": "rimraf dist && tsup --clean=false",
         "cwd": "packages/contracts"
       },
       "cache": true

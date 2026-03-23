@@ -28,8 +28,8 @@ P2 focuses on maintenance and quality features:
 ### Existing foundations
 
 - The repository already uses a unified `ResourceClientDTO` with metadata, stats, path, mime type, and timestamps in `packages/contracts/src/modules/repository/aggregates/resource-client.ts`.
-- Typed grouping already separates notes, images, videos, audio, documents, and other in `packages/app-vue/src/modules/repository/stores/repositoryStore.ts`.
-- Frontend link intelligence already builds a derived Markdown document graph in:
+- Typed grouping already separates notes, images, videos, audio, files, and other in `packages/app-vue/src/modules/repository/stores/repositoryStore.ts`.
+- Frontend link intelligence already builds a derived Markdown note graph in:
   - `packages/app-vue/src/modules/editor/composables/useEditorLinkIndex.ts`
   - `packages/app-vue/src/modules/editor/utils/linkIndex.ts`
 - `linkIndex.ts` already models unresolved wiki-links, backlinks, and graph traversal, which is an important precedent for P2 resource diagnostics.
@@ -37,7 +37,7 @@ P2 focuses on maintenance and quality features:
 ### Missing for long-term maintainability
 
 - No parser exists yet for repository-backed image or attachment references.
-- No UI surfaces show which notes reference an image/document resource.
+- No UI surfaces show which notes reference an image/file resource.
 - No workflow warns users before removing a resource that is still referenced.
 - No broken attachment/image state is surfaced during editing or browsing.
 - No lightweight resource detail panel exists in the main typed-grouped workflow.
@@ -90,7 +90,7 @@ P2 focuses on maintenance and quality features:
 1. User selects a resource in typed grouping.
 2. User opens details.
 3. System shows path, size, type, tags, created date, updated date, and reference count.
-4. For images/documents/media, system also shows where they are used.
+4. For images/files/media, system also shows where they are used.
 
 ## Architecture and design decisions
 
@@ -197,11 +197,11 @@ Do not overbuild a migration framework in the first pass.
    - inbound references for a resource
    - unresolved references
    - impacted notes for deletion preflight
-4. Add unit tests with mixed note/image/document scenarios.
+4. Add unit tests with mixed note/image/file scenarios.
 
 ### P2-B. Broken reference detection UX
 
-1. Add note-level diagnostics for unresolved image/document references.
+1. Add note-level diagnostics for unresolved image/file references.
 2. Surface broken state in preview and/or side panel.
 3. Decide how much inline decoration is feasible in CodeMirror for first pass.
 4. Add clear empty/loading/error states.

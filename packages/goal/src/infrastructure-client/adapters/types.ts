@@ -12,6 +12,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   GoalClientDTO,
+  GoalSystemView,
   KeyResultClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
@@ -60,21 +61,22 @@ export interface IGoalApiClient {
   createGoal(request: CreateGoalReq): Promise<Result<GoalClientDTO>>;
   getGoals(params?: {
     page?: number;
-    limit?: number;
+    pageSize?: number;
     query?: string;
-    status?: string;
-    dirId?: string;
-    startDate?: string;
-    endDate?: string;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
+    startDate?: number;
+    endDate?: number;
     includeChildren?: boolean;
   }): Promise<Result<QueryGoalsRes>>;
   getGoalById(id: string, includeChildren?: boolean): Promise<Result<GoalClientDTO>>;
   updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalClientDTO>>;
   deleteGoal(id: string): Promise<Result<void>>;
+  archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>>;
 
   // Goal Status
   activateGoal(id: string): Promise<Result<GoalClientDTO>>;
-  pauseGoal(id: string): Promise<Result<GoalClientDTO>>;
   completeGoal(id: string): Promise<Result<GoalClientDTO>>;
   archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
 
@@ -82,9 +84,10 @@ export interface IGoalApiClient {
   searchGoals(params: {
     query: string;
     page?: number;
-    limit?: number;
-    status?: string;
-    dirId?: string;
+    pageSize?: number;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
   }): Promise<Result<QueryGoalsRes>>;
 
   // KeyResult Management (via Goal Aggregate)
@@ -137,10 +140,7 @@ export interface IGoalApiClient {
 
   // Aggregate View
   getGoalAggregateView(goalId: string): Promise<Result<GetGoalAggregateRes>>;
-  cloneGoal(
-    goalId: string,
-    request: CloneGoalReq,
-  ): Promise<Result<GoalClientDTO>>;
+  cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalClientDTO>>;
 
   // AI Generation
   generateKeyResults(request: {

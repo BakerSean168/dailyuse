@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { EditorWorkspaceId, DocumentId } from '../../../primitives';
+import type { EditorWorkspaceId } from '../../../primitives';
 
 /**
  * Workspace Response Schema
@@ -21,15 +21,21 @@ export const WorkspaceResponseSchema = z.object({
   updatedAt: z.number(),
 });
 
-/**
- * Document Response Schema
- */
-export const DocumentResponseSchema = z.object({
-  id: brandedId<DocumentId>(),
-  workspaceId: brandedId<EditorWorkspaceId>(),
-  path: z.string(),
-  name: z.string(),
-  language: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
+export const SearchResponseSchema = z.object({
+  results: z.array(
+    z.object({
+      resourceId: z.string(),
+      resourcePath: z.string(),
+      resourceName: z.string(),
+      snippet: z.string(),
+      score: z.number(),
+      highlights: z.array(
+        z.object({
+          line: z.number().int().positive(),
+          text: z.string(),
+        }),
+      ),
+    }),
+  ),
+  total: z.number().int().min(0),
 });

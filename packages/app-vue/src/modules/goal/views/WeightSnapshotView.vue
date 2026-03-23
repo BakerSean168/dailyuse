@@ -1,11 +1,11 @@
 <template>
-  <div class="flex h-full flex-col p-6">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden p-6">
     <div class="mb-6">
       <h2 class="text-lg font-semibold">{{ t('goal.weightSnapshot.title') }}</h2>
       <p class="text-sm text-muted-foreground">{{ t('goal.weightSnapshot.subtitle') }}</p>
     </div>
 
-    <Tabs v-model="activeTab" class="flex-1">
+    <Tabs v-model="activeTab" class="flex min-h-0 flex-1 flex-col">
       <TabsList>
         <TabsTrigger value="comparison">{{ t('goal.weightSnapshot.tabComparison') }}</TabsTrigger>
         <TabsTrigger value="snapshots">{{ t('goal.weightSnapshot.tabSnapshots') }}</TabsTrigger>

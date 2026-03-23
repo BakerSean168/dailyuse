@@ -173,8 +173,11 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.updatedAt = now;
 
     // Trigger domain event
-    this.addDomainEvent<TaskEventMap['task:complete']>('task:complete', {
-      goalId: null, // TaskInstance doesn't store goalId directly
+    this.addDomainEvent<TaskEventMap['task:instance:completed']>('task:instance:completed', {
+      identityId: this._props.identityId,
+      taskInstanceId: this.id,
+      taskTemplateId: this._props.templateId,
+      completedAt: now,
     });
   }
 
@@ -198,6 +201,14 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     this._props.updatedAt = now;
+
+    this.addDomainEvent<TaskEventMap['task:instance:skipped']>('task:instance:skipped', {
+      identityId: this._props.identityId,
+      taskInstanceId: this.id,
+      taskTemplateId: this._props.templateId,
+      skippedAt: now,
+      reason: reason ?? null,
+    });
   }
 
   /** Marks the instance as expired. */

@@ -2,8 +2,7 @@
  * @file System IPC Handlers
  * @description
  * Centralized registration for system-level IPC channels, including:
- * - app:* - Application information and status checks.
- * - system:* - System utilities (DI status, memory usage, performance stats).
+ * - system:* - System utilities (version, memory usage, performance stats).
  * - desktop:* - Desktop features (auto-launch, shortcuts, tray).
  *
  * @module ipc/system-handlers
@@ -13,59 +12,16 @@ import { app, ipcMain } from 'electron';
 import type { TrayManager } from '../modules/tray';
 import type { ShortcutManager } from '../modules/shortcuts';
 import type { AutoLaunchManager } from '../modules/autolaunch';
-import { isDIConfigured, getLazyModuleStats } from '../di';
+import { getLazyModuleStats } from '../di';
 import { getIpcCache } from '../utils';
-
-/**
- * @function registerAppInfoHandlers
- * @description Registers application information IPC handlers.
- * Channels: 'app:getInfo', 'app:checkDIStatus'
- */
-function registerAppInfoHandlers(): void {
-  /**
-   * @description 获取应用信息
-   * Channel Name: app:getInfo
-   * Payload: void
-   * Return: { platform: string, version: string }
-   * Security: None
-   */
-  ipcMain.handle('app:getInfo', async () => {
-    return {
-      platform: process.platform,
-      version: app.getVersion(),
-    };
-  });
-
-  /**
-   * @description 检查 DI 容器状态
-   * Channel Name: app:checkDIStatus
-   * Payload: void
-   * Return: boolean
-   * Security: None
-   */
-  ipcMain.handle('app:checkDIStatus', async () => {
-    return isDIConfigured();
-  });
-}
 
 /**
  * @function registerSystemHandlers
  * @description Registers system-level utility IPC handlers.
- * Channels: 'system:getDIStatus', 'system:getAppVersion', 'system:getLazyModuleStats',
+ * Channels: 'system:getAppVersion', 'system:getLazyModuleStats',
  * 'system:getMemoryUsage', 'system:getIpcCacheStats'
  */
 function registerSystemHandlers(): void {
-  /**
-   * @description 获取 DI 状态（系统级）
-   * Channel Name: system:getDIStatus
-   * Payload: void
-   * Return: boolean
-   * Security: None
-   */
-  ipcMain.handle('system:getDIStatus', async () => {
-    return isDIConfigured();
-  });
-
   /**
    * @description 获取应用版本
    * Channel Name: system:getAppVersion
@@ -250,9 +206,6 @@ export function registerSystemIpcHandlers(
     return;
   }
   systemHandlersRegistered = true;
-
-  // ========== App Info Channels ==========
-  registerAppInfoHandlers();
 
   // ========== System Channels ==========
   registerSystemHandlers();

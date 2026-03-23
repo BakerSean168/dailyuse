@@ -30,6 +30,9 @@ export type PowerSyncTaskTemplateRow = {
   time_config_start_time: string | null;
   time_config_end_time: string | null;
   time_config_duration_minutes: number | null;
+  time_config_time_point: number | null;
+  time_config_time_range_start: number | null;
+  time_config_time_range_end: number | null;
   recurrence_rule_type: string | null;
   recurrence_rule_interval: number | null;
   recurrence_rule_days_of_week: string | null;
@@ -67,12 +70,12 @@ export class PowerSyncTaskTemplateMapper {
       ? TaskTimeConfig.fromDTO({
           timeType: data.time_config_type as any,
           startDate,
-          timePoint: null,
+          timePoint: data.time_config_time_point,
           timeRange:
-            startDate != null && endDate != null
+            data.time_config_time_range_start != null && data.time_config_time_range_end != null
               ? {
-                  start: 0,
-                  end: data.time_config_duration_minutes ?? Math.max(0, endDate - startDate),
+                  start: data.time_config_time_range_start,
+                  end: data.time_config_time_range_end,
                 }
               : null,
         })
@@ -178,6 +181,9 @@ export class PowerSyncTaskTemplateMapper {
         timeConfig?.timeRange != null
           ? timeConfig.timeRange.end - timeConfig.timeRange.start
           : null,
+      timeConfigTimePoint: timeConfig?.timePoint ?? null,
+      timeConfigTimeRangeStart: timeConfig?.timeRange?.start ?? null,
+      timeConfigTimeRangeEnd: timeConfig?.timeRange?.end ?? null,
       recurrenceRuleType: recurrenceRule?.frequency ?? null,
       recurrenceRuleInterval: recurrenceRule?.interval ?? null,
       recurrenceRuleDaysOfWeek: recurrenceRule?.daysOfWeek

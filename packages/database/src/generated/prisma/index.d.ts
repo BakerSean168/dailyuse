@@ -79,21 +79,6 @@ export type AuthCredential = $Result.DefaultSelection<Prisma.$AuthCredentialPayl
  */
 export type AuthSession = $Result.DefaultSelection<Prisma.$AuthSessionPayload>
 /**
- * Model Document
- * 
- */
-export type Document = $Result.DefaultSelection<Prisma.$DocumentPayload>
-/**
- * Model DocumentVersion
- * 
- */
-export type DocumentVersion = $Result.DefaultSelection<Prisma.$DocumentVersionPayload>
-/**
- * Model DocumentLink
- * 
- */
-export type DocumentLink = $Result.DefaultSelection<Prisma.$DocumentLinkPayload>
-/**
  * Model EditorWorkspace
  * 
  */
@@ -593,36 +578,6 @@ export class PrismaClient<
     * ```
     */
   get authSession(): Prisma.AuthSessionDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.document`: Exposes CRUD operations for the **Document** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Documents
-    * const documents = await prisma.document.findMany()
-    * ```
-    */
-  get document(): Prisma.DocumentDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.documentVersion`: Exposes CRUD operations for the **DocumentVersion** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more DocumentVersions
-    * const documentVersions = await prisma.documentVersion.findMany()
-    * ```
-    */
-  get documentVersion(): Prisma.DocumentVersionDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.documentLink`: Exposes CRUD operations for the **DocumentLink** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more DocumentLinks
-    * const documentLinks = await prisma.documentLink.findMany()
-    * ```
-    */
-  get documentLink(): Prisma.DocumentLinkDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.editorWorkspace`: Exposes CRUD operations for the **EditorWorkspace** model.
@@ -1540,9 +1495,6 @@ export namespace Prisma {
     AuthOAuthBinding: 'AuthOAuthBinding',
     AuthCredential: 'AuthCredential',
     AuthSession: 'AuthSession',
-    Document: 'Document',
-    DocumentVersion: 'DocumentVersion',
-    DocumentLink: 'DocumentLink',
     EditorWorkspace: 'EditorWorkspace',
     EditorWorkspaceSession: 'EditorWorkspaceSession',
     EditorWorkspaceSessionGroup: 'EditorWorkspaceSessionGroup',
@@ -1605,7 +1557,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
+      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2568,228 +2520,6 @@ export namespace Prisma {
           count: {
             args: Prisma.AuthSessionCountArgs<ExtArgs>
             result: $Utils.Optional<AuthSessionCountAggregateOutputType> | number
-          }
-        }
-      }
-      Document: {
-        payload: Prisma.$DocumentPayload<ExtArgs>
-        fields: Prisma.DocumentFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.DocumentFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.DocumentFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>
-          }
-          findFirst: {
-            args: Prisma.DocumentFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.DocumentFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>
-          }
-          findMany: {
-            args: Prisma.DocumentFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>[]
-          }
-          create: {
-            args: Prisma.DocumentCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>
-          }
-          createMany: {
-            args: Prisma.DocumentCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.DocumentCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>[]
-          }
-          delete: {
-            args: Prisma.DocumentDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>
-          }
-          update: {
-            args: Prisma.DocumentUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>
-          }
-          deleteMany: {
-            args: Prisma.DocumentDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.DocumentUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.DocumentUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>[]
-          }
-          upsert: {
-            args: Prisma.DocumentUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentPayload>
-          }
-          aggregate: {
-            args: Prisma.DocumentAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateDocument>
-          }
-          groupBy: {
-            args: Prisma.DocumentGroupByArgs<ExtArgs>
-            result: $Utils.Optional<DocumentGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.DocumentCountArgs<ExtArgs>
-            result: $Utils.Optional<DocumentCountAggregateOutputType> | number
-          }
-        }
-      }
-      DocumentVersion: {
-        payload: Prisma.$DocumentVersionPayload<ExtArgs>
-        fields: Prisma.DocumentVersionFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.DocumentVersionFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.DocumentVersionFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>
-          }
-          findFirst: {
-            args: Prisma.DocumentVersionFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.DocumentVersionFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>
-          }
-          findMany: {
-            args: Prisma.DocumentVersionFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>[]
-          }
-          create: {
-            args: Prisma.DocumentVersionCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>
-          }
-          createMany: {
-            args: Prisma.DocumentVersionCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.DocumentVersionCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>[]
-          }
-          delete: {
-            args: Prisma.DocumentVersionDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>
-          }
-          update: {
-            args: Prisma.DocumentVersionUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>
-          }
-          deleteMany: {
-            args: Prisma.DocumentVersionDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.DocumentVersionUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.DocumentVersionUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>[]
-          }
-          upsert: {
-            args: Prisma.DocumentVersionUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentVersionPayload>
-          }
-          aggregate: {
-            args: Prisma.DocumentVersionAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateDocumentVersion>
-          }
-          groupBy: {
-            args: Prisma.DocumentVersionGroupByArgs<ExtArgs>
-            result: $Utils.Optional<DocumentVersionGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.DocumentVersionCountArgs<ExtArgs>
-            result: $Utils.Optional<DocumentVersionCountAggregateOutputType> | number
-          }
-        }
-      }
-      DocumentLink: {
-        payload: Prisma.$DocumentLinkPayload<ExtArgs>
-        fields: Prisma.DocumentLinkFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.DocumentLinkFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.DocumentLinkFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>
-          }
-          findFirst: {
-            args: Prisma.DocumentLinkFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.DocumentLinkFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>
-          }
-          findMany: {
-            args: Prisma.DocumentLinkFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>[]
-          }
-          create: {
-            args: Prisma.DocumentLinkCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>
-          }
-          createMany: {
-            args: Prisma.DocumentLinkCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.DocumentLinkCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>[]
-          }
-          delete: {
-            args: Prisma.DocumentLinkDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>
-          }
-          update: {
-            args: Prisma.DocumentLinkUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>
-          }
-          deleteMany: {
-            args: Prisma.DocumentLinkDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.DocumentLinkUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.DocumentLinkUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>[]
-          }
-          upsert: {
-            args: Prisma.DocumentLinkUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$DocumentLinkPayload>
-          }
-          aggregate: {
-            args: Prisma.DocumentLinkAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateDocumentLink>
-          }
-          groupBy: {
-            args: Prisma.DocumentLinkGroupByArgs<ExtArgs>
-            result: $Utils.Optional<DocumentLinkGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.DocumentLinkCountArgs<ExtArgs>
-            result: $Utils.Optional<DocumentLinkCountAggregateOutputType> | number
           }
         }
       }
@@ -6392,9 +6122,6 @@ export namespace Prisma {
     authOAuthBinding?: AuthOAuthBindingOmit
     authCredential?: AuthCredentialOmit
     authSession?: AuthSessionOmit
-    document?: DocumentOmit
-    documentVersion?: DocumentVersionOmit
-    documentLink?: DocumentLinkOmit
     editorWorkspace?: EditorWorkspaceOmit
     editorWorkspaceSession?: EditorWorkspaceSessionOmit
     editorWorkspaceSessionGroup?: EditorWorkspaceSessionGroupOmit
@@ -6522,8 +6249,6 @@ export namespace Prisma {
    */
 
   export type AccountCountOutputType = {
-    documents: number
-    documentVersions: number
     editorWorkspaces: number
     editorWorkspaceSessions: number
     editorWorkspaceSessionGroups: number
@@ -6558,8 +6283,6 @@ export namespace Prisma {
     reminderResponses: number
     notificationChannels: number
     notificationHistory: number
-    documentVersionsByIdentity: number
-    documentLinks: number
     aiMessages: number
     folders: number
     resources: number
@@ -6567,8 +6290,6 @@ export namespace Prisma {
   }
 
   export type AccountCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    documents?: boolean | AccountCountOutputTypeCountDocumentsArgs
-    documentVersions?: boolean | AccountCountOutputTypeCountDocumentVersionsArgs
     editorWorkspaces?: boolean | AccountCountOutputTypeCountEditorWorkspacesArgs
     editorWorkspaceSessions?: boolean | AccountCountOutputTypeCountEditorWorkspaceSessionsArgs
     editorWorkspaceSessionGroups?: boolean | AccountCountOutputTypeCountEditorWorkspaceSessionGroupsArgs
@@ -6603,8 +6324,6 @@ export namespace Prisma {
     reminderResponses?: boolean | AccountCountOutputTypeCountReminderResponsesArgs
     notificationChannels?: boolean | AccountCountOutputTypeCountNotificationChannelsArgs
     notificationHistory?: boolean | AccountCountOutputTypeCountNotificationHistoryArgs
-    documentVersionsByIdentity?: boolean | AccountCountOutputTypeCountDocumentVersionsByIdentityArgs
-    documentLinks?: boolean | AccountCountOutputTypeCountDocumentLinksArgs
     aiMessages?: boolean | AccountCountOutputTypeCountAiMessagesArgs
     folders?: boolean | AccountCountOutputTypeCountFoldersArgs
     resources?: boolean | AccountCountOutputTypeCountResourcesArgs
@@ -6620,20 +6339,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the AccountCountOutputType
      */
     select?: AccountCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountDocumentVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentVersionWhereInput
   }
 
   /**
@@ -6877,20 +6582,6 @@ export namespace Prisma {
   /**
    * AccountCountOutputType without action
    */
-  export type AccountCountOutputTypeCountDocumentVersionsByIdentityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentVersionWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountDocumentLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentLinkWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
   export type AccountCountOutputTypeCountAiMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiMessageWhereInput
   }
@@ -7012,55 +6703,6 @@ export namespace Prisma {
    */
   export type AuthIdentityCountOutputTypeCountAccountsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AccountWhereInput
-  }
-
-
-  /**
-   * Count Type DocumentCountOutputType
-   */
-
-  export type DocumentCountOutputType = {
-    versions: number
-    sourceLinks: number
-    targetLinks: number
-  }
-
-  export type DocumentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    versions?: boolean | DocumentCountOutputTypeCountVersionsArgs
-    sourceLinks?: boolean | DocumentCountOutputTypeCountSourceLinksArgs
-    targetLinks?: boolean | DocumentCountOutputTypeCountTargetLinksArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentCountOutputType
-     */
-    select?: DocumentCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeCountVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentVersionWhereInput
-  }
-
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeCountSourceLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentLinkWhereInput
-  }
-
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeCountTargetLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentLinkWhereInput
   }
 
 
@@ -8013,8 +7655,6 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-    documents?: boolean | Account$documentsArgs<ExtArgs>
-    documentVersions?: boolean | Account$documentVersionsArgs<ExtArgs>
     editorWorkspaces?: boolean | Account$editorWorkspacesArgs<ExtArgs>
     editorWorkspaceSessions?: boolean | Account$editorWorkspaceSessionsArgs<ExtArgs>
     editorWorkspaceSessionGroups?: boolean | Account$editorWorkspaceSessionGroupsArgs<ExtArgs>
@@ -8058,8 +7698,6 @@ export namespace Prisma {
     reminderResponses?: boolean | Account$reminderResponsesArgs<ExtArgs>
     notificationChannels?: boolean | Account$notificationChannelsArgs<ExtArgs>
     notificationHistory?: boolean | Account$notificationHistoryArgs<ExtArgs>
-    documentVersionsByIdentity?: boolean | Account$documentVersionsByIdentityArgs<ExtArgs>
-    documentLinks?: boolean | Account$documentLinksArgs<ExtArgs>
     aiMessages?: boolean | Account$aiMessagesArgs<ExtArgs>
     folders?: boolean | Account$foldersArgs<ExtArgs>
     resources?: boolean | Account$resourcesArgs<ExtArgs>
@@ -8132,8 +7770,6 @@ export namespace Prisma {
   export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "profile" | "settings" | "emailAddress" | "emailIsVerified" | "emailVerifiedAt" | "emailIsPrimary" | "phoneCountryCode" | "phoneNumber" | "phoneFullNumber" | "phoneIsVerified" | "phoneVerifiedAt" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-    documents?: boolean | Account$documentsArgs<ExtArgs>
-    documentVersions?: boolean | Account$documentVersionsArgs<ExtArgs>
     editorWorkspaces?: boolean | Account$editorWorkspacesArgs<ExtArgs>
     editorWorkspaceSessions?: boolean | Account$editorWorkspaceSessionsArgs<ExtArgs>
     editorWorkspaceSessionGroups?: boolean | Account$editorWorkspaceSessionGroupsArgs<ExtArgs>
@@ -8177,8 +7813,6 @@ export namespace Prisma {
     reminderResponses?: boolean | Account$reminderResponsesArgs<ExtArgs>
     notificationChannels?: boolean | Account$notificationChannelsArgs<ExtArgs>
     notificationHistory?: boolean | Account$notificationHistoryArgs<ExtArgs>
-    documentVersionsByIdentity?: boolean | Account$documentVersionsByIdentityArgs<ExtArgs>
-    documentLinks?: boolean | Account$documentLinksArgs<ExtArgs>
     aiMessages?: boolean | Account$aiMessagesArgs<ExtArgs>
     folders?: boolean | Account$foldersArgs<ExtArgs>
     resources?: boolean | Account$resourcesArgs<ExtArgs>
@@ -8196,8 +7830,6 @@ export namespace Prisma {
     name: "Account"
     objects: {
       identity: Prisma.$AuthIdentityPayload<ExtArgs>
-      documents: Prisma.$DocumentPayload<ExtArgs>[]
-      documentVersions: Prisma.$DocumentVersionPayload<ExtArgs>[]
       editorWorkspaces: Prisma.$EditorWorkspacePayload<ExtArgs>[]
       editorWorkspaceSessions: Prisma.$EditorWorkspaceSessionPayload<ExtArgs>[]
       editorWorkspaceSessionGroups: Prisma.$EditorWorkspaceSessionGroupPayload<ExtArgs>[]
@@ -8241,8 +7873,6 @@ export namespace Prisma {
       reminderResponses: Prisma.$ReminderResponsePayload<ExtArgs>[]
       notificationChannels: Prisma.$NotificationChannelPayload<ExtArgs>[]
       notificationHistory: Prisma.$NotificationHistoryPayload<ExtArgs>[]
-      documentVersionsByIdentity: Prisma.$DocumentVersionPayload<ExtArgs>[]
-      documentLinks: Prisma.$DocumentLinkPayload<ExtArgs>[]
       aiMessages: Prisma.$AiMessagePayload<ExtArgs>[]
       folders: Prisma.$FolderPayload<ExtArgs>[]
       resources: Prisma.$ResourcePayload<ExtArgs>[]
@@ -8661,8 +8291,6 @@ export namespace Prisma {
   export interface Prisma__AccountClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     identity<T extends AuthIdentityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentityDefaultArgs<ExtArgs>>): Prisma__AuthIdentityClient<$Result.GetResult<Prisma.$AuthIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    documents<T extends Account$documentsArgs<ExtArgs> = {}>(args?: Subset<T, Account$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    documentVersions<T extends Account$documentVersionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$documentVersionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     editorWorkspaces<T extends Account$editorWorkspacesArgs<ExtArgs> = {}>(args?: Subset<T, Account$editorWorkspacesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EditorWorkspacePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     editorWorkspaceSessions<T extends Account$editorWorkspaceSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$editorWorkspaceSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EditorWorkspaceSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     editorWorkspaceSessionGroups<T extends Account$editorWorkspaceSessionGroupsArgs<ExtArgs> = {}>(args?: Subset<T, Account$editorWorkspaceSessionGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EditorWorkspaceSessionGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8706,8 +8334,6 @@ export namespace Prisma {
     reminderResponses<T extends Account$reminderResponsesArgs<ExtArgs> = {}>(args?: Subset<T, Account$reminderResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReminderResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notificationChannels<T extends Account$notificationChannelsArgs<ExtArgs> = {}>(args?: Subset<T, Account$notificationChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notificationHistory<T extends Account$notificationHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Account$notificationHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    documentVersionsByIdentity<T extends Account$documentVersionsByIdentityArgs<ExtArgs> = {}>(args?: Subset<T, Account$documentVersionsByIdentityArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    documentLinks<T extends Account$documentLinksArgs<ExtArgs> = {}>(args?: Subset<T, Account$documentLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiMessages<T extends Account$aiMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     folders<T extends Account$foldersArgs<ExtArgs> = {}>(args?: Subset<T, Account$foldersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     resources<T extends Account$resourcesArgs<ExtArgs> = {}>(args?: Subset<T, Account$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9151,54 +8777,6 @@ export namespace Prisma {
      * Limit how many Accounts to delete.
      */
     limit?: number
-  }
-
-  /**
-   * Account.documents
-   */
-  export type Account$documentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    where?: DocumentWhereInput
-    orderBy?: DocumentOrderByWithRelationInput | DocumentOrderByWithRelationInput[]
-    cursor?: DocumentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentScalarFieldEnum | DocumentScalarFieldEnum[]
-  }
-
-  /**
-   * Account.documentVersions
-   */
-  export type Account$documentVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    where?: DocumentVersionWhereInput
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    cursor?: DocumentVersionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentVersionScalarFieldEnum | DocumentVersionScalarFieldEnum[]
   }
 
   /**
@@ -10186,54 +9764,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationHistoryScalarFieldEnum | NotificationHistoryScalarFieldEnum[]
-  }
-
-  /**
-   * Account.documentVersionsByIdentity
-   */
-  export type Account$documentVersionsByIdentityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    where?: DocumentVersionWhereInput
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    cursor?: DocumentVersionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentVersionScalarFieldEnum | DocumentVersionScalarFieldEnum[]
-  }
-
-  /**
-   * Account.documentLinks
-   */
-  export type Account$documentLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    where?: DocumentLinkWhereInput
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    cursor?: DocumentLinkWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentLinkScalarFieldEnum | DocumentLinkScalarFieldEnum[]
   }
 
   /**
@@ -16281,12 +15811,12 @@ export namespace Prisma {
   }
 
   export type KnowledgeGenerationTaskAvgAggregateOutputType = {
-    documentCount: number | null
+    resourceCount: number | null
     progress: number | null
   }
 
   export type KnowledgeGenerationTaskSumAggregateOutputType = {
-    documentCount: number | null
+    resourceCount: number | null
     progress: number | null
   }
 
@@ -16294,7 +15824,7 @@ export namespace Prisma {
     id: string | null
     identityId: string | null
     topic: string | null
-    documentCount: number | null
+    resourceCount: number | null
     targetAudience: string | null
     folderPath: string | null
     status: string | null
@@ -16308,7 +15838,7 @@ export namespace Prisma {
     id: string | null
     identityId: string | null
     topic: string | null
-    documentCount: number | null
+    resourceCount: number | null
     targetAudience: string | null
     folderPath: string | null
     status: string | null
@@ -16322,12 +15852,12 @@ export namespace Prisma {
     id: number
     identityId: number
     topic: number
-    documentCount: number
+    resourceCount: number
     targetAudience: number
     folderPath: number
     status: number
     progress: number
-    generatedDocumentIds: number
+    generatedResourceIds: number
     error: number
     createdAt: number
     completedAt: number
@@ -16336,12 +15866,12 @@ export namespace Prisma {
 
 
   export type KnowledgeGenerationTaskAvgAggregateInputType = {
-    documentCount?: true
+    resourceCount?: true
     progress?: true
   }
 
   export type KnowledgeGenerationTaskSumAggregateInputType = {
-    documentCount?: true
+    resourceCount?: true
     progress?: true
   }
 
@@ -16349,7 +15879,7 @@ export namespace Prisma {
     id?: true
     identityId?: true
     topic?: true
-    documentCount?: true
+    resourceCount?: true
     targetAudience?: true
     folderPath?: true
     status?: true
@@ -16363,7 +15893,7 @@ export namespace Prisma {
     id?: true
     identityId?: true
     topic?: true
-    documentCount?: true
+    resourceCount?: true
     targetAudience?: true
     folderPath?: true
     status?: true
@@ -16377,12 +15907,12 @@ export namespace Prisma {
     id?: true
     identityId?: true
     topic?: true
-    documentCount?: true
+    resourceCount?: true
     targetAudience?: true
     folderPath?: true
     status?: true
     progress?: true
-    generatedDocumentIds?: true
+    generatedResourceIds?: true
     error?: true
     createdAt?: true
     completedAt?: true
@@ -16479,12 +16009,12 @@ export namespace Prisma {
     id: string
     identityId: string
     topic: string
-    documentCount: number
+    resourceCount: number
     targetAudience: string | null
     folderPath: string
     status: string
     progress: number
-    generatedDocumentIds: string[]
+    generatedResourceIds: string[]
     error: string | null
     createdAt: Date
     completedAt: Date | null
@@ -16513,12 +16043,12 @@ export namespace Prisma {
     id?: boolean
     identityId?: boolean
     topic?: boolean
-    documentCount?: boolean
+    resourceCount?: boolean
     targetAudience?: boolean
     folderPath?: boolean
     status?: boolean
     progress?: boolean
-    generatedDocumentIds?: boolean
+    generatedResourceIds?: boolean
     error?: boolean
     createdAt?: boolean
     completedAt?: boolean
@@ -16528,12 +16058,12 @@ export namespace Prisma {
     id?: boolean
     identityId?: boolean
     topic?: boolean
-    documentCount?: boolean
+    resourceCount?: boolean
     targetAudience?: boolean
     folderPath?: boolean
     status?: boolean
     progress?: boolean
-    generatedDocumentIds?: boolean
+    generatedResourceIds?: boolean
     error?: boolean
     createdAt?: boolean
     completedAt?: boolean
@@ -16543,12 +16073,12 @@ export namespace Prisma {
     id?: boolean
     identityId?: boolean
     topic?: boolean
-    documentCount?: boolean
+    resourceCount?: boolean
     targetAudience?: boolean
     folderPath?: boolean
     status?: boolean
     progress?: boolean
-    generatedDocumentIds?: boolean
+    generatedResourceIds?: boolean
     error?: boolean
     createdAt?: boolean
     completedAt?: boolean
@@ -16558,18 +16088,18 @@ export namespace Prisma {
     id?: boolean
     identityId?: boolean
     topic?: boolean
-    documentCount?: boolean
+    resourceCount?: boolean
     targetAudience?: boolean
     folderPath?: boolean
     status?: boolean
     progress?: boolean
-    generatedDocumentIds?: boolean
+    generatedResourceIds?: boolean
     error?: boolean
     createdAt?: boolean
     completedAt?: boolean
   }
 
-  export type KnowledgeGenerationTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "topic" | "documentCount" | "targetAudience" | "folderPath" | "status" | "progress" | "generatedDocumentIds" | "error" | "createdAt" | "completedAt", ExtArgs["result"]["knowledgeGenerationTask"]>
+  export type KnowledgeGenerationTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "topic" | "resourceCount" | "targetAudience" | "folderPath" | "status" | "progress" | "generatedResourceIds" | "error" | "createdAt" | "completedAt", ExtArgs["result"]["knowledgeGenerationTask"]>
 
   export type $KnowledgeGenerationTaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "KnowledgeGenerationTask"
@@ -16578,12 +16108,12 @@ export namespace Prisma {
       id: string
       identityId: string
       topic: string
-      documentCount: number
+      resourceCount: number
       targetAudience: string | null
       folderPath: string
       status: string
       progress: number
-      generatedDocumentIds: string[]
+      generatedResourceIds: string[]
       error: string | null
       createdAt: Date
       completedAt: Date | null
@@ -17013,12 +16543,12 @@ export namespace Prisma {
     readonly id: FieldRef<"KnowledgeGenerationTask", 'String'>
     readonly identityId: FieldRef<"KnowledgeGenerationTask", 'String'>
     readonly topic: FieldRef<"KnowledgeGenerationTask", 'String'>
-    readonly documentCount: FieldRef<"KnowledgeGenerationTask", 'Int'>
+    readonly resourceCount: FieldRef<"KnowledgeGenerationTask", 'Int'>
     readonly targetAudience: FieldRef<"KnowledgeGenerationTask", 'String'>
     readonly folderPath: FieldRef<"KnowledgeGenerationTask", 'String'>
     readonly status: FieldRef<"KnowledgeGenerationTask", 'String'>
     readonly progress: FieldRef<"KnowledgeGenerationTask", 'Int'>
-    readonly generatedDocumentIds: FieldRef<"KnowledgeGenerationTask", 'String[]'>
+    readonly generatedResourceIds: FieldRef<"KnowledgeGenerationTask", 'String[]'>
     readonly error: FieldRef<"KnowledgeGenerationTask", 'String'>
     readonly createdAt: FieldRef<"KnowledgeGenerationTask", 'DateTime'>
     readonly completedAt: FieldRef<"KnowledgeGenerationTask", 'DateTime'>
@@ -24318,3735 +23848,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Document
-   */
-
-  export type AggregateDocument = {
-    _count: DocumentCountAggregateOutputType | null
-    _avg: DocumentAvgAggregateOutputType | null
-    _sum: DocumentSumAggregateOutputType | null
-    _min: DocumentMinAggregateOutputType | null
-    _max: DocumentMaxAggregateOutputType | null
-  }
-
-  export type DocumentAvgAggregateOutputType = {
-    currentVersion: number | null
-    version: number | null
-  }
-
-  export type DocumentSumAggregateOutputType = {
-    currentVersion: number | null
-    version: number | null
-  }
-
-  export type DocumentMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    title: string | null
-    content: string | null
-    folderPath: string | null
-    status: string | null
-    currentVersion: number | null
-    lastVersionedAt: Date | null
-    lastEditedAt: Date | null
-    editSessionId: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type DocumentMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    title: string | null
-    content: string | null
-    folderPath: string | null
-    status: string | null
-    currentVersion: number | null
-    lastVersionedAt: Date | null
-    lastEditedAt: Date | null
-    editSessionId: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type DocumentCountAggregateOutputType = {
-    id: number
-    identityId: number
-    title: number
-    content: number
-    folderPath: number
-    tags: number
-    status: number
-    currentVersion: number
-    lastVersionedAt: number
-    lastEditedAt: number
-    editSessionId: number
-    version: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type DocumentAvgAggregateInputType = {
-    currentVersion?: true
-    version?: true
-  }
-
-  export type DocumentSumAggregateInputType = {
-    currentVersion?: true
-    version?: true
-  }
-
-  export type DocumentMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    title?: true
-    content?: true
-    folderPath?: true
-    status?: true
-    currentVersion?: true
-    lastVersionedAt?: true
-    lastEditedAt?: true
-    editSessionId?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type DocumentMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    title?: true
-    content?: true
-    folderPath?: true
-    status?: true
-    currentVersion?: true
-    lastVersionedAt?: true
-    lastEditedAt?: true
-    editSessionId?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type DocumentCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    title?: true
-    content?: true
-    folderPath?: true
-    tags?: true
-    status?: true
-    currentVersion?: true
-    lastVersionedAt?: true
-    lastEditedAt?: true
-    editSessionId?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type DocumentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Document to aggregate.
-     */
-    where?: DocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Documents to fetch.
-     */
-    orderBy?: DocumentOrderByWithRelationInput | DocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: DocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Documents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Documents.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Documents
-    **/
-    _count?: true | DocumentCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: DocumentAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: DocumentSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: DocumentMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: DocumentMaxAggregateInputType
-  }
-
-  export type GetDocumentAggregateType<T extends DocumentAggregateArgs> = {
-        [P in keyof T & keyof AggregateDocument]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateDocument[P]>
-      : GetScalarType<T[P], AggregateDocument[P]>
-  }
-
-
-
-
-  export type DocumentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentWhereInput
-    orderBy?: DocumentOrderByWithAggregationInput | DocumentOrderByWithAggregationInput[]
-    by: DocumentScalarFieldEnum[] | DocumentScalarFieldEnum
-    having?: DocumentScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: DocumentCountAggregateInputType | true
-    _avg?: DocumentAvgAggregateInputType
-    _sum?: DocumentSumAggregateInputType
-    _min?: DocumentMinAggregateInputType
-    _max?: DocumentMaxAggregateInputType
-  }
-
-  export type DocumentGroupByOutputType = {
-    id: string
-    identityId: string
-    title: string
-    content: string
-    folderPath: string
-    tags: string[]
-    status: string
-    currentVersion: number
-    lastVersionedAt: Date | null
-    lastEditedAt: Date | null
-    editSessionId: string | null
-    version: number
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: DocumentCountAggregateOutputType | null
-    _avg: DocumentAvgAggregateOutputType | null
-    _sum: DocumentSumAggregateOutputType | null
-    _min: DocumentMinAggregateOutputType | null
-    _max: DocumentMaxAggregateOutputType | null
-  }
-
-  type GetDocumentGroupByPayload<T extends DocumentGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<DocumentGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof DocumentGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], DocumentGroupByOutputType[P]>
-            : GetScalarType<T[P], DocumentGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type DocumentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    title?: boolean
-    content?: boolean
-    folderPath?: boolean
-    tags?: boolean
-    status?: boolean
-    currentVersion?: boolean
-    lastVersionedAt?: boolean
-    lastEditedAt?: boolean
-    editSessionId?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    versions?: boolean | Document$versionsArgs<ExtArgs>
-    sourceLinks?: boolean | Document$sourceLinksArgs<ExtArgs>
-    targetLinks?: boolean | Document$targetLinksArgs<ExtArgs>
-    _count?: boolean | DocumentCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["document"]>
-
-  export type DocumentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    title?: boolean
-    content?: boolean
-    folderPath?: boolean
-    tags?: boolean
-    status?: boolean
-    currentVersion?: boolean
-    lastVersionedAt?: boolean
-    lastEditedAt?: boolean
-    editSessionId?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["document"]>
-
-  export type DocumentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    title?: boolean
-    content?: boolean
-    folderPath?: boolean
-    tags?: boolean
-    status?: boolean
-    currentVersion?: boolean
-    lastVersionedAt?: boolean
-    lastEditedAt?: boolean
-    editSessionId?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["document"]>
-
-  export type DocumentSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    title?: boolean
-    content?: boolean
-    folderPath?: boolean
-    tags?: boolean
-    status?: boolean
-    currentVersion?: boolean
-    lastVersionedAt?: boolean
-    lastEditedAt?: boolean
-    editSessionId?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type DocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "title" | "content" | "folderPath" | "tags" | "status" | "currentVersion" | "lastVersionedAt" | "lastEditedAt" | "editSessionId" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["document"]>
-  export type DocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    versions?: boolean | Document$versionsArgs<ExtArgs>
-    sourceLinks?: boolean | Document$sourceLinksArgs<ExtArgs>
-    targetLinks?: boolean | Document$targetLinksArgs<ExtArgs>
-    _count?: boolean | DocumentCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type DocumentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type DocumentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $DocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Document"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-      versions: Prisma.$DocumentVersionPayload<ExtArgs>[]
-      sourceLinks: Prisma.$DocumentLinkPayload<ExtArgs>[]
-      targetLinks: Prisma.$DocumentLinkPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      title: string
-      content: string
-      folderPath: string
-      tags: string[]
-      status: string
-      currentVersion: number
-      lastVersionedAt: Date | null
-      lastEditedAt: Date | null
-      editSessionId: string | null
-      version: number
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["document"]>
-    composites: {}
-  }
-
-  type DocumentGetPayload<S extends boolean | null | undefined | DocumentDefaultArgs> = $Result.GetResult<Prisma.$DocumentPayload, S>
-
-  type DocumentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<DocumentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: DocumentCountAggregateInputType | true
-    }
-
-  export interface DocumentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Document'], meta: { name: 'Document' } }
-    /**
-     * Find zero or one Document that matches the filter.
-     * @param {DocumentFindUniqueArgs} args - Arguments to find a Document
-     * @example
-     * // Get one Document
-     * const document = await prisma.document.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends DocumentFindUniqueArgs>(args: SelectSubset<T, DocumentFindUniqueArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Document that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {DocumentFindUniqueOrThrowArgs} args - Arguments to find a Document
-     * @example
-     * // Get one Document
-     * const document = await prisma.document.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends DocumentFindUniqueOrThrowArgs>(args: SelectSubset<T, DocumentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Document that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentFindFirstArgs} args - Arguments to find a Document
-     * @example
-     * // Get one Document
-     * const document = await prisma.document.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends DocumentFindFirstArgs>(args?: SelectSubset<T, DocumentFindFirstArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Document that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentFindFirstOrThrowArgs} args - Arguments to find a Document
-     * @example
-     * // Get one Document
-     * const document = await prisma.document.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends DocumentFindFirstOrThrowArgs>(args?: SelectSubset<T, DocumentFindFirstOrThrowArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Documents that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Documents
-     * const documents = await prisma.document.findMany()
-     * 
-     * // Get first 10 Documents
-     * const documents = await prisma.document.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const documentWithIdOnly = await prisma.document.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends DocumentFindManyArgs>(args?: SelectSubset<T, DocumentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Document.
-     * @param {DocumentCreateArgs} args - Arguments to create a Document.
-     * @example
-     * // Create one Document
-     * const Document = await prisma.document.create({
-     *   data: {
-     *     // ... data to create a Document
-     *   }
-     * })
-     * 
-     */
-    create<T extends DocumentCreateArgs>(args: SelectSubset<T, DocumentCreateArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Documents.
-     * @param {DocumentCreateManyArgs} args - Arguments to create many Documents.
-     * @example
-     * // Create many Documents
-     * const document = await prisma.document.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends DocumentCreateManyArgs>(args?: SelectSubset<T, DocumentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Documents and returns the data saved in the database.
-     * @param {DocumentCreateManyAndReturnArgs} args - Arguments to create many Documents.
-     * @example
-     * // Create many Documents
-     * const document = await prisma.document.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Documents and only return the `id`
-     * const documentWithIdOnly = await prisma.document.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends DocumentCreateManyAndReturnArgs>(args?: SelectSubset<T, DocumentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Document.
-     * @param {DocumentDeleteArgs} args - Arguments to delete one Document.
-     * @example
-     * // Delete one Document
-     * const Document = await prisma.document.delete({
-     *   where: {
-     *     // ... filter to delete one Document
-     *   }
-     * })
-     * 
-     */
-    delete<T extends DocumentDeleteArgs>(args: SelectSubset<T, DocumentDeleteArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Document.
-     * @param {DocumentUpdateArgs} args - Arguments to update one Document.
-     * @example
-     * // Update one Document
-     * const document = await prisma.document.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends DocumentUpdateArgs>(args: SelectSubset<T, DocumentUpdateArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Documents.
-     * @param {DocumentDeleteManyArgs} args - Arguments to filter Documents to delete.
-     * @example
-     * // Delete a few Documents
-     * const { count } = await prisma.document.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends DocumentDeleteManyArgs>(args?: SelectSubset<T, DocumentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Documents.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Documents
-     * const document = await prisma.document.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends DocumentUpdateManyArgs>(args: SelectSubset<T, DocumentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Documents and returns the data updated in the database.
-     * @param {DocumentUpdateManyAndReturnArgs} args - Arguments to update many Documents.
-     * @example
-     * // Update many Documents
-     * const document = await prisma.document.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Documents and only return the `id`
-     * const documentWithIdOnly = await prisma.document.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends DocumentUpdateManyAndReturnArgs>(args: SelectSubset<T, DocumentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Document.
-     * @param {DocumentUpsertArgs} args - Arguments to update or create a Document.
-     * @example
-     * // Update or create a Document
-     * const document = await prisma.document.upsert({
-     *   create: {
-     *     // ... data to create a Document
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Document we want to update
-     *   }
-     * })
-     */
-    upsert<T extends DocumentUpsertArgs>(args: SelectSubset<T, DocumentUpsertArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Documents.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentCountArgs} args - Arguments to filter Documents to count.
-     * @example
-     * // Count the number of Documents
-     * const count = await prisma.document.count({
-     *   where: {
-     *     // ... the filter for the Documents we want to count
-     *   }
-     * })
-    **/
-    count<T extends DocumentCountArgs>(
-      args?: Subset<T, DocumentCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], DocumentCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Document.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends DocumentAggregateArgs>(args: Subset<T, DocumentAggregateArgs>): Prisma.PrismaPromise<GetDocumentAggregateType<T>>
-
-    /**
-     * Group by Document.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends DocumentGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: DocumentGroupByArgs['orderBy'] }
-        : { orderBy?: DocumentGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, DocumentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDocumentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Document model
-   */
-  readonly fields: DocumentFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Document.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__DocumentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    versions<T extends Document$versionsArgs<ExtArgs> = {}>(args?: Subset<T, Document$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    sourceLinks<T extends Document$sourceLinksArgs<ExtArgs> = {}>(args?: Subset<T, Document$sourceLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    targetLinks<T extends Document$targetLinksArgs<ExtArgs> = {}>(args?: Subset<T, Document$targetLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Document model
-   */
-  interface DocumentFieldRefs {
-    readonly id: FieldRef<"Document", 'String'>
-    readonly identityId: FieldRef<"Document", 'String'>
-    readonly title: FieldRef<"Document", 'String'>
-    readonly content: FieldRef<"Document", 'String'>
-    readonly folderPath: FieldRef<"Document", 'String'>
-    readonly tags: FieldRef<"Document", 'String[]'>
-    readonly status: FieldRef<"Document", 'String'>
-    readonly currentVersion: FieldRef<"Document", 'Int'>
-    readonly lastVersionedAt: FieldRef<"Document", 'DateTime'>
-    readonly lastEditedAt: FieldRef<"Document", 'DateTime'>
-    readonly editSessionId: FieldRef<"Document", 'String'>
-    readonly version: FieldRef<"Document", 'Int'>
-    readonly createdAt: FieldRef<"Document", 'DateTime'>
-    readonly updatedAt: FieldRef<"Document", 'DateTime'>
-    readonly deletedAt: FieldRef<"Document", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Document findUnique
-   */
-  export type DocumentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which Document to fetch.
-     */
-    where: DocumentWhereUniqueInput
-  }
-
-  /**
-   * Document findUniqueOrThrow
-   */
-  export type DocumentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which Document to fetch.
-     */
-    where: DocumentWhereUniqueInput
-  }
-
-  /**
-   * Document findFirst
-   */
-  export type DocumentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which Document to fetch.
-     */
-    where?: DocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Documents to fetch.
-     */
-    orderBy?: DocumentOrderByWithRelationInput | DocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Documents.
-     */
-    cursor?: DocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Documents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Documents.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Documents.
-     */
-    distinct?: DocumentScalarFieldEnum | DocumentScalarFieldEnum[]
-  }
-
-  /**
-   * Document findFirstOrThrow
-   */
-  export type DocumentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which Document to fetch.
-     */
-    where?: DocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Documents to fetch.
-     */
-    orderBy?: DocumentOrderByWithRelationInput | DocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Documents.
-     */
-    cursor?: DocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Documents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Documents.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Documents.
-     */
-    distinct?: DocumentScalarFieldEnum | DocumentScalarFieldEnum[]
-  }
-
-  /**
-   * Document findMany
-   */
-  export type DocumentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which Documents to fetch.
-     */
-    where?: DocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Documents to fetch.
-     */
-    orderBy?: DocumentOrderByWithRelationInput | DocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Documents.
-     */
-    cursor?: DocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Documents from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Documents.
-     */
-    skip?: number
-    distinct?: DocumentScalarFieldEnum | DocumentScalarFieldEnum[]
-  }
-
-  /**
-   * Document create
-   */
-  export type DocumentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Document.
-     */
-    data: XOR<DocumentCreateInput, DocumentUncheckedCreateInput>
-  }
-
-  /**
-   * Document createMany
-   */
-  export type DocumentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Documents.
-     */
-    data: DocumentCreateManyInput | DocumentCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Document createManyAndReturn
-   */
-  export type DocumentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * The data used to create many Documents.
-     */
-    data: DocumentCreateManyInput | DocumentCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Document update
-   */
-  export type DocumentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Document.
-     */
-    data: XOR<DocumentUpdateInput, DocumentUncheckedUpdateInput>
-    /**
-     * Choose, which Document to update.
-     */
-    where: DocumentWhereUniqueInput
-  }
-
-  /**
-   * Document updateMany
-   */
-  export type DocumentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Documents.
-     */
-    data: XOR<DocumentUpdateManyMutationInput, DocumentUncheckedUpdateManyInput>
-    /**
-     * Filter which Documents to update
-     */
-    where?: DocumentWhereInput
-    /**
-     * Limit how many Documents to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Document updateManyAndReturn
-   */
-  export type DocumentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * The data used to update Documents.
-     */
-    data: XOR<DocumentUpdateManyMutationInput, DocumentUncheckedUpdateManyInput>
-    /**
-     * Filter which Documents to update
-     */
-    where?: DocumentWhereInput
-    /**
-     * Limit how many Documents to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Document upsert
-   */
-  export type DocumentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Document to update in case it exists.
-     */
-    where: DocumentWhereUniqueInput
-    /**
-     * In case the Document found by the `where` argument doesn't exist, create a new Document with this data.
-     */
-    create: XOR<DocumentCreateInput, DocumentUncheckedCreateInput>
-    /**
-     * In case the Document was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<DocumentUpdateInput, DocumentUncheckedUpdateInput>
-  }
-
-  /**
-   * Document delete
-   */
-  export type DocumentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
-     * Filter which Document to delete.
-     */
-    where: DocumentWhereUniqueInput
-  }
-
-  /**
-   * Document deleteMany
-   */
-  export type DocumentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Documents to delete
-     */
-    where?: DocumentWhereInput
-    /**
-     * Limit how many Documents to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Document.versions
-   */
-  export type Document$versionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    where?: DocumentVersionWhereInput
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    cursor?: DocumentVersionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentVersionScalarFieldEnum | DocumentVersionScalarFieldEnum[]
-  }
-
-  /**
-   * Document.sourceLinks
-   */
-  export type Document$sourceLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    where?: DocumentLinkWhereInput
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    cursor?: DocumentLinkWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentLinkScalarFieldEnum | DocumentLinkScalarFieldEnum[]
-  }
-
-  /**
-   * Document.targetLinks
-   */
-  export type Document$targetLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    where?: DocumentLinkWhereInput
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    cursor?: DocumentLinkWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: DocumentLinkScalarFieldEnum | DocumentLinkScalarFieldEnum[]
-  }
-
-  /**
-   * Document without action
-   */
-  export type DocumentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model DocumentVersion
-   */
-
-  export type AggregateDocumentVersion = {
-    _count: DocumentVersionCountAggregateOutputType | null
-    _avg: DocumentVersionAvgAggregateOutputType | null
-    _sum: DocumentVersionSumAggregateOutputType | null
-    _min: DocumentVersionMinAggregateOutputType | null
-    _max: DocumentVersionMaxAggregateOutputType | null
-  }
-
-  export type DocumentVersionAvgAggregateOutputType = {
-    versionNumber: number | null
-    version: number | null
-  }
-
-  export type DocumentVersionSumAggregateOutputType = {
-    versionNumber: number | null
-    version: number | null
-  }
-
-  export type DocumentVersionMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    documentId: string | null
-    versionNumber: number | null
-    title: string | null
-    content: string | null
-    changeType: string | null
-    changeDescription: string | null
-    changedBy: string | null
-    restoredFrom: string | null
-    version: number | null
-    createdAt: Date | null
-  }
-
-  export type DocumentVersionMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    documentId: string | null
-    versionNumber: number | null
-    title: string | null
-    content: string | null
-    changeType: string | null
-    changeDescription: string | null
-    changedBy: string | null
-    restoredFrom: string | null
-    version: number | null
-    createdAt: Date | null
-  }
-
-  export type DocumentVersionCountAggregateOutputType = {
-    id: number
-    identityId: number
-    documentId: number
-    versionNumber: number
-    title: number
-    content: number
-    changeType: number
-    changeDescription: number
-    changedBy: number
-    restoredFrom: number
-    metadata: number
-    version: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type DocumentVersionAvgAggregateInputType = {
-    versionNumber?: true
-    version?: true
-  }
-
-  export type DocumentVersionSumAggregateInputType = {
-    versionNumber?: true
-    version?: true
-  }
-
-  export type DocumentVersionMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    documentId?: true
-    versionNumber?: true
-    title?: true
-    content?: true
-    changeType?: true
-    changeDescription?: true
-    changedBy?: true
-    restoredFrom?: true
-    version?: true
-    createdAt?: true
-  }
-
-  export type DocumentVersionMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    documentId?: true
-    versionNumber?: true
-    title?: true
-    content?: true
-    changeType?: true
-    changeDescription?: true
-    changedBy?: true
-    restoredFrom?: true
-    version?: true
-    createdAt?: true
-  }
-
-  export type DocumentVersionCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    documentId?: true
-    versionNumber?: true
-    title?: true
-    content?: true
-    changeType?: true
-    changeDescription?: true
-    changedBy?: true
-    restoredFrom?: true
-    metadata?: true
-    version?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type DocumentVersionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which DocumentVersion to aggregate.
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentVersions to fetch.
-     */
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: DocumentVersionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentVersions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentVersions.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned DocumentVersions
-    **/
-    _count?: true | DocumentVersionCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: DocumentVersionAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: DocumentVersionSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: DocumentVersionMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: DocumentVersionMaxAggregateInputType
-  }
-
-  export type GetDocumentVersionAggregateType<T extends DocumentVersionAggregateArgs> = {
-        [P in keyof T & keyof AggregateDocumentVersion]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateDocumentVersion[P]>
-      : GetScalarType<T[P], AggregateDocumentVersion[P]>
-  }
-
-
-
-
-  export type DocumentVersionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentVersionWhereInput
-    orderBy?: DocumentVersionOrderByWithAggregationInput | DocumentVersionOrderByWithAggregationInput[]
-    by: DocumentVersionScalarFieldEnum[] | DocumentVersionScalarFieldEnum
-    having?: DocumentVersionScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: DocumentVersionCountAggregateInputType | true
-    _avg?: DocumentVersionAvgAggregateInputType
-    _sum?: DocumentVersionSumAggregateInputType
-    _min?: DocumentVersionMinAggregateInputType
-    _max?: DocumentVersionMaxAggregateInputType
-  }
-
-  export type DocumentVersionGroupByOutputType = {
-    id: string
-    identityId: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription: string | null
-    changedBy: string
-    restoredFrom: string | null
-    metadata: JsonValue | null
-    version: number
-    createdAt: Date
-    _count: DocumentVersionCountAggregateOutputType | null
-    _avg: DocumentVersionAvgAggregateOutputType | null
-    _sum: DocumentVersionSumAggregateOutputType | null
-    _min: DocumentVersionMinAggregateOutputType | null
-    _max: DocumentVersionMaxAggregateOutputType | null
-  }
-
-  type GetDocumentVersionGroupByPayload<T extends DocumentVersionGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<DocumentVersionGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof DocumentVersionGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], DocumentVersionGroupByOutputType[P]>
-            : GetScalarType<T[P], DocumentVersionGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type DocumentVersionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    documentId?: boolean
-    versionNumber?: boolean
-    title?: boolean
-    content?: boolean
-    changeType?: boolean
-    changeDescription?: boolean
-    changedBy?: boolean
-    restoredFrom?: boolean
-    metadata?: boolean
-    version?: boolean
-    createdAt?: boolean
-    document?: boolean | DocumentDefaultArgs<ExtArgs>
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["documentVersion"]>
-
-  export type DocumentVersionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    documentId?: boolean
-    versionNumber?: boolean
-    title?: boolean
-    content?: boolean
-    changeType?: boolean
-    changeDescription?: boolean
-    changedBy?: boolean
-    restoredFrom?: boolean
-    metadata?: boolean
-    version?: boolean
-    createdAt?: boolean
-    document?: boolean | DocumentDefaultArgs<ExtArgs>
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["documentVersion"]>
-
-  export type DocumentVersionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    documentId?: boolean
-    versionNumber?: boolean
-    title?: boolean
-    content?: boolean
-    changeType?: boolean
-    changeDescription?: boolean
-    changedBy?: boolean
-    restoredFrom?: boolean
-    metadata?: boolean
-    version?: boolean
-    createdAt?: boolean
-    document?: boolean | DocumentDefaultArgs<ExtArgs>
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["documentVersion"]>
-
-  export type DocumentVersionSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    documentId?: boolean
-    versionNumber?: boolean
-    title?: boolean
-    content?: boolean
-    changeType?: boolean
-    changeDescription?: boolean
-    changedBy?: boolean
-    restoredFrom?: boolean
-    metadata?: boolean
-    version?: boolean
-    createdAt?: boolean
-  }
-
-  export type DocumentVersionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "documentId" | "versionNumber" | "title" | "content" | "changeType" | "changeDescription" | "changedBy" | "restoredFrom" | "metadata" | "version" | "createdAt", ExtArgs["result"]["documentVersion"]>
-  export type DocumentVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    document?: boolean | DocumentDefaultArgs<ExtArgs>
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type DocumentVersionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    document?: boolean | DocumentDefaultArgs<ExtArgs>
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type DocumentVersionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    document?: boolean | DocumentDefaultArgs<ExtArgs>
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $DocumentVersionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "DocumentVersion"
-    objects: {
-      document: Prisma.$DocumentPayload<ExtArgs>
-      identity: Prisma.$AccountPayload<ExtArgs>
-      account: Prisma.$AccountPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      documentId: string
-      versionNumber: number
-      title: string
-      content: string
-      changeType: string
-      changeDescription: string | null
-      changedBy: string
-      restoredFrom: string | null
-      metadata: Prisma.JsonValue | null
-      version: number
-      createdAt: Date
-    }, ExtArgs["result"]["documentVersion"]>
-    composites: {}
-  }
-
-  type DocumentVersionGetPayload<S extends boolean | null | undefined | DocumentVersionDefaultArgs> = $Result.GetResult<Prisma.$DocumentVersionPayload, S>
-
-  type DocumentVersionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<DocumentVersionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: DocumentVersionCountAggregateInputType | true
-    }
-
-  export interface DocumentVersionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DocumentVersion'], meta: { name: 'DocumentVersion' } }
-    /**
-     * Find zero or one DocumentVersion that matches the filter.
-     * @param {DocumentVersionFindUniqueArgs} args - Arguments to find a DocumentVersion
-     * @example
-     * // Get one DocumentVersion
-     * const documentVersion = await prisma.documentVersion.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends DocumentVersionFindUniqueArgs>(args: SelectSubset<T, DocumentVersionFindUniqueArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one DocumentVersion that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {DocumentVersionFindUniqueOrThrowArgs} args - Arguments to find a DocumentVersion
-     * @example
-     * // Get one DocumentVersion
-     * const documentVersion = await prisma.documentVersion.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends DocumentVersionFindUniqueOrThrowArgs>(args: SelectSubset<T, DocumentVersionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first DocumentVersion that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionFindFirstArgs} args - Arguments to find a DocumentVersion
-     * @example
-     * // Get one DocumentVersion
-     * const documentVersion = await prisma.documentVersion.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends DocumentVersionFindFirstArgs>(args?: SelectSubset<T, DocumentVersionFindFirstArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first DocumentVersion that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionFindFirstOrThrowArgs} args - Arguments to find a DocumentVersion
-     * @example
-     * // Get one DocumentVersion
-     * const documentVersion = await prisma.documentVersion.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends DocumentVersionFindFirstOrThrowArgs>(args?: SelectSubset<T, DocumentVersionFindFirstOrThrowArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more DocumentVersions that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all DocumentVersions
-     * const documentVersions = await prisma.documentVersion.findMany()
-     * 
-     * // Get first 10 DocumentVersions
-     * const documentVersions = await prisma.documentVersion.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const documentVersionWithIdOnly = await prisma.documentVersion.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends DocumentVersionFindManyArgs>(args?: SelectSubset<T, DocumentVersionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a DocumentVersion.
-     * @param {DocumentVersionCreateArgs} args - Arguments to create a DocumentVersion.
-     * @example
-     * // Create one DocumentVersion
-     * const DocumentVersion = await prisma.documentVersion.create({
-     *   data: {
-     *     // ... data to create a DocumentVersion
-     *   }
-     * })
-     * 
-     */
-    create<T extends DocumentVersionCreateArgs>(args: SelectSubset<T, DocumentVersionCreateArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many DocumentVersions.
-     * @param {DocumentVersionCreateManyArgs} args - Arguments to create many DocumentVersions.
-     * @example
-     * // Create many DocumentVersions
-     * const documentVersion = await prisma.documentVersion.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends DocumentVersionCreateManyArgs>(args?: SelectSubset<T, DocumentVersionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many DocumentVersions and returns the data saved in the database.
-     * @param {DocumentVersionCreateManyAndReturnArgs} args - Arguments to create many DocumentVersions.
-     * @example
-     * // Create many DocumentVersions
-     * const documentVersion = await prisma.documentVersion.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many DocumentVersions and only return the `id`
-     * const documentVersionWithIdOnly = await prisma.documentVersion.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends DocumentVersionCreateManyAndReturnArgs>(args?: SelectSubset<T, DocumentVersionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a DocumentVersion.
-     * @param {DocumentVersionDeleteArgs} args - Arguments to delete one DocumentVersion.
-     * @example
-     * // Delete one DocumentVersion
-     * const DocumentVersion = await prisma.documentVersion.delete({
-     *   where: {
-     *     // ... filter to delete one DocumentVersion
-     *   }
-     * })
-     * 
-     */
-    delete<T extends DocumentVersionDeleteArgs>(args: SelectSubset<T, DocumentVersionDeleteArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one DocumentVersion.
-     * @param {DocumentVersionUpdateArgs} args - Arguments to update one DocumentVersion.
-     * @example
-     * // Update one DocumentVersion
-     * const documentVersion = await prisma.documentVersion.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends DocumentVersionUpdateArgs>(args: SelectSubset<T, DocumentVersionUpdateArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more DocumentVersions.
-     * @param {DocumentVersionDeleteManyArgs} args - Arguments to filter DocumentVersions to delete.
-     * @example
-     * // Delete a few DocumentVersions
-     * const { count } = await prisma.documentVersion.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends DocumentVersionDeleteManyArgs>(args?: SelectSubset<T, DocumentVersionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more DocumentVersions.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many DocumentVersions
-     * const documentVersion = await prisma.documentVersion.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends DocumentVersionUpdateManyArgs>(args: SelectSubset<T, DocumentVersionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more DocumentVersions and returns the data updated in the database.
-     * @param {DocumentVersionUpdateManyAndReturnArgs} args - Arguments to update many DocumentVersions.
-     * @example
-     * // Update many DocumentVersions
-     * const documentVersion = await prisma.documentVersion.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more DocumentVersions and only return the `id`
-     * const documentVersionWithIdOnly = await prisma.documentVersion.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends DocumentVersionUpdateManyAndReturnArgs>(args: SelectSubset<T, DocumentVersionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one DocumentVersion.
-     * @param {DocumentVersionUpsertArgs} args - Arguments to update or create a DocumentVersion.
-     * @example
-     * // Update or create a DocumentVersion
-     * const documentVersion = await prisma.documentVersion.upsert({
-     *   create: {
-     *     // ... data to create a DocumentVersion
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the DocumentVersion we want to update
-     *   }
-     * })
-     */
-    upsert<T extends DocumentVersionUpsertArgs>(args: SelectSubset<T, DocumentVersionUpsertArgs<ExtArgs>>): Prisma__DocumentVersionClient<$Result.GetResult<Prisma.$DocumentVersionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of DocumentVersions.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionCountArgs} args - Arguments to filter DocumentVersions to count.
-     * @example
-     * // Count the number of DocumentVersions
-     * const count = await prisma.documentVersion.count({
-     *   where: {
-     *     // ... the filter for the DocumentVersions we want to count
-     *   }
-     * })
-    **/
-    count<T extends DocumentVersionCountArgs>(
-      args?: Subset<T, DocumentVersionCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], DocumentVersionCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a DocumentVersion.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends DocumentVersionAggregateArgs>(args: Subset<T, DocumentVersionAggregateArgs>): Prisma.PrismaPromise<GetDocumentVersionAggregateType<T>>
-
-    /**
-     * Group by DocumentVersion.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentVersionGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends DocumentVersionGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: DocumentVersionGroupByArgs['orderBy'] }
-        : { orderBy?: DocumentVersionGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, DocumentVersionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDocumentVersionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the DocumentVersion model
-   */
-  readonly fields: DocumentVersionFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for DocumentVersion.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__DocumentVersionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    document<T extends DocumentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DocumentDefaultArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    identity<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the DocumentVersion model
-   */
-  interface DocumentVersionFieldRefs {
-    readonly id: FieldRef<"DocumentVersion", 'String'>
-    readonly identityId: FieldRef<"DocumentVersion", 'String'>
-    readonly documentId: FieldRef<"DocumentVersion", 'String'>
-    readonly versionNumber: FieldRef<"DocumentVersion", 'Int'>
-    readonly title: FieldRef<"DocumentVersion", 'String'>
-    readonly content: FieldRef<"DocumentVersion", 'String'>
-    readonly changeType: FieldRef<"DocumentVersion", 'String'>
-    readonly changeDescription: FieldRef<"DocumentVersion", 'String'>
-    readonly changedBy: FieldRef<"DocumentVersion", 'String'>
-    readonly restoredFrom: FieldRef<"DocumentVersion", 'String'>
-    readonly metadata: FieldRef<"DocumentVersion", 'Json'>
-    readonly version: FieldRef<"DocumentVersion", 'Int'>
-    readonly createdAt: FieldRef<"DocumentVersion", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * DocumentVersion findUnique
-   */
-  export type DocumentVersionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentVersion to fetch.
-     */
-    where: DocumentVersionWhereUniqueInput
-  }
-
-  /**
-   * DocumentVersion findUniqueOrThrow
-   */
-  export type DocumentVersionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentVersion to fetch.
-     */
-    where: DocumentVersionWhereUniqueInput
-  }
-
-  /**
-   * DocumentVersion findFirst
-   */
-  export type DocumentVersionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentVersion to fetch.
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentVersions to fetch.
-     */
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for DocumentVersions.
-     */
-    cursor?: DocumentVersionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentVersions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentVersions.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of DocumentVersions.
-     */
-    distinct?: DocumentVersionScalarFieldEnum | DocumentVersionScalarFieldEnum[]
-  }
-
-  /**
-   * DocumentVersion findFirstOrThrow
-   */
-  export type DocumentVersionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentVersion to fetch.
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentVersions to fetch.
-     */
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for DocumentVersions.
-     */
-    cursor?: DocumentVersionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentVersions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentVersions.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of DocumentVersions.
-     */
-    distinct?: DocumentVersionScalarFieldEnum | DocumentVersionScalarFieldEnum[]
-  }
-
-  /**
-   * DocumentVersion findMany
-   */
-  export type DocumentVersionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentVersions to fetch.
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentVersions to fetch.
-     */
-    orderBy?: DocumentVersionOrderByWithRelationInput | DocumentVersionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing DocumentVersions.
-     */
-    cursor?: DocumentVersionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentVersions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentVersions.
-     */
-    skip?: number
-    distinct?: DocumentVersionScalarFieldEnum | DocumentVersionScalarFieldEnum[]
-  }
-
-  /**
-   * DocumentVersion create
-   */
-  export type DocumentVersionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * The data needed to create a DocumentVersion.
-     */
-    data: XOR<DocumentVersionCreateInput, DocumentVersionUncheckedCreateInput>
-  }
-
-  /**
-   * DocumentVersion createMany
-   */
-  export type DocumentVersionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many DocumentVersions.
-     */
-    data: DocumentVersionCreateManyInput | DocumentVersionCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * DocumentVersion createManyAndReturn
-   */
-  export type DocumentVersionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * The data used to create many DocumentVersions.
-     */
-    data: DocumentVersionCreateManyInput | DocumentVersionCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * DocumentVersion update
-   */
-  export type DocumentVersionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * The data needed to update a DocumentVersion.
-     */
-    data: XOR<DocumentVersionUpdateInput, DocumentVersionUncheckedUpdateInput>
-    /**
-     * Choose, which DocumentVersion to update.
-     */
-    where: DocumentVersionWhereUniqueInput
-  }
-
-  /**
-   * DocumentVersion updateMany
-   */
-  export type DocumentVersionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update DocumentVersions.
-     */
-    data: XOR<DocumentVersionUpdateManyMutationInput, DocumentVersionUncheckedUpdateManyInput>
-    /**
-     * Filter which DocumentVersions to update
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * Limit how many DocumentVersions to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * DocumentVersion updateManyAndReturn
-   */
-  export type DocumentVersionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * The data used to update DocumentVersions.
-     */
-    data: XOR<DocumentVersionUpdateManyMutationInput, DocumentVersionUncheckedUpdateManyInput>
-    /**
-     * Filter which DocumentVersions to update
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * Limit how many DocumentVersions to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * DocumentVersion upsert
-   */
-  export type DocumentVersionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * The filter to search for the DocumentVersion to update in case it exists.
-     */
-    where: DocumentVersionWhereUniqueInput
-    /**
-     * In case the DocumentVersion found by the `where` argument doesn't exist, create a new DocumentVersion with this data.
-     */
-    create: XOR<DocumentVersionCreateInput, DocumentVersionUncheckedCreateInput>
-    /**
-     * In case the DocumentVersion was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<DocumentVersionUpdateInput, DocumentVersionUncheckedUpdateInput>
-  }
-
-  /**
-   * DocumentVersion delete
-   */
-  export type DocumentVersionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-    /**
-     * Filter which DocumentVersion to delete.
-     */
-    where: DocumentVersionWhereUniqueInput
-  }
-
-  /**
-   * DocumentVersion deleteMany
-   */
-  export type DocumentVersionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which DocumentVersions to delete
-     */
-    where?: DocumentVersionWhereInput
-    /**
-     * Limit how many DocumentVersions to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * DocumentVersion without action
-   */
-  export type DocumentVersionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentVersion
-     */
-    select?: DocumentVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentVersion
-     */
-    omit?: DocumentVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentVersionInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model DocumentLink
-   */
-
-  export type AggregateDocumentLink = {
-    _count: DocumentLinkCountAggregateOutputType | null
-    _avg: DocumentLinkAvgAggregateOutputType | null
-    _sum: DocumentLinkSumAggregateOutputType | null
-    _min: DocumentLinkMinAggregateOutputType | null
-    _max: DocumentLinkMaxAggregateOutputType | null
-  }
-
-  export type DocumentLinkAvgAggregateOutputType = {
-    linkPosition: number | null
-    version: number | null
-  }
-
-  export type DocumentLinkSumAggregateOutputType = {
-    linkPosition: number | null
-    version: number | null
-  }
-
-  export type DocumentLinkMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    sourceDocumentId: string | null
-    targetDocumentId: string | null
-    linkText: string | null
-    linkPosition: number | null
-    isBroken: boolean | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type DocumentLinkMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    sourceDocumentId: string | null
-    targetDocumentId: string | null
-    linkText: string | null
-    linkPosition: number | null
-    isBroken: boolean | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type DocumentLinkCountAggregateOutputType = {
-    id: number
-    identityId: number
-    sourceDocumentId: number
-    targetDocumentId: number
-    linkText: number
-    linkPosition: number
-    isBroken: number
-    version: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type DocumentLinkAvgAggregateInputType = {
-    linkPosition?: true
-    version?: true
-  }
-
-  export type DocumentLinkSumAggregateInputType = {
-    linkPosition?: true
-    version?: true
-  }
-
-  export type DocumentLinkMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    sourceDocumentId?: true
-    targetDocumentId?: true
-    linkText?: true
-    linkPosition?: true
-    isBroken?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type DocumentLinkMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    sourceDocumentId?: true
-    targetDocumentId?: true
-    linkText?: true
-    linkPosition?: true
-    isBroken?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type DocumentLinkCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    sourceDocumentId?: true
-    targetDocumentId?: true
-    linkText?: true
-    linkPosition?: true
-    isBroken?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type DocumentLinkAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which DocumentLink to aggregate.
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentLinks to fetch.
-     */
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: DocumentLinkWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentLinks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentLinks.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned DocumentLinks
-    **/
-    _count?: true | DocumentLinkCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: DocumentLinkAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: DocumentLinkSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: DocumentLinkMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: DocumentLinkMaxAggregateInputType
-  }
-
-  export type GetDocumentLinkAggregateType<T extends DocumentLinkAggregateArgs> = {
-        [P in keyof T & keyof AggregateDocumentLink]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateDocumentLink[P]>
-      : GetScalarType<T[P], AggregateDocumentLink[P]>
-  }
-
-
-
-
-  export type DocumentLinkGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: DocumentLinkWhereInput
-    orderBy?: DocumentLinkOrderByWithAggregationInput | DocumentLinkOrderByWithAggregationInput[]
-    by: DocumentLinkScalarFieldEnum[] | DocumentLinkScalarFieldEnum
-    having?: DocumentLinkScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: DocumentLinkCountAggregateInputType | true
-    _avg?: DocumentLinkAvgAggregateInputType
-    _sum?: DocumentLinkSumAggregateInputType
-    _min?: DocumentLinkMinAggregateInputType
-    _max?: DocumentLinkMaxAggregateInputType
-  }
-
-  export type DocumentLinkGroupByOutputType = {
-    id: string
-    identityId: string
-    sourceDocumentId: string
-    targetDocumentId: string | null
-    linkText: string
-    linkPosition: number
-    isBroken: boolean
-    version: number
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: DocumentLinkCountAggregateOutputType | null
-    _avg: DocumentLinkAvgAggregateOutputType | null
-    _sum: DocumentLinkSumAggregateOutputType | null
-    _min: DocumentLinkMinAggregateOutputType | null
-    _max: DocumentLinkMaxAggregateOutputType | null
-  }
-
-  type GetDocumentLinkGroupByPayload<T extends DocumentLinkGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<DocumentLinkGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof DocumentLinkGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], DocumentLinkGroupByOutputType[P]>
-            : GetScalarType<T[P], DocumentLinkGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type DocumentLinkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    sourceDocumentId?: boolean
-    targetDocumentId?: boolean
-    linkText?: boolean
-    linkPosition?: boolean
-    isBroken?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    sourceDocument?: boolean | DocumentDefaultArgs<ExtArgs>
-    targetDocument?: boolean | DocumentLink$targetDocumentArgs<ExtArgs>
-  }, ExtArgs["result"]["documentLink"]>
-
-  export type DocumentLinkSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    sourceDocumentId?: boolean
-    targetDocumentId?: boolean
-    linkText?: boolean
-    linkPosition?: boolean
-    isBroken?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    sourceDocument?: boolean | DocumentDefaultArgs<ExtArgs>
-    targetDocument?: boolean | DocumentLink$targetDocumentArgs<ExtArgs>
-  }, ExtArgs["result"]["documentLink"]>
-
-  export type DocumentLinkSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    sourceDocumentId?: boolean
-    targetDocumentId?: boolean
-    linkText?: boolean
-    linkPosition?: boolean
-    isBroken?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    sourceDocument?: boolean | DocumentDefaultArgs<ExtArgs>
-    targetDocument?: boolean | DocumentLink$targetDocumentArgs<ExtArgs>
-  }, ExtArgs["result"]["documentLink"]>
-
-  export type DocumentLinkSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    sourceDocumentId?: boolean
-    targetDocumentId?: boolean
-    linkText?: boolean
-    linkPosition?: boolean
-    isBroken?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type DocumentLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "sourceDocumentId" | "targetDocumentId" | "linkText" | "linkPosition" | "isBroken" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["documentLink"]>
-  export type DocumentLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    sourceDocument?: boolean | DocumentDefaultArgs<ExtArgs>
-    targetDocument?: boolean | DocumentLink$targetDocumentArgs<ExtArgs>
-  }
-  export type DocumentLinkIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    sourceDocument?: boolean | DocumentDefaultArgs<ExtArgs>
-    targetDocument?: boolean | DocumentLink$targetDocumentArgs<ExtArgs>
-  }
-  export type DocumentLinkIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AccountDefaultArgs<ExtArgs>
-    sourceDocument?: boolean | DocumentDefaultArgs<ExtArgs>
-    targetDocument?: boolean | DocumentLink$targetDocumentArgs<ExtArgs>
-  }
-
-  export type $DocumentLinkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "DocumentLink"
-    objects: {
-      identity: Prisma.$AccountPayload<ExtArgs>
-      sourceDocument: Prisma.$DocumentPayload<ExtArgs>
-      targetDocument: Prisma.$DocumentPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      sourceDocumentId: string
-      targetDocumentId: string | null
-      linkText: string
-      linkPosition: number
-      isBroken: boolean
-      version: number
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["documentLink"]>
-    composites: {}
-  }
-
-  type DocumentLinkGetPayload<S extends boolean | null | undefined | DocumentLinkDefaultArgs> = $Result.GetResult<Prisma.$DocumentLinkPayload, S>
-
-  type DocumentLinkCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<DocumentLinkFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: DocumentLinkCountAggregateInputType | true
-    }
-
-  export interface DocumentLinkDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DocumentLink'], meta: { name: 'DocumentLink' } }
-    /**
-     * Find zero or one DocumentLink that matches the filter.
-     * @param {DocumentLinkFindUniqueArgs} args - Arguments to find a DocumentLink
-     * @example
-     * // Get one DocumentLink
-     * const documentLink = await prisma.documentLink.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends DocumentLinkFindUniqueArgs>(args: SelectSubset<T, DocumentLinkFindUniqueArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one DocumentLink that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {DocumentLinkFindUniqueOrThrowArgs} args - Arguments to find a DocumentLink
-     * @example
-     * // Get one DocumentLink
-     * const documentLink = await prisma.documentLink.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends DocumentLinkFindUniqueOrThrowArgs>(args: SelectSubset<T, DocumentLinkFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first DocumentLink that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkFindFirstArgs} args - Arguments to find a DocumentLink
-     * @example
-     * // Get one DocumentLink
-     * const documentLink = await prisma.documentLink.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends DocumentLinkFindFirstArgs>(args?: SelectSubset<T, DocumentLinkFindFirstArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first DocumentLink that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkFindFirstOrThrowArgs} args - Arguments to find a DocumentLink
-     * @example
-     * // Get one DocumentLink
-     * const documentLink = await prisma.documentLink.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends DocumentLinkFindFirstOrThrowArgs>(args?: SelectSubset<T, DocumentLinkFindFirstOrThrowArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more DocumentLinks that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all DocumentLinks
-     * const documentLinks = await prisma.documentLink.findMany()
-     * 
-     * // Get first 10 DocumentLinks
-     * const documentLinks = await prisma.documentLink.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const documentLinkWithIdOnly = await prisma.documentLink.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends DocumentLinkFindManyArgs>(args?: SelectSubset<T, DocumentLinkFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a DocumentLink.
-     * @param {DocumentLinkCreateArgs} args - Arguments to create a DocumentLink.
-     * @example
-     * // Create one DocumentLink
-     * const DocumentLink = await prisma.documentLink.create({
-     *   data: {
-     *     // ... data to create a DocumentLink
-     *   }
-     * })
-     * 
-     */
-    create<T extends DocumentLinkCreateArgs>(args: SelectSubset<T, DocumentLinkCreateArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many DocumentLinks.
-     * @param {DocumentLinkCreateManyArgs} args - Arguments to create many DocumentLinks.
-     * @example
-     * // Create many DocumentLinks
-     * const documentLink = await prisma.documentLink.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends DocumentLinkCreateManyArgs>(args?: SelectSubset<T, DocumentLinkCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many DocumentLinks and returns the data saved in the database.
-     * @param {DocumentLinkCreateManyAndReturnArgs} args - Arguments to create many DocumentLinks.
-     * @example
-     * // Create many DocumentLinks
-     * const documentLink = await prisma.documentLink.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many DocumentLinks and only return the `id`
-     * const documentLinkWithIdOnly = await prisma.documentLink.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends DocumentLinkCreateManyAndReturnArgs>(args?: SelectSubset<T, DocumentLinkCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a DocumentLink.
-     * @param {DocumentLinkDeleteArgs} args - Arguments to delete one DocumentLink.
-     * @example
-     * // Delete one DocumentLink
-     * const DocumentLink = await prisma.documentLink.delete({
-     *   where: {
-     *     // ... filter to delete one DocumentLink
-     *   }
-     * })
-     * 
-     */
-    delete<T extends DocumentLinkDeleteArgs>(args: SelectSubset<T, DocumentLinkDeleteArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one DocumentLink.
-     * @param {DocumentLinkUpdateArgs} args - Arguments to update one DocumentLink.
-     * @example
-     * // Update one DocumentLink
-     * const documentLink = await prisma.documentLink.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends DocumentLinkUpdateArgs>(args: SelectSubset<T, DocumentLinkUpdateArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more DocumentLinks.
-     * @param {DocumentLinkDeleteManyArgs} args - Arguments to filter DocumentLinks to delete.
-     * @example
-     * // Delete a few DocumentLinks
-     * const { count } = await prisma.documentLink.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends DocumentLinkDeleteManyArgs>(args?: SelectSubset<T, DocumentLinkDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more DocumentLinks.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many DocumentLinks
-     * const documentLink = await prisma.documentLink.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends DocumentLinkUpdateManyArgs>(args: SelectSubset<T, DocumentLinkUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more DocumentLinks and returns the data updated in the database.
-     * @param {DocumentLinkUpdateManyAndReturnArgs} args - Arguments to update many DocumentLinks.
-     * @example
-     * // Update many DocumentLinks
-     * const documentLink = await prisma.documentLink.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more DocumentLinks and only return the `id`
-     * const documentLinkWithIdOnly = await prisma.documentLink.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends DocumentLinkUpdateManyAndReturnArgs>(args: SelectSubset<T, DocumentLinkUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one DocumentLink.
-     * @param {DocumentLinkUpsertArgs} args - Arguments to update or create a DocumentLink.
-     * @example
-     * // Update or create a DocumentLink
-     * const documentLink = await prisma.documentLink.upsert({
-     *   create: {
-     *     // ... data to create a DocumentLink
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the DocumentLink we want to update
-     *   }
-     * })
-     */
-    upsert<T extends DocumentLinkUpsertArgs>(args: SelectSubset<T, DocumentLinkUpsertArgs<ExtArgs>>): Prisma__DocumentLinkClient<$Result.GetResult<Prisma.$DocumentLinkPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of DocumentLinks.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkCountArgs} args - Arguments to filter DocumentLinks to count.
-     * @example
-     * // Count the number of DocumentLinks
-     * const count = await prisma.documentLink.count({
-     *   where: {
-     *     // ... the filter for the DocumentLinks we want to count
-     *   }
-     * })
-    **/
-    count<T extends DocumentLinkCountArgs>(
-      args?: Subset<T, DocumentLinkCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], DocumentLinkCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a DocumentLink.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends DocumentLinkAggregateArgs>(args: Subset<T, DocumentLinkAggregateArgs>): Prisma.PrismaPromise<GetDocumentLinkAggregateType<T>>
-
-    /**
-     * Group by DocumentLink.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {DocumentLinkGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends DocumentLinkGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: DocumentLinkGroupByArgs['orderBy'] }
-        : { orderBy?: DocumentLinkGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, DocumentLinkGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDocumentLinkGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the DocumentLink model
-   */
-  readonly fields: DocumentLinkFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for DocumentLink.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__DocumentLinkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    identity<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    sourceDocument<T extends DocumentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DocumentDefaultArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    targetDocument<T extends DocumentLink$targetDocumentArgs<ExtArgs> = {}>(args?: Subset<T, DocumentLink$targetDocumentArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the DocumentLink model
-   */
-  interface DocumentLinkFieldRefs {
-    readonly id: FieldRef<"DocumentLink", 'String'>
-    readonly identityId: FieldRef<"DocumentLink", 'String'>
-    readonly sourceDocumentId: FieldRef<"DocumentLink", 'String'>
-    readonly targetDocumentId: FieldRef<"DocumentLink", 'String'>
-    readonly linkText: FieldRef<"DocumentLink", 'String'>
-    readonly linkPosition: FieldRef<"DocumentLink", 'Int'>
-    readonly isBroken: FieldRef<"DocumentLink", 'Boolean'>
-    readonly version: FieldRef<"DocumentLink", 'Int'>
-    readonly createdAt: FieldRef<"DocumentLink", 'DateTime'>
-    readonly updatedAt: FieldRef<"DocumentLink", 'DateTime'>
-    readonly deletedAt: FieldRef<"DocumentLink", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * DocumentLink findUnique
-   */
-  export type DocumentLinkFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentLink to fetch.
-     */
-    where: DocumentLinkWhereUniqueInput
-  }
-
-  /**
-   * DocumentLink findUniqueOrThrow
-   */
-  export type DocumentLinkFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentLink to fetch.
-     */
-    where: DocumentLinkWhereUniqueInput
-  }
-
-  /**
-   * DocumentLink findFirst
-   */
-  export type DocumentLinkFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentLink to fetch.
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentLinks to fetch.
-     */
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for DocumentLinks.
-     */
-    cursor?: DocumentLinkWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentLinks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentLinks.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of DocumentLinks.
-     */
-    distinct?: DocumentLinkScalarFieldEnum | DocumentLinkScalarFieldEnum[]
-  }
-
-  /**
-   * DocumentLink findFirstOrThrow
-   */
-  export type DocumentLinkFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentLink to fetch.
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentLinks to fetch.
-     */
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for DocumentLinks.
-     */
-    cursor?: DocumentLinkWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentLinks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentLinks.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of DocumentLinks.
-     */
-    distinct?: DocumentLinkScalarFieldEnum | DocumentLinkScalarFieldEnum[]
-  }
-
-  /**
-   * DocumentLink findMany
-   */
-  export type DocumentLinkFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * Filter, which DocumentLinks to fetch.
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of DocumentLinks to fetch.
-     */
-    orderBy?: DocumentLinkOrderByWithRelationInput | DocumentLinkOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing DocumentLinks.
-     */
-    cursor?: DocumentLinkWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` DocumentLinks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` DocumentLinks.
-     */
-    skip?: number
-    distinct?: DocumentLinkScalarFieldEnum | DocumentLinkScalarFieldEnum[]
-  }
-
-  /**
-   * DocumentLink create
-   */
-  export type DocumentLinkCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * The data needed to create a DocumentLink.
-     */
-    data: XOR<DocumentLinkCreateInput, DocumentLinkUncheckedCreateInput>
-  }
-
-  /**
-   * DocumentLink createMany
-   */
-  export type DocumentLinkCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many DocumentLinks.
-     */
-    data: DocumentLinkCreateManyInput | DocumentLinkCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * DocumentLink createManyAndReturn
-   */
-  export type DocumentLinkCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * The data used to create many DocumentLinks.
-     */
-    data: DocumentLinkCreateManyInput | DocumentLinkCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * DocumentLink update
-   */
-  export type DocumentLinkUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * The data needed to update a DocumentLink.
-     */
-    data: XOR<DocumentLinkUpdateInput, DocumentLinkUncheckedUpdateInput>
-    /**
-     * Choose, which DocumentLink to update.
-     */
-    where: DocumentLinkWhereUniqueInput
-  }
-
-  /**
-   * DocumentLink updateMany
-   */
-  export type DocumentLinkUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update DocumentLinks.
-     */
-    data: XOR<DocumentLinkUpdateManyMutationInput, DocumentLinkUncheckedUpdateManyInput>
-    /**
-     * Filter which DocumentLinks to update
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * Limit how many DocumentLinks to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * DocumentLink updateManyAndReturn
-   */
-  export type DocumentLinkUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * The data used to update DocumentLinks.
-     */
-    data: XOR<DocumentLinkUpdateManyMutationInput, DocumentLinkUncheckedUpdateManyInput>
-    /**
-     * Filter which DocumentLinks to update
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * Limit how many DocumentLinks to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * DocumentLink upsert
-   */
-  export type DocumentLinkUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * The filter to search for the DocumentLink to update in case it exists.
-     */
-    where: DocumentLinkWhereUniqueInput
-    /**
-     * In case the DocumentLink found by the `where` argument doesn't exist, create a new DocumentLink with this data.
-     */
-    create: XOR<DocumentLinkCreateInput, DocumentLinkUncheckedCreateInput>
-    /**
-     * In case the DocumentLink was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<DocumentLinkUpdateInput, DocumentLinkUncheckedUpdateInput>
-  }
-
-  /**
-   * DocumentLink delete
-   */
-  export type DocumentLinkDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-    /**
-     * Filter which DocumentLink to delete.
-     */
-    where: DocumentLinkWhereUniqueInput
-  }
-
-  /**
-   * DocumentLink deleteMany
-   */
-  export type DocumentLinkDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which DocumentLinks to delete
-     */
-    where?: DocumentLinkWhereInput
-    /**
-     * Limit how many DocumentLinks to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * DocumentLink.targetDocument
-   */
-  export type DocumentLink$targetDocumentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    where?: DocumentWhereInput
-  }
-
-  /**
-   * DocumentLink without action
-   */
-  export type DocumentLinkDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentLink
-     */
-    select?: DocumentLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the DocumentLink
-     */
-    omit?: DocumentLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentLinkInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model EditorWorkspace
    */
 
@@ -31708,7 +27509,7 @@ export namespace Prisma {
     sessionId: string | null
     workspaceId: string | null
     identityId: string | null
-    documentId: string | null
+    resourceId: string | null
     tabIndex: number | null
     tabType: string | null
     title: string | null
@@ -31726,7 +27527,7 @@ export namespace Prisma {
     sessionId: string | null
     workspaceId: string | null
     identityId: string | null
-    documentId: string | null
+    resourceId: string | null
     tabIndex: number | null
     tabType: string | null
     title: string | null
@@ -31744,7 +27545,7 @@ export namespace Prisma {
     sessionId: number
     workspaceId: number
     identityId: number
-    documentId: number
+    resourceId: number
     tabIndex: number
     tabType: number
     title: number
@@ -31775,7 +27576,7 @@ export namespace Prisma {
     sessionId?: true
     workspaceId?: true
     identityId?: true
-    documentId?: true
+    resourceId?: true
     tabIndex?: true
     tabType?: true
     title?: true
@@ -31793,7 +27594,7 @@ export namespace Prisma {
     sessionId?: true
     workspaceId?: true
     identityId?: true
-    documentId?: true
+    resourceId?: true
     tabIndex?: true
     tabType?: true
     title?: true
@@ -31811,7 +27612,7 @@ export namespace Prisma {
     sessionId?: true
     workspaceId?: true
     identityId?: true
-    documentId?: true
+    resourceId?: true
     tabIndex?: true
     tabType?: true
     title?: true
@@ -31917,7 +27718,7 @@ export namespace Prisma {
     sessionId: string
     workspaceId: string
     identityId: string
-    documentId: string | null
+    resourceId: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -31955,7 +27756,7 @@ export namespace Prisma {
     sessionId?: boolean
     workspaceId?: boolean
     identityId?: boolean
-    documentId?: boolean
+    resourceId?: boolean
     tabIndex?: boolean
     tabType?: boolean
     title?: boolean
@@ -31976,7 +27777,7 @@ export namespace Prisma {
     sessionId?: boolean
     workspaceId?: boolean
     identityId?: boolean
-    documentId?: boolean
+    resourceId?: boolean
     tabIndex?: boolean
     tabType?: boolean
     title?: boolean
@@ -31997,7 +27798,7 @@ export namespace Prisma {
     sessionId?: boolean
     workspaceId?: boolean
     identityId?: boolean
-    documentId?: boolean
+    resourceId?: boolean
     tabIndex?: boolean
     tabType?: boolean
     title?: boolean
@@ -32018,7 +27819,7 @@ export namespace Prisma {
     sessionId?: boolean
     workspaceId?: boolean
     identityId?: boolean
-    documentId?: boolean
+    resourceId?: boolean
     tabIndex?: boolean
     tabType?: boolean
     title?: boolean
@@ -32031,7 +27832,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type EditorWorkspaceSessionGroupTabOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupId" | "sessionId" | "workspaceId" | "identityId" | "documentId" | "tabIndex" | "tabType" | "title" | "viewState" | "isPinned" | "isActive" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["editorWorkspaceSessionGroupTab"]>
+  export type EditorWorkspaceSessionGroupTabOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupId" | "sessionId" | "workspaceId" | "identityId" | "resourceId" | "tabIndex" | "tabType" | "title" | "viewState" | "isPinned" | "isActive" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["editorWorkspaceSessionGroupTab"]>
   export type EditorWorkspaceSessionGroupTabInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
     group?: boolean | EditorWorkspaceSessionGroupDefaultArgs<ExtArgs>
@@ -32057,7 +27858,7 @@ export namespace Prisma {
       sessionId: string
       workspaceId: string
       identityId: string
-      documentId: string | null
+      resourceId: string | null
       tabIndex: number
       tabType: string
       title: string
@@ -32498,7 +28299,7 @@ export namespace Prisma {
     readonly sessionId: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
     readonly workspaceId: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
     readonly identityId: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
-    readonly documentId: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
+    readonly resourceId: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
     readonly tabIndex: FieldRef<"EditorWorkspaceSessionGroupTab", 'Int'>
     readonly tabType: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
     readonly title: FieldRef<"EditorWorkspaceSessionGroupTab", 'String'>
@@ -35909,6 +31710,7 @@ export namespace Prisma {
   }
 
   export type KeyResultAvgAggregateOutputType = {
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     weight: number | null
@@ -35917,6 +31719,7 @@ export namespace Prisma {
   }
 
   export type KeyResultSumAggregateOutputType = {
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     weight: number | null
@@ -35932,6 +31735,7 @@ export namespace Prisma {
     description: string | null
     valueType: string | null
     aggregationMethod: string | null
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     unit: string | null
@@ -35951,6 +31755,7 @@ export namespace Prisma {
     description: string | null
     valueType: string | null
     aggregationMethod: string | null
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     unit: string | null
@@ -35970,6 +31775,7 @@ export namespace Prisma {
     description: number
     valueType: number
     aggregationMethod: number
+    initialValue: number
     targetValue: number
     currentValue: number
     unit: number
@@ -35984,6 +31790,7 @@ export namespace Prisma {
 
 
   export type KeyResultAvgAggregateInputType = {
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     weight?: true
@@ -35992,6 +31799,7 @@ export namespace Prisma {
   }
 
   export type KeyResultSumAggregateInputType = {
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     weight?: true
@@ -36007,6 +31815,7 @@ export namespace Prisma {
     description?: true
     valueType?: true
     aggregationMethod?: true
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     unit?: true
@@ -36026,6 +31835,7 @@ export namespace Prisma {
     description?: true
     valueType?: true
     aggregationMethod?: true
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     unit?: true
@@ -36045,6 +31855,7 @@ export namespace Prisma {
     description?: true
     valueType?: true
     aggregationMethod?: true
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     unit?: true
@@ -36151,6 +31962,7 @@ export namespace Prisma {
     description: string | null
     valueType: string
     aggregationMethod: string
+    initialValue: number
     targetValue: number
     currentValue: number
     unit: string | null
@@ -36189,6 +32001,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -36213,6 +32026,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -36234,6 +32048,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -36255,6 +32070,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -36266,7 +32082,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type KeyResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "goalId" | "title" | "description" | "valueType" | "aggregationMethod" | "targetValue" | "currentValue" | "unit" | "weight" | "order" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["keyResult"]>
+  export type KeyResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "goalId" | "title" | "description" | "valueType" | "aggregationMethod" | "initialValue" | "targetValue" | "currentValue" | "unit" | "weight" | "order" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["keyResult"]>
   export type KeyResultInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     identity?: boolean | AccountDefaultArgs<ExtArgs>
     goal?: boolean | GoalDefaultArgs<ExtArgs>
@@ -36317,6 +32133,10 @@ export namespace Prisma {
        * 聚合方法（sum/average/latest）
        */
       aggregationMethod: string
+      /**
+       * 起始值
+       */
+      initialValue: number
       /**
        * 目标值
        */
@@ -36775,6 +32595,7 @@ export namespace Prisma {
     readonly description: FieldRef<"KeyResult", 'String'>
     readonly valueType: FieldRef<"KeyResult", 'String'>
     readonly aggregationMethod: FieldRef<"KeyResult", 'String'>
+    readonly initialValue: FieldRef<"KeyResult", 'Float'>
     readonly targetValue: FieldRef<"KeyResult", 'Float'>
     readonly currentValue: FieldRef<"KeyResult", 'Float'>
     readonly unit: FieldRef<"KeyResult", 'String'>
@@ -60257,6 +56078,7 @@ export namespace Prisma {
     identityId: string | null
     bestTimeSlots: string | null
     worstTimeSlots: string | null
+    globalReminderEnabled: boolean | null
     globalSmartFrequency: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -60267,6 +56089,7 @@ export namespace Prisma {
     identityId: string | null
     bestTimeSlots: string | null
     worstTimeSlots: string | null
+    globalReminderEnabled: boolean | null
     globalSmartFrequency: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -60277,6 +56100,7 @@ export namespace Prisma {
     identityId: number
     bestTimeSlots: number
     worstTimeSlots: number
+    globalReminderEnabled: number
     globalSmartFrequency: number
     createdAt: number
     updatedAt: number
@@ -60289,6 +56113,7 @@ export namespace Prisma {
     identityId?: true
     bestTimeSlots?: true
     worstTimeSlots?: true
+    globalReminderEnabled?: true
     globalSmartFrequency?: true
     createdAt?: true
     updatedAt?: true
@@ -60299,6 +56124,7 @@ export namespace Prisma {
     identityId?: true
     bestTimeSlots?: true
     worstTimeSlots?: true
+    globalReminderEnabled?: true
     globalSmartFrequency?: true
     createdAt?: true
     updatedAt?: true
@@ -60309,6 +56135,7 @@ export namespace Prisma {
     identityId?: true
     bestTimeSlots?: true
     worstTimeSlots?: true
+    globalReminderEnabled?: true
     globalSmartFrequency?: true
     createdAt?: true
     updatedAt?: true
@@ -60392,6 +56219,7 @@ export namespace Prisma {
     identityId: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled: boolean
     globalSmartFrequency: boolean
     createdAt: Date
     updatedAt: Date
@@ -60419,6 +56247,7 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -60430,6 +56259,7 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -60441,6 +56271,7 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -60452,12 +56283,13 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserReminderPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "bestTimeSlots" | "worstTimeSlots" | "globalSmartFrequency" | "createdAt" | "updatedAt", ExtArgs["result"]["userReminderPreference"]>
+  export type UserReminderPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "bestTimeSlots" | "worstTimeSlots" | "globalReminderEnabled" | "globalSmartFrequency" | "createdAt" | "updatedAt", ExtArgs["result"]["userReminderPreference"]>
   export type UserReminderPreferenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }
@@ -60484,6 +56316,7 @@ export namespace Prisma {
        * JSON: TimeSlotDTO[]
        */
       worstTimeSlots: string
+      globalReminderEnabled: boolean
       globalSmartFrequency: boolean
       createdAt: Date
       updatedAt: Date
@@ -60915,6 +56748,7 @@ export namespace Prisma {
     readonly identityId: FieldRef<"UserReminderPreference", 'String'>
     readonly bestTimeSlots: FieldRef<"UserReminderPreference", 'String'>
     readonly worstTimeSlots: FieldRef<"UserReminderPreference", 'String'>
+    readonly globalReminderEnabled: FieldRef<"UserReminderPreference", 'Boolean'>
     readonly globalSmartFrequency: FieldRef<"UserReminderPreference", 'Boolean'>
     readonly createdAt: FieldRef<"UserReminderPreference", 'DateTime'>
     readonly updatedAt: FieldRef<"UserReminderPreference", 'DateTime'>
@@ -86936,12 +82770,12 @@ export namespace Prisma {
     id: 'id',
     identityId: 'identityId',
     topic: 'topic',
-    documentCount: 'documentCount',
+    resourceCount: 'resourceCount',
     targetAudience: 'targetAudience',
     folderPath: 'folderPath',
     status: 'status',
     progress: 'progress',
-    generatedDocumentIds: 'generatedDocumentIds',
+    generatedResourceIds: 'generatedResourceIds',
     error: 'error',
     createdAt: 'createdAt',
     completedAt: 'completedAt'
@@ -87041,63 +82875,6 @@ export namespace Prisma {
   export type AuthSessionScalarFieldEnum = (typeof AuthSessionScalarFieldEnum)[keyof typeof AuthSessionScalarFieldEnum]
 
 
-  export const DocumentScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    title: 'title',
-    content: 'content',
-    folderPath: 'folderPath',
-    tags: 'tags',
-    status: 'status',
-    currentVersion: 'currentVersion',
-    lastVersionedAt: 'lastVersionedAt',
-    lastEditedAt: 'lastEditedAt',
-    editSessionId: 'editSessionId',
-    version: 'version',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type DocumentScalarFieldEnum = (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum]
-
-
-  export const DocumentVersionScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    documentId: 'documentId',
-    versionNumber: 'versionNumber',
-    title: 'title',
-    content: 'content',
-    changeType: 'changeType',
-    changeDescription: 'changeDescription',
-    changedBy: 'changedBy',
-    restoredFrom: 'restoredFrom',
-    metadata: 'metadata',
-    version: 'version',
-    createdAt: 'createdAt'
-  };
-
-  export type DocumentVersionScalarFieldEnum = (typeof DocumentVersionScalarFieldEnum)[keyof typeof DocumentVersionScalarFieldEnum]
-
-
-  export const DocumentLinkScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    sourceDocumentId: 'sourceDocumentId',
-    targetDocumentId: 'targetDocumentId',
-    linkText: 'linkText',
-    linkPosition: 'linkPosition',
-    isBroken: 'isBroken',
-    version: 'version',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type DocumentLinkScalarFieldEnum = (typeof DocumentLinkScalarFieldEnum)[keyof typeof DocumentLinkScalarFieldEnum]
-
-
   export const EditorWorkspaceScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
@@ -87157,7 +82934,7 @@ export namespace Prisma {
     sessionId: 'sessionId',
     workspaceId: 'workspaceId',
     identityId: 'identityId',
-    documentId: 'documentId',
+    resourceId: 'resourceId',
     tabIndex: 'tabIndex',
     tabType: 'tabType',
     title: 'title',
@@ -87233,6 +83010,7 @@ export namespace Prisma {
     description: 'description',
     valueType: 'valueType',
     aggregationMethod: 'aggregationMethod',
+    initialValue: 'initialValue',
     targetValue: 'targetValue',
     currentValue: 'currentValue',
     unit: 'unit',
@@ -87619,6 +83397,7 @@ export namespace Prisma {
     identityId: 'identityId',
     bestTimeSlots: 'bestTimeSlots',
     worstTimeSlots: 'worstTimeSlots',
+    globalReminderEnabled: 'globalReminderEnabled',
     globalSmartFrequency: 'globalSmartFrequency',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -88237,8 +84016,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Account"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-    documents?: DocumentListRelationFilter
-    documentVersions?: DocumentVersionListRelationFilter
     editorWorkspaces?: EditorWorkspaceListRelationFilter
     editorWorkspaceSessions?: EditorWorkspaceSessionListRelationFilter
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupListRelationFilter
@@ -88282,8 +84059,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseListRelationFilter
     notificationChannels?: NotificationChannelListRelationFilter
     notificationHistory?: NotificationHistoryListRelationFilter
-    documentVersionsByIdentity?: DocumentVersionListRelationFilter
-    documentLinks?: DocumentLinkListRelationFilter
     aiMessages?: AiMessageListRelationFilter
     folders?: FolderListRelationFilter
     resources?: ResourceListRelationFilter
@@ -88309,8 +84084,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     identity?: AuthIdentityOrderByWithRelationInput
-    documents?: DocumentOrderByRelationAggregateInput
-    documentVersions?: DocumentVersionOrderByRelationAggregateInput
     editorWorkspaces?: EditorWorkspaceOrderByRelationAggregateInput
     editorWorkspaceSessions?: EditorWorkspaceSessionOrderByRelationAggregateInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupOrderByRelationAggregateInput
@@ -88354,8 +84127,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseOrderByRelationAggregateInput
     notificationChannels?: NotificationChannelOrderByRelationAggregateInput
     notificationHistory?: NotificationHistoryOrderByRelationAggregateInput
-    documentVersionsByIdentity?: DocumentVersionOrderByRelationAggregateInput
-    documentLinks?: DocumentLinkOrderByRelationAggregateInput
     aiMessages?: AiMessageOrderByRelationAggregateInput
     folders?: FolderOrderByRelationAggregateInput
     resources?: ResourceOrderByRelationAggregateInput
@@ -88384,8 +84155,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Account"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-    documents?: DocumentListRelationFilter
-    documentVersions?: DocumentVersionListRelationFilter
     editorWorkspaces?: EditorWorkspaceListRelationFilter
     editorWorkspaceSessions?: EditorWorkspaceSessionListRelationFilter
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupListRelationFilter
@@ -88429,8 +84198,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseListRelationFilter
     notificationChannels?: NotificationChannelListRelationFilter
     notificationHistory?: NotificationHistoryListRelationFilter
-    documentVersionsByIdentity?: DocumentVersionListRelationFilter
-    documentLinks?: DocumentLinkListRelationFilter
     aiMessages?: AiMessageListRelationFilter
     folders?: FolderListRelationFilter
     resources?: ResourceListRelationFilter
@@ -88947,12 +84714,12 @@ export namespace Prisma {
     id?: StringFilter<"KnowledgeGenerationTask"> | string
     identityId?: StringFilter<"KnowledgeGenerationTask"> | string
     topic?: StringFilter<"KnowledgeGenerationTask"> | string
-    documentCount?: IntFilter<"KnowledgeGenerationTask"> | number
+    resourceCount?: IntFilter<"KnowledgeGenerationTask"> | number
     targetAudience?: StringNullableFilter<"KnowledgeGenerationTask"> | string | null
     folderPath?: StringFilter<"KnowledgeGenerationTask"> | string
     status?: StringFilter<"KnowledgeGenerationTask"> | string
     progress?: IntFilter<"KnowledgeGenerationTask"> | number
-    generatedDocumentIds?: StringNullableListFilter<"KnowledgeGenerationTask">
+    generatedResourceIds?: StringNullableListFilter<"KnowledgeGenerationTask">
     error?: StringNullableFilter<"KnowledgeGenerationTask"> | string | null
     createdAt?: DateTimeFilter<"KnowledgeGenerationTask"> | Date | string
     completedAt?: DateTimeNullableFilter<"KnowledgeGenerationTask"> | Date | string | null
@@ -88962,12 +84729,12 @@ export namespace Prisma {
     id?: SortOrder
     identityId?: SortOrder
     topic?: SortOrder
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     targetAudience?: SortOrderInput | SortOrder
     folderPath?: SortOrder
     status?: SortOrder
     progress?: SortOrder
-    generatedDocumentIds?: SortOrder
+    generatedResourceIds?: SortOrder
     error?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
@@ -88980,12 +84747,12 @@ export namespace Prisma {
     NOT?: KnowledgeGenerationTaskWhereInput | KnowledgeGenerationTaskWhereInput[]
     identityId?: StringFilter<"KnowledgeGenerationTask"> | string
     topic?: StringFilter<"KnowledgeGenerationTask"> | string
-    documentCount?: IntFilter<"KnowledgeGenerationTask"> | number
+    resourceCount?: IntFilter<"KnowledgeGenerationTask"> | number
     targetAudience?: StringNullableFilter<"KnowledgeGenerationTask"> | string | null
     folderPath?: StringFilter<"KnowledgeGenerationTask"> | string
     status?: StringFilter<"KnowledgeGenerationTask"> | string
     progress?: IntFilter<"KnowledgeGenerationTask"> | number
-    generatedDocumentIds?: StringNullableListFilter<"KnowledgeGenerationTask">
+    generatedResourceIds?: StringNullableListFilter<"KnowledgeGenerationTask">
     error?: StringNullableFilter<"KnowledgeGenerationTask"> | string | null
     createdAt?: DateTimeFilter<"KnowledgeGenerationTask"> | Date | string
     completedAt?: DateTimeNullableFilter<"KnowledgeGenerationTask"> | Date | string | null
@@ -88995,12 +84762,12 @@ export namespace Prisma {
     id?: SortOrder
     identityId?: SortOrder
     topic?: SortOrder
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     targetAudience?: SortOrderInput | SortOrder
     folderPath?: SortOrder
     status?: SortOrder
     progress?: SortOrder
-    generatedDocumentIds?: SortOrder
+    generatedResourceIds?: SortOrder
     error?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
@@ -89018,12 +84785,12 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"KnowledgeGenerationTask"> | string
     identityId?: StringWithAggregatesFilter<"KnowledgeGenerationTask"> | string
     topic?: StringWithAggregatesFilter<"KnowledgeGenerationTask"> | string
-    documentCount?: IntWithAggregatesFilter<"KnowledgeGenerationTask"> | number
+    resourceCount?: IntWithAggregatesFilter<"KnowledgeGenerationTask"> | number
     targetAudience?: StringNullableWithAggregatesFilter<"KnowledgeGenerationTask"> | string | null
     folderPath?: StringWithAggregatesFilter<"KnowledgeGenerationTask"> | string
     status?: StringWithAggregatesFilter<"KnowledgeGenerationTask"> | string
     progress?: IntWithAggregatesFilter<"KnowledgeGenerationTask"> | number
-    generatedDocumentIds?: StringNullableListFilter<"KnowledgeGenerationTask">
+    generatedResourceIds?: StringNullableListFilter<"KnowledgeGenerationTask">
     error?: StringNullableWithAggregatesFilter<"KnowledgeGenerationTask"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"KnowledgeGenerationTask"> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeGenerationTask"> | Date | string | null
@@ -89506,318 +85273,6 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableWithAggregatesFilter<"AuthSession"> | Date | string | null
   }
 
-  export type DocumentWhereInput = {
-    AND?: DocumentWhereInput | DocumentWhereInput[]
-    OR?: DocumentWhereInput[]
-    NOT?: DocumentWhereInput | DocumentWhereInput[]
-    id?: StringFilter<"Document"> | string
-    identityId?: StringFilter<"Document"> | string
-    title?: StringFilter<"Document"> | string
-    content?: StringFilter<"Document"> | string
-    folderPath?: StringFilter<"Document"> | string
-    tags?: StringNullableListFilter<"Document">
-    status?: StringFilter<"Document"> | string
-    currentVersion?: IntFilter<"Document"> | number
-    lastVersionedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    lastEditedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    editSessionId?: StringNullableFilter<"Document"> | string | null
-    version?: IntFilter<"Document"> | number
-    createdAt?: DateTimeFilter<"Document"> | Date | string
-    updatedAt?: DateTimeFilter<"Document"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    versions?: DocumentVersionListRelationFilter
-    sourceLinks?: DocumentLinkListRelationFilter
-    targetLinks?: DocumentLinkListRelationFilter
-  }
-
-  export type DocumentOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    folderPath?: SortOrder
-    tags?: SortOrder
-    status?: SortOrder
-    currentVersion?: SortOrder
-    lastVersionedAt?: SortOrderInput | SortOrder
-    lastEditedAt?: SortOrderInput | SortOrder
-    editSessionId?: SortOrderInput | SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    account?: AccountOrderByWithRelationInput
-    versions?: DocumentVersionOrderByRelationAggregateInput
-    sourceLinks?: DocumentLinkOrderByRelationAggregateInput
-    targetLinks?: DocumentLinkOrderByRelationAggregateInput
-  }
-
-  export type DocumentWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: DocumentWhereInput | DocumentWhereInput[]
-    OR?: DocumentWhereInput[]
-    NOT?: DocumentWhereInput | DocumentWhereInput[]
-    identityId?: StringFilter<"Document"> | string
-    title?: StringFilter<"Document"> | string
-    content?: StringFilter<"Document"> | string
-    folderPath?: StringFilter<"Document"> | string
-    tags?: StringNullableListFilter<"Document">
-    status?: StringFilter<"Document"> | string
-    currentVersion?: IntFilter<"Document"> | number
-    lastVersionedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    lastEditedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    editSessionId?: StringNullableFilter<"Document"> | string | null
-    version?: IntFilter<"Document"> | number
-    createdAt?: DateTimeFilter<"Document"> | Date | string
-    updatedAt?: DateTimeFilter<"Document"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    versions?: DocumentVersionListRelationFilter
-    sourceLinks?: DocumentLinkListRelationFilter
-    targetLinks?: DocumentLinkListRelationFilter
-  }, "id">
-
-  export type DocumentOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    folderPath?: SortOrder
-    tags?: SortOrder
-    status?: SortOrder
-    currentVersion?: SortOrder
-    lastVersionedAt?: SortOrderInput | SortOrder
-    lastEditedAt?: SortOrderInput | SortOrder
-    editSessionId?: SortOrderInput | SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: DocumentCountOrderByAggregateInput
-    _avg?: DocumentAvgOrderByAggregateInput
-    _max?: DocumentMaxOrderByAggregateInput
-    _min?: DocumentMinOrderByAggregateInput
-    _sum?: DocumentSumOrderByAggregateInput
-  }
-
-  export type DocumentScalarWhereWithAggregatesInput = {
-    AND?: DocumentScalarWhereWithAggregatesInput | DocumentScalarWhereWithAggregatesInput[]
-    OR?: DocumentScalarWhereWithAggregatesInput[]
-    NOT?: DocumentScalarWhereWithAggregatesInput | DocumentScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Document"> | string
-    identityId?: StringWithAggregatesFilter<"Document"> | string
-    title?: StringWithAggregatesFilter<"Document"> | string
-    content?: StringWithAggregatesFilter<"Document"> | string
-    folderPath?: StringWithAggregatesFilter<"Document"> | string
-    tags?: StringNullableListFilter<"Document">
-    status?: StringWithAggregatesFilter<"Document"> | string
-    currentVersion?: IntWithAggregatesFilter<"Document"> | number
-    lastVersionedAt?: DateTimeNullableWithAggregatesFilter<"Document"> | Date | string | null
-    lastEditedAt?: DateTimeNullableWithAggregatesFilter<"Document"> | Date | string | null
-    editSessionId?: StringNullableWithAggregatesFilter<"Document"> | string | null
-    version?: IntWithAggregatesFilter<"Document"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"Document"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Document"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"Document"> | Date | string | null
-  }
-
-  export type DocumentVersionWhereInput = {
-    AND?: DocumentVersionWhereInput | DocumentVersionWhereInput[]
-    OR?: DocumentVersionWhereInput[]
-    NOT?: DocumentVersionWhereInput | DocumentVersionWhereInput[]
-    id?: StringFilter<"DocumentVersion"> | string
-    identityId?: StringFilter<"DocumentVersion"> | string
-    documentId?: StringFilter<"DocumentVersion"> | string
-    versionNumber?: IntFilter<"DocumentVersion"> | number
-    title?: StringFilter<"DocumentVersion"> | string
-    content?: StringFilter<"DocumentVersion"> | string
-    changeType?: StringFilter<"DocumentVersion"> | string
-    changeDescription?: StringNullableFilter<"DocumentVersion"> | string | null
-    changedBy?: StringFilter<"DocumentVersion"> | string
-    restoredFrom?: StringNullableFilter<"DocumentVersion"> | string | null
-    metadata?: JsonNullableFilter<"DocumentVersion">
-    version?: IntFilter<"DocumentVersion"> | number
-    createdAt?: DateTimeFilter<"DocumentVersion"> | Date | string
-    document?: XOR<DocumentScalarRelationFilter, DocumentWhereInput>
-    identity?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }
-
-  export type DocumentVersionOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    documentId?: SortOrder
-    versionNumber?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    changeType?: SortOrder
-    changeDescription?: SortOrderInput | SortOrder
-    changedBy?: SortOrder
-    restoredFrom?: SortOrderInput | SortOrder
-    metadata?: SortOrderInput | SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    document?: DocumentOrderByWithRelationInput
-    identity?: AccountOrderByWithRelationInput
-    account?: AccountOrderByWithRelationInput
-  }
-
-  export type DocumentVersionWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: DocumentVersionWhereInput | DocumentVersionWhereInput[]
-    OR?: DocumentVersionWhereInput[]
-    NOT?: DocumentVersionWhereInput | DocumentVersionWhereInput[]
-    identityId?: StringFilter<"DocumentVersion"> | string
-    documentId?: StringFilter<"DocumentVersion"> | string
-    versionNumber?: IntFilter<"DocumentVersion"> | number
-    title?: StringFilter<"DocumentVersion"> | string
-    content?: StringFilter<"DocumentVersion"> | string
-    changeType?: StringFilter<"DocumentVersion"> | string
-    changeDescription?: StringNullableFilter<"DocumentVersion"> | string | null
-    changedBy?: StringFilter<"DocumentVersion"> | string
-    restoredFrom?: StringNullableFilter<"DocumentVersion"> | string | null
-    metadata?: JsonNullableFilter<"DocumentVersion">
-    version?: IntFilter<"DocumentVersion"> | number
-    createdAt?: DateTimeFilter<"DocumentVersion"> | Date | string
-    document?: XOR<DocumentScalarRelationFilter, DocumentWhereInput>
-    identity?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id">
-
-  export type DocumentVersionOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    documentId?: SortOrder
-    versionNumber?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    changeType?: SortOrder
-    changeDescription?: SortOrderInput | SortOrder
-    changedBy?: SortOrder
-    restoredFrom?: SortOrderInput | SortOrder
-    metadata?: SortOrderInput | SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    _count?: DocumentVersionCountOrderByAggregateInput
-    _avg?: DocumentVersionAvgOrderByAggregateInput
-    _max?: DocumentVersionMaxOrderByAggregateInput
-    _min?: DocumentVersionMinOrderByAggregateInput
-    _sum?: DocumentVersionSumOrderByAggregateInput
-  }
-
-  export type DocumentVersionScalarWhereWithAggregatesInput = {
-    AND?: DocumentVersionScalarWhereWithAggregatesInput | DocumentVersionScalarWhereWithAggregatesInput[]
-    OR?: DocumentVersionScalarWhereWithAggregatesInput[]
-    NOT?: DocumentVersionScalarWhereWithAggregatesInput | DocumentVersionScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    identityId?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    documentId?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    versionNumber?: IntWithAggregatesFilter<"DocumentVersion"> | number
-    title?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    content?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    changeType?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    changeDescription?: StringNullableWithAggregatesFilter<"DocumentVersion"> | string | null
-    changedBy?: StringWithAggregatesFilter<"DocumentVersion"> | string
-    restoredFrom?: StringNullableWithAggregatesFilter<"DocumentVersion"> | string | null
-    metadata?: JsonNullableWithAggregatesFilter<"DocumentVersion">
-    version?: IntWithAggregatesFilter<"DocumentVersion"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"DocumentVersion"> | Date | string
-  }
-
-  export type DocumentLinkWhereInput = {
-    AND?: DocumentLinkWhereInput | DocumentLinkWhereInput[]
-    OR?: DocumentLinkWhereInput[]
-    NOT?: DocumentLinkWhereInput | DocumentLinkWhereInput[]
-    id?: StringFilter<"DocumentLink"> | string
-    identityId?: StringFilter<"DocumentLink"> | string
-    sourceDocumentId?: StringFilter<"DocumentLink"> | string
-    targetDocumentId?: StringNullableFilter<"DocumentLink"> | string | null
-    linkText?: StringFilter<"DocumentLink"> | string
-    linkPosition?: IntFilter<"DocumentLink"> | number
-    isBroken?: BoolFilter<"DocumentLink"> | boolean
-    version?: IntFilter<"DocumentLink"> | number
-    createdAt?: DateTimeFilter<"DocumentLink"> | Date | string
-    updatedAt?: DateTimeFilter<"DocumentLink"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"DocumentLink"> | Date | string | null
-    identity?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    sourceDocument?: XOR<DocumentScalarRelationFilter, DocumentWhereInput>
-    targetDocument?: XOR<DocumentNullableScalarRelationFilter, DocumentWhereInput> | null
-  }
-
-  export type DocumentLinkOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sourceDocumentId?: SortOrder
-    targetDocumentId?: SortOrderInput | SortOrder
-    linkText?: SortOrder
-    linkPosition?: SortOrder
-    isBroken?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    identity?: AccountOrderByWithRelationInput
-    sourceDocument?: DocumentOrderByWithRelationInput
-    targetDocument?: DocumentOrderByWithRelationInput
-  }
-
-  export type DocumentLinkWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: DocumentLinkWhereInput | DocumentLinkWhereInput[]
-    OR?: DocumentLinkWhereInput[]
-    NOT?: DocumentLinkWhereInput | DocumentLinkWhereInput[]
-    identityId?: StringFilter<"DocumentLink"> | string
-    sourceDocumentId?: StringFilter<"DocumentLink"> | string
-    targetDocumentId?: StringNullableFilter<"DocumentLink"> | string | null
-    linkText?: StringFilter<"DocumentLink"> | string
-    linkPosition?: IntFilter<"DocumentLink"> | number
-    isBroken?: BoolFilter<"DocumentLink"> | boolean
-    version?: IntFilter<"DocumentLink"> | number
-    createdAt?: DateTimeFilter<"DocumentLink"> | Date | string
-    updatedAt?: DateTimeFilter<"DocumentLink"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"DocumentLink"> | Date | string | null
-    identity?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    sourceDocument?: XOR<DocumentScalarRelationFilter, DocumentWhereInput>
-    targetDocument?: XOR<DocumentNullableScalarRelationFilter, DocumentWhereInput> | null
-  }, "id">
-
-  export type DocumentLinkOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sourceDocumentId?: SortOrder
-    targetDocumentId?: SortOrderInput | SortOrder
-    linkText?: SortOrder
-    linkPosition?: SortOrder
-    isBroken?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: DocumentLinkCountOrderByAggregateInput
-    _avg?: DocumentLinkAvgOrderByAggregateInput
-    _max?: DocumentLinkMaxOrderByAggregateInput
-    _min?: DocumentLinkMinOrderByAggregateInput
-    _sum?: DocumentLinkSumOrderByAggregateInput
-  }
-
-  export type DocumentLinkScalarWhereWithAggregatesInput = {
-    AND?: DocumentLinkScalarWhereWithAggregatesInput | DocumentLinkScalarWhereWithAggregatesInput[]
-    OR?: DocumentLinkScalarWhereWithAggregatesInput[]
-    NOT?: DocumentLinkScalarWhereWithAggregatesInput | DocumentLinkScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"DocumentLink"> | string
-    identityId?: StringWithAggregatesFilter<"DocumentLink"> | string
-    sourceDocumentId?: StringWithAggregatesFilter<"DocumentLink"> | string
-    targetDocumentId?: StringNullableWithAggregatesFilter<"DocumentLink"> | string | null
-    linkText?: StringWithAggregatesFilter<"DocumentLink"> | string
-    linkPosition?: IntWithAggregatesFilter<"DocumentLink"> | number
-    isBroken?: BoolWithAggregatesFilter<"DocumentLink"> | boolean
-    version?: IntWithAggregatesFilter<"DocumentLink"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"DocumentLink"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"DocumentLink"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"DocumentLink"> | Date | string | null
-  }
-
   export type EditorWorkspaceWhereInput = {
     AND?: EditorWorkspaceWhereInput | EditorWorkspaceWhereInput[]
     OR?: EditorWorkspaceWhereInput[]
@@ -90113,7 +85568,7 @@ export namespace Prisma {
     sessionId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     workspaceId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     identityId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
-    documentId?: StringNullableFilter<"EditorWorkspaceSessionGroupTab"> | string | null
+    resourceId?: StringNullableFilter<"EditorWorkspaceSessionGroupTab"> | string | null
     tabIndex?: IntFilter<"EditorWorkspaceSessionGroupTab"> | number
     tabType?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     title?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
@@ -90134,7 +85589,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     workspaceId?: SortOrder
     identityId?: SortOrder
-    documentId?: SortOrderInput | SortOrder
+    resourceId?: SortOrderInput | SortOrder
     tabIndex?: SortOrder
     tabType?: SortOrder
     title?: SortOrder
@@ -90158,7 +85613,7 @@ export namespace Prisma {
     sessionId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     workspaceId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     identityId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
-    documentId?: StringNullableFilter<"EditorWorkspaceSessionGroupTab"> | string | null
+    resourceId?: StringNullableFilter<"EditorWorkspaceSessionGroupTab"> | string | null
     tabIndex?: IntFilter<"EditorWorkspaceSessionGroupTab"> | number
     tabType?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     title?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
@@ -90179,7 +85634,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     workspaceId?: SortOrder
     identityId?: SortOrder
-    documentId?: SortOrderInput | SortOrder
+    resourceId?: SortOrderInput | SortOrder
     tabIndex?: SortOrder
     tabType?: SortOrder
     title?: SortOrder
@@ -90206,7 +85661,7 @@ export namespace Prisma {
     sessionId?: StringWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string
     workspaceId?: StringWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string
     identityId?: StringWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string
-    documentId?: StringNullableWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string | null
+    resourceId?: StringNullableWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string | null
     tabIndex?: IntWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | number
     tabType?: StringWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string
     title?: StringWithAggregatesFilter<"EditorWorkspaceSessionGroupTab"> | string
@@ -90524,6 +85979,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"KeyResult"> | string | null
     valueType?: StringFilter<"KeyResult"> | string
     aggregationMethod?: StringFilter<"KeyResult"> | string
+    initialValue?: FloatFilter<"KeyResult"> | number
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
@@ -90547,6 +86003,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrderInput | SortOrder
@@ -90573,6 +86030,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"KeyResult"> | string | null
     valueType?: StringFilter<"KeyResult"> | string
     aggregationMethod?: StringFilter<"KeyResult"> | string
+    initialValue?: FloatFilter<"KeyResult"> | number
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
@@ -90596,6 +86054,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrderInput | SortOrder
@@ -90623,6 +86082,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"KeyResult"> | string | null
     valueType?: StringWithAggregatesFilter<"KeyResult"> | string
     aggregationMethod?: StringWithAggregatesFilter<"KeyResult"> | string
+    initialValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     targetValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     currentValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     unit?: StringNullableWithAggregatesFilter<"KeyResult"> | string | null
@@ -92549,6 +88009,7 @@ export namespace Prisma {
     identityId?: StringFilter<"UserReminderPreference"> | string
     bestTimeSlots?: StringFilter<"UserReminderPreference"> | string
     worstTimeSlots?: StringFilter<"UserReminderPreference"> | string
+    globalReminderEnabled?: BoolFilter<"UserReminderPreference"> | boolean
     globalSmartFrequency?: BoolFilter<"UserReminderPreference"> | boolean
     createdAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
@@ -92560,6 +88021,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -92574,6 +88036,7 @@ export namespace Prisma {
     NOT?: UserReminderPreferenceWhereInput | UserReminderPreferenceWhereInput[]
     bestTimeSlots?: StringFilter<"UserReminderPreference"> | string
     worstTimeSlots?: StringFilter<"UserReminderPreference"> | string
+    globalReminderEnabled?: BoolFilter<"UserReminderPreference"> | boolean
     globalSmartFrequency?: BoolFilter<"UserReminderPreference"> | boolean
     createdAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
@@ -92585,6 +88048,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -92601,6 +88065,7 @@ export namespace Prisma {
     identityId?: StringWithAggregatesFilter<"UserReminderPreference"> | string
     bestTimeSlots?: StringWithAggregatesFilter<"UserReminderPreference"> | string
     worstTimeSlots?: StringWithAggregatesFilter<"UserReminderPreference"> | string
+    globalReminderEnabled?: BoolWithAggregatesFilter<"UserReminderPreference"> | boolean
     globalSmartFrequency?: BoolWithAggregatesFilter<"UserReminderPreference"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"UserReminderPreference"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserReminderPreference"> | Date | string
@@ -94949,8 +90414,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -94994,8 +90457,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -95020,8 +90481,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -95065,8 +90524,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -95091,8 +90548,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -95136,8 +90591,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -95162,8 +90615,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -95207,8 +90658,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -95787,12 +91236,12 @@ export namespace Prisma {
     id: string
     identityId: string
     topic: string
-    documentCount?: number
+    resourceCount?: number
     targetAudience?: string | null
     folderPath: string
     status: string
     progress?: number
-    generatedDocumentIds?: KnowledgeGenerationTaskCreategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskCreategeneratedResourceIdsInput | string[]
     error?: string | null
     createdAt?: Date | string
     completedAt?: Date | string | null
@@ -95802,12 +91251,12 @@ export namespace Prisma {
     id: string
     identityId: string
     topic: string
-    documentCount?: number
+    resourceCount?: number
     targetAudience?: string | null
     folderPath: string
     status: string
     progress?: number
-    generatedDocumentIds?: KnowledgeGenerationTaskCreategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskCreategeneratedResourceIdsInput | string[]
     error?: string | null
     createdAt?: Date | string
     completedAt?: Date | string | null
@@ -95817,12 +91266,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
     topic?: StringFieldUpdateOperationsInput | string
-    documentCount?: IntFieldUpdateOperationsInput | number
+    resourceCount?: IntFieldUpdateOperationsInput | number
     targetAudience?: NullableStringFieldUpdateOperationsInput | string | null
     folderPath?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     progress?: IntFieldUpdateOperationsInput | number
-    generatedDocumentIds?: KnowledgeGenerationTaskUpdategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskUpdategeneratedResourceIdsInput | string[]
     error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95832,12 +91281,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
     topic?: StringFieldUpdateOperationsInput | string
-    documentCount?: IntFieldUpdateOperationsInput | number
+    resourceCount?: IntFieldUpdateOperationsInput | number
     targetAudience?: NullableStringFieldUpdateOperationsInput | string | null
     folderPath?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     progress?: IntFieldUpdateOperationsInput | number
-    generatedDocumentIds?: KnowledgeGenerationTaskUpdategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskUpdategeneratedResourceIdsInput | string[]
     error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95847,12 +91296,12 @@ export namespace Prisma {
     id: string
     identityId: string
     topic: string
-    documentCount?: number
+    resourceCount?: number
     targetAudience?: string | null
     folderPath: string
     status: string
     progress?: number
-    generatedDocumentIds?: KnowledgeGenerationTaskCreategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskCreategeneratedResourceIdsInput | string[]
     error?: string | null
     createdAt?: Date | string
     completedAt?: Date | string | null
@@ -95862,12 +91311,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
     topic?: StringFieldUpdateOperationsInput | string
-    documentCount?: IntFieldUpdateOperationsInput | number
+    resourceCount?: IntFieldUpdateOperationsInput | number
     targetAudience?: NullableStringFieldUpdateOperationsInput | string | null
     folderPath?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     progress?: IntFieldUpdateOperationsInput | number
-    generatedDocumentIds?: KnowledgeGenerationTaskUpdategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskUpdategeneratedResourceIdsInput | string[]
     error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95877,12 +91326,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
     topic?: StringFieldUpdateOperationsInput | string
-    documentCount?: IntFieldUpdateOperationsInput | number
+    resourceCount?: IntFieldUpdateOperationsInput | number
     targetAudience?: NullableStringFieldUpdateOperationsInput | string | null
     folderPath?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     progress?: IntFieldUpdateOperationsInput | number
-    generatedDocumentIds?: KnowledgeGenerationTaskUpdategeneratedDocumentIdsInput | string[]
+    generatedResourceIds?: KnowledgeGenerationTaskUpdategeneratedResourceIdsInput | string[]
     error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96411,347 +91860,6 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type DocumentCreateInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account: AccountCreateNestedOneWithoutDocumentsInput
-    versions?: DocumentVersionCreateNestedManyWithoutDocumentInput
-    sourceLinks?: DocumentLinkCreateNestedManyWithoutSourceDocumentInput
-    targetLinks?: DocumentLinkCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentUncheckedCreateInput = {
-    id: string
-    identityId: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    versions?: DocumentVersionUncheckedCreateNestedManyWithoutDocumentInput
-    sourceLinks?: DocumentLinkUncheckedCreateNestedManyWithoutSourceDocumentInput
-    targetLinks?: DocumentLinkUncheckedCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneRequiredWithoutDocumentsNestedInput
-    versions?: DocumentVersionUpdateManyWithoutDocumentNestedInput
-    sourceLinks?: DocumentLinkUpdateManyWithoutSourceDocumentNestedInput
-    targetLinks?: DocumentLinkUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    versions?: DocumentVersionUncheckedUpdateManyWithoutDocumentNestedInput
-    sourceLinks?: DocumentLinkUncheckedUpdateManyWithoutSourceDocumentNestedInput
-    targetLinks?: DocumentLinkUncheckedUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentCreateManyInput = {
-    id: string
-    identityId: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentVersionCreateInput = {
-    id: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    document: DocumentCreateNestedOneWithoutVersionsInput
-    identity: AccountCreateNestedOneWithoutDocumentVersionsByIdentityInput
-    account: AccountCreateNestedOneWithoutDocumentVersionsInput
-  }
-
-  export type DocumentVersionUncheckedCreateInput = {
-    id: string
-    identityId: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    changedBy: string
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentVersionUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    document?: DocumentUpdateOneRequiredWithoutVersionsNestedInput
-    identity?: AccountUpdateOneRequiredWithoutDocumentVersionsByIdentityNestedInput
-    account?: AccountUpdateOneRequiredWithoutDocumentVersionsNestedInput
-  }
-
-  export type DocumentVersionUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    changedBy?: StringFieldUpdateOperationsInput | string
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentVersionCreateManyInput = {
-    id: string
-    identityId: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    changedBy: string
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentVersionUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentVersionUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    changedBy?: StringFieldUpdateOperationsInput | string
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentLinkCreateInput = {
-    id: string
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AccountCreateNestedOneWithoutDocumentLinksInput
-    sourceDocument: DocumentCreateNestedOneWithoutSourceLinksInput
-    targetDocument?: DocumentCreateNestedOneWithoutTargetLinksInput
-  }
-
-  export type DocumentLinkUncheckedCreateInput = {
-    id: string
-    identityId: string
-    sourceDocumentId: string
-    targetDocumentId?: string | null
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentLinkUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AccountUpdateOneRequiredWithoutDocumentLinksNestedInput
-    sourceDocument?: DocumentUpdateOneRequiredWithoutSourceLinksNestedInput
-    targetDocument?: DocumentUpdateOneWithoutTargetLinksNestedInput
-  }
-
-  export type DocumentLinkUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    sourceDocumentId?: StringFieldUpdateOperationsInput | string
-    targetDocumentId?: NullableStringFieldUpdateOperationsInput | string | null
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentLinkCreateManyInput = {
-    id: string
-    identityId: string
-    sourceDocumentId: string
-    targetDocumentId?: string | null
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentLinkUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentLinkUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    sourceDocumentId?: StringFieldUpdateOperationsInput | string
-    targetDocumentId?: NullableStringFieldUpdateOperationsInput | string | null
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type EditorWorkspaceCreateInput = {
     id: string
     name: string
@@ -97071,7 +92179,7 @@ export namespace Prisma {
     id: string
     sessionId: string
     workspaceId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -97092,7 +92200,7 @@ export namespace Prisma {
     sessionId: string
     workspaceId: string
     identityId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -97109,7 +92217,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -97130,7 +92238,7 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -97149,7 +92257,7 @@ export namespace Prisma {
     sessionId: string
     workspaceId: string
     identityId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -97166,7 +92274,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -97185,7 +92293,7 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -97549,6 +92657,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -97572,6 +92681,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -97591,6 +92701,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97614,6 +92725,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97635,6 +92747,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -97652,6 +92765,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97671,6 +92785,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -99857,6 +94972,7 @@ export namespace Prisma {
     id: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -99868,6 +94984,7 @@ export namespace Prisma {
     identityId: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -99877,6 +94994,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99888,6 +95006,7 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99898,6 +95017,7 @@ export namespace Prisma {
     identityId: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -99907,6 +95027,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99917,6 +95038,7 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -102711,18 +97833,6 @@ export namespace Prisma {
     isNot?: AuthIdentityWhereInput
   }
 
-  export type DocumentListRelationFilter = {
-    every?: DocumentWhereInput
-    some?: DocumentWhereInput
-    none?: DocumentWhereInput
-  }
-
-  export type DocumentVersionListRelationFilter = {
-    every?: DocumentVersionWhereInput
-    some?: DocumentVersionWhereInput
-    none?: DocumentVersionWhereInput
-  }
-
   export type EditorWorkspaceListRelationFilter = {
     every?: EditorWorkspaceWhereInput
     some?: EditorWorkspaceWhereInput
@@ -102972,12 +98082,6 @@ export namespace Prisma {
     none?: NotificationHistoryWhereInput
   }
 
-  export type DocumentLinkListRelationFilter = {
-    every?: DocumentLinkWhereInput
-    some?: DocumentLinkWhereInput
-    none?: DocumentLinkWhereInput
-  }
-
   export type AiMessageListRelationFilter = {
     every?: AiMessageWhereInput
     some?: AiMessageWhereInput
@@ -103005,14 +98109,6 @@ export namespace Prisma {
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
-  }
-
-  export type DocumentOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type DocumentVersionOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type EditorWorkspaceOrderByRelationAggregateInput = {
@@ -103148,10 +98244,6 @@ export namespace Prisma {
   }
 
   export type NotificationHistoryOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type DocumentLinkOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -103674,19 +98766,19 @@ export namespace Prisma {
     id?: SortOrder
     identityId?: SortOrder
     topic?: SortOrder
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     targetAudience?: SortOrder
     folderPath?: SortOrder
     status?: SortOrder
     progress?: SortOrder
-    generatedDocumentIds?: SortOrder
+    generatedResourceIds?: SortOrder
     error?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
 
   export type KnowledgeGenerationTaskAvgOrderByAggregateInput = {
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     progress?: SortOrder
   }
 
@@ -103694,7 +98786,7 @@ export namespace Prisma {
     id?: SortOrder
     identityId?: SortOrder
     topic?: SortOrder
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     targetAudience?: SortOrder
     folderPath?: SortOrder
     status?: SortOrder
@@ -103708,7 +98800,7 @@ export namespace Prisma {
     id?: SortOrder
     identityId?: SortOrder
     topic?: SortOrder
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     targetAudience?: SortOrder
     folderPath?: SortOrder
     status?: SortOrder
@@ -103719,7 +98811,7 @@ export namespace Prisma {
   }
 
   export type KnowledgeGenerationTaskSumOrderByAggregateInput = {
-    documentCount?: SortOrder
+    resourceCount?: SortOrder
     progress?: SortOrder
   }
 
@@ -104082,186 +99174,6 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
-  export type DocumentCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    folderPath?: SortOrder
-    tags?: SortOrder
-    status?: SortOrder
-    currentVersion?: SortOrder
-    lastVersionedAt?: SortOrder
-    lastEditedAt?: SortOrder
-    editSessionId?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type DocumentAvgOrderByAggregateInput = {
-    currentVersion?: SortOrder
-    version?: SortOrder
-  }
-
-  export type DocumentMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    folderPath?: SortOrder
-    status?: SortOrder
-    currentVersion?: SortOrder
-    lastVersionedAt?: SortOrder
-    lastEditedAt?: SortOrder
-    editSessionId?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type DocumentMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    folderPath?: SortOrder
-    status?: SortOrder
-    currentVersion?: SortOrder
-    lastVersionedAt?: SortOrder
-    lastEditedAt?: SortOrder
-    editSessionId?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type DocumentSumOrderByAggregateInput = {
-    currentVersion?: SortOrder
-    version?: SortOrder
-  }
-
-  export type DocumentScalarRelationFilter = {
-    is?: DocumentWhereInput
-    isNot?: DocumentWhereInput
-  }
-
-  export type DocumentVersionCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    documentId?: SortOrder
-    versionNumber?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    changeType?: SortOrder
-    changeDescription?: SortOrder
-    changedBy?: SortOrder
-    restoredFrom?: SortOrder
-    metadata?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type DocumentVersionAvgOrderByAggregateInput = {
-    versionNumber?: SortOrder
-    version?: SortOrder
-  }
-
-  export type DocumentVersionMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    documentId?: SortOrder
-    versionNumber?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    changeType?: SortOrder
-    changeDescription?: SortOrder
-    changedBy?: SortOrder
-    restoredFrom?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type DocumentVersionMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    documentId?: SortOrder
-    versionNumber?: SortOrder
-    title?: SortOrder
-    content?: SortOrder
-    changeType?: SortOrder
-    changeDescription?: SortOrder
-    changedBy?: SortOrder
-    restoredFrom?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type DocumentVersionSumOrderByAggregateInput = {
-    versionNumber?: SortOrder
-    version?: SortOrder
-  }
-
-  export type DocumentNullableScalarRelationFilter = {
-    is?: DocumentWhereInput | null
-    isNot?: DocumentWhereInput | null
-  }
-
-  export type DocumentLinkCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sourceDocumentId?: SortOrder
-    targetDocumentId?: SortOrder
-    linkText?: SortOrder
-    linkPosition?: SortOrder
-    isBroken?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type DocumentLinkAvgOrderByAggregateInput = {
-    linkPosition?: SortOrder
-    version?: SortOrder
-  }
-
-  export type DocumentLinkMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sourceDocumentId?: SortOrder
-    targetDocumentId?: SortOrder
-    linkText?: SortOrder
-    linkPosition?: SortOrder
-    isBroken?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type DocumentLinkMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sourceDocumentId?: SortOrder
-    targetDocumentId?: SortOrder
-    linkText?: SortOrder
-    linkPosition?: SortOrder
-    isBroken?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type DocumentLinkSumOrderByAggregateInput = {
-    linkPosition?: SortOrder
-    version?: SortOrder
-  }
-
   export type EditorWorkspaceCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
@@ -104435,7 +99347,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     workspaceId?: SortOrder
     identityId?: SortOrder
-    documentId?: SortOrder
+    resourceId?: SortOrder
     tabIndex?: SortOrder
     tabType?: SortOrder
     title?: SortOrder
@@ -104459,7 +99371,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     workspaceId?: SortOrder
     identityId?: SortOrder
-    documentId?: SortOrder
+    resourceId?: SortOrder
     tabIndex?: SortOrder
     tabType?: SortOrder
     title?: SortOrder
@@ -104477,7 +99389,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     workspaceId?: SortOrder
     identityId?: SortOrder
-    documentId?: SortOrder
+    resourceId?: SortOrder
     tabIndex?: SortOrder
     tabType?: SortOrder
     title?: SortOrder
@@ -104690,6 +99602,7 @@ export namespace Prisma {
     description?: SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrder
@@ -104702,6 +99615,7 @@ export namespace Prisma {
   }
 
   export type KeyResultAvgOrderByAggregateInput = {
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     weight?: SortOrder
@@ -104717,6 +99631,7 @@ export namespace Prisma {
     description?: SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrder
@@ -104736,6 +99651,7 @@ export namespace Prisma {
     description?: SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrder
@@ -104748,6 +99664,7 @@ export namespace Prisma {
   }
 
   export type KeyResultSumOrderByAggregateInput = {
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     weight?: SortOrder
@@ -105929,6 +100846,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -105939,6 +100857,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -105949,6 +100868,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -107475,20 +102395,6 @@ export namespace Prisma {
     connect?: AuthIdentityWhereUniqueInput
   }
 
-  export type DocumentCreateNestedManyWithoutAccountInput = {
-    create?: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput> | DocumentCreateWithoutAccountInput[] | DocumentUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentCreateOrConnectWithoutAccountInput | DocumentCreateOrConnectWithoutAccountInput[]
-    createMany?: DocumentCreateManyAccountInputEnvelope
-    connect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-  }
-
-  export type DocumentVersionCreateNestedManyWithoutAccountInput = {
-    create?: XOR<DocumentVersionCreateWithoutAccountInput, DocumentVersionUncheckedCreateWithoutAccountInput> | DocumentVersionCreateWithoutAccountInput[] | DocumentVersionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutAccountInput | DocumentVersionCreateOrConnectWithoutAccountInput[]
-    createMany?: DocumentVersionCreateManyAccountInputEnvelope
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-  }
-
   export type EditorWorkspaceCreateNestedManyWithoutAccountInput = {
     create?: XOR<EditorWorkspaceCreateWithoutAccountInput, EditorWorkspaceUncheckedCreateWithoutAccountInput> | EditorWorkspaceCreateWithoutAccountInput[] | EditorWorkspaceUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: EditorWorkspaceCreateOrConnectWithoutAccountInput | EditorWorkspaceCreateOrConnectWithoutAccountInput[]
@@ -107781,20 +102687,6 @@ export namespace Prisma {
     connect?: NotificationHistoryWhereUniqueInput | NotificationHistoryWhereUniqueInput[]
   }
 
-  export type DocumentVersionCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<DocumentVersionCreateWithoutIdentityInput, DocumentVersionUncheckedCreateWithoutIdentityInput> | DocumentVersionCreateWithoutIdentityInput[] | DocumentVersionUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutIdentityInput | DocumentVersionCreateOrConnectWithoutIdentityInput[]
-    createMany?: DocumentVersionCreateManyIdentityInputEnvelope
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-  }
-
-  export type DocumentLinkCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<DocumentLinkCreateWithoutIdentityInput, DocumentLinkUncheckedCreateWithoutIdentityInput> | DocumentLinkCreateWithoutIdentityInput[] | DocumentLinkUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutIdentityInput | DocumentLinkCreateOrConnectWithoutIdentityInput[]
-    createMany?: DocumentLinkCreateManyIdentityInputEnvelope
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-  }
-
   export type AiMessageCreateNestedManyWithoutIdentityInput = {
     create?: XOR<AiMessageCreateWithoutIdentityInput, AiMessageUncheckedCreateWithoutIdentityInput> | AiMessageCreateWithoutIdentityInput[] | AiMessageUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AiMessageCreateOrConnectWithoutIdentityInput | AiMessageCreateOrConnectWithoutIdentityInput[]
@@ -107821,20 +102713,6 @@ export namespace Prisma {
     connectOrCreate?: RepositoryResourceCreateOrConnectWithoutIdentityInput | RepositoryResourceCreateOrConnectWithoutIdentityInput[]
     createMany?: RepositoryResourceCreateManyIdentityInputEnvelope
     connect?: RepositoryResourceWhereUniqueInput | RepositoryResourceWhereUniqueInput[]
-  }
-
-  export type DocumentUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput> | DocumentCreateWithoutAccountInput[] | DocumentUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentCreateOrConnectWithoutAccountInput | DocumentCreateOrConnectWithoutAccountInput[]
-    createMany?: DocumentCreateManyAccountInputEnvelope
-    connect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-  }
-
-  export type DocumentVersionUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<DocumentVersionCreateWithoutAccountInput, DocumentVersionUncheckedCreateWithoutAccountInput> | DocumentVersionCreateWithoutAccountInput[] | DocumentVersionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutAccountInput | DocumentVersionCreateOrConnectWithoutAccountInput[]
-    createMany?: DocumentVersionCreateManyAccountInputEnvelope
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
   }
 
   export type EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput = {
@@ -108129,20 +103007,6 @@ export namespace Prisma {
     connect?: NotificationHistoryWhereUniqueInput | NotificationHistoryWhereUniqueInput[]
   }
 
-  export type DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<DocumentVersionCreateWithoutIdentityInput, DocumentVersionUncheckedCreateWithoutIdentityInput> | DocumentVersionCreateWithoutIdentityInput[] | DocumentVersionUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutIdentityInput | DocumentVersionCreateOrConnectWithoutIdentityInput[]
-    createMany?: DocumentVersionCreateManyIdentityInputEnvelope
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-  }
-
-  export type DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<DocumentLinkCreateWithoutIdentityInput, DocumentLinkUncheckedCreateWithoutIdentityInput> | DocumentLinkCreateWithoutIdentityInput[] | DocumentLinkUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutIdentityInput | DocumentLinkCreateOrConnectWithoutIdentityInput[]
-    createMany?: DocumentLinkCreateManyIdentityInputEnvelope
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-  }
-
   export type AiMessageUncheckedCreateNestedManyWithoutIdentityInput = {
     create?: XOR<AiMessageCreateWithoutIdentityInput, AiMessageUncheckedCreateWithoutIdentityInput> | AiMessageCreateWithoutIdentityInput[] | AiMessageUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AiMessageCreateOrConnectWithoutIdentityInput | AiMessageCreateOrConnectWithoutIdentityInput[]
@@ -108209,34 +103073,6 @@ export namespace Prisma {
     upsert?: AuthIdentityUpsertWithoutAccountsInput
     connect?: AuthIdentityWhereUniqueInput
     update?: XOR<XOR<AuthIdentityUpdateToOneWithWhereWithoutAccountsInput, AuthIdentityUpdateWithoutAccountsInput>, AuthIdentityUncheckedUpdateWithoutAccountsInput>
-  }
-
-  export type DocumentUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput> | DocumentCreateWithoutAccountInput[] | DocumentUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentCreateOrConnectWithoutAccountInput | DocumentCreateOrConnectWithoutAccountInput[]
-    upsert?: DocumentUpsertWithWhereUniqueWithoutAccountInput | DocumentUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: DocumentCreateManyAccountInputEnvelope
-    set?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    disconnect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    delete?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    connect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    update?: DocumentUpdateWithWhereUniqueWithoutAccountInput | DocumentUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: DocumentUpdateManyWithWhereWithoutAccountInput | DocumentUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: DocumentScalarWhereInput | DocumentScalarWhereInput[]
-  }
-
-  export type DocumentVersionUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<DocumentVersionCreateWithoutAccountInput, DocumentVersionUncheckedCreateWithoutAccountInput> | DocumentVersionCreateWithoutAccountInput[] | DocumentVersionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutAccountInput | DocumentVersionCreateOrConnectWithoutAccountInput[]
-    upsert?: DocumentVersionUpsertWithWhereUniqueWithoutAccountInput | DocumentVersionUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: DocumentVersionCreateManyAccountInputEnvelope
-    set?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    disconnect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    delete?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    update?: DocumentVersionUpdateWithWhereUniqueWithoutAccountInput | DocumentVersionUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: DocumentVersionUpdateManyWithWhereWithoutAccountInput | DocumentVersionUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
   }
 
   export type EditorWorkspaceUpdateManyWithoutAccountNestedInput = {
@@ -108805,34 +103641,6 @@ export namespace Prisma {
     deleteMany?: NotificationHistoryScalarWhereInput | NotificationHistoryScalarWhereInput[]
   }
 
-  export type DocumentVersionUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<DocumentVersionCreateWithoutIdentityInput, DocumentVersionUncheckedCreateWithoutIdentityInput> | DocumentVersionCreateWithoutIdentityInput[] | DocumentVersionUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutIdentityInput | DocumentVersionCreateOrConnectWithoutIdentityInput[]
-    upsert?: DocumentVersionUpsertWithWhereUniqueWithoutIdentityInput | DocumentVersionUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: DocumentVersionCreateManyIdentityInputEnvelope
-    set?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    disconnect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    delete?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    update?: DocumentVersionUpdateWithWhereUniqueWithoutIdentityInput | DocumentVersionUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: DocumentVersionUpdateManyWithWhereWithoutIdentityInput | DocumentVersionUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
-  }
-
-  export type DocumentLinkUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<DocumentLinkCreateWithoutIdentityInput, DocumentLinkUncheckedCreateWithoutIdentityInput> | DocumentLinkCreateWithoutIdentityInput[] | DocumentLinkUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutIdentityInput | DocumentLinkCreateOrConnectWithoutIdentityInput[]
-    upsert?: DocumentLinkUpsertWithWhereUniqueWithoutIdentityInput | DocumentLinkUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: DocumentLinkCreateManyIdentityInputEnvelope
-    set?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    disconnect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    delete?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    update?: DocumentLinkUpdateWithWhereUniqueWithoutIdentityInput | DocumentLinkUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: DocumentLinkUpdateManyWithWhereWithoutIdentityInput | DocumentLinkUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-  }
-
   export type AiMessageUpdateManyWithoutIdentityNestedInput = {
     create?: XOR<AiMessageCreateWithoutIdentityInput, AiMessageUncheckedCreateWithoutIdentityInput> | AiMessageCreateWithoutIdentityInput[] | AiMessageUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AiMessageCreateOrConnectWithoutIdentityInput | AiMessageCreateOrConnectWithoutIdentityInput[]
@@ -108887,34 +103695,6 @@ export namespace Prisma {
     update?: RepositoryResourceUpdateWithWhereUniqueWithoutIdentityInput | RepositoryResourceUpdateWithWhereUniqueWithoutIdentityInput[]
     updateMany?: RepositoryResourceUpdateManyWithWhereWithoutIdentityInput | RepositoryResourceUpdateManyWithWhereWithoutIdentityInput[]
     deleteMany?: RepositoryResourceScalarWhereInput | RepositoryResourceScalarWhereInput[]
-  }
-
-  export type DocumentUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput> | DocumentCreateWithoutAccountInput[] | DocumentUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentCreateOrConnectWithoutAccountInput | DocumentCreateOrConnectWithoutAccountInput[]
-    upsert?: DocumentUpsertWithWhereUniqueWithoutAccountInput | DocumentUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: DocumentCreateManyAccountInputEnvelope
-    set?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    disconnect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    delete?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    connect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
-    update?: DocumentUpdateWithWhereUniqueWithoutAccountInput | DocumentUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: DocumentUpdateManyWithWhereWithoutAccountInput | DocumentUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: DocumentScalarWhereInput | DocumentScalarWhereInput[]
-  }
-
-  export type DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<DocumentVersionCreateWithoutAccountInput, DocumentVersionUncheckedCreateWithoutAccountInput> | DocumentVersionCreateWithoutAccountInput[] | DocumentVersionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutAccountInput | DocumentVersionCreateOrConnectWithoutAccountInput[]
-    upsert?: DocumentVersionUpsertWithWhereUniqueWithoutAccountInput | DocumentVersionUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: DocumentVersionCreateManyAccountInputEnvelope
-    set?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    disconnect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    delete?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    update?: DocumentVersionUpdateWithWhereUniqueWithoutAccountInput | DocumentVersionUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: DocumentVersionUpdateManyWithWhereWithoutAccountInput | DocumentVersionUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
   }
 
   export type EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput = {
@@ -109483,34 +104263,6 @@ export namespace Prisma {
     deleteMany?: NotificationHistoryScalarWhereInput | NotificationHistoryScalarWhereInput[]
   }
 
-  export type DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<DocumentVersionCreateWithoutIdentityInput, DocumentVersionUncheckedCreateWithoutIdentityInput> | DocumentVersionCreateWithoutIdentityInput[] | DocumentVersionUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutIdentityInput | DocumentVersionCreateOrConnectWithoutIdentityInput[]
-    upsert?: DocumentVersionUpsertWithWhereUniqueWithoutIdentityInput | DocumentVersionUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: DocumentVersionCreateManyIdentityInputEnvelope
-    set?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    disconnect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    delete?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    update?: DocumentVersionUpdateWithWhereUniqueWithoutIdentityInput | DocumentVersionUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: DocumentVersionUpdateManyWithWhereWithoutIdentityInput | DocumentVersionUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
-  }
-
-  export type DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<DocumentLinkCreateWithoutIdentityInput, DocumentLinkUncheckedCreateWithoutIdentityInput> | DocumentLinkCreateWithoutIdentityInput[] | DocumentLinkUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutIdentityInput | DocumentLinkCreateOrConnectWithoutIdentityInput[]
-    upsert?: DocumentLinkUpsertWithWhereUniqueWithoutIdentityInput | DocumentLinkUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: DocumentLinkCreateManyIdentityInputEnvelope
-    set?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    disconnect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    delete?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    update?: DocumentLinkUpdateWithWhereUniqueWithoutIdentityInput | DocumentLinkUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: DocumentLinkUpdateManyWithWhereWithoutIdentityInput | DocumentLinkUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-  }
-
   export type AiMessageUncheckedUpdateManyWithoutIdentityNestedInput = {
     create?: XOR<AiMessageCreateWithoutIdentityInput, AiMessageUncheckedCreateWithoutIdentityInput> | AiMessageCreateWithoutIdentityInput[] | AiMessageUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AiMessageCreateOrConnectWithoutIdentityInput | AiMessageCreateOrConnectWithoutIdentityInput[]
@@ -109701,11 +104453,11 @@ export namespace Prisma {
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutAiProviderConfigsInput, AccountUpdateWithoutAiProviderConfigsInput>, AccountUncheckedUpdateWithoutAiProviderConfigsInput>
   }
 
-  export type KnowledgeGenerationTaskCreategeneratedDocumentIdsInput = {
+  export type KnowledgeGenerationTaskCreategeneratedResourceIdsInput = {
     set: string[]
   }
 
-  export type KnowledgeGenerationTaskUpdategeneratedDocumentIdsInput = {
+  export type KnowledgeGenerationTaskUpdategeneratedResourceIdsInput = {
     set?: string[]
     push?: string | string[]
   }
@@ -109988,241 +104740,6 @@ export namespace Prisma {
     upsert?: AuthIdentityUpsertWithoutSessionsInput
     connect?: AuthIdentityWhereUniqueInput
     update?: XOR<XOR<AuthIdentityUpdateToOneWithWhereWithoutSessionsInput, AuthIdentityUpdateWithoutSessionsInput>, AuthIdentityUncheckedUpdateWithoutSessionsInput>
-  }
-
-  export type DocumentCreatetagsInput = {
-    set: string[]
-  }
-
-  export type AccountCreateNestedOneWithoutDocumentsInput = {
-    create?: XOR<AccountCreateWithoutDocumentsInput, AccountUncheckedCreateWithoutDocumentsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentsInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type DocumentVersionCreateNestedManyWithoutDocumentInput = {
-    create?: XOR<DocumentVersionCreateWithoutDocumentInput, DocumentVersionUncheckedCreateWithoutDocumentInput> | DocumentVersionCreateWithoutDocumentInput[] | DocumentVersionUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutDocumentInput | DocumentVersionCreateOrConnectWithoutDocumentInput[]
-    createMany?: DocumentVersionCreateManyDocumentInputEnvelope
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-  }
-
-  export type DocumentLinkCreateNestedManyWithoutSourceDocumentInput = {
-    create?: XOR<DocumentLinkCreateWithoutSourceDocumentInput, DocumentLinkUncheckedCreateWithoutSourceDocumentInput> | DocumentLinkCreateWithoutSourceDocumentInput[] | DocumentLinkUncheckedCreateWithoutSourceDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutSourceDocumentInput | DocumentLinkCreateOrConnectWithoutSourceDocumentInput[]
-    createMany?: DocumentLinkCreateManySourceDocumentInputEnvelope
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-  }
-
-  export type DocumentLinkCreateNestedManyWithoutTargetDocumentInput = {
-    create?: XOR<DocumentLinkCreateWithoutTargetDocumentInput, DocumentLinkUncheckedCreateWithoutTargetDocumentInput> | DocumentLinkCreateWithoutTargetDocumentInput[] | DocumentLinkUncheckedCreateWithoutTargetDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutTargetDocumentInput | DocumentLinkCreateOrConnectWithoutTargetDocumentInput[]
-    createMany?: DocumentLinkCreateManyTargetDocumentInputEnvelope
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-  }
-
-  export type DocumentVersionUncheckedCreateNestedManyWithoutDocumentInput = {
-    create?: XOR<DocumentVersionCreateWithoutDocumentInput, DocumentVersionUncheckedCreateWithoutDocumentInput> | DocumentVersionCreateWithoutDocumentInput[] | DocumentVersionUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutDocumentInput | DocumentVersionCreateOrConnectWithoutDocumentInput[]
-    createMany?: DocumentVersionCreateManyDocumentInputEnvelope
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-  }
-
-  export type DocumentLinkUncheckedCreateNestedManyWithoutSourceDocumentInput = {
-    create?: XOR<DocumentLinkCreateWithoutSourceDocumentInput, DocumentLinkUncheckedCreateWithoutSourceDocumentInput> | DocumentLinkCreateWithoutSourceDocumentInput[] | DocumentLinkUncheckedCreateWithoutSourceDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutSourceDocumentInput | DocumentLinkCreateOrConnectWithoutSourceDocumentInput[]
-    createMany?: DocumentLinkCreateManySourceDocumentInputEnvelope
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-  }
-
-  export type DocumentLinkUncheckedCreateNestedManyWithoutTargetDocumentInput = {
-    create?: XOR<DocumentLinkCreateWithoutTargetDocumentInput, DocumentLinkUncheckedCreateWithoutTargetDocumentInput> | DocumentLinkCreateWithoutTargetDocumentInput[] | DocumentLinkUncheckedCreateWithoutTargetDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutTargetDocumentInput | DocumentLinkCreateOrConnectWithoutTargetDocumentInput[]
-    createMany?: DocumentLinkCreateManyTargetDocumentInputEnvelope
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-  }
-
-  export type DocumentUpdatetagsInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type AccountUpdateOneRequiredWithoutDocumentsNestedInput = {
-    create?: XOR<AccountCreateWithoutDocumentsInput, AccountUncheckedCreateWithoutDocumentsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentsInput
-    upsert?: AccountUpsertWithoutDocumentsInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDocumentsInput, AccountUpdateWithoutDocumentsInput>, AccountUncheckedUpdateWithoutDocumentsInput>
-  }
-
-  export type DocumentVersionUpdateManyWithoutDocumentNestedInput = {
-    create?: XOR<DocumentVersionCreateWithoutDocumentInput, DocumentVersionUncheckedCreateWithoutDocumentInput> | DocumentVersionCreateWithoutDocumentInput[] | DocumentVersionUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutDocumentInput | DocumentVersionCreateOrConnectWithoutDocumentInput[]
-    upsert?: DocumentVersionUpsertWithWhereUniqueWithoutDocumentInput | DocumentVersionUpsertWithWhereUniqueWithoutDocumentInput[]
-    createMany?: DocumentVersionCreateManyDocumentInputEnvelope
-    set?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    disconnect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    delete?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    update?: DocumentVersionUpdateWithWhereUniqueWithoutDocumentInput | DocumentVersionUpdateWithWhereUniqueWithoutDocumentInput[]
-    updateMany?: DocumentVersionUpdateManyWithWhereWithoutDocumentInput | DocumentVersionUpdateManyWithWhereWithoutDocumentInput[]
-    deleteMany?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
-  }
-
-  export type DocumentLinkUpdateManyWithoutSourceDocumentNestedInput = {
-    create?: XOR<DocumentLinkCreateWithoutSourceDocumentInput, DocumentLinkUncheckedCreateWithoutSourceDocumentInput> | DocumentLinkCreateWithoutSourceDocumentInput[] | DocumentLinkUncheckedCreateWithoutSourceDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutSourceDocumentInput | DocumentLinkCreateOrConnectWithoutSourceDocumentInput[]
-    upsert?: DocumentLinkUpsertWithWhereUniqueWithoutSourceDocumentInput | DocumentLinkUpsertWithWhereUniqueWithoutSourceDocumentInput[]
-    createMany?: DocumentLinkCreateManySourceDocumentInputEnvelope
-    set?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    disconnect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    delete?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    update?: DocumentLinkUpdateWithWhereUniqueWithoutSourceDocumentInput | DocumentLinkUpdateWithWhereUniqueWithoutSourceDocumentInput[]
-    updateMany?: DocumentLinkUpdateManyWithWhereWithoutSourceDocumentInput | DocumentLinkUpdateManyWithWhereWithoutSourceDocumentInput[]
-    deleteMany?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-  }
-
-  export type DocumentLinkUpdateManyWithoutTargetDocumentNestedInput = {
-    create?: XOR<DocumentLinkCreateWithoutTargetDocumentInput, DocumentLinkUncheckedCreateWithoutTargetDocumentInput> | DocumentLinkCreateWithoutTargetDocumentInput[] | DocumentLinkUncheckedCreateWithoutTargetDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutTargetDocumentInput | DocumentLinkCreateOrConnectWithoutTargetDocumentInput[]
-    upsert?: DocumentLinkUpsertWithWhereUniqueWithoutTargetDocumentInput | DocumentLinkUpsertWithWhereUniqueWithoutTargetDocumentInput[]
-    createMany?: DocumentLinkCreateManyTargetDocumentInputEnvelope
-    set?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    disconnect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    delete?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    update?: DocumentLinkUpdateWithWhereUniqueWithoutTargetDocumentInput | DocumentLinkUpdateWithWhereUniqueWithoutTargetDocumentInput[]
-    updateMany?: DocumentLinkUpdateManyWithWhereWithoutTargetDocumentInput | DocumentLinkUpdateManyWithWhereWithoutTargetDocumentInput[]
-    deleteMany?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-  }
-
-  export type DocumentVersionUncheckedUpdateManyWithoutDocumentNestedInput = {
-    create?: XOR<DocumentVersionCreateWithoutDocumentInput, DocumentVersionUncheckedCreateWithoutDocumentInput> | DocumentVersionCreateWithoutDocumentInput[] | DocumentVersionUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: DocumentVersionCreateOrConnectWithoutDocumentInput | DocumentVersionCreateOrConnectWithoutDocumentInput[]
-    upsert?: DocumentVersionUpsertWithWhereUniqueWithoutDocumentInput | DocumentVersionUpsertWithWhereUniqueWithoutDocumentInput[]
-    createMany?: DocumentVersionCreateManyDocumentInputEnvelope
-    set?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    disconnect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    delete?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    connect?: DocumentVersionWhereUniqueInput | DocumentVersionWhereUniqueInput[]
-    update?: DocumentVersionUpdateWithWhereUniqueWithoutDocumentInput | DocumentVersionUpdateWithWhereUniqueWithoutDocumentInput[]
-    updateMany?: DocumentVersionUpdateManyWithWhereWithoutDocumentInput | DocumentVersionUpdateManyWithWhereWithoutDocumentInput[]
-    deleteMany?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
-  }
-
-  export type DocumentLinkUncheckedUpdateManyWithoutSourceDocumentNestedInput = {
-    create?: XOR<DocumentLinkCreateWithoutSourceDocumentInput, DocumentLinkUncheckedCreateWithoutSourceDocumentInput> | DocumentLinkCreateWithoutSourceDocumentInput[] | DocumentLinkUncheckedCreateWithoutSourceDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutSourceDocumentInput | DocumentLinkCreateOrConnectWithoutSourceDocumentInput[]
-    upsert?: DocumentLinkUpsertWithWhereUniqueWithoutSourceDocumentInput | DocumentLinkUpsertWithWhereUniqueWithoutSourceDocumentInput[]
-    createMany?: DocumentLinkCreateManySourceDocumentInputEnvelope
-    set?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    disconnect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    delete?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    update?: DocumentLinkUpdateWithWhereUniqueWithoutSourceDocumentInput | DocumentLinkUpdateWithWhereUniqueWithoutSourceDocumentInput[]
-    updateMany?: DocumentLinkUpdateManyWithWhereWithoutSourceDocumentInput | DocumentLinkUpdateManyWithWhereWithoutSourceDocumentInput[]
-    deleteMany?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-  }
-
-  export type DocumentLinkUncheckedUpdateManyWithoutTargetDocumentNestedInput = {
-    create?: XOR<DocumentLinkCreateWithoutTargetDocumentInput, DocumentLinkUncheckedCreateWithoutTargetDocumentInput> | DocumentLinkCreateWithoutTargetDocumentInput[] | DocumentLinkUncheckedCreateWithoutTargetDocumentInput[]
-    connectOrCreate?: DocumentLinkCreateOrConnectWithoutTargetDocumentInput | DocumentLinkCreateOrConnectWithoutTargetDocumentInput[]
-    upsert?: DocumentLinkUpsertWithWhereUniqueWithoutTargetDocumentInput | DocumentLinkUpsertWithWhereUniqueWithoutTargetDocumentInput[]
-    createMany?: DocumentLinkCreateManyTargetDocumentInputEnvelope
-    set?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    disconnect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    delete?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    connect?: DocumentLinkWhereUniqueInput | DocumentLinkWhereUniqueInput[]
-    update?: DocumentLinkUpdateWithWhereUniqueWithoutTargetDocumentInput | DocumentLinkUpdateWithWhereUniqueWithoutTargetDocumentInput[]
-    updateMany?: DocumentLinkUpdateManyWithWhereWithoutTargetDocumentInput | DocumentLinkUpdateManyWithWhereWithoutTargetDocumentInput[]
-    deleteMany?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-  }
-
-  export type DocumentCreateNestedOneWithoutVersionsInput = {
-    create?: XOR<DocumentCreateWithoutVersionsInput, DocumentUncheckedCreateWithoutVersionsInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutVersionsInput
-    connect?: DocumentWhereUniqueInput
-  }
-
-  export type AccountCreateNestedOneWithoutDocumentVersionsByIdentityInput = {
-    create?: XOR<AccountCreateWithoutDocumentVersionsByIdentityInput, AccountUncheckedCreateWithoutDocumentVersionsByIdentityInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentVersionsByIdentityInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type AccountCreateNestedOneWithoutDocumentVersionsInput = {
-    create?: XOR<AccountCreateWithoutDocumentVersionsInput, AccountUncheckedCreateWithoutDocumentVersionsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentVersionsInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type DocumentUpdateOneRequiredWithoutVersionsNestedInput = {
-    create?: XOR<DocumentCreateWithoutVersionsInput, DocumentUncheckedCreateWithoutVersionsInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutVersionsInput
-    upsert?: DocumentUpsertWithoutVersionsInput
-    connect?: DocumentWhereUniqueInput
-    update?: XOR<XOR<DocumentUpdateToOneWithWhereWithoutVersionsInput, DocumentUpdateWithoutVersionsInput>, DocumentUncheckedUpdateWithoutVersionsInput>
-  }
-
-  export type AccountUpdateOneRequiredWithoutDocumentVersionsByIdentityNestedInput = {
-    create?: XOR<AccountCreateWithoutDocumentVersionsByIdentityInput, AccountUncheckedCreateWithoutDocumentVersionsByIdentityInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentVersionsByIdentityInput
-    upsert?: AccountUpsertWithoutDocumentVersionsByIdentityInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDocumentVersionsByIdentityInput, AccountUpdateWithoutDocumentVersionsByIdentityInput>, AccountUncheckedUpdateWithoutDocumentVersionsByIdentityInput>
-  }
-
-  export type AccountUpdateOneRequiredWithoutDocumentVersionsNestedInput = {
-    create?: XOR<AccountCreateWithoutDocumentVersionsInput, AccountUncheckedCreateWithoutDocumentVersionsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentVersionsInput
-    upsert?: AccountUpsertWithoutDocumentVersionsInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDocumentVersionsInput, AccountUpdateWithoutDocumentVersionsInput>, AccountUncheckedUpdateWithoutDocumentVersionsInput>
-  }
-
-  export type AccountCreateNestedOneWithoutDocumentLinksInput = {
-    create?: XOR<AccountCreateWithoutDocumentLinksInput, AccountUncheckedCreateWithoutDocumentLinksInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentLinksInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type DocumentCreateNestedOneWithoutSourceLinksInput = {
-    create?: XOR<DocumentCreateWithoutSourceLinksInput, DocumentUncheckedCreateWithoutSourceLinksInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutSourceLinksInput
-    connect?: DocumentWhereUniqueInput
-  }
-
-  export type DocumentCreateNestedOneWithoutTargetLinksInput = {
-    create?: XOR<DocumentCreateWithoutTargetLinksInput, DocumentUncheckedCreateWithoutTargetLinksInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutTargetLinksInput
-    connect?: DocumentWhereUniqueInput
-  }
-
-  export type AccountUpdateOneRequiredWithoutDocumentLinksNestedInput = {
-    create?: XOR<AccountCreateWithoutDocumentLinksInput, AccountUncheckedCreateWithoutDocumentLinksInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutDocumentLinksInput
-    upsert?: AccountUpsertWithoutDocumentLinksInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDocumentLinksInput, AccountUpdateWithoutDocumentLinksInput>, AccountUncheckedUpdateWithoutDocumentLinksInput>
-  }
-
-  export type DocumentUpdateOneRequiredWithoutSourceLinksNestedInput = {
-    create?: XOR<DocumentCreateWithoutSourceLinksInput, DocumentUncheckedCreateWithoutSourceLinksInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutSourceLinksInput
-    upsert?: DocumentUpsertWithoutSourceLinksInput
-    connect?: DocumentWhereUniqueInput
-    update?: XOR<XOR<DocumentUpdateToOneWithWhereWithoutSourceLinksInput, DocumentUpdateWithoutSourceLinksInput>, DocumentUncheckedUpdateWithoutSourceLinksInput>
-  }
-
-  export type DocumentUpdateOneWithoutTargetLinksNestedInput = {
-    create?: XOR<DocumentCreateWithoutTargetLinksInput, DocumentUncheckedCreateWithoutTargetLinksInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutTargetLinksInput
-    upsert?: DocumentUpsertWithoutTargetLinksInput
-    disconnect?: DocumentWhereInput | boolean
-    delete?: DocumentWhereInput | boolean
-    connect?: DocumentWhereUniqueInput
-    update?: XOR<XOR<DocumentUpdateToOneWithWhereWithoutTargetLinksInput, DocumentUpdateWithoutTargetLinksInput>, DocumentUncheckedUpdateWithoutTargetLinksInput>
   }
 
   export type EditorWorkspaceSessionCreateNestedManyWithoutWorkspaceInput = {
@@ -113117,96 +107634,6 @@ export namespace Prisma {
     create: XOR<AuthIdentityCreateWithoutAccountsInput, AuthIdentityUncheckedCreateWithoutAccountsInput>
   }
 
-  export type DocumentCreateWithoutAccountInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    versions?: DocumentVersionCreateNestedManyWithoutDocumentInput
-    sourceLinks?: DocumentLinkCreateNestedManyWithoutSourceDocumentInput
-    targetLinks?: DocumentLinkCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentUncheckedCreateWithoutAccountInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    versions?: DocumentVersionUncheckedCreateNestedManyWithoutDocumentInput
-    sourceLinks?: DocumentLinkUncheckedCreateNestedManyWithoutSourceDocumentInput
-    targetLinks?: DocumentLinkUncheckedCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentCreateOrConnectWithoutAccountInput = {
-    where: DocumentWhereUniqueInput
-    create: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput>
-  }
-
-  export type DocumentCreateManyAccountInputEnvelope = {
-    data: DocumentCreateManyAccountInput | DocumentCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type DocumentVersionCreateWithoutAccountInput = {
-    id: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    document: DocumentCreateNestedOneWithoutVersionsInput
-    identity: AccountCreateNestedOneWithoutDocumentVersionsByIdentityInput
-  }
-
-  export type DocumentVersionUncheckedCreateWithoutAccountInput = {
-    id: string
-    identityId: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentVersionCreateOrConnectWithoutAccountInput = {
-    where: DocumentVersionWhereUniqueInput
-    create: XOR<DocumentVersionCreateWithoutAccountInput, DocumentVersionUncheckedCreateWithoutAccountInput>
-  }
-
-  export type DocumentVersionCreateManyAccountInputEnvelope = {
-    data: DocumentVersionCreateManyAccountInput | DocumentVersionCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
   export type EditorWorkspaceCreateWithoutAccountInput = {
     id: string
     name: string
@@ -113329,7 +107756,7 @@ export namespace Prisma {
     id: string
     sessionId: string
     workspaceId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -113348,7 +107775,7 @@ export namespace Prisma {
     groupId: string
     sessionId: string
     workspaceId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -113821,6 +108248,7 @@ export namespace Prisma {
     id: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -113830,6 +108258,7 @@ export namespace Prisma {
     id: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -114695,6 +109124,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -114716,6 +109146,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -115069,82 +109500,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type DocumentVersionCreateWithoutIdentityInput = {
-    id: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    document: DocumentCreateNestedOneWithoutVersionsInput
-    account: AccountCreateNestedOneWithoutDocumentVersionsInput
-  }
-
-  export type DocumentVersionUncheckedCreateWithoutIdentityInput = {
-    id: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    changedBy: string
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentVersionCreateOrConnectWithoutIdentityInput = {
-    where: DocumentVersionWhereUniqueInput
-    create: XOR<DocumentVersionCreateWithoutIdentityInput, DocumentVersionUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type DocumentVersionCreateManyIdentityInputEnvelope = {
-    data: DocumentVersionCreateManyIdentityInput | DocumentVersionCreateManyIdentityInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type DocumentLinkCreateWithoutIdentityInput = {
-    id: string
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    sourceDocument: DocumentCreateNestedOneWithoutSourceLinksInput
-    targetDocument?: DocumentCreateNestedOneWithoutTargetLinksInput
-  }
-
-  export type DocumentLinkUncheckedCreateWithoutIdentityInput = {
-    id: string
-    sourceDocumentId: string
-    targetDocumentId?: string | null
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentLinkCreateOrConnectWithoutIdentityInput = {
-    where: DocumentLinkWhereUniqueInput
-    create: XOR<DocumentLinkCreateWithoutIdentityInput, DocumentLinkUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type DocumentLinkCreateManyIdentityInputEnvelope = {
-    data: DocumentLinkCreateManyIdentityInput | DocumentLinkCreateManyIdentityInput[]
-    skipDuplicates?: boolean
-  }
-
   export type AiMessageCreateWithoutIdentityInput = {
     id: string
     role: string
@@ -115364,78 +109719,6 @@ export namespace Prisma {
     sessions?: AuthSessionUncheckedUpdateManyWithoutIdentityNestedInput
   }
 
-  export type DocumentUpsertWithWhereUniqueWithoutAccountInput = {
-    where: DocumentWhereUniqueInput
-    update: XOR<DocumentUpdateWithoutAccountInput, DocumentUncheckedUpdateWithoutAccountInput>
-    create: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput>
-  }
-
-  export type DocumentUpdateWithWhereUniqueWithoutAccountInput = {
-    where: DocumentWhereUniqueInput
-    data: XOR<DocumentUpdateWithoutAccountInput, DocumentUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type DocumentUpdateManyWithWhereWithoutAccountInput = {
-    where: DocumentScalarWhereInput
-    data: XOR<DocumentUpdateManyMutationInput, DocumentUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type DocumentScalarWhereInput = {
-    AND?: DocumentScalarWhereInput | DocumentScalarWhereInput[]
-    OR?: DocumentScalarWhereInput[]
-    NOT?: DocumentScalarWhereInput | DocumentScalarWhereInput[]
-    id?: StringFilter<"Document"> | string
-    identityId?: StringFilter<"Document"> | string
-    title?: StringFilter<"Document"> | string
-    content?: StringFilter<"Document"> | string
-    folderPath?: StringFilter<"Document"> | string
-    tags?: StringNullableListFilter<"Document">
-    status?: StringFilter<"Document"> | string
-    currentVersion?: IntFilter<"Document"> | number
-    lastVersionedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    lastEditedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-    editSessionId?: StringNullableFilter<"Document"> | string | null
-    version?: IntFilter<"Document"> | number
-    createdAt?: DateTimeFilter<"Document"> | Date | string
-    updatedAt?: DateTimeFilter<"Document"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Document"> | Date | string | null
-  }
-
-  export type DocumentVersionUpsertWithWhereUniqueWithoutAccountInput = {
-    where: DocumentVersionWhereUniqueInput
-    update: XOR<DocumentVersionUpdateWithoutAccountInput, DocumentVersionUncheckedUpdateWithoutAccountInput>
-    create: XOR<DocumentVersionCreateWithoutAccountInput, DocumentVersionUncheckedCreateWithoutAccountInput>
-  }
-
-  export type DocumentVersionUpdateWithWhereUniqueWithoutAccountInput = {
-    where: DocumentVersionWhereUniqueInput
-    data: XOR<DocumentVersionUpdateWithoutAccountInput, DocumentVersionUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type DocumentVersionUpdateManyWithWhereWithoutAccountInput = {
-    where: DocumentVersionScalarWhereInput
-    data: XOR<DocumentVersionUpdateManyMutationInput, DocumentVersionUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type DocumentVersionScalarWhereInput = {
-    AND?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
-    OR?: DocumentVersionScalarWhereInput[]
-    NOT?: DocumentVersionScalarWhereInput | DocumentVersionScalarWhereInput[]
-    id?: StringFilter<"DocumentVersion"> | string
-    identityId?: StringFilter<"DocumentVersion"> | string
-    documentId?: StringFilter<"DocumentVersion"> | string
-    versionNumber?: IntFilter<"DocumentVersion"> | number
-    title?: StringFilter<"DocumentVersion"> | string
-    content?: StringFilter<"DocumentVersion"> | string
-    changeType?: StringFilter<"DocumentVersion"> | string
-    changeDescription?: StringNullableFilter<"DocumentVersion"> | string | null
-    changedBy?: StringFilter<"DocumentVersion"> | string
-    restoredFrom?: StringNullableFilter<"DocumentVersion"> | string | null
-    metadata?: JsonNullableFilter<"DocumentVersion">
-    version?: IntFilter<"DocumentVersion"> | number
-    createdAt?: DateTimeFilter<"DocumentVersion"> | Date | string
-  }
-
   export type EditorWorkspaceUpsertWithWhereUniqueWithoutAccountInput = {
     where: EditorWorkspaceWhereUniqueInput
     update: XOR<EditorWorkspaceUpdateWithoutAccountInput, EditorWorkspaceUncheckedUpdateWithoutAccountInput>
@@ -115562,7 +109845,7 @@ export namespace Prisma {
     sessionId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     workspaceId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     identityId?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
-    documentId?: StringNullableFilter<"EditorWorkspaceSessionGroupTab"> | string | null
+    resourceId?: StringNullableFilter<"EditorWorkspaceSessionGroupTab"> | string | null
     tabIndex?: IntFilter<"EditorWorkspaceSessionGroupTab"> | number
     tabType?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
     title?: StringFilter<"EditorWorkspaceSessionGroupTab"> | string
@@ -115949,6 +110232,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -115958,6 +110242,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -116731,6 +111016,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"KeyResult"> | string | null
     valueType?: StringFilter<"KeyResult"> | string
     aggregationMethod?: StringFilter<"KeyResult"> | string
+    initialValue?: FloatFilter<"KeyResult"> | number
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
@@ -117057,55 +111343,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"NotificationHistory"> | Date | string
   }
 
-  export type DocumentVersionUpsertWithWhereUniqueWithoutIdentityInput = {
-    where: DocumentVersionWhereUniqueInput
-    update: XOR<DocumentVersionUpdateWithoutIdentityInput, DocumentVersionUncheckedUpdateWithoutIdentityInput>
-    create: XOR<DocumentVersionCreateWithoutIdentityInput, DocumentVersionUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type DocumentVersionUpdateWithWhereUniqueWithoutIdentityInput = {
-    where: DocumentVersionWhereUniqueInput
-    data: XOR<DocumentVersionUpdateWithoutIdentityInput, DocumentVersionUncheckedUpdateWithoutIdentityInput>
-  }
-
-  export type DocumentVersionUpdateManyWithWhereWithoutIdentityInput = {
-    where: DocumentVersionScalarWhereInput
-    data: XOR<DocumentVersionUpdateManyMutationInput, DocumentVersionUncheckedUpdateManyWithoutIdentityInput>
-  }
-
-  export type DocumentLinkUpsertWithWhereUniqueWithoutIdentityInput = {
-    where: DocumentLinkWhereUniqueInput
-    update: XOR<DocumentLinkUpdateWithoutIdentityInput, DocumentLinkUncheckedUpdateWithoutIdentityInput>
-    create: XOR<DocumentLinkCreateWithoutIdentityInput, DocumentLinkUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type DocumentLinkUpdateWithWhereUniqueWithoutIdentityInput = {
-    where: DocumentLinkWhereUniqueInput
-    data: XOR<DocumentLinkUpdateWithoutIdentityInput, DocumentLinkUncheckedUpdateWithoutIdentityInput>
-  }
-
-  export type DocumentLinkUpdateManyWithWhereWithoutIdentityInput = {
-    where: DocumentLinkScalarWhereInput
-    data: XOR<DocumentLinkUpdateManyMutationInput, DocumentLinkUncheckedUpdateManyWithoutIdentityInput>
-  }
-
-  export type DocumentLinkScalarWhereInput = {
-    AND?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-    OR?: DocumentLinkScalarWhereInput[]
-    NOT?: DocumentLinkScalarWhereInput | DocumentLinkScalarWhereInput[]
-    id?: StringFilter<"DocumentLink"> | string
-    identityId?: StringFilter<"DocumentLink"> | string
-    sourceDocumentId?: StringFilter<"DocumentLink"> | string
-    targetDocumentId?: StringNullableFilter<"DocumentLink"> | string | null
-    linkText?: StringFilter<"DocumentLink"> | string
-    linkPosition?: IntFilter<"DocumentLink"> | number
-    isBroken?: BoolFilter<"DocumentLink"> | boolean
-    version?: IntFilter<"DocumentLink"> | number
-    createdAt?: DateTimeFilter<"DocumentLink"> | Date | string
-    updatedAt?: DateTimeFilter<"DocumentLink"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"DocumentLink"> | Date | string | null
-  }
-
   export type AiMessageUpsertWithWhereUniqueWithoutIdentityInput = {
     where: AiMessageWhereUniqueInput
     update: XOR<AiMessageUpdateWithoutIdentityInput, AiMessageUncheckedUpdateWithoutIdentityInput>
@@ -117268,8 +111505,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -117312,8 +111547,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -117338,8 +111571,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -117382,8 +111613,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -117452,8 +111681,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -117496,8 +111723,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -117522,8 +111747,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -117566,8 +111789,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -117608,8 +111829,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -117653,8 +111872,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
@@ -117678,8 +111895,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -117723,8 +111938,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -117795,8 +112008,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -117840,8 +112051,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
@@ -117865,8 +112074,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -117910,8 +112117,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -117972,8 +112177,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -118016,8 +112219,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -118042,8 +112243,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -118086,8 +112285,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -118128,8 +112325,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -118172,8 +112367,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -118198,8 +112391,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -118242,8 +112433,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -118268,8 +112457,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -118312,8 +112499,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -118338,8 +112523,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -118382,8 +112565,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -118424,8 +112605,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -118468,8 +112647,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -118494,8 +112671,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -118538,8 +112713,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -118564,8 +112737,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -118608,8 +112779,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -118634,8 +112803,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -118678,8 +112845,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -118720,8 +112885,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -118764,8 +112927,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -118790,8 +112951,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -118834,8 +112993,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -118860,8 +113017,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -118904,8 +113059,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -118930,8 +113083,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -118974,8 +113125,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -119016,8 +113165,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -119060,8 +113207,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -119086,8 +113231,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -119130,8 +113273,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -119293,8 +113434,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -119338,8 +113477,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -119363,8 +113500,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -119408,8 +113543,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -119914,1638 +114047,6 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutIdentityNestedInput
   }
 
-  export type AccountCreateWithoutDocumentsInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountUncheckedCreateWithoutDocumentsInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountCreateOrConnectWithoutDocumentsInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutDocumentsInput, AccountUncheckedCreateWithoutDocumentsInput>
-  }
-
-  export type DocumentVersionCreateWithoutDocumentInput = {
-    id: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-    identity: AccountCreateNestedOneWithoutDocumentVersionsByIdentityInput
-    account: AccountCreateNestedOneWithoutDocumentVersionsInput
-  }
-
-  export type DocumentVersionUncheckedCreateWithoutDocumentInput = {
-    id: string
-    identityId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    changedBy: string
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentVersionCreateOrConnectWithoutDocumentInput = {
-    where: DocumentVersionWhereUniqueInput
-    create: XOR<DocumentVersionCreateWithoutDocumentInput, DocumentVersionUncheckedCreateWithoutDocumentInput>
-  }
-
-  export type DocumentVersionCreateManyDocumentInputEnvelope = {
-    data: DocumentVersionCreateManyDocumentInput | DocumentVersionCreateManyDocumentInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type DocumentLinkCreateWithoutSourceDocumentInput = {
-    id: string
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AccountCreateNestedOneWithoutDocumentLinksInput
-    targetDocument?: DocumentCreateNestedOneWithoutTargetLinksInput
-  }
-
-  export type DocumentLinkUncheckedCreateWithoutSourceDocumentInput = {
-    id: string
-    identityId: string
-    targetDocumentId?: string | null
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentLinkCreateOrConnectWithoutSourceDocumentInput = {
-    where: DocumentLinkWhereUniqueInput
-    create: XOR<DocumentLinkCreateWithoutSourceDocumentInput, DocumentLinkUncheckedCreateWithoutSourceDocumentInput>
-  }
-
-  export type DocumentLinkCreateManySourceDocumentInputEnvelope = {
-    data: DocumentLinkCreateManySourceDocumentInput | DocumentLinkCreateManySourceDocumentInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type DocumentLinkCreateWithoutTargetDocumentInput = {
-    id: string
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AccountCreateNestedOneWithoutDocumentLinksInput
-    sourceDocument: DocumentCreateNestedOneWithoutSourceLinksInput
-  }
-
-  export type DocumentLinkUncheckedCreateWithoutTargetDocumentInput = {
-    id: string
-    identityId: string
-    sourceDocumentId: string
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentLinkCreateOrConnectWithoutTargetDocumentInput = {
-    where: DocumentLinkWhereUniqueInput
-    create: XOR<DocumentLinkCreateWithoutTargetDocumentInput, DocumentLinkUncheckedCreateWithoutTargetDocumentInput>
-  }
-
-  export type DocumentLinkCreateManyTargetDocumentInputEnvelope = {
-    data: DocumentLinkCreateManyTargetDocumentInput | DocumentLinkCreateManyTargetDocumentInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type AccountUpsertWithoutDocumentsInput = {
-    update: XOR<AccountUpdateWithoutDocumentsInput, AccountUncheckedUpdateWithoutDocumentsInput>
-    create: XOR<AccountCreateWithoutDocumentsInput, AccountUncheckedCreateWithoutDocumentsInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutDocumentsInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutDocumentsInput, AccountUncheckedUpdateWithoutDocumentsInput>
-  }
-
-  export type AccountUpdateWithoutDocumentsInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutDocumentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type DocumentVersionUpsertWithWhereUniqueWithoutDocumentInput = {
-    where: DocumentVersionWhereUniqueInput
-    update: XOR<DocumentVersionUpdateWithoutDocumentInput, DocumentVersionUncheckedUpdateWithoutDocumentInput>
-    create: XOR<DocumentVersionCreateWithoutDocumentInput, DocumentVersionUncheckedCreateWithoutDocumentInput>
-  }
-
-  export type DocumentVersionUpdateWithWhereUniqueWithoutDocumentInput = {
-    where: DocumentVersionWhereUniqueInput
-    data: XOR<DocumentVersionUpdateWithoutDocumentInput, DocumentVersionUncheckedUpdateWithoutDocumentInput>
-  }
-
-  export type DocumentVersionUpdateManyWithWhereWithoutDocumentInput = {
-    where: DocumentVersionScalarWhereInput
-    data: XOR<DocumentVersionUpdateManyMutationInput, DocumentVersionUncheckedUpdateManyWithoutDocumentInput>
-  }
-
-  export type DocumentLinkUpsertWithWhereUniqueWithoutSourceDocumentInput = {
-    where: DocumentLinkWhereUniqueInput
-    update: XOR<DocumentLinkUpdateWithoutSourceDocumentInput, DocumentLinkUncheckedUpdateWithoutSourceDocumentInput>
-    create: XOR<DocumentLinkCreateWithoutSourceDocumentInput, DocumentLinkUncheckedCreateWithoutSourceDocumentInput>
-  }
-
-  export type DocumentLinkUpdateWithWhereUniqueWithoutSourceDocumentInput = {
-    where: DocumentLinkWhereUniqueInput
-    data: XOR<DocumentLinkUpdateWithoutSourceDocumentInput, DocumentLinkUncheckedUpdateWithoutSourceDocumentInput>
-  }
-
-  export type DocumentLinkUpdateManyWithWhereWithoutSourceDocumentInput = {
-    where: DocumentLinkScalarWhereInput
-    data: XOR<DocumentLinkUpdateManyMutationInput, DocumentLinkUncheckedUpdateManyWithoutSourceDocumentInput>
-  }
-
-  export type DocumentLinkUpsertWithWhereUniqueWithoutTargetDocumentInput = {
-    where: DocumentLinkWhereUniqueInput
-    update: XOR<DocumentLinkUpdateWithoutTargetDocumentInput, DocumentLinkUncheckedUpdateWithoutTargetDocumentInput>
-    create: XOR<DocumentLinkCreateWithoutTargetDocumentInput, DocumentLinkUncheckedCreateWithoutTargetDocumentInput>
-  }
-
-  export type DocumentLinkUpdateWithWhereUniqueWithoutTargetDocumentInput = {
-    where: DocumentLinkWhereUniqueInput
-    data: XOR<DocumentLinkUpdateWithoutTargetDocumentInput, DocumentLinkUncheckedUpdateWithoutTargetDocumentInput>
-  }
-
-  export type DocumentLinkUpdateManyWithWhereWithoutTargetDocumentInput = {
-    where: DocumentLinkScalarWhereInput
-    data: XOR<DocumentLinkUpdateManyMutationInput, DocumentLinkUncheckedUpdateManyWithoutTargetDocumentInput>
-  }
-
-  export type DocumentCreateWithoutVersionsInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account: AccountCreateNestedOneWithoutDocumentsInput
-    sourceLinks?: DocumentLinkCreateNestedManyWithoutSourceDocumentInput
-    targetLinks?: DocumentLinkCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentUncheckedCreateWithoutVersionsInput = {
-    id: string
-    identityId: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    sourceLinks?: DocumentLinkUncheckedCreateNestedManyWithoutSourceDocumentInput
-    targetLinks?: DocumentLinkUncheckedCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentCreateOrConnectWithoutVersionsInput = {
-    where: DocumentWhereUniqueInput
-    create: XOR<DocumentCreateWithoutVersionsInput, DocumentUncheckedCreateWithoutVersionsInput>
-  }
-
-  export type AccountCreateWithoutDocumentVersionsByIdentityInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountUncheckedCreateWithoutDocumentVersionsByIdentityInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountCreateOrConnectWithoutDocumentVersionsByIdentityInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutDocumentVersionsByIdentityInput, AccountUncheckedCreateWithoutDocumentVersionsByIdentityInput>
-  }
-
-  export type AccountCreateWithoutDocumentVersionsInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountUncheckedCreateWithoutDocumentVersionsInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountCreateOrConnectWithoutDocumentVersionsInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutDocumentVersionsInput, AccountUncheckedCreateWithoutDocumentVersionsInput>
-  }
-
-  export type DocumentUpsertWithoutVersionsInput = {
-    update: XOR<DocumentUpdateWithoutVersionsInput, DocumentUncheckedUpdateWithoutVersionsInput>
-    create: XOR<DocumentCreateWithoutVersionsInput, DocumentUncheckedCreateWithoutVersionsInput>
-    where?: DocumentWhereInput
-  }
-
-  export type DocumentUpdateToOneWithWhereWithoutVersionsInput = {
-    where?: DocumentWhereInput
-    data: XOR<DocumentUpdateWithoutVersionsInput, DocumentUncheckedUpdateWithoutVersionsInput>
-  }
-
-  export type DocumentUpdateWithoutVersionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneRequiredWithoutDocumentsNestedInput
-    sourceLinks?: DocumentLinkUpdateManyWithoutSourceDocumentNestedInput
-    targetLinks?: DocumentLinkUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentUncheckedUpdateWithoutVersionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sourceLinks?: DocumentLinkUncheckedUpdateManyWithoutSourceDocumentNestedInput
-    targetLinks?: DocumentLinkUncheckedUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type AccountUpsertWithoutDocumentVersionsByIdentityInput = {
-    update: XOR<AccountUpdateWithoutDocumentVersionsByIdentityInput, AccountUncheckedUpdateWithoutDocumentVersionsByIdentityInput>
-    create: XOR<AccountCreateWithoutDocumentVersionsByIdentityInput, AccountUncheckedCreateWithoutDocumentVersionsByIdentityInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutDocumentVersionsByIdentityInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutDocumentVersionsByIdentityInput, AccountUncheckedUpdateWithoutDocumentVersionsByIdentityInput>
-  }
-
-  export type AccountUpdateWithoutDocumentVersionsByIdentityInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutDocumentVersionsByIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AccountUpsertWithoutDocumentVersionsInput = {
-    update: XOR<AccountUpdateWithoutDocumentVersionsInput, AccountUncheckedUpdateWithoutDocumentVersionsInput>
-    create: XOR<AccountCreateWithoutDocumentVersionsInput, AccountUncheckedCreateWithoutDocumentVersionsInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutDocumentVersionsInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutDocumentVersionsInput, AccountUncheckedUpdateWithoutDocumentVersionsInput>
-  }
-
-  export type AccountUpdateWithoutDocumentVersionsInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutDocumentVersionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AccountCreateWithoutDocumentLinksInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
-    folders?: FolderCreateNestedManyWithoutIdentityInput
-    resources?: ResourceCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountUncheckedCreateWithoutDocumentLinksInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
-    goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
-    goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
-    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
-    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
-    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
-    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
-    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AccountCreateOrConnectWithoutDocumentLinksInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutDocumentLinksInput, AccountUncheckedCreateWithoutDocumentLinksInput>
-  }
-
-  export type DocumentCreateWithoutSourceLinksInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account: AccountCreateNestedOneWithoutDocumentsInput
-    versions?: DocumentVersionCreateNestedManyWithoutDocumentInput
-    targetLinks?: DocumentLinkCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentUncheckedCreateWithoutSourceLinksInput = {
-    id: string
-    identityId: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    versions?: DocumentVersionUncheckedCreateNestedManyWithoutDocumentInput
-    targetLinks?: DocumentLinkUncheckedCreateNestedManyWithoutTargetDocumentInput
-  }
-
-  export type DocumentCreateOrConnectWithoutSourceLinksInput = {
-    where: DocumentWhereUniqueInput
-    create: XOR<DocumentCreateWithoutSourceLinksInput, DocumentUncheckedCreateWithoutSourceLinksInput>
-  }
-
-  export type DocumentCreateWithoutTargetLinksInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account: AccountCreateNestedOneWithoutDocumentsInput
-    versions?: DocumentVersionCreateNestedManyWithoutDocumentInput
-    sourceLinks?: DocumentLinkCreateNestedManyWithoutSourceDocumentInput
-  }
-
-  export type DocumentUncheckedCreateWithoutTargetLinksInput = {
-    id: string
-    identityId: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    versions?: DocumentVersionUncheckedCreateNestedManyWithoutDocumentInput
-    sourceLinks?: DocumentLinkUncheckedCreateNestedManyWithoutSourceDocumentInput
-  }
-
-  export type DocumentCreateOrConnectWithoutTargetLinksInput = {
-    where: DocumentWhereUniqueInput
-    create: XOR<DocumentCreateWithoutTargetLinksInput, DocumentUncheckedCreateWithoutTargetLinksInput>
-  }
-
-  export type AccountUpsertWithoutDocumentLinksInput = {
-    update: XOR<AccountUpdateWithoutDocumentLinksInput, AccountUncheckedUpdateWithoutDocumentLinksInput>
-    create: XOR<AccountCreateWithoutDocumentLinksInput, AccountUncheckedCreateWithoutDocumentLinksInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutDocumentLinksInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutDocumentLinksInput, AccountUncheckedUpdateWithoutDocumentLinksInput>
-  }
-
-  export type AccountUpdateWithoutDocumentLinksInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutDocumentLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
-    goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
-    goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
-    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
-    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
-    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
-    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
-    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type DocumentUpsertWithoutSourceLinksInput = {
-    update: XOR<DocumentUpdateWithoutSourceLinksInput, DocumentUncheckedUpdateWithoutSourceLinksInput>
-    create: XOR<DocumentCreateWithoutSourceLinksInput, DocumentUncheckedCreateWithoutSourceLinksInput>
-    where?: DocumentWhereInput
-  }
-
-  export type DocumentUpdateToOneWithWhereWithoutSourceLinksInput = {
-    where?: DocumentWhereInput
-    data: XOR<DocumentUpdateWithoutSourceLinksInput, DocumentUncheckedUpdateWithoutSourceLinksInput>
-  }
-
-  export type DocumentUpdateWithoutSourceLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneRequiredWithoutDocumentsNestedInput
-    versions?: DocumentVersionUpdateManyWithoutDocumentNestedInput
-    targetLinks?: DocumentLinkUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentUncheckedUpdateWithoutSourceLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    versions?: DocumentVersionUncheckedUpdateManyWithoutDocumentNestedInput
-    targetLinks?: DocumentLinkUncheckedUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentUpsertWithoutTargetLinksInput = {
-    update: XOR<DocumentUpdateWithoutTargetLinksInput, DocumentUncheckedUpdateWithoutTargetLinksInput>
-    create: XOR<DocumentCreateWithoutTargetLinksInput, DocumentUncheckedCreateWithoutTargetLinksInput>
-    where?: DocumentWhereInput
-  }
-
-  export type DocumentUpdateToOneWithWhereWithoutTargetLinksInput = {
-    where?: DocumentWhereInput
-    data: XOR<DocumentUpdateWithoutTargetLinksInput, DocumentUncheckedUpdateWithoutTargetLinksInput>
-  }
-
-  export type DocumentUpdateWithoutTargetLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneRequiredWithoutDocumentsNestedInput
-    versions?: DocumentVersionUpdateManyWithoutDocumentNestedInput
-    sourceLinks?: DocumentLinkUpdateManyWithoutSourceDocumentNestedInput
-  }
-
-  export type DocumentUncheckedUpdateWithoutTargetLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    versions?: DocumentVersionUncheckedUpdateManyWithoutDocumentNestedInput
-    sourceLinks?: DocumentLinkUncheckedUpdateManyWithoutSourceDocumentNestedInput
-  }
-
   export type EditorWorkspaceSessionCreateWithoutWorkspaceInput = {
     id: string
     name: string
@@ -121600,8 +114101,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
@@ -121644,8 +114143,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -121670,8 +114167,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
@@ -121714,8 +114209,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -121772,8 +114265,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
@@ -121816,8 +114307,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -121842,8 +114331,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
@@ -121886,8 +114373,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -121950,8 +114435,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
@@ -121994,8 +114477,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -122020,8 +114501,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
@@ -122064,8 +114543,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -122161,8 +114638,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
@@ -122205,8 +114680,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -122231,8 +114704,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
@@ -122275,8 +114746,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -122332,7 +114801,7 @@ export namespace Prisma {
     id: string
     sessionId: string
     workspaceId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -122351,7 +114820,7 @@ export namespace Prisma {
     sessionId: string
     workspaceId: string
     identityId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -122392,8 +114861,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
@@ -122436,8 +114903,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -122462,8 +114927,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
@@ -122506,8 +114969,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -122595,8 +115056,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
@@ -122639,8 +115098,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -122665,8 +115122,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
@@ -122709,8 +115164,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -122772,8 +115225,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -122816,8 +115267,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -122842,8 +115291,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -122886,8 +115333,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -122961,8 +115406,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -123005,8 +115448,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -123031,8 +115472,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -123075,8 +115514,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -123140,8 +115577,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -123184,8 +115619,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -123210,8 +115643,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -123254,8 +115685,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -123457,6 +115886,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -123478,6 +115908,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -123660,8 +116091,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -123704,8 +116133,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -123730,8 +116157,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -123774,8 +116199,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -124004,8 +116427,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -124048,8 +116469,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -124074,8 +116493,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -124118,8 +116535,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -124327,8 +116742,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -124371,8 +116784,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -124397,8 +116808,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -124441,8 +116850,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -124550,8 +116957,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -124594,8 +116999,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -124620,8 +117023,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -124664,8 +117065,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -124845,8 +117244,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -124889,8 +117286,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -124915,8 +117310,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -124959,8 +117352,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -125090,8 +117481,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -125134,8 +117523,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -125160,8 +117547,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -125204,8 +117589,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -125223,6 +117606,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -125245,6 +117629,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -125291,8 +117676,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -125335,8 +117718,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -125361,8 +117742,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -125405,8 +117784,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -125430,6 +117807,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -125452,6 +117830,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -125482,8 +117861,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -125526,8 +117903,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -125552,8 +117927,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -125596,8 +117969,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -125705,8 +118076,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -125749,8 +118118,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -125775,8 +118142,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -125819,8 +118184,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -125918,8 +118281,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -125962,8 +118323,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -125988,8 +118347,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -126032,8 +118389,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -126118,6 +118473,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -126140,6 +118496,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -126186,8 +118543,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -126230,8 +118585,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -126256,8 +118609,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -126300,8 +118651,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -126398,6 +118747,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -126420,6 +118770,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -126450,8 +118801,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -126494,8 +118843,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -126520,8 +118867,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -126564,8 +118909,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -126673,8 +119016,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -126717,8 +119058,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -126743,8 +119082,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -126787,8 +119124,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -126886,8 +119221,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -126930,8 +119263,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -126956,8 +119287,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -127000,8 +119329,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -127042,8 +119369,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -127086,8 +119411,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -127112,8 +119435,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -127156,8 +119477,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -127182,8 +119501,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -127226,8 +119543,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -127252,8 +119567,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -127296,8 +119609,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -127338,8 +119649,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -127382,8 +119691,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -127408,8 +119715,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -127452,8 +119757,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -127691,8 +119994,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -127735,8 +120036,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -127761,8 +120060,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -127805,8 +120102,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -127879,8 +120174,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -127923,8 +120216,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -127949,8 +120240,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -127993,8 +120282,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -128019,8 +120306,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -128063,8 +120348,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -128089,8 +120372,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -128133,8 +120414,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -128230,8 +120509,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -128274,8 +120551,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -128300,8 +120575,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -128344,8 +120617,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -128431,8 +120702,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -128475,8 +120744,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -128501,8 +120768,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -128545,8 +120810,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -128642,8 +120905,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -128686,8 +120947,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -128712,8 +120971,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -128756,8 +121013,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -128939,8 +121194,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -128983,8 +121236,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -129009,8 +121260,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -129053,8 +121302,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -129184,8 +121431,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -129228,8 +121473,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -129254,8 +121497,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -129298,8 +121539,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -129371,8 +121610,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -129415,8 +121652,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -129441,8 +121676,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -129485,8 +121718,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -129621,8 +121852,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -129665,8 +121894,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -129691,8 +121918,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -129735,8 +121960,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -129777,8 +122000,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -129821,8 +122042,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -129847,8 +122066,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -129891,8 +122108,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -130022,8 +122237,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -130066,8 +122279,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -130092,8 +122303,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -130136,8 +122345,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -130257,8 +122464,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -130301,8 +122506,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -130327,8 +122530,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -130371,8 +122572,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -130502,8 +122701,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -130546,8 +122743,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -130572,8 +122767,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -130616,8 +122809,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -130737,8 +122928,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -130781,8 +122970,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -130807,8 +122994,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -130851,8 +123036,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -130893,8 +123076,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -130937,8 +123118,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -130963,8 +123142,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -131007,8 +123184,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -131033,8 +123208,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -131077,8 +123250,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -131103,8 +123274,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -131147,8 +123316,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -131278,8 +123445,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -131322,8 +123487,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -131348,8 +123511,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -131392,8 +123553,6 @@ export namespace Prisma {
     reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -131513,8 +123672,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -131557,8 +123714,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -131583,8 +123738,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -131627,8 +123780,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -131669,8 +123820,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -131713,8 +123862,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -131739,8 +123886,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -131783,8 +123928,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -131809,8 +123952,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -131853,8 +123994,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -131879,8 +124018,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -131923,8 +124060,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -132153,8 +124288,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -132197,8 +124330,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -132223,8 +124354,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -132267,8 +124396,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -132357,8 +124484,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -132402,8 +124527,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
@@ -132427,8 +124550,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -132472,8 +124593,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -132635,8 +124754,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -132680,8 +124797,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
@@ -132705,8 +124820,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -132750,8 +124863,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -132887,8 +124998,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -132932,8 +125041,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
@@ -132957,8 +125064,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -133002,8 +125107,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -133094,8 +125197,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -133139,8 +125240,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
@@ -133164,8 +125263,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -133209,8 +125306,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -133333,8 +125428,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -133378,8 +125471,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -133403,8 +125494,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -133448,8 +125537,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -133636,8 +125723,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -133681,8 +125766,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -133706,8 +125789,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -133751,8 +125832,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -134191,8 +126270,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -134235,8 +126312,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -134261,8 +126336,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -134305,8 +126378,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -134398,8 +126469,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -134442,8 +126511,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -134468,8 +126535,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -134512,8 +126577,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -134595,8 +126658,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -134639,8 +126700,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -134665,8 +126724,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -134709,8 +126766,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -134751,8 +126806,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -134795,8 +126848,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -134821,8 +126872,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -134865,8 +126914,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -134891,8 +126938,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -134935,8 +126980,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -134961,8 +127004,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -135005,8 +127046,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -135047,8 +127086,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -135091,8 +127128,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -135117,8 +127152,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -135161,8 +127194,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -135187,8 +127218,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -135231,8 +127260,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -135257,8 +127284,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -135301,8 +127326,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -135343,8 +127366,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -135387,8 +127408,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -135413,8 +127432,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -135457,8 +127474,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -135517,8 +127532,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -135561,8 +127574,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -135587,8 +127598,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -135631,8 +127640,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -135689,8 +127696,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -135733,8 +127738,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -135759,8 +127762,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -135803,8 +127804,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -135829,8 +127828,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -135873,8 +127870,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -135899,8 +127894,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -135943,8 +127936,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -136060,8 +128051,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -136104,8 +128093,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -136130,8 +128117,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -136174,8 +128159,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -136281,8 +128264,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -136325,8 +128306,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -136351,8 +128330,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -136395,8 +128372,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -136437,8 +128412,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -136481,8 +128454,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -136507,8 +128478,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -136551,8 +128520,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -136577,8 +128544,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -136621,8 +128586,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -136647,8 +128610,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -136691,8 +128652,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -136733,8 +128692,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -136777,8 +128734,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -136803,8 +128758,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -136847,8 +128800,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -136873,8 +128824,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -136917,8 +128866,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -136943,8 +128890,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -136987,8 +128932,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -137133,8 +129076,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -137177,8 +129118,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -137203,8 +129142,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -137247,8 +129184,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -137289,8 +129224,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -137333,8 +129266,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -137359,8 +129290,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -137403,8 +129332,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -137817,8 +129744,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -137861,8 +129786,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -137887,8 +129810,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -137931,8 +129852,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -138179,8 +130098,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -138223,8 +130140,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -138249,8 +130164,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -138293,8 +130206,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -138434,8 +130345,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -138478,8 +130387,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -138504,8 +130411,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -138548,8 +130453,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -138679,8 +130582,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -138723,8 +130624,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -138749,8 +130648,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -138793,8 +130690,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -139033,8 +130928,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -139077,8 +130970,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -139103,8 +130994,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -139147,8 +131036,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -139383,8 +131270,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -139427,8 +131312,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -139453,8 +131336,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -139497,8 +131378,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -139638,8 +131517,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -139682,8 +131559,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -139708,8 +131583,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -139752,8 +131625,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -139883,8 +131754,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
@@ -139927,8 +131796,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
     folders?: FolderCreateNestedManyWithoutIdentityInput
     resources?: ResourceCreateNestedManyWithoutIdentityInput
@@ -139953,8 +131820,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
@@ -139997,8 +131862,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
     notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
     notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedCreateNestedManyWithoutIdentityInput
-    documentLinks?: DocumentLinkUncheckedCreateNestedManyWithoutIdentityInput
     aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
     folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
     resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
@@ -140039,8 +131902,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -140083,8 +131944,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -140109,8 +131968,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -140153,44 +132010,10 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
     repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type DocumentCreateManyAccountInput = {
-    id: string
-    title: string
-    content: string
-    folderPath: string
-    tags?: DocumentCreatetagsInput | string[]
-    status?: string
-    currentVersion?: number
-    lastVersionedAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editSessionId?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentVersionCreateManyAccountInput = {
-    id: string
-    identityId: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
   }
 
   export type EditorWorkspaceCreateManyAccountInput = {
@@ -140239,7 +132062,7 @@ export namespace Prisma {
     groupId: string
     sessionId: string
     workspaceId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -140642,6 +132465,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -140768,34 +132592,6 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
-  export type DocumentVersionCreateManyIdentityInput = {
-    id: string
-    documentId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    changedBy: string
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentLinkCreateManyIdentityInput = {
-    id: string
-    sourceDocumentId: string
-    targetDocumentId?: string | null
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
   export type AiMessageCreateManyIdentityInput = {
     id: string
     conversationId: string
@@ -140858,108 +132654,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     modifiedAt?: Date | string | null
-  }
-
-  export type DocumentUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    versions?: DocumentVersionUpdateManyWithoutDocumentNestedInput
-    sourceLinks?: DocumentLinkUpdateManyWithoutSourceDocumentNestedInput
-    targetLinks?: DocumentLinkUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    versions?: DocumentVersionUncheckedUpdateManyWithoutDocumentNestedInput
-    sourceLinks?: DocumentLinkUncheckedUpdateManyWithoutSourceDocumentNestedInput
-    targetLinks?: DocumentLinkUncheckedUpdateManyWithoutTargetDocumentNestedInput
-  }
-
-  export type DocumentUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    folderPath?: StringFieldUpdateOperationsInput | string
-    tags?: DocumentUpdatetagsInput | string[]
-    status?: StringFieldUpdateOperationsInput | string
-    currentVersion?: IntFieldUpdateOperationsInput | number
-    lastVersionedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    editSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentVersionUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    document?: DocumentUpdateOneRequiredWithoutVersionsNestedInput
-    identity?: AccountUpdateOneRequiredWithoutDocumentVersionsByIdentityNestedInput
-  }
-
-  export type DocumentVersionUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentVersionUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type EditorWorkspaceUpdateWithoutAccountInput = {
@@ -141095,7 +132789,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -141114,7 +132808,7 @@ export namespace Prisma {
     groupId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -141132,7 +132826,7 @@ export namespace Prisma {
     groupId?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -142350,6 +134044,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -142371,6 +134066,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -142391,6 +134087,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -142745,90 +134442,6 @@ export namespace Prisma {
     details?: NullableStringFieldUpdateOperationsInput | string | null
     actorId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentVersionUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    document?: DocumentUpdateOneRequiredWithoutVersionsNestedInput
-    account?: AccountUpdateOneRequiredWithoutDocumentVersionsNestedInput
-  }
-
-  export type DocumentVersionUncheckedUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    changedBy?: StringFieldUpdateOperationsInput | string
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentVersionUncheckedUpdateManyWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    changedBy?: StringFieldUpdateOperationsInput | string
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentLinkUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sourceDocument?: DocumentUpdateOneRequiredWithoutSourceLinksNestedInput
-    targetDocument?: DocumentUpdateOneWithoutTargetLinksNestedInput
-  }
-
-  export type DocumentLinkUncheckedUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sourceDocumentId?: StringFieldUpdateOperationsInput | string
-    targetDocumentId?: NullableStringFieldUpdateOperationsInput | string | null
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentLinkUncheckedUpdateManyWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sourceDocumentId?: StringFieldUpdateOperationsInput | string
-    targetDocumentId?: NullableStringFieldUpdateOperationsInput | string | null
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AiMessageUpdateWithoutIdentityInput = {
@@ -143299,8 +134912,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
@@ -143344,8 +134955,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
     folders?: FolderUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUpdateManyWithoutIdentityNestedInput
@@ -143369,8 +134978,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
     editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
@@ -143414,8 +135021,6 @@ export namespace Prisma {
     reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
     notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
     notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
-    documentVersionsByIdentity?: DocumentVersionUncheckedUpdateManyWithoutIdentityNestedInput
-    documentLinks?: DocumentLinkUncheckedUpdateManyWithoutIdentityNestedInput
     aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
     folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
     resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
@@ -143435,170 +135040,6 @@ export namespace Prisma {
     phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
     phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentVersionCreateManyDocumentInput = {
-    id: string
-    identityId: string
-    versionNumber: number
-    title: string
-    content: string
-    changeType: string
-    changeDescription?: string | null
-    changedBy: string
-    restoredFrom?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: number
-    createdAt?: Date | string
-  }
-
-  export type DocumentLinkCreateManySourceDocumentInput = {
-    id: string
-    identityId: string
-    targetDocumentId?: string | null
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentLinkCreateManyTargetDocumentInput = {
-    id: string
-    identityId: string
-    sourceDocumentId: string
-    linkText: string
-    linkPosition: number
-    isBroken?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type DocumentVersionUpdateWithoutDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    identity?: AccountUpdateOneRequiredWithoutDocumentVersionsByIdentityNestedInput
-    account?: AccountUpdateOneRequiredWithoutDocumentVersionsNestedInput
-  }
-
-  export type DocumentVersionUncheckedUpdateWithoutDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    changedBy?: StringFieldUpdateOperationsInput | string
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentVersionUncheckedUpdateManyWithoutDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    versionNumber?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    changeType?: StringFieldUpdateOperationsInput | string
-    changeDescription?: NullableStringFieldUpdateOperationsInput | string | null
-    changedBy?: StringFieldUpdateOperationsInput | string
-    restoredFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentLinkUpdateWithoutSourceDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AccountUpdateOneRequiredWithoutDocumentLinksNestedInput
-    targetDocument?: DocumentUpdateOneWithoutTargetLinksNestedInput
-  }
-
-  export type DocumentLinkUncheckedUpdateWithoutSourceDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    targetDocumentId?: NullableStringFieldUpdateOperationsInput | string | null
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentLinkUncheckedUpdateManyWithoutSourceDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    targetDocumentId?: NullableStringFieldUpdateOperationsInput | string | null
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentLinkUpdateWithoutTargetDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AccountUpdateOneRequiredWithoutDocumentLinksNestedInput
-    sourceDocument?: DocumentUpdateOneRequiredWithoutSourceLinksNestedInput
-  }
-
-  export type DocumentLinkUncheckedUpdateWithoutTargetDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    sourceDocumentId?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type DocumentLinkUncheckedUpdateManyWithoutTargetDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    sourceDocumentId?: StringFieldUpdateOperationsInput | string
-    linkText?: StringFieldUpdateOperationsInput | string
-    linkPosition?: IntFieldUpdateOperationsInput | number
-    isBroken?: BoolFieldUpdateOperationsInput | boolean
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -143714,7 +135155,7 @@ export namespace Prisma {
     sessionId: string
     workspaceId: string
     identityId: string
-    documentId?: string | null
+    resourceId?: string | null
     tabIndex: number
     tabType: string
     title: string
@@ -143731,7 +135172,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -143750,7 +135191,7 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -143768,7 +135209,7 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    documentId?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
     tabIndex?: IntFieldUpdateOperationsInput | number
     tabType?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -143814,6 +135255,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -143969,6 +135411,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -143990,6 +135433,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -144010,6 +135454,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null

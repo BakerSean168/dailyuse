@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { useNotificationStore } from '../stores/notificationStore';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 export function useNotification() {
@@ -32,11 +33,13 @@ export function useNotification() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.findNotifications({
-        ...query,
-        page: store.pagination.page,
-        limit: store.pagination.pageSize,
-      } as Parameters<typeof service.findNotifications>[0]);
+      const result = await service.findNotifications(
+        sanitizeForIpc({
+          ...query,
+          page: store.pagination.page,
+          limit: store.pagination.pageSize,
+        }) as Parameters<typeof service.findNotifications>[0],
+      );
       if (result.ok) {
         store.setNotifications(result.data.notifications ?? [], result.data.total ?? 0);
       } else {
@@ -84,8 +87,18 @@ export function useNotification() {
   }
 
   async function dismissAll() {
-    // TODO: NotificationClientService does not yet provide dismissAll — stub until service is extended
-    console.warn('[notification] dismissAll not yet available in NotificationClientService');
+    const ids = store.notifications.map((notification) => notification.id);
+    if (ids.length === 0) {
+      return;
+    }
+
+    const result = await service.dismissAll(ids);
+    if (result.ok) {
+      store.setNotifications([], 0);
+      store.setUnreadCount(0);
+    } else {
+      handleError(result.error.message || t('notification.error.deleteFailed'));
+    }
   }
 
   async function refreshStats() {

@@ -1,8 +1,8 @@
 /**
  * RecurrenceRule 值对象
- * 
+ *
  * 【规范说明：Class 类型值对象 - 参考 domain-shared-class-value-object-spec.md】
- * 
+ *
  * 任务重复规则：频率、间隔、结束条件等
  * 不可变性（所有修改返回新实例）
  */
@@ -19,7 +19,7 @@ import type { DomainDate } from '@dailyuse/contracts/primitives';
 
 /**
  * RecurrenceRule 值对象实现
- * 
+ *
  * 包含：
  * - frequency: 重复频率（Daily, Weekly, Monthly, Yearly）
  * - interval: 间隔（如每2天、每3周）
@@ -28,7 +28,6 @@ import type { DomainDate } from '@dailyuse/contracts/primitives';
  * - occurrences: 重复次数（可选）
  */
 export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IRecurrenceRule {
-
   private constructor(props: RecurrenceRuleDTO) {
     super(props);
   }
@@ -83,9 +82,7 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
    * 从数据库持久化 DTO 恢复值对象
    */
   public static fromPersistenceDTO(dto: RecurrenceRulePersistenceDTO): RecurrenceRule {
-    const daysOfWeek = typeof dto.daysOfWeek === 'string' 
-      ? JSON.parse(dto.daysOfWeek) 
-      : [];
+    const daysOfWeek = typeof dto.daysOfWeek === 'string' ? JSON.parse(dto.daysOfWeek) : [];
     return new RecurrenceRule({
       frequency: dto.frequency as RecurrenceFrequency,
       interval: dto.interval,
@@ -100,6 +97,10 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
    * 集中校验逻辑
    */
   private static validate(props: RecurrenceRuleDTO): void {
+    if (props.endDate !== null && props.occurrences !== null) {
+      throw new Error('Recurrence rule cannot define both endDate and occurrences');
+    }
+
     // 间隔必须为正数
     if (props.interval < 1) {
       throw new Error('Interval must be at least 1');
@@ -245,7 +246,7 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
 
     if (this.props.frequency === 'Weekly' && this.props.daysOfWeek.length > 0) {
       const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-      const days = this.props.daysOfWeek.map(d => dayNames[d]).join('、');
+      const days = this.props.daysOfWeek.map((d) => dayNames[d]).join('、');
       desc += `（${days}）`;
     }
 

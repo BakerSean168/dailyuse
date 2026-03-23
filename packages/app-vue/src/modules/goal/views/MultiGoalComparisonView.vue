@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col p-6">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden p-6">
     <div class="mb-6 flex items-center justify-between">
       <h2 class="text-lg font-semibold">{{ t('goal.multiComparison.title') }}</h2>
       <Button variant="outline" size="sm" @click="showSelector = true">
@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <ScrollArea v-else class="flex-1">
+    <ScrollArea v-else class="min-h-0 flex-1">
       <div class="space-y-6">
         <!-- 对比概览 -->
         <div class="grid gap-4" :class="gridCols">

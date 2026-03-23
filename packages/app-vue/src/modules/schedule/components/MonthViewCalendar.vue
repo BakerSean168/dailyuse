@@ -14,10 +14,6 @@
           {{ t('schedule.calendar.today') }}
         </Button>
       </div>
-      <Button size="sm" @click="emit('create')">
-        <Plus class="mr-2 h-4 w-4" />
-        {{ t('schedule.calendar.createSchedule') }}
-      </Button>
     </div>
 
     <!-- Month Grid -->
@@ -91,9 +87,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 
 interface CalendarDay {
   key: string;
@@ -115,7 +111,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'month-change', startDate: Date, endDate: Date): void;
-  (e: 'create'): void;
   (e: 'event-click', event: CalendarEventItem): void;
   (e: 'day-click', date: Date): void;
 }>();
@@ -148,7 +143,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
   const month = currentMonth.value.getMonth();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = toLocalDateKey(today);
 
   const firstDay = new Date(year, month, 1);
   let startWeekDay = firstDay.getDay();
@@ -215,9 +210,7 @@ function toDateStr(d: Date): string {
 }
 
 function getEventsForDate(dateStr: string): CalendarEventItem[] {
-  return props.schedules.filter((event) => {
-    return new Date(event.startTime).toISOString().split('T')[0] === dateStr;
-  });
+  return props.schedules.filter((event) => toLocalDateKey(event.startTime) === dateStr);
 }
 
 function eventClass(event: CalendarEventItem): string {

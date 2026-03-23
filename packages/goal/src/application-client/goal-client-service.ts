@@ -15,7 +15,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import { map as mapResult, ok } from '@dailyuse/contracts/result';
 import type {
   CreateGoalReq,
   UpdateGoalReq,
@@ -28,9 +28,9 @@ import type {
   CreateGoalReviewReq,
   GoalReviewClientDTO,
   GoalClientDTO,
+  GoalSystemView,
   GoalFolderClientDTO,
   KeyResultClientDTO,
-  KeyResultServerDTO,
   GoalRecordClientDTO,
   QueryGoalsRes,
   GetKeyResultsRes,
@@ -139,21 +139,6 @@ function keyResultFromDTO(dto: KeyResultClientDTO): KeyResult {
   });
 }
 
-function keyResultFromServerDTO(dto: KeyResultServerDTO): KeyResult {
-  return keyResultFromDTO({
-    id: dto.id,
-    title: dto.title,
-    description: dto.description,
-    progress: dto.progress,
-    weight: dto.weight,
-    order: dto.sortOrder,
-    version: dto.version,
-    createdAt: dto.createdAt,
-    updatedAt: dto.updatedAt,
-    deletedAt: dto.deletedAt,
-  });
-}
-
 function goalReviewFromDTO(dto: GoalReviewClientDTO): GoalReview {
   return GoalReview.load({
     id: GoalReviewId.of(dto.id),
@@ -193,7 +178,46 @@ export class GoalClientService {
     private readonly goalApi: IGoalApiClient,
     private readonly folderApi: IGoalFolderApiClient,
     private readonly focusApi?: IGoalFocusApiClient,
-  ) {}
+  ) {
+    this.createGoal = this.createGoal.bind(this);
+    this.getGoal = this.getGoal.bind(this);
+    this.listGoals = this.listGoals.bind(this);
+    this.updateGoal = this.updateGoal.bind(this);
+    this.deleteGoal = this.deleteGoal.bind(this);
+    this.activateGoal = this.activateGoal.bind(this);
+    this.completeGoal = this.completeGoal.bind(this);
+    this.archiveGoal = this.archiveGoal.bind(this);
+    this.searchGoals = this.searchGoals.bind(this);
+    this.archiveExpiredGoals = this.archiveExpiredGoals.bind(this);
+    this.getGoalAggregateView = this.getGoalAggregateView.bind(this);
+    this.cloneGoal = this.cloneGoal.bind(this);
+    this.createKeyResult = this.createKeyResult.bind(this);
+    this.getKeyResults = this.getKeyResults.bind(this);
+    this.updateKeyResult = this.updateKeyResult.bind(this);
+    this.deleteKeyResult = this.deleteKeyResult.bind(this);
+    this.batchUpdateKeyResultWeights = this.batchUpdateKeyResultWeights.bind(this);
+    this.getProgressBreakdown = this.getProgressBreakdown.bind(this);
+    this.generateKeyResults = this.generateKeyResults.bind(this);
+    this.createGoalRecord = this.createGoalRecord.bind(this);
+    this.getGoalRecordsByKeyResult = this.getGoalRecordsByKeyResult.bind(this);
+    this.getGoalRecordsByGoal = this.getGoalRecordsByGoal.bind(this);
+    this.deleteGoalRecord = this.deleteGoalRecord.bind(this);
+    this.createGoalReview = this.createGoalReview.bind(this);
+    this.getGoalReviews = this.getGoalReviews.bind(this);
+    this.updateGoalReview = this.updateGoalReview.bind(this);
+    this.deleteGoalReview = this.deleteGoalReview.bind(this);
+    this.createGoalFolder = this.createGoalFolder.bind(this);
+    this.listGoalFolders = this.listGoalFolders.bind(this);
+    this.getGoalFolder = this.getGoalFolder.bind(this);
+    this.updateGoalFolder = this.updateGoalFolder.bind(this);
+    this.deleteGoalFolder = this.deleteGoalFolder.bind(this);
+    this.startFocusSession = this.startFocusSession.bind(this);
+    this.pauseFocusSession = this.pauseFocusSession.bind(this);
+    this.resumeFocusSession = this.resumeFocusSession.bind(this);
+    this.stopFocusSession = this.stopFocusSession.bind(this);
+    this.getFocusStatus = this.getFocusStatus.bind(this);
+    this.getFocusHistory = this.getFocusHistory.bind(this);
+  }
 
   // ===== Goal Management =====
 
@@ -209,12 +233,13 @@ export class GoalClientService {
 
   async listGoals(params?: {
     page?: number;
-    limit?: number;
+    pageSize?: number;
     query?: string;
-    status?: string;
-    dirId?: string;
-    startDate?: string;
-    endDate?: string;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
+    startDate?: number;
+    endDate?: number;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.getGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
@@ -243,11 +268,6 @@ export class GoalClientService {
     return mapResult(result, (dto) => goalFromDTO(dto));
   }
 
-  async pauseGoal(id: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.pauseGoal(id);
-    return mapResult(result, (dto) => goalFromDTO(dto));
-  }
-
   async completeGoal(id: string): Promise<Result<Goal>> {
     const result = await this.goalApi.completeGoal(id);
     return mapResult(result, (dto) => goalFromDTO(dto));
@@ -261,9 +281,10 @@ export class GoalClientService {
   async searchGoals(params: {
     query: string;
     page?: number;
-    limit?: number;
-    status?: string;
-    dirId?: string;
+    pageSize?: number;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
@@ -276,6 +297,10 @@ export class GoalClientService {
         totalPages: 0,
       },
     }));
+  }
+
+  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
+    return this.goalApi.archiveExpiredGoals();
   }
 
   async getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>> {
@@ -300,7 +325,7 @@ export class GoalClientService {
   async getKeyResults(goalId: string): Promise<Result<{ keyResults: KeyResult[] }>> {
     const result = await this.goalApi.getKeyResultsByGoal(goalId);
     return mapResult(result, (data: GetKeyResultsRes) => ({
-      keyResults: (data?.data ?? []).map((dto) => keyResultFromServerDTO(dto)),
+      keyResults: (data?.data ?? []).map((dto) => keyResultFromDTO(dto)),
     }));
   }
 
@@ -323,7 +348,7 @@ export class GoalClientService {
   ): Promise<Result<{ keyResults: KeyResult[] }>> {
     const result = await this.goalApi.batchUpdateKeyResultWeights(goalId, { updates });
     return mapResult(result, (data: GetKeyResultsRes) => ({
-      keyResults: data.data.map((dto) => keyResultFromServerDTO(dto)),
+      keyResults: data.data.map((dto) => keyResultFromDTO(dto)),
     }));
   }
 

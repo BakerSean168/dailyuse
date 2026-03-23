@@ -25,9 +25,10 @@ import {
   UserReminderPreferencePrismaRepository,
   type ReminderModuleInstance,
 } from '../infrastructure-server';
+import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
 import { registerReminderRoutes } from './routes';
 import { createReminderTransportHandlers } from './transport-handlers';
-import { createReminderTriggerCronJob } from '../infrastructure-server/cron/reminder-trigger-cron-job';
+import { createReminderScheduleRuntimeContribution } from './schedule-runtime';
 
 /**
  * Module registration context (structurally compatible with apps/api's IApiModuleContext).
@@ -68,9 +69,9 @@ export const ReminderApiModule: ReminderApiModuleDef = {
       reminderGroupRepository,
       reminderResponseRepository: new ReminderResponsePrismaRepository(prismaClient),
       userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(prismaClient),
-      runtimeContributions: createReminderTriggerCronJob({
+      runtimeContributions: createReminderScheduleRuntimeContribution({
         reminderTemplateRepository,
-        reminderGroupRepository,
+        scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
       }),
     });
     activeReminderModule = reminderModule;

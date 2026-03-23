@@ -10,8 +10,6 @@ import type {
   FrequencyAdjustmentDTO,
   NotificationConfigServer,
   NotificationConfigServerDTO,
-  RecurrenceConfigServer,
-  RecurrenceConfigServerDTO,
   ReminderTemplateClientDTO,
   ReminderTemplateServerDTO,
   ResponseMetricsDTO,
@@ -30,7 +28,6 @@ import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-t
 import { IdentityId } from '@dailyuse/domain-shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
-  RecurrenceConfig,
   NotificationConfig,
   TriggerConfig,
   ActiveTimeConfig,
@@ -51,7 +48,6 @@ export interface ReminderTemplateState {
   description: string | null;
   type: ReminderType;
   trigger: TriggerConfig;
-  recurrence: RecurrenceConfig | null;
   activeTime: ActiveTimeConfig;
   activeHours: ActiveHoursConfig | null;
   notificationConfig: NotificationConfig;
@@ -111,9 +107,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   }
   public get trigger(): TriggerConfigServer {
     return this._props.trigger;
-  }
-  public get recurrence(): RecurrenceConfigServer | null {
-    return this._props.recurrence;
   }
   public get activeTime(): ActiveTimeConfigServer {
     return this._props.activeTime;
@@ -200,7 +193,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     activeTime: ActiveTimeConfigServerDTO;
     notificationConfig: NotificationConfigServerDTO;
     description?: string;
-    recurrence?: RecurrenceConfigServerDTO;
     activeHours?: ActiveHoursConfigServerDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
@@ -215,7 +207,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     const trigger = TriggerConfig.fromDTO(params.trigger);
     const activeTime = ActiveTimeConfig.fromDTO(params.activeTime);
     const notificationConfig = NotificationConfig.fromDTO(params.notificationConfig);
-    const recurrence = params.recurrence ? RecurrenceConfig.fromDTO(params.recurrence) : null;
     const activeHours = params.activeHours ? ActiveHoursConfig.fromDTO(params.activeHours) : null;
 
     const template = new ReminderTemplate({
@@ -225,7 +216,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: params.description ?? null,
       type: params.type,
       trigger,
-      recurrence,
       activeTime,
       activeHours,
       notificationConfig,
@@ -253,10 +243,9 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布创建事件
     template.addDomainEvent('reminder:template:created', {
-      templateId: id as string,
       identityId: params.identityId,
-      title: params.title,
-      type: params.type,
+      templateId: id as string,
+      reminder: template.toServerDTO(),
     });
 
     return template;
@@ -318,7 +307,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     trigger?: TriggerConfigServerDTO;
     activeTime?: ActiveTimeConfigServerDTO;
     notificationConfig?: NotificationConfigServerDTO;
-    recurrence?: RecurrenceConfigServerDTO | null;
     activeHours?: ActiveHoursConfigServerDTO | null;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
@@ -361,11 +349,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     if (updates.notificationConfig !== undefined) {
       this._props.notificationConfig = NotificationConfig.fromDTO(updates.notificationConfig);
     }
-    if (updates.recurrence !== undefined) {
-      this._props.recurrence = updates.recurrence
-        ? RecurrenceConfig.fromDTO(updates.recurrence)
-        : null;
-    }
     if (updates.activeHours !== undefined) {
       this._props.activeHours = updates.activeHours
         ? ActiveHoursConfig.fromDTO(updates.activeHours)
@@ -377,10 +360,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(now);
 
     // 发布更新事件
+    const changes = Object.keys(updates);
     this.addDomainEvent('reminder:template:updated', {
-      template: this.toServerDTO(),
-      updates: Object.keys(updates),
       identityId: this._props.identityId,
+      templateId: this.id,
+      reminder: this.toServerDTO(),
+      changes,
     });
   }
 
@@ -405,9 +390,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布启用事件
     this.addDomainEvent('reminder:template:enabled', {
-      templateId: this.id,
       activatedAt: now,
       identityId: this._props.identityId,
+      templateId: this.id,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -426,8 +412,9 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布暂停事件
     this.addDomainEvent('reminder:template:paused', {
-      templateId: this.id,
       identityId: this._props.identityId,
+      templateId: this.id,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -463,10 +450,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布移动事件
     this.addDomainEvent('reminder:template:moved', {
+      identityId: this._props.identityId,
       templateId: this.id,
       oldGroupId,
       newGroupId: targetGroupId,
-      identityId: this._props.identityId,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -559,10 +547,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布触发事件
     this.addDomainEvent('reminder:triggered', {
+      identityId: this._props.identityId,
       templateId: this.id,
+      groupId: this._props.groupId,
       triggeredAt: now,
       nextTriggerAt: this._props.nextTriggerAt,
-      identityId: this._props.identityId,
       reminder: this.toServerDTO(),
     });
   }
@@ -604,9 +593,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布删除事件
     this.addDomainEvent('reminder:template:deleted', {
+      identityId: this._props.identityId,
       templateId: this.id,
       templateTitle: this._props.title,
-      identityId: this._props.identityId,
+      reminder: this.toServerDTO(),
+      isSoftDelete: true,
+      deletedAt: this._props.deletedAt,
     });
   }
 
@@ -780,7 +772,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: this._props.description,
       type: this._props.type,
       trigger: this._props.trigger.toServerDTO(),
-      recurrence: this._props.recurrence?.toServerDTO() ?? null,
       activeTime: this._props.activeTime.toServerDTO(),
       activeHours: this._props.activeHours?.toServerDTO() ?? null,
       notificationConfig: this._props.notificationConfig.toServerDTO(),
@@ -806,10 +797,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   }
 
   public toClientDTO(includeChildren = false): ReminderTemplateClientDTO {
-    // Note: effectiveEnabled and controlledByGroup should ideally be passed in
-    // from an application service that has the context of the group.
-    // Here we default to the template's own state.
-    const effectiveEnabled = this._props.selfEnabled;
+    const effectiveEnabled = this._props.effectiveEnabled;
     const controlledByGroup = !!this._props.groupId;
 
     const typeText = this._props.type === ReminderType.OneTime ? '一次性' : '循环';
@@ -837,14 +825,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       ...triggerServerDTO,
       displayText: this._props.trigger.displayText,
     };
-
-    // Build recurrence client DTO manually
-    const recurrenceClientDTO = this._props.recurrence
-      ? {
-          ...this._props.recurrence.toServerDTO(),
-          displayText: (this._props.recurrence as { displayText?: string }).displayText ?? '',
-        }
-      : null;
 
     // Build activeTime client DTO manually - format display text
     const activeTimeServerDTO = this._props.activeTime.toServerDTO();
@@ -884,7 +864,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: this._props.description,
       type: this._props.type,
       trigger: triggerClientDTO,
-      recurrence: recurrenceClientDTO,
       activeTime: activeTimeClientDTO,
       activeHours: activeHoursClientDTO,
       notificationConfig: notificationConfigClientDTO,
@@ -909,7 +888,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       displayTitle: this._props.title,
       typeText,
       triggerText: this._props.trigger.displayText,
-      recurrenceText: recurrenceClientDTO?.displayText ?? null,
       statusText,
       importanceText,
       nextTriggerText: formatRelativeTime(this._props.nextTriggerAt),
@@ -917,6 +895,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       isPaused: this._props.status === ReminderStatus.Paused,
       lastTriggeredText: formatRelativeTime(lastTriggeredAt),
       controlledByGroup: controlledByGroup,
+      lifecycleSource: controlledByGroup ? 'group' : 'template',
+      effectiveEnabledReason: controlledByGroup
+        ? '当前分组接管了提醒启用状态'
+        : '当前使用模板自身启用状态',
+      groupControlMode: controlledByGroup ? 'Group' : null,
+      groupEnabled: controlledByGroup ? effectiveEnabled : null,
+      globalReminderEnabled: true,
+      groupName: null,
     };
 
     if (includeChildren && this._props.history.length > 0) {

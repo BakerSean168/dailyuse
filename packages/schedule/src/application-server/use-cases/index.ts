@@ -16,7 +16,5 @@ export * from './queries';
 
 // Utilities and Supporting Infrastructure
 export * from './calculate-next-run';
-export * from './schedule-event-publisher';
 export * from './schedule-task-executor';
 export * from './schedule-task-executor-adapter';
-export * from './schedule-task-factory';

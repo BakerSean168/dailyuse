@@ -102,7 +102,7 @@
 ### 5.2 导入资源流程
 
 1. 用户点击“导入资源”
-2. 选择图片/视频/文档/Markdown
+2. 选择图片/视频/文件/Markdown
 3. 系统上传并创建资源记录
 4. 左侧固定分组立即刷新
 
@@ -154,7 +154,7 @@
 职责：
 
 - 插入已有图片
-- 插入已有文档链接
+- 插入已有文件链接
 - 粘贴图片上传后插入
 - 拖拽图片上传后插入
 - 统一决定插入文本模板
@@ -217,9 +217,9 @@
 
 - `insertExistingResource(resourceId, mode)`
 - `pasteAttachmentAndInsert(file, mode)`
-- `exportMarkdownAsSelfContained(documentId)`
+- `exportMarkdownAsSelfContained(resourceId)`
 - `listResourceReferences(resourceId)`
-- `validateMarkdownResourceReferences(documentId)`
+- `validateMarkdownResourceReferences(resourceId)`
 
 ---
 

@@ -10,8 +10,9 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import {
   CreateGoalFolderSchema,
   UpdateGoalFolderSchema,
-  QueryGoalFoldersSchema,
+  ListGoalFolderFiltersSchema,
 } from '@dailyuse/contracts/goal';
+import type { ListGoalFolderFilters, ListGoalFoldersQuery } from '@dailyuse/contracts/goal';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';
@@ -59,8 +60,8 @@ export class GoalFolderController {
     return ok(folder);
   }
 
-  async list(query: unknown): Promise<Result<unknown>> {
-    const parsed = QueryGoalFoldersSchema.safeParse(query);
+  async list(filters: unknown, ctx: Context): Promise<Result<unknown>> {
+    const parsed = ListGoalFolderFiltersSchema.safeParse(filters);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -68,7 +69,12 @@ export class GoalFolderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const result = await this.useCases.listGoalFolders.execute(parsed.data);
+    // Construct internal query with identityId from context
+    const query: ListGoalFoldersQuery = {
+      ...parsed.data,
+      identityId: ctx.identityId as unknown as IdentityId,
+    };
+    const result = await this.useCases.listGoalFolders.execute(query);
     return ok(result);
   }
 

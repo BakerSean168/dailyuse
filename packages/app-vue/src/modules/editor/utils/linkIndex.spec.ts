@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildEditorLinkIndex,
-  getBacklinksForDocument,
-  getLinkGraphForDocument,
-  searchLinkIndexDocuments,
+  getBacklinksForNote,
+  getLinkGraphForNote,
+  searchLinkIndexNotes,
 } from './linkIndex';
 import { ResourceStatus } from '@dailyuse/contracts/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
@@ -90,11 +90,11 @@ describe('linkIndex', () => {
 
     const index = buildEditorLinkIndex(resources);
 
-    expect(searchLinkIndexDocuments(index, 'bet')[0]?.id).toBe('beta');
+    expect(searchLinkIndexNotes(index, 'bet')[0]?.id).toBe('beta');
 
-    const backlinks = getBacklinksForDocument(index, 'alpha');
+    const backlinks = getBacklinksForNote(index, 'alpha');
     expect(backlinks).toHaveLength(1);
-    expect(backlinks[0]?.sourceDocument.id).toBe('beta');
+    expect(backlinks[0]?.sourceNote.id).toBe('beta');
 
     expect(index.unresolvedLinks).toHaveLength(1);
     expect(index.unresolvedLinks[0]?.target).toBe('Missing Note');
@@ -135,7 +135,7 @@ describe('linkIndex', () => {
     ];
 
     const index = buildEditorLinkIndex(resources);
-    const graph = getLinkGraphForDocument(index, 'alpha', 2, { maxNodes: 4, maxEdges: 4 });
+    const graph = getLinkGraphForNote(index, 'alpha', 2, { maxNodes: 4, maxEdges: 4 });
 
     expect(graph.centerId).toBe('alpha');
     expect(graph.nodes.some((node) => node.id === 'alpha' && node.isCurrent)).toBe(true);
