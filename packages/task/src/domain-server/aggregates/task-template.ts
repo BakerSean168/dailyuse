@@ -999,6 +999,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       throw new TaskTemplateArchivedError(this.id);
     }
 
+    if (this._props.goalBinding) {
+      throw new InvalidGoalBindingError('Template is already bound to a goal');
+    }
+
     this._props.goalBinding = TaskGoalBinding.fromDTO({
       goalId,
       keyResultId,

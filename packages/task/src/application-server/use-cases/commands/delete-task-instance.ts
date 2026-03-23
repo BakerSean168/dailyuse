@@ -12,17 +12,20 @@ export class DeleteTaskInstance {
 
   async execute(id: string): Promise<Result<void>> {
     const instance = await this.instanceRepository.findById(id);
-    if (!instance) {
-      return ok(undefined);
+
+    // Delete remains idempotent: callers do not need to care whether the
+    // instance still exists when issuing the command.
+    await this.instanceRepository.delete(id);
+
+    if (instance) {
+      (eventBus as any).send('task:instance:deleted', {
+        identityId: String(instance.identityId),
+        taskInstanceId: instance.id,
+        taskTemplateId: String(instance.templateId),
+        deletedAt: Date.now(),
+      });
     }
 
-    await this.instanceRepository.delete(id);
-    (eventBus as any).send('task:instance:deleted', {
-      identityId: String(instance.identityId),
-      taskInstanceId: instance.id,
-      taskTemplateId: String(instance.templateId),
-      deletedAt: Date.now(),
-    });
     return ok(undefined);
   }
 }

@@ -308,6 +308,8 @@ describe('desktop IPC contract alignment', () => {
     await adapter.deleteReminderGroup('reminder-group-1');
     await adapter.toggleReminderGroupStatus('reminder-group-1');
     await adapter.switchReminderGroupControlMode('reminder-group-1', 'manual' as never);
+    await adapter.getPreferences();
+    await adapter.updatePreferences({});
 
     expect(new Set(recorder.channels())).toEqual(channelSet(ReminderChannels));
   });

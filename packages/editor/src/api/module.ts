@@ -23,6 +23,12 @@ import type { Router, Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 import {
+  createRepositoryModule,
+  RepositoryRepositoryFactory,
+  ResourceBookmarkPrismaRepository,
+  FsStorageAdapter,
+} from '@dailyuse/repository/infrastructure-server';
+import {
   createEditorModule,
   EditorWorkspacePrismaRepository,
   EditorSessionPrismaRepository,
@@ -30,10 +36,6 @@ import {
   EditorTabPrismaRepository,
   type EditorModuleInstance,
 } from '../infrastructure-server';
-import { createRepositoryModule } from '../../../repository/src/infrastructure-server/repository.module';
-import { RepositoryRepositoryFactory } from '../../../repository/src/infrastructure-server/di/repository-repository.factory';
-import { ResourceBookmarkPrismaRepository } from '../../../repository/src/infrastructure-server/adapters/prisma/resource-bookmark-prisma.repository';
-import { FsStorageAdapter } from '../../../repository/src/infrastructure-server/adapters/fs/fs-storage.adapter';
 import { registerEditorRoutes } from './routes';
 import { createEditorTransportHandlers } from './transport-handlers';
 import { createEditorRuntimeContribution } from './runtime';

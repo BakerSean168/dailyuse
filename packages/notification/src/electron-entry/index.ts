@@ -39,7 +39,17 @@ const Ch = {
   GET_UNREAD_COUNT: 'notification:unread-count',
 } as const;
 
-const channels = Object.values(Ch);
+const RendererCh = {
+  CUSTOM_RECEIVE: 'notification:custom:receive',
+  CUSTOM_CLICK: 'notification:custom:click',
+  CUSTOM_CLOSE: 'notification:custom:close',
+  CUSTOM_RESIZE: 'notification:custom:resize',
+  CUSTOM_MOUSE_ENTER: 'notification:custom:mouse-enter',
+  CUSTOM_MOUSE_LEAVE: 'notification:custom:mouse-leave',
+  CUSTOM_RENDERER_READY: 'notification:custom:renderer-ready',
+} as const;
+
+const channels = [...Object.values(Ch), ...Object.values(RendererCh)];
 let activeNotificationModule: NotificationModuleInstance | null = null;
 
 export function getNotificationRepository(): INotificationRepository {

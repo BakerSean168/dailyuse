@@ -108,6 +108,7 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
     deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
     countFutureInstances: vi.fn().mockResolvedValue(0),
     findByTemplateIdAndDateRange: vi.fn().mockResolvedValue([]),
+    getTemplateStats: vi.fn().mockResolvedValue({}),
     deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
   };
 }
@@ -165,7 +166,7 @@ export function createSmokeApp(): SmokeTestApp {
   // Wire use cases with mock repos (same as TaskModule constructor)
   const templateController = new TaskTemplateController({
     createTemplate: new CreateTaskTemplate(templateRepo, instanceRepo),
-    getTemplate: new GetTaskTemplate(templateRepo),
+    getTemplate: new GetTaskTemplate(templateRepo, instanceRepo),
     listTemplates: new ListTaskTemplates(templateRepo, instanceRepo),
     updateTemplate: new UpdateTaskTemplate(templateRepo),
     deleteTemplate: new DeleteTaskTemplate(templateRepo, instanceRepo),
