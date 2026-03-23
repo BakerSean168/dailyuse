@@ -122,6 +122,7 @@ export function mapTaskTemplateDtoToViewModel(
           goalId: dto.goalBinding.goalId,
           keyResultId: dto.goalBinding.keyResultId,
           incrementValue: dto.goalBinding.goalRecordValue,
+          progressTrigger: dto.goalBinding.progressTrigger,
         }
       : null,
     timeConfig: {

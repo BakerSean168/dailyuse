@@ -5,8 +5,7 @@ import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { TaskType } from '@dailyuse/contracts/task';
+import { TaskGoalBindingTrigger, TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { CreateTaskTemplate } from '../create-task-template';
 
@@ -104,6 +103,7 @@ describe('CreateTaskTemplate', () => {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
         goalRecordValue: 2,
+        progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
       },
     });
 
@@ -115,6 +115,7 @@ describe('CreateTaskTemplate', () => {
           goalId: 'goal-1',
           keyResultId: 'kr-1',
           goalRecordValue: 2,
+          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
         }),
       }),
     );

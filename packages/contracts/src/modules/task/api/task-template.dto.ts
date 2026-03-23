@@ -3,7 +3,7 @@ import { brandedId } from '../../../primitives';
 import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../aggregates';
-import { TaskType } from '../value-objects';
+import { TaskGoalBindingTrigger, TaskType } from '../value-objects';
 import type { RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
 import type { TaskGoalBindingDTO, TaskTimeConfigDTO } from '../value-objects';
 
@@ -39,6 +39,7 @@ export const TaskGoalBindingSchema = z.object({
   goalId: brandedId<GoalId>(),
   keyResultId: brandedId<KeyResultId>(),
   goalRecordValue: z.number().nonnegative(),
+  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
 });
 
 // Public transport schema - NO identityId (injected from Context)
@@ -124,7 +125,8 @@ export type GenerateInstancesRes = TaskInstanceClientDTO[];
 export const BindToGoalSchema = z.object({
   goalId: brandedId<GoalId>(),
   keyResultId: brandedId<KeyResultId>(),
-  goalRecordValue: z.number(),
+  goalRecordValue: z.number().nonnegative(),
+  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
 });
 
 export type BindToGoalReq = z.infer<typeof BindToGoalSchema>;

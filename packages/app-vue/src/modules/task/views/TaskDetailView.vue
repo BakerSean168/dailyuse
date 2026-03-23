@@ -162,6 +162,7 @@ import {
 import { useTask } from '../composables/useTask';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
+import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
@@ -219,6 +220,18 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
     color: vm.color ?? null,
+    goalBinding:
+      vm.goalBinding?.goalId && vm.goalBinding?.keyResultId
+        ? {
+            goalId: vm.goalBinding.goalId,
+            keyResultId: vm.goalBinding.keyResultId,
+            goalRecordValue: vm.goalBinding.incrementValue ?? 1,
+            progressTrigger:
+              vm.goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
+          }
+        : vm.goalBinding === null
+          ? null
+          : undefined,
   });
   if (result) {
     showEditDialog.value = false;

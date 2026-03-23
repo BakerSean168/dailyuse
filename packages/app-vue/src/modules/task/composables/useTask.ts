@@ -13,7 +13,11 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { ResultError } from '@dailyuse/contracts/result';
-import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
+import type {
+  CompleteTaskInstanceReq,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+} from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 
 type TaskTemplateListParams = {
@@ -283,10 +287,10 @@ export function useTask() {
     return null;
   }
 
-  async function completeInstance(id: string) {
-    let result = await service.completeInstance(id);
+  async function completeInstance(id: string, request?: CompleteTaskInstanceReq) {
+    let result = await service.completeInstance(id, sanitizeForIpc(request));
     if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.completeInstance(id);
+      result = await service.completeInstance(id, sanitizeForIpc(request));
     }
     if (result.ok) {
       const dto = result.data.toDTO();

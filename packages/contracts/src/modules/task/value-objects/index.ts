@@ -23,6 +23,8 @@ export type {
   TaskGoalBindingDTO,
   TaskGoalBindingPersistenceDTO,
 } from './task-goal-binding';
+export { TaskGoalBindingTrigger } from './task-goal-binding-trigger';
+export type { TaskGoalBindingTrigger as TaskGoalBindingTriggerValue } from './task-goal-binding-trigger';
 
 // TaskTimeConfig
 export type {

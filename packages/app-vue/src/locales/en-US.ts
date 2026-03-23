@@ -2711,8 +2711,21 @@ export default {
       progressPlaceholder: 'Enter progress increment (positive)',
       points: 'pts',
       progressText: 'Completing this task will add progress to the key result',
+      trigger: {
+        label: 'Progress Trigger',
+        placeholder: 'Choose when to add key result progress',
+        perInstance: 'Once per instance',
+        perInstanceDesc: 'Best for repeatable work, each completed instance adds progress once',
+        allInstancesCompleted: 'After all instances complete',
+        allInstancesCompletedDesc:
+          'Only add progress once all current instances of this template are completed',
+      },
       configPreview: 'Link Configuration Preview',
-      previewText: 'On completion, key result progress increases by {value} pts',
+      previewText: {
+        PER_INSTANCE: 'Each completed task instance increases key result progress by {value} pts',
+        ALL_INSTANCES_COMPLETED:
+          'Key result progress increases by {value} pts only after all current template instances are completed',
+      },
       validation: {
         required: 'This field is required',
         positiveNumber: 'Must be a positive number',

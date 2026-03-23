@@ -46,6 +46,8 @@ function mapKeyResultOption(keyResult: KeyResultLike): KeyResultBindingOption {
   };
 }
 
+const GOAL_BINDING_PAGE_SIZE = 100;
+
 export function useTaskGoalBindingOptions() {
   const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 
@@ -102,28 +104,41 @@ export function useTaskGoalBindingOptions() {
     loadError.value = null;
 
     try {
-      let result = await goalService.listGoals({
-        page: 1,
-        pageSize: 200,
-        systemView: 'active',
-      });
+      const collectedGoals: GoalBindingOption[] = [];
+      let page = 1;
+      let hasMore = true;
 
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await goalService.listGoals({
-          page: 1,
-          pageSize: 200,
+      while (hasMore) {
+        let result = await goalService.listGoals({
+          page,
+          // Goal list query validation caps pageSize at 100.
+          pageSize: GOAL_BINDING_PAGE_SIZE,
           systemView: 'active',
         });
+
+        if (!result.ok && (await maybeRecoverAuth(result.error))) {
+          result = await goalService.listGoals({
+            page,
+            pageSize: GOAL_BINDING_PAGE_SIZE,
+            systemView: 'active',
+          });
+        }
+
+        if (!result.ok) {
+          loadError.value = result.error.message;
+          goals.value = [];
+          console.error('[TaskGoalBindingOptions] Failed to load goals', result.error);
+          return [];
+        }
+
+        collectedGoals.push(...(result.data.goals ?? []).map((goal: Goal) => mapGoalOption(goal)));
+
+        const pagination = result.data.pagination;
+        hasMore = Boolean(pagination?.hasMore);
+        page += 1;
       }
 
-      if (!result.ok) {
-        loadError.value = result.error.message;
-        goals.value = [];
-        console.error('[TaskGoalBindingOptions] Failed to load goals', result.error);
-        return [];
-      }
-
-      goals.value = (result.data.goals ?? []).map((goal: Goal) => mapGoalOption(goal));
+      goals.value = collectedGoals;
       return goals.value;
     } finally {
       loadingGoals.value = false;

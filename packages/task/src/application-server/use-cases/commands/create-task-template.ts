@@ -58,6 +58,7 @@ export class CreateTaskTemplate {
             goalId: request.goalBinding.goalId,
             keyResultId: request.goalBinding.keyResultId,
             goalRecordValue: request.goalBinding.goalRecordValue,
+            progressTrigger: request.goalBinding.progressTrigger,
           }
         : null,
     });

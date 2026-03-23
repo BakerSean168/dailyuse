@@ -52,12 +52,13 @@ export class UpdateTaskTemplate {
 
     if (request.goalBinding !== undefined) {
       if (request.goalBinding === null) {
-        template.unlinkFromGoal();
+        template.unbindFromGoal();
       } else {
         template.bindToGoal(
           request.goalBinding.goalId,
           request.goalBinding.keyResultId,
           request.goalBinding.goalRecordValue,
+          request.goalBinding.progressTrigger,
         );
       }
     }

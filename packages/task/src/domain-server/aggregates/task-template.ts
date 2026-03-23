@@ -6,8 +6,13 @@ import type {
   TaskTemplateClientDTO,
   TaskTemplateServerDTO,
   TaskEventMap,
+  TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@dailyuse/contracts/task';
-import { RecurrenceFrequency, RecurrenceEndConditionType } from '@dailyuse/contracts/task';
+import {
+  RecurrenceFrequency,
+  RecurrenceEndConditionType,
+  TaskGoalBindingTrigger,
+} from '@dailyuse/contracts/task';
 import { TaskTimeType as TimeType, TaskInstanceStatus } from '../../domain-shared/value-objects';
 import { DependencyStatus, TaskType } from '../value-objects';
 import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
@@ -955,15 +960,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   // ===== Goal Binding Methods =====
 
   /** Binds the template to a goal. */
-  public bindToGoal(goalId: string, keyResultId: string, goalRecordValue: number): void {
+  public bindToGoal(
+    goalId: string,
+    keyResultId: string,
+    goalRecordValue: number,
+    progressTrigger: TaskGoalBindingTriggerValue = TaskGoalBindingTrigger.PerInstance,
+  ): void {
     // Validate parameters
     if (!goalId || !keyResultId) {
       throw new InvalidGoalBindingError('Goal ID and Key Result ID are required');
-    }
-
-    // Check if already bound
-    if (this._props.goalBinding) {
-      throw new InvalidGoalBindingError('Template is already bound to a goal');
     }
 
     // Check if template is archived
@@ -975,9 +980,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalId,
       keyResultId,
       goalRecordValue,
+      progressTrigger,
     });
+    this._props.goalId = goalId as GoalId;
+    this._props.keyResultId = keyResultId as KeyResultId;
     this._props.updatedAt = new Date();
-    this.addHistory('goal_bound', { goalId, keyResultId, goalRecordValue });
+    this.addHistory('goal_bound', { goalId, keyResultId, goalRecordValue, progressTrigger });
   }
 
   /** Unbinds from the current goal. */
@@ -993,6 +1001,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
 
     this._props.goalBinding = null;
+    this._props.goalId = null;
+    this._props.keyResultId = null;
     this._props.updatedAt = new Date();
     this.addHistory('goal_unbound');
   }
@@ -1524,6 +1534,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalId: string;
       keyResultId: string;
       goalRecordValue: number;
+      progressTrigger: TaskGoalBindingTriggerValue;
     } | null;
   }): TaskTemplate {
     if (!params.identityId) {

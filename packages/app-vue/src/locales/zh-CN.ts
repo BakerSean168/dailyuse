@@ -2685,8 +2685,19 @@ export default {
       progressPlaceholder: '输入进度增量（正数）',
       points: '点',
       progressText: '完成此任务后，关键结果进度将增加',
+      trigger: {
+        label: '进度触发方式',
+        placeholder: '选择何时为关键结果增加一次进度',
+        perInstance: '每完成一个实例记一次',
+        perInstanceDesc: '适合日常重复动作，每完成一个实例就增加一次关键结果进度',
+        allInstancesCompleted: '全部实例完成后记一次',
+        allInstancesCompletedDesc: '只有当前模板的全部实例都完成后，才增加一次关键结果进度',
+      },
       configPreview: '关联配置预览',
-      previewText: '完成任务后，将为关键结果增加 {value} 点进度',
+      previewText: {
+        PER_INSTANCE: '每完成一个任务实例后，将为关键结果增加 {value} 点进度',
+        ALL_INSTANCES_COMPLETED: '当该模板当前全部实例都完成后，将为关键结果增加 {value} 点进度',
+      },
       validation: {
         required: '此项为必填项',
         positiveNumber: '必须是正数',

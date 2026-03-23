@@ -14,6 +14,7 @@ export { SubtaskId } from './subtask-id';
 export { TaskTemplateStatus } from './task-template-status';
 export { TaskInstanceStatus } from './task-instance-status';
 export { TaskTimeType } from './task-time-type';
+export { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 
 // Class Value Objects
 export { RecurrenceRule } from './recurrence-rule';

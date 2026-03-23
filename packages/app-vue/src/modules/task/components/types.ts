@@ -1,3 +1,5 @@
+import type { TaskGoalBindingTriggerValue } from '@dailyuse/contracts/task';
+
 export type UIPriority = 'high' | 'normal' | 'low' | 'urgent';
 
 export interface EditableTaskUI {
@@ -27,6 +29,7 @@ export interface TaskGoalBindingViewModel {
   goalId?: string;
   keyResultId?: string;
   incrementValue?: number;
+  progressTrigger?: TaskGoalBindingTriggerValue;
   goalTitle?: string;
   keyResultTitle?: string;
 }

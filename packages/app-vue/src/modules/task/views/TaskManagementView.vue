@@ -73,7 +73,7 @@ import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
-import { TaskType } from '@dailyuse/contracts/task';
+import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
 
 const router = useRouter();
@@ -120,6 +120,7 @@ function toGoalBindingPayload(template: TaskTemplateViewModel) {
     goalId: template.goalBinding.goalId,
     keyResultId: template.goalBinding.keyResultId,
     goalRecordValue: template.goalBinding.incrementValue ?? 1,
+    progressTrigger: template.goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
   };
 }
 

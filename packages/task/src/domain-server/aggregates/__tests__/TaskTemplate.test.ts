@@ -23,7 +23,11 @@ import { TaskFolderId } from '../../../domain-shared/value-objects/task-folder-i
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { PriorityLevel } from '@dailyuse/contracts/shared';
-import { DayOfWeek, RecurrenceEndConditionType } from '@dailyuse/contracts/task';
+import {
+  DayOfWeek,
+  RecurrenceEndConditionType,
+  TaskGoalBindingTrigger,
+} from '@dailyuse/contracts/task';
 import { TaskType } from '../../value-objects';
 import {
   TaskTimeConfig,
@@ -1610,6 +1614,7 @@ describe('TaskTemplate Aggregate', () => {
           goalId: 'goal-123',
           keyResultId: 'kr-456',
           goalRecordValue: 10,
+          progressTrigger: TaskGoalBindingTrigger.AllInstancesCompleted,
         });
         const template = TaskTemplate.load(
           makeState({

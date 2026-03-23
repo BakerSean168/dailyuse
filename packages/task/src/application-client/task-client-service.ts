@@ -132,6 +132,7 @@ function parseGoalBinding(dto: TaskGoalBindingDTO): TaskGoalBinding {
     goalId: dto.goalId as unknown as TaskGoalBinding['goalId'],
     keyResultId: dto.keyResultId as unknown as TaskGoalBinding['keyResultId'],
     goalRecordValue: dto.goalRecordValue,
+    progressTrigger: dto.progressTrigger,
   };
 }
 
