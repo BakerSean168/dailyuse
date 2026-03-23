@@ -1,4 +1,5 @@
 import { onScopeDispose, watch } from 'vue';
+import { WindowChannels } from '@dailyuse/contracts/electron';
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
@@ -14,6 +15,10 @@ function resolveThemeMode(theme: ThemeMode): 'light' | 'dark' {
   return theme;
 }
 
+function syncDesktopWindowChrome(theme: 'light' | 'dark'): void {
+  void window.electronAPI?.invoke(WindowChannels.SYNC_CHROME_THEME, theme);
+}
+
 export function applyThemeMode(theme: ThemeMode | string | null | undefined): void {
   const safeTheme: ThemeMode =
     theme === 'dark' || theme === 'light' || theme === 'auto' ? theme : 'auto';
@@ -23,6 +28,7 @@ export function applyThemeMode(theme: ThemeMode | string | null | undefined): vo
   root.classList.toggle(DARK_CLASS, resolvedTheme === 'dark');
   root.dataset.theme = resolvedTheme;
   root.style.colorScheme = resolvedTheme;
+  syncDesktopWindowChrome(resolvedTheme);
 }
 
 export function useThemeSync() {

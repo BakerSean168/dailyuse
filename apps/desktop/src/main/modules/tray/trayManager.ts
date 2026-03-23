@@ -7,7 +7,8 @@
  */
 
 import { Tray, Menu, app, nativeImage, type BrowserWindow } from 'electron';
-import { resolveAssetPath } from '../../utils/asset-path';
+import { assetManifest } from '@dailyuse/assets';
+import { resolveAssetPath, resolveAssetPathFromKey } from '../../utils/asset-path';
 
 /**
  * @class TrayManager
@@ -28,8 +29,12 @@ export class TrayManager {
    * @param {BrowserWindow} mainWindow - The main application window.
    */
   constructor(private mainWindow: BrowserWindow) {
-    this.iconPath = resolveAssetPath('images/logos/DailyUse-32.png');
-    this.transparentIconPath = resolveAssetPath('images/logos/DailyUse-16.png');
+    this.iconPath =
+      resolveAssetPathFromKey('images', 'logo32', assetManifest) ??
+      resolveAssetPath('images/logos/DailyUse-32.png');
+    this.transparentIconPath =
+      resolveAssetPathFromKey('images', 'logo16', assetManifest) ??
+      resolveAssetPath('images/logos/DailyUse-16.png');
     this.init();
   }
 

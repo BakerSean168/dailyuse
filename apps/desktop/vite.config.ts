@@ -58,6 +58,7 @@ const workspacePkgs = [
   '@dailyuse/utils',
   '@dailyuse/contracts',
   '@dailyuse/app-vue',
+  '@dailyuse/dashboard',
   '@dailyuse/ui-vue-shadcn',
   '@dailyuse/ipc-client',
   '@dailyuse/assets',

@@ -277,6 +277,7 @@ export const RendererEventChannels = {
   TRAY_ACTION: 'tray:action',
   SHORTCUT_TRIGGERED: 'shortcut:triggered',
   DB_CHANGED: 'db:changed',
+  WINDOW_STATE_CHANGED: 'window-state:changed',
 } as const;
 
 export const CacheChannels = {
@@ -295,4 +296,9 @@ export const WindowChannels = {
   TRANSITION_TO_MAIN: 'window:transition-to-main',
   TRANSITION_TO_LOGIN: 'window:transition-to-login',
   GET_TYPE: 'window:get-type',
+  SYNC_CHROME_THEME: 'window:sync-chrome-theme',
+  MINIMIZE: 'window:minimize',
+  TOGGLE_MAXIMIZE: 'window:toggle-maximize',
+  CLOSE: 'window:close',
+  GET_CONTROLS_STATE: 'window:get-controls-state',
 } as const;

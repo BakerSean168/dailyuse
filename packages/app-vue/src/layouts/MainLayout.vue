@@ -8,6 +8,7 @@ import { defaultMainNavigation, defaultBottomNavigation } from '../di/navigation
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
+const isDesktopEnvironment = typeof window !== 'undefined' && !!window.electronAPI;
 
 const mainNavigation = computed(() => inject(MAIN_NAVIGATION_KEY) ?? defaultMainNavigation);
 const bottomNavigation = computed(() => inject(BOTTOM_NAVIGATION_KEY) ?? defaultBottomNavigation);
@@ -25,6 +26,7 @@ const navigateTo = (path: string) => {
   <div class="flex h-full min-h-0 overflow-hidden bg-background">
     <aside class="w-44 flex flex-col bg-sidebar border-r border-sidebar-border shrink-0 p-3 gap-2">
       <button
+        v-if="!isDesktopEnvironment"
         class="text-left font-bold px-2 py-2 rounded hover:bg-sidebar-accent"
         @click="navigateTo('/')"
       >

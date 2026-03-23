@@ -199,7 +199,9 @@ export class NotificationService {
    */
   private initDefaultIcon(): void {
     try {
-      const iconPath = resolveAssetPath('images/logos/DailyUse-128.png');
+      const iconPath =
+        resolveAssetPathFromKey('images', 'logo128', assetManifest) ??
+        resolveAssetPath('images/logos/DailyUse-128.png');
       this.defaultIcon = nativeImage.createFromPath(iconPath);
     } catch (err) {
       console.warn('[NotificationService] Failed to load default icon:', err);
