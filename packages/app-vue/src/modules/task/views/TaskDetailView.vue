@@ -167,6 +167,7 @@ import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
 } from '../utils/taskTemplatePresentation';
+import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 
 const route = useRoute();
 const router = useRouter();
@@ -210,6 +211,19 @@ function openEditDialog() {
   showEditDialog.value = true;
 }
 
+function toGoalBindingPayload(goalBinding: TaskTemplateViewModel['goalBinding']) {
+  if (!goalBinding?.goalId || !goalBinding?.keyResultId) {
+    return goalBinding === null ? null : undefined;
+  }
+
+  return {
+    goalId: goalBinding.goalId as GoalId,
+    keyResultId: goalBinding.keyResultId as KeyResultId,
+    goalRecordValue: goalBinding.incrementValue ?? 1,
+    progressTrigger: goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
+  };
+}
+
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
   const result = await updateTemplate(id, {
@@ -220,18 +234,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
     color: vm.color ?? null,
-    goalBinding:
-      vm.goalBinding?.goalId && vm.goalBinding?.keyResultId
-        ? {
-            goalId: vm.goalBinding.goalId,
-            keyResultId: vm.goalBinding.keyResultId,
-            goalRecordValue: vm.goalBinding.incrementValue ?? 1,
-            progressTrigger:
-              vm.goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
-          }
-        : vm.goalBinding === null
-          ? null
-          : undefined,
+    goalBinding: toGoalBindingPayload(vm.goalBinding),
   });
   if (result) {
     showEditDialog.value = false;

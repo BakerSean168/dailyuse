@@ -179,13 +179,18 @@ function createTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},
 ): ReminderTemplateClientDTO {
   return {
-    id: 'template-1',
+    id: 'template-1' as ReminderTemplateClientDTO['id'],
     identityId: 'identity-1' as ReminderTemplateClientDTO['identityId'],
     name: '喝水提醒',
     description: null,
     type: 'Recurring',
-    trigger: null,
-    activeTime: { startDate: 0, endDate: null },
+    trigger: {
+      type: 'FixedTime',
+      fixedTime: { time: '09:00', timezone: null },
+      interval: null,
+      displayText: 'At 09:00',
+    },
+    activeTime: { activatedAt: 0, displayText: 'Activated now' },
     activeHours: null,
     notificationConfig: {
       channels: ['Push'],
@@ -194,11 +199,14 @@ function createTemplate(
       sound: null,
       vibration: null,
       actions: null,
+      channelsText: 'Push',
+      hasSoundEnabled: false,
+      hasVibrationEnabled: false,
     },
     selfEnabled: true,
     status: 'Active',
     effectiveEnabled: true,
-    groupId: 'group-1',
+    groupId: 'group-1' as ReminderTemplateClientDTO['groupId'],
     groupName: '健康管理',
     importanceLevel: 'Moderate',
     tags: [],
@@ -226,12 +234,12 @@ function createTemplate(
     groupEnabled: true,
     globalReminderEnabled: true,
     ...overrides,
-  };
+  } as ReminderTemplateClientDTO;
 }
 
 function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderGroupClientDTO {
   return {
-    id: 'group-1',
+    id: 'group-1' as ReminderGroupClientDTO['id'],
     identityId: 'identity-1' as ReminderGroupClientDTO['identityId'],
     name: '健康管理',
     description: '健康相关',
@@ -244,10 +252,11 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     stats: {
       totalTemplates: 1,
       activeTemplates: 1,
-      totalExecutions: 0,
-      completedExecutions: 0,
-      pendingExecutions: 0,
-      avgResponseRate: 0,
+      pausedTemplates: 0,
+      selfEnabledTemplates: 1,
+      selfPausedTemplates: 0,
+      templateCountText: '1 template',
+      activeStatusText: '1 active',
     },
     version: 1,
     createdAt: 0,
@@ -261,7 +270,7 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     controlDescription: 'Group decides the final state.',
     effectiveTemplatePolicyText: '分组开启时统一生效，分组暂停时统一暂停。',
     ...overrides,
-  };
+  } as ReminderGroupClientDTO;
 }
 
 function mountDialog(props?: {
@@ -275,7 +284,7 @@ function mountDialog(props?: {
       groups: props?.groups ?? [
         createGroup(),
         createGroup({
-          id: 'group-2',
+          id: 'group-2' as ReminderGroupClientDTO['id'],
           name: '工作提醒',
           controlMode: 'Individual',
           enabled: true,
@@ -284,7 +293,11 @@ function mountDialog(props?: {
       ],
       templates: props?.templates ?? [
         createTemplate(),
-        createTemplate({ id: 'template-2', name: '散步提醒', groupId: 'group-2' }),
+        createTemplate({
+          id: 'template-2' as ReminderTemplateClientDTO['id'],
+          name: '散步提醒',
+          groupId: 'group-2' as ReminderTemplateClientDTO['groupId'],
+        }),
       ],
     },
     global: {
@@ -306,7 +319,7 @@ function mountDialog(props?: {
 describe('TemplateMoveDialog', () => {
   it('emits move-to-root and shows the root lifecycle preview', async () => {
     const wrapper = mountDialog();
-    (wrapper.vm as { open: () => void }).open();
+    (wrapper.vm as unknown as { open: () => void }).open();
     await nextTick();
 
     const checkbox = wrapper.find('[data-stub="Checkbox"]');
@@ -328,7 +341,7 @@ describe('TemplateMoveDialog', () => {
 
   it('emits move-to-group and shows the selected group policy', async () => {
     const wrapper = mountDialog();
-    (wrapper.vm as { open: () => void }).open();
+    (wrapper.vm as unknown as { open: () => void }).open();
     await nextTick();
 
     const selectButton = wrapper.find('[data-select-value]');
@@ -354,7 +367,7 @@ describe('TemplateMoveDialog', () => {
       groups: [
         createGroup(),
         createGroup({
-          id: 'group-2',
+          id: 'group-2' as ReminderGroupClientDTO['id'],
           name: '暂停分组',
           controlMode: 'Group',
           enabled: false,
@@ -363,7 +376,7 @@ describe('TemplateMoveDialog', () => {
       ],
     });
 
-    (wrapper.vm as { open: () => void }).open();
+    (wrapper.vm as unknown as { open: () => void }).open();
     await nextTick();
 
     const selectButton = wrapper.find('[data-select-value]');

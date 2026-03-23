@@ -76,13 +76,18 @@ function createTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},
 ): ReminderTemplateClientDTO {
   return {
-    id: 'template-1',
+    id: 'template-1' as ReminderTemplateClientDTO['id'],
     identityId: 'identity-1' as ReminderTemplateClientDTO['identityId'],
     name: 'Morning review',
     description: null,
     type: 'Recurring',
-    trigger: null,
-    activeTime: { startDate: 0, endDate: null },
+    trigger: {
+      type: 'FixedTime',
+      fixedTime: { time: '09:00', timezone: null },
+      interval: null,
+      displayText: 'At 09:00',
+    },
+    activeTime: { activatedAt: 0, displayText: 'Activated now' },
     activeHours: null,
     notificationConfig: {
       channels: ['Push'],
@@ -91,6 +96,9 @@ function createTemplate(
       sound: null,
       vibration: null,
       actions: null,
+      channelsText: 'Push',
+      hasSoundEnabled: false,
+      hasVibrationEnabled: false,
     },
     selfEnabled: true,
     status: 'Active',
@@ -123,12 +131,12 @@ function createTemplate(
     groupEnabled: true,
     globalReminderEnabled: true,
     ...overrides,
-  };
+  } as ReminderTemplateClientDTO;
 }
 
 function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderGroupClientDTO {
   return {
-    id: 'group-1',
+    id: 'group-1' as ReminderGroupClientDTO['id'],
     identityId: 'identity-1' as ReminderGroupClientDTO['identityId'],
     name: 'Focus',
     description: null,
@@ -141,10 +149,11 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     stats: {
       totalTemplates: 2,
       activeTemplates: 1,
-      totalExecutions: 0,
-      completedExecutions: 0,
-      pendingExecutions: 0,
-      avgResponseRate: 0,
+      pausedTemplates: 1,
+      selfEnabledTemplates: 1,
+      selfPausedTemplates: 1,
+      templateCountText: '2 templates',
+      activeStatusText: '1 active',
     },
     version: 1,
     createdAt: 0,
@@ -158,7 +167,7 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     controlDescription: 'Group decides the final state.',
     effectiveTemplatePolicyText: 'Group switch decides whether reminders run.',
     ...overrides,
-  };
+  } as ReminderGroupClientDTO;
 }
 
 describe('lifecyclePresentation', () => {
@@ -226,6 +235,7 @@ describe('lifecyclePresentation', () => {
             type: 'FixedTime',
             fixedTime: { time: '09:00', timezone: null },
             interval: null,
+            displayText: 'At 09:00',
           },
         }),
       ),
@@ -238,6 +248,7 @@ describe('lifecyclePresentation', () => {
             type: 'Interval',
             fixedTime: null,
             interval: { minutes: 30, startTime: null },
+            displayText: 'Every 30 minutes',
           },
         }),
       ),
@@ -250,13 +261,13 @@ describe('lifecyclePresentation', () => {
     expect(
       getGroupSidebarSummary(t, group, [
         createTemplate({
-          id: 'a',
+          id: 'a' as ReminderTemplateClientDTO['id'],
           groupId: group.id,
           lifecycleSource: 'global',
           effectiveEnabled: false,
         }),
         createTemplate({
-          id: 'b',
+          id: 'b' as ReminderTemplateClientDTO['id'],
           groupId: group.id,
           lifecycleSource: 'template',
           effectiveEnabled: true,
@@ -267,7 +278,7 @@ describe('lifecyclePresentation', () => {
     expect(
       getGroupSidebarSummary(t, group, [
         createTemplate({
-          id: 'a',
+          id: 'a' as ReminderTemplateClientDTO['id'],
           groupId: group.id,
           lifecycleSource: 'group',
           effectiveEnabled: false,
@@ -278,7 +289,7 @@ describe('lifecyclePresentation', () => {
     expect(
       getGroupSidebarSummary(t, group, [
         createTemplate({
-          id: 'a',
+          id: 'a' as ReminderTemplateClientDTO['id'],
           groupId: group.id,
           lifecycleSource: 'template',
           effectiveEnabled: true,

@@ -22,6 +22,8 @@ export default defineConfig({
     '@dailyuse/database',
     '@dailyuse/domain-shared',
     '@dailyuse/domain-shared/shared',
+    '@dailyuse/repository',
+    '@dailyuse/repository/infrastructure-server',
     'express',
     'zod',
   ],

@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from 'vue';
+import { computed, ref, type ComponentPublicInstance, type Ref } from 'vue';
 import type { EditorSelectionRange } from './useResourceInsertion';
 import type { useActiveEditorDocument } from './useActiveEditorDocument';
 import { logEditorIssue } from '../../../shared/utils/editorIssueDebug';
@@ -51,10 +51,15 @@ export function useEditorScenePane(documentState: ReturnType<typeof useActiveEdi
     activeDocumentPaneRef.value?.focus();
   }
 
-  function bindActiveDocumentPane(instance: EditorScenePaneController | null) {
-    activeDocumentPaneRef.value = instance;
+  function bindActiveDocumentPane(
+    instance: Element | ComponentPublicInstance | EditorScenePaneController | null,
+  ) {
+    activeDocumentPaneRef.value =
+      instance && typeof instance === 'object' && 'insertText' in instance
+        ? (instance as EditorScenePaneController)
+        : null;
     logEditorIssue('editor:pane-ref-bound', {
-      bound: Boolean(instance),
+      bound: Boolean(activeDocumentPaneRef.value),
     });
   }
 

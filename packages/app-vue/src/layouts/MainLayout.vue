@@ -8,7 +8,11 @@ import { defaultMainNavigation, defaultBottomNavigation } from '../di/navigation
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
-const isDesktopEnvironment = typeof window !== 'undefined' && !!window.electronAPI;
+const isDesktopEnvironment =
+  typeof window !== 'undefined' &&
+  !!(window as Window & {
+    electronAPI?: { invoke(channel: string, ...args: unknown[]): Promise<unknown> };
+  }).electronAPI;
 
 const mainNavigation = computed(() => inject(MAIN_NAVIGATION_KEY) ?? defaultMainNavigation);
 const bottomNavigation = computed(() => inject(BOTTOM_NAVIGATION_KEY) ?? defaultBottomNavigation);

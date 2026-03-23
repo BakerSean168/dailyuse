@@ -134,14 +134,14 @@ function createTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},
 ): ReminderTemplateClientDTO {
   return {
-    id: 'template-1',
+    id: 'template-1' as ReminderTemplateClientDTO['id'],
     identityId: 'identity-1' as ReminderTemplateClientDTO['identityId'],
     name: 'Morning review',
     description: 'Start-of-day reflection',
     type: 'Recurring',
     icon: null,
     color: null,
-    activeTime: { startDate: 0, endDate: null },
+    activeTime: { activatedAt: 0, displayText: 'Activated now' },
     activeHours: null,
     notificationConfig: {
       channels: ['Push'],
@@ -150,12 +150,20 @@ function createTemplate(
       sound: null,
       vibration: null,
       actions: null,
+      channelsText: 'Push',
+      hasSoundEnabled: false,
+      hasVibrationEnabled: false,
     },
     effectiveEnabled: false,
     selfEnabled: true,
     groupId: 'group-1' as ReminderTemplateClientDTO['groupId'],
     groupName: 'Focus',
-    trigger: null,
+    trigger: {
+      type: 'FixedTime',
+      fixedTime: { time: '09:00', timezone: null },
+      interval: null,
+      displayText: 'At 09:00',
+    },
     importanceLevel: 'Moderate',
     tags: [],
     nextTriggerAt: null,
@@ -181,7 +189,7 @@ function createTemplate(
     globalReminderEnabled: true,
     triggerText: 'Every day',
     ...overrides,
-  };
+  } as ReminderTemplateClientDTO;
 }
 
 function mountCard(template: ReminderTemplateClientDTO) {

@@ -10,6 +10,8 @@
       "@dailyuse/http-client": ["../http-client/src/index.ts"],
       "@dailyuse/contracts": ["../contracts/src/index.ts"],
       "@dailyuse/contracts/repository": ["../contracts/src/modules/repository/index.ts"],
+      "@dailyuse/repository": ["../repository/src/index.ts"],
+      "@dailyuse/repository/*": ["../repository/src/*/index.ts"],
       "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/shared": ["../domain-shared/src/shared/index.ts"],
       "@dailyuse/contracts/editor": ["../contracts/src/modules/editor/index.ts"],

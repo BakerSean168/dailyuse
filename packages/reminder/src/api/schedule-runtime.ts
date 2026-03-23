@@ -1,9 +1,8 @@
 import { eventBus, createLogger } from '@dailyuse/utils';
 import { ReminderType, type ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTask, TaskMetadata } from '@dailyuse/schedule/domain-server';
-import { ScheduleConfig } from '@dailyuse/schedule/domain-shared';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule/domain-server/repositories/IScheduleTaskRepository';
+import { ScheduleTask, TaskMetadata, type IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
+import { ScheduleConfig, Timezone } from '@dailyuse/schedule/domain-shared';
 import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderModuleRuntimeContribution } from '../infrastructure-server';
 
@@ -58,7 +57,9 @@ export function createReminderScheduleRuntimeContribution(deps: {
       sourceEntityId: template.id,
       schedule: ScheduleConfig.fromDTO({
         cronExpression: null,
-        timezone: template.trigger.fixedTime?.timezone ?? 'Asia/Shanghai',
+        timezone: template.trigger.fixedTime?.timezone
+          ? Timezone.of(template.trigger.fixedTime.timezone)
+          : Timezone.Shanghai,
         startDate: new Date(template.nextTriggerAt).toISOString(),
         endDate: null,
         maxExecutions: template.type === ReminderType.OneTime ? 1 : null,

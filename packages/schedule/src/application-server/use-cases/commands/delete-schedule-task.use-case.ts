@@ -8,7 +8,7 @@
  * - 事务协调
  */
 
-import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleTaskRepository } from '../../../domain-server';
 import { eventBus } from '@dailyuse/utils';
 
 /**

@@ -1088,6 +1088,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/repository':
+        specifier: workspace:*
+        version: link:../repository
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils

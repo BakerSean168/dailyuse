@@ -16,7 +16,11 @@ function resolveThemeMode(theme: ThemeMode): 'light' | 'dark' {
 }
 
 function syncDesktopWindowChrome(theme: 'light' | 'dark'): void {
-  void window.electronAPI?.invoke(WindowChannels.SYNC_CHROME_THEME, theme);
+  void (
+    window as Window & {
+      electronAPI?: { invoke(channel: string, ...args: unknown[]): Promise<unknown> };
+    }
+  ).electronAPI?.invoke(WindowChannels.SYNC_CHROME_THEME, theme);
 }
 
 export function applyThemeMode(theme: ThemeMode | string | null | undefined): void {

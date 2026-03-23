@@ -75,6 +75,7 @@ import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
 import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
+import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -117,8 +118,8 @@ function toGoalBindingPayload(template: TaskTemplateViewModel) {
   }
 
   return {
-    goalId: template.goalBinding.goalId,
-    keyResultId: template.goalBinding.keyResultId,
+    goalId: template.goalBinding.goalId as GoalId,
+    keyResultId: template.goalBinding.keyResultId as KeyResultId,
     goalRecordValue: template.goalBinding.incrementValue ?? 1,
     progressTrigger: template.goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
   };

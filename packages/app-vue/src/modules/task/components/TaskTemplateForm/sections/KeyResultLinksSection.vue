@@ -179,7 +179,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
+import {
+  TaskGoalBindingTrigger,
+  type TaskGoalBindingTriggerValue,
+} from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel, GoalBindingOption, KeyResultBindingOption } from '../../types';
 import {
   Card,
@@ -220,7 +223,7 @@ const linkEnabled = ref(false);
 const selectedGoalId = ref<string | null>(null);
 const selectedKeyResultId = ref<string | null>(null);
 const incrementValue = ref<number>(1);
-const progressTrigger = ref(TaskGoalBindingTrigger.PerInstance);
+const progressTrigger = ref<TaskGoalBindingTriggerValue>(TaskGoalBindingTrigger.PerInstance);
 const loadingGoals = ref(false);
 const loadingKeyResults = ref(false);
 

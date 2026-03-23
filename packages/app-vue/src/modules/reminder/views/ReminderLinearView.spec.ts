@@ -215,15 +215,34 @@ function createTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},
 ): ReminderTemplateClientDTO {
   return {
-    id: 'template-1',
+    id: 'template-1' as ReminderTemplateClientDTO['id'],
     identityId: 'identity-1' as ReminderTemplateClientDTO['identityId'],
     name: 'Morning review',
     description: null,
+    type: 'Recurring',
     icon: null,
     color: null,
+    activeTime: { activatedAt: 0, displayText: 'Activated now' },
+    activeHours: null,
+    notificationConfig: {
+      channels: ['Push'],
+      title: null,
+      body: null,
+      sound: null,
+      vibration: null,
+      actions: null,
+      channelsText: 'Push',
+      hasSoundEnabled: false,
+      hasVibrationEnabled: false,
+    },
     groupId: 'group-1' as ReminderTemplateClientDTO['groupId'],
     groupName: 'Focus',
-    trigger: null,
+    trigger: {
+      type: 'FixedTime',
+      fixedTime: { time: '09:00', timezone: null },
+      interval: null,
+      displayText: 'At 09:00',
+    },
     selfEnabled: true,
     effectiveEnabled: true,
     controlledByGroup: false,
@@ -233,21 +252,30 @@ function createTemplate(
     groupEnabled: true,
     globalReminderEnabled: true,
     status: 'Active',
-    order: 0,
+    importanceLevel: 'Moderate',
+    tags: [],
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,
     version: 1,
+    history: null,
+    displayTitle: 'Morning review',
+    typeText: 'Recurring',
     triggerText: 'Every day',
+    statusText: 'Active',
+    importanceText: 'Moderate',
+    nextTriggerText: null,
+    isActive: true,
+    isPaused: false,
+    lastTriggeredText: null,
     nextTriggerAt: null,
-    lastTriggeredAt: null,
     ...overrides,
   } as ReminderTemplateClientDTO;
 }
 
 function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderGroupClientDTO {
   return {
-    id: 'group-1',
+    id: 'group-1' as ReminderGroupClientDTO['id'],
     identityId: 'identity-1' as ReminderGroupClientDTO['identityId'],
     name: 'Focus',
     description: 'Deep work reminders',
@@ -260,10 +288,11 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     stats: {
       totalTemplates: 2,
       activeTemplates: 1,
-      totalExecutions: 0,
-      completedExecutions: 0,
-      pendingExecutions: 0,
-      avgResponseRate: 0,
+      pausedTemplates: 1,
+      selfEnabledTemplates: 1,
+      selfPausedTemplates: 1,
+      templateCountText: '2 templates',
+      activeStatusText: '1 active',
     },
     version: 1,
     createdAt: 0,
@@ -332,13 +361,13 @@ describe('ReminderLinearView', () => {
     groupsRef.value = [createGroup()];
     templatesRef.value = [
       createTemplate({
-        id: 'template-global',
+        id: 'template-global' as ReminderTemplateClientDTO['id'],
         lifecycleSource: 'global',
         effectiveEnabled: false,
         effectiveEnabledReason: 'Global reminder switch is off.',
       }),
       createTemplate({
-        id: 'template-group',
+        id: 'template-group' as ReminderTemplateClientDTO['id'],
         name: 'Afternoon review',
         lifecycleSource: 'group',
         selfEnabled: true,
@@ -378,7 +407,7 @@ describe('ReminderLinearView', () => {
 
   it('shows root move toast and refreshes selected template when move succeeds', async () => {
     const movedTemplate = createTemplate({
-      id: 'template-1',
+      id: 'template-1' as ReminderTemplateClientDTO['id'],
       groupId: null,
       groupName: null,
       lifecycleSource: 'template',
@@ -437,8 +466,8 @@ describe('ReminderLinearView', () => {
 
     await nextTick();
 
-    vm.handleTemplateClick({ id: 'template-1' });
-    vm.handleMoveTemplate({ id: 'template-1' });
+    vm.handleTemplateClick({ id: 'template-1' as ReminderTemplateClientDTO['id'] });
+    vm.handleMoveTemplate({ id: 'template-1' as ReminderTemplateClientDTO['id'] });
     await nextTick();
 
     await wrapper.find('[data-stub="trigger-root-move"]').trigger('click');
@@ -451,7 +480,7 @@ describe('ReminderLinearView', () => {
 
   it('shows paused toast when a template stays overridden by group control', async () => {
     const toggledTemplate = createTemplate({
-      id: 'template-1',
+      id: 'template-1' as ReminderTemplateClientDTO['id'],
       selfEnabled: false,
       effectiveEnabled: false,
       lifecycleSource: 'group',
@@ -470,7 +499,7 @@ describe('ReminderLinearView', () => {
       handleToggleEnabled: (template: { id: string }) => Promise<void>;
     };
 
-    await vm.handleToggleEnabled({ id: 'template-1' });
+    await vm.handleToggleEnabled({ id: 'template-1' as ReminderTemplateClientDTO['id'] });
 
     expect(toggleTemplate).toHaveBeenCalledWith('template-1');
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith('paused');

@@ -45,7 +45,11 @@ function logInvokeFailure(action: string, result: EditorInvokeResult<unknown> | 
 }
 
 function getElectronApi() {
-  return typeof window !== 'undefined' ? window.electronAPI : undefined;
+  return typeof window !== 'undefined'
+    ? (window as Window & {
+        electronAPI?: { invoke(channel: string, ...args: unknown[]): Promise<unknown> };
+      }).electronAPI
+    : undefined;
 }
 
 export async function listEditorWorkspaces(): Promise<EditorWorkspaceResult[]> {
