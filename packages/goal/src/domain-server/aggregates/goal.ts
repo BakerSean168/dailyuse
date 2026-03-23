@@ -169,6 +169,8 @@ export class Goal extends AggregateRoot<GoalId> {
       keyResults: params.keyResults ?? [],
       goalReviews: params.goalReviews ?? [],
       weightSnapshots: params.weightSnapshots ?? [],
+      totalKeyResults: params.totalKeyResults,
+      completedKeyResults: params.completedKeyResults,
     };
   }
 
