@@ -201,6 +201,14 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     this._props.updatedAt = now;
+
+    this.addDomainEvent<TaskEventMap['task:instance:skipped']>('task:instance:skipped', {
+      identityId: this._props.identityId,
+      taskInstanceId: this.id,
+      taskTemplateId: this._props.templateId,
+      skippedAt: now,
+      reason: reason ?? null,
+    });
   }
 
   /** Marks the instance as expired. */

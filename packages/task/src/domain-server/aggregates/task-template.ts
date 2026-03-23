@@ -665,6 +665,23 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     });
   }
 
+  /** Updates the reminder configuration. */
+  public updateReminderConfig(newReminderConfig: TaskReminderConfig | null): void {
+    const oldReminderConfig = this._props.reminderConfig?.toDTO() ?? null;
+    this._props.reminderConfig = newReminderConfig;
+    this._props.updatedAt = new Date();
+    this.addHistory('reminder_config_updated', {
+      oldReminderConfig,
+      newReminderConfig: newReminderConfig?.toDTO() ?? null,
+    });
+
+    this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
+      identityId: this._props.identityId,
+      task: this.toServerDTO(),
+      changes: ['reminderConfig'],
+    });
+  }
+
   /** Updates the start date (OneTime tasks only). */
   public updateStartDate(newStartDate: Date | null): void {
     if (this._props.taskType !== TaskType.OneTime) {
@@ -860,6 +877,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.importance = newImportance;
     this._props.updatedAt = new Date();
     this.addHistory('priority_updated', { oldImportance, newImportance });
+
+    this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
+      identityId: this._props.identityId,
+      task: this.toServerDTO(),
+      changes: ['importance'],
+    });
   }
 
   /** Updates the tags. */

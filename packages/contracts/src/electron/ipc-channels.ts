@@ -192,6 +192,13 @@ export const NotificationChannels = {
   DELETE: 'notification:delete',
   CLEAR_ALL: 'notification:clear-all',
   GET_UNREAD_COUNT: 'notification:unread-count',
+  CUSTOM_RECEIVE: 'notification:custom:receive',
+  CUSTOM_CLICK: 'notification:custom:click',
+  CUSTOM_CLOSE: 'notification:custom:close',
+  CUSTOM_RESIZE: 'notification:custom:resize',
+  CUSTOM_MOUSE_ENTER: 'notification:custom:mouse-enter',
+  CUSTOM_MOUSE_LEAVE: 'notification:custom:mouse-leave',
+  CUSTOM_RENDERER_READY: 'notification:custom:renderer-ready',
 } as const;
 
 export const RepositoryChannels = {

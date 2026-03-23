@@ -144,6 +144,79 @@
               </div>
             </div>
 
+            <Collapsible v-model:open="showReminder">
+              <CollapsibleTrigger as-child>
+                <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
+                  <span class="flex items-center gap-2">
+                    <Bell class="h-4 w-4" />
+                    {{ t('goal.dialog.sectionReminder') }}
+                  </span>
+                  <ChevronDown
+                    class="h-4 w-4 transition-transform"
+                    :class="{ 'rotate-180': showReminder }"
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent class="mt-3 space-y-4">
+                <div class="flex items-center gap-2">
+                  <Switch v-model:checked="reminderEnabled" />
+                  <Label class="text-sm font-medium">{{ t('goal.dialog.enableReminder') }}</Label>
+                </div>
+
+                <div v-if="reminderEnabled" class="space-y-3">
+                  <div
+                    v-for="(trigger, index) in reminderTriggers"
+                    :key="`${trigger.type}-${index}`"
+                    class="grid grid-cols-[1fr_120px_40px] gap-3 items-end rounded-lg border p-3"
+                  >
+                    <div class="grid gap-2">
+                      <Label class="text-sm font-medium">
+                        {{ t('goal.dialog.reminderType') }}
+                      </Label>
+                      <Select v-model="trigger.type">
+                        <SelectTrigger>
+                          <SelectValue :placeholder="t('goal.dialog.selectReminderType')" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem :value="ReminderTriggerType.RemainingDays">
+                            {{ t('goal.dialog.triggerRemainingDays') }}
+                          </SelectItem>
+                          <SelectItem :value="ReminderTriggerType.TimeProgressPercentage">
+                            {{ t('goal.dialog.triggerTimeProgress') }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div class="grid gap-2">
+                      <Label class="text-sm font-medium">
+                        {{
+                          trigger.type === ReminderTriggerType.RemainingDays
+                            ? t('goal.dialog.triggerValueDays')
+                            : t('goal.dialog.triggerValuePercent')
+                        }}
+                      </Label>
+                      <Input v-model.number="trigger.value" type="number" min="0" />
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="text-destructive"
+                      @click="removeReminderTrigger(index)"
+                    >
+                      <Trash2 class="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <Button variant="outline" class="w-full" @click="addReminderTrigger">
+                    <Plus class="mr-2 h-4 w-4" />
+                    {{ t('goal.dialog.addReminderTrigger') }}
+                  </Button>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
             <!-- ========== MOTIVATION & FEASIBILITY (collapsible) ========== -->
 
             <Collapsible v-model:open="showMotivation">
@@ -343,6 +416,7 @@ import {
   DialogDescription,
   DialogFooter,
   Button,
+  Switch,
   TagInput,
   Input,
   Label,
@@ -368,6 +442,7 @@ import { ColorPickerField } from '../../../../shared/components';
 import {
   Calendar as CalendarIcon,
   ChevronDown,
+  Bell,
   Lightbulb,
   Settings2,
   Plus,
@@ -382,10 +457,13 @@ import type {
   CreateGoalReq,
   UpdateGoalReq,
   GoalClientDTO,
+  GoalReminderConfigDTO,
   KeyResultClientDTO,
   AddKeyResultReq,
   UpdateKeyResultReq,
+  ReminderTriggerType as GoalReminderTriggerType,
 } from '@dailyuse/contracts/goal';
+import { ReminderTriggerType } from '@dailyuse/contracts/goal';
 import type { GoalFolderId, GoalId } from '@dailyuse/contracts/primitives';
 
 // ── Props & Emits ──────────────────────────────────────────────────────
@@ -621,7 +699,17 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm());
 
+const reminderEnabled = ref(false);
+const reminderTriggers = ref<
+  Array<{
+    type: GoalReminderTriggerType;
+    value: number;
+    enabled: boolean;
+  }>
+>([]);
+
 const showMotivation = ref(false);
+const showReminder = ref(false);
 const showOrganization = ref(false);
 
 // ── Computed ───────────────────────────────────────────────────────────
@@ -671,10 +759,48 @@ function handleTargetDateSelect(date: unknown) {
   }
 }
 
+function addReminderTrigger() {
+  reminderTriggers.value.push({
+    type: ReminderTriggerType.RemainingDays as GoalReminderTriggerType,
+    value: 7,
+    enabled: true,
+  });
+}
+
+function removeReminderTrigger(index: number) {
+  reminderTriggers.value.splice(index, 1);
+}
+
+function normalizeReminderConfig(): GoalReminderConfigDTO | null {
+  if (!reminderEnabled.value) {
+    return null;
+  }
+
+  const triggers = reminderTriggers.value
+    .filter((trigger) => Number.isFinite(trigger.value))
+    .map((trigger) => ({
+      type: trigger.type,
+      value: Number(trigger.value),
+      enabled: true,
+    }));
+
+  if (triggers.length === 0) {
+    return null;
+  }
+
+  return {
+    enabled: true,
+    triggers,
+  };
+}
+
 function resetForm() {
   Object.assign(form, defaultForm());
   form.folderId = props.defaultFolderId ?? '';
+  reminderEnabled.value = false;
+  reminderTriggers.value = [];
   showMotivation.value = false;
+  showReminder.value = false;
   showOrganization.value = false;
   activeTab.value = 'basic';
   krList.value = [];
@@ -693,10 +819,20 @@ function prefillFromGoal(goal: GoalClientDTO) {
   form.targetDate = goal.targetDate;
   form.folderId = goal.folderId ?? '';
   form.parentGoalId = goal.parentGoalId ?? '';
+  reminderEnabled.value = goal.reminderConfig?.enabled ?? false;
+  reminderTriggers.value =
+    goal.reminderConfig?.triggers.map((trigger) => ({
+      type: trigger.type as GoalReminderTriggerType,
+      value: trigger.value,
+      enabled: trigger.enabled,
+    })) ?? [];
 
   // Auto-expand sections that have content
   if (form.motivation || form.feasibilityAnalysis) {
     showMotivation.value = true;
+  }
+  if (reminderEnabled.value || reminderTriggers.value.length > 0) {
+    showReminder.value = true;
   }
   if (form.color || form.tags.length > 0 || form.folderId || form.parentGoalId) {
     showOrganization.value = true;
@@ -724,6 +860,15 @@ watch(
 watch(keyResults, () => {
   if (isEditMode.value) {
     populateKrList();
+  }
+});
+
+watch(reminderEnabled, (enabled) => {
+  if (enabled) {
+    showReminder.value = true;
+    if (reminderTriggers.value.length === 0) {
+      addReminderTrigger();
+    }
   }
 });
 
@@ -760,6 +905,42 @@ function validateKrs(): string | null {
       return t('goal.dialog.krTargetInvalid');
     }
   }
+  return null;
+}
+
+function validateReminder(): string | null {
+  if (!reminderEnabled.value) {
+    return null;
+  }
+
+  if (reminderTriggers.value.length === 0) {
+    return t('goal.dialog.reminderAtLeastOneTrigger');
+  }
+
+  for (const trigger of reminderTriggers.value) {
+    if (trigger.type === ReminderTriggerType.RemainingDays) {
+      if (!Number.isFinite(trigger.value) || trigger.value < 0) {
+        return t('goal.dialog.reminderRemainingDaysInvalid');
+      }
+      if (!form.targetDate) {
+        return t('goal.dialog.reminderRemainingDaysRequiresTargetDate');
+      }
+    }
+
+    if (trigger.type === ReminderTriggerType.TimeProgressPercentage) {
+      if (!Number.isFinite(trigger.value) || trigger.value <= 0 || trigger.value > 100) {
+        return t('goal.dialog.reminderTimeProgressInvalid');
+      }
+      if (
+        !form.startDate ||
+        !form.targetDate ||
+        form.targetDate <= form.startDate
+      ) {
+        return t('goal.dialog.reminderTimeProgressRequiresRange');
+      }
+    }
+  }
+
   return null;
 }
 
@@ -840,6 +1021,14 @@ async function handleSave() {
     return;
   }
 
+  const reminderError = validateReminder();
+  if (reminderError) {
+    toast.error(reminderError);
+    return;
+  }
+
+  const reminderConfig = normalizeReminderConfig();
+
   if (isEditMode.value && props.goal) {
     // Build partial update request — only include changed fields
     const req: UpdateGoalReq = {};
@@ -899,6 +1088,10 @@ async function handleSave() {
       req.parentGoalId = (parentGoalId as GoalId) ?? null;
     }
 
+    if (JSON.stringify(reminderConfig) !== JSON.stringify(props.goal.reminderConfig ?? null)) {
+      req.reminderConfig = reminderConfig;
+    }
+
     // Save goal update if there are changes
     if (Object.keys(req).length > 0) {
       const result = await updateGoal(props.goal.id, req);
@@ -924,6 +1117,7 @@ async function handleSave() {
       tags: form.tags.length > 0 ? form.tags : undefined,
       startDate: form.startDate ?? undefined,
       targetDate: form.targetDate ?? undefined,
+      reminderConfig: reminderConfig ?? undefined,
       folderId: form.folderId === 'none' ? undefined : (form.folderId as GoalFolderId) || undefined,
       parentGoalId:
         form.parentGoalId === 'none' ? undefined : (form.parentGoalId as GoalId) || undefined,

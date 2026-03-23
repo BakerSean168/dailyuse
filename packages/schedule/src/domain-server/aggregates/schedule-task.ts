@@ -228,7 +228,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // Recalculate next execution time (uses current time as default)
-    const nextRunAt = Date.now();
+    const nextRunAt = this._props.schedule.calculateNextRun(Date.now());
     this._props.execution = this._props.execution.with({ nextRunAt });
 
     // Publish event
@@ -294,8 +294,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.schedule = this._props.schedule.with(schedule);
     this._props.updatedAt = new Date();
 
-    // Recalculate next execution time (uses current time as default)
-    const nextRunAt = Date.now();
+    const nextRunAt = this._props.schedule.calculateNextRun(Date.now());
     this._props.execution = this._props.execution.with({ nextRunAt });
 
     // Publish event
@@ -316,9 +315,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
    * Calculates the next run time.
    * @returns Timestamp in milliseconds
    */
-  public calculateNextRun(): number {
-    // Uses current time as default (calculation logic can be implemented externally)
-    return Date.now();
+  public calculateNextRun(): number | null {
+    return this._props.schedule.calculateNextRun(Date.now());
   }
 
   // ===== Execution Info Management =====
@@ -388,6 +386,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     duration: number,
     result?: Record<string, any>,
     error?: string,
+    nextRunAt?: number | null,
   ): ScheduleExecution {
     const execution = this.createExecution({
       executionTime: Date.now(),
@@ -407,12 +406,11 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this.addExecution(execution);
 
     // Update execution info
-    const nextRunAt = Date.now(); // Uses current time as default
     this._props.execution = this._props.execution.updateAfterExecution({
       executedAt: Date.now(),
       status,
       duration,
-      nextRunAt,
+      nextRunAt: nextRunAt ?? this._props.schedule.calculateNextRun(Date.now()),
     });
 
     this._props.updatedAt = new Date();
@@ -494,20 +492,33 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
   /** Enables the task. */
   public enable(): void {
+    const wasPaused = this._props.status === ScheduleTaskStatus.Paused;
     this._props.enabled = true;
-    // If currently paused, auto-transition to active
-    if (this._props.status === ScheduleTaskStatus.Paused) {
+    if (wasPaused) {
       this._props.status = ScheduleTaskStatus.Active;
+      const nextRunAt = this._props.schedule.calculateNextRun(Date.now());
+      this._props.execution = this._props.execution.with({ nextRunAt });
+      this.addDomainEvent('schedule:task:resumed', {
+        taskId: this.id,
+        sourceModule: this._props.sourceModule,
+        sourceEntityId: this._props.sourceEntityId,
+        nextRunAt,
+      });
     }
     this._props.updatedAt = new Date();
   }
 
   /** Disables the task. */
   public disable(): void {
+    const wasActive = this._props.status === ScheduleTaskStatus.Active;
     this._props.enabled = false;
-    // If currently active, auto-transition to paused
-    if (this._props.status === ScheduleTaskStatus.Active) {
+    if (wasActive) {
       this._props.status = ScheduleTaskStatus.Paused;
+      this.addDomainEvent('schedule:task:paused', {
+        taskId: this.id,
+        sourceModule: this._props.sourceModule,
+        sourceEntityId: this._props.sourceEntityId,
+      });
     }
     this._props.updatedAt = new Date();
   }
@@ -703,7 +714,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     retryPolicy?: RetryPolicy;
   }): ScheduleTask {
     const now = new Date();
-    const nextRunAt = now.getTime();
+    const nextRunAt = params.schedule.calculateNextRun(now.getTime());
 
     const state: ScheduleTaskState = {
       id: ScheduleTaskId.generate(),
@@ -716,7 +727,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       enabled: true,
       schedule: params.schedule,
       execution: ExecutionInfo.fromDTO({
-        nextRunAt: new Date(nextRunAt).toISOString(),
+        nextRunAt: nextRunAt !== null ? new Date(nextRunAt).toISOString() : null,
         lastRunAt: null,
         executionCount: 0,
         lastExecutionStatus: null,
@@ -739,7 +750,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       name: params.name,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
-      cronExpression: params.schedule.toServerDTO().cronExpression,
+      cronExpression: params.schedule.toServerDTO().cronExpression ?? '',
       nextRunAt,
     });
 

@@ -155,7 +155,7 @@ async function startApp() {
     history: createWebHashHistory(),
     isAuthenticated: () => useAuthenticationStore().isAuthenticated,
     authView: DesktopAuthView,
-    additionalRoutes: [
+    additionalTopLevelRoutes: [
       {
         path: '/custom-notification',
         name: 'custom-notification',

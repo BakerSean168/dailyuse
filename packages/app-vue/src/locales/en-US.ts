@@ -2024,11 +2024,29 @@ export default {
       // Importance levels
       importanceVital: 'Vital',
       importanceImportant: 'Important',
-      importanceModerate: 'Moderate',
-      importanceMinor: 'Minor',
-      importanceTrivial: 'Trivial',
-      // Motivation & Feasibility
-      sectionMotivation: 'Motivation & Feasibility',
+        importanceModerate: 'Moderate',
+        importanceMinor: 'Minor',
+        importanceTrivial: 'Trivial',
+        // Reminder
+        sectionReminder: 'Reminder Settings',
+        enableReminder: 'Enable Goal Reminders',
+        reminderType: 'Reminder Type',
+        selectReminderType: 'Select reminder type',
+        triggerRemainingDays: 'Remaining Days',
+        triggerTimeProgress: 'Time Progress',
+        triggerValueDays: 'Days Before Deadline',
+        triggerValuePercent: 'Progress Percentage',
+        addReminderTrigger: 'Add Reminder Trigger',
+        reminderAtLeastOneTrigger: 'Add at least one trigger when reminders are enabled.',
+        reminderRemainingDaysInvalid: 'Remaining days must be a number greater than or equal to 0.',
+        reminderRemainingDaysRequiresTargetDate:
+          'Remaining-days reminders require a target date.',
+        reminderTimeProgressInvalid:
+          'Time-progress reminders must be between 1 and 100.',
+        reminderTimeProgressRequiresRange:
+          'Time-progress reminders require both a start date and a target date.',
+        // Motivation & Feasibility
+        sectionMotivation: 'Motivation & Feasibility',
       motivation: 'Motivation',
       motivationPlaceholder: 'Why is this goal important to you?',
       feasibilityAnalysis: 'Feasibility Analysis',

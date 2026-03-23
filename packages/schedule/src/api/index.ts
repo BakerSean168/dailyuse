@@ -16,7 +16,11 @@
  * - /schedules/events (calendar entries)
  */
 
-export { ScheduleApiModule } from './module';
-export type { ScheduleApiModuleContext, ScheduleApiModuleDef } from './module';
+export { ScheduleApiModule, createScheduleApiModule } from './module';
+export type {
+  ScheduleApiModuleContext,
+  ScheduleApiModuleDef,
+  CreateScheduleApiModuleOptions,
+} from './module';
 export { ScheduleController, type ScheduleUseCases } from '../controllers';
 export { ScheduleEventController, type ScheduleEventUseCases } from '../controllers';

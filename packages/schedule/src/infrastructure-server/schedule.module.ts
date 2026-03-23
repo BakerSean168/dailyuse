@@ -71,8 +71,7 @@ export interface ScheduleModuleDependencies {
  * 模块拥有的运行时副作用。
  *
  * A contribution is the unit we start/stop together with the module instance.
- * This is the replacement for the older ScheduleEventPublisher.configure() +
- * InitializationManager global hooks.
+ * This replaces the old global initialization pattern with explicit module-owned runtime hooks.
  */
 export interface ScheduleModuleRuntimeContribution {
   start(): void;

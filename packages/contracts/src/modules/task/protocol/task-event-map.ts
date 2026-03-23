@@ -3,6 +3,8 @@ import type {
   TaskUpdatedEvent,
   TaskDeletedEvent,
   TaskInstanceCompletedEvent,
+  TaskInstanceSkippedEvent,
+  TaskInstanceDeletedEvent,
   TaskInstancesGeneratedEvent,
   TaskTemplatePausedEvent,
   TaskTemplateResumedEvent,
@@ -39,6 +41,8 @@ export type TaskEventMap = {
   'task:delete': TaskDeletedEvent;
 
   'task:instance:completed': TaskInstanceCompletedEvent;
+  'task:instance:skipped': TaskInstanceSkippedEvent;
+  'task:instance:deleted': TaskInstanceDeletedEvent;
   'task:instances:generated': TaskInstancesGeneratedEvent;
   'task:template:paused': TaskTemplatePausedEvent;
   'task:template:resumed': TaskTemplateResumedEvent;

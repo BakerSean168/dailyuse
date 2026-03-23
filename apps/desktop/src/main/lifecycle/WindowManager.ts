@@ -16,6 +16,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils';
+import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktopChrome';
 import type { DesktopChromeTheme } from './desktopChrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
@@ -274,6 +275,7 @@ export class WindowManager {
 
       // 3. 显示主窗口
       mainWin.show();
+      startScheduleRuntime();
 
       // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
       setTimeout(() => {
@@ -301,6 +303,7 @@ export class WindowManager {
     logger.info('Transitioning from main to login window');
 
     try {
+      stopScheduleRuntime();
       // 1. 创建登录窗口
       const loginWin = this.createLoginWindow();
 

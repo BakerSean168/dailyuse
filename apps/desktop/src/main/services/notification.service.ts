@@ -11,11 +11,13 @@
 import { Notification, nativeImage, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { eventBus } from '@dailyuse/utils';
+import { createLogger, eventBus } from '@dailyuse/utils';
 import type { NotificationDispatchDesktopEvent } from '@dailyuse/contracts/notification';
 import { getCustomNotificationManager } from './custom-notification.manager';
 import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
 import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
+
+const logger = createLogger('NotificationService');
 
 /**
  * Configuration options for displaying a notification.
@@ -215,13 +217,27 @@ export class NotificationService {
     eventBus.on(
       'notification:dispatch_desktop' as any,
       (event: NotificationDispatchDesktopEvent) => {
+        logger.info('[Desktop][NotificationFlow] Received desktop dispatch event', {
+          title: event.title,
+          bodyLength: event.body?.length ?? 0,
+          hasIcon: !!event.icon,
+          silent: event.silent ?? false,
+          soundEnabled: event.sound?.enabled ?? true,
+          useCustomNotification: this.useCustomNotification,
+        });
         this.showNotification({
           title: event.title,
           body: event.body ?? '',
           icon: event.icon ?? undefined,
           silent: event.silent,
           sound: event.sound?.enabled ?? true,
-          data: event.data,
+          data: {
+            ...(event.data ?? {}),
+            notificationId: event.id,
+            identityId: event.identityId,
+            notificationType: event.type,
+            notificationCategory: event.category,
+          },
         });
       },
     );
@@ -265,6 +281,14 @@ export class NotificationService {
    * @returns {Notification | null} The Notification instance, or null if suppressed/unsupported.
    */
   showNotification(options: NotificationOptions): Notification | null {
+    logger.info('[Desktop][NotificationFlow] showNotification invoked', {
+      title: options.title,
+      bodyLength: options.body?.length ?? 0,
+      useCustomNotification: this.useCustomNotification,
+      dndEnabled: this.dndEnabled,
+      dndScheduleEnabled: this.dndScheduleEnabled,
+    });
+
     // Check DND status
     if (this.isInDNDPeriod()) {
       console.log('[NotificationService] Notification suppressed (DND mode):', options.title);
@@ -284,10 +308,16 @@ export class NotificationService {
     // so we rely on explicit sync calls or the cached value.
     if (this.useCustomNotification) {
       // Use Custom Notification Manager
+      logger.info('[Desktop][NotificationFlow] Routing notification to custom manager', {
+        title: options.title,
+      });
       const customManager = getCustomNotificationManager();
       customManager.dispatch(options);
       return null; // Custom notifications don't return an Electron.Notification instance
     } else {
+      logger.info('[Desktop][NotificationFlow] Routing notification to native Electron notification', {
+        title: options.title,
+      });
       // Check system support for native notifications
       if (!Notification.isSupported()) {
         console.warn('[NotificationService] Notifications are not supported on this system');

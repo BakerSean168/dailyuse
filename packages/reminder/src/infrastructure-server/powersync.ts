@@ -19,7 +19,6 @@ import {
   ReminderResponsePowerSyncRepository,
   UserReminderPreferencePowerSyncRepository,
 } from './adapters/powersync';
-import { createReminderTriggerCronJob } from './cron/reminder-trigger-cron-job';
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -43,12 +42,7 @@ export function createReminderPowerSyncModule(
     reminderGroupRepository,
     reminderResponseRepository: new ReminderResponsePowerSyncRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePowerSyncRepository(db),
-    runtimeContributions:
-      runtimeContributions ??
-      createReminderTriggerCronJob({
-        reminderTemplateRepository,
-        reminderGroupRepository,
-      }),
+    runtimeContributions,
   });
 }
 

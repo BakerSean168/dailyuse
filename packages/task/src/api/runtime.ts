@@ -49,17 +49,25 @@ const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
     const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
     logger.info(`[Task] Instance completed: ${instanceId}`);
   },
+  'task:instance:skipped': (event) => {
+    const payload = event.payload ?? event;
+    const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
+    logger.info(`[Task] Instance skipped: ${instanceId}`);
+  },
+  'task:instance:deleted': (event) => {
+    const payload = event.payload ?? event;
+    const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
+    logger.info(`[Task] Instance deleted: ${instanceId}`);
+  },
 };
 
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
  *
- * Replaces the old `registerTaskInitializationTasks()` and static
- * `TaskEventHandler.initialize()` with an explicit start/stop lifecycle.
+ * Replaces the old global initialization pattern with an explicit start/stop lifecycle.
  *
- * 替代旧的 `registerTaskInitializationTasks()` 和静态
- * `TaskEventHandler.initialize()`，使用显式的 start/stop 生命周期。
+ * 替代旧的全局初始化方式，使用显式的 start/stop 生命周期。
  */
 export function createTaskRuntimeContribution(): TaskRuntimeContribution {
   let started = false;

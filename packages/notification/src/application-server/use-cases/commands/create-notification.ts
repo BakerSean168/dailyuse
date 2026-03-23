@@ -8,6 +8,7 @@ import { NotificationPolicy } from '../../../domain-server/services/Notification
 import { createLogger, eventBus } from '@dailyuse/utils';
 import type {
   NotificationClientDTO,
+  NotificationDispatchDesktopEvent,
   NotificationEventMap,
   NotificationType,
   NotificationCategory,
@@ -123,6 +124,21 @@ export class CreateNotification {
           data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
         };
         eventBus.send('notification:dispatch_in_app', dispatchEvent);
+      }
+
+      if (resolvedChannels.includes(ChannelTypeEnum.Push)) {
+        const desktopEvent: NotificationDispatchDesktopEvent = {
+          id: clientDTO.id,
+          identityId,
+          title: clientDTO.title,
+          body: clientDTO.content,
+          category: clientDTO.category,
+          type: clientDTO.type,
+          importance: clientDTO.importance,
+          data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
+          sound: { enabled: true, name: null },
+        };
+        eventBus.send('notification:dispatch_desktop', desktopEvent);
       }
 
       logger.debug('📬 [应用服务] Notification dispatched via event bus', {

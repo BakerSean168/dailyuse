@@ -28,6 +28,7 @@ const authStore = useAuthenticationStore();
 const shouldShowAIFloatingBall = computed(
   () => authStore.isAuthenticated && route.meta.requiresAuth !== false,
 );
+const isCustomNotificationRoute = computed(() => route.name === 'custom-notification');
 const showDesktopTitlebar = computed(() => route.name !== 'custom-notification');
 const isMacPlatform =
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -101,7 +102,12 @@ useThemeSync();
 </script>
 
 <template>
+  <GlobalErrorBoundary v-if="isCustomNotificationRoute">
+    <router-view />
+  </GlobalErrorBoundary>
+
   <div
+    v-else
     class="desktop-shell"
     :class="{
       'desktop-shell--mac': isMacPlatform,

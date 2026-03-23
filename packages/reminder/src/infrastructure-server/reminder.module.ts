@@ -379,7 +379,7 @@ export function createReminderModule(
       if (!existing) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      await reminderDomainService.deleteTemplate(id, false);
+      await reminderDomainService.deleteTemplate(id, true);
       return ok(undefined);
     },
 

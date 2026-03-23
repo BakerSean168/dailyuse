@@ -20,7 +20,6 @@ import type { IScheduleTimer } from '@dailyuse/patterns/scheduler';
 import { NodeTimer } from '@dailyuse/patterns/scheduler';
 import type { IScheduleMonitor } from '@dailyuse/patterns/scheduler';
 import { NoopScheduleMonitor } from '@dailyuse/patterns/scheduler';
-import { calculateNextRun } from '../use-cases/calculate-next-run';
 
 /**
  * 调度队列中的任务项
@@ -477,7 +476,7 @@ export class ScheduleTaskQueue {
    * 执行单个任务
    */
   private async executeTask(item: ScheduledItem): Promise<void> {
-    const { taskId, taskName, cronExpression, timezone } = item;
+    const { taskId, taskName } = item;
     const startTime = this.timer.now();
 
     this.isExecuting = true;
@@ -496,22 +495,6 @@ export class ScheduleTaskQueue {
         duration,
       });
 
-      // 如果是循环任务，计算下次执行时间并重新入队
-      if (cronExpression) {
-        const nextRunAt = calculateNextRun(cronExpression, timezone);
-        if (nextRunAt) {
-          this.queue.insert({
-            ...item,
-            nextRunAt: nextRunAt.getTime(),
-          });
-
-          this.logger.debug('Recurring task rescheduled', {
-            taskId,
-            taskName,
-            nextRunAt: nextRunAt.toISOString(),
-          });
-        }
-      }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.monitor.recordExecutionFailure(taskId, taskName, err);

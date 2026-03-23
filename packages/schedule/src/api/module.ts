@@ -16,7 +16,6 @@ import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import {
   createScheduleModule,
-  createScheduleUseCases,
   SchedulePrismaRepository,
   ScheduleTaskPrismaRepository,
   ScheduleExecutionPrismaRepository,
@@ -29,7 +28,7 @@ import {
   createScheduleEventTransportHandlers,
   createScheduleTransportHandlers,
 } from './transport-handlers';
-import { createScheduleRuntimeContribution } from './runtime';
+import { createScheduleRuntimeContribution, type ScheduleTaskSourceExecutor } from './runtime';
 
 /**
  * Module context (structurally compatible with IApiModuleContext from apps/api).
@@ -57,79 +56,75 @@ export interface ScheduleApiModuleDef {
 
 let activeScheduleModule: ScheduleModuleInstance | null = null;
 
-export const ScheduleApiModule: ScheduleApiModuleDef = {
-  name: 'Schedule',
+export interface CreateScheduleApiModuleOptions {
+  readonly sourceExecutor?: ScheduleTaskSourceExecutor;
+}
 
-  register(context) {
-    const { router, middleware, db } = context;
+export function createScheduleApiModule(
+  options: CreateScheduleApiModuleOptions = {},
+): ScheduleApiModuleDef {
+  return {
+    name: 'Schedule',
 
-    // 1. Composition Root — assemble dependencies (use shared database singleton)
-    // 1. 组合根 —— 组装依赖（使用共享数据库单例）
-    const prismaClient = db as PrismaClient;
+    register(context) {
+      const { router, middleware, db } = context;
 
-    // Build repositories first.
-    // 先构建仓储实例。
-    const repos = {
-      scheduleRepository: new SchedulePrismaRepository(prismaClient),
-      scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(prismaClient),
-      scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
-    };
+      // 1. Composition Root — assemble dependencies (use shared database singleton)
+      // 1. 组合根 —— 组装依赖（使用共享数据库单例）
+      const prismaClient = db as PrismaClient;
 
-    // Build use cases independently to break the chicken-and-egg cycle:
-    // the runtime contribution needs use case references, but the module
-    // constructor needs the runtime contribution.
-    // 先独立构建 use case 以打破循环依赖：
-    // 运行时贡献需要 use case 引用，而模块构造器需要运行时贡献。
-    const useCases = createScheduleUseCases(repos);
+      const repos = {
+        scheduleRepository: new SchedulePrismaRepository(prismaClient),
+        scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(prismaClient),
+        scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
+      };
 
-    // Create the runtime contribution with the pre-built use cases.
-    // 用预先构建的 use case 创建运行时贡献。
-    const runtimeContribution = createScheduleRuntimeContribution({
-      createScheduleTask: useCases.createScheduleTask,
-      listScheduleTasksBySource: useCases.listScheduleTasksBySource,
-      deleteScheduleTask: useCases.deleteScheduleTask,
-      pauseScheduleTask: useCases.pauseScheduleTask,
-      resumeScheduleTask: useCases.resumeScheduleTask,
-    });
+      const runtimeContribution = createScheduleRuntimeContribution({
+        scheduleTaskRepository: repos.scheduleTaskRepository,
+        sourceExecutor:
+          options.sourceExecutor ??
+          {
+            async execute(task) {
+              throw new Error(`No schedule source executor configured for ${task.sourceModule}`);
+            },
+          },
+      });
 
-    // Now assemble the module with both repos and runtime contribution.
-    // createScheduleModule will build its own use cases internally — the
-    // pre-built set above is only for the runtime contribution wiring.
-    // 现在用仓储和运行时贡献组装模块。
-    // createScheduleModule 内部会再构建一份 use case — 上面预构建的
-    // 仅用于运行时贡献接线。
-    const scheduleModule = createScheduleModule({
-      ...repos,
-      runtimeContributions: runtimeContribution,
-    });
-    activeScheduleModule = scheduleModule;
-    scheduleModule.start();
+      const scheduleModule = createScheduleModule({
+        ...repos,
+        runtimeContributions: runtimeContribution,
+      });
+      activeScheduleModule = scheduleModule;
+      scheduleModule.start();
 
-    // 2. Transport handlers (thin boring mapping)
-    // 2. 传输层处理器（简单透传映射）
-    const handlers = createScheduleTransportHandlers(scheduleModule.api);
+      // 2. Transport handlers (thin boring mapping)
+      // 2. 传输层处理器（简单透传映射）
+      const handlers = createScheduleTransportHandlers(scheduleModule.api);
 
-    // 3. Register task routes / 注册任务路由
-    const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
+      // 3. Register task routes / 注册任务路由
+      const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
 
-    // 3b. Register schedule event routes (calendar entries)
-    // 3b. 注册日程事件路由（日历条目）
-    const eventController = new ScheduleEventController({
-      ...createScheduleEventTransportHandlers(scheduleModule.eventApi),
-    });
-    const eventRoutes = registerScheduleEventRoutes(
-      eventController,
-      middleware,
-      context.openApiRegistry,
-    );
+      // 3b. Register schedule event routes (calendar entries)
+      // 3b. 注册日程事件路由（日历条目）
+      const eventController = new ScheduleEventController({
+        ...createScheduleEventTransportHandlers(scheduleModule.eventApi),
+      });
+      const eventRoutes = registerScheduleEventRoutes(
+        eventController,
+        middleware,
+        context.openApiRegistry,
+      );
 
-    // 4. Mount onto API router / 挂载到主路由
-    router.use('/schedules', scheduleRoutes);
-    router.use('/schedules/events', eventRoutes);
-  },
+      // 4. Mount onto API router / 挂载到主路由
+      router.use('/schedules', scheduleRoutes);
+      router.use('/schedules/events', eventRoutes);
+    },
 
-  destroy() {
-    activeScheduleModule?.dispose();
-    activeScheduleModule = null;
-  },
-};
+    destroy() {
+      activeScheduleModule?.dispose();
+      activeScheduleModule = null;
+    },
+  };
+}
+
+export const ScheduleApiModule: ScheduleApiModuleDef = createScheduleApiModule();

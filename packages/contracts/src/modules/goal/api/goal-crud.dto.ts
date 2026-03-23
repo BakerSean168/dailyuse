@@ -11,12 +11,24 @@ import type { GoalClientDTO } from '../aggregates';
 import { GoalStatus } from '../value-objects/goal-status';
 import { GoalSystemView } from '../value-objects/goal-system-view';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 
 const GoalNameSchema = z
   .string()
   .trim()
   .min(1, '目标名称不能为空')
   .max(256, '目标名称不能超过 256 字符');
+
+const ReminderTriggerSchema = z.object({
+  type: z.enum(ReminderTriggerType),
+  value: z.number().min(0),
+  enabled: z.boolean(),
+});
+
+const GoalReminderConfigSchema = z.object({
+  enabled: z.boolean(),
+  triggers: z.array(ReminderTriggerSchema).max(10),
+});
 
 // ============================================================================
 // CREATE Goal
@@ -42,6 +54,7 @@ export const CreateGoalSchema = z
     targetDate: z.number().int().optional(),
     folderId: brandedId<GoalFolderId>().optional(),
     parentGoalId: brandedId<GoalId>().optional(),
+    reminderConfig: GoalReminderConfigSchema.nullable().optional(),
   })
   .strict();
 
@@ -73,6 +86,7 @@ export const UpdateGoalSchema = z
     targetDate: z.number().int().nullable().optional(),
     folderId: brandedId<GoalFolderId>().nullable().optional(),
     parentGoalId: brandedId<GoalId>().nullable().optional(),
+    reminderConfig: GoalReminderConfigSchema.nullable().optional(),
   })
   .strict();
 

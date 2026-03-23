@@ -4,6 +4,8 @@ import type {
 } from '../../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleTaskStatus, type SourceModule } from '@dailyuse/contracts/schedule';
+import type { AppEventRegistry } from '@dailyuse/contracts/shared';
+import { createLogger, eventBus } from '@dailyuse/utils';
 import {
   PowerSyncScheduleTaskMapper,
   type PowerSyncScheduleTaskRow,
@@ -17,11 +19,27 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
+const logger = createLogger('ScheduleTaskPowerSyncRepo');
+
 export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository {
   constructor(private readonly db: Queryable) {}
 
   async save(task: ScheduleTask): Promise<void> {
     const data = PowerSyncScheduleTaskMapper.toPersistence(task);
+    const pendingDomainEvents = task.domainEvents.map((event) => event.eventType);
+
+    logger.info('[Schedule][Repo] Saving task', {
+      taskId: String(task.id),
+      identityId: task.identityId,
+      sourceModule: task.sourceModule,
+      sourceEntityId: task.sourceEntityId,
+      status: task.status,
+      enabled: task.enabled,
+      nextRunAt: task.nextRunAt?.toISOString() ?? null,
+      executionCount: task.executionCount,
+      pendingDomainEvents,
+    });
+
     const existingTask = await this.db.getOptional<{ id: string }>(
       'SELECT id FROM schedule_tasks WHERE id = ? LIMIT 1',
       [data.id],
@@ -183,6 +201,25 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           ],
         );
       }
+    }
+
+    if (pendingDomainEvents.length > 0) {
+      for (const event of task.pullDomainEvents()) {
+        const eventType = event.eventType as keyof AppEventRegistry;
+        eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
+      }
+
+      logger.info('[Schedule][Repo] Published domain events after PowerSync save', {
+        taskId: String(task.id),
+        publishedDomainEvents: pendingDomainEvents,
+      });
+    } else {
+      logger.warn(
+        '[Schedule][Repo] PowerSync save completed without domain events to publish',
+        {
+          taskId: String(task.id),
+        },
+      );
     }
   }
 

@@ -32,8 +32,7 @@ export class ResumeScheduleTaskUseCase {
       throw new Error(`Schedule task ${id} not found`);
     }
 
-    // 2. 调用聚合根的 enable 方法（业务逻辑在聚合根内）
-    task.enable();
+    task.resume();
 
     // 3. 持久化
     await this.scheduleTaskRepository.save(task);

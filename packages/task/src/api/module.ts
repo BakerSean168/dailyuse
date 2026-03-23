@@ -28,6 +28,8 @@ import { TaskDependencyController } from './controllers/task-dependency.controll
 import { registerTaskRoutes } from './routes';
 import { createTaskTransportHandlers } from './transport-handlers';
 import { createTaskRuntimeContribution } from './runtime';
+import { createTaskScheduleRuntimeContribution } from './schedule-runtime';
+import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
 
 /**
  * Module registration context (aligned with apps/api IApiModuleContext).
@@ -72,14 +74,23 @@ export const TaskApiModule: TaskApiModuleDef = {
     // 1. Composition Root — assemble dependencies (using shared database singleton)
     //    组合根 — 组装依赖（使用共享数据库单例）
     const prismaClient = db as PrismaClient;
+    const taskTemplateRepository = new TaskTemplatePrismaRepository(prismaClient);
+    const taskInstanceRepository = new TaskInstancePrismaRepository(prismaClient);
     const taskModule = createTaskModule({
       // The application edge decides which adapter implementation to use.
       // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
-      taskTemplateRepository: new TaskTemplatePrismaRepository(prismaClient),
-      taskInstanceRepository: new TaskInstancePrismaRepository(prismaClient),
+      taskTemplateRepository,
+      taskInstanceRepository,
       taskDependencyRepository: new TaskDependencyPrismaRepository(prismaClient),
       taskFolderRepository: new TaskFolderPrismaRepository(prismaClient),
-      runtimeContributions: createTaskRuntimeContribution(),
+      runtimeContributions: [
+        createTaskRuntimeContribution(),
+        createTaskScheduleRuntimeContribution({
+          taskTemplateRepository,
+          taskInstanceRepository,
+          scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
+        }),
+      ],
     });
     activeTaskModule = taskModule;
     taskModule.start();

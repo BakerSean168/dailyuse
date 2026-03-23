@@ -2,16 +2,19 @@
   <ActionableWrapper :actions="menuActions" :show-more-button="false">
     <div
       :class="[
-        'flex gap-3 p-4 cursor-pointer transition-colors hover:bg-muted/50 border-b last:border-b-0',
-        !notification.isRead && 'bg-info/10 dark:bg-info/20',
+        'flex gap-3 border-b border-l-4 p-4 cursor-pointer transition-all last:border-b-0',
+        notification.isRead
+          ? 'border-l-transparent bg-background/70 opacity-75 hover:bg-muted/40 hover:opacity-100'
+          : 'border-l-info bg-info/12 shadow-sm hover:bg-info/16',
       ]"
       @click="$emit('click', notification)"
     >
       <!-- Icon -->
       <div
         :class="[
-          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all',
           typeColorClass,
+          notification.isRead ? 'opacity-55 saturate-50' : 'ring-4 ring-info/12 shadow-sm',
         ]"
       >
         <component :is="typeIcon" class="h-5 w-5 text-white" />
@@ -21,8 +24,16 @@
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-1">
           <!-- Unread indicator dot -->
-          <span v-if="!notification.isRead" class="h-2 w-2 shrink-0 rounded-full bg-info" />
-          <span :class="['text-sm', !notification.isRead && 'font-semibold']">
+          <span
+            v-if="!notification.isRead"
+            class="h-2.5 w-2.5 shrink-0 rounded-full bg-info shadow-[0_0_0_4px_hsl(var(--info)/0.16)]"
+          />
+          <span
+            :class="[
+              'text-sm transition-colors',
+              notification.isRead ? 'text-muted-foreground' : 'font-semibold text-foreground',
+            ]"
+          >
             {{ notification.title }}
           </span>
           <Badge
@@ -37,11 +48,21 @@
           </Badge>
         </div>
 
-        <p class="text-sm text-muted-foreground line-clamp-2">
+        <p
+          :class="[
+            'text-sm line-clamp-2 transition-colors',
+            notification.isRead ? 'text-muted-foreground/80' : 'text-foreground/80',
+          ]"
+        >
           {{ notification.content }}
         </p>
 
-        <p class="text-xs text-muted-foreground mt-1">
+        <p
+          :class="[
+            'mt-1 text-xs transition-colors',
+            notification.isRead ? 'text-muted-foreground/70' : 'font-medium text-info/90',
+          ]"
+        >
           {{ timeDisplay }}
         </p>
       </div>

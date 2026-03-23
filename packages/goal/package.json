@@ -55,6 +55,7 @@
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
+    "@dailyuse/schedule": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",
     "zod": "^4.3.6"

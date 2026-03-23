@@ -9,6 +9,7 @@
  */
 
 import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
+import { eventBus } from '@dailyuse/utils';
 
 /**
  * Delete Schedule Task Use Case
@@ -31,5 +32,6 @@ export class DeleteScheduleTaskUseCase {
 
     // 2. 执行删除（硬删除或软删除取决于业务需求）
     await this.scheduleTaskRepository.deleteById(id);
+    (eventBus as any).send('schedule:task:deleted', { taskId: id });
   }
 }

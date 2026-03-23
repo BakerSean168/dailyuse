@@ -9,7 +9,7 @@ import type { Timezone } from './timezone';
 /** Schedule config - Server interface. */
 export interface IScheduleConfigServer {
   /** Cron expression */
-  cronExpression: string;
+  cronExpression: string | null;
 
   /** Timezone */
   timezone: Timezone;
@@ -45,7 +45,7 @@ export interface IScheduleConfigServer {
 /** Schedule config - Client interface. */
 export interface IScheduleConfigClient {
   /** Cron expression */
-  cronExpression: string;
+  cronExpression: string | null;
 
   /** Timezone */
   timezone: Timezone;
@@ -86,7 +86,7 @@ export interface IScheduleConfigClient {
  * Schedule Config Server DTO
  */
 export interface ScheduleConfigServerDTO {
-  cronExpression: string;
+  cronExpression: string | null;
   timezone: Timezone;
   startDate: string | null; // ISO string
   endDate: string | null;
@@ -97,7 +97,7 @@ export interface ScheduleConfigServerDTO {
  * Schedule Config Client DTO
  */
 export interface ScheduleConfigClientDTO {
-  cronExpression: string;
+  cronExpression: string | null;
   timezone: Timezone;
   startDate: string | null;
   endDate: string | null;
@@ -113,7 +113,7 @@ export interface ScheduleConfigClientDTO {
  * Schedule Config Persistence DTO
  */
 export interface ScheduleConfigPersistenceDTO {
-  cronExpression: string;
+  cronExpression: string | null;
   timezone: string;
   startDate: string | null;
   endDate: string | null;

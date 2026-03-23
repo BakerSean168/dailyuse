@@ -29,6 +29,7 @@ import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
 import { getDesktopAuthService } from '../auth/desktop-auth-context';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
+import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -154,9 +155,11 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     // 直接进入主窗口
     win = windowManager.createMainWindow();
     mainWindow = win;
+    startScheduleRuntime();
     console.log('[Lifecycle] Created main window (auto-login)');
   } else {
     // 显示登录窗口
+    stopScheduleRuntime();
     win = windowManager.createLoginWindow({
       hasQuickLoginAccounts: quickLoginAccounts.length > 0,
       quickLoginAccounts,

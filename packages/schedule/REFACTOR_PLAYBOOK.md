@@ -15,9 +15,8 @@ Use this file as the quickest map when reviewing or extending the schedule modul
    - 3-step pattern: composition root -> transport handlers -> route mounting
    - `destroy()` calls `scheduleModule.dispose()`
 3. `packages/schedule/src/api/runtime.ts`
-   - shows how old `ScheduleEventPublisher.configure()` + `InitializationManager` became
-     an explicit `createScheduleRuntimeContribution()` with `start()` / `stop()`
-   - manages cross-module domain event subscriptions (goal:create, task:create, etc.)
+   - hosts the live scheduler runtime via `createScheduleRuntimeContribution()`
+   - loads active tasks, tracks task lifecycle changes, and executes due tasks through registered source executors
 4. `packages/schedule/src/api/transport-handlers.ts`
    - thin mapping layer: `ScheduleApplicationPort` -> `ScheduleUseCases` (controller port)
    - currently a direct pass-through since shapes already match
@@ -76,8 +75,8 @@ From `packages/schedule/src/api/module.ts` — self-contained 3-step pattern:
 3. **Route mounting**: `router.use('/schedules', scheduleRoutes)` + `router.use('/schedules/events', eventRoutes)`
    （路由挂载）
 
-Note: schedule's API module builds use cases independently (`createScheduleUseCases`) before the module to break the chicken-and-egg cycle where the runtime contribution needs use case references. This is a valid extension of the governance pattern.
-（schedule 的 API 模块独立预构建 use case 以打破运行时贡献对 use case 的循环依赖。）
+Note: schedule's API module builds use cases independently (`createScheduleUseCases`) before the module so the runtime contribution can reuse the assembled task APIs without a second composition path.
+（schedule 的 API 模块独立预构建 use case，让 runtime contribution 可以直接复用已组装好的任务 API，而不需要第二套装配路径。）
 
 ### 3. Runtime Contribution Shape
 
@@ -85,15 +84,10 @@ From `packages/schedule/src/api/runtime.ts`:
 
 - Replaces the deprecated `registerScheduleInitializationTasks()` from `initialization.ts`
   （取代 `initialization.ts` 中已弃用的 `registerScheduleInitializationTasks()`）
-- Wraps `ScheduleEventPublisher.configure()` + `.initialize()` / `.reset()` in `start()` / `stop()`
-- Receives a subset of use cases (`ScheduleEventPublisherDependencies`) to wire the publisher
+- Loads active tasks into the in-memory queue on `start()`
+- Subscribes to `schedule:task:*` events to keep the queue synchronized
+- Dispatches due tasks through the registered source executors and records execution results
 - Repeated `start()` / `stop()` calls are safe (idempotent guard)
-
-```ts
-export function createScheduleRuntimeContribution(
-  deps: ScheduleEventPublisherDependencies,
-): ScheduleRuntimeContribution;
-```
 
 ### 4. Transport Mapping Shape
 
@@ -117,8 +111,8 @@ export function createScheduleTransportHandlers(api: ScheduleApplicationPort): S
   （全局初始化管理器注册用法已被模块自有的 start/stop 取代）
 - `src/api/initialization.ts` — still present but marked `@deprecated`; all active code paths use `runtime.ts`
   （文件仍存在但全文标记 @deprecated；所有活跃代码路径已切换到 runtime.ts）
-- Direct `ScheduleEventPublisher.configure()` calls from transport/route code — now encapsulated in runtime contribution
-  （传输/路由代码中直接调用 ScheduleEventPublisher 的方式已封装进运行时贡献）
+- Centralized schedule projection logic — replaced by per-module schedule runtime contributions in goal / task / reminder
+  （集中式 schedule projection 逻辑已被 goal / task / reminder 各自拥有的 schedule runtime contribution 取代）
 
 ## Correspondence With Governance
 
@@ -153,6 +147,8 @@ export function createScheduleTransportHandlers(api: ScheduleApplicationPort): S
 - [x] Add `ScheduleElectronModule.destroy()` calling `module.dispose()` + removing IPC handlers
 - [x] Add `createSchedulePowerSyncModule()` convenience factory in `powersync.ts`
 - [x] Update barrel export in `src/index.ts`
+- [x] Remove `ScheduleEventPublisher` / strategy-factory based projection path
+- [x] Move schedule projection ownership to goal / task / reminder modules
 
 ## Success Criteria
 

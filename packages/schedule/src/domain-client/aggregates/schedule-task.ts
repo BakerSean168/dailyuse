@@ -34,7 +34,7 @@ import { ScheduleExecution } from '../entities/schedule-execution.js';
 export class ScheduleConfigVO {
   constructor(private readonly dto: ScheduleConfigClientDTO) {}
 
-  get cronExpression(): string {
+  get cronExpression(): string | null {
     return this.dto.cronExpression;
   }
 

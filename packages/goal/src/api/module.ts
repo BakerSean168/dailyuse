@@ -25,7 +25,9 @@ import {
   createGoalFolderTransportHandlers,
 } from './transport-handlers';
 import { createGoalRuntimeContribution } from './runtime';
+import { createGoalScheduleRuntimeContribution } from './schedule-runtime';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
 
 /**
  * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
@@ -60,11 +62,20 @@ export const GoalApiModule: GoalApiModuleDef = {
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
     const prismaClient = db as PrismaClient;
+    const goalRepository = new GoalPrismaRepository(prismaClient);
+    const goalFolderRepository = new GoalFolderPrismaRepository(prismaClient);
+    const goalRecordRepository = new GoalRecordPrismaRepository(prismaClient);
     const goalModule = createGoalModule({
-      goalRepository: new GoalPrismaRepository(prismaClient),
-      goalFolderRepository: new GoalFolderPrismaRepository(prismaClient),
-      goalRecordRepository: new GoalRecordPrismaRepository(prismaClient),
-      runtimeContributions: createGoalRuntimeContribution(),
+      goalRepository,
+      goalFolderRepository,
+      goalRecordRepository,
+      runtimeContributions: [
+        createGoalRuntimeContribution(),
+        createGoalScheduleRuntimeContribution({
+          goalRepository,
+          scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
+        }),
+      ],
     });
     activeGoalModule = goalModule;
     goalModule.start();

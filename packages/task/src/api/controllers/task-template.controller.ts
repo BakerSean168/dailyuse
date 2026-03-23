@@ -168,6 +168,7 @@ export class TaskTemplateController {
       description: parsed.data.description,
       timeConfig: parsed.data.timeConfig,
       recurrenceRule: parsed.data.recurrenceRule,
+      reminderConfig: parsed.data.reminderConfig,
       importance: parsed.data.importance,
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,

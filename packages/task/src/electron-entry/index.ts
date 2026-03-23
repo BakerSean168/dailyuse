@@ -13,9 +13,10 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { createTaskPowerSyncModule } from '../infrastructure-server/powersync';
+import { createTaskModule } from '../infrastructure-server/task.module';
 import { createTaskTransportHandlers } from '../api/transport-handlers';
 import { createTaskRuntimeContribution } from '../api/runtime';
+import { createTaskScheduleRuntimeContribution } from '../api/schedule-runtime';
 import { TaskTemplateController } from '../api/controllers/task-template.controller';
 import { TaskInstanceController } from '../api/controllers/task-instance.controller';
 import { TaskDependencyController } from '../api/controllers/task-dependency.controller';
@@ -24,6 +25,13 @@ import type { TaskModuleInstance } from '../infrastructure-server';
 import type { ITaskTemplateRepository } from '../domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import {
+  PowerSyncTaskTemplateRepository,
+  PowerSyncTaskInstanceRepository,
+  PowerSyncTaskDependencyRepository,
+  PowerSyncTaskFolderRepository,
+} from '../infrastructure-server/powersync';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
 
 const logger = createLogger('TaskElectron');
 
@@ -100,8 +108,22 @@ export const TaskElectronModule: IElectronModule = {
 
     // 1. Composition Root — PowerSync factory wires repos + use cases + runtime contribution
     //    组合根 — PowerSync 工厂组装仓储、用例和运行时贡献
-    const runtimeContribution = createTaskRuntimeContribution();
-    const taskModule = createTaskPowerSyncModule(db as any, runtimeContribution);
+    const taskTemplateRepo = new PowerSyncTaskTemplateRepository(db as any);
+    const taskInstanceRepo = new PowerSyncTaskInstanceRepository(db as any);
+    const taskModule = createTaskModule({
+      taskTemplateRepository: taskTemplateRepo,
+      taskInstanceRepository: taskInstanceRepo,
+      taskDependencyRepository: new PowerSyncTaskDependencyRepository(db as any),
+      taskFolderRepository: new PowerSyncTaskFolderRepository(db as any),
+      runtimeContributions: [
+        createTaskRuntimeContribution(),
+        createTaskScheduleRuntimeContribution({
+          taskTemplateRepository: taskTemplateRepo,
+          taskInstanceRepository: taskInstanceRepo,
+          scheduleTaskRepository: new PowerSyncScheduleTaskRepository(db as any),
+        }),
+      ],
+    });
     activeTaskModule = taskModule;
     taskTemplateRepository = taskModule.taskTemplateRepository;
     taskInstanceRepository = taskModule.taskInstanceRepository;

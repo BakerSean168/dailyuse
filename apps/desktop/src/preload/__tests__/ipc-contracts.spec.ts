@@ -133,6 +133,13 @@ describe('desktop IPC contract alignment', () => {
       NotificationChannels.DELETE,
       NotificationChannels.CLEAR_ALL,
       NotificationChannels.GET_UNREAD_COUNT,
+      NotificationChannels.CUSTOM_RECEIVE,
+      NotificationChannels.CUSTOM_CLICK,
+      NotificationChannels.CUSTOM_CLOSE,
+      NotificationChannels.CUSTOM_RESIZE,
+      NotificationChannels.CUSTOM_MOUSE_ENTER,
+      NotificationChannels.CUSTOM_MOUSE_LEAVE,
+      NotificationChannels.CUSTOM_RENDERER_READY,
     ]);
     expectChannelsRegistered([...supported], allowedByPrefix('notification:'));
   });

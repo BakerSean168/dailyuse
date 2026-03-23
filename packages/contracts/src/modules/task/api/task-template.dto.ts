@@ -74,6 +74,7 @@ export const UpdateTaskTemplateSchema = z.object({
   description: z.string().optional().nullable(),
   timeConfig: TaskTimeConfigSchema.optional().nullable(),
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
+  reminderConfig: TaskReminderConfigSchema.optional().nullable(),
   importance: z
     .custom<ImportanceLevel>()
     .openapi({

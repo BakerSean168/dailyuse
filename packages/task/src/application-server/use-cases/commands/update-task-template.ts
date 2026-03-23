@@ -5,6 +5,7 @@
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import { RecurrenceRule } from '../../../domain-shared/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain-shared/value-objects/task-time-config';
+import { TaskReminderConfig } from '../../../domain-shared/value-objects/task-reminder-config';
 import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -48,6 +49,13 @@ export class UpdateTaskTemplate {
 
     if (request.recurrenceRule !== undefined && request.recurrenceRule !== null) {
       template.updateRecurrenceRule(RecurrenceRule.fromDTO(request.recurrenceRule));
+    }
+
+    if (request.reminderConfig !== undefined) {
+      const nextReminderConfig = request.reminderConfig
+        ? TaskReminderConfig.fromDTO(request.reminderConfig)
+        : null;
+      template.updateReminderConfig(nextReminderConfig);
     }
 
     if (request.goalBinding !== undefined) {
