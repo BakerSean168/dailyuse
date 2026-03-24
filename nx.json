@@ -93,6 +93,13 @@
         "ciTargetName": "test-ci",
         "testMode": "watch"
       }
+    },
+    {
+      "plugin": "@nxlv/python",
+      "options": {
+        "packageManager": "uv",
+        "inferDependencies": true
+      }
     }
   ],
   "release": {
