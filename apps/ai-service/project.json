@@ -2,7 +2,7 @@
   "name": "ai-service",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "apps/ai-service/ai_service",
+  "sourceRoot": "apps/ai-service/src",
   "targets": {
     "lock": {
       "executor": "@nxlv/python:lock",
@@ -37,6 +37,13 @@
       },
       "cache": true
     },
+    "serve": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run uvicorn ai_service.main:app --reload --host 0.0.0.0 --port 8100",
+        "cwd": "{projectRoot}/src"
+      }
+    },
     "lint": {
       "executor": "@nxlv/python:ruff-check",
       "outputs": [],
@@ -65,6 +72,14 @@
       },
       "cache": true
     },
+    "typecheck": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "uv run pyright src",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true
+    },
     "install": {
       "executor": "@nxlv/python:install",
       "options": {
@@ -75,7 +90,7 @@
       }
     }
   },
-  "tags": [],
+  "tags": ["scope:ai", "type:app", "layer:service"],
   "release": {
     "version": {
       "versionActions": "@nxlv/python/release/version-actions"
