@@ -1,9 +1,12 @@
 """Tests for chat endpoints."""
 
+import asyncio
 import json
 import os
+import time
 from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
 
 
@@ -37,6 +40,8 @@ class TestChatComplete:
                 },
             )
             assert response.status_code == 401
+            assert response.headers["X-Request-Id"]
+            assert response.json()["request_id"] == response.headers["X-Request-Id"]
 
         # Restore
         os.environ["DEBUG"] = "true"
@@ -45,11 +50,15 @@ class TestChatComplete:
 
     def test_chat_complete_invalid_provider(self, client):
         """Test that invalid provider returns 400."""
+        from ai_service.errors import UnsupportedProviderError
+
         with patch(
             "ai_service.services.chat_service.ChatService.complete",
             new_callable=AsyncMock,
         ) as mock_complete:
-            mock_complete.side_effect = ValueError("Unknown provider: invalid")
+            mock_complete.side_effect = UnsupportedProviderError(
+                detail="Unknown provider: invalid"
+            )
 
             response = client.post(
                 "/internal/chat/complete",
@@ -63,6 +72,98 @@ class TestChatComplete:
                 },
             )
             assert response.status_code == 400
+            assert response.headers["X-Request-Id"]
+            assert response.json()["request_id"] == response.headers["X-Request-Id"]
+
+    def test_chat_complete_rejects_stale_timestamp(self, signed_json_request):
+        """Test that strict auth rejects old signed requests."""
+        from fastapi.testclient import TestClient
+
+        from ai_service.config import get_settings
+        from ai_service.main import create_app
+
+        os.environ["DEBUG"] = "false"
+        os.environ["DEV_BYPASS_AUTH"] = "false"
+        os.environ["INTERNAL_REQUEST_MAX_SKEW_SECONDS"] = "60"
+        get_settings.cache_clear()
+
+        payload = {
+            "messages": [{"role": "user", "content": "Hello"}],
+            "provider_config": {
+                "provider": "openai",
+                "model": "gpt-4",
+                "api_key": "test-key",
+            },
+        }
+        headers, body = signed_json_request(
+            path="/internal/chat/complete",
+            payload=payload,
+            timestamp=int(time.time()) - 3600,
+        )
+
+        test_app = create_app()
+        with TestClient(test_app) as strict_client:
+            response = strict_client.post(
+                "/internal/chat/complete",
+                content=body,
+                headers=headers,
+            )
+            assert response.status_code == 401
+            assert (
+                response.json()["detail"]
+                == "Request timestamp is outside the allowed window"
+            )
+            assert response.json()["request_id"] == "test-request-id"
+
+        os.environ["DEBUG"] = "true"
+        os.environ["DEV_BYPASS_AUTH"] = "true"
+        os.environ["INTERNAL_REQUEST_MAX_SKEW_SECONDS"] = "300"
+        get_settings.cache_clear()
+
+    def test_chat_complete_rejects_body_hash_mismatch(self, signed_json_request):
+        """Test that the signature is tied to the exact body bytes."""
+        from fastapi.testclient import TestClient
+
+        from ai_service.config import get_settings
+        from ai_service.main import create_app
+
+        os.environ["DEBUG"] = "false"
+        os.environ["DEV_BYPASS_AUTH"] = "false"
+        get_settings.cache_clear()
+
+        payload = {
+            "messages": [{"role": "user", "content": "Hello"}],
+            "provider_config": {
+                "provider": "openai",
+                "model": "gpt-4",
+                "api_key": "test-key",
+            },
+        }
+        headers, _ = signed_json_request(
+            path="/internal/chat/complete",
+            payload=payload,
+        )
+        tampered_body = json.dumps(
+            {
+                "messages": [{"role": "user", "content": "Tampered"}],
+                "provider_config": payload["provider_config"],
+            }
+        ).encode("utf-8")
+
+        test_app = create_app()
+        with TestClient(test_app) as strict_client:
+            response = strict_client.post(
+                "/internal/chat/complete",
+                content=tampered_body,
+                headers=headers,
+            )
+            assert response.status_code == 401
+            assert response.json()["detail"] == "Request body hash does not match"
+            assert response.json()["request_id"] == "test-request-id"
+
+        os.environ["DEBUG"] = "true"
+        os.environ["DEV_BYPASS_AUTH"] = "true"
+        get_settings.cache_clear()
 
     def test_chat_complete_success(self, client):
         """Test successful chat completion."""
@@ -90,6 +191,7 @@ class TestChatComplete:
                 },
             )
             assert response.status_code == 200
+            assert response.headers["X-Request-Id"]
 
             data = response.json()
             assert data["content"] == "Hello! How can I help you?"
@@ -142,7 +244,7 @@ class TestChatStream:
             # Verify we got content chunks
             assert len(events) >= 1
 
-    def test_chat_stream_with_auth_headers(self, auth_headers):
+    def test_chat_stream_with_auth_headers(self, signed_json_request):
         """Test streaming with proper auth headers."""
         from fastapi.testclient import TestClient
 
@@ -156,6 +258,18 @@ class TestChatStream:
         get_settings.cache_clear()
 
         test_app = create_app()
+        payload = {
+            "messages": [{"role": "user", "content": "Hello"}],
+            "provider_config": {
+                "provider": "openai",
+                "model": "gpt-4",
+                "api_key": "test-key",
+            },
+        }
+        headers, body = signed_json_request(
+            path="/internal/chat/stream",
+            payload=payload,
+        )
 
         async def mock_stream(*args, **kwargs):
             yield ChatStreamChunk(content="Test", finish_reason="stop")
@@ -167,17 +281,11 @@ class TestChatStream:
             ):
                 response = client.post(
                     "/internal/chat/stream",
-                    json={
-                        "messages": [{"role": "user", "content": "Hello"}],
-                        "provider_config": {
-                            "provider": "openai",
-                            "model": "gpt-4",
-                            "api_key": "test-key",
-                        },
-                    },
-                    headers=auth_headers,
+                    content=body,
+                    headers=headers,
                 )
                 assert response.status_code == 200
+                assert response.headers["X-Request-Id"] == "test-request-id"
 
         # Restore
         os.environ["DEBUG"] = "true"
@@ -188,34 +296,62 @@ class TestChatStream:
 class TestChatService:
     """Tests for the chat service."""
 
+    @staticmethod
+    def _build_service():
+        """Create a real ChatService instance for provider registry tests."""
+
+        from ai_service.providers import AnthropicProvider, OpenAIProvider
+        from ai_service.services.chat_service import ChatService
+
+        http_client = httpx.AsyncClient()
+        service = ChatService(
+            providers={
+                "openai": OpenAIProvider(http_client=http_client),
+                "anthropic": AnthropicProvider(http_client=http_client),
+            }
+        )
+        return service, http_client
+
     def test_get_provider_openai(self):
         """Test getting OpenAI provider."""
-        from ai_service.services.chat_service import ChatService, OpenAIProvider
+        from ai_service.providers import OpenAIProvider
 
-        service = ChatService()
-        provider = service.get_provider("openai")
-        assert isinstance(provider, OpenAIProvider)
+        service, http_client = self._build_service()
+        try:
+            provider = service.get_provider("openai")
+            assert isinstance(provider, OpenAIProvider)
+        finally:
+            asyncio.run(http_client.aclose())
 
     def test_get_provider_anthropic(self):
         """Test getting Anthropic provider."""
-        from ai_service.services.chat_service import AnthropicProvider, ChatService
+        from ai_service.providers import AnthropicProvider
 
-        service = ChatService()
-        provider = service.get_provider("anthropic")
-        assert isinstance(provider, AnthropicProvider)
+        service, http_client = self._build_service()
+        try:
+            provider = service.get_provider("anthropic")
+            assert isinstance(provider, AnthropicProvider)
+        finally:
+            asyncio.run(http_client.aclose())
 
     def test_get_provider_case_insensitive(self):
         """Test provider lookup is case insensitive."""
-        from ai_service.services.chat_service import ChatService, OpenAIProvider
+        from ai_service.providers import OpenAIProvider
 
-        service = ChatService()
-        provider = service.get_provider("OpenAI")
-        assert isinstance(provider, OpenAIProvider)
+        service, http_client = self._build_service()
+        try:
+            provider = service.get_provider("OpenAI")
+            assert isinstance(provider, OpenAIProvider)
+        finally:
+            asyncio.run(http_client.aclose())
 
     def test_get_provider_unknown_raises(self):
-        """Test unknown provider raises ValueError."""
-        from ai_service.services.chat_service import ChatService
+        """Test unknown provider raises UnsupportedProviderError."""
+        from ai_service.errors import UnsupportedProviderError
 
-        service = ChatService()
-        with pytest.raises(ValueError, match="Unknown provider"):
-            service.get_provider("unknown")
+        service, http_client = self._build_service()
+        try:
+            with pytest.raises(UnsupportedProviderError, match="Unknown provider"):
+                service.get_provider("unknown")
+        finally:
+            asyncio.run(http_client.aclose())

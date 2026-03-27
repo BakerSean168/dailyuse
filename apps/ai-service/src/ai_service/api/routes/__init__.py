@@ -1,5 +1,5 @@
 """API routes submodule."""
 
-from . import chat, health
+from . import analytics, chat, goals, health, knowledge
 
-__all__ = ["chat", "health"]
+__all__ = ["analytics", "chat", "goals", "health", "knowledge"]

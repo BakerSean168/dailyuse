@@ -10,16 +10,15 @@ import {
 import { createLogger } from '@dailyuse/utils';
 import { AiProviderConfigId } from '../../../domain-shared/value-objects/ai-provider-config-id';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
-import { AISecretCipher } from '../../../infrastructure-server/security/ai-secret-cipher';
-import { OpenAICompatibleGateway } from '../../../infrastructure-server/gateways/openai-compatible.gateway';
+import type { IAIChatExecutionPort } from '../../ports';
+import { toChatExecutionProviderConfig } from './ai-provider-resolution';
 
 const logger = createLogger('AIProviderConfigService');
 
 export class AIProviderConfigService {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
-    private readonly secretCipher = new AISecretCipher(),
-    private readonly gateway = new OpenAICompatibleGateway(),
+    private readonly chatExecutionPort: IAIChatExecutionPort,
   ) {}
 
   async createProvider(
@@ -37,7 +36,7 @@ export class AIProviderConfigService {
       name: request.name.trim(),
       providerType: AIProviderType.OpenAICompatible,
       baseUrl: request.baseUrl.replace(/\/+$/, ''),
-      apiKey: this.secretCipher.encrypt(request.apiKey),
+      apiKey: request.apiKey,
       defaultModel: request.model,
       availableModels: [],
       isActive: true,
@@ -71,7 +70,7 @@ export class AIProviderConfigService {
       ...current,
       name: request.name?.trim() ?? current.name,
       baseUrl: request.baseUrl?.replace(/\/+$/, '') ?? current.baseUrl,
-      apiKey: request.apiKey ? this.secretCipher.encrypt(request.apiKey) : current.apiKey,
+      apiKey: request.apiKey ?? current.apiKey,
       defaultModel: request.model ?? current.defaultModel,
       isDefault: request.isDefault ?? current.isDefault,
       isActive: request.isActive ?? current.isActive,
@@ -100,32 +99,21 @@ export class AIProviderConfigService {
     return providers.map((provider) => this.toClientDTO(provider));
   }
 
-  async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
-    const provider = request.providerId
-      ? await this.providerConfigRepository.findById(request.providerId)
-      : null;
-
+  async testConnection(identityId: string, request: TestAIProviderReq): Promise<TestAIProviderRes> {
     const startedAt = Date.now();
-    const baseUrl = provider?.baseUrl ?? request.baseUrl;
-    const apiKey = provider ? this.secretCipher.decrypt(provider.apiKey) : request.apiKey;
-    const model = provider?.defaultModel ?? request.model;
-
-    if (!baseUrl || !apiKey || !model) {
-      throw new Error('Provider config is incomplete');
-    }
+    const providerConfig = await this.resolveProviderConfigForConnectionTest(identityId, request);
 
     try {
-      const result = await this.gateway.complete({
-        baseUrl,
-        apiKey,
-        model,
+      const result = await this.chatExecutionPort.complete({
+        identityId,
+        providerConfig,
         messages: [{ role: 'user', content: request.testPrompt ?? 'Hello, this is a test.' }],
       });
 
       return {
         ok: true,
         response: result.content,
-        model: result.model ?? model,
+        model: providerConfig.model,
         latencyMs: Date.now() - startedAt,
       };
     } catch (error) {
@@ -157,8 +145,40 @@ export class AIProviderConfigService {
     return provider ? this.toClientDTO(provider) : null;
   }
 
+  private async resolveProviderConfigForConnectionTest(
+    identityId: string,
+    request: TestAIProviderReq,
+  ) {
+    if (request.providerId) {
+      const provider = await this.providerConfigRepository.findById(request.providerId);
+      if (!provider || String(provider.identityId) !== identityId) {
+        throw new Error('Provider not found');
+      }
+
+      return toChatExecutionProviderConfig(provider, {
+        temperature: 0.2,
+      });
+    }
+
+    if (!request.baseUrl || !request.apiKey || !request.model) {
+      throw new Error('Provider config is incomplete');
+    }
+
+    return toChatExecutionProviderConfig(
+      {
+        providerType: AIProviderType.OpenAICompatible,
+        baseUrl: request.baseUrl,
+        apiKey: request.apiKey,
+        defaultModel: request.model,
+      },
+      {
+        temperature: 0.2,
+      },
+    );
+  }
+
   private toClientDTO(provider: AIProviderConfigServerDTO): AIProviderConfigClientDTO {
-    const plainApiKey = this.secretCipher.decrypt(provider.apiKey);
+    const plainApiKey = provider.apiKey;
 
     return {
       id: provider.id,

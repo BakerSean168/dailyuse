@@ -65,6 +65,22 @@
         "command": "prisma db push --config ./prisma/prisma.config.ts"
       },
       "cache": false
+    },
+    "ai-knowledge-smoke": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/verify-ai-knowledge-index.ts"
+      },
+      "cache": false
+    },
+    "ai-knowledge-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/bootstrap-ai-knowledge-index.ts"
+      },
+      "cache": false
     }
   }
 }

@@ -1,0 +1,181 @@
+{
+  "generated_at": "2026-03-27T00:00:00+00:00",
+  "cases_path": "evals/regression_cases.json",
+  "total_cases": 4,
+  "passed_cases": 4,
+  "failed_cases": 0,
+  "pass_rate": 1.0,
+  "by_type": {
+    "chat_sanity": 1,
+    "goal_planning": 1,
+    "knowledge_grounding": 2
+  },
+  "failed_case_ids": [],
+  "gate_passed": true,
+  "gate_failures": [],
+  "baseline_path": null,
+  "archive_path": null,
+  "results": [
+    {
+      "id": "chat-incremental-rollout-guidance",
+      "type": "chat_sanity",
+      "description": "Chat answers should stay concrete and implementation-oriented.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "response_non_empty",
+          "passed": true,
+          "detail": "Value is present."
+        },
+        {
+          "name": "contains:execution boundary",
+          "passed": true,
+          "detail": "Answer contains \"execution boundary\"."
+        },
+        {
+          "name": "contains:tests",
+          "passed": true,
+          "detail": "Answer contains \"tests\"."
+        },
+        {
+          "name": "contains:incrementally",
+          "passed": true,
+          "detail": "Answer contains \"incrementally\"."
+        },
+        {
+          "name": "contains:observability",
+          "passed": true,
+          "detail": "Answer contains \"observability\"."
+        },
+        {
+          "name": "excludes:cannot help",
+          "passed": true,
+          "detail": "Answer excludes \"cannot help\"."
+        },
+        {
+          "name": "excludes:unknown",
+          "passed": true,
+          "detail": "Answer excludes \"unknown\"."
+        }
+      ],
+      "metadata": {
+        "response_preview": "Start with a clear execution boundary, add tests around the contract, and ship the rollout incrementally with observability in place."
+      }
+    },
+    {
+      "id": "goal-planning-eval-harness",
+      "type": "goal_planning",
+      "description": "Goal planning should produce a concrete work goal with multiple measurable outcomes.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "goal_title_present",
+          "passed": true,
+          "detail": "Value is present."
+        },
+        {
+          "name": "goal_dates_increasing",
+          "passed": true,
+          "detail": "Goal dates are ordered correctly."
+        },
+        {
+          "name": "goal_category_matches",
+          "passed": true,
+          "detail": "Goal category matches expectations."
+        },
+        {
+          "name": "key_result_count_in_range",
+          "passed": true,
+          "detail": "Key result count 3 is within range."
+        },
+        {
+          "name": "goal_mentions:evaluation",
+          "passed": true,
+          "detail": "Goal output mentions \"evaluation\"."
+        },
+        {
+          "name": "goal_mentions:regression",
+          "passed": true,
+          "detail": "Goal output mentions \"regression\"."
+        }
+      ],
+      "metadata": {
+        "goal_title": "Ship an AI evaluation harness",
+        "key_result_count": 3,
+        "goal_category": "work"
+      }
+    },
+    {
+      "id": "knowledge-grounding-cites-retrieval-doc",
+      "type": "knowledge_grounding",
+      "description": "Knowledge answers should cite the repository resource that supports the answer.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "citation_presence_matches_expectation",
+          "passed": true,
+          "detail": "Citation presence matches expectation."
+        },
+        {
+          "name": "citations_reference_indexed_resources",
+          "passed": true,
+          "detail": "All citations reference indexed repository resources."
+        },
+        {
+          "name": "cites_expected_path:docs/retrieval.md",
+          "passed": true,
+          "detail": "Citation for \"docs/retrieval.md\" was returned."
+        },
+        {
+          "name": "answer_mentions:chunks",
+          "passed": true,
+          "detail": "Answer mentions \"chunks\"."
+        },
+        {
+          "name": "answer_mentions:repository",
+          "passed": true,
+          "detail": "Answer mentions \"repository\"."
+        }
+      ],
+      "metadata": {
+        "citation_count": 1,
+        "cited_paths": [
+          "docs/retrieval.md"
+        ],
+        "answer_preview": "Retrieval first chunks repository content and then answers from those excerpts, citing the repository path that supplied the evidence."
+      }
+    },
+    {
+      "id": "knowledge-grounding-avoids-false-positive",
+      "type": "knowledge_grounding",
+      "description": "Knowledge retrieval should avoid hallucinated citations when nothing relevant matches.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "citation_presence_matches_expectation",
+          "passed": true,
+          "detail": "Citation presence matches expectation."
+        },
+        {
+          "name": "citations_reference_indexed_resources",
+          "passed": true,
+          "detail": "All citations reference indexed repository resources."
+        },
+        {
+          "name": "answer_mentions:could not find enough relevant knowledge",
+          "passed": true,
+          "detail": "Answer mentions \"could not find enough relevant knowledge\"."
+        }
+      ],
+      "metadata": {
+        "citation_count": 0,
+        "cited_paths": [],
+        "answer_preview": "I could not find enough relevant knowledge in the provided repository resources."
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # DailyUse AI Python Integration Implementation Plan
 
-Status: Draft  
-Date: 2026-03-23  
+Status: Active Implementation Update  
+Date: 2026-03-27  
 Scope: `dailyuse` monorepo AI architecture, implementation phases, and rollout strategy
 
 ## 1. Document Purpose
@@ -17,6 +17,33 @@ The goal is not to replace the existing TypeScript AI module wholesale. The goal
 
 This plan is based on the current repository structure and runtime wiring, not on a greenfield assumption.
 
+### 2.3 Implementation Status Update (2026-03-27)
+
+Current implementation status in the repository:
+
+1. Phase 0 through Phase 4 are implemented.
+2. Phase 5 is partially implemented:
+   - repository-backed knowledge indexing exists
+   - retrieval returns citations
+   - resource create or update now auto-triggers knowledge reindexing
+   - grounded knowledge expansion now flows through the TS boundary and AI floating panel for cited draft refinement
+   - indexed resources now persist embeddings and use hybrid lexical plus vector retrieval
+   - provider-backed embeddings are now attempted on Python indexing paths, including query-triggered sync, draft expansion, manual reindex, and repository-mutation auto reindex, with local deterministic fallback when the upstream provider does not support embeddings
+   - Python citation ranking now chooses a query embedding that matches each resource or chunk dimension, so provider-sized embeddings are usable during retrieval instead of collapsing to zero similarity
+   - server-side Prisma storage now has a dedicated `AiKnowledgeIndexEntry` table instead of relying only on repository resource metadata
+   - TS knowledge sync now asks the knowledge index repository for indexed candidates first, then hydrates repository content only for those hits or for fallback resources
+   - server-side Prisma retrieval now has an optional `pgvector` candidate-recall path backed by a dedicated `retrieval_vector` column and IVFFlat index, with automatic fallback when the extension or migration is unavailable
+   - AI capabilities now expose knowledge-index diagnostics so the current persistence backend and vector-recall mode are visible instead of being hidden behind fallback behavior
+   - desktop and PowerSync paths still retain metadata-backed persistence and fallback behavior
+   - desktop-side ANN retrieval and a fully separate vector database are still not implemented
+3. Phase 6 is implemented as controlled analytics Q&A rather than unrestricted SQL generation.
+4. Phase 7 is implemented with plan-first, confirm-before-side-effects automation.
+5. Phase 8 is intentionally remote-backed today. Local desktop Python runtime is not implemented.
+6. Phase 12 is partially implemented:
+   - request tracing, provider or model tagging, error classification, deterministic evals, live-provider evals, history archiving, quality gates, and basic cost estimation are in place
+   - evaluation report surfacing now exists through the TS AI boundary, HTTP and IPC transports, and the shared AI floating panel, so latest deterministic and live reports plus recent history are visible in web and desktop
+   - broader quality monitoring and richer cost visibility are still being completed
+
 ## 2. Current State Summary
 
 The repository already has a meaningful AI architecture. This matters because the Python service must fit the existing system instead of bypassing it.
@@ -25,10 +52,13 @@ The repository already has a meaningful AI architecture. This matters because th
 
 1. The API runtime registers AI as a first-class module in `apps/api/src/main.ts`.
 2. The desktop runtime also registers AI as a first-class module in `packages/ai/src/electron-entry/index.ts`.
-3. The shared UI already exposes three AI entry points in `packages/app-vue/src/modules/ai/components/AIFloatingBall.vue`:
+3. The shared UI already exposes AI entry points in `packages/app-vue/src/modules/ai/components/AIFloatingBall.vue`:
    - Generate Goal
    - AI Chat
    - Create Knowledge Note
+   - Expand Draft With Knowledge
+   - Ask Knowledge Base
+   - Ask Analytics
 4. AI provider configuration, conversation storage, message storage, and generation task tables already exist in the shared database schema.
 5. AI-related tables are already part of the PowerSync projection surface.
 6. Knowledge notes are already persisted through the repository module application boundary instead of bypassing repository rules.
@@ -46,7 +76,7 @@ The repository already has a meaningful AI architecture. This matters because th
 The recommended design is:
 
 - Keep `@dailyuse/ai` as the public orchestration and business boundary.
-- Add `apps/ai-python` as an internal AI execution service.
+- Add `apps/ai-service` as an internal AI execution service.
 - Keep web and desktop clients talking to the existing TypeScript-facing contracts.
 - Move model-heavy and retrieval-heavy capabilities into Python progressively.
 
@@ -75,7 +105,7 @@ apps/web / apps/desktop
   -> HTTP API or Electron IPC
   -> TypeScript AI orchestration layer
   -> internal AI execution adapter
-  -> apps/ai-python (FastAPI)
+      -> apps/ai-service (FastAPI)
       -> LLM provider calls
       -> embeddings
       -> RAG retrieval
@@ -196,6 +226,8 @@ Recommended approach:
 Recommended headers:
 
 - `X-Internal-Service`
+- `X-Internal-Timestamp`
+- `X-Internal-Content-SHA256`
 - `X-Internal-Signature`
 - `X-Request-Id`
 - `X-Identity-Id`
@@ -337,6 +369,7 @@ Python can:
 - extract structured facts
 - generate follow-up note drafts
 - apply user-chosen templates or writing patterns
+- refine an in-progress draft against cited repository excerpts
 
 The final write-back should still go through the repository module boundary.
 
@@ -446,7 +479,7 @@ Recommended new project:
 
 ```text
 apps/
-  ai-python/
+  ai-service/
     pyproject.toml
     README.md
     src/
@@ -465,7 +498,7 @@ apps/
 
 Recommended ownership:
 
-- `apps/ai-python`: Python runtime and AI execution
+- `apps/ai-service`: Python runtime and AI execution
 - `packages/ai`: shared TS AI boundary and adapters
 - `apps/api`: public HTTP gateway to AI
 - `apps/desktop`: desktop routing and optional remote/local strategy
@@ -513,7 +546,7 @@ The local development environment should eventually support:
 The phase 1 workflow should aim for:
 
 ```text
-pnpm nx run-many -t serve --projects=api,web,ai-python
+pnpm nx run-many -t serve --projects=api,web,ai-service
 ```
 
 Desktop can remain optional in day-to-day AI backend development.
@@ -542,6 +575,8 @@ Minimum evaluation goals:
 
 ## Phase 0: Architecture Alignment and Contract Freeze
 
+Status: Done
+
 ### Goals
 
 - confirm architectural boundaries
@@ -566,6 +601,8 @@ Minimum evaluation goals:
 - there is no ambiguity about what stays in TS and what moves to Python first
 
 ## Phase 1: Python Service Skeleton
+
+Status: Done
 
 ### Goals
 
@@ -595,6 +632,8 @@ Minimum evaluation goals:
 
 ## Phase 2: Chat Execution Migration
 
+Status: Done
+
 ### Goals
 
 - move chat inference from direct TS provider calls into Python
@@ -623,6 +662,8 @@ Minimum evaluation goals:
 
 ## Phase 3: Goal Planning Migration
 
+Status: Done
+
 ### Goals
 
 - replace placeholder goal generation with real structured planning
@@ -650,6 +691,8 @@ Minimum evaluation goals:
 
 ## Phase 4: Knowledge Generation and Write-Back
 
+Status: Done
+
 ### Goals
 
 - move note content generation into Python
@@ -673,6 +716,8 @@ Minimum evaluation goals:
 - no direct Python repository writes are needed
 
 ## Phase 5: Knowledge Ingestion and RAG
+
+Status: Partial
 
 ### Goals
 
@@ -699,7 +744,22 @@ Minimum evaluation goals:
 - knowledge queries can cite real repository sources
 - reindexing is repeatable and auditable
 
+Current implementation note:
+
+1. Retrieval with citations exists.
+2. Reindexing is auditable and repository resource mutations now auto-trigger incremental reindexing.
+3. Knowledge expansion now has an internal endpoint for grounded note refinement.
+4. Provider-backed embeddings now cover query-triggered sync, draft expansion, manual reindex, repository-mutation auto reindex, and query-side citation ranking, with deterministic local fallback when embeddings are unavailable.
+5. Server-side Prisma persistence now uses a dedicated `AiKnowledgeIndexEntry` table, while desktop and PowerSync still retain metadata-backed persistence and fallback behavior.
+6. TS knowledge sync now uses the knowledge index repository as its first retrieval layer and falls back to raw repository resources only when indexed recall is insufficient.
+7. Server-side Prisma retrieval now has an optional `pgvector` candidate-recall path backed by a `retrieval_vector` column and IVFFlat index, with automatic fallback when the extension or migration is unavailable.
+8. AI capabilities now expose knowledge-index diagnostics so the runtime can report whether it is using the Prisma table, legacy metadata fallback, `pgvector` recall, or lexical-hybrid fallback.
+9. Local Docker development now uses `pgvector`-capable Postgres images so the optional ANN path can be exercised in dev once the database container is recreated.
+10. Desktop-side ANN retrieval and a fully separate vector database are still pending.
+
 ## Phase 6: Controlled Analytics and Database Q&A
+
+Status: Done
 
 ### Goals
 
@@ -723,6 +783,8 @@ Minimum evaluation goals:
 - useful business questions are answerable without exposing unrestricted SQL access
 
 ## Phase 7: Agent Tooling for Goal and Task Automation
+
+Status: Done
 
 ### Goals
 
@@ -751,6 +813,8 @@ Minimum evaluation goals:
 
 ## Phase 8: Desktop Advanced Strategy Decision
 
+Status: Partial
+
 ### Goals
 
 - decide whether desktop advanced AI should stay remote-backed or gain local Python support
@@ -774,6 +838,12 @@ Do not choose Option B until phases 1 through 7 are stable.
 
 - the team can justify the operational cost of local desktop Python
 
+Current implementation note:
+
+1. The strategy decision is currently Option A.
+2. Desktop advanced AI capabilities are remote-backed.
+3. Local desktop Python runtime has not been implemented yet.
+
 ## 14. Acceptance Criteria for the Overall Program
 
 The integration should be considered successful when:
@@ -789,9 +859,8 @@ The integration should be considered successful when:
 
 The recommended next implementation step is:
 
-1. Create `apps/ai-python`.
-2. Define the internal Node-to-Python contract.
-3. Move chat inference first.
+1. Deploy the new knowledge-index migrations to the real database and run `pnpm nx run database:ai-knowledge-smoke` so the optional `pgvector` path can be validated outside unit tests.
+2. Expand the current evaluation report surfacing into richer quality monitoring, including trend views, stronger failure drill-down, and cost visibility.
+3. Revisit local desktop Python only after the remote-backed quality loop is mature.
 
-This gives the highest architectural signal with the lowest migration risk.
-
+This gives the highest next signal with lower risk than shipping local Python packaging too early.

@@ -9,9 +9,26 @@
  */
 
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { IKnowledgeNotePersistencePort } from '../application-server/ports';
+import type {
+  IAIExecutionLogPort,
+  IAIEvaluationReportPort,
+  IAIAutomationToolExecutorPort,
+  IAnalyticsQueryPort,
+  IAnalyticsReadPort,
+  IAIChatExecutionPort,
+  IGoalAutomationPlanningPort,
+  IGoalPlanningPort,
+  IKnowledgeIndexRepository,
+  IKnowledgeIngestionPort,
+  IKnowledgeQueryPort,
+  IKnowledgeNoteGenerationPort,
+  IKnowledgeNotePersistencePort,
+  IKnowledgeSourcePort,
+} from '../application-server/ports';
 import { createAIModule, type AIModuleInstance, type AIModuleDependencies } from './ai.module';
 import {
+  AIExecutionLogPowerSyncAdapter,
+  AIKnowledgeIndexPowerSyncRepository,
   PowerSyncAIConversationRepository,
   PowerSyncAIProviderConfigRepository,
 } from './adapters/powersync';
@@ -21,7 +38,20 @@ import {
  * PowerSync 便捷工厂的选项。
  */
 export interface AIModulePowerSyncOptions {
+  readonly chatExecutionPort?: IAIChatExecutionPort;
+  readonly goalPlanningPort?: IGoalPlanningPort;
+  readonly goalAutomationPlanningPort?: IGoalAutomationPlanningPort;
+  readonly automationToolExecutorPort?: IAIAutomationToolExecutorPort;
+  readonly knowledgeIndexRepository?: IKnowledgeIndexRepository;
+  readonly knowledgeIngestionPort?: IKnowledgeIngestionPort;
+  readonly knowledgeQueryPort?: IKnowledgeQueryPort;
+  readonly knowledgeNoteGenerationPort?: IKnowledgeNoteGenerationPort;
+  readonly analyticsQueryPort?: IAnalyticsQueryPort;
+  readonly executionLogPort?: IAIExecutionLogPort;
+  readonly evaluationReportPort?: IAIEvaluationReportPort;
   readonly knowledgeNotePersistence?: IKnowledgeNotePersistencePort;
+  readonly knowledgeSourcePort?: IKnowledgeSourcePort;
+  readonly analyticsReadPort?: IAnalyticsReadPort;
   readonly getKnowledgeNoteSubpath?: (identityId: string) => Promise<string>;
   readonly runtimeContributions?: AIModuleDependencies['runtimeContributions'];
 }
@@ -37,10 +67,29 @@ export function createAIPowerSyncModule(
   return createAIModule({
     conversationRepository: new PowerSyncAIConversationRepository(db),
     providerConfigRepository: new PowerSyncAIProviderConfigRepository(db),
+    chatExecutionPort: options?.chatExecutionPort,
+    goalPlanningPort: options?.goalPlanningPort,
+    goalAutomationPlanningPort: options?.goalAutomationPlanningPort,
+    automationToolExecutorPort: options?.automationToolExecutorPort,
+    knowledgeIndexRepository:
+      options?.knowledgeIndexRepository ?? new AIKnowledgeIndexPowerSyncRepository(db),
+    knowledgeIngestionPort: options?.knowledgeIngestionPort,
+    knowledgeQueryPort: options?.knowledgeQueryPort,
+    knowledgeNoteGenerationPort: options?.knowledgeNoteGenerationPort,
+    analyticsQueryPort: options?.analyticsQueryPort,
+    executionLogPort: options?.executionLogPort ?? new AIExecutionLogPowerSyncAdapter(db),
+    evaluationReportPort: options?.evaluationReportPort,
     knowledgeNotePersistence: options?.knowledgeNotePersistence,
+    knowledgeSourcePort: options?.knowledgeSourcePort,
+    analyticsReadPort: options?.analyticsReadPort,
     getKnowledgeNoteSubpath: options?.getKnowledgeNoteSubpath,
     runtimeContributions: options?.runtimeContributions,
   });
 }
 
-export { PowerSyncAIConversationRepository, PowerSyncAIProviderConfigRepository };
+export {
+  PowerSyncAIConversationRepository,
+  PowerSyncAIProviderConfigRepository,
+  AIKnowledgeIndexPowerSyncRepository,
+  AIExecutionLogPowerSyncAdapter,
+};

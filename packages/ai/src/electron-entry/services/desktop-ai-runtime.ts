@@ -9,11 +9,11 @@
  * 现在 `createAIPowerSyncModule()` 组合根已在内部处理此逻辑。
  */
 
-import { OpenAICompatibleGateway } from '../../infrastructure-server/gateways/openai-compatible.gateway';
 import { AIKnowledgeNotePathResolver } from '../../infrastructure-server/services/ai-knowledge-note-path-resolver';
 import { AIKnowledgeNoteService } from '../../application-server/use-cases/commands/ai-knowledge-note.service';
 import type { IKnowledgeNotePersistencePort } from '../../application-server/ports';
 import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
+import { DirectProviderKnowledgeNoteGenerationAdapter } from '../../infrastructure-server/chat-execution';
 
 /**
  * @deprecated Use `createAIPowerSyncModule()` with `knowledgeNotePersistence` option instead.
@@ -29,7 +29,7 @@ export class DesktopAIRuntime {
   ) {
     this.knowledgeNoteService = new AIKnowledgeNoteService(
       providerConfigRepository,
-      new OpenAICompatibleGateway(),
+      new DirectProviderKnowledgeNoteGenerationAdapter(),
       persistencePort,
       getKnowledgeNoteSubpath,
       new AIKnowledgeNotePathResolver(),

@@ -7,12 +7,15 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
 import { GenerateGoalsSchema } from '@dailyuse/contracts/ai';
-import type { GenerateGoalsRes } from '@dailyuse/contracts/ai';
+import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { GoalGenerationApplicationService } from '../../application-server/use-cases/commands/goal-generation-application-service';
+
+interface AIGoalGenerationControllerService {
+  generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<GenerateGoalsRes>;
+}
 
 export class AIGoalGenerationController {
-  constructor(private readonly service: GoalGenerationApplicationService) {}
+  constructor(private readonly service: AIGoalGenerationControllerService) {}
 
   async generateGoal(input: unknown, identityId: string): Promise<Result<GenerateGoalsRes>> {
     const parsed = GenerateGoalsSchema.safeParse(input);
@@ -28,11 +31,11 @@ export class AIGoalGenerationController {
       identityId,
       idea: parsed.data.idea,
       providerId: parsed.data.providerId,
-      category: parsed.data.category as any,
+      category: parsed.data.category,
       timeframe: parsed.data.timeframe,
       includeKeyResults: parsed.data.includeKeyResults,
     });
 
-    return ok(result as GenerateGoalsRes);
+    return ok(result);
   }
 }

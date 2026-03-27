@@ -7,6 +7,7 @@ def test_health_check(client):
     """Test health endpoint returns healthy status."""
     response = client.get("/healthz")
     assert response.status_code == 200
+    assert response.headers["X-Request-Id"]
 
     data = response.json()
     assert data["status"] == "healthy"
@@ -31,6 +32,7 @@ def test_health_check_no_auth_required():
     with TestClient(test_app) as client:
         response = client.get("/healthz")
         assert response.status_code == 200
+        assert response.headers["X-Request-Id"]
 
     # Restore
     os.environ["DEBUG"] = "true"

@@ -57,9 +57,11 @@ build-backend = "uv_build"
 [tool.ruff]
 exclude = [
     ".ruff_cache",
+    ".pytest_cache",
     ".svn",
     ".tox",
     ".venv",
+    "__pycache__",
     "dist",
 ]
 

@@ -112,11 +112,15 @@ export function installIpcServices(app: App): void {
   app.provide(
     AI_SERVICE_KEY,
     new AIClientService(
+      aiAdapters.capabilities,
+      aiAdapters.evaluationReport,
       aiAdapters.providerConfig,
       aiAdapters.conversation,
       aiAdapters.message,
       aiAdapters.goal,
+      aiAdapters.knowledge,
       aiAdapters.knowledgeNote,
+      aiAdapters.analytics,
     ),
   );
 

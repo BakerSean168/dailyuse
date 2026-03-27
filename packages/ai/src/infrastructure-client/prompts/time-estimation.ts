@@ -42,12 +42,18 @@ export const TIME_ESTIMATION_SYSTEM_PROMPT = `你是一位经验丰富的项目�
  * @param historicalData 历史数据（可选）
  * @returns 格式化的用户提示词
  */
+interface TimeEstimationHistoricalData {
+  averageMinutes?: number;
+  userSpeedFactor?: number;
+  estimationAccuracy?: number;
+}
+
 export const TIME_ESTIMATION_USER_PROMPT_TEMPLATE = (
   taskTitle: string,
   taskDescription: string,
   complexity?: 'simple' | 'medium' | 'complex',
   dependencies?: string[],
-  historicalData?: any,
+  historicalData?: TimeEstimationHistoricalData,
 ): string => {
   const complexityInfo = complexity
     ? `任务复杂度：${complexity === 'simple' ? '简单' : complexity === 'medium' ? '中等' : '复杂'}\n`

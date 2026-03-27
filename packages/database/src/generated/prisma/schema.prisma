@@ -76,6 +76,7 @@ model Account {
   notifications                   Notification[]
   aiConversations                 AiConversation[]
   aiGenerationTasks               AiGenerationTask[]
+  aiKnowledgeIndexEntries         AiKnowledgeIndexEntry[]
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
@@ -238,6 +239,37 @@ model KnowledgeGenerationTask {
   @@index([status])
   @@index([createdAt])
   @@map("knowledge_generation_tasks")
+}
+
+model AiKnowledgeIndexEntry {
+  id              String    @id
+  identityId      String    @map("identity_id")
+  repositoryId    String    @map("repository_id")
+  resourceId      String    @unique @map("resource_id")
+  resourcePath    String    @map("resource_path")
+  title           String?
+  mimeType        String    @map("mime_type")
+  contentHash     String    @map("content_hash")
+  status          String
+  summary         String?   @db.Text
+  keywords        Json      @default("[]")
+  embedding       Json?
+  chunks          Json?
+  metadata        Json      @default("{}")
+  error           String?   @db.Text
+  indexedAt       DateTime  @map("indexed_at")
+  lastRequestedAt DateTime? @map("last_requested_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@index([repositoryId])
+  @@index([status])
+  @@index([lastRequestedAt])
+  @@map("ai_knowledge_index_entries")
 }
 
 model DashboardConfig {

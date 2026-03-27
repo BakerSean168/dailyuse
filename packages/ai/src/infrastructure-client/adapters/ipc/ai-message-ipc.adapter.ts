@@ -11,6 +11,27 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
     return result.data;
   }
 
+  async streamMessage(
+    request: SendMessageReq,
+    handlers: {
+      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
+      onDone?: (result: {
+        userMessage: SendMessageRes['userMessage'];
+        assistantMessage: SendMessageRes['assistantMessage'];
+        tokenUsage: SendMessageRes['tokenUsage'];
+        providerId: SendMessageRes['providerId'];
+        processingTimeMs: number;
+      }) => void;
+    },
+  ): Promise<void> {
+    const result = await this.sendMessage(request);
+    handlers.onChunk?.({
+      role: 'assistant',
+      content: result.assistantMessage.content,
+    });
+    handlers.onDone?.(result);
+  }
+
   async getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },

@@ -37,7 +37,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
 
   private constructor(state: AIProviderConfigState) {
     super(state.id);
-    const { id: _, ...rest } = state;
+    const { id, ...rest } = state;
+    void id;
     this._props = { ...rest };
   }
 

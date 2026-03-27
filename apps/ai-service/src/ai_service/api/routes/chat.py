@@ -1,17 +1,22 @@
 """Chat completion endpoints."""
 
+from __future__ import annotations
+
 import json
 import logging
+from collections.abc import AsyncGenerator
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sse_starlette.sse import EventSourceResponse
 
+from ai_service.api.dependencies import get_chat_service
+from ai_service.errors import AIServiceError
 from ai_service.schemas import (
     ChatCompleteRequest,
     ChatCompleteResponse,
     ChatStreamRequest,
 )
-from ai_service.services import ChatService, get_chat_service
+from ai_service.services import ChatService
 
 logger = logging.getLogger(__name__)
 
@@ -24,18 +29,11 @@ async def chat_complete(
     chat_service: ChatService = Depends(get_chat_service),
 ) -> ChatCompleteResponse:
     """Generate a non-streaming chat completion."""
-    try:
-        return await chat_service.complete(
-            messages=request.messages,
-            config=request.provider_config,
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
-    except Exception as e:
-        logger.exception("Error in chat completion")
-        raise HTTPException(
-            status_code=500, detail=f"Chat completion failed: {e!s}"
-        ) from e
+
+    return await chat_service.complete(
+        messages=request.messages,
+        config=request.provider_config,
+    )
 
 
 @router.post("/stream")
@@ -45,31 +43,38 @@ async def chat_stream(
 ) -> EventSourceResponse:
     """Generate a streaming chat completion using SSE."""
 
-    async def event_generator():
+    async def event_generator() -> AsyncGenerator[dict[str, str], None]:
         try:
             async for chunk in chat_service.stream(
                 messages=request.messages,
                 config=request.provider_config,
             ):
-                # Yield each chunk as SSE data
                 yield {
                     "event": "message",
-                    "data": json.dumps(chunk.model_dump()),
+                    "data": json.dumps(chunk.model_dump(mode="json")),
                 }
 
-            # Send done event
             yield {"event": "done", "data": ""}
-
-        except ValueError as e:
+        except AIServiceError as exc:
             yield {
                 "event": "error",
-                "data": json.dumps({"error": str(e)}),
+                "data": json.dumps(
+                    {
+                        "error": exc.error,
+                        "detail": exc.detail,
+                    }
+                ),
             }
-        except Exception as e:
+        except Exception as exc:
             logger.exception("Error in chat stream")
             yield {
                 "event": "error",
-                "data": json.dumps({"error": f"Chat stream failed: {e!s}"}),
+                "data": json.dumps(
+                    {
+                        "error": "internal_error",
+                        "detail": f"Chat stream failed: {exc!s}",
+                    }
+                ),
             }
 
     return EventSourceResponse(event_generator())

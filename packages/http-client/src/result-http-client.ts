@@ -28,7 +28,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosReq
 import type { Result, ResultError } from '@dailyuse/contracts/result';
 import { ok, fail, ResultCode, fromHttpResponse } from '@dailyuse/contracts/result';
 import type { HttpResponse } from '@dailyuse/contracts/result';
-import type { AxiosHttpClientConfig, TokenRefreshHandler } from './types';
+import type { AxiosHttpClientConfig, TokenProvider, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
 
 // ============================================================================
@@ -69,6 +69,7 @@ export class ResultHttpClient {
   private readonly enableLogging: boolean;
   private readonly onTokenRefresh?: TokenRefreshHandler;
   private readonly onUnauthorized?: () => void;
+  private readonly tokenProvider?: TokenProvider;
 
   /** 是否正在刷新 Token（防止并发刷新） */
   private isRefreshing = false;
@@ -83,6 +84,7 @@ export class ResultHttpClient {
     this.enableLogging = config.enableLogging ?? false;
     this.onTokenRefresh = config.onTokenRefresh;
     this.onUnauthorized = config.onUnauthorized;
+    this.tokenProvider = config.tokenProvider;
     
     // 设置 401 响应拦截器
     this.setupResponseInterceptor();
@@ -134,6 +136,51 @@ export class ResultHttpClient {
    */
   async delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<Result<T>> {
     return this.execute<T>(() => this.axios.delete(url, config));
+  }
+
+  async stream(
+    url: string,
+    config?: {
+      method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+      body?: unknown;
+      headers?: Record<string, string>;
+    },
+  ): Promise<Response> {
+    const method = config?.method ?? 'GET';
+    const headers = new Headers(config?.headers);
+    headers.set('Accept', 'text/event-stream');
+
+    if (config?.body !== undefined && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+
+    const accessToken = this.tokenProvider?.getAccessToken();
+    if (accessToken) {
+      headers.set('Authorization', `Bearer ${accessToken}`);
+    }
+
+    const requestInit: RequestInit = {
+      method,
+      headers,
+      body: config?.body === undefined ? undefined : JSON.stringify(config.body),
+    };
+
+    let response = await fetch(this.axios.getUri({ url }), requestInit);
+    if (response.status === 401 && this.onTokenRefresh) {
+      const refreshedToken = await this.onTokenRefresh();
+      if (refreshedToken) {
+        headers.set('Authorization', `Bearer ${refreshedToken}`);
+        response = await fetch(this.axios.getUri({ url }), requestInit);
+      } else {
+        this.onUnauthorized?.();
+      }
+    }
+
+    if (response.status === 401) {
+      this.onUnauthorized?.();
+    }
+
+    return response;
   }
 
   // ────────────────────────────────────────

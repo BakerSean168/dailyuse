@@ -11,7 +11,23 @@ import { AIConversation as AIConversationServer } from '../../../domain-server/a
 import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
+import type {
+  ChatExecutionMessage,
+  ChatExecutionUsage,
+  IAIExecutionLogPort,
+  IAIChatExecutionPort,
+} from '../../ports';
 import { createLogger } from '@dailyuse/utils';
+import {
+  resolveActiveProviderConfig,
+  toChatExecutionProviderConfig,
+} from './ai-provider-resolution';
+import {
+  attachRequestIdToError,
+  classifyAIExecutionError,
+  createAIRequestId,
+  withAICostEstimate,
+} from './ai-observability';
 
 const logger = createLogger('AIChatApplicationService');
 
@@ -22,6 +38,8 @@ export class AIChatApplicationService {
   constructor(
     private readonly conversationRepository: IAIConversationRepository,
     private readonly providerConfigRepository: IAIProviderConfigRepository,
+    private readonly chatExecutionPort: IAIChatExecutionPort,
+    private readonly executionLogPort?: IAIExecutionLogPort,
   ) {}
 
   /**
@@ -31,33 +49,97 @@ export class AIChatApplicationService {
     identityId: string,
     conversationId: string,
     content: string,
-    provider?: string,
+    providerId?: string,
     model?: string,
   ): Promise<SendMessageRes> {
-    const conversation = await this.validateAndGetConversation(identityId, conversationId);
-    const userMessage = await this.saveMessage(conversation, MessageRole.User, content);
-    const history = await this.getConversationHistory(conversationId);
-    const prompt = this.formatChatPrompt(history, content);
-    const aiResponseContent = await this.generateChatResponse(identityId, prompt);
-    const assistantMessage = await this.saveMessage(
-      conversation,
-      MessageRole.Assistant,
-      aiResponseContent,
-    );
+    const startedAt = Date.now();
+    const requestId = createAIRequestId();
+    let providerMetadata: {
+      providerId?: string;
+      providerName?: string;
+      model?: string;
+    } = {};
 
-    const providerConfig = await this.getProviderConfig(identityId);
+    try {
+      const conversation = await this.validateAndGetConversation(identityId, conversationId);
+      const userMessage = await this.saveMessage(conversation, MessageRole.User, content);
+      const history = await this.getConversationHistory(conversationId);
+      const providerConfig = await this.getProviderConfig(identityId, providerId);
+      const executionProviderConfig = toChatExecutionProviderConfig(providerConfig, {
+        modelOverride: model,
+        temperature: 0.7,
+      });
+      providerMetadata = {
+        providerId: providerConfig.id,
+        providerName: providerConfig.name,
+        model: executionProviderConfig.model,
+      };
+      const completion = await this.chatExecutionPort.complete({
+        identityId,
+        messages: this.toExecutionMessages(history),
+        providerConfig: executionProviderConfig,
+        requestId,
+      });
+      const assistantMessage = await this.saveMessage(
+        conversation,
+        MessageRole.Assistant,
+        completion.content,
+      );
 
-    return {
-      userMessage,
-      assistantMessage,
-      tokenUsage: {
-        promptTokens: 0,
-        completionTokens: 0,
-        totalTokens: 0,
-      },
-      providerId: providerConfig.id,
-      processingTimeMs: 0,
-    };
+      const result = {
+        userMessage,
+        assistantMessage,
+        tokenUsage: completion.usage,
+        providerId: providerConfig.id,
+        processingTimeMs: Date.now() - startedAt,
+      };
+
+      await this.recordExecution({
+        identityId,
+        taskType: 'CHAT_COMPLETE',
+        status: 'COMPLETED',
+        requestId,
+        ...providerMetadata,
+        input: {
+          conversationId,
+          contentLength: content.length,
+          selectedProviderId: providerId,
+          modelOverride: model,
+        },
+        result: {
+          assistantMessageId: String(assistantMessage.id),
+          finishReason: completion.finishReason,
+        },
+        tokenUsage: completion.usage,
+        processingMs: result.processingTimeMs,
+      });
+
+      return result;
+    } catch (error) {
+      await this.recordExecution({
+        identityId,
+        taskType: 'CHAT_COMPLETE',
+        status: 'FAILED',
+        requestId,
+        ...providerMetadata,
+        errorCategory: classifyAIExecutionError(error),
+        input: {
+          conversationId,
+          contentLength: content.length,
+          selectedProviderId: providerId,
+          modelOverride: model,
+        },
+        error: error instanceof Error ? error.message : 'Chat execution failed',
+        processingMs: Date.now() - startedAt,
+      });
+      logger.error('AI Chat Failed', {
+        error,
+        identityId,
+        conversationId,
+        requestId,
+      });
+      throw attachRequestIdToError(error, requestId);
+    }
   }
 
   /**
@@ -67,29 +149,127 @@ export class AIChatApplicationService {
     identityId: string,
     conversationId: string,
     content: string,
-    onChunk: (chunk: any) => void,
-    provider?: string,
+    onChunk: (chunk: { content: string; role: 'assistant' }) => void,
+    providerId?: string,
     model?: string,
-  ): Promise<void> {
-    const conversation = await this.validateAndGetConversation(identityId, conversationId);
-    await this.saveMessage(conversation, MessageRole.User, content);
-
-    const history = await this.getConversationHistory(conversationId);
-    const prompt = this.formatChatPrompt(history, content);
-
+  ): Promise<{
+    userMessage: MessageClientDTO;
+    assistantMessage: MessageClientDTO;
+    tokenUsage: ChatExecutionUsage;
+    providerId: SendMessageRes['providerId'];
+    processingTimeMs: number;
+  }> {
+    const startedAt = Date.now();
+    const requestId = createAIRequestId();
+    let providerMetadata: {
+      providerId?: string;
+      providerName?: string;
+      model?: string;
+    } = {};
     let fullContent = '';
+    let finishReason = 'stop';
 
     try {
-      fullContent = await this.generateChatResponse(identityId, prompt);
-      onChunk({
-        content: fullContent,
-        role: MessageRole.Assistant,
+      const conversation = await this.validateAndGetConversation(identityId, conversationId);
+      const userMessage = await this.saveMessage(conversation, MessageRole.User, content);
+      const history = await this.getConversationHistory(conversationId);
+      const providerConfig = await this.getProviderConfig(identityId, providerId);
+      const messages = this.toExecutionMessages(history);
+      const executionProviderConfig = toChatExecutionProviderConfig(providerConfig, {
+        modelOverride: model,
+        temperature: 0.7,
       });
+      providerMetadata = {
+        providerId: providerConfig.id,
+        providerName: providerConfig.name,
+        model: executionProviderConfig.model,
+      };
 
-      await this.saveMessage(conversation, MessageRole.Assistant, fullContent);
+      for await (const chunk of this.chatExecutionPort.stream({
+        identityId,
+        messages,
+        providerConfig: executionProviderConfig,
+        requestId,
+      })) {
+        if (!chunk.content && !chunk.finishReason) {
+          continue;
+        }
+        fullContent += chunk.content;
+        finishReason = chunk.finishReason ?? finishReason;
+        if (chunk.content) {
+          onChunk({
+            content: chunk.content,
+            role: 'assistant',
+          });
+        }
+      }
+
+      const assistantMessage = await this.saveMessage(
+        conversation,
+        MessageRole.Assistant,
+        fullContent,
+      );
+      const result = {
+        userMessage,
+        assistantMessage,
+        tokenUsage: {
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+        },
+        providerId: providerConfig.id as SendMessageRes['providerId'],
+        processingTimeMs: Date.now() - startedAt,
+      };
+      await this.recordExecution({
+        identityId,
+        taskType: 'CHAT_STREAM',
+        status: 'COMPLETED',
+        requestId,
+        ...providerMetadata,
+        input: {
+          conversationId,
+          contentLength: content.length,
+          selectedProviderId: providerId,
+          modelOverride: model,
+        },
+        result: {
+          assistantMessageId: String(assistantMessage.id),
+          streamedCharacters: fullContent.length,
+          finishReason,
+        },
+        tokenUsage: result.tokenUsage,
+        processingMs: result.processingTimeMs,
+      });
+      return result;
     } catch (error) {
-      logger.error('AI Stream Failed', error);
-      throw error;
+      await this.recordExecution({
+        identityId,
+        taskType: 'CHAT_STREAM',
+        status: 'FAILED',
+        requestId,
+        ...providerMetadata,
+        errorCategory: classifyAIExecutionError(error),
+        input: {
+          conversationId,
+          contentLength: content.length,
+          selectedProviderId: providerId,
+          modelOverride: model,
+        },
+        result: {
+          finishReason,
+          streamedCharacters: fullContent.length,
+        },
+        error: error instanceof Error ? error.message : 'Chat stream failed',
+        processingMs: Date.now() - startedAt,
+      });
+      logger.error('AI Stream Failed', {
+        error,
+        finishReason,
+        identityId,
+        conversationId,
+        requestId,
+      });
+      throw attachRequestIdToError(error, requestId);
     }
   }
 
@@ -131,79 +311,61 @@ export class AIChatApplicationService {
     const conversation = await this.conversationRepository.findById(conversationId, {
       includeChildren: true,
     });
-    if (!conversation) return [];
-    // Assuming messages are loaded
-    const messages = conversation.getAllMessages?.() || []; // Get all messages from aggregate
-    // If messages are private/protected, we rely on Repository `includeChildren` to populate them.
-    // Aggregate root should expose them or we fetch usage DTO.
-    return messages.map((m: any) => m.toClientDTO?.() || m);
+    if (!conversation) {
+      return [];
+    }
+
+    return conversation.getAllMessages().map((message) => message.toClientDTO());
   }
 
-  private formatChatPrompt(history: MessageClientDTO[], newContent: string): string {
-    // Simple formatting.
-    // Note: Ideally adapter handles structured messages.
-    let prompt = '';
-    for (const msg of history) {
-      prompt += `${msg.role}: ${msg.content}\n`;
-    }
-    // prompt += `user: ${newContent}\n`; // newContent is already in history if we saved it first?
-    // If we saved user message first, it is in history.
-    return prompt;
+  private async getProviderConfig(identityId: string, providerId?: string) {
+    return resolveActiveProviderConfig(this.providerConfigRepository, identityId, providerId);
   }
 
-  private async generateChatResponse(identityId: string, prompt: string): Promise<string> {
-    const providerConfig = await this.getProviderConfig(identityId);
-    const response = await this.requestChatCompletion(providerConfig, prompt);
-    return response.content;
+  private async recordExecution(
+    input: Parameters<NonNullable<IAIExecutionLogPort['record']>>[0],
+  ): Promise<void> {
+    if (!this.executionLogPort) {
+      return;
+    }
+
+    try {
+      await this.executionLogPort.record(withAICostEstimate(input));
+    } catch (error) {
+      logger.warn('Failed to record chat execution log', {
+        error,
+        identityId: input.identityId,
+        taskType: input.taskType,
+      });
+    }
   }
 
-  private async getProviderConfig(identityId: string) {
-    const defaultConfig = await this.providerConfigRepository.findDefaultByIdentityId(identityId);
-    if (defaultConfig && defaultConfig.isActive) {
-      return defaultConfig;
-    }
+  private toExecutionMessages(history: MessageClientDTO[]): ChatExecutionMessage[] {
+    const systemMessage: ChatExecutionMessage = {
+      role: 'system',
+      content: 'You are a helpful assistant.',
+    };
 
-    const providers = await this.providerConfigRepository.findByIdentityId(identityId);
-    const activeProvider = providers.find((provider) => provider.isActive);
-    if (!activeProvider) {
-      throw new Error('No AI provider configured');
-    }
-
-    return activeProvider;
+    return [
+      systemMessage,
+      ...history.map((message) => ({
+        role: this.toExecutionRole(message.role),
+        content: message.content,
+      })),
+    ];
   }
 
-  private async requestChatCompletion(
-    config: { baseUrl: string; apiKey: string; defaultModel: string | null; name?: string },
-    prompt: string,
-  ): Promise<{ content: string }> {
-    const url = new URL('/v1/chat/completions', config.baseUrl);
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: config.defaultModel || 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant.' },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`AI Provider error: ${response.status} ${errorText}`);
+  private toExecutionRole(role: MessageClientDTO['role']): ChatExecutionMessage['role'] {
+    switch (role) {
+      case MessageRole.User:
+        return 'user';
+      case MessageRole.Assistant:
+        return 'assistant';
+      case MessageRole.System:
+        return 'system';
+      default:
+        logger.warn('Unknown message role received, defaulting to user', { role });
+        return 'user';
     }
-
-    const json = await response.json();
-    const content = json?.choices?.[0]?.message?.content;
-    if (!content || typeof content !== 'string') {
-      throw new Error('AI Provider returned empty response');
-    }
-
-    return { content };
   }
 }

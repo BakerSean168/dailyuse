@@ -17,11 +17,11 @@ services:
   # profile: dev
   # ============================================================
 
-  # 开发数据库 - PostgreSQL 16，持久化存储
+  # 开发数据库 - PostgreSQL 16 + pgvector，持久化存储
   # wal_level=logical 为 PowerSync 实时同步所必需
   postgres-dev:
     profiles: [dev]
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: dailyuse-dev-db
     environment:
       POSTGRES_USER: dailyuse
@@ -98,10 +98,10 @@ services:
   # profile: test
   # ============================================================
 
-  # 测试数据库 - PostgreSQL 15，tmpfs 内存模式，关闭 fsync 提速
+  # 测试数据库 - PostgreSQL 15 + pgvector，tmpfs 内存模式，关闭 fsync 提速
   postgres-test:
     profiles: [test]
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: dailyuse-test-db
     environment:
       POSTGRES_USER: test_user

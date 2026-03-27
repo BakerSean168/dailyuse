@@ -4,8 +4,26 @@ import { AIValidationError } from '../../errors/AIErrors';
 
 const service = new AIGenerationValidationService();
 
+interface KeyResultTestCandidate {
+  title: string;
+  valueType: string;
+  targetValue: number;
+  currentValue: number;
+  unit: string;
+  weight: number;
+  aggregationMethod: string;
+}
+
+interface TaskTestCandidate {
+  title: string;
+  description: string;
+  estimatedHours: number;
+  priority: string;
+  dependencies: number[];
+}
+
 describe('AIGenerationValidationService.validateKeyResultsOutput', () => {
-  function makeKR(overrides: Partial<any> = {}) {
+  function makeKR(overrides: Partial<KeyResultTestCandidate> = {}): KeyResultTestCandidate {
     return {
       title: 'Improve Quality',
       valueType: 'Incremental',
@@ -49,7 +67,7 @@ describe('AIGenerationValidationService.validateKeyResultsOutput', () => {
 });
 
 describe('AIGenerationValidationService.validateTasksOutput', () => {
-  function makeTask(overrides: Partial<any> = {}) {
+  function makeTask(overrides: Partial<TaskTestCandidate> = {}): TaskTestCandidate {
     return {
       title: 'Research requirements',
       description: 'A'.repeat(60),

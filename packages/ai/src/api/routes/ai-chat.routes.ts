@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Router, type RequestHandler } from 'express';
+import { Router, type Request, type RequestHandler } from 'express';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -164,6 +164,61 @@ export function registerAIChatRoutes(
     [auth],
     (req) => controller.listMessages(req.query),
   );
+
+  router.post('/messages/sse', auth, async (req, res) => {
+    const identityId = (req as Request & { user?: { identityId?: string } }).user?.identityId;
+    if (!identityId) {
+      res.status(401).json({
+        ok: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: '未授权，请登录',
+        },
+      });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+
+    try {
+      const result = await controller.streamMessage(
+        req.body,
+        identityId,
+        (chunk) => {
+          res.write(
+            `event: message\ndata: ${JSON.stringify({
+              role: chunk.role,
+              content: chunk.content,
+            })}\n\n`,
+          );
+        },
+      );
+
+      if (!result.ok) {
+        res.write(
+          `event: error\ndata: ${JSON.stringify({
+            message: result.error.message,
+            details: result.error.details,
+          })}\n\n`,
+        );
+        return;
+      }
+
+      res.write(`event: done\ndata: ${JSON.stringify(result.data)}\n\n`);
+    } catch (error) {
+      res.write(
+        `event: error\ndata: ${JSON.stringify({
+          message: error instanceof Error ? error.message : 'AI stream failed',
+        })}\n\n`,
+      );
+    } finally {
+      res.end();
+    }
+  });
 
   return router;
 }

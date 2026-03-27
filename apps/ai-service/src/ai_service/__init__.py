@@ -1,1 +1,1 @@
-"""AI Service main application module."""
+"""AI Service package."""

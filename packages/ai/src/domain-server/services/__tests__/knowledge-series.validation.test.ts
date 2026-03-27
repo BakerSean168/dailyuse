@@ -7,6 +7,12 @@ import { describe, it, expect } from 'vitest';
 import { AIGenerationValidationService } from '../AIGenerationValidationService';
 import { AIValidationError } from '../../errors/AIErrors';
 
+interface KnowledgeSeriesTestDocument {
+  title: string;
+  content: string;
+  order?: number;
+}
+
 describe('AIGenerationValidationService.validateKnowledgeSeriesOutput', () => {
   const service = new AIGenerationValidationService();
 
@@ -25,7 +31,10 @@ describe('AIGenerationValidationService.validateKnowledgeSeriesOutput', () => {
     }
   }
 
-  function makeDocument(order: number, overrides: Partial<any> = {}) {
+  function makeDocument(
+    order: number,
+    overrides: Partial<KnowledgeSeriesTestDocument> = {},
+  ): KnowledgeSeriesTestDocument {
     // Generate ~1000 words by repeating 'Word ' 1000 times
     return {
       title: `Knowledge Document ${order}: Fundamentals`,
@@ -72,7 +81,9 @@ Key takeaways from this document.`,
 
   describe('Invalid structure', () => {
     it('should reject non-array input', () => {
-      expect(() => service.validateKnowledgeSeriesOutput({} as any, 5)).toThrow(
+      expect(() =>
+        service.validateKnowledgeSeriesOutput({} as unknown as KnowledgeSeriesTestDocument[], 5),
+      ).toThrow(
         'Invalid knowledge series structure',
       );
     });

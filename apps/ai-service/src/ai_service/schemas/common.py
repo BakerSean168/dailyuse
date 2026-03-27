@@ -1,10 +1,12 @@
 """Common schemas used across the application."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class HealthResponse(BaseModel):
     """Health check response schema."""
+
+    model_config = ConfigDict(extra="forbid")
 
     status: str
     service: str
@@ -13,6 +15,8 @@ class HealthResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Error response schema."""
+
+    model_config = ConfigDict(extra="forbid")
 
     error: str
     detail: str | None = None

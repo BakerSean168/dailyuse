@@ -26,6 +26,12 @@ import type {
   MessageListRes,
   CreateKnowledgeNoteReq,
   CreateKnowledgeNoteRes,
+  ExpandKnowledgeReq,
+  ExpandKnowledgeRes,
+  QueryAnalyticsReq,
+  QueryAnalyticsRes,
+  QueryKnowledgeReq,
+  QueryKnowledgeRes,
 } from '../api';
 
 export type AIRpcMap = {
@@ -48,4 +54,7 @@ export type AIRpcMap = {
   'ai:chat:message:list': [ListMessagesQuery, MessageListRes];
 
   'ai:knowledge-note:create': [CreateKnowledgeNoteReq, CreateKnowledgeNoteRes];
+  'ai:knowledge:expand': [ExpandKnowledgeReq, ExpandKnowledgeRes];
+  'ai:knowledge:query': [QueryKnowledgeReq, QueryKnowledgeRes];
+  'ai:analytics:query': [QueryAnalyticsReq, QueryAnalyticsRes];
 };

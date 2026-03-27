@@ -228,6 +228,29 @@ exports.Prisma.KnowledgeGenerationTaskScalarFieldEnum = {
   completedAt: 'completedAt'
 };
 
+exports.Prisma.AiKnowledgeIndexEntryScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  repositoryId: 'repositoryId',
+  resourceId: 'resourceId',
+  resourcePath: 'resourcePath',
+  title: 'title',
+  mimeType: 'mimeType',
+  contentHash: 'contentHash',
+  status: 'status',
+  summary: 'summary',
+  keywords: 'keywords',
+  embedding: 'embedding',
+  chunks: 'chunks',
+  metadata: 'metadata',
+  error: 'error',
+  indexedAt: 'indexedAt',
+  lastRequestedAt: 'lastRequestedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.DashboardConfigScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1171,6 +1194,7 @@ exports.Prisma.ModelName = {
   AiUsageQuota: 'AiUsageQuota',
   AiProviderConfig: 'AiProviderConfig',
   KnowledgeGenerationTask: 'KnowledgeGenerationTask',
+  AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
   DashboardConfig: 'DashboardConfig',
   AuthIdentity: 'AuthIdentity',
   AuthIdentifier: 'AuthIdentifier',

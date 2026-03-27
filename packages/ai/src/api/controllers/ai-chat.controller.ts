@@ -9,16 +9,48 @@ import {
   type GetConversationRes,
   type MessageListRes,
   type SendMessageRes,
+  type UpdateConversationReq,
   type UpdateConversationRes,
 } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { AIConversationService } from '../../application-server/use-cases/commands/a-i-conversation-service';
-import type { AIChatApplicationService } from '../../application-server/use-cases/commands/a-i-chat-application-service';
+
+interface AIChatConversationControllerService {
+  createConversation(identityId: string, name?: string): Promise<CreateConversationRes>;
+  listConversations(identityId: string, page?: number, pageSize?: number): Promise<ConversationListRes>;
+  getConversation(id: string, includeMessages?: boolean): Promise<{
+    toClientDTO(): GetConversationRes;
+    getAllMessages(): Array<{ toClientDTO(): MessageListRes['data'][number] }>;
+  } | null>;
+  updateConversation(id: string, input: UpdateConversationReq): Promise<UpdateConversationRes>;
+  deleteConversation(id: string): Promise<void>;
+}
+
+interface AIChatMessageControllerService {
+  sendMessage(
+    identityId: string,
+    conversationId: string,
+    content: string,
+    providerId?: string,
+  ): Promise<SendMessageRes>;
+  streamMessage(
+    identityId: string,
+    conversationId: string,
+    content: string,
+    onChunk: (chunk: { content: string; role: 'assistant' }) => void,
+    providerId?: string,
+  ): Promise<{
+    userMessage: SendMessageRes['userMessage'];
+    assistantMessage: SendMessageRes['assistantMessage'];
+    tokenUsage: SendMessageRes['tokenUsage'];
+    providerId: SendMessageRes['providerId'];
+    processingTimeMs: number;
+  }>;
+}
 
 export class AIChatController {
   constructor(
-    private readonly conversationService: AIConversationService,
-    private readonly chatService: AIChatApplicationService,
+    private readonly conversationService: AIChatConversationControllerService,
+    private readonly chatService: AIChatMessageControllerService,
   ) {}
 
   async createConversation(
@@ -89,6 +121,54 @@ export class AIChatController {
         parsed.data.providerId,
       ),
     );
+  }
+
+  async streamMessage(
+    input: unknown,
+    identityId: string,
+    onChunk: (chunk: { content: string; role: 'assistant' }) => void,
+  ): Promise<Result<{
+    userMessage: SendMessageRes['userMessage'];
+    assistantMessage: SendMessageRes['assistantMessage'];
+    tokenUsage: SendMessageRes['tokenUsage'];
+    providerId: SendMessageRes['providerId'];
+    processingTimeMs: number;
+  }>> {
+    const parsed = this.parseSendMessage(input);
+    if (!parsed.ok) {
+      return parsed;
+    }
+
+    return ok(
+      await this.chatService.streamMessage(
+        identityId,
+        parsed.data.conversationId,
+        parsed.data.content,
+        onChunk,
+        parsed.data.providerId,
+      ),
+    );
+  }
+
+  parseSendMessage(input: unknown): Result<{
+    conversationId: string;
+    content: string;
+    providerId?: string;
+  }> {
+    const parsed = SendMessageSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    return ok({
+      conversationId: parsed.data.conversationId,
+      content: parsed.data.content,
+      providerId: parsed.data.providerId,
+    });
   }
 
   async listMessages(input: unknown): Promise<Result<MessageListRes>> {

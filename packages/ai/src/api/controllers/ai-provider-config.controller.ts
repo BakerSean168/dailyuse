@@ -2,16 +2,32 @@ import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import {
   CreateAIProviderConfigSchema,
   type CreateAIProviderConfigRes,
+  type CreateAIProviderConfigReq,
   TestAIProviderSchema,
+  type TestAIProviderReq,
   type TestAIProviderRes,
   UpdateAIProviderConfigSchema,
+  type UpdateAIProviderConfigReq,
   type UpdateAIProviderConfigRes,
+  type AIProviderConfigClientDTO,
 } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { AIProviderConfigService } from '../../application-server/use-cases/commands/a-i-provider-config-service';
+
+interface AIProviderConfigControllerService {
+  createProvider(
+    identityId: string,
+    request: CreateAIProviderConfigReq,
+  ): Promise<CreateAIProviderConfigRes>;
+  updateProvider(id: string, request: UpdateAIProviderConfigReq): Promise<UpdateAIProviderConfigRes>;
+  listProviders(identityId: string): Promise<AIProviderConfigClientDTO[]>;
+  getProvider(id: string): Promise<AIProviderConfigClientDTO>;
+  deleteProvider(id: string): Promise<void>;
+  testConnection(identityId: string, request: TestAIProviderReq): Promise<TestAIProviderRes>;
+  setDefaultProvider(id: string, identityId: string): Promise<void>;
+}
 
 export class AIProviderConfigController {
-  constructor(private readonly service: AIProviderConfigService) {}
+  constructor(private readonly service: AIProviderConfigControllerService) {}
 
   async create(input: unknown, identityId: string): Promise<Result<CreateAIProviderConfigRes>> {
     const parsed = CreateAIProviderConfigSchema.safeParse(input);
@@ -52,7 +68,7 @@ export class AIProviderConfigController {
     return ok(undefined);
   }
 
-  async test(input: unknown): Promise<Result<TestAIProviderRes>> {
+  async test(input: unknown, identityId: string): Promise<Result<TestAIProviderRes>> {
     const parsed = TestAIProviderSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -62,7 +78,7 @@ export class AIProviderConfigController {
       });
     }
 
-    return ok(await this.service.testConnection(parsed.data));
+    return ok(await this.service.testConnection(identityId, parsed.data));
   }
 
   async setDefault(id: string, identityId: string) {

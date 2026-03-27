@@ -1,8 +1,7 @@
-import { config } from 'dotenv';
 import { defineConfig } from 'prisma/config';
-import { join } from 'path';
+import { loadWorkspaceEnv } from '../src/load-workspace-env';
 
-config({ path: join(__dirname, '../../../.env') });
+loadWorkspaceEnv();
 
 export default defineConfig({
   schema: './schema',

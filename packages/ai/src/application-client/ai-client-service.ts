@@ -10,7 +10,11 @@
  */
 
 import type {
+  IAICapabilitiesApiClient,
+  AIEvaluationReportApiClient,
+  AIAnalyticsQueryApiClient,
   AIKnowledgeNoteApiClient,
+  AIKnowledgeQueryApiClient,
   IAIGoalApiClient,
   IAIConversationApiClient,
   IAIMessageApiClient,
@@ -20,8 +24,15 @@ import type {
   CreateAIProviderConfigReq,
   CreateConversationReq,
   CreateKnowledgeNoteReq,
+  GenerateGoalAutomationReq,
   GenerateGoalsReq,
+  GetAIEvaluationOverviewReq,
+  ExpandKnowledgeReq,
+  QueryAnalyticsReq,
+  QueryKnowledgeReq,
+  ReindexKnowledgeReq,
   SendMessageReq,
+  SetDefaultAIProviderReq,
   TestAIProviderReq,
   UpdateConversationReq,
   UpdateAIProviderConfigReq,
@@ -33,12 +44,18 @@ import type {
  */
 export class AIClientService {
   constructor(
+    private readonly capabilitiesApi: IAICapabilitiesApiClient,
+    private readonly evaluationReportApi: AIEvaluationReportApiClient,
     private readonly providerApi: IAIProviderConfigApiClient,
     private readonly conversationApi: IAIConversationApiClient,
     private readonly messageApi: IAIMessageApiClient,
     private readonly goalApi: IAIGoalApiClient,
+    private readonly knowledgeQueryApi: AIKnowledgeQueryApiClient,
     private readonly knowledgeNoteApi: AIKnowledgeNoteApiClient,
+    private readonly analyticsQueryApi: AIAnalyticsQueryApiClient,
   ) {
+    this.getCapabilities = this.getCapabilities.bind(this);
+    this.getEvaluationOverview = this.getEvaluationOverview.bind(this);
     this.createProvider = this.createProvider.bind(this);
     this.updateProvider = this.updateProvider.bind(this);
     this.listProviders = this.listProviders.bind(this);
@@ -47,14 +64,28 @@ export class AIClientService {
     this.testProvider = this.testProvider.bind(this);
     this.setDefaultProvider = this.setDefaultProvider.bind(this);
     this.generateGoal = this.generateGoal.bind(this);
+    this.automateGoal = this.automateGoal.bind(this);
     this.createConversation = this.createConversation.bind(this);
     this.updateConversation = this.updateConversation.bind(this);
     this.listConversations = this.listConversations.bind(this);
     this.getConversation = this.getConversation.bind(this);
     this.deleteConversation = this.deleteConversation.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
+    this.streamMessage = this.streamMessage.bind(this);
     this.listMessages = this.listMessages.bind(this);
+    this.queryKnowledge = this.queryKnowledge.bind(this);
+    this.expandKnowledge = this.expandKnowledge.bind(this);
+    this.reindexKnowledge = this.reindexKnowledge.bind(this);
     this.createKnowledgeNote = this.createKnowledgeNote.bind(this);
+    this.queryAnalytics = this.queryAnalytics.bind(this);
+  }
+
+  getCapabilities() {
+    return this.capabilitiesApi.getCapabilities();
+  }
+
+  getEvaluationOverview(request?: GetAIEvaluationOverviewReq) {
+    return this.evaluationReportApi.getEvaluationOverview(request);
   }
 
   createProvider(request: CreateAIProviderConfigReq) {
@@ -82,11 +113,16 @@ export class AIClientService {
   }
 
   setDefaultProvider(providerId: string) {
-    return this.providerApi.setDefaultProvider({ providerId: providerId as any });
+    const request: SetDefaultAIProviderReq = { providerId: providerId as SetDefaultAIProviderReq['providerId'] };
+    return this.providerApi.setDefaultProvider(request);
   }
 
   generateGoal(request: GenerateGoalsReq) {
     return this.goalApi.generateGoal(request);
+  }
+
+  automateGoal(request: GenerateGoalAutomationReq) {
+    return this.goalApi.automateGoal(request);
   }
 
   createConversation(request: CreateConversationReq) {
@@ -113,11 +149,34 @@ export class AIClientService {
     return this.messageApi.sendMessage(request);
   }
 
+  streamMessage(
+    request: SendMessageReq,
+    handlers: Parameters<IAIMessageApiClient['streamMessage']>[1],
+  ) {
+    return this.messageApi.streamMessage(request, handlers);
+  }
+
   listMessages(conversationId: string, params?: { page?: number; pageSize?: number }) {
     return this.messageApi.getMessages(conversationId, params);
   }
 
+  queryKnowledge(request: QueryKnowledgeReq) {
+    return this.knowledgeQueryApi.queryKnowledge(request);
+  }
+
+  expandKnowledge(request: ExpandKnowledgeReq) {
+    return this.knowledgeQueryApi.expandKnowledge(request);
+  }
+
+  reindexKnowledge(request: ReindexKnowledgeReq) {
+    return this.knowledgeQueryApi.reindexKnowledge(request);
+  }
+
   createKnowledgeNote(request: CreateKnowledgeNoteReq) {
     return this.knowledgeNoteApi.createKnowledgeNote(request);
+  }
+
+  queryAnalytics(request: QueryAnalyticsReq) {
+    return this.analyticsQueryApi.queryAnalytics(request);
   }
 }

@@ -19,23 +19,49 @@
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import {
+  AIExecutionLogPrismaAdapter,
+  AIEvaluationReportFileAdapter,
+  AIKnowledgeIndexPrismaRepository,
+  AIServiceAnalyticsQueryAdapter,
+  AIServiceGoalAutomationAdapter,
   createAIModule,
   AIConversationPrismaRepository,
   AIProviderConfigPrismaRepository,
   type AIModuleInstance,
+  AIServiceChatExecutionAdapter,
+  AIServiceGoalPlanningAdapter,
+  AIServiceKnowledgeIngestionAdapter,
+  AIServiceKnowledgeQueryAdapter,
+  AIServiceKnowledgeNoteGenerationAdapter,
 } from '../infrastructure-server';
 import {
+  registerAICapabilitiesRoutes,
+  registerAIAnalyticsQueryRoutes,
+  registerAIEvaluationReportRoutes,
+  registerAIGoalAutomationRoutes,
   registerAIGoalGenerationRoutes,
   registerAIProviderRoutes,
   registerAIChatRoutes,
+  registerAIKnowledgeQueryRoutes,
   registerAIKnowledgeNoteRoutes,
 } from './routes';
+import { AICapabilitiesController } from './controllers/ai-capabilities.controller';
+import { AIAnalyticsQueryController } from './controllers/ai-analytics-query.controller';
+import { AIEvaluationReportController } from './controllers/ai-evaluation-report.controller';
+import { AIGoalAutomationController } from './controllers/ai-goal-automation.controller';
 import { AIGoalGenerationController } from './controllers/ai-goal-generation.controller';
 import { AIProviderConfigController } from './controllers/ai-provider-config.controller';
 import { AIChatController } from './controllers/ai-chat.controller';
+import { AIKnowledgeQueryController } from './controllers/ai-knowledge-query.controller';
 import { AIKnowledgeNoteController } from './controllers/ai-knowledge-note.controller';
-import type { IKnowledgeNotePersistencePort } from '../application-server';
+import type {
+  IAnalyticsReadPort,
+  IAIAutomationToolExecutorPort,
+  IKnowledgeNotePersistencePort,
+  IKnowledgeSourcePort,
+} from '../application-server';
 import { createAITransportHandlers } from './transport-handlers';
+import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 /**
  * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
@@ -77,6 +103,9 @@ let activeAIModule: AIModuleInstance | null = null;
  */
 export function createAIApiModule(options: {
   createKnowledgeNotePersistence(context: AIApiModuleContext): IKnowledgeNotePersistencePort;
+  createKnowledgeSourcePort(context: AIApiModuleContext): IKnowledgeSourcePort;
+  createAnalyticsReadPort(context: AIApiModuleContext): IAnalyticsReadPort;
+  createAutomationToolExecutor(context: AIApiModuleContext): IAIAutomationToolExecutorPort;
   getKnowledgeNoteSubpath(identityId: string, context: AIApiModuleContext): Promise<string>;
 }): AIApiModuleDef {
   return {
@@ -91,10 +120,38 @@ export function createAIApiModule(options: {
       //    模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
       // ---------------------------------------------------------------
       const prismaClient = db as PrismaClient;
+      const aiServiceRuntimeConfig = getAIServiceRuntimeConfig();
       const aiModule = createAIModule({
         conversationRepository: new AIConversationPrismaRepository(prismaClient),
         providerConfigRepository: new AIProviderConfigPrismaRepository(prismaClient),
+        chatExecutionPort: aiServiceRuntimeConfig
+          ? new AIServiceChatExecutionAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        goalPlanningPort: aiServiceRuntimeConfig
+          ? new AIServiceGoalPlanningAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        goalAutomationPlanningPort: aiServiceRuntimeConfig
+          ? new AIServiceGoalAutomationAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        automationToolExecutorPort: options.createAutomationToolExecutor(context),
+        knowledgeIndexRepository: new AIKnowledgeIndexPrismaRepository(prismaClient),
+        knowledgeIngestionPort: aiServiceRuntimeConfig
+          ? new AIServiceKnowledgeIngestionAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        knowledgeQueryPort: aiServiceRuntimeConfig
+          ? new AIServiceKnowledgeQueryAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        knowledgeNoteGenerationPort: aiServiceRuntimeConfig
+          ? new AIServiceKnowledgeNoteGenerationAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        analyticsQueryPort: aiServiceRuntimeConfig
+          ? new AIServiceAnalyticsQueryAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        executionLogPort: new AIExecutionLogPrismaAdapter(prismaClient),
+        evaluationReportPort: new AIEvaluationReportFileAdapter(),
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(context),
+        knowledgeSourcePort: options.createKnowledgeSourcePort(context),
+        analyticsReadPort: options.createAnalyticsReadPort(context),
         getKnowledgeNoteSubpath: (identityId: string) =>
           options.getKnowledgeNoteSubpath(identityId, context),
       });
@@ -115,7 +172,13 @@ export function createAIApiModule(options: {
       // ---------------------------------------------------------------
       const goalController = new AIGoalGenerationController({
         generateGoal: handlers.generateGoal,
-      } as any);
+      });
+      const capabilitiesController = new AICapabilitiesController({
+        getCapabilities: handlers.getCapabilities,
+      });
+      const goalAutomationController = new AIGoalAutomationController({
+        automateGoal: handlers.automateGoal,
+      });
       const providerController = new AIProviderConfigController({
         createProvider: handlers.createProvider,
         updateProvider: handlers.updateProvider,
@@ -124,7 +187,7 @@ export function createAIApiModule(options: {
         deleteProvider: handlers.deleteProvider,
         testConnection: handlers.testConnection,
         setDefaultProvider: handlers.setDefaultProvider,
-      } as any);
+      });
       const chatController = new AIChatController(
         {
           createConversation: handlers.createConversation,
@@ -132,10 +195,11 @@ export function createAIApiModule(options: {
           getConversation: handlers.getConversation,
           updateConversation: handlers.updateConversation,
           deleteConversation: handlers.deleteConversation,
-        } as any,
+        },
         {
           sendMessage: handlers.sendMessage,
-        } as any,
+          streamMessage: handlers.streamMessage,
+        },
       );
 
       // Guard against missing knowledge-note service — 对缺失的知识笔记服务进行防御
@@ -147,30 +211,83 @@ export function createAIApiModule(options: {
       }
       const knowledgeNoteController = new AIKnowledgeNoteController({
         createKnowledgeNote: handlers.createKnowledgeNote,
-      } as any);
+      });
+      if (!aiModule.services.knowledgeQueryService) {
+        throw new Error(
+          'AI API module requires knowledge query dependencies to be provided. ' +
+            'AI API 模块需要注入知识查询依赖。',
+        );
+      }
+      const knowledgeQueryController = new AIKnowledgeQueryController({
+        expandKnowledge: handlers.expandKnowledge,
+        queryKnowledge: handlers.queryKnowledge,
+        reindexKnowledge: handlers.reindexKnowledge,
+      });
+      if (!aiModule.services.analyticsQueryService) {
+        throw new Error(
+          'AI API module requires analytics query dependencies to be provided. ' +
+            'AI API 模块需要注入分析查询依赖。',
+        );
+      }
+      const analyticsQueryController = new AIAnalyticsQueryController({
+        queryAnalytics: handlers.queryAnalytics,
+      });
+      const evaluationReportController = new AIEvaluationReportController({
+        getEvaluationOverview: handlers.getEvaluationOverview,
+      });
 
       // ---------------------------------------------------------------
       // 3. 创建路由（注入平台中间件）并挂载到主路由
       //    Create routes (inject platform middleware) and mount them.
       // ---------------------------------------------------------------
       const goalRoutes = registerAIGoalGenerationRoutes(goalController, middleware);
+      const capabilityRoutes = registerAICapabilitiesRoutes(
+        capabilitiesController,
+        middleware,
+        context.openApiRegistry,
+      );
+      const goalAutomationRoutes = registerAIGoalAutomationRoutes(
+        goalAutomationController,
+        middleware,
+        context.openApiRegistry,
+      );
       const providerRoutes = registerAIProviderRoutes(
         providerController,
         middleware,
         context.openApiRegistry,
       );
       const chatRoutes = registerAIChatRoutes(chatController, middleware, context.openApiRegistry);
+      const knowledgeQueryRoutes = registerAIKnowledgeQueryRoutes(
+        knowledgeQueryController,
+        middleware,
+        context.openApiRegistry,
+      );
       const knowledgeNoteRoutes = registerAIKnowledgeNoteRoutes(
         knowledgeNoteController,
+        middleware,
+        context.openApiRegistry,
+      );
+      const analyticsQueryRoutes = registerAIAnalyticsQueryRoutes(
+        analyticsQueryController,
+        middleware,
+        context.openApiRegistry,
+      );
+      const evaluationReportRoutes = registerAIEvaluationReportRoutes(
+        evaluationReportController,
         middleware,
         context.openApiRegistry,
       );
 
       // 挂载到主路由（模块自决前缀）
       router.use('/ai/providers', providerRoutes);
+      router.use('/ai', capabilityRoutes);
       router.use('/ai/chat', chatRoutes);
+      router.use('/ai/knowledge', knowledgeQueryRoutes);
       router.use('/ai/knowledge-notes', knowledgeNoteRoutes);
+      router.use('/ai/analytics', analyticsQueryRoutes);
+      router.use('/ai', evaluationReportRoutes);
       router.use('/ai/generate', goalRoutes);
+      router.use('/ai/generate', goalAutomationRoutes);
     },
 
     destroy() {

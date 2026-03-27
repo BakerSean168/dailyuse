@@ -18,6 +18,12 @@ dist-ssr
 *.local
 release
 
+# Python artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
 # But don't ignore tools/build (it contains build configs, not build outputs)
 !tools/build/
 

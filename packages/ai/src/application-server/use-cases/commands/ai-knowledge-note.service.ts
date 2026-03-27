@@ -1,16 +1,43 @@
 import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '@dailyuse/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
-import { OpenAICompatibleGateway } from '../../../infrastructure-server/gateways/openai-compatible.gateway';
 import { AIKnowledgeNotePathResolver } from '../../../infrastructure-server/services/ai-knowledge-note-path-resolver';
-import type { IKnowledgeNotePersistencePort } from '../../ports';
+import { createLogger } from '@dailyuse/utils';
+import type {
+  IAIExecutionLogPort,
+  IKnowledgeNoteGenerationPort,
+  IKnowledgeNotePersistencePort,
+} from '../../ports';
+import {
+  resolveActiveProviderConfig,
+  toChatExecutionProviderConfig,
+} from './ai-provider-resolution';
+import {
+  attachRequestIdToError,
+  classifyAIExecutionError,
+  createAIRequestId,
+  withAICostEstimate,
+} from './ai-observability';
 
+const logger = createLogger('AIKnowledgeNoteService');
+
+/**
+ * Generate a markdown knowledge note through the shared AI execution port and
+ * then persist the generated file through the host application's storage port.
+ *
+ * This keeps the use case focused on orchestration:
+ * 1. choose the provider
+ * 2. build the prompt
+ * 3. ask the execution engine for text
+ * 4. save the text
+ */
 export class AIKnowledgeNoteService {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
-    private readonly gateway: OpenAICompatibleGateway,
+    private readonly knowledgeNoteGenerationPort: IKnowledgeNoteGenerationPort,
     private readonly persistencePort: IKnowledgeNotePersistencePort,
     private readonly getKnowledgeNoteSubpath: (identityId: string) => Promise<string>,
     private readonly pathResolver: AIKnowledgeNotePathResolver,
+    private readonly executionLogPort?: IAIExecutionLogPort,
   ) {}
 
   async createKnowledgeNote(
@@ -18,64 +45,115 @@ export class AIKnowledgeNoteService {
     request: CreateKnowledgeNoteReq,
   ): Promise<CreateKnowledgeNoteRes> {
     const startedAt = Date.now();
-    const provider = await this.resolveProvider(identityId, request.providerId);
-    const subpath = request.targetSubpath ?? (await this.getKnowledgeNoteSubpath(identityId));
-    const pathInfo = this.pathResolver.resolve(subpath, request.title ?? request.topic);
+    const requestId = createAIRequestId();
+    let providerMetadata: {
+      providerId?: string;
+      providerName?: string;
+      model?: string;
+    } = {};
 
-    const completion = await this.gateway.complete({
-      baseUrl: provider.baseUrl,
-      apiKey: provider.apiKey,
-      model: provider.defaultModel ?? 'gpt-4o-mini',
-      responseFormat: 'text',
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You write concise, structured Markdown knowledge notes with a title, short intro, section headings, and a closing summary.',
+    try {
+      const provider = await resolveActiveProviderConfig(
+        this.providerConfigRepository,
+        identityId,
+        request.providerId,
+      );
+      const executionProviderConfig = toChatExecutionProviderConfig(provider, {
+        temperature: 0.4,
+      });
+      providerMetadata = {
+        providerId: provider.id,
+        providerName: provider.name,
+        model: executionProviderConfig.model,
+      };
+      const subpath = request.targetSubpath ?? (await this.getKnowledgeNoteSubpath(identityId));
+      const pathInfo = this.pathResolver.resolve(subpath, request.title ?? request.topic);
+
+      const completion = await this.knowledgeNoteGenerationPort.generate({
+        identityId,
+        providerConfig: executionProviderConfig,
+        topic: request.topic,
+        title: request.title,
+        requestId,
+      });
+
+      const persisted = await this.persistencePort.createKnowledgeNote({
+        identityId,
+        path: pathInfo.path,
+        fileName: pathInfo.fileName,
+        content: completion.content,
+      });
+
+      const result = {
+        resource: persisted.resource,
+        resolvedPath: pathInfo.path,
+        tokenUsage: completion.usage,
+        providerId: provider.id,
+        processingTimeMs: Date.now() - startedAt,
+        generatedAt: Date.now(),
+      };
+
+      await this.recordExecution({
+        identityId,
+        taskType: 'KNOWLEDGE_NOTE_GENERATION',
+        status: 'COMPLETED',
+        requestId,
+        ...providerMetadata,
+        input: {
+          topic: request.topic,
+          title: request.title,
+          targetSubpath: request.targetSubpath,
+          selectedProviderId: request.providerId,
         },
-        {
-          role: 'user',
-          content: `Create a Markdown knowledge note about: ${request.topic}`,
+        result: {
+          resolvedPath: result.resolvedPath,
+          resourceId: String(result.resource.id),
         },
-      ],
-    });
+        tokenUsage: result.tokenUsage,
+        processingMs: result.processingTimeMs,
+      });
 
-    const persisted = await this.persistencePort.createKnowledgeNote({
-      identityId,
-      path: pathInfo.path,
-      fileName: pathInfo.fileName,
-      content: completion.content,
-    });
-
-    return {
-      resource: persisted.resource,
-      resolvedPath: pathInfo.path,
-      tokenUsage: completion.usage,
-      providerId: provider.id,
-      processingTimeMs: Date.now() - startedAt,
-      generatedAt: Date.now(),
-    };
+      return result;
+    } catch (error) {
+      await this.recordExecution({
+        identityId,
+        taskType: 'KNOWLEDGE_NOTE_GENERATION',
+        status: 'FAILED',
+        requestId,
+        ...providerMetadata,
+        errorCategory: classifyAIExecutionError(error),
+        input: {
+          topic: request.topic,
+          title: request.title,
+          targetSubpath: request.targetSubpath,
+          selectedProviderId: request.providerId,
+        },
+        error: error instanceof Error ? error.message : 'Knowledge note generation failed',
+        processingMs: Date.now() - startedAt,
+      });
+      logger.error('Knowledge note generation failed', {
+        error,
+        identityId,
+        requestId,
+      });
+      throw attachRequestIdToError(error, requestId);
+    }
   }
 
-  private async resolveProvider(identityId: string, providerId?: string) {
-    if (providerId) {
-      const provider = await this.providerConfigRepository.findById(providerId);
-      if (provider?.isActive) {
-        return provider;
-      }
+  private async recordExecution(
+    input: Parameters<NonNullable<IAIExecutionLogPort['record']>>[0],
+  ): Promise<void> {
+    if (!this.executionLogPort) {
+      return;
     }
 
-    const defaultProvider = await this.providerConfigRepository.findDefaultByIdentityId(identityId);
-    if (defaultProvider?.isActive) {
-      return defaultProvider;
+    try {
+      await this.executionLogPort.record(withAICostEstimate(input));
+    } catch (error) {
+      logger.warn('Failed to record knowledge-note execution log', {
+        error,
+        identityId: input.identityId,
+      });
     }
-
-    const providers = await this.providerConfigRepository.findByIdentityId(identityId);
-    const provider = providers.find((item) => item.isActive);
-    if (!provider) {
-      throw new Error('No AI provider configured');
-    }
-
-    return provider;
   }
 }

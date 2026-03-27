@@ -10,15 +10,17 @@
 export type { IHttpClient } from '@dailyuse/http-client';
 export type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
+  AICapabilities,
   AIConversationClientDTO,
   ConversationListRes,
   CreateConversationReq,
   UpdateConversationReq,
-  MessageClientDTO,
   MessageListRes,
   SendMessageReq,
   GenerateGoalsReq,
   GenerateGoalsRes,
+  GenerateGoalAutomationReq,
+  GenerateGoalAutomationRes,
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
   CreateAIProviderConfigReq,
@@ -28,6 +30,16 @@ import type {
   SetDefaultAIProviderReq,
   CreateKnowledgeNoteReq,
   CreateKnowledgeNoteRes,
+  QueryAnalyticsReq,
+  QueryAnalyticsRes,
+  GetAIEvaluationOverviewReq,
+  GetAIEvaluationOverviewRes,
+  ExpandKnowledgeReq,
+  ExpandKnowledgeRes,
+  QueryKnowledgeReq,
+  QueryKnowledgeRes,
+  ReindexKnowledgeReq,
+  ReindexKnowledgeRes,
   SendMessageRes,
 } from '@dailyuse/contracts/ai';
 
@@ -58,6 +70,19 @@ export interface IAIConversationApiClient {
 
 export interface IAIMessageApiClient {
   sendMessage(request: SendMessageReq): Promise<SendMessageRes>;
+  streamMessage(
+    request: SendMessageReq,
+    handlers: {
+      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
+      onDone?: (result: {
+        userMessage: SendMessageRes['userMessage'];
+        assistantMessage: SendMessageRes['assistantMessage'];
+        tokenUsage: SendMessageRes['tokenUsage'];
+        providerId: SendMessageRes['providerId'];
+        processingTimeMs: number;
+      }) => void;
+    },
+  ): Promise<void>;
   getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },
@@ -66,10 +91,31 @@ export interface IAIMessageApiClient {
 
 export interface IAIGoalApiClient {
   generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
+  automateGoal(request: GenerateGoalAutomationReq): Promise<GenerateGoalAutomationRes>;
+}
+
+export interface IAICapabilitiesApiClient {
+  getCapabilities(): Promise<AICapabilities>;
+}
+
+export interface AIEvaluationReportApiClient {
+  getEvaluationOverview(
+    request?: GetAIEvaluationOverviewReq,
+  ): Promise<GetAIEvaluationOverviewRes>;
 }
 
 export interface AIKnowledgeNoteApiClient {
   createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
+}
+
+export interface AIKnowledgeQueryApiClient {
+  expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes>;
+  queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes>;
+  reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes>;
+}
+
+export interface AIAnalyticsQueryApiClient {
+  queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
 }
 
 export interface IAIProviderConfigApiClient {

@@ -463,6 +463,9 @@ importers:
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@dailyuse/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@dailyuse/dashboard':
         specifier: workspace:*
         version: link:../../packages/dashboard
@@ -512,9 +515,6 @@ importers:
         specifier: 4.0.3
         version: 4.0.3
     devDependencies:
-      '@dailyuse/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@dailyuse/editor':
         specifier: workspace:*
         version: link:../../packages/editor
@@ -1044,6 +1044,9 @@ importers:
       '@prisma/client':
         specifier: ^7.4.2
         version: 7.4.2(prisma@7.4.2(@types/react@19.2.14)(better-sqlite3@12.6.2)(magicast@0.3.5)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client-runtime-utils':
+        specifier: 7.4.2
+        version: 7.4.2
       pg:
         specifier: 8.18.0
         version: 8.18.0

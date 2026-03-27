@@ -1,10 +1,17 @@
 import { fail, ok, type Result } from '@dailyuse/contracts/result';
-import { CreateKnowledgeNoteSchema, type CreateKnowledgeNoteRes } from '@dailyuse/contracts/ai';
+import {
+  CreateKnowledgeNoteSchema,
+  type CreateKnowledgeNoteReq,
+  type CreateKnowledgeNoteRes,
+} from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { AIKnowledgeNoteService } from '../../application-server/use-cases/commands/ai-knowledge-note.service';
+
+interface AIKnowledgeNoteControllerService {
+  createKnowledgeNote(identityId: string, request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
+}
 
 export class AIKnowledgeNoteController {
-  constructor(private readonly service: AIKnowledgeNoteService) {}
+  constructor(private readonly service: AIKnowledgeNoteControllerService) {}
 
   async create(input: unknown, identityId: string): Promise<Result<CreateKnowledgeNoteRes>> {
     const parsed = CreateKnowledgeNoteSchema.safeParse(input);

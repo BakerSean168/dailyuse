@@ -1,22 +1,27 @@
 """Chat-related schemas."""
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ChatMessage(BaseModel):
     """A single chat message."""
 
+    model_config = ConfigDict(extra="forbid")
+
     role: Literal["system", "user", "assistant"]
-    content: str
+    content: str = Field(..., min_length=1)
 
 
 class ProviderConfig(BaseModel):
     """Configuration for the LLM provider."""
 
-    provider: str  # "openai", "anthropic", etc.
+    model_config = ConfigDict(extra="forbid")
+
+    provider: str = Field(..., min_length=1)
     model: str
+    embedding_model: str | None = None
     api_key: str
     base_url: str | None = None
     temperature: float = 0.7
@@ -26,6 +31,8 @@ class ProviderConfig(BaseModel):
 class ChatCompleteRequest(BaseModel):
     """Request for non-streaming chat completion."""
 
+    model_config = ConfigDict(extra="forbid")
+
     messages: list[ChatMessage]
     provider_config: ProviderConfig
     request_id: str | None = None
@@ -34,13 +41,17 @@ class ChatCompleteRequest(BaseModel):
 class ChatCompleteResponse(BaseModel):
     """Response for non-streaming chat completion."""
 
+    model_config = ConfigDict(extra="forbid")
+
     content: str
     finish_reason: str
-    usage: dict | None = None
+    usage: dict[str, Any] | None = None
 
 
 class ChatStreamRequest(BaseModel):
     """Request for streaming chat completion."""
+
+    model_config = ConfigDict(extra="forbid")
 
     messages: list[ChatMessage]
     provider_config: ProviderConfig
@@ -49,6 +60,8 @@ class ChatStreamRequest(BaseModel):
 
 class ChatStreamChunk(BaseModel):
     """A single chunk in a streaming response."""
+
+    model_config = ConfigDict(extra="forbid")
 
     content: str
     finish_reason: str | None = None

@@ -134,7 +134,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req) => controller.test(req.body),
+    (req, ctx) => controller.test(req.body, ctx.identityId),
   );
 
   // POST /:id/set-default — Set default provider

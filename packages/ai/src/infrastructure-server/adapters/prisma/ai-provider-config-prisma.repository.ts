@@ -7,8 +7,9 @@
 
 import type { PrismaClient, AiProviderConfig as PrismaAiProviderConfig } from '@dailyuse/database';
 import type { IAIProviderConfigRepository } from '../../../domain-server';
-import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { AIModelInfo, AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 import type { AIProviderType } from '@dailyuse/contracts/ai';
+import { AISecretCipher } from '../../security/ai-secret-cipher';
 
 /**
  * AIProviderConfig Prisma Repository
@@ -16,7 +17,10 @@ import type { AIProviderType } from '@dailyuse/contracts/ai';
  * Prisma implementation of IAIProviderConfigRepository.
  */
 export class AIProviderConfigPrismaRepository implements IAIProviderConfigRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly secretCipher = new AISecretCipher(),
+  ) {}
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     await this.prisma.aiProviderConfig.upsert({
@@ -27,7 +31,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
         name: config.name,
         providerType: config.providerType,
         baseUrl: config.baseUrl,
-        apiKeyEncrypted: config.apiKey,
+        apiKeyEncrypted: this.secretCipher.encrypt(this.secretCipher.decrypt(config.apiKey)),
         defaultModel: config.defaultModel,
         availableModels: JSON.stringify(config.availableModels ?? []),
         isActive: config.isActive,
@@ -42,7 +46,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
         name: config.name,
         providerType: config.providerType,
         baseUrl: config.baseUrl,
-        apiKeyEncrypted: config.apiKey,
+        apiKeyEncrypted: this.secretCipher.encrypt(this.secretCipher.decrypt(config.apiKey)),
         defaultModel: config.defaultModel,
         availableModels: JSON.stringify(config.availableModels ?? []),
         isActive: config.isActive,
@@ -123,7 +127,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
       name: row.name,
       providerType: row.providerType as AIProviderType,
       baseUrl: row.baseUrl,
-      apiKey: row.apiKeyEncrypted,
+      apiKey: this.secretCipher.decrypt(row.apiKeyEncrypted),
       defaultModel: row.defaultModel,
       availableModels: this.parseModels(row.availableModels),
       isActive: row.isActive,
@@ -136,14 +140,14 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     };
   }
 
-  private parseModels(value: string | null): any[] {
+  private parseModels(value: string | null): AIModelInfo[] {
     if (!value) {
       return [];
     }
 
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      return Array.isArray(parsed) ? (parsed as AIModelInfo[]) : [];
     } catch {
       return [];
     }

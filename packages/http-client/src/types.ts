@@ -69,6 +69,14 @@ export interface IResultHttpClient {
   put<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
   patch<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
   delete<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  stream(
+    url: string,
+    config?: {
+      method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+      body?: unknown;
+      headers?: Record<string, string>;
+    },
+  ): Promise<Response>;
 }
 
 // ============================================================================

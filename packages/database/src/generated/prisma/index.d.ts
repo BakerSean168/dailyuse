@@ -49,6 +49,11 @@ export type AiProviderConfig = $Result.DefaultSelection<Prisma.$AiProviderConfig
  */
 export type KnowledgeGenerationTask = $Result.DefaultSelection<Prisma.$KnowledgeGenerationTaskPayload>
 /**
+ * Model AiKnowledgeIndexEntry
+ * 
+ */
+export type AiKnowledgeIndexEntry = $Result.DefaultSelection<Prisma.$AiKnowledgeIndexEntryPayload>
+/**
  * Model DashboardConfig
  * 
  */
@@ -518,6 +523,16 @@ export class PrismaClient<
     * ```
     */
   get knowledgeGenerationTask(): Prisma.KnowledgeGenerationTaskDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aiKnowledgeIndexEntry`: Exposes CRUD operations for the **AiKnowledgeIndexEntry** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AiKnowledgeIndexEntries
+    * const aiKnowledgeIndexEntries = await prisma.aiKnowledgeIndexEntry.findMany()
+    * ```
+    */
+  get aiKnowledgeIndexEntry(): Prisma.AiKnowledgeIndexEntryDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.dashboardConfig`: Exposes CRUD operations for the **DashboardConfig** model.
@@ -1489,6 +1504,7 @@ export namespace Prisma {
     AiUsageQuota: 'AiUsageQuota',
     AiProviderConfig: 'AiProviderConfig',
     KnowledgeGenerationTask: 'KnowledgeGenerationTask',
+    AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
     DashboardConfig: 'DashboardConfig',
     AuthIdentity: 'AuthIdentity',
     AuthIdentifier: 'AuthIdentifier',
@@ -1557,7 +1573,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
+      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2076,6 +2092,80 @@ export namespace Prisma {
           count: {
             args: Prisma.KnowledgeGenerationTaskCountArgs<ExtArgs>
             result: $Utils.Optional<KnowledgeGenerationTaskCountAggregateOutputType> | number
+          }
+        }
+      }
+      AiKnowledgeIndexEntry: {
+        payload: Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>
+        fields: Prisma.AiKnowledgeIndexEntryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AiKnowledgeIndexEntryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AiKnowledgeIndexEntryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>
+          }
+          findFirst: {
+            args: Prisma.AiKnowledgeIndexEntryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AiKnowledgeIndexEntryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>
+          }
+          findMany: {
+            args: Prisma.AiKnowledgeIndexEntryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>[]
+          }
+          create: {
+            args: Prisma.AiKnowledgeIndexEntryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>
+          }
+          createMany: {
+            args: Prisma.AiKnowledgeIndexEntryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AiKnowledgeIndexEntryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>[]
+          }
+          delete: {
+            args: Prisma.AiKnowledgeIndexEntryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>
+          }
+          update: {
+            args: Prisma.AiKnowledgeIndexEntryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>
+          }
+          deleteMany: {
+            args: Prisma.AiKnowledgeIndexEntryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AiKnowledgeIndexEntryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AiKnowledgeIndexEntryUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>[]
+          }
+          upsert: {
+            args: Prisma.AiKnowledgeIndexEntryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiKnowledgeIndexEntryPayload>
+          }
+          aggregate: {
+            args: Prisma.AiKnowledgeIndexEntryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAiKnowledgeIndexEntry>
+          }
+          groupBy: {
+            args: Prisma.AiKnowledgeIndexEntryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AiKnowledgeIndexEntryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AiKnowledgeIndexEntryCountArgs<ExtArgs>
+            result: $Utils.Optional<AiKnowledgeIndexEntryCountAggregateOutputType> | number
           }
         }
       }
@@ -6116,6 +6206,7 @@ export namespace Prisma {
     aiUsageQuota?: AiUsageQuotaOmit
     aiProviderConfig?: AiProviderConfigOmit
     knowledgeGenerationTask?: KnowledgeGenerationTaskOmit
+    aiKnowledgeIndexEntry?: AiKnowledgeIndexEntryOmit
     dashboardConfig?: DashboardConfigOmit
     authIdentity?: AuthIdentityOmit
     authIdentifier?: AuthIdentifierOmit
@@ -6271,6 +6362,7 @@ export namespace Prisma {
     notifications: number
     aiConversations: number
     aiGenerationTasks: number
+    aiKnowledgeIndexEntries: number
     aiProviderConfigs: number
     keyResults: number
     goalRecords: number
@@ -6312,6 +6404,7 @@ export namespace Prisma {
     notifications?: boolean | AccountCountOutputTypeCountNotificationsArgs
     aiConversations?: boolean | AccountCountOutputTypeCountAiConversationsArgs
     aiGenerationTasks?: boolean | AccountCountOutputTypeCountAiGenerationTasksArgs
+    aiKnowledgeIndexEntries?: boolean | AccountCountOutputTypeCountAiKnowledgeIndexEntriesArgs
     aiProviderConfigs?: boolean | AccountCountOutputTypeCountAiProviderConfigsArgs
     keyResults?: boolean | AccountCountOutputTypeCountKeyResultsArgs
     goalRecords?: boolean | AccountCountOutputTypeCountGoalRecordsArgs
@@ -6493,6 +6586,13 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountAiGenerationTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiGenerationTaskWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountAiKnowledgeIndexEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiKnowledgeIndexEntryWhereInput
   }
 
   /**
@@ -7684,6 +7784,7 @@ export namespace Prisma {
     notifications?: boolean | Account$notificationsArgs<ExtArgs>
     aiConversations?: boolean | Account$aiConversationsArgs<ExtArgs>
     aiGenerationTasks?: boolean | Account$aiGenerationTasksArgs<ExtArgs>
+    aiKnowledgeIndexEntries?: boolean | Account$aiKnowledgeIndexEntriesArgs<ExtArgs>
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
@@ -7799,6 +7900,7 @@ export namespace Prisma {
     notifications?: boolean | Account$notificationsArgs<ExtArgs>
     aiConversations?: boolean | Account$aiConversationsArgs<ExtArgs>
     aiGenerationTasks?: boolean | Account$aiGenerationTasksArgs<ExtArgs>
+    aiKnowledgeIndexEntries?: boolean | Account$aiKnowledgeIndexEntriesArgs<ExtArgs>
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
@@ -7859,6 +7961,7 @@ export namespace Prisma {
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       aiConversations: Prisma.$AiConversationPayload<ExtArgs>[]
       aiGenerationTasks: Prisma.$AiGenerationTaskPayload<ExtArgs>[]
+      aiKnowledgeIndexEntries: Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>[]
       aiUsageQuotas: Prisma.$AiUsageQuotaPayload<ExtArgs> | null
       aiProviderConfigs: Prisma.$AiProviderConfigPayload<ExtArgs>[]
       dashboardConfigs: Prisma.$DashboardConfigPayload<ExtArgs> | null
@@ -8320,6 +8423,7 @@ export namespace Prisma {
     notifications<T extends Account$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Account$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiConversations<T extends Account$aiConversationsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiGenerationTasks<T extends Account$aiGenerationTasksArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiGenerationTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiGenerationTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    aiKnowledgeIndexEntries<T extends Account$aiKnowledgeIndexEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiKnowledgeIndexEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsageQuotas<T extends Account$aiUsageQuotasArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiUsageQuotasArgs<ExtArgs>>): Prisma__AiUsageQuotaClient<$Result.GetResult<Prisma.$AiUsageQuotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     aiProviderConfigs<T extends Account$aiProviderConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiProviderConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dashboardConfigs<T extends Account$dashboardConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$dashboardConfigsArgs<ExtArgs>>): Prisma__DashboardConfigClient<$Result.GetResult<Prisma.$DashboardConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -9438,6 +9542,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AiGenerationTaskScalarFieldEnum | AiGenerationTaskScalarFieldEnum[]
+  }
+
+  /**
+   * Account.aiKnowledgeIndexEntries
+   */
+  export type Account$aiKnowledgeIndexEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    where?: AiKnowledgeIndexEntryWhereInput
+    orderBy?: AiKnowledgeIndexEntryOrderByWithRelationInput | AiKnowledgeIndexEntryOrderByWithRelationInput[]
+    cursor?: AiKnowledgeIndexEntryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AiKnowledgeIndexEntryScalarFieldEnum | AiKnowledgeIndexEntryScalarFieldEnum[]
   }
 
   /**
@@ -16915,6 +17043,1243 @@ export namespace Prisma {
      * Omit specific fields from the KnowledgeGenerationTask
      */
     omit?: KnowledgeGenerationTaskOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AiKnowledgeIndexEntry
+   */
+
+  export type AggregateAiKnowledgeIndexEntry = {
+    _count: AiKnowledgeIndexEntryCountAggregateOutputType | null
+    _min: AiKnowledgeIndexEntryMinAggregateOutputType | null
+    _max: AiKnowledgeIndexEntryMaxAggregateOutputType | null
+  }
+
+  export type AiKnowledgeIndexEntryMinAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    repositoryId: string | null
+    resourceId: string | null
+    resourcePath: string | null
+    title: string | null
+    mimeType: string | null
+    contentHash: string | null
+    status: string | null
+    summary: string | null
+    error: string | null
+    indexedAt: Date | null
+    lastRequestedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type AiKnowledgeIndexEntryMaxAggregateOutputType = {
+    id: string | null
+    identityId: string | null
+    repositoryId: string | null
+    resourceId: string | null
+    resourcePath: string | null
+    title: string | null
+    mimeType: string | null
+    contentHash: string | null
+    status: string | null
+    summary: string | null
+    error: string | null
+    indexedAt: Date | null
+    lastRequestedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type AiKnowledgeIndexEntryCountAggregateOutputType = {
+    id: number
+    identityId: number
+    repositoryId: number
+    resourceId: number
+    resourcePath: number
+    title: number
+    mimeType: number
+    contentHash: number
+    status: number
+    summary: number
+    keywords: number
+    embedding: number
+    chunks: number
+    metadata: number
+    error: number
+    indexedAt: number
+    lastRequestedAt: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type AiKnowledgeIndexEntryMinAggregateInputType = {
+    id?: true
+    identityId?: true
+    repositoryId?: true
+    resourceId?: true
+    resourcePath?: true
+    title?: true
+    mimeType?: true
+    contentHash?: true
+    status?: true
+    summary?: true
+    error?: true
+    indexedAt?: true
+    lastRequestedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type AiKnowledgeIndexEntryMaxAggregateInputType = {
+    id?: true
+    identityId?: true
+    repositoryId?: true
+    resourceId?: true
+    resourcePath?: true
+    title?: true
+    mimeType?: true
+    contentHash?: true
+    status?: true
+    summary?: true
+    error?: true
+    indexedAt?: true
+    lastRequestedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type AiKnowledgeIndexEntryCountAggregateInputType = {
+    id?: true
+    identityId?: true
+    repositoryId?: true
+    resourceId?: true
+    resourcePath?: true
+    title?: true
+    mimeType?: true
+    contentHash?: true
+    status?: true
+    summary?: true
+    keywords?: true
+    embedding?: true
+    chunks?: true
+    metadata?: true
+    error?: true
+    indexedAt?: true
+    lastRequestedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type AiKnowledgeIndexEntryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiKnowledgeIndexEntry to aggregate.
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiKnowledgeIndexEntries to fetch.
+     */
+    orderBy?: AiKnowledgeIndexEntryOrderByWithRelationInput | AiKnowledgeIndexEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AiKnowledgeIndexEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiKnowledgeIndexEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiKnowledgeIndexEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AiKnowledgeIndexEntries
+    **/
+    _count?: true | AiKnowledgeIndexEntryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AiKnowledgeIndexEntryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AiKnowledgeIndexEntryMaxAggregateInputType
+  }
+
+  export type GetAiKnowledgeIndexEntryAggregateType<T extends AiKnowledgeIndexEntryAggregateArgs> = {
+        [P in keyof T & keyof AggregateAiKnowledgeIndexEntry]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAiKnowledgeIndexEntry[P]>
+      : GetScalarType<T[P], AggregateAiKnowledgeIndexEntry[P]>
+  }
+
+
+
+
+  export type AiKnowledgeIndexEntryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiKnowledgeIndexEntryWhereInput
+    orderBy?: AiKnowledgeIndexEntryOrderByWithAggregationInput | AiKnowledgeIndexEntryOrderByWithAggregationInput[]
+    by: AiKnowledgeIndexEntryScalarFieldEnum[] | AiKnowledgeIndexEntryScalarFieldEnum
+    having?: AiKnowledgeIndexEntryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AiKnowledgeIndexEntryCountAggregateInputType | true
+    _min?: AiKnowledgeIndexEntryMinAggregateInputType
+    _max?: AiKnowledgeIndexEntryMaxAggregateInputType
+  }
+
+  export type AiKnowledgeIndexEntryGroupByOutputType = {
+    id: string
+    identityId: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary: string | null
+    keywords: JsonValue
+    embedding: JsonValue | null
+    chunks: JsonValue | null
+    metadata: JsonValue
+    error: string | null
+    indexedAt: Date
+    lastRequestedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: AiKnowledgeIndexEntryCountAggregateOutputType | null
+    _min: AiKnowledgeIndexEntryMinAggregateOutputType | null
+    _max: AiKnowledgeIndexEntryMaxAggregateOutputType | null
+  }
+
+  type GetAiKnowledgeIndexEntryGroupByPayload<T extends AiKnowledgeIndexEntryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AiKnowledgeIndexEntryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AiKnowledgeIndexEntryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AiKnowledgeIndexEntryGroupByOutputType[P]>
+            : GetScalarType<T[P], AiKnowledgeIndexEntryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AiKnowledgeIndexEntrySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    repositoryId?: boolean
+    resourceId?: boolean
+    resourcePath?: boolean
+    title?: boolean
+    mimeType?: boolean
+    contentHash?: boolean
+    status?: boolean
+    summary?: boolean
+    keywords?: boolean
+    embedding?: boolean
+    chunks?: boolean
+    metadata?: boolean
+    error?: boolean
+    indexedAt?: boolean
+    lastRequestedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiKnowledgeIndexEntry"]>
+
+  export type AiKnowledgeIndexEntrySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    repositoryId?: boolean
+    resourceId?: boolean
+    resourcePath?: boolean
+    title?: boolean
+    mimeType?: boolean
+    contentHash?: boolean
+    status?: boolean
+    summary?: boolean
+    keywords?: boolean
+    embedding?: boolean
+    chunks?: boolean
+    metadata?: boolean
+    error?: boolean
+    indexedAt?: boolean
+    lastRequestedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiKnowledgeIndexEntry"]>
+
+  export type AiKnowledgeIndexEntrySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    identityId?: boolean
+    repositoryId?: boolean
+    resourceId?: boolean
+    resourcePath?: boolean
+    title?: boolean
+    mimeType?: boolean
+    contentHash?: boolean
+    status?: boolean
+    summary?: boolean
+    keywords?: boolean
+    embedding?: boolean
+    chunks?: boolean
+    metadata?: boolean
+    error?: boolean
+    indexedAt?: boolean
+    lastRequestedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiKnowledgeIndexEntry"]>
+
+  export type AiKnowledgeIndexEntrySelectScalar = {
+    id?: boolean
+    identityId?: boolean
+    repositoryId?: boolean
+    resourceId?: boolean
+    resourcePath?: boolean
+    title?: boolean
+    mimeType?: boolean
+    contentHash?: boolean
+    status?: boolean
+    summary?: boolean
+    keywords?: boolean
+    embedding?: boolean
+    chunks?: boolean
+    metadata?: boolean
+    error?: boolean
+    indexedAt?: boolean
+    lastRequestedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type AiKnowledgeIndexEntryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "repositoryId" | "resourceId" | "resourcePath" | "title" | "mimeType" | "contentHash" | "status" | "summary" | "keywords" | "embedding" | "chunks" | "metadata" | "error" | "indexedAt" | "lastRequestedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["aiKnowledgeIndexEntry"]>
+  export type AiKnowledgeIndexEntryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type AiKnowledgeIndexEntryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type AiKnowledgeIndexEntryIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+
+  export type $AiKnowledgeIndexEntryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AiKnowledgeIndexEntry"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      identityId: string
+      repositoryId: string
+      resourceId: string
+      resourcePath: string
+      title: string | null
+      mimeType: string
+      contentHash: string
+      status: string
+      summary: string | null
+      keywords: Prisma.JsonValue
+      embedding: Prisma.JsonValue | null
+      chunks: Prisma.JsonValue | null
+      metadata: Prisma.JsonValue
+      error: string | null
+      indexedAt: Date
+      lastRequestedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["aiKnowledgeIndexEntry"]>
+    composites: {}
+  }
+
+  type AiKnowledgeIndexEntryGetPayload<S extends boolean | null | undefined | AiKnowledgeIndexEntryDefaultArgs> = $Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload, S>
+
+  type AiKnowledgeIndexEntryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AiKnowledgeIndexEntryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AiKnowledgeIndexEntryCountAggregateInputType | true
+    }
+
+  export interface AiKnowledgeIndexEntryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AiKnowledgeIndexEntry'], meta: { name: 'AiKnowledgeIndexEntry' } }
+    /**
+     * Find zero or one AiKnowledgeIndexEntry that matches the filter.
+     * @param {AiKnowledgeIndexEntryFindUniqueArgs} args - Arguments to find a AiKnowledgeIndexEntry
+     * @example
+     * // Get one AiKnowledgeIndexEntry
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AiKnowledgeIndexEntryFindUniqueArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryFindUniqueArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AiKnowledgeIndexEntry that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AiKnowledgeIndexEntryFindUniqueOrThrowArgs} args - Arguments to find a AiKnowledgeIndexEntry
+     * @example
+     * // Get one AiKnowledgeIndexEntry
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AiKnowledgeIndexEntryFindUniqueOrThrowArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiKnowledgeIndexEntry that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryFindFirstArgs} args - Arguments to find a AiKnowledgeIndexEntry
+     * @example
+     * // Get one AiKnowledgeIndexEntry
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AiKnowledgeIndexEntryFindFirstArgs>(args?: SelectSubset<T, AiKnowledgeIndexEntryFindFirstArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiKnowledgeIndexEntry that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryFindFirstOrThrowArgs} args - Arguments to find a AiKnowledgeIndexEntry
+     * @example
+     * // Get one AiKnowledgeIndexEntry
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AiKnowledgeIndexEntryFindFirstOrThrowArgs>(args?: SelectSubset<T, AiKnowledgeIndexEntryFindFirstOrThrowArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AiKnowledgeIndexEntries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AiKnowledgeIndexEntries
+     * const aiKnowledgeIndexEntries = await prisma.aiKnowledgeIndexEntry.findMany()
+     * 
+     * // Get first 10 AiKnowledgeIndexEntries
+     * const aiKnowledgeIndexEntries = await prisma.aiKnowledgeIndexEntry.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aiKnowledgeIndexEntryWithIdOnly = await prisma.aiKnowledgeIndexEntry.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AiKnowledgeIndexEntryFindManyArgs>(args?: SelectSubset<T, AiKnowledgeIndexEntryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AiKnowledgeIndexEntry.
+     * @param {AiKnowledgeIndexEntryCreateArgs} args - Arguments to create a AiKnowledgeIndexEntry.
+     * @example
+     * // Create one AiKnowledgeIndexEntry
+     * const AiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.create({
+     *   data: {
+     *     // ... data to create a AiKnowledgeIndexEntry
+     *   }
+     * })
+     * 
+     */
+    create<T extends AiKnowledgeIndexEntryCreateArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryCreateArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AiKnowledgeIndexEntries.
+     * @param {AiKnowledgeIndexEntryCreateManyArgs} args - Arguments to create many AiKnowledgeIndexEntries.
+     * @example
+     * // Create many AiKnowledgeIndexEntries
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AiKnowledgeIndexEntryCreateManyArgs>(args?: SelectSubset<T, AiKnowledgeIndexEntryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AiKnowledgeIndexEntries and returns the data saved in the database.
+     * @param {AiKnowledgeIndexEntryCreateManyAndReturnArgs} args - Arguments to create many AiKnowledgeIndexEntries.
+     * @example
+     * // Create many AiKnowledgeIndexEntries
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AiKnowledgeIndexEntries and only return the `id`
+     * const aiKnowledgeIndexEntryWithIdOnly = await prisma.aiKnowledgeIndexEntry.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AiKnowledgeIndexEntryCreateManyAndReturnArgs>(args?: SelectSubset<T, AiKnowledgeIndexEntryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AiKnowledgeIndexEntry.
+     * @param {AiKnowledgeIndexEntryDeleteArgs} args - Arguments to delete one AiKnowledgeIndexEntry.
+     * @example
+     * // Delete one AiKnowledgeIndexEntry
+     * const AiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.delete({
+     *   where: {
+     *     // ... filter to delete one AiKnowledgeIndexEntry
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AiKnowledgeIndexEntryDeleteArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryDeleteArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AiKnowledgeIndexEntry.
+     * @param {AiKnowledgeIndexEntryUpdateArgs} args - Arguments to update one AiKnowledgeIndexEntry.
+     * @example
+     * // Update one AiKnowledgeIndexEntry
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AiKnowledgeIndexEntryUpdateArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryUpdateArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AiKnowledgeIndexEntries.
+     * @param {AiKnowledgeIndexEntryDeleteManyArgs} args - Arguments to filter AiKnowledgeIndexEntries to delete.
+     * @example
+     * // Delete a few AiKnowledgeIndexEntries
+     * const { count } = await prisma.aiKnowledgeIndexEntry.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AiKnowledgeIndexEntryDeleteManyArgs>(args?: SelectSubset<T, AiKnowledgeIndexEntryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiKnowledgeIndexEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AiKnowledgeIndexEntries
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AiKnowledgeIndexEntryUpdateManyArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiKnowledgeIndexEntries and returns the data updated in the database.
+     * @param {AiKnowledgeIndexEntryUpdateManyAndReturnArgs} args - Arguments to update many AiKnowledgeIndexEntries.
+     * @example
+     * // Update many AiKnowledgeIndexEntries
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AiKnowledgeIndexEntries and only return the `id`
+     * const aiKnowledgeIndexEntryWithIdOnly = await prisma.aiKnowledgeIndexEntry.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AiKnowledgeIndexEntryUpdateManyAndReturnArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AiKnowledgeIndexEntry.
+     * @param {AiKnowledgeIndexEntryUpsertArgs} args - Arguments to update or create a AiKnowledgeIndexEntry.
+     * @example
+     * // Update or create a AiKnowledgeIndexEntry
+     * const aiKnowledgeIndexEntry = await prisma.aiKnowledgeIndexEntry.upsert({
+     *   create: {
+     *     // ... data to create a AiKnowledgeIndexEntry
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AiKnowledgeIndexEntry we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AiKnowledgeIndexEntryUpsertArgs>(args: SelectSubset<T, AiKnowledgeIndexEntryUpsertArgs<ExtArgs>>): Prisma__AiKnowledgeIndexEntryClient<$Result.GetResult<Prisma.$AiKnowledgeIndexEntryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AiKnowledgeIndexEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryCountArgs} args - Arguments to filter AiKnowledgeIndexEntries to count.
+     * @example
+     * // Count the number of AiKnowledgeIndexEntries
+     * const count = await prisma.aiKnowledgeIndexEntry.count({
+     *   where: {
+     *     // ... the filter for the AiKnowledgeIndexEntries we want to count
+     *   }
+     * })
+    **/
+    count<T extends AiKnowledgeIndexEntryCountArgs>(
+      args?: Subset<T, AiKnowledgeIndexEntryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AiKnowledgeIndexEntryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AiKnowledgeIndexEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AiKnowledgeIndexEntryAggregateArgs>(args: Subset<T, AiKnowledgeIndexEntryAggregateArgs>): Prisma.PrismaPromise<GetAiKnowledgeIndexEntryAggregateType<T>>
+
+    /**
+     * Group by AiKnowledgeIndexEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiKnowledgeIndexEntryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AiKnowledgeIndexEntryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AiKnowledgeIndexEntryGroupByArgs['orderBy'] }
+        : { orderBy?: AiKnowledgeIndexEntryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AiKnowledgeIndexEntryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAiKnowledgeIndexEntryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AiKnowledgeIndexEntry model
+   */
+  readonly fields: AiKnowledgeIndexEntryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AiKnowledgeIndexEntry.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AiKnowledgeIndexEntryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AiKnowledgeIndexEntry model
+   */
+  interface AiKnowledgeIndexEntryFieldRefs {
+    readonly id: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly identityId: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly repositoryId: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly resourceId: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly resourcePath: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly title: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly mimeType: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly contentHash: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly status: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly summary: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly keywords: FieldRef<"AiKnowledgeIndexEntry", 'Json'>
+    readonly embedding: FieldRef<"AiKnowledgeIndexEntry", 'Json'>
+    readonly chunks: FieldRef<"AiKnowledgeIndexEntry", 'Json'>
+    readonly metadata: FieldRef<"AiKnowledgeIndexEntry", 'Json'>
+    readonly error: FieldRef<"AiKnowledgeIndexEntry", 'String'>
+    readonly indexedAt: FieldRef<"AiKnowledgeIndexEntry", 'DateTime'>
+    readonly lastRequestedAt: FieldRef<"AiKnowledgeIndexEntry", 'DateTime'>
+    readonly createdAt: FieldRef<"AiKnowledgeIndexEntry", 'DateTime'>
+    readonly updatedAt: FieldRef<"AiKnowledgeIndexEntry", 'DateTime'>
+    readonly deletedAt: FieldRef<"AiKnowledgeIndexEntry", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AiKnowledgeIndexEntry findUnique
+   */
+  export type AiKnowledgeIndexEntryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which AiKnowledgeIndexEntry to fetch.
+     */
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+  }
+
+  /**
+   * AiKnowledgeIndexEntry findUniqueOrThrow
+   */
+  export type AiKnowledgeIndexEntryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which AiKnowledgeIndexEntry to fetch.
+     */
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+  }
+
+  /**
+   * AiKnowledgeIndexEntry findFirst
+   */
+  export type AiKnowledgeIndexEntryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which AiKnowledgeIndexEntry to fetch.
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiKnowledgeIndexEntries to fetch.
+     */
+    orderBy?: AiKnowledgeIndexEntryOrderByWithRelationInput | AiKnowledgeIndexEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AiKnowledgeIndexEntries.
+     */
+    cursor?: AiKnowledgeIndexEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiKnowledgeIndexEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiKnowledgeIndexEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AiKnowledgeIndexEntries.
+     */
+    distinct?: AiKnowledgeIndexEntryScalarFieldEnum | AiKnowledgeIndexEntryScalarFieldEnum[]
+  }
+
+  /**
+   * AiKnowledgeIndexEntry findFirstOrThrow
+   */
+  export type AiKnowledgeIndexEntryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which AiKnowledgeIndexEntry to fetch.
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiKnowledgeIndexEntries to fetch.
+     */
+    orderBy?: AiKnowledgeIndexEntryOrderByWithRelationInput | AiKnowledgeIndexEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AiKnowledgeIndexEntries.
+     */
+    cursor?: AiKnowledgeIndexEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiKnowledgeIndexEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiKnowledgeIndexEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AiKnowledgeIndexEntries.
+     */
+    distinct?: AiKnowledgeIndexEntryScalarFieldEnum | AiKnowledgeIndexEntryScalarFieldEnum[]
+  }
+
+  /**
+   * AiKnowledgeIndexEntry findMany
+   */
+  export type AiKnowledgeIndexEntryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which AiKnowledgeIndexEntries to fetch.
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiKnowledgeIndexEntries to fetch.
+     */
+    orderBy?: AiKnowledgeIndexEntryOrderByWithRelationInput | AiKnowledgeIndexEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AiKnowledgeIndexEntries.
+     */
+    cursor?: AiKnowledgeIndexEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiKnowledgeIndexEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiKnowledgeIndexEntries.
+     */
+    skip?: number
+    distinct?: AiKnowledgeIndexEntryScalarFieldEnum | AiKnowledgeIndexEntryScalarFieldEnum[]
+  }
+
+  /**
+   * AiKnowledgeIndexEntry create
+   */
+  export type AiKnowledgeIndexEntryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AiKnowledgeIndexEntry.
+     */
+    data: XOR<AiKnowledgeIndexEntryCreateInput, AiKnowledgeIndexEntryUncheckedCreateInput>
+  }
+
+  /**
+   * AiKnowledgeIndexEntry createMany
+   */
+  export type AiKnowledgeIndexEntryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AiKnowledgeIndexEntries.
+     */
+    data: AiKnowledgeIndexEntryCreateManyInput | AiKnowledgeIndexEntryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AiKnowledgeIndexEntry createManyAndReturn
+   */
+  export type AiKnowledgeIndexEntryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * The data used to create many AiKnowledgeIndexEntries.
+     */
+    data: AiKnowledgeIndexEntryCreateManyInput | AiKnowledgeIndexEntryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiKnowledgeIndexEntry update
+   */
+  export type AiKnowledgeIndexEntryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AiKnowledgeIndexEntry.
+     */
+    data: XOR<AiKnowledgeIndexEntryUpdateInput, AiKnowledgeIndexEntryUncheckedUpdateInput>
+    /**
+     * Choose, which AiKnowledgeIndexEntry to update.
+     */
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+  }
+
+  /**
+   * AiKnowledgeIndexEntry updateMany
+   */
+  export type AiKnowledgeIndexEntryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AiKnowledgeIndexEntries.
+     */
+    data: XOR<AiKnowledgeIndexEntryUpdateManyMutationInput, AiKnowledgeIndexEntryUncheckedUpdateManyInput>
+    /**
+     * Filter which AiKnowledgeIndexEntries to update
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * Limit how many AiKnowledgeIndexEntries to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiKnowledgeIndexEntry updateManyAndReturn
+   */
+  export type AiKnowledgeIndexEntryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * The data used to update AiKnowledgeIndexEntries.
+     */
+    data: XOR<AiKnowledgeIndexEntryUpdateManyMutationInput, AiKnowledgeIndexEntryUncheckedUpdateManyInput>
+    /**
+     * Filter which AiKnowledgeIndexEntries to update
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * Limit how many AiKnowledgeIndexEntries to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiKnowledgeIndexEntry upsert
+   */
+  export type AiKnowledgeIndexEntryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AiKnowledgeIndexEntry to update in case it exists.
+     */
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+    /**
+     * In case the AiKnowledgeIndexEntry found by the `where` argument doesn't exist, create a new AiKnowledgeIndexEntry with this data.
+     */
+    create: XOR<AiKnowledgeIndexEntryCreateInput, AiKnowledgeIndexEntryUncheckedCreateInput>
+    /**
+     * In case the AiKnowledgeIndexEntry was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AiKnowledgeIndexEntryUpdateInput, AiKnowledgeIndexEntryUncheckedUpdateInput>
+  }
+
+  /**
+   * AiKnowledgeIndexEntry delete
+   */
+  export type AiKnowledgeIndexEntryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
+    /**
+     * Filter which AiKnowledgeIndexEntry to delete.
+     */
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+  }
+
+  /**
+   * AiKnowledgeIndexEntry deleteMany
+   */
+  export type AiKnowledgeIndexEntryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiKnowledgeIndexEntries to delete
+     */
+    where?: AiKnowledgeIndexEntryWhereInput
+    /**
+     * Limit how many AiKnowledgeIndexEntries to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiKnowledgeIndexEntry without action
+   */
+  export type AiKnowledgeIndexEntryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiKnowledgeIndexEntry
+     */
+    select?: AiKnowledgeIndexEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiKnowledgeIndexEntry
+     */
+    omit?: AiKnowledgeIndexEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiKnowledgeIndexEntryInclude<ExtArgs> | null
   }
 
 
@@ -82784,6 +84149,32 @@ export namespace Prisma {
   export type KnowledgeGenerationTaskScalarFieldEnum = (typeof KnowledgeGenerationTaskScalarFieldEnum)[keyof typeof KnowledgeGenerationTaskScalarFieldEnum]
 
 
+  export const AiKnowledgeIndexEntryScalarFieldEnum: {
+    id: 'id',
+    identityId: 'identityId',
+    repositoryId: 'repositoryId',
+    resourceId: 'resourceId',
+    resourcePath: 'resourcePath',
+    title: 'title',
+    mimeType: 'mimeType',
+    contentHash: 'contentHash',
+    status: 'status',
+    summary: 'summary',
+    keywords: 'keywords',
+    embedding: 'embedding',
+    chunks: 'chunks',
+    metadata: 'metadata',
+    error: 'error',
+    indexedAt: 'indexedAt',
+    lastRequestedAt: 'lastRequestedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type AiKnowledgeIndexEntryScalarFieldEnum = (typeof AiKnowledgeIndexEntryScalarFieldEnum)[keyof typeof AiKnowledgeIndexEntryScalarFieldEnum]
+
+
   export const DashboardConfigScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
@@ -84045,6 +85436,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     aiConversations?: AiConversationListRelationFilter
     aiGenerationTasks?: AiGenerationTaskListRelationFilter
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryListRelationFilter
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
@@ -84113,6 +85505,7 @@ export namespace Prisma {
     notifications?: NotificationOrderByRelationAggregateInput
     aiConversations?: AiConversationOrderByRelationAggregateInput
     aiGenerationTasks?: AiGenerationTaskOrderByRelationAggregateInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryOrderByRelationAggregateInput
     aiUsageQuotas?: AiUsageQuotaOrderByWithRelationInput
     aiProviderConfigs?: AiProviderConfigOrderByRelationAggregateInput
     dashboardConfigs?: DashboardConfigOrderByWithRelationInput
@@ -84184,6 +85577,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     aiConversations?: AiConversationListRelationFilter
     aiGenerationTasks?: AiGenerationTaskListRelationFilter
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryListRelationFilter
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
@@ -84794,6 +86188,136 @@ export namespace Prisma {
     error?: StringNullableWithAggregatesFilter<"KnowledgeGenerationTask"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"KnowledgeGenerationTask"> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<"KnowledgeGenerationTask"> | Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryWhereInput = {
+    AND?: AiKnowledgeIndexEntryWhereInput | AiKnowledgeIndexEntryWhereInput[]
+    OR?: AiKnowledgeIndexEntryWhereInput[]
+    NOT?: AiKnowledgeIndexEntryWhereInput | AiKnowledgeIndexEntryWhereInput[]
+    id?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    identityId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    repositoryId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    resourceId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    resourcePath?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    title?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    mimeType?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    contentHash?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    status?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    summary?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    keywords?: JsonFilter<"AiKnowledgeIndexEntry">
+    embedding?: JsonNullableFilter<"AiKnowledgeIndexEntry">
+    chunks?: JsonNullableFilter<"AiKnowledgeIndexEntry">
+    metadata?: JsonFilter<"AiKnowledgeIndexEntry">
+    error?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    indexedAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    lastRequestedAt?: DateTimeNullableFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+    createdAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }
+
+  export type AiKnowledgeIndexEntryOrderByWithRelationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    repositoryId?: SortOrder
+    resourceId?: SortOrder
+    resourcePath?: SortOrder
+    title?: SortOrderInput | SortOrder
+    mimeType?: SortOrder
+    contentHash?: SortOrder
+    status?: SortOrder
+    summary?: SortOrderInput | SortOrder
+    keywords?: SortOrder
+    embedding?: SortOrderInput | SortOrder
+    chunks?: SortOrderInput | SortOrder
+    metadata?: SortOrder
+    error?: SortOrderInput | SortOrder
+    indexedAt?: SortOrder
+    lastRequestedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    account?: AccountOrderByWithRelationInput
+  }
+
+  export type AiKnowledgeIndexEntryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    resourceId?: string
+    AND?: AiKnowledgeIndexEntryWhereInput | AiKnowledgeIndexEntryWhereInput[]
+    OR?: AiKnowledgeIndexEntryWhereInput[]
+    NOT?: AiKnowledgeIndexEntryWhereInput | AiKnowledgeIndexEntryWhereInput[]
+    identityId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    repositoryId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    resourcePath?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    title?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    mimeType?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    contentHash?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    status?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    summary?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    keywords?: JsonFilter<"AiKnowledgeIndexEntry">
+    embedding?: JsonNullableFilter<"AiKnowledgeIndexEntry">
+    chunks?: JsonNullableFilter<"AiKnowledgeIndexEntry">
+    metadata?: JsonFilter<"AiKnowledgeIndexEntry">
+    error?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    indexedAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    lastRequestedAt?: DateTimeNullableFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+    createdAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }, "id" | "resourceId">
+
+  export type AiKnowledgeIndexEntryOrderByWithAggregationInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    repositoryId?: SortOrder
+    resourceId?: SortOrder
+    resourcePath?: SortOrder
+    title?: SortOrderInput | SortOrder
+    mimeType?: SortOrder
+    contentHash?: SortOrder
+    status?: SortOrder
+    summary?: SortOrderInput | SortOrder
+    keywords?: SortOrder
+    embedding?: SortOrderInput | SortOrder
+    chunks?: SortOrderInput | SortOrder
+    metadata?: SortOrder
+    error?: SortOrderInput | SortOrder
+    indexedAt?: SortOrder
+    lastRequestedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: AiKnowledgeIndexEntryCountOrderByAggregateInput
+    _max?: AiKnowledgeIndexEntryMaxOrderByAggregateInput
+    _min?: AiKnowledgeIndexEntryMinOrderByAggregateInput
+  }
+
+  export type AiKnowledgeIndexEntryScalarWhereWithAggregatesInput = {
+    AND?: AiKnowledgeIndexEntryScalarWhereWithAggregatesInput | AiKnowledgeIndexEntryScalarWhereWithAggregatesInput[]
+    OR?: AiKnowledgeIndexEntryScalarWhereWithAggregatesInput[]
+    NOT?: AiKnowledgeIndexEntryScalarWhereWithAggregatesInput | AiKnowledgeIndexEntryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    identityId?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    repositoryId?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    resourceId?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    resourcePath?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    title?: StringNullableWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string | null
+    mimeType?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    contentHash?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    status?: StringWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string
+    summary?: StringNullableWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string | null
+    keywords?: JsonWithAggregatesFilter<"AiKnowledgeIndexEntry">
+    embedding?: JsonNullableWithAggregatesFilter<"AiKnowledgeIndexEntry">
+    chunks?: JsonNullableWithAggregatesFilter<"AiKnowledgeIndexEntry">
+    metadata?: JsonWithAggregatesFilter<"AiKnowledgeIndexEntry">
+    error?: StringNullableWithAggregatesFilter<"AiKnowledgeIndexEntry"> | string | null
+    indexedAt?: DateTimeWithAggregatesFilter<"AiKnowledgeIndexEntry"> | Date | string
+    lastRequestedAt?: DateTimeNullableWithAggregatesFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AiKnowledgeIndexEntry"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AiKnowledgeIndexEntry"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"AiKnowledgeIndexEntry"> | Date | string | null
   }
 
   export type DashboardConfigWhereInput = {
@@ -90443,6 +91967,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -90510,6 +92035,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -90577,6 +92103,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -90644,6 +92171,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -91335,6 +92863,166 @@ export namespace Prisma {
     error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryCreateInput = {
+    id: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title?: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary?: string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    indexedAt: Date | string
+    lastRequestedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    account: AccountCreateNestedOneWithoutAiKnowledgeIndexEntriesInput
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedCreateInput = {
+    id: string
+    identityId: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title?: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary?: string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    indexedAt: Date | string
+    lastRequestedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    account?: AccountUpdateOneRequiredWithoutAiKnowledgeIndexEntriesNestedInput
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryCreateManyInput = {
+    id: string
+    identityId: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title?: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary?: string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    indexedAt: Date | string
+    lastRequestedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DashboardConfigCreateInput = {
@@ -98000,6 +99688,12 @@ export namespace Prisma {
     none?: AiGenerationTaskWhereInput
   }
 
+  export type AiKnowledgeIndexEntryListRelationFilter = {
+    every?: AiKnowledgeIndexEntryWhereInput
+    some?: AiKnowledgeIndexEntryWhereInput
+    none?: AiKnowledgeIndexEntryWhereInput
+  }
+
   export type AiUsageQuotaNullableScalarRelationFilter = {
     is?: AiUsageQuotaWhereInput | null
     isNot?: AiUsageQuotaWhereInput | null
@@ -98196,6 +99890,10 @@ export namespace Prisma {
   }
 
   export type AiGenerationTaskOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AiKnowledgeIndexEntryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -98814,6 +100512,116 @@ export namespace Prisma {
     resourceCount?: SortOrder
     progress?: SortOrder
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type AiKnowledgeIndexEntryCountOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    repositoryId?: SortOrder
+    resourceId?: SortOrder
+    resourcePath?: SortOrder
+    title?: SortOrder
+    mimeType?: SortOrder
+    contentHash?: SortOrder
+    status?: SortOrder
+    summary?: SortOrder
+    keywords?: SortOrder
+    embedding?: SortOrder
+    chunks?: SortOrder
+    metadata?: SortOrder
+    error?: SortOrder
+    indexedAt?: SortOrder
+    lastRequestedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type AiKnowledgeIndexEntryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    repositoryId?: SortOrder
+    resourceId?: SortOrder
+    resourcePath?: SortOrder
+    title?: SortOrder
+    mimeType?: SortOrder
+    contentHash?: SortOrder
+    status?: SortOrder
+    summary?: SortOrder
+    error?: SortOrder
+    indexedAt?: SortOrder
+    lastRequestedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type AiKnowledgeIndexEntryMinOrderByAggregateInput = {
+    id?: SortOrder
+    identityId?: SortOrder
+    repositoryId?: SortOrder
+    resourceId?: SortOrder
+    resourcePath?: SortOrder
+    title?: SortOrder
+    mimeType?: SortOrder
+    contentHash?: SortOrder
+    status?: SortOrder
+    summary?: SortOrder
+    error?: SortOrder
+    indexedAt?: SortOrder
+    lastRequestedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
 
   export type DashboardConfigCountOrderByAggregateInput = {
     id?: SortOrder
@@ -99061,29 +100869,6 @@ export namespace Prisma {
   export type AuthCredentialSumOrderByAggregateInput = {
     version?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type AuthSessionCountOrderByAggregateInput = {
     id?: SortOrder
@@ -99146,32 +100931,6 @@ export namespace Prisma {
 
   export type AuthSessionSumOrderByAggregateInput = {
     version?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EditorWorkspaceCountOrderByAggregateInput = {
@@ -102591,6 +104350,13 @@ export namespace Prisma {
     connect?: AiGenerationTaskWhereUniqueInput | AiGenerationTaskWhereUniqueInput[]
   }
 
+  export type AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput = {
+    create?: XOR<AiKnowledgeIndexEntryCreateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput> | AiKnowledgeIndexEntryCreateWithoutAccountInput[] | AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput | AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput[]
+    createMany?: AiKnowledgeIndexEntryCreateManyAccountInputEnvelope
+    connect?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+  }
+
   export type AiUsageQuotaCreateNestedOneWithoutAccountInput = {
     create?: XOR<AiUsageQuotaCreateWithoutAccountInput, AiUsageQuotaUncheckedCreateWithoutAccountInput>
     connectOrCreate?: AiUsageQuotaCreateOrConnectWithoutAccountInput
@@ -102909,6 +104675,13 @@ export namespace Prisma {
     connectOrCreate?: AiGenerationTaskCreateOrConnectWithoutAccountInput | AiGenerationTaskCreateOrConnectWithoutAccountInput[]
     createMany?: AiGenerationTaskCreateManyAccountInputEnvelope
     connect?: AiGenerationTaskWhereUniqueInput | AiGenerationTaskWhereUniqueInput[]
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<AiKnowledgeIndexEntryCreateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput> | AiKnowledgeIndexEntryCreateWithoutAccountInput[] | AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput | AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput[]
+    createMany?: AiKnowledgeIndexEntryCreateManyAccountInputEnvelope
+    connect?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
   }
 
   export type AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput = {
@@ -103451,6 +105224,20 @@ export namespace Prisma {
     update?: AiGenerationTaskUpdateWithWhereUniqueWithoutAccountInput | AiGenerationTaskUpdateWithWhereUniqueWithoutAccountInput[]
     updateMany?: AiGenerationTaskUpdateManyWithWhereWithoutAccountInput | AiGenerationTaskUpdateManyWithWhereWithoutAccountInput[]
     deleteMany?: AiGenerationTaskScalarWhereInput | AiGenerationTaskScalarWhereInput[]
+  }
+
+  export type AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<AiKnowledgeIndexEntryCreateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput> | AiKnowledgeIndexEntryCreateWithoutAccountInput[] | AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput | AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput[]
+    upsert?: AiKnowledgeIndexEntryUpsertWithWhereUniqueWithoutAccountInput | AiKnowledgeIndexEntryUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: AiKnowledgeIndexEntryCreateManyAccountInputEnvelope
+    set?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    disconnect?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    delete?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    connect?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    update?: AiKnowledgeIndexEntryUpdateWithWhereUniqueWithoutAccountInput | AiKnowledgeIndexEntryUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: AiKnowledgeIndexEntryUpdateManyWithWhereWithoutAccountInput | AiKnowledgeIndexEntryUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: AiKnowledgeIndexEntryScalarWhereInput | AiKnowledgeIndexEntryScalarWhereInput[]
   }
 
   export type AiUsageQuotaUpdateOneWithoutAccountNestedInput = {
@@ -104075,6 +105862,20 @@ export namespace Prisma {
     deleteMany?: AiGenerationTaskScalarWhereInput | AiGenerationTaskScalarWhereInput[]
   }
 
+  export type AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<AiKnowledgeIndexEntryCreateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput> | AiKnowledgeIndexEntryCreateWithoutAccountInput[] | AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput | AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput[]
+    upsert?: AiKnowledgeIndexEntryUpsertWithWhereUniqueWithoutAccountInput | AiKnowledgeIndexEntryUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: AiKnowledgeIndexEntryCreateManyAccountInputEnvelope
+    set?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    disconnect?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    delete?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    connect?: AiKnowledgeIndexEntryWhereUniqueInput | AiKnowledgeIndexEntryWhereUniqueInput[]
+    update?: AiKnowledgeIndexEntryUpdateWithWhereUniqueWithoutAccountInput | AiKnowledgeIndexEntryUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: AiKnowledgeIndexEntryUpdateManyWithWhereWithoutAccountInput | AiKnowledgeIndexEntryUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: AiKnowledgeIndexEntryScalarWhereInput | AiKnowledgeIndexEntryScalarWhereInput[]
+  }
+
   export type AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput = {
     create?: XOR<AiUsageQuotaCreateWithoutAccountInput, AiUsageQuotaUncheckedCreateWithoutAccountInput>
     connectOrCreate?: AiUsageQuotaCreateOrConnectWithoutAccountInput
@@ -104460,6 +106261,20 @@ export namespace Prisma {
   export type KnowledgeGenerationTaskUpdategeneratedResourceIdsInput = {
     set?: string[]
     push?: string | string[]
+  }
+
+  export type AccountCreateNestedOneWithoutAiKnowledgeIndexEntriesInput = {
+    create?: XOR<AccountCreateWithoutAiKnowledgeIndexEntriesInput, AccountUncheckedCreateWithoutAiKnowledgeIndexEntriesInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutAiKnowledgeIndexEntriesInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutAiKnowledgeIndexEntriesNestedInput = {
+    create?: XOR<AccountCreateWithoutAiKnowledgeIndexEntriesInput, AccountUncheckedCreateWithoutAiKnowledgeIndexEntriesInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutAiKnowledgeIndexEntriesInput
+    upsert?: AccountUpsertWithoutAiKnowledgeIndexEntriesInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutAiKnowledgeIndexEntriesInput, AccountUpdateWithoutAiKnowledgeIndexEntriesInput>, AccountUncheckedUpdateWithoutAiKnowledgeIndexEntriesInput>
   }
 
   export type AccountCreateNestedOneWithoutDashboardConfigsInput = {
@@ -109025,6 +110840,60 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AiKnowledgeIndexEntryCreateWithoutAccountInput = {
+    id: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title?: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary?: string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    indexedAt: Date | string
+    lastRequestedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput = {
+    id: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title?: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary?: string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    indexedAt: Date | string
+    lastRequestedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryCreateOrConnectWithoutAccountInput = {
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+    create: XOR<AiKnowledgeIndexEntryCreateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput>
+  }
+
+  export type AiKnowledgeIndexEntryCreateManyAccountInputEnvelope = {
+    data: AiKnowledgeIndexEntryCreateManyAccountInput | AiKnowledgeIndexEntryCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AiUsageQuotaCreateWithoutAccountInput = {
     id: string
     quotaLimit?: number
@@ -110891,6 +112760,48 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"AiGenerationTask"> | Date | string | null
   }
 
+  export type AiKnowledgeIndexEntryUpsertWithWhereUniqueWithoutAccountInput = {
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+    update: XOR<AiKnowledgeIndexEntryUpdateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedUpdateWithoutAccountInput>
+    create: XOR<AiKnowledgeIndexEntryCreateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedCreateWithoutAccountInput>
+  }
+
+  export type AiKnowledgeIndexEntryUpdateWithWhereUniqueWithoutAccountInput = {
+    where: AiKnowledgeIndexEntryWhereUniqueInput
+    data: XOR<AiKnowledgeIndexEntryUpdateWithoutAccountInput, AiKnowledgeIndexEntryUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type AiKnowledgeIndexEntryUpdateManyWithWhereWithoutAccountInput = {
+    where: AiKnowledgeIndexEntryScalarWhereInput
+    data: XOR<AiKnowledgeIndexEntryUpdateManyMutationInput, AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type AiKnowledgeIndexEntryScalarWhereInput = {
+    AND?: AiKnowledgeIndexEntryScalarWhereInput | AiKnowledgeIndexEntryScalarWhereInput[]
+    OR?: AiKnowledgeIndexEntryScalarWhereInput[]
+    NOT?: AiKnowledgeIndexEntryScalarWhereInput | AiKnowledgeIndexEntryScalarWhereInput[]
+    id?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    identityId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    repositoryId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    resourceId?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    resourcePath?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    title?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    mimeType?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    contentHash?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    status?: StringFilter<"AiKnowledgeIndexEntry"> | string
+    summary?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    keywords?: JsonFilter<"AiKnowledgeIndexEntry">
+    embedding?: JsonNullableFilter<"AiKnowledgeIndexEntry">
+    chunks?: JsonNullableFilter<"AiKnowledgeIndexEntry">
+    metadata?: JsonFilter<"AiKnowledgeIndexEntry">
+    error?: StringNullableFilter<"AiKnowledgeIndexEntry"> | string | null
+    indexedAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    lastRequestedAt?: DateTimeNullableFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+    createdAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"AiKnowledgeIndexEntry"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"AiKnowledgeIndexEntry"> | Date | string | null
+  }
+
   export type AiUsageQuotaUpsertWithoutAccountInput = {
     update: XOR<AiUsageQuotaUpdateWithoutAccountInput, AiUsageQuotaUncheckedUpdateWithoutAccountInput>
     create: XOR<AiUsageQuotaCreateWithoutAccountInput, AiUsageQuotaUncheckedCreateWithoutAccountInput>
@@ -111533,6 +113444,7 @@ export namespace Prisma {
     userSettings?: UserSettingCreateNestedOneWithoutAccountInput
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -111599,6 +113511,7 @@ export namespace Prisma {
     userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -111709,6 +113622,7 @@ export namespace Prisma {
     userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -111775,6 +113689,7 @@ export namespace Prisma {
     userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -111858,6 +113773,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -111924,6 +113840,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -112037,6 +113954,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -112103,6 +114021,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -112205,6 +114124,7 @@ export namespace Prisma {
     userSettings?: UserSettingCreateNestedOneWithoutAccountInput
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -112271,6 +114191,7 @@ export namespace Prisma {
     userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -112353,6 +114274,7 @@ export namespace Prisma {
     userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -112419,6 +114341,7 @@ export namespace Prisma {
     userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -112486,6 +114409,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
@@ -112552,6 +114476,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
@@ -112634,6 +114559,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
@@ -112700,6 +114626,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
@@ -112766,6 +114693,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
@@ -112832,6 +114760,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
@@ -112914,6 +114843,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
@@ -112980,7 +114910,292 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
+    goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
+    goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
+    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+  }
+
+  export type AccountCreateWithoutAiKnowledgeIndexEntriesInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
+    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
+    goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
+    goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
+    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+  }
+
+  export type AccountUncheckedCreateWithoutAiKnowledgeIndexEntriesInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
+    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
+    goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
+    goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
+    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+  }
+
+  export type AccountCreateOrConnectWithoutAiKnowledgeIndexEntriesInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutAiKnowledgeIndexEntriesInput, AccountUncheckedCreateWithoutAiKnowledgeIndexEntriesInput>
+  }
+
+  export type AccountUpsertWithoutAiKnowledgeIndexEntriesInput = {
+    update: XOR<AccountUpdateWithoutAiKnowledgeIndexEntriesInput, AccountUncheckedUpdateWithoutAiKnowledgeIndexEntriesInput>
+    create: XOR<AccountCreateWithoutAiKnowledgeIndexEntriesInput, AccountUncheckedCreateWithoutAiKnowledgeIndexEntriesInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutAiKnowledgeIndexEntriesInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutAiKnowledgeIndexEntriesInput, AccountUncheckedUpdateWithoutAiKnowledgeIndexEntriesInput>
+  }
+
+  export type AccountUpdateWithoutAiKnowledgeIndexEntriesInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
+    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
+    goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
+    goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
+    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutAiKnowledgeIndexEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
+    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
@@ -113046,6 +115261,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
@@ -113112,6 +115328,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
@@ -113194,6 +115411,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
@@ -113260,6 +115478,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
@@ -113463,6 +115682,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -113529,6 +115749,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -114129,6 +116350,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -114195,6 +116417,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -114293,6 +116516,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -114359,6 +116583,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -114463,6 +116688,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -114529,6 +116755,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -114666,6 +116893,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -114732,6 +116960,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -114889,6 +117118,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -114955,6 +117185,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -115084,6 +117315,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -115150,6 +117382,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -115253,6 +117486,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -115319,6 +117553,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -115434,6 +117669,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -115500,6 +117736,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -115605,6 +117842,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -115671,6 +117909,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -116119,6 +118358,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -116185,6 +118425,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -116455,6 +118696,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -116521,6 +118763,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -116770,6 +119013,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -116836,6 +119080,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -116986,6 +119231,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -117052,6 +119298,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -117273,6 +119520,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -117339,6 +119587,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -117510,6 +119759,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -117576,6 +119826,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -117705,6 +119956,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -117771,6 +120023,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -117890,6 +120143,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -117956,6 +120210,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -118105,6 +120360,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -118171,6 +120427,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -118310,6 +120567,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -118376,6 +120634,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -118572,6 +120831,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -118638,6 +120898,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -118829,6 +121090,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -118895,6 +121157,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -119044,6 +121307,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -119110,6 +121374,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -119249,6 +121514,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -119315,6 +121581,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -119397,6 +121664,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -119463,6 +121731,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -119529,6 +121798,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -119595,6 +121865,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -119677,6 +121948,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -119743,6 +122015,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -120022,6 +122295,7 @@ export namespace Prisma {
     userSettings?: UserSettingCreateNestedOneWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -120088,6 +122362,7 @@ export namespace Prisma {
     userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -120202,6 +122477,7 @@ export namespace Prisma {
     userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -120268,6 +122544,7 @@ export namespace Prisma {
     userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -120335,6 +122612,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -120401,6 +122679,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -120538,6 +122817,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -120604,6 +122884,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -120731,6 +123012,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -120797,6 +123079,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -120934,6 +123217,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -121000,6 +123284,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -121222,6 +123507,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -121288,6 +123574,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -121459,6 +123746,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -121525,6 +123813,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -121638,6 +123927,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -121704,6 +123994,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -121880,6 +124171,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -121946,6 +124238,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -122028,6 +124321,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -122094,6 +124388,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -122265,6 +124560,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -122331,6 +124627,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -122493,6 +124790,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -122559,6 +124857,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -122730,6 +125029,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -122796,6 +125096,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -122956,6 +125257,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -123022,6 +125324,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -123104,6 +125407,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -123170,6 +125474,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -123237,6 +125542,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -123303,6 +125609,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -123474,6 +125781,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -123540,6 +125848,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -123700,6 +126009,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -123766,6 +126076,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -123848,6 +126159,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -123914,6 +126226,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -123980,6 +126293,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -124046,6 +126360,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -124316,6 +126631,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -124382,6 +126698,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -124513,6 +126830,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -124579,6 +126897,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -124783,6 +127102,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -124849,6 +127169,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -125027,6 +127348,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -125093,6 +127415,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -125226,6 +127549,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -125292,6 +127616,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -125457,6 +127782,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -125523,6 +127849,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -125752,6 +128079,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -125818,6 +128146,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -126298,6 +128627,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -126364,6 +128694,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -126497,6 +128828,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -126563,6 +128895,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -126686,6 +129019,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -126752,6 +129086,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -126834,6 +129169,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -126900,6 +129236,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -126966,6 +129303,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -127032,6 +129370,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -127114,6 +129453,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -127180,6 +129520,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -127246,6 +129587,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -127312,6 +129654,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -127394,6 +129737,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -127460,6 +129804,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -127560,6 +129905,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -127626,6 +129972,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -127724,6 +130071,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -127790,6 +130138,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -127857,6 +130206,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -127923,6 +130273,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -128080,6 +130431,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -128146,6 +130498,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -128292,6 +130645,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -128358,6 +130712,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -128440,6 +130795,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -128506,6 +130862,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -128572,6 +130929,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -128638,6 +130996,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -128720,6 +131079,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -128786,6 +131146,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -128852,6 +131213,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -128918,6 +131280,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -129104,6 +131467,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -129170,6 +131534,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -129252,6 +131617,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -129318,6 +131684,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -129772,6 +132139,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -129838,6 +132206,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -130126,6 +132495,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -130192,6 +132562,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -130373,6 +132744,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -130439,6 +132811,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -130611,6 +132984,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -130677,6 +133051,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -130957,6 +133332,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -131023,6 +133399,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -131299,6 +133676,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -131365,6 +133743,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -131546,6 +133925,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -131612,6 +133992,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -131782,6 +134163,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
@@ -131848,6 +134230,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
     aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
@@ -131930,6 +134313,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -131996,6 +134380,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
@@ -132438,6 +134823,28 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
+    deletedAt?: Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryCreateManyAccountInput = {
+    id: string
+    repositoryId: string
+    resourceId: string
+    resourcePath: string
+    title?: string | null
+    mimeType: string
+    contentHash: string
+    status: string
+    summary?: string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    indexedAt: Date | string
+    lastRequestedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     deletedAt?: Date | string | null
   }
 
@@ -133987,6 +136394,72 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type AiKnowledgeIndexEntryUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    repositoryId?: StringFieldUpdateOperationsInput | string
+    resourceId?: StringFieldUpdateOperationsInput | string
+    resourcePath?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    mimeType?: StringFieldUpdateOperationsInput | string
+    contentHash?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: JsonNullValueInput | InputJsonValue
+    embedding?: NullableJsonNullValueInput | InputJsonValue
+    chunks?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    indexedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type AiProviderConfigUpdateWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -134941,6 +137414,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
@@ -135007,6 +137481,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
     aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput

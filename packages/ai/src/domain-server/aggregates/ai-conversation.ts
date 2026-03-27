@@ -26,7 +26,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
 
   private constructor(state: AIConversationState) {
     super(state.id);
-    const { id: _, ...rest } = state;
+    const { id, ...rest } = state;
+    void id;
     this._props = { ...rest };
   }
 

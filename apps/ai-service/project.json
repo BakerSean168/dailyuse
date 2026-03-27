@@ -40,7 +40,7 @@
     "serve": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run uvicorn ai_service.main:app --reload --host 0.0.0.0 --port 8100",
+        "command": "uv run uvicorn ai_service.main:create_app --factory --reload --host 0.0.0.0 --port 8100",
         "cwd": "{projectRoot}/src"
       }
     },
@@ -71,6 +71,28 @@
         "cwd": "{projectRoot}"
       },
       "cache": true
+    },
+    "eval": {
+      "executor": "@nxlv/python:run-commands",
+      "outputs": [
+        "{workspaceRoot}/reports/{projectRoot}/evals"
+      ],
+      "options": {
+        "command": "uv run python -m ai_service.evals.runner",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true
+    },
+    "eval-live": {
+      "executor": "@nxlv/python:run-commands",
+      "outputs": [
+        "{workspaceRoot}/reports/{projectRoot}/evals"
+      ],
+      "options": {
+        "command": "uv run python -m ai_service.evals.runner --mode live",
+        "cwd": "{projectRoot}"
+      },
+      "cache": false
     },
     "typecheck": {
       "executor": "@nxlv/python:run-commands",
