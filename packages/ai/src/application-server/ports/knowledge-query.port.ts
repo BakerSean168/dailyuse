@@ -1,0 +1,50 @@
+import type {
+  ChatExecutionProviderConfig,
+  ChatExecutionUsage,
+} from './chat-execution.port';
+import type { KnowledgeIndexedResource } from './knowledge-ingestion.port';
+
+export interface KnowledgeQueryCitation {
+  resourceId: string;
+  resourcePath: string;
+  title?: string;
+  chunkIndex: number;
+  excerpt: string;
+  score: number;
+}
+
+export interface KnowledgeQueryInput {
+  identityId: string;
+  providerConfig: ChatExecutionProviderConfig;
+  question: string;
+  indexedResources: KnowledgeIndexedResource[];
+  maxCitations?: number;
+  requestId?: string;
+}
+
+export interface KnowledgeQueryResult {
+  answer: string;
+  citations: KnowledgeQueryCitation[];
+  usage: ChatExecutionUsage;
+}
+
+export interface KnowledgeExpansionInput {
+  identityId: string;
+  providerConfig: ChatExecutionProviderConfig;
+  instruction: string;
+  currentContent?: string;
+  indexedResources: KnowledgeIndexedResource[];
+  maxCitations?: number;
+  requestId?: string;
+}
+
+export interface KnowledgeExpansionResult {
+  expandedContent: string;
+  citations: KnowledgeQueryCitation[];
+  usage: ChatExecutionUsage;
+}
+
+export interface IKnowledgeQueryPort {
+  query(input: KnowledgeQueryInput): Promise<KnowledgeQueryResult>;
+  expand(input: KnowledgeExpansionInput): Promise<KnowledgeExpansionResult>;
+}

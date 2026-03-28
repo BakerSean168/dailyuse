@@ -16,6 +16,7 @@
       "@dailyuse/contracts": ["../contracts/src/index.ts"],
       "@dailyuse/contracts/ai": ["../contracts/src/modules/ai/index.ts"],
       "@dailyuse/contracts/electron": ["../contracts/src/electron/index.ts"],
+      "@dailyuse/contracts/goal": ["../contracts/src/modules/goal/index.ts"],
       "@dailyuse/contracts/primitives": ["../contracts/src/primitives/index.ts"],
       "@dailyuse/contracts/repository": ["../contracts/src/modules/repository/index.ts"],
       "@dailyuse/contracts/result": ["../contracts/src/result/index.ts"],

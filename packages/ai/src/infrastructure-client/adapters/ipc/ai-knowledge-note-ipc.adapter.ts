@@ -1,6 +1,7 @@
 import type { AIKnowledgeNoteApiClient, IResultIpcClient } from '../types';
 import { AIChannels } from '@dailyuse/contracts/electron';
 import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIKnowledgeNoteIpcAdapter implements AIKnowledgeNoteApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -10,7 +11,6 @@ export class AIKnowledgeNoteIpcAdapter implements AIKnowledgeNoteApiClient {
       AIChannels.KNOWLEDGE_NOTE_CREATE,
       request,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }

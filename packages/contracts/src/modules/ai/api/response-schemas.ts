@@ -3,6 +3,10 @@ import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
 import { GoalCategory } from '../dtos';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import {
+  KeyResultCalculationMethod,
+  KeyResultValueType,
+} from '../../goal/value-objects';
 
 const TokenUsageSchema = z.object({
   promptTokens: z.number(),
@@ -13,8 +17,13 @@ const TokenUsageSchema = z.object({
 const KeyResultPreviewSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
+  valueType: z.enum(KeyResultValueType),
+  calculationMethod: z.enum(KeyResultCalculationMethod),
+  startValue: z.number(),
+  currentValue: z.number(),
   targetValue: z.number(),
   unit: z.string(),
+  weight: z.number().int().min(1).max(5),
 });
 
 const GeneratedGoalDraftSchema = z.object({

@@ -14,7 +14,6 @@ import { ipcMain } from 'electron';
 import {
   type IElectronModule,
   type IElectronModuleContext,
-  withAuthenticatedIdentity,
 } from '@dailyuse/contracts/electron';
 import { ok, fail } from '@dailyuse/contracts/result';
 import {
@@ -24,6 +23,7 @@ import {
 } from '../infrastructure-server';
 import { createAccountEventListenerRuntime } from '../application-server/handlers';
 import { createLogger } from '@dailyuse/utils';
+import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 const logger = createLogger('AccountElectron');
 

@@ -1,5 +1,6 @@
 import type { Context } from '@dailyuse/contracts/shared';
 import { AuthRuntimeState } from '@dailyuse/contracts/authentication';
+import { ElectronAuthResolutionError } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils';
 
 import type { AuthDesktopApplicationService } from '../modules/authentication/application/AuthDesktopApplicationService';
@@ -23,8 +24,10 @@ function getRegisteredService(): AuthDesktopApplicationService {
   return authService;
 }
 
-function createAuthResolutionError(code: 'AUTH_REQUIRED' | 'AUTH_RESTORING'): Error {
-  return new Error(code);
+function createAuthResolutionError(
+  code: 'AUTH_REQUIRED' | 'AUTH_RESTORING',
+): ElectronAuthResolutionError {
+  return new ElectronAuthResolutionError(code);
 }
 
 export function getDesktopAuthService(): AuthDesktopApplicationService {

@@ -17,6 +17,7 @@ import type { NavigationItem } from './types';
 export const defaultMainNavigation: NavigationItem[] = [
   { path: '/', title: 'nav.home' },
   { path: '/dashboard', title: 'nav.dashboard' },
+  { path: '/ai/chat', title: 'nav.aiChat' },
   { path: '/goals', title: 'nav.goals' },
   { path: '/tasks', title: 'nav.tasks' },
   { path: '/schedule', title: 'nav.schedule' },

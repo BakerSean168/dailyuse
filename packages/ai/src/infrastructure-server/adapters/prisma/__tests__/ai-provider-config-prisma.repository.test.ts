@@ -1,0 +1,70 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { AIProviderType, type AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { PrismaClient } from '@dailyuse/database';
+
+import { AIProviderConfigPrismaRepository } from '../ai-provider-config-prisma.repository';
+import { AISecretCipher } from '../../../security/ai-secret-cipher';
+
+describe('AIProviderConfigPrismaRepository', () => {
+  it('decrypts api keys when reading and stores encrypted values when writing', async () => {
+    const cipher = new AISecretCipher('test-secret');
+    const prisma = {
+      aiProviderConfig: {
+        upsert: vi.fn(async () => undefined),
+        findFirst: vi.fn(async () => ({
+          id: 'provider-1',
+          identityId: 'identity-1',
+          name: 'Main provider',
+          providerType: AIProviderType.OpenAICompatible,
+          baseUrl: 'https://api.openai.com/v1',
+          apiKeyEncrypted: cipher.encrypt('plain-secret'),
+          defaultModel: 'gpt-4o-mini',
+          availableModels: '[]',
+          isActive: true,
+          isDefault: true,
+          priority: 100,
+          version: 1,
+          createdAt: new Date('2026-03-26T00:00:00.000Z'),
+          updatedAt: new Date('2026-03-26T00:00:00.000Z'),
+          deletedAt: null,
+        })),
+      },
+    };
+
+    const repository = new AIProviderConfigPrismaRepository(prisma as unknown as PrismaClient, cipher);
+
+    const provider = await repository.findById('provider-1');
+
+    expect(provider?.apiKey).toBe('plain-secret');
+
+    await repository.save({
+      id: 'provider-1' as AIProviderConfigServerDTO['id'],
+      identityId: 'identity-1' as AIProviderConfigServerDTO['identityId'],
+      name: 'Main provider',
+      providerType: AIProviderType.OpenAICompatible,
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: 'plain-secret',
+      defaultModel: 'gpt-4o-mini',
+      availableModels: [],
+      isActive: true,
+      isDefault: true,
+      priority: 100,
+      version: 1,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      deletedAt: null,
+    });
+
+    expect(prisma.aiProviderConfig.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          apiKeyEncrypted: expect.stringMatching(/^enc_v1:/),
+        }),
+        update: expect.objectContaining({
+          apiKeyEncrypted: expect.stringMatching(/^enc_v1:/),
+        }),
+      }),
+    );
+  });
+});

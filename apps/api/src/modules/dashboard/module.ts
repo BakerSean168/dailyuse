@@ -10,6 +10,7 @@ import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/authMiddleware.js';
+import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
 import { getApiDashboardData } from './dashboard-read-service.js';
 
 export const DashboardApiModule: IApiModule = {
@@ -22,25 +23,22 @@ export const DashboardApiModule: IApiModule = {
 
     // GET /dashboard/stats — Aggregated dashboard statistics
     dashboardRouter.get('/stats', middleware.auth, async (req, res) => {
+      const responseBuilder = createApiResponseBuilder(req);
+
       try {
         const authReq = req as AuthenticatedRequest;
         const identityId = authReq.user?.identityId;
 
         if (!identityId) {
-          res
-            .status(401)
-            .json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+          res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
           return;
         }
 
         const data = await getApiDashboardData(prisma, identityId);
 
-        res.json({ ok: true, code: 200, message: 'Success', data, timestamp: Date.now() });
+        res.json(responseBuilder.success(data, 'Success'));
       } catch (err) {
-        res.status(500).json({
-          ok: false,
-          error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch dashboard stats' },
-        });
+        res.status(500).json(responseBuilder.internalError('Failed to fetch dashboard stats'));
       }
     });
 

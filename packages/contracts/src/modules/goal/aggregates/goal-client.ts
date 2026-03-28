@@ -65,4 +65,5 @@ export interface GoalClientDTO {
   // Key result summary (for lightweight list display)
   totalKeyResults?: number;
   completedKeyResults?: number;
+  overallProgress?: number;
 }

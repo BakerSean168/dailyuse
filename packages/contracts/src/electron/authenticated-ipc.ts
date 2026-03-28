@@ -1,8 +1,9 @@
 import { fail, ok, type IpcResult } from '../result';
 import type { IElectronModuleContext } from './index';
 import type { Context } from '../shared';
+import { isElectronAuthResolutionError } from './auth-context';
 
-type UnexpectedErrorCode = 'AUTH_REQUIRED' | 'INTERNAL_ERROR';
+type UnexpectedErrorCode = 'INTERNAL_ERROR';
 
 export interface AuthenticatedIpcWrapperOptions {
   authRequiredMessage?: string;
@@ -26,8 +27,8 @@ function isIpcResult<T>(value: unknown): value is IpcResult<T> {
 export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOptions = {}) {
   const authRequiredMessage = options.authRequiredMessage ?? 'Authentication required';
   const authRestoringMessage = options.authRestoringMessage ?? 'Authentication restore in progress';
-  const unexpectedErrorCode = options.unexpectedErrorCode ?? 'AUTH_REQUIRED';
-  const unexpectedErrorMessage = options.unexpectedErrorMessage ?? authRequiredMessage;
+  const unexpectedErrorCode = options.unexpectedErrorCode ?? 'INTERNAL_ERROR';
+  const unexpectedErrorMessage = options.unexpectedErrorMessage ?? 'Internal IPC error';
 
   return async function withAuthenticatedValue<T>(
     ctx: IElectronModuleContext,
@@ -38,12 +39,11 @@ export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOp
       const result = await handler(requestContext);
       return isIpcResult<T>(result) ? result : ok(result);
     } catch (error) {
-      if (error instanceof Error && error.message === 'AUTH_RESTORING') {
-        return fail({ code: 'AUTH_RESTORING', message: authRestoringMessage });
-      }
-
-      if (error instanceof Error && error.message === 'AUTH_REQUIRED') {
-        return fail({ code: 'AUTH_REQUIRED', message: authRequiredMessage });
+      if (isElectronAuthResolutionError(error)) {
+        return fail({
+          code: error.code,
+          message: error.code === 'AUTH_REQUIRED' ? authRequiredMessage : authRestoringMessage,
+        });
       }
 
       return fail({ code: unexpectedErrorCode, message: unexpectedErrorMessage });

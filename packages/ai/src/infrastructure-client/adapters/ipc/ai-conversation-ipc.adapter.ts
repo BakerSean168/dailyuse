@@ -6,6 +6,7 @@ import type {
   CreateConversationReq,
   UpdateConversationReq,
 } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIConversationIpcAdapter implements IAIConversationApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -15,8 +16,7 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
       AIChannels.CONVERSATION_CREATE,
       request,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async updateConversation(
@@ -30,8 +30,7 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
         ...request,
       },
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async getConversations(params?: {
@@ -42,8 +41,7 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
       AIChannels.CONVERSATION_LIST,
       params,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async getConversationById(id: string): Promise<AIConversationClientDTO> {
@@ -51,12 +49,11 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
       AIChannels.CONVERSATION_GET,
       id,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async deleteConversation(id: string): Promise<void> {
     const result = await this.ipcClient.invoke<void>(AIChannels.CONVERSATION_DELETE, id);
-    if (!result.ok) throw new Error(result.error.message);
+    unwrapResultOrThrow(result);
   }
 }

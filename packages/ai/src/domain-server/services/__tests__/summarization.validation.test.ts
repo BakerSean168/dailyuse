@@ -1,10 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { AIGenerationValidationService } from '../AIGenerationValidationService';
 
+interface SummaryTestCandidate {
+  core: string;
+  keyPoints: string[];
+  actionItems: string[];
+}
+
 describe('AIGenerationService.validateSummaryOutput', () => {
   const service = new AIGenerationValidationService();
 
-  function makeSummary(overrides: Partial<any> = {}) {
+  function makeSummary(overrides: Partial<SummaryTestCandidate> = {}): SummaryTestCandidate {
     return {
       core: 'word '.repeat(60).trim(),
       keyPoints: [

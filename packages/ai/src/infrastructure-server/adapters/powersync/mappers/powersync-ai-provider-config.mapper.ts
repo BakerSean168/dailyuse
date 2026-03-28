@@ -1,4 +1,4 @@
-import type { AIProviderConfigServerDTO, AIProviderType } from '@dailyuse/contracts/ai';
+import type { AIModelInfo, AIProviderConfigServerDTO, AIProviderType } from '@dailyuse/contracts/ai';
 import type { AISecretCipher } from '../../../security/ai-secret-cipher';
 
 export interface PowerSyncAIProviderConfigRow {
@@ -37,11 +37,11 @@ export interface PowerSyncAIProviderConfigWriteRow {
   deleted_at: string | null;
 }
 
-function parseModels(value: string | null): any[] {
+function parseModels(value: string | null): AIModelInfo[] {
   if (!value) return [];
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? (parsed as AIModelInfo[]) : [];
   } catch {
     return [];
   }

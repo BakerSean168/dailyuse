@@ -32,36 +32,72 @@
             </div>
           </CardHeader>
           <CardContent>
-            <div class="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <span class="text-muted-foreground">{{ t('goal.detail.startDate') }}</span>
-                <p class="font-medium">
-                  {{
-                    goal.startDate
-                      ? new Date(goal.startDate).toLocaleDateString()
-                      : t('goal.detail.notSet')
-                  }}
-                </p>
+            <div class="flex flex-col gap-6 md:flex-row md:items-center">
+              <div
+                class="flex shrink-0 flex-col items-center justify-center rounded-2xl border bg-muted/20 px-6 py-5 md:w-56"
+              >
+                <div class="relative flex h-34 w-34 items-center justify-center">
+                  <svg class="h-34 w-34 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle cx="60" cy="60" r="48" fill="none" stroke="hsl(var(--muted))" stroke-width="10" />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="48"
+                      fill="none"
+                      :stroke="goalAccentColor"
+                      stroke-width="10"
+                      stroke-linecap="round"
+                      :stroke-dasharray="ringCircumference"
+                      :stroke-dashoffset="ringDashOffset"
+                    />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-3xl font-semibold leading-none">{{ goalProgress }}%</span>
+                    <span class="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Progress
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <span class="text-muted-foreground">{{ t('goal.detail.targetDate') }}</span>
-                <p class="font-medium">
-                  {{
-                    goal.targetDate
-                      ? new Date(goal.targetDate).toLocaleDateString()
-                      : t('goal.detail.notSet')
-                  }}
-                </p>
+
+              <div class="min-w-0 flex-1 space-y-4">
+                <div class="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+                  <div>
+                    <span class="text-muted-foreground">{{ t('goal.detail.startDate') }}</span>
+                    <p class="font-medium">
+                      {{
+                        goal.startDate
+                          ? new Date(goal.startDate).toLocaleDateString()
+                          : t('goal.detail.notSet')
+                      }}
+                    </p>
+                  </div>
+                  <div>
+                    <span class="text-muted-foreground">{{ t('goal.detail.targetDate') }}</span>
+                    <p class="font-medium">
+                      {{
+                        goal.targetDate
+                          ? new Date(goal.targetDate).toLocaleDateString()
+                          : t('goal.detail.notSet')
+                      }}
+                    </p>
+                  </div>
+                  <div>
+                    <span class="text-muted-foreground">{{ t('goal.detail.category') }}</span>
+                    <p class="font-medium">{{ goal.category || t('goal.detail.uncategorized') }}</p>
+                  </div>
+                  <div>
+                    <span class="text-muted-foreground">KRs</span>
+                    <p class="font-medium">{{ completedKeyResultCount }}/{{ totalKeyResultCount }}</p>
+                  </div>
+                </div>
+
+                <div v-if="goal.tags?.length" class="flex flex-wrap gap-1">
+                  <Badge v-for="tag in goal.tags" :key="tag" variant="outline" class="text-xs">
+                    {{ tag }}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <span class="text-muted-foreground">{{ t('goal.detail.category') }}</span>
-                <p class="font-medium">{{ goal.category || t('goal.detail.uncategorized') }}</p>
-              </div>
-            </div>
-            <div v-if="goal.tags?.length" class="mt-4 flex flex-wrap gap-1">
-              <Badge v-for="tag in goal.tags" :key="tag" variant="outline" class="text-xs">
-                {{ tag }}
-              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -203,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, ChevronDown, ChevronUp } from 'lucide-vue-next';
@@ -225,6 +261,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
+import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
 
 const route = useRoute();
 const router = useRouter();
@@ -245,6 +282,18 @@ const {
 
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const expandedRecordId = ref<string | null>(null);
+const ringRadius = 48;
+const ringCircumference = 2 * Math.PI * ringRadius;
+
+const goalProgress = computed(() => getGoalOverallProgress(goal.value));
+const totalKeyResultCount = computed(
+  () => goal.value?.totalKeyResults ?? goal.value?.keyResults?.length ?? keyResults.value.length,
+);
+const completedKeyResultCount = computed(() => getCompletedKeyResultCount(goal.value));
+const goalAccentColor = computed(() => goal.value?.color || 'hsl(var(--primary))');
+const ringDashOffset = computed(
+  () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
+);
 
 function handleOpenAddKR() {
   keyResultDialogRef.value?.openForCreateKeyResult(goalId);

@@ -1,0 +1,98 @@
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_lines = ['if TYPE_CHECKING:']
+show_missing = true
+
+[tool.pytest.ini_options]
+addopts = """
+ --cov
+ --cov-report html:'../../coverage/apps/ai-service/html'
+ --cov-report xml:'../../coverage/apps/ai-service/coverage.xml'
+ --html='../../reports/apps/ai-service/unittests/html/index.html'
+ --junitxml='../../reports/apps/ai-service/unittests/junit.xml'
+"""
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[project]
+name = "ai-service"
+version = "1.0.0"
+description = "Python AI service for LLM integrations"
+requires-python = ">=3.11,<4"
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "httpx>=0.28.0",
+    "sse-starlette>=2.2.0",
+]
+
+[project.optional-dependencies]
+llm = [
+    "openai>=1.58.0",
+    "anthropic>=0.40.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.0",
+    "pytest-sugar>=1.0.0",
+    "pytest-cov>=6.0.0",
+    "pytest-html>=4.1.1",
+    "ruff>=0.8.2",
+    "pyright>=1.1.390",
+    "httpx>=0.28.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.9,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+exclude = [
+    ".ruff_cache",
+    ".pytest_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "dist",
+]
+
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = [
+    "B008",  # Allow Depends() in function defaults (FastAPI pattern)
+    "SIM117",  # Allow nested with statements (async context managers)
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.pyright]
+include = ["src"]
+exclude = ["**/__pycache__"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"

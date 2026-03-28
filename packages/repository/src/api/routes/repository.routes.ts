@@ -15,6 +15,7 @@ import multer from 'multer';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
+  createHttpResponseBuilder,
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
@@ -58,15 +59,13 @@ export function registerRepositoryCrudRoutes(
   });
 
   router.post('/:repoId/resources/upload', auth, upload.array('files'), async (req, res) => {
+    const responseBuilder = createHttpResponseBuilder({
+      traceId: (req as { traceId?: string; id?: string }).traceId ?? (req as { id?: string }).id,
+      startTime: Date.now(),
+    });
     const ctx = (req as any).ctx;
     if (!ctx?.identityId) {
-      res.status(401).json({
-        ok: false,
-        code: 401,
-        message: 'Authentication required',
-        error: { code: 'AUTH_REQUIRED', message: 'Authentication required' },
-        timestamp: Date.now(),
-      });
+      res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
       return;
     }
     try {
@@ -104,16 +103,11 @@ export function registerRepositoryCrudRoutes(
         timestamp: Date.now(),
       });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        code: 500,
-        message: error instanceof Error ? error.message : 'Upload failed',
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Upload failed',
-        },
-        timestamp: Date.now(),
-      });
+      console.error(
+        '[repository.uploadResources] Unhandled error:',
+        error instanceof Error ? (error.stack ?? error.message) : error,
+      );
+      res.status(500).json(responseBuilder.internalError('上传失败'));
     }
   });
 
@@ -142,6 +136,7 @@ export function registerRepositoryCrudRoutes(
       responses: {
         200: successResponse(UploadResourcesResponseSchema, '上传完成'),
         207: successResponse(UploadResourcesResponseSchema, '部分上传成功'),
+        401: errorResponse('未授权，请登录'),
         422: errorResponse('部分或全部上传失败'),
       },
     });

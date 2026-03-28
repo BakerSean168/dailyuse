@@ -1443,6 +1443,7 @@ export class Goal extends AggregateRoot<GoalId> {
           : null,
       totalKeyResults,
       completedKeyResults,
+      overallProgress: this.calculateProgress(),
     };
   }
 

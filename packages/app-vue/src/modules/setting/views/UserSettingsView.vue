@@ -14,9 +14,6 @@ import { Loader2 } from 'lucide-vue-next';
 import AppearanceSettings from '../components/AppearanceSettings.vue';
 import AISettings from '../components/AISettings.vue';
 import LocaleSettings from '../components/LocaleSettings.vue';
-import EditorSettings from '../components/EditorSettings.vue';
-import WorkflowSettings from '../components/WorkflowSettings.vue';
-import RepositorySettings from '../components/RepositorySettings.vue';
 import PrivacySettings from '../components/PrivacySettings.vue';
 import ShortcutSettings from '../components/ShortcutSettings.vue';
 import NotificationSettings from '../components/NotificationSettings.vue';
@@ -50,10 +47,6 @@ const activeTab = ref('appearance');
 // ── Section models — local reactive copies for v-model ──
 const appearance = ref({
   theme: 'auto' as UserSettingPreferences['appearance']['theme'],
-  fontSize: 14,
-  accentColor: '#3b82f6',
-  compactMode: false,
-  fontFamily: null as string | null,
 });
 
 const locale = ref({
@@ -63,36 +56,6 @@ const locale = ref({
   timeFormat: '24H',
   weekStartsOn: 1,
   currency: 'CNY',
-});
-
-const editor = ref({
-  defaultMode: 'reading' as 'reading' | 'editing',
-  autoSaveDelay: 500,
-  enableLinkPreview: true,
-  enableMediaEmbed: true,
-  supportedVideoSites: ['youtube.com', 'bilibili.com'],
-  fontSize: 16,
-  showLineNumbers: false,
-  showWordCount: true,
-});
-
-const workflow = ref({
-  autoSave: true,
-  autoSaveInterval: 10000,
-  confirmBeforeDelete: true,
-  defaultGoalView: 'LIST',
-  defaultScheduleView: 'WEEK',
-  defaultTaskView: 'LIST',
-});
-
-const repository = ref({
-  imageEmbedMode: 'link',
-  autoEmbedThreshold: 100,
-  imageCompression: true,
-  compressionQuality: 80,
-  autoConvertToWebP: false,
-  maxImageWidth: 1920,
-  defaultViewMode: 'notes',
 });
 
 const privacy = ref({
@@ -131,15 +94,6 @@ function hydrateFromStore() {
 
   const l = getCategory('locale');
   if (l) Object.assign(locale.value, l);
-
-  const e = getCategory('editor');
-  if (e) Object.assign(editor.value, e);
-
-  const w = getCategory('workflow');
-  if (w) Object.assign(workflow.value, w);
-
-  // Note: 'repository' is not a PreferenceCategory in the schema.
-  // RepositorySettings uses local defaults until backend adds the category.
 
   const p = getCategory('privacy');
   if (p) Object.assign(privacy.value, p);
@@ -187,9 +141,6 @@ onMounted(async () => {
 const tabs = computed(() => [
   { value: 'appearance', label: t('setting.tabs.appearance') },
   { value: 'locale', label: t('setting.tabs.locale') },
-  { value: 'editor', label: t('setting.tabs.editor') },
-  { value: 'workflow', label: t('setting.tabs.workflow') },
-  { value: 'repository', label: t('setting.tabs.repository') },
   { value: 'ai', label: t('setting.tabs.ai') },
   { value: 'privacy', label: t('setting.tabs.privacy') },
   { value: 'shortcuts', label: t('setting.tabs.shortcuts') },
@@ -227,18 +178,6 @@ const tabs = computed(() => [
 
           <TabsContent value="locale">
             <LocaleSettings v-model="locale" />
-          </TabsContent>
-
-          <TabsContent value="editor">
-            <EditorSettings v-model="editor" />
-          </TabsContent>
-
-          <TabsContent value="workflow">
-            <WorkflowSettings v-model="workflow" />
-          </TabsContent>
-
-          <TabsContent value="repository">
-            <RepositorySettings v-model="repository" />
           </TabsContent>
 
           <TabsContent value="ai">

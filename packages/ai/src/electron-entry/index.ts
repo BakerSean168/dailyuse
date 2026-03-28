@@ -18,10 +18,27 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { createAIPowerSyncModule, type AIModuleInstance } from '../infrastructure-server';
+import {
+  AIServiceAnalyticsQueryAdapter,
+  AIEvaluationReportFileAdapter,
+  createAIPowerSyncModule,
+  type AIModuleInstance,
+  AIServiceChatExecutionAdapter,
+  AIServiceGoalAutomationAdapter,
+  AIServiceGoalPlanningAdapter,
+  AIServiceKnowledgeIngestionAdapter,
+  AIServiceKnowledgeQueryAdapter,
+  AIServiceKnowledgeNoteGenerationAdapter,
+} from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
-import type { IKnowledgeNotePersistencePort } from '../application-server';
+import type {
+  IAnalyticsReadPort,
+  IAIAutomationToolExecutorPort,
+  IKnowledgeNotePersistencePort,
+  IKnowledgeSourcePort,
+} from '../application-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 const logger = createLogger('AIElectron');
 
@@ -30,6 +47,7 @@ const logger = createLogger('AIElectron');
 // ---------------------------------------------------------------------------
 
 const Ch = {
+  CAPABILITIES_GET: 'ai:capabilities:get',
   PROVIDER_CREATE: 'ai:provider:create',
   PROVIDER_LIST: 'ai:provider:list',
   PROVIDER_GET: 'ai:provider:get',
@@ -37,7 +55,9 @@ const Ch = {
   PROVIDER_DELETE: 'ai:provider:delete',
   PROVIDER_TEST: 'ai:provider:test',
   PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
+  PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
   GOAL_GENERATE: 'ai:goal:generate',
+  GOAL_AUTOMATE: 'ai:goal:automate',
   CONVERSATION_CREATE: 'ai:chat:conversation:create',
   CONVERSATION_UPDATE: 'ai:chat:conversation:update',
   CONVERSATION_LIST: 'ai:chat:conversation:list',
@@ -45,7 +65,12 @@ const Ch = {
   CONVERSATION_DELETE: 'ai:chat:conversation:delete',
   MESSAGE_SEND: 'ai:chat:message:send',
   MESSAGE_LIST: 'ai:chat:message:list',
+  KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
+  KNOWLEDGE_QUERY: 'ai:knowledge:query',
+  KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
   KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
+  ANALYTICS_QUERY: 'ai:analytics:query',
+  EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
 } as const;
 
 const channels = Object.values(Ch);
@@ -92,17 +117,47 @@ let activeAIModule: AIModuleInstance | null = null;
  */
 export function createAIElectronModule(options: {
   createKnowledgeNotePersistence(context: IElectronModuleContext): IKnowledgeNotePersistencePort;
+  createKnowledgeSourcePort(context: IElectronModuleContext): IKnowledgeSourcePort;
+  createAnalyticsReadPort(context: IElectronModuleContext): IAnalyticsReadPort;
+  createAutomationToolExecutor(context: IElectronModuleContext): IAIAutomationToolExecutorPort;
 }): IElectronModule {
   return {
     name: 'AI',
 
     register(ctx: IElectronModuleContext): void {
+      const aiServiceRuntimeConfig = getAIServiceRuntimeConfig();
+
       // ---------------------------------------------------------------
       // 1. Composition Root — 使用 PowerSync 便捷工厂
       //    Uses the PowerSync convenience factory with explicit deps.
       // ---------------------------------------------------------------
       const aiModule = createAIPowerSyncModule(ctx.db, {
+        chatExecutionPort: aiServiceRuntimeConfig
+          ? new AIServiceChatExecutionAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        goalPlanningPort: aiServiceRuntimeConfig
+          ? new AIServiceGoalPlanningAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        goalAutomationPlanningPort: aiServiceRuntimeConfig
+          ? new AIServiceGoalAutomationAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        automationToolExecutorPort: options.createAutomationToolExecutor(ctx),
+        knowledgeIngestionPort: aiServiceRuntimeConfig
+          ? new AIServiceKnowledgeIngestionAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        knowledgeQueryPort: aiServiceRuntimeConfig
+          ? new AIServiceKnowledgeQueryAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        knowledgeNoteGenerationPort: aiServiceRuntimeConfig
+          ? new AIServiceKnowledgeNoteGenerationAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        analyticsQueryPort: aiServiceRuntimeConfig
+          ? new AIServiceAnalyticsQueryAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        evaluationReportPort: new AIEvaluationReportFileAdapter(),
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(ctx),
+        knowledgeSourcePort: options.createKnowledgeSourcePort(ctx),
+        analyticsReadPort: options.createAnalyticsReadPort(ctx),
         getKnowledgeNoteSubpath: createKnowledgeNoteSubpathResolver(ctx),
       });
       activeAIModule = aiModule;
@@ -114,6 +169,9 @@ export function createAIElectronModule(options: {
       // ---------------------------------------------------------------
 
       // -- Provider Config --
+      ipcMain.handle(Ch.CAPABILITIES_GET, async () =>
+        withAuthenticatedValue(ctx, async () => aiModule.api.getCapabilities()),
+      );
       ipcMain.handle(Ch.PROVIDER_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.createProvider(requestContext.identityId, dto),
@@ -136,11 +194,18 @@ export function createAIElectronModule(options: {
         withAuthenticatedValue(ctx, async () => aiModule.api.deleteProvider(id)),
       );
       ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.testConnection(dto)),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.testConnection(requestContext.identityId, dto),
+        ),
       );
       ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.setDefaultProvider(dto.providerId, requestContext.identityId),
+        ),
+      );
+      ipcMain.handle(Ch.PROVIDER_REFRESH_MODELS, async (_, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.refreshProviderModels(requestContext.identityId, String(id)),
         ),
       );
 
@@ -148,6 +213,14 @@ export function createAIElectronModule(options: {
       ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.generateGoal({
+            identityId: requestContext.identityId,
+            ...dto,
+          }),
+        ),
+      );
+      ipcMain.handle(Ch.GOAL_AUTOMATE, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.automateGoal({
             identityId: requestContext.identityId,
             ...dto,
           }),
@@ -194,6 +267,7 @@ export function createAIElectronModule(options: {
             String(dto.conversationId),
             String(dto.content),
             dto.providerId,
+            dto.model,
           ),
         ),
       );
@@ -216,6 +290,29 @@ export function createAIElectronModule(options: {
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.createKnowledgeNote(requestContext.identityId, dto),
         ),
+      );
+      ipcMain.handle(Ch.KNOWLEDGE_QUERY, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.queryKnowledge(requestContext.identityId, dto),
+        ),
+      );
+      ipcMain.handle(Ch.KNOWLEDGE_EXPAND, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.expandKnowledge(requestContext.identityId, dto),
+        ),
+      );
+      ipcMain.handle(Ch.KNOWLEDGE_REINDEX, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.reindexKnowledge(requestContext.identityId, dto ?? {}),
+        ),
+      );
+      ipcMain.handle(Ch.ANALYTICS_QUERY, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.queryAnalytics(requestContext.identityId, dto),
+        ),
+      );
+      ipcMain.handle(Ch.EVALUATION_OVERVIEW_GET, async (_, dto) =>
+        withAuthenticatedValue(ctx, async () => aiModule.api.getEvaluationOverview(dto ?? {})),
       );
 
       logger.info('AI module registered');

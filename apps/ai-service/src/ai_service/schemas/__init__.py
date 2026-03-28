@@ -1,0 +1,78 @@
+"""Schemas module for the AI Service."""
+
+from .analytics import (
+    AnalyticsQueryContext,
+    AnalyticsQueryRequest,
+    AnalyticsQueryResponse,
+)
+from .chat import (
+    ChatCompleteRequest,
+    ChatCompleteResponse,
+    ChatMessage,
+    ChatStreamChunk,
+    ChatStreamRequest,
+    ProviderConfig,
+)
+from .common import ErrorResponse, HealthResponse
+from .goals import (
+    GoalAutomationLLMResponse,
+    GoalAutomationRequest,
+    GoalAutomationResponse,
+    GoalAutomationToolCall,
+    GoalPlanningLLMResponse,
+    GoalPlanningRequest,
+    GoalPlanningResponse,
+    KeyResultDraft,
+    PlannedGoal,
+    TaskTemplateDraft,
+)
+from .knowledge import (
+    IndexedKnowledgeChunk,
+    IndexedKnowledgeResource,
+    KnowledgeCitation,
+    KnowledgeExpansionRequest,
+    KnowledgeExpansionResponse,
+    KnowledgeIndexResourceRequest,
+    KnowledgeIndexResourceResponse,
+    KnowledgeNoteRequest,
+    KnowledgeNoteResponse,
+    KnowledgeQueryRequest,
+    KnowledgeQueryResponse,
+    KnowledgeResourceDocument,
+)
+
+__all__ = [
+    "AnalyticsQueryContext",
+    "AnalyticsQueryRequest",
+    "AnalyticsQueryResponse",
+    "ChatCompleteRequest",
+    "ChatCompleteResponse",
+    "ChatMessage",
+    "ChatStreamChunk",
+    "ChatStreamRequest",
+    "ErrorResponse",
+    "GoalAutomationLLMResponse",
+    "GoalAutomationRequest",
+    "GoalAutomationResponse",
+    "GoalAutomationToolCall",
+    "GoalPlanningLLMResponse",
+    "GoalPlanningRequest",
+    "GoalPlanningResponse",
+    "HealthResponse",
+    "IndexedKnowledgeChunk",
+    "IndexedKnowledgeResource",
+    "KeyResultDraft",
+    "KnowledgeCitation",
+    "KnowledgeExpansionRequest",
+    "KnowledgeExpansionResponse",
+    "KnowledgeIndexResourceRequest",
+    "KnowledgeIndexResourceResponse",
+    "KnowledgeNoteRequest",
+    "KnowledgeNoteResponse",
+    "KnowledgeQueryRequest",
+    "KnowledgeQueryResponse",
+    "KnowledgeResourceDocument",
+    "PlannedGoal",
+    "TaskTemplateDraft",
+    "ProviderConfig",
+]

@@ -8,6 +8,7 @@ export const CreateKnowledgeNoteSchema = z.object({
   topic: z.string().trim().min(3).max(200),
   title: z.string().trim().min(1).max(200).optional(),
   providerId: brandedId<AiProviderConfigId>().optional(),
+  model: z.string().trim().min(1).max(120).optional(),
   targetSubpath: KnowledgeNoteSubpathSchema.optional(),
 });
 

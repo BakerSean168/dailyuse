@@ -59,6 +59,7 @@ model Account {
   notifications                   Notification[]
   aiConversations                 AiConversation[]
   aiGenerationTasks               AiGenerationTask[]
+  aiKnowledgeIndexEntries         AiKnowledgeIndexEntry[]
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?

@@ -7,6 +7,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { getJwtConfig } from '../../config/env.js';
+import { createApiResponseBuilder } from '../response-builder.js';
 
 /**
  * JWT Token 载荷接口
@@ -47,6 +48,22 @@ export interface AuthenticatedRequest extends Request {
   sessionId?: string; // 当前会话UUID
 }
 
+function sendUnauthorized(
+  req: AuthenticatedRequest,
+  res: Response,
+  message: string,
+): Response {
+  return res.status(401).json(createApiResponseBuilder(req).unauthorized(message));
+}
+
+function sendInternalError(
+  req: AuthenticatedRequest,
+  res: Response,
+  message: string,
+): Response {
+  return res.status(500).json(createApiResponseBuilder(req).internalError(message));
+}
+
 /**
  * JWT 认证中间件。
  *
@@ -64,21 +81,13 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        ok: false,
-        code: 'UNAUTHORIZED',
-        message: '缺少认证令牌，请提供有效的Authorization header',
-      });
+      return sendUnauthorized(req, res, '缺少认证令牌，请提供有效的Authorization header');
     }
 
     const token = authHeader.substring(7); // 移除 "Bearer " 前缀
 
     if (!token) {
-      return res.status(401).json({
-        ok: false,
-        code: 'UNAUTHORIZED',
-        message: '认证令牌不能为空',
-      });
+      return sendUnauthorized(req, res, '认证令牌不能为空');
     }
 
     // 验证 JWT token
@@ -89,29 +98,17 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 
       // 验证必要字段
       if (!decoded.identityId) {
-        return res.status(401).json({
-          ok: false,
-          code: 'UNAUTHORIZED',
-          message: '无效的认证令牌：缺少用户信息',
-        });
+        return sendUnauthorized(req, res, '无效的认证令牌：缺少用户信息');
       }
 
       // 验证 identityId 格式（支持带前缀的品牌化 ID）
       if (!isValidIdentityId(decoded.identityId)) {
-        return res.status(401).json({
-          ok: false,
-          code: 'UNAUTHORIZED',
-          message: '无效的认证令牌：身份ID 格式不符合要求',
-        });
+        return sendUnauthorized(req, res, '无效的认证令牌：身份ID 格式不符合要求');
       }
 
       // 检查token是否过期
       if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-        return res.status(401).json({
-          ok: false,
-          code: 'UNAUTHORIZED',
-          message: '认证令牌已过期，请重新登录',
-        });
+        return sendUnauthorized(req, res, '认证令牌已过期，请重新登录');
       }
 
       // 将用户信息添加到请求对象
@@ -129,19 +126,11 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       return next();
     } catch (jwtError) {
       console.error('JWT验证失败:', jwtError);
-      return res.status(401).json({
-        ok: false,
-        code: 'UNAUTHORIZED',
-        message: '无效的认证令牌，请重新登录',
-      });
+      return sendUnauthorized(req, res, '无效的认证令牌，请重新登录');
     }
   } catch (error) {
     console.error('认证中间件错误:', error);
-    return res.status(500).json({
-      ok: false,
-      code: 'INTERNAL_ERROR',
-      message: 'Internal server error',
-    });
+    return sendInternalError(req, res, 'Internal server error');
   }
 };
 

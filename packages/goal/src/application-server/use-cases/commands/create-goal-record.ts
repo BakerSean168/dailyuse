@@ -9,7 +9,7 @@
 
 import type { IGoalRepository, IGoalRecordRepository } from '@/domain-server';
 import { GoalRecord } from '@/domain-server';
-import type { GoalProgressCalculator } from '@/domain-server';
+import { KeyResultProgress } from '@/domain-shared';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -19,7 +19,6 @@ export class CreateGoalRecord {
   constructor(
     private readonly goalRepository: IGoalRepository,
     private readonly goalRecordRepository: IGoalRecordRepository,
-    private readonly goalProgressCalculator: GoalProgressCalculator,
   ) {}
 
   async execute(
@@ -43,6 +42,10 @@ export class CreateGoalRecord {
       return error('NOT_FOUND', `KeyResult not found: ${keyResultId} in goal ${goalId}`);
     }
 
+    const historyBefore = await this.goalRecordRepository.findByKeyResultId(keyResultId, {
+      orderBy: 'asc',
+    });
+
     // 3. 创建 GoalRecord 实体
     const record = GoalRecord.create({
       keyResultId: keyResultId as KeyResultId,
@@ -54,16 +57,32 @@ export class CreateGoalRecord {
     // 4. 持久化
     await this.goalRecordRepository.save(record);
 
-    // 5. 根据历史记录重算并同步 KR 当前值
-    const progressResult = await this.goalProgressCalculator.recalculateKeyResultProgress(
-      goal,
-      keyResultId,
+    // 5. 追加 record 时，基于当前值和既有历史保持隐式基线一致。
+    // 这可以避免「手工 currentValue 已有进度，但尚未生成历史 record」时
+    // 第一次新增 record 把当前值重置回仅由 history 推导的结果。
+    const nextValue = calculateNextValueOnRecordCreate(
+      KeyResultProgress.fromDTO(keyResult.progress),
+      historyBefore.map((item) => item.value),
+      params.value,
     );
-    if (progressResult.changed) {
+
+    if (nextValue !== keyResult.progress.currentValue) {
+      goal.updateKeyResultProgress(keyResultId, nextValue);
       await this.goalRepository.save(goal);
     }
 
-    const valueAfter = goal.getKeyResult(keyResultId)?.progress.currentValue ?? params.value;
-    return ok(record.toClientDTO(goalId, valueAfter));
+    return ok(record.toClientDTO(goalId, nextValue));
   }
+}
+
+function calculateNextValueOnRecordCreate(
+  progress: KeyResultProgress,
+  historyBefore: number[],
+  addedValue: number,
+): number {
+  if (progress.aggregationMethod === 'Sum') {
+    return progress.currentValue + addedValue;
+  }
+
+  return progress.recalculateFromHistory([...historyBefore, addedValue]).currentValue;
 }

@@ -71,6 +71,7 @@ import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
+import { getGoalOverallProgress } from '../../utils/progress';
 
 const props = withDefaults(
   defineProps<{
@@ -109,17 +110,7 @@ const toDate = (value: string | number | null) => {
 };
 
 const getProgressPercent = (goal: GoalClientDTO) => {
-  const keyResults = goal.keyResults ?? [];
-  if (keyResults.length === 0) return 0;
-
-  const total = keyResults.reduce((acc, item) => {
-    const target = item.progress.targetValue || 0;
-    const current = item.progress.currentValue || 0;
-    if (target <= 0) return acc;
-    return acc + Math.min(100, Math.max(0, (current / target) * 100));
-  }, 0);
-
-  return Math.round(total / keyResults.length);
+  return getGoalOverallProgress(goal);
 };
 
 const getProgressLabel = (goal: GoalClientDTO) => {

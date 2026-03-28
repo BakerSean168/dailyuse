@@ -67,12 +67,20 @@ export {
   AIConversationPrismaRepository,
   /** @internal Concrete Prisma implementation — use IAIProviderConfigRepository interface instead. Prisma 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
   AIProviderConfigPrismaRepository,
+  /** @internal Concrete Prisma implementation — use IKnowledgeIndexRepository interface instead. Prisma 具体实现 — 请使用 IKnowledgeIndexRepository 接口。 */
+  AIKnowledgeIndexPrismaRepository,
+  /** @internal Concrete Prisma implementation — use IAIExecutionLogPort interface instead. Prisma 具体实现 — 请使用 IAIExecutionLogPort 接口。 */
+  AIExecutionLogPrismaAdapter,
 
   // -- PowerSync Adapters --
   /** @internal Concrete PowerSync implementation — use IAIConversationRepository interface instead. PowerSync 具体实现 — 请使用 IAIConversationRepository 接口。 */
   PowerSyncAIConversationRepository,
   /** @internal Concrete PowerSync implementation — use IAIProviderConfigRepository interface instead. PowerSync 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
   PowerSyncAIProviderConfigRepository,
+  /** @internal Concrete PowerSync implementation — use IKnowledgeIndexRepository interface instead. PowerSync 具体实现 — 请使用 IKnowledgeIndexRepository 接口。 */
+  AIKnowledgeIndexPowerSyncRepository,
+  /** @internal Concrete PowerSync implementation — use IAIExecutionLogPort interface instead. PowerSync 具体实现 — 请使用 IAIExecutionLogPort 接口。 */
+  AIExecutionLogPowerSyncAdapter,
 } from './infrastructure-server';
 
 export * from './infrastructure-client';

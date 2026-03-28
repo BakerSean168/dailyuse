@@ -165,6 +165,7 @@ export const AuthChannels = {
 } as const;
 
 export const AIChannels = {
+  CAPABILITIES_GET: 'ai:capabilities:get',
   PROVIDER_CREATE: 'ai:provider:create',
   PROVIDER_LIST: 'ai:provider:list',
   PROVIDER_GET: 'ai:provider:get',
@@ -172,7 +173,9 @@ export const AIChannels = {
   PROVIDER_DELETE: 'ai:provider:delete',
   PROVIDER_TEST: 'ai:provider:test',
   PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
+  PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
   GOAL_GENERATE: 'ai:goal:generate',
+  GOAL_AUTOMATE: 'ai:goal:automate',
   CONVERSATION_CREATE: 'ai:chat:conversation:create',
   CONVERSATION_UPDATE: 'ai:chat:conversation:update',
   CONVERSATION_LIST: 'ai:chat:conversation:list',
@@ -180,7 +183,12 @@ export const AIChannels = {
   CONVERSATION_DELETE: 'ai:chat:conversation:delete',
   MESSAGE_SEND: 'ai:chat:message:send',
   MESSAGE_LIST: 'ai:chat:message:list',
+  KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
+  KNOWLEDGE_QUERY: 'ai:knowledge:query',
+  KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
   KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
+  ANALYTICS_QUERY: 'ai:analytics:query',
+  EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
 } as const;
 
 export const NotificationChannels = {

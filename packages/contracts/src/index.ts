@@ -57,6 +57,8 @@ export {
   isFail,
   // Utilities
   unwrap,
+  unwrapOrThrowError,
+  toResultErrorException,
   unwrapOr,
   map,
   mapError,
@@ -69,6 +71,7 @@ export {
   okBatch,
   // Error factories
   ResultErrors,
+  ResultErrorException,
   // IPC adapters
   toIpcResult,
   fromIpcResult,

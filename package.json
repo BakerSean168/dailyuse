@@ -121,6 +121,7 @@
     "@nx/vitest": "22.5.3",
     "@nx/web": "22.5.3",
     "@nx/workspace": "22.5.3",
+    "@nxlv/python": "22.1.1",
     "@playwright/test": "^1.56.1",
     "@storybook/addon-docs": "^10.2.8",
     "@storybook/vue3": "^10.2.8",

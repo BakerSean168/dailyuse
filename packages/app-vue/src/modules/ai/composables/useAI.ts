@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import type {
   CreateAIProviderConfigReq,
+  ExpandKnowledgeReq,
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
@@ -11,17 +12,40 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 export function useAI() {
   const service = useStrictInject(AI_SERVICE_KEY, 'AIService');
   const providers = ref<unknown[]>([]);
+  const capabilities = ref<unknown | null>(null);
   const isLoadingProviders = ref(false);
+  const isLoadingCapabilities = ref(false);
 
-  const hasProviders = computed(() => providers.value.length > 0);
+  const hasProviders = computed(() => Array.isArray(providers.value) && providers.value.length > 0);
 
   async function loadProviders() {
     isLoadingProviders.value = true;
     try {
-      providers.value = (await service.listProviders()) as unknown[];
+      const nextProviders = await service.listProviders();
+      providers.value = Array.isArray(nextProviders) ? nextProviders : [];
+      console.debug('[AI] providers loaded', {
+        count: providers.value.length,
+        providerIds: providers.value
+          .map((provider) =>
+            typeof provider === 'object' && provider !== null && 'id' in provider
+              ? String((provider as { id: unknown }).id)
+              : 'unknown',
+          )
+          .slice(0, 10),
+      });
       return providers.value;
     } finally {
       isLoadingProviders.value = false;
+    }
+  }
+
+  async function loadCapabilities() {
+    isLoadingCapabilities.value = true;
+    try {
+      capabilities.value = await service.getCapabilities();
+      return capabilities.value;
+    } finally {
+      isLoadingCapabilities.value = false;
     }
   }
 
@@ -47,20 +71,35 @@ export function useAI() {
     await loadProviders();
   }
 
+  async function refreshProviderModels(providerId: string) {
+    const provider = await service.refreshProviderModels(providerId);
+    await loadProviders();
+    return provider;
+  }
+
   function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {
     return service.testProvider(request) as Promise<TestAIProviderRes>;
+  }
+
+  function expandKnowledge(request: ExpandKnowledgeReq) {
+    return service.expandKnowledge(request);
   }
 
   return {
     service,
     providers,
+    capabilities,
     hasProviders,
     isLoadingProviders,
+    isLoadingCapabilities,
+    loadCapabilities,
     loadProviders,
     createProvider,
     updateProvider,
     deleteProvider,
     setDefaultProvider,
+    refreshProviderModels,
     testProvider,
+    expandKnowledge,
   };
 }

@@ -91,11 +91,15 @@ const settingService = new SettingClientService(settingAdapters.setting);
 
 const aiAdapters = createAIHttpAdapters(resultHttpClient);
 const aiService = new AIClientService(
+  aiAdapters.capabilities,
+  aiAdapters.evaluationReport,
   aiAdapters.providerConfig,
   aiAdapters.conversation,
   aiAdapters.message,
   aiAdapters.goal,
+  aiAdapters.knowledge,
   aiAdapters.knowledgeNote,
+  aiAdapters.analytics,
 );
 
 const taskAdapters = createTaskHttpAdapters(resultHttpClient);

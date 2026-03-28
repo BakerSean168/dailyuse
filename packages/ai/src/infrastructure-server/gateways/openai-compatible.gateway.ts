@@ -8,7 +8,7 @@ export class OpenAICompatibleGateway {
     const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     try {
-      const response = await fetch(new URL('/chat/completions', request.baseUrl).toString(), {
+      const response = await fetch(buildCompletionUrl(request.baseUrl), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${request.apiKey}`,
@@ -53,4 +53,9 @@ export class OpenAICompatibleGateway {
       clearTimeout(timeoutId);
     }
   }
+}
+
+function buildCompletionUrl(baseUrl: string): string {
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return new URL('chat/completions', normalizedBaseUrl).toString();
 }

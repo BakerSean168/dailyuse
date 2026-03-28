@@ -7,7 +7,11 @@
  * @module contracts/electron
  */
 
-export type { IElectronAuthContext } from './auth-context';
+export type { IElectronAuthContext, ElectronAuthResolutionCode } from './auth-context';
+export {
+  ElectronAuthResolutionError,
+  isElectronAuthResolutionError,
+} from './auth-context';
 export {
   createAuthenticatedIpcWrapper,
   createAuthenticatedIdentityIpcWrapper,

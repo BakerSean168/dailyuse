@@ -12,11 +12,28 @@ export interface AIProviderTemplate {
   apiKeyUrl?: string;
   hasFreeQuota: boolean;
   freeQuotaNote?: string;
+  defaultModel: string;
   recommendedModels?: string[];
   supportsModelList: boolean;
 }
 
 export const AI_PROVIDER_TEMPLATES: AIProviderTemplate[] = [
+  {
+    id: 'gemini',
+    name: 'Gemini',
+    description: 'Official Gemini API via Google OpenAI-compatible endpoint',
+    icon: 'mdi-google',
+    color: '#2563eb',
+    providerType: AIProviderType.OpenAICompatible,
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    authType: 'bearer',
+    apiKeyUrl: 'https://aistudio.google.com/app/apikey',
+    hasFreeQuota: true,
+    freeQuotaNote: 'Free API keys are available in Google AI Studio',
+    defaultModel: 'gemini-2.5-flash',
+    recommendedModels: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+    supportsModelList: true,
+  },
   {
     id: 'openrouter',
     name: 'OpenRouter',
@@ -29,7 +46,8 @@ export const AI_PROVIDER_TEMPLATES: AIProviderTemplate[] = [
     apiKeyUrl: 'https://openrouter.ai/keys',
     hasFreeQuota: true,
     freeQuotaNote: 'Some free models are available',
-    recommendedModels: ['google/gemini-2.0-flash-exp:free'],
+    defaultModel: 'google/gemini-2.5-flash',
+    recommendedModels: ['google/gemini-2.5-flash', 'openai/gpt-4o-mini'],
     supportsModelList: true,
   },
   {
@@ -43,6 +61,7 @@ export const AI_PROVIDER_TEMPLATES: AIProviderTemplate[] = [
     authType: 'bearer',
     apiKeyUrl: 'https://platform.openai.com/api-keys',
     hasFreeQuota: false,
+    defaultModel: 'gpt-4o-mini',
     recommendedModels: ['gpt-4o-mini', 'gpt-4o'],
     supportsModelList: true,
   },
@@ -58,6 +77,7 @@ export const AI_PROVIDER_TEMPLATES: AIProviderTemplate[] = [
     apiKeyUrl: 'https://platform.deepseek.com/api_keys',
     hasFreeQuota: true,
     freeQuotaNote: 'Free credits may be available for new users',
+    defaultModel: 'deepseek-chat',
     recommendedModels: ['deepseek-chat'],
     supportsModelList: true,
   },
@@ -71,6 +91,7 @@ export const AI_PROVIDER_TEMPLATES: AIProviderTemplate[] = [
     baseUrl: '',
     authType: 'bearer',
     hasFreeQuota: false,
+    defaultModel: 'gpt-4o-mini',
     supportsModelList: true,
   },
 ];

@@ -13,8 +13,7 @@ import type {
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import { Message } from '../../../domain-server/entities/message';
-import type { ConversationStatus } from '@dailyuse/contracts/ai';
-import type { MessagePersistenceDTO } from '@dailyuse/contracts/ai';
+import { ConversationStatus, MessageRole } from '@dailyuse/contracts/ai';
 import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
 import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
@@ -202,10 +201,8 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
         const parsed = JSON.parse(row.tokenUsage);
         if (typeof parsed === 'number') {
           tokenCount = parsed;
-        } else if (typeof parsed?.tokenCount === 'number') {
-          tokenCount = parsed.tokenCount;
-        } else if (typeof parsed?.totalTokens === 'number') {
-          tokenCount = parsed.totalTokens;
+        } else if (isTokenUsageLike(parsed)) {
+          tokenCount = parsed.tokenCount ?? parsed.totalTokens ?? null;
         }
       } catch {
         tokenCount = null;
@@ -215,7 +212,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     return Message.load({
       id: AiMessageId.of(row.id),
       conversationId: AiConversationId.of(row.conversationId),
-      role: row.role as any,
+      role: row.role as MessageRole,
       content: row.content,
       tokenCount,
       version: 1,
@@ -224,4 +221,10 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       deletedAt: null,
     });
   }
+}
+
+function isTokenUsageLike(
+  value: unknown,
+): value is { tokenCount?: number; totalTokens?: number } {
+  return value !== null && typeof value === 'object';
 }

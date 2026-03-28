@@ -15,8 +15,6 @@ import { ipcMain } from 'electron';
 import {
   type IElectronModule,
   type IElectronModuleContext,
-  withAuthenticatedIdentity,
-  withAuthenticatedValue,
 } from '@dailyuse/contracts/electron';
 import { fail } from '@dailyuse/contracts/result';
 import { createNotificationPowerSyncModule } from '../infrastructure-server/powersync';
@@ -25,6 +23,7 @@ import { createNotificationTransportHandlers } from '../api/transport-handlers';
 import { createNotificationRuntimeContribution } from '../api/runtime';
 import type { NotificationModuleInstance } from '../infrastructure-server';
 import type { INotificationRepository } from '../domain-server/repositories';
+import { withAuthenticatedIdentity, withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('NotificationElectron');
 

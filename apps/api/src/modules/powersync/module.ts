@@ -12,10 +12,12 @@
 
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import { ResultCode } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
 import { getPowerSyncConfig } from '../../shared/infrastructure/config/env.js';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/authMiddleware.js';
+import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
 
 const logger = createLogger('PowerSync');
 
@@ -172,22 +174,23 @@ export const PowerSyncApiModule: IApiModule = {
     // Returns a short-lived RS256 JWT that PowerSync Service verifies via JWKS.
     // =========================================================================
     psRouter.get('/token', middleware.auth, (req: AuthenticatedRequest, res) => {
+      const responseBuilder = createApiResponseBuilder(req);
+
       try {
         if (!config.privateKey) {
           logger.error('PowerSync private key not configured');
-          return res.status(503).json({
-            ok: false,
-            code: 'SERVICE_UNAVAILABLE',
-            message: 'PowerSync sync is not configured',
-          });
+          return res
+            .status(503)
+            .json(
+              responseBuilder.error(
+                ResultCode.SERVICE_UNAVAILABLE,
+                'PowerSync sync is not configured',
+              ),
+            );
         }
 
         if (!req.identityId) {
-          return res.status(401).json({
-            ok: false,
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
-          });
+          return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
         }
 
         // Sign a short-lived RS256 JWT for PowerSync
@@ -210,21 +213,16 @@ export const PowerSyncApiModule: IApiModule = {
           expiresInSec: 300,
         });
 
-        return res.json({
-          ok: true,
-          data: {
+        return res.json(
+          responseBuilder.success({
             token,
             endpoint: config.url,
             expiresIn: 300, // 5 minutes in seconds
-          },
-        });
+          }),
+        );
       } catch (error) {
         logger.error('Failed to generate PowerSync token', error);
-        return res.status(500).json({
-          ok: false,
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to generate sync token',
-        });
+        return res.status(500).json(responseBuilder.internalError('Failed to generate sync token'));
       }
     });
 

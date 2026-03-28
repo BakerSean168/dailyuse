@@ -18,6 +18,7 @@ import { reminderRoutes } from '../modules/reminder/router';
 import { repositoryRoutes } from '../modules/repository/router';
 import { notificationRoutes } from '../modules/notification/router';
 import { settingRoutes } from '../modules/setting/router';
+import { aiRoutes } from '../modules/ai/router';
 
 export function createAppRouter(options?: {
   history?: RouterHistory;
@@ -70,6 +71,7 @@ export function createAppRouter(options?: {
         ...reminderRoutes,
         ...repositoryRoutes,
         ...notificationRoutes,
+        ...aiRoutes,
         ...settingRoutes,
         // Host-provided additional routes
         ...additionalRoutes,

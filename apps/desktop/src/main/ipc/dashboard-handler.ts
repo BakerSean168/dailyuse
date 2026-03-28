@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import { isElectronAuthResolutionError } from '@dailyuse/contracts/electron';
 import { fail, ok } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
@@ -16,14 +17,14 @@ export function registerDashboardIpcHandler(): void {
       const data = await getDesktopDashboardData(requestContext.identityId);
       return ok(data);
     } catch (error) {
-      if (error instanceof Error && error.message === 'AUTH_RESTORING') {
+      if (isElectronAuthResolutionError(error) && error.code === 'AUTH_RESTORING') {
         return fail({
           code: 'AUTH_RESTORING',
           message: 'Authentication restore in progress',
         });
       }
 
-      if (error instanceof Error && error.message === 'AUTH_REQUIRED') {
+      if (isElectronAuthResolutionError(error) && error.code === 'AUTH_REQUIRED') {
         return fail({
           code: 'AUTH_REQUIRED',
           message: 'Authentication required',

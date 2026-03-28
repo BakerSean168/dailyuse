@@ -47,7 +47,17 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
+import {
+  REPOSITORY_RESOURCE_MUTATED_EVENT,
+  RepositoryResourceMutationType,
+  type RepositoryResourceMutatedEvent,
+} from '@dailyuse/contracts/repository';
 import { PathCalculator } from '../domain-server/services/PathCalculator';
+import { eventBus } from '@dailyuse/utils';
+
+const repositoryEventBus = eventBus as unknown as {
+  send(eventType: string, payload: unknown): void;
+};
 
 // ---------------------------------------------------------------------------
 // Dependencies — 依赖类型
@@ -540,6 +550,15 @@ function buildApplicationPort(
     return ok(created.repository);
   }
 
+  function emitResourceMutationEvent(
+    payload: Omit<RepositoryResourceMutatedEvent, 'timestamp'>,
+  ): void {
+    repositoryEventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+      ...payload,
+      timestamp: Date.now(),
+    } satisfies RepositoryResourceMutatedEvent);
+  }
+
   return {
     getCurrentRepository: async (ctx) => {
       return ensureCanonicalRepository(ctx.identityId);
@@ -556,6 +575,16 @@ function buildApplicationPort(
         path: data.path ?? `/${data.name}`,
         content: data.content,
       });
+      const createdResource = await resourceRepository.findById(String(result.resource.id));
+      if (createdResource) {
+        emitResourceMutationEvent({
+          identityId: createdResource.identityId,
+          repositoryId: String(createdResource.repositoryId),
+          resourceId: String(createdResource.id),
+          resourcePath: createdResource.path,
+          mutation: RepositoryResourceMutationType.Created,
+        });
+      }
       return ok(result.resource);
     },
     listResources: async (repositoryId) => {
@@ -571,8 +600,9 @@ function buildApplicationPort(
       if (!currentResource) {
         throw new Error(`Resource not found: ${id}`);
       }
+      const pathChanged = data.name !== undefined;
 
-      if (data.name !== undefined) {
+      if (pathChanged) {
         currentResource = await moveResourceInStorage(id, data.name);
       }
 
@@ -587,17 +617,54 @@ function buildApplicationPort(
           id,
           content: data.content,
         });
+        const updatedResource = await resourceRepository.findById(id);
+        if (updatedResource) {
+          emitResourceMutationEvent({
+            identityId: updatedResource.identityId,
+            repositoryId: String(updatedResource.repositoryId),
+            resourceId: String(updatedResource.id),
+            resourcePath: updatedResource.path,
+            mutation: RepositoryResourceMutationType.ContentUpdated,
+          });
+        }
         return ok(result.resource);
+      }
+
+      if (pathChanged) {
+        emitResourceMutationEvent({
+          identityId: currentResource.identityId,
+          repositoryId: String(currentResource.repositoryId),
+          resourceId: String(currentResource.id),
+          resourcePath: currentResource.path,
+          mutation: RepositoryResourceMutationType.Moved,
+        });
       }
 
       return ok(currentResource.toClientDTO());
     },
     moveResource: async (id, targetFolderId) => {
       const resource = await moveResourceInStorage(id, undefined, targetFolderId);
+      emitResourceMutationEvent({
+        identityId: resource.identityId,
+        repositoryId: String(resource.repositoryId),
+        resourceId: String(resource.id),
+        resourcePath: resource.path,
+        mutation: RepositoryResourceMutationType.Moved,
+      });
       return ok(resource.toClientDTO());
     },
     deleteResource: async (id) => {
+      const resource = await resourceRepository.findById(id);
       await useCases.deleteResource.execute({ id });
+      if (resource) {
+        emitResourceMutationEvent({
+          identityId: resource.identityId,
+          repositoryId: String(resource.repositoryId),
+          resourceId: String(resource.id),
+          resourcePath: resource.path,
+          mutation: RepositoryResourceMutationType.Deleted,
+        });
+      }
       return ok(undefined);
     },
     uploadResources: async (data, ctx) => {

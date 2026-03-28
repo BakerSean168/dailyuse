@@ -6,13 +6,41 @@
 
 import { AIValidationError } from '../errors/AIErrors';
 
+interface KeyResultCandidate {
+  title?: string;
+  targetValue?: number | null;
+  valueType?: string;
+  weight?: number | null;
+  aggregationMethod?: string;
+}
+
+interface TaskCandidate {
+  title?: string;
+  description?: string;
+  estimatedHours?: number | null;
+  priority?: string;
+  dependencies?: unknown;
+}
+
+interface SummaryCandidate {
+  core?: string;
+  keyPoints?: unknown;
+  actionItems?: unknown;
+}
+
+interface KnowledgeDocumentCandidate {
+  title?: string;
+  content?: string;
+  order?: number;
+}
+
 export class AIGenerationValidationService {
   constructor() {}
 
   /**
    * 验证关键结果输出
    */
-  validateKeyResultsOutput(keyResults: any[]): void {
+  validateKeyResultsOutput(keyResults: KeyResultCandidate[]): void {
     const errors: string[] = [];
     if (!keyResults || !Array.isArray(keyResults)) {
       errors.push('Expected array of key results');
@@ -21,7 +49,7 @@ export class AIGenerationValidationService {
     if (keyResults.length < 3 || keyResults.length > 5) {
       errors.push(`Expected 3-5 key results, got ${keyResults.length}`);
     }
-    keyResults.forEach((kr: any, index: number) => {
+    keyResults.forEach((kr, index) => {
       if (!kr.title || kr.title.trim().length === 0) {
         errors.push(`KR[${index}] missing title`);
       }
@@ -41,7 +69,7 @@ export class AIGenerationValidationService {
         errors.push(`KR[${index}] missing aggregationMethod`);
       }
     });
-    const totalWeight = keyResults.reduce((sum: number, kr: any) => sum + (kr.weight || 0), 0);
+    const totalWeight = keyResults.reduce((sum, kr) => sum + (kr.weight || 0), 0);
     if (Math.abs(totalWeight - 100) > 5) {
       errors.push(`Total weight should be 100±5, got ${totalWeight}`);
     }
@@ -53,7 +81,7 @@ export class AIGenerationValidationService {
   /**
    * 验证任务模板输出
    */
-  validateTasksOutput(tasks: any[]): void {
+  validateTasksOutput(tasks: TaskCandidate[]): void {
     const errors: string[] = [];
     if (!tasks || !Array.isArray(tasks)) {
       errors.push('Expected array of tasks');
@@ -62,7 +90,7 @@ export class AIGenerationValidationService {
     if (tasks.length < 5 || tasks.length > 10) {
       errors.push(`Expected 5-10 tasks, got ${tasks.length}`);
     }
-    tasks.forEach((task: any, index: number) => {
+    tasks.forEach((task, index) => {
       if (!task.title || task.title.trim().length === 0) {
         errors.push(`Task[${index}] missing title`);
       }
@@ -88,7 +116,7 @@ export class AIGenerationValidationService {
       if (!Array.isArray(task.dependencies)) {
         errors.push(`Task[${index}] dependencies must be an array`);
       } else {
-        task.dependencies.forEach((dep: any) => {
+        task.dependencies.forEach((dep) => {
           if (typeof dep !== 'number' || dep < 0 || dep >= tasks.length) {
             errors.push(`Task[${index}] invalid dependency index: ${dep}`);
           }
@@ -103,7 +131,7 @@ export class AIGenerationValidationService {
   /**
    * 验证摘要输出 (Story 4.1)
    */
-  validateSummaryOutput(summary: any, includeActions = true): void {
+  validateSummaryOutput(summary: SummaryCandidate, includeActions = true): void {
     const errors: string[] = [];
     if (!summary || typeof summary !== 'object') {
       errors.push('Summary must be an object');
@@ -124,7 +152,7 @@ export class AIGenerationValidationService {
       if (keyPoints.length < 3 || keyPoints.length > 5) {
         errors.push(`keyPoints count must be 3-5, got ${keyPoints.length}`);
       }
-      keyPoints.forEach((kp: any, idx: number) => {
+      keyPoints.forEach((kp, idx: number) => {
         if (typeof kp !== 'string') {
           errors.push(`keyPoints[${idx}] not string`);
           return;
@@ -142,7 +170,7 @@ export class AIGenerationValidationService {
         } else if (actionItems.length > 3) {
           errors.push(`actionItems max 3, got ${actionItems.length}`);
         } else {
-          actionItems.forEach((ai: any, idx: number) => {
+          actionItems.forEach((ai, idx: number) => {
             if (typeof ai !== 'string') {
               errors.push(`actionItems[${idx}] not string`);
             }
@@ -164,7 +192,7 @@ export class AIGenerationValidationService {
    * - 每个文档：title (max 60 chars), content (1000-1500 words Markdown), order
    * - 顺序：1 到 N 连续
    */
-  validateKnowledgeSeriesOutput(documents: any[], expectedCount: number): void {
+  validateKnowledgeSeriesOutput(documents: KnowledgeDocumentCandidate[], expectedCount: number): void {
     const errors: string[] = [];
 
     // 验证是否为数组
@@ -184,7 +212,7 @@ export class AIGenerationValidationService {
 
     // 验证每个文档
     const orders = new Set<number>();
-    documents.forEach((doc: any, idx: number) => {
+    documents.forEach((doc, idx: number) => {
       if (!doc || typeof doc !== 'object') {
         errors.push(`Document[${idx}] must be an object`);
         return;

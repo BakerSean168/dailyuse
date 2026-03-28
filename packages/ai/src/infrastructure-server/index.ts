@@ -41,7 +41,17 @@ export { type IAIProviderConfigRepository } from '../domain-server';
 export {
   AIConversationPrismaRepository,
   AIProviderConfigPrismaRepository,
+  AIKnowledgeIndexPrismaRepository,
+  AIExecutionLogPrismaAdapter,
 } from './adapters/prisma';
+
+// ---------------------------------------------------------------------------
+// Filesystem Adapters
+// ---------------------------------------------------------------------------
+export {
+  AIEvaluationReportFileAdapter,
+  type AIEvaluationReportFileAdapterOptions,
+} from './adapters/fs';
 
 // ---------------------------------------------------------------------------
 // PowerSync Adapters
@@ -49,4 +59,30 @@ export {
 export {
   PowerSyncAIConversationRepository,
   PowerSyncAIProviderConfigRepository,
+  AIKnowledgeIndexPowerSyncRepository,
+  AIExecutionLogPowerSyncAdapter,
 } from './adapters/powersync';
+
+// ---------------------------------------------------------------------------
+// Chat Execution Adapters
+// ---------------------------------------------------------------------------
+export {
+  AIServiceAnalyticsQueryAdapter,
+  AIServiceChatExecutionAdapter,
+  AIServiceGoalAutomationAdapter,
+  AIServiceGoalPlanningAdapter,
+  AIServiceKnowledgeIngestionAdapter,
+  AIServiceKnowledgeQueryAdapter,
+  AIServiceKnowledgeNoteGenerationAdapter,
+  DirectProviderChatExecutionAdapter,
+  DirectProviderGoalPlanningAdapter,
+  DirectProviderKnowledgeNoteGenerationAdapter,
+  type AIServiceInternalClientOptions,
+  INTERNAL_CONTENT_HASH_HEADER,
+  INTERNAL_SERVICE_HEADER,
+  INTERNAL_SIGNATURE_HEADER,
+  INTERNAL_TIMESTAMP_HEADER,
+  buildInternalSignaturePayload,
+  computeContentSha256,
+  signInternalRequest,
+} from './chat-execution';

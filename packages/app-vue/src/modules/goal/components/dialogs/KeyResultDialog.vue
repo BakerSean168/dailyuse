@@ -207,6 +207,7 @@ import {
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { Target, Loader2 } from 'lucide-vue-next';
+import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 const { t } = useI18n();
 
@@ -220,14 +221,7 @@ type EditableKeyResult = {
   description: string | null;
   weight: number;
   order: number;
-  progress: {
-    valueType: string;
-    aggregationMethod: string;
-    initialValue: number;
-    targetValue: number;
-    currentValue: number;
-    unit: string | null;
-  };
+  progress: KeyResultClientDTO['progress'];
 };
 
 const emit = defineEmits<{
@@ -271,9 +265,7 @@ const isFormValid = computed(() => {
   return title.length > 0 && weight >= 1 && weight <= 5;
 });
 const progressPercentage = computed(() => {
-  const progress = localKeyResult.value.progress;
-  if (!progress.targetValue || progress.targetValue <= 0) return 0;
-  return Math.min(100, Math.max(0, (progress.currentValue / progress.targetValue) * 100));
+  return getKeyResultProgressPercentage(localKeyResult.value.progress);
 });
 
 const keyResultTitle = computed({
@@ -313,7 +305,7 @@ const keyResultCurrentValue = computed({
 
 const keyResultCalculationMethod = computed({
   get: () => localKeyResult.value.progress.aggregationMethod || AggregationMethod.Sum,
-  set: (val: string) => {
+  set: (val: KeyResultClientDTO['progress']['aggregationMethod']) => {
     localKeyResult.value.progress.aggregationMethod = val;
   },
 });
@@ -424,8 +416,8 @@ watch([() => visible.value, () => propKeyResult.value], ([newValue]) => {
         weight: propKeyResult.value.weight,
         order: propKeyResult.value.order,
         progress: {
-          valueType: propKeyResult.value.progress.valueType as string,
-          aggregationMethod: propKeyResult.value.progress.aggregationMethod as string,
+          valueType: propKeyResult.value.progress.valueType,
+          aggregationMethod: propKeyResult.value.progress.aggregationMethod,
           initialValue: propKeyResult.value.progress.initialValue,
           targetValue: propKeyResult.value.progress.targetValue,
           currentValue: propKeyResult.value.progress.currentValue,
@@ -447,3 +439,4 @@ defineExpose({
   openForUpdateKeyResult,
 });
 </script>
+

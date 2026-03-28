@@ -12,22 +12,16 @@ import { useRoute, useRouter } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
-  AIFloatingBall,
   GlobalConfirmDialog,
   GlobalErrorBoundary,
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
   useThemeSync,
-  useAuthenticationStore,
 } from '@dailyuse/app-vue';
 
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthenticationStore();
-const shouldShowAIFloatingBall = computed(
-  () => authStore.isAuthenticated && route.meta.requiresAuth !== false,
-);
 const isCustomNotificationRoute = computed(() => route.name === 'custom-notification');
 const showDesktopTitlebar = computed(() => route.name !== 'custom-notification');
 const isMacPlatform =
@@ -190,7 +184,6 @@ useThemeSync();
   <GlobalConfirmDialog />
   <GlobalSheet />
   <GlobalCommandPalette />
-  <AIFloatingBall v-if="shouldShowAIFloatingBall" />
 </template>
 
 <style>

@@ -12,9 +12,13 @@
 export type {
   IHttpClient,
   IIpcClient,
+  IAICapabilitiesApiClient,
+  AIEvaluationReportApiClient,
+  AIAnalyticsQueryApiClient,
   IAIConversationApiClient,
   IAIMessageApiClient,
   IAIGoalApiClient,
+  AIKnowledgeQueryApiClient,
   AIKnowledgeNoteApiClient,
   IAIProviderConfigApiClient,
 } from './adapters/types';
@@ -25,11 +29,13 @@ export {
   AIConversationHttpAdapter,
   AIMessageHttpAdapter,
   AIProviderConfigHttpAdapter,
+  AIEvaluationReportHttpAdapter,
   createAIHttpAdapters,
   // IPC
   AIConversationIpcAdapter,
   AIMessageIpcAdapter,
   AIProviderConfigIpcAdapter,
+  AIEvaluationReportIpcAdapter,
   createAIIpcAdapters,
 } from './adapters';
 

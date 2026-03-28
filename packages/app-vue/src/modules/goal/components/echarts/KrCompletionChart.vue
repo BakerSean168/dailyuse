@@ -15,6 +15,7 @@ import { PieChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 use([TitleComponent, TooltipComponent, LegendComponent, PieChart, CanvasRenderer]);
 
@@ -29,24 +30,17 @@ const fontColor = '#64748b';
 
 const keyResults = computed(() => props.goal?.keyResults || []);
 
-const getProgressPercentage = (target: number, current: number) => {
-  if (!target || target <= 0) return 0;
-  return Math.min(100, Math.max(0, (current / target) * 100));
-};
-
 // 计算完成情况统计
 const completionStats = computed(() => {
   const total = keyResults.value.length;
   const completed = keyResults.value.filter(
-    (kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue) >= 100,
+    (kr) => getKeyResultProgressPercentage(kr.progress) >= 100,
   ).length;
   const inProgress = keyResults.value.filter((kr) => {
-    const percentage = getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue);
+    const percentage = getKeyResultProgressPercentage(kr.progress);
     return percentage > 0 && percentage < 100;
   }).length;
-  const notStarted = keyResults.value.filter(
-    (kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue) === 0,
-  ).length;
+  const notStarted = keyResults.value.filter((kr) => getKeyResultProgressPercentage(kr.progress) === 0).length;
 
   return {
     completed,

@@ -41,6 +41,7 @@ import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
 import { TaskInstancePrismaRepository, TaskTemplatePrismaRepository } from '@dailyuse/task/infrastructure-server';
 import { createAIApiModule } from '@dailyuse/ai';
+import type { AIApiModuleContext } from '@dailyuse/ai/api';
 import { createSettingModule, UserSettingPrismaRepository } from '@dailyuse/setting';
 import {
   NotificationCategory,
@@ -54,7 +55,10 @@ import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
+import { ControlledAnalyticsReadAdapter } from './modules/ai/controlled-analytics-read.adapter';
+import { BackendAutomationToolExecutorAdapter } from './modules/ai/backend-automation-tool-executor.adapter';
 import { RepositoryKnowledgeNotePersistenceAdapter } from './modules/ai/repository-knowledge-note-persistence.adapter';
+import { RepositoryKnowledgeSourceAdapter } from './modules/ai/repository-knowledge-source.adapter';
 
 // 初始化日志系统
 initializeLogger();
@@ -89,14 +93,26 @@ function mapReminderChannels(channels: readonly string[]): NotificationChannelTy
 }
 
 const AIApiModule = createAIApiModule({
-  createKnowledgeNotePersistence: (context: any) =>
+  createKnowledgeNotePersistence: (context: AIApiModuleContext) =>
     new RepositoryKnowledgeNotePersistenceAdapter(
-      context.db,
+      context.db as typeof prisma,
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
-  getKnowledgeNoteSubpath: async (identityId: any, context: any) => {
+  createKnowledgeSourcePort: (context: AIApiModuleContext) =>
+    new RepositoryKnowledgeSourceAdapter(
+      context.db as typeof prisma,
+      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
+    ),
+  createAnalyticsReadPort: (context: AIApiModuleContext) =>
+    new ControlledAnalyticsReadAdapter(context.db as typeof prisma),
+  createAutomationToolExecutor: (context: AIApiModuleContext) =>
+    new BackendAutomationToolExecutorAdapter(
+      context.db as typeof prisma,
+      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
+    ),
+  getKnowledgeNoteSubpath: async (identityId: string, context: AIApiModuleContext) => {
     const settingModule = createSettingModule({
-      userSettingRepository: new UserSettingPrismaRepository(context.db),
+      userSettingRepository: new UserSettingPrismaRepository(context.db as typeof prisma),
     });
     const setting = await settingModule.api.getUserSetting(identityId);
     return setting.preferences.ai.knowledgeNoteSubpath;

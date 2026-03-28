@@ -21,6 +21,7 @@
 
 import type { Router, Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 import {
   createRepositoryModule,
@@ -177,11 +178,18 @@ export const EditorApiModule: EditorApiModuleDef = {
       repositoryContentPort: {
         async getContent(resourceId) {
           const result = await repositoryBridgeModule.api.getResource(resourceId);
-          if (!result.ok || !result.data) {
-            throw new Error(`Repository resource not found: ${resourceId}`);
+          const resource = unwrapOrThrowError(result) as {
+            id: string;
+            name: string;
+            content: string | null;
+          } | null;
+          if (!resource) {
+            throw new ResultErrorException(
+              `Repository resource not found: ${resourceId}`,
+              'NOT_FOUND',
+            );
           }
 
-          const resource = result.data as { id: string; name: string; content: string | null };
           return {
             resourceId: resource.id,
             name: resource.name,
@@ -190,9 +198,7 @@ export const EditorApiModule: EditorApiModuleDef = {
         },
         async saveContent({ resourceId, content }) {
           const result = await repositoryBridgeModule.api.updateResource(resourceId, { content });
-          if (!result.ok) {
-            throw new Error(result.error.message || `Failed to persist resource: ${resourceId}`);
-          }
+          unwrapOrThrowError(result);
         },
       },
       repositorySearchPort: {

@@ -15,6 +15,17 @@ runs:
         node-version: ${{ inputs.node-version }}
         package-manager-cache: false
 
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version-file: apps/ai-service/.python-version
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        working-directory: apps/ai-service
+        enable-cache: true
+
     - name: Setup pnpm
       shell: bash
       run: |
@@ -52,3 +63,4 @@ runs:
         echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
         echo "Using NX_BASE=$NX_BASE_VALUE"
         echo "Using NX_HEAD=$NX_HEAD_VALUE"
+

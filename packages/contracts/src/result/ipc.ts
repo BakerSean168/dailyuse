@@ -10,7 +10,7 @@
 // Import ResultCode from codes.ts to avoid circular dependency issues
 import { ResultCode } from './codes';
 import type { Result, ResultError, ResultMeta } from './index';
-import { ok, fail, isOk } from './index';
+import { ok, fail, isOk, toResultErrorException } from './index';
 
 // ============================================================================
 // IPC Result Types
@@ -177,7 +177,7 @@ export function createIpcClientWrapper(
       if (isOk(result)) {
         return result.data;
       }
-      throw new Error(`[${result.error.code}] ${result.error.message}`);
+      throw toResultErrorException(result.error);
     },
   };
 }

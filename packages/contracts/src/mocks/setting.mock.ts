@@ -19,10 +19,6 @@ export function createMockUserSetting(
     preferences: {
       appearance: {
         theme: faker.helpers.arrayElement(['light', 'dark', 'auto']),
-        fontSize: faker.helpers.arrayElement([12, 14, 16]),
-        compactMode: faker.datatype.boolean(),
-        accentColor: faker.color.rgb(),
-        fontFamily: faker.helpers.arrayElement([null, 'sans-serif', 'serif', 'monospace']),
       },
       locale: {
         language: faker.helpers.arrayElement(['zh-CN', 'en-US', 'ja-JP']),
@@ -79,8 +75,6 @@ export function createMockUserSetting(
         sidebarCollapsed: faker.datatype.boolean(),
       },
       ai: {
-        enabled: faker.datatype.boolean(),
-        showFloatingBall: faker.datatype.boolean(),
         knowledgeNoteSubpath: faker.helpers.arrayElement(['', 'ai', 'ai/inbox']),
       },
     },

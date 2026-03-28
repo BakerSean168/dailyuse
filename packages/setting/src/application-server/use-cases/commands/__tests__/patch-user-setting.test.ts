@@ -48,11 +48,11 @@ describe('PatchUserSetting', () => {
     const existing = UserSetting.create({ identityId });
     vi.mocked(repo.findByIdentityId).mockResolvedValue(existing);
 
-    const result = await useCase.execute(identityId, 'appearance', { theme: 'dark' });
+    const result = await useCase.execute(identityId, 'editor', { theme: 'dark' });
 
     // fontSize should remain at default (14)
-    expect(result.preferences.appearance.fontSize).toBe(14);
-    expect(result.preferences.appearance.theme).toBe('dark');
+    expect(result.preferences.editor.fontSize).toBe(14);
+    expect(result.preferences.editor.theme).toBe('dark');
   });
 
   it('should preserve other categories', async () => {
@@ -95,7 +95,7 @@ describe('PatchUserSetting', () => {
     vi.mocked(repo.findByIdentityId).mockResolvedValue(existing);
 
     await expect(
-      useCase.execute(identityId, 'appearance', { fontSize: 999 } as any),
+      useCase.execute(identityId, 'editor', { fontSize: 999 } as any),
     ).rejects.toThrow();
   });
 

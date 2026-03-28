@@ -17,37 +17,40 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
   private conversations = new Map<string, AIConversation>();
 
   async save(conversation: AIConversation): Promise<void> {
-    this.conversations.set((conversation as any).id, conversation);
+    this.conversations.set(String(conversation.id), conversation);
   }
 
-  async findById(
-    id: string,
-    _options?: AIConversationQueryOptions,
-  ): Promise<AIConversation | null> {
+  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
+    void options;
     return this.conversations.get(id) ?? null;
   }
 
   async findByIdentityId(
     identityId: string,
-    _options?: AIConversationQueryOptions,
+    options?: AIConversationQueryOptions,
   ): Promise<AIConversation[]> {
-    return Array.from(this.conversations.values()).filter((c: any) => c.identityId === identityId);
+    void options;
+    return Array.from(this.conversations.values()).filter(
+      (conversation) => String(conversation.identityId) === identityId,
+    );
   }
 
   async findByStatus(
     identityId: string,
     status: ConversationStatus,
-    _options?: AIConversationQueryOptions,
+    options?: AIConversationQueryOptions,
   ): Promise<AIConversation[]> {
+    void options;
     return Array.from(this.conversations.values()).filter(
-      (c: any) => c.identityId === identityId && c.status === status,
+      (conversation) =>
+        String(conversation.identityId) === identityId && conversation.status === status,
     );
   }
 
   async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
     const filtered = Array.from(this.conversations.values())
-      .filter((c: any) => c.identityId === identityId)
-      .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      .filter((conversation) => String(conversation.identityId) === identityId)
+      .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime());
     return filtered.slice(offset ?? 0, (offset ?? 0) + limit);
   }
 
@@ -65,6 +68,6 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
   }
 
   seed(conversations: AIConversation[]): void {
-    conversations.forEach((c: any) => this.conversations.set(c.id, c));
+    conversations.forEach((conversation) => this.conversations.set(String(conversation.id), conversation));
   }
 }

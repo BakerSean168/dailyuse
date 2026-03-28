@@ -1,0 +1,170 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { AIProviderType } from '@dailyuse/contracts/ai';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+
+import type {
+  AIExecutionLogInput,
+  CreateKnowledgeNotePersistenceInput,
+  CreateKnowledgeNotePersistenceResult,
+  IAIExecutionLogPort,
+  IKnowledgeNoteGenerationPort,
+  IKnowledgeNotePersistencePort,
+  KnowledgeNoteGenerationInput,
+  KnowledgeNoteGenerationResult,
+} from '../../../ports';
+import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
+import { AIKnowledgeNoteService } from '../ai-knowledge-note.service';
+import { AIKnowledgeNotePathResolver } from '../../../../infrastructure-server/services/ai-knowledge-note-path-resolver';
+
+class StubProviderConfigRepository {
+  constructor(
+    private readonly provider: {
+      id: string;
+      identityId: string;
+      providerType: string;
+      baseUrl: string;
+      apiKey: string;
+      defaultModel: string | null;
+      isActive: boolean;
+      isDefault?: boolean;
+      name?: string;
+    },
+  ) {}
+
+  async findById(id: string) {
+    return id === this.provider.id ? this.provider : null;
+  }
+
+  async findDefaultByIdentityId() {
+    return null;
+  }
+
+  async findByIdentityId() {
+    return [this.provider];
+  }
+}
+
+class StubKnowledgeNoteGenerationPort implements IKnowledgeNoteGenerationPort {
+  public readonly generate = vi.fn<
+    (input: KnowledgeNoteGenerationInput) => Promise<KnowledgeNoteGenerationResult>
+  >(async () => ({
+    content: '# Python Tooling\n\nA concise note.',
+    usage: {
+      promptTokens: 20,
+      completionTokens: 10,
+      totalTokens: 30,
+    },
+  }));
+}
+
+class StubKnowledgeNotePersistencePort implements IKnowledgeNotePersistencePort {
+  public readonly createKnowledgeNote = vi.fn<
+    (input: CreateKnowledgeNotePersistenceInput) => Promise<CreateKnowledgeNotePersistenceResult>
+  >(async (input) => ({
+    resource: createResource(input),
+  }));
+}
+
+class StubExecutionLogPort implements IAIExecutionLogPort {
+  public readonly record = vi.fn<(input: AIExecutionLogInput) => Promise<void>>(async () => {});
+}
+
+function createResource(input: CreateKnowledgeNotePersistenceInput): ResourceClientDTO {
+  return {
+    id: 'resource-1' as ResourceClientDTO['id'],
+    repositoryId: 'repository-1' as ResourceClientDTO['repositoryId'],
+    folderId: null,
+    name: input.fileName,
+    type: 'note' as ResourceClientDTO['type'],
+    mimeType: 'text/markdown',
+    path: input.path,
+    size: input.content.length,
+    content: input.content,
+    metadata: {} as ResourceClientDTO['metadata'],
+    stats: {} as ResourceClientDTO['stats'],
+    status: 'active' as ResourceClientDTO['status'],
+    createdAt: Date.now() as ResourceClientDTO['createdAt'],
+    updatedAt: Date.now() as ResourceClientDTO['updatedAt'],
+    deletedAt: null,
+    version: 1,
+    isDeleted: false,
+    isArchived: false,
+    isActive: true,
+    isDraft: false,
+    statusText: 'active',
+    typeText: 'note',
+    displayName: input.fileName,
+    formattedSize: '1 KB',
+    createdAtText: 'now',
+    updatedAtText: 'now',
+    extension: '.md',
+    icon: 'description',
+  };
+}
+
+describe('AIKnowledgeNoteService', () => {
+  it('generates markdown through the execution port and persists the note', async () => {
+    const executionPort = new StubKnowledgeNoteGenerationPort();
+    const persistencePort = new StubKnowledgeNotePersistencePort();
+    const executionLogPort = new StubExecutionLogPort();
+    const service = new AIKnowledgeNoteService(
+      new StubProviderConfigRepository({
+        id: 'provider-1',
+        identityId: 'identity-1',
+        providerType: AIProviderType.OpenAICompatible,
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: 'plain-secret',
+        defaultModel: 'gpt-4o-mini',
+        isActive: true,
+        name: 'Main provider',
+      }) as unknown as IAIProviderConfigRepository,
+      executionPort,
+      persistencePort,
+      async () => 'python',
+      new AIKnowledgeNotePathResolver(),
+      executionLogPort,
+    );
+
+    const result = await service.createKnowledgeNote('identity-1', {
+      topic: 'Python tooling',
+      title: 'Python Tooling',
+    });
+
+    expect(executionPort.generate).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      providerConfig: {
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        apiKey: 'plain-secret',
+        baseUrl: 'https://api.openai.com/v1',
+        temperature: 0.4,
+        maxTokens: undefined,
+      },
+      topic: 'Python tooling',
+      title: 'Python Tooling',
+      requestId: expect.any(String),
+    });
+
+    expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      path: '/notes/python/Python-Tooling.md',
+      fileName: 'Python-Tooling.md',
+      content: '# Python Tooling\n\nA concise note.',
+    });
+
+    expect(result.providerId).toBe('provider-1');
+    expect(result.tokenUsage.totalTokens).toBe(30);
+    expect(result.resolvedPath).toBe('/notes/python/Python-Tooling.md');
+    expect(executionLogPort.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskType: 'KNOWLEDGE_NOTE_GENERATION',
+        status: 'COMPLETED',
+        providerId: 'provider-1',
+        providerName: 'Main provider',
+        model: 'gpt-4o-mini',
+        requestId: expect.any(String),
+      }),
+    );
+  });
+});

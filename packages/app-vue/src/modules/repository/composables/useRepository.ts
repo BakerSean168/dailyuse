@@ -8,7 +8,6 @@ import { computed, ref } from 'vue';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { AuthChannels } from '@dailyuse/contracts/electron';
 import type {
   FileTreeResponse,
   ResourceBookmarkClientDTO,
@@ -20,6 +19,11 @@ import type {
 import type { Repository } from '@dailyuse/repository/domain-client';
 import { searchRepositoryResources } from './repositorySearch';
 import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
+import {
+  getDesktopAuthApi,
+  recoverDesktopAuthIfNeeded,
+  type DesktopAuthApi,
+} from '../../../shared/utils/desktopAuthRecovery';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -37,10 +41,6 @@ export interface RepositoryUploadProgress {
   completed: number;
   currentFileName: string | null;
 }
-
-type DesktopAuthApi = {
-  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
-};
 
 interface RepositoryServiceLike {
   getCurrentRepository(): Promise<{
@@ -173,14 +173,8 @@ export function useRepository() {
     console.error(msg);
   }
 
-  async function ensureDesktopAuthReady(): Promise<boolean> {
-    return ensureDesktopAuthReadyWithApi((window as { electronAPI?: DesktopAuthApi }).electronAPI);
-  }
-
   async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
-    return shouldRecoverAuth(error)
-      ? ensureDesktopAuthReadyWithApi((window as { electronAPI?: DesktopAuthApi }).electronAPI)
-      : false;
+    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'Repository');
   }
 
   async function executeWithAuthRecovery<T extends ResultLike>(
@@ -861,42 +855,9 @@ export const __test__ = {
     host?: { electronAPI?: DesktopAuthApi },
   ) => {
     const result = await operation();
-    if (!result.ok && result.error && shouldRecoverAuth(result.error)) {
-      return ensureDesktopAuthReadyWithApi(host?.electronAPI);
+    if (!result.ok && result.error) {
+      return recoverDesktopAuthIfNeeded(result.error, host?.electronAPI, 'Repository');
     }
     return false;
   },
 };
-
-function shouldRecoverAuth(error: { code?: string }): boolean {
-  return error.code === 'AUTH_REQUIRED' || error.code === 'AUTH_RESTORING';
-}
-
-async function ensureDesktopAuthReadyWithApi(api?: DesktopAuthApi): Promise<boolean> {
-  if (!api?.invoke) {
-    return false;
-  }
-
-  try {
-    const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
-      authenticated?: boolean;
-      runtimeState?: string;
-    };
-
-    if (status?.authenticated) {
-      return true;
-    }
-
-    if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
-      await api.invoke(AuthChannels.INITIALIZE);
-      const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
-        authenticated?: boolean;
-      };
-      return Boolean(refreshed?.authenticated);
-    }
-  } catch (error) {
-    console.warn('[Repository] Failed to ensure desktop auth readiness', error);
-  }
-
-  return false;
-}

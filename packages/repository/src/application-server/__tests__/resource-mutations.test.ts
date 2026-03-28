@@ -12,6 +12,12 @@ import { Repository } from '../../domain-server/aggregates/repository';
 import { Folder } from '../../domain-server/entities/folder';
 import { CreateRepository } from '../use-cases/commands/create-repository';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
+import {
+  REPOSITORY_RESOURCE_MUTATED_EVENT,
+  RepositoryResourceMutationType,
+  type RepositoryResourceMutatedEvent,
+} from '@dailyuse/contracts/repository';
+import { eventBus } from '@dailyuse/utils';
 
 describe('Repository resource mutations', () => {
   it('renames a resource in both storage and metadata', async () => {
@@ -263,6 +269,79 @@ describe('Repository resource mutations', () => {
         }),
       );
     } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('emits repository resource mutation events for create, content update, move, and delete', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-events-'));
+    const receivedEvents: RepositoryResourceMutatedEvent[] = [];
+    const handler = (event: RepositoryResourceMutatedEvent) => {
+      receivedEvents.push(event);
+    };
+    (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+
+    try {
+      const storage = new FsStorageAdapter(tempDir);
+      const resourceRepository = new ResourceMemoryRepository();
+      const repositoryRepository = new RepositoryMemoryRepository();
+      const folderRepository = new FolderMemoryRepository();
+      const module = createRepositoryModule({
+        repositoryRepository,
+        resourceRepository,
+        folderRepository,
+        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
+        storagePort: storage,
+      });
+
+      const repository = Repository.create({
+        identityId: 'user-1' as any,
+        name: 'Repo',
+        type: 'personal' as any,
+        path: '/repo',
+      });
+      await repositoryRepository.save(repository);
+
+      const folder = Folder.create({
+        repositoryId: String(repository.id),
+        identityId: 'user-1',
+        name: 'articles',
+        parentId: null,
+      });
+      await folderRepository.save(folder);
+      await storage.write({
+        repositoryId: String(repository.id),
+        path: folder.path,
+        isFolder: true,
+      });
+
+      const created = await module.api.createResource(
+        {
+          repositoryId: String(repository.id),
+          name: 'note.md',
+          type: 'File',
+          content: '# Hello',
+        },
+        { identityId: 'user-1' } as any,
+      );
+      if (!created.ok) {
+        throw new Error('Expected created resource');
+      }
+      const resourceId = (created.data as { id: string }).id;
+
+      await module.api.updateResource(resourceId, { content: '# Updated' });
+      await module.api.moveResource(resourceId, String(folder.id));
+      await module.api.deleteResource(resourceId);
+
+      expect(receivedEvents.map((event) => event.mutation)).toEqual([
+        RepositoryResourceMutationType.Created,
+        RepositoryResourceMutationType.ContentUpdated,
+        RepositoryResourceMutationType.Moved,
+        RepositoryResourceMutationType.Deleted,
+      ]);
+      expect(receivedEvents.every((event) => event.resourceId === resourceId)).toBe(true);
+    } finally {
+      (eventBus as any).off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
   });

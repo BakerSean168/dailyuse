@@ -20,7 +20,7 @@ import type {
   IGoalFolderRepository,
   IGoalRecordRepository,
 } from '../domain-server';
-import { GoalPolicy, GoalProgressCalculator } from '../domain-server';
+import { GoalPolicy } from '../domain-server';
 import {
   CreateGoal,
   GetGoal,
@@ -312,7 +312,6 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
   const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
 
   const goalPolicy = new GoalPolicy();
-  const goalProgressCalculator = new GoalProgressCalculator(goalRecordRepository);
 
   return {
     // Goal CRUD / 目标增删改查
@@ -348,11 +347,7 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deleteReview: new DeleteGoalReview(goalRepository, goalPolicy),
 
     // Record / 进度记录
-    createRecord: new CreateGoalRecord(
-      goalRepository,
-      goalRecordRepository,
-      goalProgressCalculator,
-    ),
+    createRecord: new CreateGoalRecord(goalRepository, goalRecordRepository),
     listRecords: new ListGoalRecords(goalRecordRepository, goalRepository),
     deleteRecord: new DeleteGoalRecord(goalRecordRepository),
   };

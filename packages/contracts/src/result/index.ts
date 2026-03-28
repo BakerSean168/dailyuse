@@ -99,6 +99,23 @@ export interface ResultError {
 }
 
 /**
+ * 将 ResultError 提升为可抛出的结构化异常。
+ */
+export class ResultErrorException extends Error {
+  constructor(
+    message: string,
+    public readonly code: ResultCode | string,
+    public readonly details?: ResultErrorDetail[],
+    public readonly context?: Record<string, unknown>,
+    public readonly statusCode?: number,
+    public readonly cause?: unknown,
+  ) {
+    super(message);
+    this.name = 'ResultErrorException';
+  }
+}
+
+/**
  * Result 联合类型
  * 表示一个操作可能成功或失败
  */
@@ -185,7 +202,29 @@ export function unwrap<T>(result: Result<T>): T {
   if (isOk(result)) {
     return result.data;
   }
-  throw new Error(result.error.message);
+  throw toResultErrorException(result.error);
+}
+
+export function toResultErrorException(
+  error: ResultError,
+  statusCode?: number,
+): ResultErrorException {
+  return new ResultErrorException(
+    error.message,
+    error.code,
+    error.details,
+    error.context,
+    statusCode,
+    error.cause,
+  );
+}
+
+export function unwrapOrThrowError<T>(result: Result<T>, statusCode?: number): T {
+  if (isOk(result)) {
+    return result.data;
+  }
+
+  throw toResultErrorException(result.error, statusCode);
 }
 
 /**

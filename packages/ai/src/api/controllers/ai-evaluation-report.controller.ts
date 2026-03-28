@@ -1,0 +1,30 @@
+import { fail, ok, type Result } from '@dailyuse/contracts/result';
+import {
+  GetAIEvaluationOverviewSchema,
+  type GetAIEvaluationOverviewReq,
+  type GetAIEvaluationOverviewRes,
+} from '@dailyuse/contracts/ai';
+import { formatZodErrors } from '@dailyuse/utils/result';
+
+interface AIEvaluationReportControllerService {
+  getEvaluationOverview(
+    request?: GetAIEvaluationOverviewReq,
+  ): Promise<GetAIEvaluationOverviewRes>;
+}
+
+export class AIEvaluationReportController {
+  constructor(private readonly service: AIEvaluationReportControllerService) {}
+
+  async overview(input: unknown): Promise<Result<GetAIEvaluationOverviewRes>> {
+    const parsed = GetAIEvaluationOverviewSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    return ok(await this.service.getEvaluationOverview(parsed.data));
+  }
+}
