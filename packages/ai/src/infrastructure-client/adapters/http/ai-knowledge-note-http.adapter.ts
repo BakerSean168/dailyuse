@@ -1,5 +1,6 @@
 import type { AIKnowledgeNoteApiClient, IResultHttpClient } from '../types';
 import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIKnowledgeNoteHttpAdapter implements AIKnowledgeNoteApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
@@ -9,7 +10,6 @@ export class AIKnowledgeNoteHttpAdapter implements AIKnowledgeNoteApiClient {
       '/ai/knowledge-notes',
       request,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }

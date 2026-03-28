@@ -6,14 +6,14 @@ import type {
   GenerateGoalsReq,
   GenerateGoalsRes,
 } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIGoalIpcAdapter implements IAIGoalApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes> {
     const result = await this.ipcClient.invoke<GenerateGoalsRes>(AIChannels.GOAL_GENERATE, request);
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async automateGoal(request: GenerateGoalAutomationReq): Promise<GenerateGoalAutomationRes> {
@@ -21,7 +21,6 @@ export class AIGoalIpcAdapter implements IAIGoalApiClient {
       AIChannels.GOAL_AUTOMATE,
       request,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }

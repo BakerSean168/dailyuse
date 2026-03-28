@@ -39,6 +39,7 @@ import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { DesktopAuthElectronModule } from './modules/authentication/desktop-auth.electron-module';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
+import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
@@ -403,9 +404,7 @@ async function initializeApp(): Promise<void> {
           },
           saveContent: async ({ resourceId, content }) => {
             const result = await editorRepositoryModule.api.updateResource(resourceId, { content });
-            if (!result.ok) {
-              throw new Error(result.error.message || 'Failed to persist editor content');
-            }
+            unwrapOrThrowError(result);
           },
         },
         searchPort: {

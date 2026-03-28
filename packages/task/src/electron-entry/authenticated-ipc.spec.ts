@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { ElectronAuthResolutionError } from '@dailyuse/contracts/electron';
 import type { IElectronModuleContext } from '@dailyuse/contracts/electron';
 
 import { withAuthenticatedValue } from './authenticated-ipc';
@@ -30,7 +31,9 @@ describe('withAuthenticatedValue', () => {
 
   it('returns AUTH_RESTORING when auth restoration is in progress', async () => {
     const ctx = createContext({
-      requireRequestContext: vi.fn().mockRejectedValue(new Error('AUTH_RESTORING')),
+      requireRequestContext: vi
+        .fn()
+        .mockRejectedValue(new ElectronAuthResolutionError('AUTH_RESTORING')),
     });
 
     const result = await withAuthenticatedValue(ctx, async () => ({ id: 'ignored' }));
@@ -43,7 +46,9 @@ describe('withAuthenticatedValue', () => {
 
   it('returns AUTH_REQUIRED when auth context is unavailable', async () => {
     const ctx = createContext({
-      requireRequestContext: vi.fn().mockRejectedValue(new Error('AUTH_REQUIRED')),
+      requireRequestContext: vi
+        .fn()
+        .mockRejectedValue(new ElectronAuthResolutionError('AUTH_REQUIRED')),
     });
 
     const result = await withAuthenticatedValue(ctx, async () => ({ id: 'ignored' }));

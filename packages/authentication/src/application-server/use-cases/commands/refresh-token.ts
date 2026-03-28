@@ -7,6 +7,7 @@
 import type { IAuthSessionRepository } from '@/domain-server';
 import type { IAuthIdentityRepository } from '@/domain-server';
 import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
+import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
 import { AuthSessionId } from '@/domain-shared';
@@ -33,11 +34,8 @@ export class RefreshToken {
     try {
       // 1. 验证 refresh token 并解析 payload
       const verifyResult = this.tokenProvider.verifyRefreshToken(input.refreshToken);
-      if (!verifyResult.ok) {
-        throw new Error(verifyResult.error.message || 'Invalid or expired refresh token');
-      }
-
-      const { identityId: tokenIdentityId, sessionId: tokenSessionId } = verifyResult.data;
+      const { identityId: tokenIdentityId, sessionId: tokenSessionId } =
+        unwrapOrThrowError(verifyResult);
 
       // 2. 根据 payload 查找并校验会话
       const session = await this.sessionRepository.findById(AuthSessionId.of(tokenSessionId));

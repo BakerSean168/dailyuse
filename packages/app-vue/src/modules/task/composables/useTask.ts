@@ -11,14 +11,16 @@ import { useTaskStore } from '../stores/taskStore';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import { AuthChannels } from '@dailyuse/contracts/electron';
-import type { ResultError } from '@dailyuse/contracts/result';
 import type {
   CompleteTaskInstanceReq,
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,
 } from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
+import {
+  getDesktopAuthApi,
+  recoverDesktopAuthIfNeeded,
+} from '../../../shared/utils/desktopAuthRecovery';
 
 type TaskTemplateListParams = {
   page?: number;
@@ -48,41 +50,8 @@ export function useTask() {
     toast.error(t('task.error.operationFailed'), { description: message });
   }
 
-  async function ensureDesktopAuthReady(): Promise<boolean> {
-    const api = (window as any)?.electronAPI;
-    if (!api?.invoke) {
-      return false;
-    }
-
-    try {
-      const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
-        authenticated?: boolean;
-        runtimeState?: string;
-      };
-
-      if (status?.authenticated) {
-        return true;
-      }
-
-      if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
-        await api.invoke(AuthChannels.INITIALIZE);
-        const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
-          authenticated?: boolean;
-        };
-        return Boolean(refreshed?.authenticated);
-      }
-    } catch (error) {
-      console.warn('[Task] Failed to ensure desktop auth readiness', error);
-    }
-
-    return false;
-  }
-
-  async function maybeRecoverAuth(error: ResultError): Promise<boolean> {
-    if (error.code !== 'AUTH_REQUIRED' && error.code !== 'AUTH_RESTORING') {
-      return false;
-    }
-    return ensureDesktopAuthReady();
+  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
+    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'Task');
   }
 
   // ========== Templates ==========

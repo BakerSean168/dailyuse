@@ -1,14 +1,14 @@
 import type { IAIMessageApiClient, IResultIpcClient } from '../types';
 import { AIChannels } from '@dailyuse/contracts/electron';
 import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIMessageIpcAdapter implements IAIMessageApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async sendMessage(request: SendMessageReq): Promise<SendMessageRes> {
     const result = await this.ipcClient.invoke<SendMessageRes>(AIChannels.MESSAGE_SEND, request);
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async streamMessage(
@@ -40,7 +40,6 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
       conversationId,
       ...params,
     });
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }

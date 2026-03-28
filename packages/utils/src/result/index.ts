@@ -20,7 +20,9 @@ export {
   isOk,
   isFail,
   unwrap,
+  unwrapOrThrowError,
   unwrapOr,
+  toResultErrorException,
   map,
   mapError,
   flatMap,
@@ -28,6 +30,7 @@ export {
   tryCatchSync,
   ResultCode,
   ResultErrors,
+  ResultErrorException,
   okPaged,
   okBatch,
   // HTTP

@@ -24,6 +24,7 @@ import {
   TaskGoalBindingTrigger,
   TaskType,
 } from '@dailyuse/contracts/task';
+import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 
 import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adapter';
@@ -96,16 +97,13 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             },
           );
 
-          if (!result.ok) {
-            throw new Error(result.error.message);
-          }
-
-          createdGoalId = result.data.id as GoalId;
+          const goal = unwrapOrThrowError(result);
+          createdGoalId = goal.id as GoalId;
           actions.push({
             tool: action.tool,
             status: 'executed',
             entityId: createdGoalId,
-            message: `Created goal "${result.data.name}"`,
+            message: `Created goal "${goal.name}"`,
           });
           continue;
         }
@@ -130,16 +128,13 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             weight: this.resolveWeight(input.plan.keyResults?.length ?? 1),
           });
 
-          if (!result.ok) {
-            throw new Error(result.error.message);
-          }
-
-          createdKeyResultIds.set(action.index ?? 0, result.data.id as KeyResultId);
+          const createdKeyResult = unwrapOrThrowError(result);
+          createdKeyResultIds.set(action.index ?? 0, createdKeyResult.id as KeyResultId);
           actions.push({
             tool: action.tool,
             status: 'executed',
-            entityId: result.data.id,
-            message: `Created key result "${result.data.title}"`,
+            entityId: createdKeyResult.id,
+            message: `Created key result "${createdKeyResult.title}"`,
           });
           continue;
         }
@@ -179,15 +174,12 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
                 : null,
           });
 
-          if (!result.ok) {
-            throw new Error(result.error.message);
-          }
-
+          const taskTemplateResult = unwrapOrThrowError(result);
           actions.push({
             tool: action.tool,
             status: 'executed',
-            entityId: result.data.template.id,
-            message: `Created task template "${result.data.template.name}"`,
+            entityId: taskTemplateResult.template.id,
+            message: `Created task template "${taskTemplateResult.template.name}"`,
           });
           continue;
         }

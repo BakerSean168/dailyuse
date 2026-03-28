@@ -8,20 +8,19 @@ import type {
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
 } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIKnowledgeQueryIpcAdapter implements AIKnowledgeQueryApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes> {
     const result = await this.ipcClient.invoke<ExpandKnowledgeRes>(AIChannels.KNOWLEDGE_EXPAND, request);
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes> {
     const result = await this.ipcClient.invoke<QueryKnowledgeRes>(AIChannels.KNOWLEDGE_QUERY, request);
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes> {
@@ -29,7 +28,6 @@ export class AIKnowledgeQueryIpcAdapter implements AIKnowledgeQueryApiClient {
       AIChannels.KNOWLEDGE_REINDEX,
       request,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }

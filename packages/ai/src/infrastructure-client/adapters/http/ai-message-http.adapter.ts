@@ -1,5 +1,11 @@
 import type { IAIMessageApiClient, IResultHttpClient } from '../types';
+import type { ResultErrorDetail } from '@dailyuse/contracts/result';
 import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
+import {
+  createResultClientError,
+  createResultClientErrorFromResponse,
+  unwrapResultOrThrow,
+} from '../result-client-error';
 
 export class AIMessageHttpAdapter implements IAIMessageApiClient {
   private readonly baseUrl = '/ai/chat/messages';
@@ -9,8 +15,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
 
   async sendMessage(request: SendMessageReq): Promise<SendMessageRes> {
     const result = await this.httpClient.post<SendMessageRes>(this.baseUrl, request);
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 
   async streamMessage(
@@ -32,7 +37,10 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`AI stream request failed: ${response.status}`);
+      throw await createResultClientErrorFromResponse(
+        response,
+        `AI stream request failed: ${response.status}`,
+      );
     }
 
     for await (const event of parseSSE(response)) {
@@ -56,8 +64,19 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
       }
 
       if (event.event === 'error') {
-        const payload = event.data ? JSON.parse(event.data) as { message?: string } : {};
-        throw new Error(payload.message ?? 'AI stream failed');
+        const payload = event.data
+          ? (JSON.parse(event.data) as {
+              code?: string;
+              message?: string;
+              details?: ResultErrorDetail[];
+            })
+          : {};
+        throw createResultClientError(
+          payload.message ?? 'AI stream failed',
+          payload.code ?? 'INTERNAL_ERROR',
+          undefined,
+          payload.details,
+        );
       }
     }
   }
@@ -69,8 +88,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
     const result = await this.httpClient.get<MessageListRes>(this.baseUrl, {
       params: { conversationId, ...params },
     });
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }
 

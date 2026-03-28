@@ -3,6 +3,7 @@ import { Router, type Request, type RequestHandler } from 'express';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
+  createHttpResponseBuilder,
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
@@ -166,15 +167,14 @@ export function registerAIChatRoutes(
   );
 
   router.post('/messages/sse', auth, async (req, res) => {
+    const requestWithMeta = req as Request & { traceId?: string; id?: string };
+    const responseBuilder = createHttpResponseBuilder({
+      traceId: requestWithMeta.traceId ?? requestWithMeta.id,
+      startTime: Date.now(),
+    });
     const identityId = (req as Request & { user?: { identityId?: string } }).user?.identityId;
     if (!identityId) {
-      res.status(401).json({
-        ok: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: '未授权，请登录',
-        },
-      });
+      res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
       return;
     }
 
@@ -201,6 +201,7 @@ export function registerAIChatRoutes(
       if (!result.ok) {
         res.write(
           `event: error\ndata: ${JSON.stringify({
+            code: result.error.code,
             message: result.error.message,
             details: result.error.details,
           })}\n\n`,
@@ -212,6 +213,7 @@ export function registerAIChatRoutes(
     } catch (error) {
       res.write(
         `event: error\ndata: ${JSON.stringify({
+          code: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'AI stream failed',
         })}\n\n`,
       );

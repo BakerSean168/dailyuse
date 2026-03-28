@@ -3,6 +3,7 @@ import type {
   GetAIEvaluationOverviewReq,
   GetAIEvaluationOverviewRes,
 } from '@dailyuse/contracts/ai';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIEvaluationReportHttpAdapter implements AIEvaluationReportApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
@@ -19,7 +20,6 @@ export class AIEvaluationReportHttpAdapter implements AIEvaluationReportApiClien
     const result = await this.httpClient.get<GetAIEvaluationOverviewRes>(
       `/ai/evaluations/overview${suffix}`,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }

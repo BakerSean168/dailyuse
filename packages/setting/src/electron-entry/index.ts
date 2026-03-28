@@ -8,11 +8,11 @@ import { ipcMain } from 'electron';
 import {
   type IElectronModule,
   type IElectronModuleContext,
-  withAuthenticatedIdentity,
 } from '@dailyuse/contracts/electron';
 import { createSettingPowerSyncModule } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import type { SettingModuleInstance } from '../infrastructure-server';
+import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 const logger = createLogger('SettingElectron');
 

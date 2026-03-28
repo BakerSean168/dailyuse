@@ -108,4 +108,26 @@ describe('repository route contracts', () => {
     );
     expect(reorderSchema.safeParse({ ids: ['bookmark-1', 'bookmark-2'] }).success).toBe(false);
   });
+
+  it('documents upload authorization failures with the standard unauthorized response', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerRepositoryCrudRoutes(
+      createRepositoryControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const uploadRoute = getRegisteredRoute(
+      registry,
+      'post',
+      '/api/v1/repositories/{repoId}/resources/upload',
+    );
+
+    expect(uploadRoute.responses).toMatchObject({
+      401: {
+        description: '未授权，请登录',
+      },
+    });
+  });
 });

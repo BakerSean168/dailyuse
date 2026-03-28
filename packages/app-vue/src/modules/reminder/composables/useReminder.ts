@@ -23,9 +23,11 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
-import { AuthChannels } from '@dailyuse/contracts/electron';
-import type { ResultError } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
+import {
+  getDesktopAuthApi,
+  recoverDesktopAuthIfNeeded,
+} from '../../../shared/utils/desktopAuthRecovery';
 
 export function useReminder() {
   const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
@@ -46,41 +48,8 @@ export function useReminder() {
     console.error(msg);
   }
 
-  async function ensureDesktopAuthReady(): Promise<boolean> {
-    const api = (window as any)?.electronAPI;
-    if (!api?.invoke) {
-      return false;
-    }
-
-    try {
-      const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
-        authenticated?: boolean;
-        runtimeState?: string;
-      };
-
-      if (status?.authenticated) {
-        return true;
-      }
-
-      if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
-        await api.invoke(AuthChannels.INITIALIZE);
-        const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
-          authenticated?: boolean;
-        };
-        return Boolean(refreshed?.authenticated);
-      }
-    } catch (error) {
-      console.warn('[Reminder] Failed to ensure desktop auth readiness', error);
-    }
-
-    return false;
-  }
-
-  async function maybeRecoverAuth(error: ResultError): Promise<boolean> {
-    if (error.code !== 'AUTH_REQUIRED' && error.code !== 'AUTH_RESTORING') {
-      return false;
-    }
-    return ensureDesktopAuthReady();
+  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
+    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'Reminder');
   }
 
   async function executeWithOptionalAuthRecovery<T>(

@@ -4,6 +4,7 @@ import type {
   GetAIEvaluationOverviewRes,
 } from '@dailyuse/contracts/ai';
 import type { AIEvaluationReportApiClient, IResultIpcClient } from '../types';
+import { unwrapResultOrThrow } from '../result-client-error';
 
 export class AIEvaluationReportIpcAdapter implements AIEvaluationReportApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -15,7 +16,6 @@ export class AIEvaluationReportIpcAdapter implements AIEvaluationReportApiClient
       AIChannels.EVALUATION_OVERVIEW_GET,
       request,
     );
-    if (!result.ok) throw new Error(result.error.message);
-    return result.data;
+    return unwrapResultOrThrow(result);
   }
 }
