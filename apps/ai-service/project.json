@@ -61,14 +61,19 @@
       "cache": true
     },
     "test": {
-      "executor": "@nxlv/python:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [
         "{workspaceRoot}/reports/{projectRoot}/unittests",
         "{workspaceRoot}/coverage/{projectRoot}"
       ],
       "options": {
-        "command": "uv run pytest tests/",
-        "cwd": "{projectRoot}"
+        "commands": [
+          {
+            "command": "uv run pytest tests/",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "apps/ai-service"
       },
       "cache": true
     },

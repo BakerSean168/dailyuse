@@ -3,7 +3,7 @@ import { UserSetting } from '../user-setting';
 import { getDefaultPreferences } from '@dailyuse/contracts/setting';
 
 describe('UserSetting Aggregate Root', () => {
-  const testIdentityId = 'IdentityId_test-identity-123';
+  const testIdentityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
 
   describe('create()', () => {
     it('should create a new user setting with default preferences', () => {
@@ -25,11 +25,11 @@ describe('UserSetting Aggregate Root', () => {
     it('should apply overrides when creating', () => {
       const setting = UserSetting.create({
         identityId: testIdentityId,
-        overrides: { appearance: { theme: 'dark' } },
+        overrides: { editor: { theme: 'dark' } },
       });
 
-      expect(setting.toPreferences().appearance.theme).toBe('dark');
-      expect(setting.toPreferences().appearance.fontSize).toBe(14); // default preserved
+      expect(setting.toPreferences().editor.theme).toBe('dark');
+      expect(setting.toPreferences().editor.fontSize).toBe(14); // default preserved
     });
 
     it('should emit UserSettingCreatedEvent', () => {
@@ -101,7 +101,7 @@ describe('UserSetting Aggregate Root', () => {
     it('should reject invalid values via Zod validation', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
 
-      expect(() => setting.patchCategory('appearance', { fontSize: 999 } as any)).toThrow();
+      expect(() => setting.patchCategory('editor', { fontSize: 999 } as any)).toThrow();
     });
   });
 
@@ -130,12 +130,12 @@ describe('UserSetting Aggregate Root', () => {
   describe('resetCategory()', () => {
     it('should reset a category to defaults', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
-      setting.patchCategory('appearance', { theme: 'dark', fontSize: 20 });
+      setting.patchCategory('editor', { theme: 'dark', fontSize: 20 });
 
-      setting.resetCategory('appearance');
+      setting.resetCategory('editor');
 
       const defaults = getDefaultPreferences();
-      expect(setting.toPreferences().appearance).toEqual(defaults.appearance);
+      expect(setting.toPreferences().editor).toEqual(defaults.editor);
     });
 
     it('should emit UserSettingResetEvent with category', () => {
@@ -193,12 +193,13 @@ describe('UserSetting Aggregate Root', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
 
       setting.importPreferences({
-        appearance: {
+        editor: {
           theme: 'dark',
           fontSize: 16,
-          compactMode: true,
-          accentColor: '#FF0000',
-          fontFamily: null,
+          tabSize: 4,
+          wordWrap: false,
+          lineNumbers: true,
+          minimap: false,
         },
         locale: {
           language: 'en-US',
@@ -210,7 +211,8 @@ describe('UserSetting Aggregate Root', () => {
         },
       });
 
-      expect(setting.toPreferences().appearance.theme).toBe('dark');
+      expect(setting.toPreferences().editor.theme).toBe('dark');
+      expect(setting.toPreferences().editor.fontSize).toBe(16);
       expect(setting.toPreferences().locale.language).toBe('en-US');
       // Other categories remain default
       expect(setting.toPreferences().notification.email).toBe(true);
