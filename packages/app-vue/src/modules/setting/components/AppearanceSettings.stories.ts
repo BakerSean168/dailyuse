@@ -4,10 +4,6 @@ import AppearanceSettings from './AppearanceSettings.vue';
 
 const defaultSettings = {
   theme: 'light',
-  fontSize: 14,
-  accentColor: '#3b82f6',
-  compactMode: false,
-  fontFamily: null,
 };
 
 const meta = {
@@ -49,10 +45,6 @@ export const DarkTheme: Story = {
   args: {
     modelValue: {
       theme: 'dark',
-      fontSize: 16,
-      accentColor: '#8b5cf6',
-      compactMode: false,
-      fontFamily: 'monospace',
     },
   },
 };
@@ -68,11 +60,7 @@ export const CompactMode: Story = {
   }),
   args: {
     modelValue: {
-      theme: 'light',
-      fontSize: 12,
-      accentColor: '#10b981',
-      compactMode: true,
-      fontFamily: null,
+      theme: 'auto',
     },
   },
 };

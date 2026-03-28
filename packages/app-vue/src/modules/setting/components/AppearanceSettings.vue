@@ -3,106 +3,28 @@
     <CardHeader>
       <CardTitle>{{ t('setting.appearance.title') }}</CardTitle>
     </CardHeader>
-    <CardContent class="space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Theme -->
-        <div class="space-y-2">
-          <Label for="theme-select">{{ t('setting.appearance.theme') }}</Label>
-          <Select
-            :model-value="modelValue.theme"
-            @update:model-value="
-              (value: any) =>
-                emit('update:modelValue', { ...modelValue, theme: value as AppearanceTheme })
-            "
-          >
-            <SelectTrigger id="theme-select">
-              <SelectValue :placeholder="t('setting.appearance.themePlaceholder')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in themeOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p class="text-sm text-muted-foreground">
-            {{ t('setting.appearance.themeDescription') }}
-          </p>
-        </div>
-
-        <!-- Font Size -->
-        <div class="space-y-2">
-          <Label for="font-size-select">{{ t('setting.appearance.fontSize') }}</Label>
-          <Select
-            :model-value="String(modelValue.fontSize)"
-            @update:model-value="
-              (value: any) => emit('update:modelValue', { ...modelValue, fontSize: Number(value) })
-            "
-          >
-            <SelectTrigger id="font-size-select">
-              <SelectValue :placeholder="t('setting.appearance.fontSizePlaceholder')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in fontSizeOpts" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <!-- Accent Color -->
-        <div class="space-y-2">
-          <Label for="accent-color">{{ t('setting.appearance.accentColor') }}</Label>
-          <Input
-            id="accent-color"
-            type="color"
-            :model-value="modelValue.accentColor"
-            @update:model-value="
-              (value: any) =>
-                emit('update:modelValue', { ...modelValue, accentColor: String(value) })
-            "
-          />
-          <p class="text-sm text-muted-foreground">
-            {{ t('setting.appearance.accentColorDescription') }}
-          </p>
-        </div>
-
-        <!-- Compact Mode -->
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <Label for="compact-mode">{{ t('setting.appearance.compactMode') }}</Label>
-            <Switch
-              id="compact-mode"
-              :checked="modelValue.compactMode"
-              @update:checked="
-                (value) => emit('update:modelValue', { ...modelValue, compactMode: value })
-              "
-            />
-          </div>
-          <p class="text-sm text-muted-foreground">
-            {{ t('setting.appearance.compactModeDescription') }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Font Family -->
+    <CardContent>
       <div class="space-y-2">
-        <Label for="font-family-select">{{ t('setting.appearance.fontFamily') }}</Label>
+        <Label for="theme-select">{{ t('setting.appearance.theme') }}</Label>
         <Select
-          :model-value="modelValue.fontFamily ?? undefined"
+          :model-value="modelValue.theme"
           @update:model-value="
             (value: any) =>
-              emit('update:modelValue', { ...modelValue, fontFamily: value as string })
+              emit('update:modelValue', { ...modelValue, theme: value as AppearanceTheme })
           "
         >
-          <SelectTrigger id="font-family-select">
-            <SelectValue :placeholder="t('setting.appearance.fontFamilyPlaceholder')" />
+          <SelectTrigger id="theme-select">
+            <SelectValue :placeholder="t('setting.appearance.themePlaceholder')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem v-for="option in fontFamilyOpts" :key="option.value" :value="option.value">
+            <SelectItem v-for="option in themeOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </SelectItem>
           </SelectContent>
         </Select>
+        <p class="text-sm text-muted-foreground">
+          {{ t('setting.appearance.themeDescription') }}
+        </p>
       </div>
     </CardContent>
   </Card>
@@ -120,20 +42,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
-import { Switch } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
 
 const { t } = useI18n();
 
+type AppearanceTheme = 'light' | 'dark' | 'auto';
+
 interface AppearanceSettings {
   theme?: AppearanceTheme;
-  fontSize?: number;
-  accentColor?: string;
-  compactMode?: boolean;
-  fontFamily?: string | null;
 }
-
-type AppearanceTheme = 'light' | 'dark' | 'auto';
 
 interface Props {
   modelValue: AppearanceSettings;
@@ -156,19 +72,4 @@ const themeOptions = computed(
       { label: `🖥️ ${t('setting.appearance.themeAuto')}`, value: 'auto' },
     ],
 );
-
-const fontSizeOpts = computed(() => [
-  { label: t('setting.appearance.fontSmall'), value: '12' },
-  { label: t('setting.appearance.fontMedium'), value: '14' },
-  { label: t('setting.appearance.fontLarge'), value: '16' },
-]);
-
-const fontFamilyOpts = computed(() => [
-  { label: t('setting.appearance.fontDefault'), value: 'default' },
-  { label: 'Inter', value: 'Inter' },
-  { label: 'Arial', value: 'Arial' },
-  { label: 'Roboto', value: 'Roboto' },
-  { label: t('setting.appearance.fontMSYH'), value: 'Microsoft YaHei' },
-  { label: t('setting.appearance.fontPingFang'), value: 'PingFang SC' },
-]);
 </script>

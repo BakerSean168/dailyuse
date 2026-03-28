@@ -43,7 +43,5 @@ export const KnowledgeNoteSubpathSchema = RawKnowledgeNoteSubpathSchema.superRef
 ).transform(normalizeKnowledgeNoteSubpath);
 
 export const AISchema = z.object({
-  enabled: z.boolean().default(true),
-  showFloatingBall: z.boolean().default(true),
   knowledgeNoteSubpath: KnowledgeNoteSubpathSchema.default(''),
 });

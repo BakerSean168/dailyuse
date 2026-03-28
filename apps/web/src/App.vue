@@ -8,21 +8,15 @@
  * 3. 全局辅助交互 (GlobalCommandPalette, GlobalSheet, GlobalProgressBar)
  * 4. 错误兜底系统 (GlobalErrorBoundary)
  */
-import { computed } from 'vue';
 import { Toaster, TooltipProvider } from '@dailyuse/ui-vue-shadcn';
 import {
-  AIFloatingBall,
   GlobalConfirmDialog,
   GlobalErrorBoundary,
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
   useThemeSync,
-  useAuthenticationStore,
 } from '@dailyuse/app-vue';
-
-const authStore = useAuthenticationStore();
-const shouldShowAIFloatingBall = computed(() => authStore.isAuthenticated);
 
 useThemeSync();
 </script>
@@ -42,7 +36,6 @@ useThemeSync();
     <GlobalConfirmDialog />
     <GlobalSheet />
     <GlobalCommandPalette />
-    <AIFloatingBall v-if="shouldShowAIFloatingBall" />
   </TooltipProvider>
 </template>
 

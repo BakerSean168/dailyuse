@@ -129,6 +129,7 @@ export default {
       emptyTitle: '从一个问题开始',
       emptyDescription:
         '选择提供商和模型，然后直接在这里持续对话。历史会话会保留在左侧，方便随时继续。',
+      workspaceToolsButton: '工作区工具',
       chatUnavailable: '当前 AI 运行模式不支持聊天能力，请先检查 AI 服务配置。',
       modelPending: '未选择模型',
       emptyModels: '当前没有可用模型，可以前往设置配置 AI 提供方和模型。',
@@ -602,11 +603,7 @@ export default {
 
     ai: {
       title: 'AI 助手',
-      description: '控制全局悬浮入口，以及 AI 知识笔记的默认保存位置。',
-      enabled: '启用 AI 助手',
-      enabledDescription: '关闭后将隐藏 AI 入口，并暂停全局 AI 交互。',
-      showFloatingBall: '显示悬浮球',
-      showFloatingBallDescription: '在界面右下角显示全局 AI 快捷入口。',
+      description: '配置 AI 知识笔记默认保存位置，以及 AI 提供方接入。',
       knowledgeNoteSubpath: '知识笔记默认子路径',
       knowledgeNoteSubpathDescription: '只填写 notes/ 下的相对子路径，留空时默认保存到 notes/。',
       knowledgeNoteSubpathPlaceholder: '例如 ai/inbox',

@@ -7,32 +7,6 @@
     <CardContent class="space-y-6">
       <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <div class="space-y-6">
-          <div class="flex items-center justify-between gap-4">
-            <div class="space-y-1">
-              <Label class="text-base font-medium">{{ t('setting.ai.enabled') }}</Label>
-              <p class="text-sm text-muted-foreground">{{ t('setting.ai.enabledDescription') }}</p>
-            </div>
-            <Switch
-              :checked="preferences.enabled"
-              :disabled="isSavingSettings"
-              @update:checked="updateEnabled"
-            />
-          </div>
-
-          <div class="flex items-center justify-between gap-4">
-            <div class="space-y-1">
-              <Label class="text-base font-medium">{{ t('setting.ai.showFloatingBall') }}</Label>
-              <p class="text-sm text-muted-foreground">
-                {{ t('setting.ai.showFloatingBallDescription') }}
-              </p>
-            </div>
-            <Switch
-              :checked="preferences.showFloatingBall"
-              :disabled="isSavingSettings || !preferences.enabled"
-              @update:checked="updateFloatingBall"
-            />
-          </div>
-
           <div class="space-y-3 rounded-lg border border-border/70 bg-muted/20 p-4">
             <div class="space-y-1">
               <Label for="knowledge-note-subpath" class="text-base font-medium">
@@ -46,7 +20,7 @@
             <Input
               id="knowledge-note-subpath"
               v-model="draftSubpath"
-              :disabled="isSavingSettings || !preferences.enabled"
+              :disabled="isSavingSettings"
               :placeholder="t('setting.ai.knowledgeNoteSubpathPlaceholder')"
             />
 
@@ -404,8 +378,6 @@ import { useUserSetting } from '../composables/useUserSetting';
 import { useAI } from '../../ai/composables/useAI';
 
 interface AIFormState {
-  enabled: boolean;
-  showFloatingBall: boolean;
   knowledgeNoteSubpath: string;
 }
 
@@ -452,8 +424,6 @@ const {
 const QUICK_PROVIDER_TEMPLATE_IDS = ['gemini', 'openai', 'openrouter'] as const;
 
 const fallbackState: AIFormState = {
-  enabled: true,
-  showFloatingBall: true,
   knowledgeNoteSubpath: '',
 };
 
@@ -494,14 +464,16 @@ const presetApiKeys = reactive<Record<string, string>>({
 
 const aiSettings = computed(() => getCategory('ai'));
 
+function normalizeAIFormState(value?: Partial<AIFormState> | null): AIFormState {
+  return {
+    knowledgeNoteSubpath: value?.knowledgeNoteSubpath ?? fallbackState.knowledgeNoteSubpath,
+  };
+}
+
 watch(
   aiSettings,
   (value) => {
-    preferences.value = {
-      enabled: value?.enabled ?? fallbackState.enabled,
-      showFloatingBall: value?.showFloatingBall ?? fallbackState.showFloatingBall,
-      knowledgeNoteSubpath: value?.knowledgeNoteSubpath ?? fallbackState.knowledgeNoteSubpath,
-    };
+    preferences.value = normalizeAIFormState(value);
     draftSubpath.value = preferences.value.knowledgeNoteSubpath;
   },
   { immediate: true },
@@ -550,7 +522,6 @@ const resolvedPathPreview = computed(() => {
 const isSaveSubpathDisabled = computed(() => {
   return (
     isSavingSettings.value ||
-    !preferences.value.enabled ||
     !parsedSubpath.value.success ||
     parsedSubpath.value.data === preferences.value.knowledgeNoteSubpath
   );
@@ -588,27 +559,12 @@ async function patchAISettings(patch: Partial<AIFormState>) {
     const updated = await updateCategory('ai', nextState);
     if (!updated) return;
 
-    preferences.value = {
-      enabled: updated.preferences.ai.enabled,
-      showFloatingBall: updated.preferences.ai.showFloatingBall,
-      knowledgeNoteSubpath: updated.preferences.ai.knowledgeNoteSubpath,
-    };
+    preferences.value = normalizeAIFormState(updated.preferences?.ai);
     draftSubpath.value = preferences.value.knowledgeNoteSubpath;
     toast.success(t('setting.ai.saved'));
   } finally {
     isSavingSettings.value = false;
   }
-}
-
-async function updateEnabled(value: boolean) {
-  await patchAISettings({
-    enabled: value,
-    showFloatingBall: value ? preferences.value.showFloatingBall : false,
-  });
-}
-
-async function updateFloatingBall(value: boolean) {
-  await patchAISettings({ showFloatingBall: value });
 }
 
 async function saveSubpath() {

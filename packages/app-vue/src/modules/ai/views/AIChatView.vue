@@ -85,35 +85,39 @@
             {{ currentConversationLabel }}
           </h1>
 
-          <div class="flex items-center gap-1 md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              :title="t('aiAssistant.dialogs.chat.newConversation')"
-              @click="startNewConversation()"
-            >
-              <Plus class="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              :title="t('aiAssistant.dialogs.chat.refresh')"
-              :disabled="conversationListLoading"
-              @click="loadConversationList"
-            >
-              <RefreshCcw class="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              :title="t('nav.settings')"
-              @click="openSettings"
-            >
-              <Settings2 class="h-4 w-4" />
-            </Button>
+          <div class="flex items-center gap-2">
+            <AIWorkspaceToolbox :selected-provider-id="selectedModel?.providerId ?? null" />
+
+            <div class="flex items-center gap-1 md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                :title="t('aiAssistant.dialogs.chat.newConversation')"
+                @click="startNewConversation()"
+              >
+                <Plus class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                :title="t('aiAssistant.dialogs.chat.refresh')"
+                :disabled="conversationListLoading"
+                @click="loadConversationList"
+              >
+                <RefreshCcw class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                :title="t('nav.settings')"
+                @click="openSettings"
+              >
+                <Settings2 class="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -498,6 +502,7 @@ import { useRepository } from '../../repository/composables/useRepository';
 import { useUserSetting } from '../../setting/composables/useUserSetting';
 import { useEditorWorkspaceActions } from '../../editor/composables';
 import AIGoalDraftEditor from '../components/AIGoalDraftEditor.vue';
+import AIWorkspaceToolbox from '../components/AIWorkspaceToolbox.vue';
 
 type WorkflowMode = 'chat' | 'goal' | 'knowledge-note';
 

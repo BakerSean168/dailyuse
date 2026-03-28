@@ -131,6 +131,7 @@ export default {
       emptyTitle: 'Start with a prompt',
       emptyDescription:
         'Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.',
+      workspaceToolsButton: 'Workspace Tools',
       chatUnavailable:
         'The current AI runtime mode does not support chat. Check the AI service configuration first.',
       modelPending: 'No model selected',
@@ -627,12 +628,7 @@ export default {
     ai: {
       title: 'AI Assistant',
       description:
-        'Control the floating assistant entry and the default save path for AI-generated knowledge notes.',
-      enabled: 'Enable AI assistant',
-      enabledDescription:
-        'Turn off the assistant to hide AI entry points and pause global AI interactions.',
-      showFloatingBall: 'Show floating button',
-      showFloatingBallDescription: 'Display the global AI shortcut in the bottom-right corner.',
+        'Configure the default save path for AI-generated knowledge notes and AI provider connections.',
       knowledgeNoteSubpath: 'Knowledge note default subpath',
       knowledgeNoteSubpathDescription:
         'Only enter a relative path under notes/. Leave blank to save directly into notes/.',
