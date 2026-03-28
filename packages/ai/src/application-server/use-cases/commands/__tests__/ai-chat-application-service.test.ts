@@ -72,15 +72,16 @@ class StubExecutionLogPort implements IAIExecutionLogPort {
 
 describe('AIChatApplicationService', () => {
   it('routes chat execution through the execution port with structured messages', async () => {
+    const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
     const conversation = AIConversation.create({
-      identityId: '550e8400-e29b-41d4-a716-446655440000',
+      identityId,
       name: 'Test conversation',
     });
 
     const conversationRepository = new InMemoryConversationRepository(conversation);
     const providerRepository = new StubProviderConfigRepository({
       id: 'provider-1',
-      identityId: '550e8400-e29b-41d4-a716-446655440000',
+      identityId,
       providerType: AIProviderType.OpenAICompatible,
       baseUrl: 'https://api.openai.com/v1',
       apiKey: 'secret-key',
@@ -99,7 +100,7 @@ describe('AIChatApplicationService', () => {
     );
 
     const result = await service.sendMessage(
-      '550e8400-e29b-41d4-a716-446655440000',
+      identityId,
       String(conversation.id),
       'Hello from user',
       'provider-1',
@@ -107,7 +108,7 @@ describe('AIChatApplicationService', () => {
 
     expect(executionPort.complete).toHaveBeenCalledTimes(1);
     expect(executionPort.complete).toHaveBeenCalledWith({
-      identityId: '550e8400-e29b-41d4-a716-446655440000',
+      identityId,
       messages: [
         {
           role: 'system',
