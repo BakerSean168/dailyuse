@@ -13,6 +13,7 @@ import {
   type UpdateConversationRes,
 } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
+import { toAIControllerFailure } from './ai-controller-errors';
 
 interface AIChatConversationControllerService {
   createConversation(identityId: string, name?: string): Promise<CreateConversationRes>;
@@ -68,7 +69,11 @@ export class AIChatController {
       });
     }
 
-    return ok(await this.conversationService.createConversation(identityId, parsed.data.name));
+    try {
+      return ok(await this.conversationService.createConversation(identityId, parsed.data.name));
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 
   async listConversations(
@@ -76,15 +81,23 @@ export class AIChatController {
     page = 1,
     pageSize = 20,
   ): Promise<Result<ConversationListRes>> {
-    return ok(await this.conversationService.listConversations(identityId, page, pageSize));
+    try {
+      return ok(await this.conversationService.listConversations(identityId, page, pageSize));
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 
   async getConversation(id: string): Promise<Result<GetConversationRes>> {
-    const conversation = await this.conversationService.getConversation(id, true);
-    if (!conversation) {
-      return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
+    try {
+      const conversation = await this.conversationService.getConversation(id, true);
+      if (!conversation) {
+        return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
+      }
+      return ok(conversation.toClientDTO());
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
     }
-    return ok(conversation.toClientDTO());
   }
 
   async updateConversation(id: string, input: unknown): Promise<Result<UpdateConversationRes>> {
@@ -97,12 +110,20 @@ export class AIChatController {
       });
     }
 
-    return ok(await this.conversationService.updateConversation(id, parsed.data));
+    try {
+      return ok(await this.conversationService.updateConversation(id, parsed.data));
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 
   async deleteConversation(id: string) {
-    await this.conversationService.deleteConversation(id);
-    return ok(undefined);
+    try {
+      await this.conversationService.deleteConversation(id);
+      return ok(undefined);
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 
   async sendMessage(input: unknown, identityId: string): Promise<Result<SendMessageRes>> {
@@ -115,15 +136,19 @@ export class AIChatController {
       });
     }
 
-    return ok(
-      await this.chatService.sendMessage(
-        identityId,
-        parsed.data.conversationId,
-        parsed.data.content,
-        parsed.data.providerId,
-        parsed.data.model,
-      ),
-    );
+    try {
+      return ok(
+        await this.chatService.sendMessage(
+          identityId,
+          parsed.data.conversationId,
+          parsed.data.content,
+          parsed.data.providerId,
+          parsed.data.model,
+        ),
+      );
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 
   async streamMessage(
@@ -142,16 +167,20 @@ export class AIChatController {
       return parsed;
     }
 
-    return ok(
-      await this.chatService.streamMessage(
-        identityId,
-        parsed.data.conversationId,
-        parsed.data.content,
-        onChunk,
-        parsed.data.providerId,
-        parsed.data.model,
-      ),
-    );
+    try {
+      return ok(
+        await this.chatService.streamMessage(
+          identityId,
+          parsed.data.conversationId,
+          parsed.data.content,
+          onChunk,
+          parsed.data.providerId,
+          parsed.data.model,
+        ),
+      );
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 
   parseSendMessage(input: unknown): Result<{
@@ -187,20 +216,24 @@ export class AIChatController {
       });
     }
 
-    const conversation = await this.conversationService.getConversation(
-      parsed.data.conversationId,
-      true,
-    );
-    if (!conversation) {
-      return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
-    }
+    try {
+      const conversation = await this.conversationService.getConversation(
+        parsed.data.conversationId,
+        true,
+      );
+      if (!conversation) {
+        return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
+      }
 
-    const messages = conversation.getAllMessages().map((message) => message.toClientDTO());
-    return ok({
-      data: messages,
-      total: messages.length,
-      page: parsed.data.page ?? 1,
-      pageSize: parsed.data.pageSize ?? 50,
-    });
+      const messages = conversation.getAllMessages().map((message) => message.toClientDTO());
+      return ok({
+        data: messages,
+        total: messages.length,
+        page: parsed.data.page ?? 1,
+        pageSize: parsed.data.pageSize ?? 50,
+      });
+    } catch (error) {
+      return toAIControllerFailure(error, 'AI chat failed');
+    }
   }
 }

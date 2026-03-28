@@ -49,6 +49,7 @@ export class GoalGenerationApplicationService {
         params.providerId,
       );
       const executionProviderConfig = toChatExecutionProviderConfig(provider, {
+        modelOverride: params.model,
         temperature: 0.3,
       });
       providerMetadata = {
@@ -90,6 +91,7 @@ export class GoalGenerationApplicationService {
           timeframe: params.timeframe,
           includeKeyResults: params.includeKeyResults ?? true,
           selectedProviderId: params.providerId,
+          selectedModel: params.model,
         },
         result: {
           goalTitle: result.goal.title,
@@ -114,6 +116,7 @@ export class GoalGenerationApplicationService {
           timeframe: params.timeframe,
           includeKeyResults: params.includeKeyResults ?? true,
           selectedProviderId: params.providerId,
+          selectedModel: params.model,
         },
         error: error instanceof Error ? error.message : 'Goal generation failed',
         processingMs: Date.now() - startedAt,

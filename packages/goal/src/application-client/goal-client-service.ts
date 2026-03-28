@@ -69,6 +69,7 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
   const dtoWithSummary = dto as GoalClientDTO & {
     totalKeyResults?: number;
     completedKeyResults?: number;
+    overallProgress?: number;
   };
 
   return Goal.load({
@@ -100,6 +101,7 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     reviews: dto.reviews?.map((r) => goalReviewFromDTO(r)) ?? null,
     totalKeyResults: dtoWithSummary.totalKeyResults,
     completedKeyResults: dtoWithSummary.completedKeyResults,
+    overallProgress: dtoWithSummary.overallProgress,
   });
 }
 

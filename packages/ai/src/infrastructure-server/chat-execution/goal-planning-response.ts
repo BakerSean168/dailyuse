@@ -3,6 +3,10 @@ import {
   type GeneratedGoalDraft,
   type KeyResultPreview,
 } from '@dailyuse/contracts/ai';
+import {
+  KeyResultCalculationMethod,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 export function parseGoalPlanningResponse(
@@ -15,8 +19,11 @@ export function parseGoalPlanningResponse(
 } {
   const parsed = safeParseJson(stripCodeFence(content));
   const goalRecord = asRecord(parsed?.goal);
+  const suggestedStartDate = toTimestamp(goalRecord?.suggestedStartDate) ?? now;
   const suggestedDurationDays = toPositiveInteger(goalRecord?.suggestedDurationDays) ?? 30;
-  const suggestedEndDate = now + suggestedDurationDays * 24 * 60 * 60 * 1000;
+  const suggestedEndDate =
+    toTimestamp(goalRecord?.suggestedEndDate) ??
+    suggestedStartDate + suggestedDurationDays * 24 * 60 * 60 * 1000;
 
   const goal: GeneratedGoalDraft = {
     title: toNonEmptyString(goalRecord?.title) ?? 'AI generated goal',
@@ -27,8 +34,11 @@ export function parseGoalPlanningResponse(
     tags: toStringArray(goalRecord?.tags),
     feasibilityAnalysis: toOptionalString(goalRecord?.feasibilityAnalysis),
     aiInsights: toOptionalString(goalRecord?.aiInsights),
-    suggestedStartDate: now,
-    suggestedEndDate,
+    suggestedStartDate,
+    suggestedEndDate:
+      suggestedEndDate >= suggestedStartDate
+        ? suggestedEndDate
+        : suggestedStartDate + 30 * 24 * 60 * 60 * 1000,
   };
 
   const keyResults = includeKeyResults ? toKeyResults(parsed?.keyResults) : undefined;
@@ -41,9 +51,12 @@ export function parseGoalPlanningResponse(
 
 export function buildGoalGenerationSystemPrompt(): string {
   return [
-    'You are an assistant that turns a rough idea into a practical personal goal draft.',
+    'You are an assistant that turns a rough idea into a practical personal goal draft that is ready for a goal creation form.',
     'Respond with JSON only.',
     'Do not include markdown code fences.',
+    'Be concrete. Preserve any numbers, dates, and progress already provided by the user.',
+    'If a number is unknown, make a reasonable default and keep it internally consistent.',
+    'If the user already gave current progress, copy it into both startValue and currentValue unless a better start value is explicit.',
     'JSON shape:',
     '{',
     '  "goal": {',
@@ -55,17 +68,29 @@ export function buildGoalGenerationSystemPrompt(): string {
     '    "tags": string[],',
     '    "feasibilityAnalysis": string,',
     '    "aiInsights": string,',
+    '    "suggestedStartDate": "YYYY-MM-DD" | number,',
+    '    "suggestedEndDate": "YYYY-MM-DD" | number,',
     '    "suggestedDurationDays": number',
     '  },',
     '  "keyResults": [',
     '    {',
     '      "title": string,',
     '      "description": string,',
+    '      "valueType": "Incremental" | "Absolute" | "Percentage" | "Binary",',
+    '      "calculationMethod": "Sum" | "Average" | "Max" | "Min" | "Last",',
+    '      "startValue": number,',
+    '      "currentValue": number,',
     '      "targetValue": number,',
-    '      "unit": string',
+    '      "unit": string,',
+    '      "weight": 1 | 2 | 3 | 4 | 5',
     '    }',
     '  ]',
     '}',
+    'Rules for key results:',
+    '- Use Binary only for done/not-done milestones with targetValue 1.',
+    '- Use Incremental + Sum for accumulation goals such as points, counts, pages, or hours.',
+    '- Use Absolute + Last for state-based goals.',
+    '- Keep weight between 1 and 5.',
     'Keep the output realistic, specific, and concise.',
   ].join('\n');
 }
@@ -124,6 +149,39 @@ function toPositiveInteger(value: unknown): number | undefined {
     : undefined;
 }
 
+function toNumber(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+}
+
+function toTimestamp(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.round(value);
+  }
+
+  if (typeof value !== 'string' || !value.trim()) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  const parsed = Date.parse(trimmed);
+  if (!Number.isNaN(parsed)) {
+    return parsed;
+  }
+
+  return undefined;
+}
+
 function toStringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value
@@ -160,6 +218,36 @@ function toImportanceLevel(value: unknown): GeneratedGoalDraft['importance'] {
   }
 }
 
+function toValueType(value: unknown): KeyResultPreview['valueType'] {
+  switch (value) {
+    case KeyResultValueType.Incremental:
+    case KeyResultValueType.Absolute:
+    case KeyResultValueType.Percentage:
+    case KeyResultValueType.Binary:
+      return value;
+    default:
+      return KeyResultValueType.Incremental;
+  }
+}
+
+function toCalculationMethod(
+  value: unknown,
+  valueType: KeyResultPreview['valueType'],
+): KeyResultPreview['calculationMethod'] {
+  switch (value) {
+    case KeyResultCalculationMethod.Sum:
+    case KeyResultCalculationMethod.Average:
+    case KeyResultCalculationMethod.Max:
+    case KeyResultCalculationMethod.Min:
+    case KeyResultCalculationMethod.Last:
+      return value;
+    default:
+      return valueType === KeyResultValueType.Incremental
+        ? KeyResultCalculationMethod.Sum
+        : KeyResultCalculationMethod.Last;
+  }
+}
+
 function toKeyResults(value: unknown): KeyResultPreview[] {
   if (!Array.isArray(value)) {
     return [];
@@ -168,10 +256,28 @@ function toKeyResults(value: unknown): KeyResultPreview[] {
   return value
     .map((item) => asRecord(item))
     .filter((item): item is Record<string, unknown> => item !== null)
-    .map((item) => ({
-      title: toNonEmptyString(item.title) ?? 'Review generated draft',
-      description: toOptionalString(item.description),
-      targetValue: toPositiveInteger(item.targetValue) ?? 1,
-      unit: toNonEmptyString(item.unit) ?? 'step',
-    }));
+    .map((item) => {
+      const valueType = toValueType(item.valueType);
+      const startValue = toNumber(item.startValue) ?? 0;
+      const currentValue = toNumber(item.currentValue) ?? startValue;
+      const targetValue =
+        valueType === KeyResultValueType.Binary ? 1 : (toNumber(item.targetValue) ?? 1);
+
+      return {
+        title: toNonEmptyString(item.title) ?? 'Review generated draft',
+        description: toOptionalString(item.description),
+        valueType,
+        calculationMethod: toCalculationMethod(item.calculationMethod, valueType),
+        startValue,
+        currentValue,
+        targetValue,
+        unit:
+          valueType === KeyResultValueType.Binary
+            ? toNonEmptyString(item.unit) ?? 'done'
+            : toNonEmptyString(item.unit) ?? 'step',
+        weight: toPositiveInteger(item.weight) && (toPositiveInteger(item.weight) as number) <= 5
+          ? (toPositiveInteger(item.weight) as number)
+          : 1,
+      };
+    });
 }

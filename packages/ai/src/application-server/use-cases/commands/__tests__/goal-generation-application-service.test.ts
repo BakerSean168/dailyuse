@@ -59,8 +59,13 @@ class StubGoalPlanningPort implements IGoalPlanningPort {
         {
           title: 'Finish provider abstraction',
           description: 'Route AI calls through a shared execution port.',
+          valueType: 'Incremental',
+          calculationMethod: 'Sum',
+          startValue: 0,
+          currentValue: 0,
           targetValue: 1,
           unit: 'milestone',
+          weight: 1,
         },
       ],
       usage: {
@@ -140,8 +145,13 @@ describe('GoalGenerationApplicationService', () => {
       {
         title: 'Finish provider abstraction',
         description: 'Route AI calls through a shared execution port.',
+        valueType: 'Incremental',
+        calculationMethod: 'Sum',
+        startValue: 0,
+        currentValue: 0,
         targetValue: 1,
         unit: 'milestone',
+        weight: 1,
       },
     ]);
     expect(result.providerId).toBe('provider-1');

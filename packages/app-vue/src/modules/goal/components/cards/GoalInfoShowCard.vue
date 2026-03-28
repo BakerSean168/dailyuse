@@ -58,6 +58,7 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import KeyResultCard from './KeyResultCard.vue';
+import { getGoalOverallProgress } from '../../utils/progress';
 
 const props = defineProps<{
   goal: GoalClientDTO;
@@ -75,16 +76,7 @@ const emit = defineEmits<{
 const keyResults = computed(() => props.goal.keyResults ?? []);
 
 const overallProgress = computed(() => {
-  if (keyResults.value.length === 0) return 0;
-
-  const total = keyResults.value.reduce((acc, keyResult) => {
-    const target = keyResult.progress.targetValue || 0;
-    const current = keyResult.progress.currentValue || 0;
-    if (target <= 0) return acc;
-    return acc + Math.min(100, Math.max(0, (current / target) * 100));
-  }, 0);
-
-  return Math.round(total / keyResults.value.length);
+  return getGoalOverallProgress(props.goal);
 });
 
 const todayProgress = computed(() => 0);

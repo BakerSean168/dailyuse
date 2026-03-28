@@ -99,6 +99,7 @@ export default {
   nav: {
     home: '首页',
     dashboard: '仪表盘',
+    aiChat: 'AI 对话',
     goals: '目标',
     tasks: '任务',
     schedule: '日程',
@@ -121,6 +122,59 @@ export default {
     configureProviderNotice: '请先在设置中配置兼容 OpenAI 的 AI 提供方，再使用 AI 功能。',
     providerSummaryEmpty: '当前还没有配置 AI 提供方。',
     providerSummaryConfigured: '已配置 {count} 个 AI 提供方。',
+    chatPage: {
+      eyebrow: 'AI Workspace',
+      title: 'AI 对话',
+      subtitle: '像 Gemini 或 GPT 一样，把会话、模型选择和输入区固定在同一工作区里。',
+      emptyTitle: '从一个问题开始',
+      emptyDescription:
+        '选择提供商和模型，然后直接在这里持续对话。历史会话会保留在左侧，方便随时继续。',
+      chatUnavailable: '当前 AI 运行模式不支持聊天能力，请先检查 AI 服务配置。',
+      composerSummary: '当前使用 {provider} · {model}',
+      modelPending: '未选择模型',
+      emptyModels: '当前没有可用模型，可以前往设置配置 AI 提供方和模型。',
+      toolIntro: {
+        goal: {
+          title: '开始生成目标',
+          description:
+            '先用对话补充目标背景、范围、成功标准和时间预期，整理好后再生成结构化草稿。',
+        },
+        knowledgeNote: {
+          title: '开始创建知识笔记',
+          description:
+            '先把主题、来源和想保留的重点聊清楚，确认后会直接在后台创建 Markdown 笔记。',
+        },
+      },
+      workflow: {
+        activeMode: '当前工具',
+        toolButton: '工具',
+        goalCollectingHint: '继续通过对话补充背景，准备好后生成目标草稿。',
+        goalDraftReadyHint: '目标草稿已就绪，可以直接创建，或先展开编辑再确认。',
+        noteCollectingHint: '继续通过对话整理笔记内容，确认后会直接创建到知识库。',
+        noteCreatedHint: '知识笔记已创建到 {path}。',
+        generateGoalDraft: '生成目标草稿',
+        regenerateGoalDraft: '重新生成',
+        createGoalDirectly: '直接创建目标',
+        editGoalBeforeCreate: '编辑后创建',
+        hideGoalEditor: '收起编辑',
+        createKnowledgeNote: '创建知识笔记',
+        openCreatedNote: '打开笔记',
+        startAnotherNote: '新建笔记对话',
+        exitTool: '退出工具',
+        goalDraftTitle: '目标草稿',
+        noteCreatedTitle: '知识笔记已创建',
+        noteTopicFallback: '根据本次对话整理一篇知识笔记',
+        tools: {
+          chat: '普通对话',
+          goal: '生成目标',
+          knowledgeNote: '创建知识笔记',
+        },
+        defaultConversationNames: {
+          goal: '目标规划',
+          knowledgeNote: '知识笔记',
+        },
+      },
+    },
     actions: {
       generateGoal: '生成目标',
       automateGoalSetup: '自动化目标设置',
@@ -149,10 +203,13 @@ export default {
         product: '产品',
         engineering: '工程',
         marketing: '市场',
+        work: '工作',
         personal: '个人',
         health: '健康',
         finance: '财务',
         learning: '学习',
+        relationship: '关系',
+        other: '其他',
       },
       importanceLevels: {
         vital: '关键',

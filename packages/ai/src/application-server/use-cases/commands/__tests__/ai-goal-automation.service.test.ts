@@ -66,8 +66,13 @@ class StubGoalAutomationPlanningPort implements IGoalAutomationPlanningPort {
       {
         title: 'Expose confirmation UX',
         description: 'Users can approve the action plan.',
+        valueType: 'Incremental',
+        calculationMethod: 'Sum',
+        startValue: 0,
+        currentValue: 0,
         targetValue: 1,
         unit: 'milestone',
+        weight: 1,
       },
     ],
     taskTemplates: [
@@ -185,8 +190,13 @@ describe('AIGoalAutomationService', () => {
           {
             title: 'Expose confirmation UX',
             description: 'Users can approve the action plan.',
+            valueType: 'Incremental',
+            calculationMethod: 'Sum',
+            startValue: 0,
+            currentValue: 0,
             targetValue: 1,
             unit: 'milestone',
+            weight: 1,
           },
         ],
         taskTemplates: [

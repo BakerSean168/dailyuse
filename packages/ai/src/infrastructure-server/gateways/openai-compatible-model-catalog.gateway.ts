@@ -19,6 +19,8 @@ interface OpenAICompatibleModelsResponse {
   }>;
 }
 
+type OpenAICompatibleModelRow = NonNullable<OpenAICompatibleModelsResponse['data']>[number];
+
 const EXCLUDED_MODEL_PATTERNS = [
   /embedding/i,
   /whisper/i,
@@ -78,7 +80,7 @@ function buildModelsUrl(baseUrl: string): string {
   return new URL('models', normalizedBaseUrl).toString();
 }
 
-function normalizeModel(row: OpenAICompatibleModelsResponse['data'][number]): AIModelInfo | null {
+function normalizeModel(row: OpenAICompatibleModelRow): AIModelInfo | null {
   const id = row.id?.trim();
   if (!id || EXCLUDED_MODEL_PATTERNS.some((pattern) => pattern.test(id))) {
     return null;

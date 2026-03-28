@@ -67,6 +67,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadc
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
+import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 const { t } = useI18n();
 
@@ -105,10 +106,6 @@ const menuActions = computed<MenuAction[]>(() => [
 ]);
 
 const progressPercentage = computed(() => {
-  const target = props.keyResult.progress.targetValue || 0;
-  const current = props.keyResult.progress.currentValue || 0;
-  if (target <= 0) return 0;
-  const value = (current / target) * 100;
-  return Math.round(Math.min(100, Math.max(0, value)));
+  return getKeyResultProgressPercentage(props.keyResult.progress);
 });
 </script>

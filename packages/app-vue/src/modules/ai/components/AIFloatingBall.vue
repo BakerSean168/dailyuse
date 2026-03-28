@@ -87,7 +87,7 @@
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
-          @click="handleOpenChatDialog"
+          @click="openChatPage"
         >
           <MessageCircle class="mr-2 h-4 w-4" />
           {{ t('aiAssistant.actions.aiChat') }}
@@ -173,9 +173,10 @@
             :key-results="editableKeyResults"
             :is-submitting="creatingGoal"
             @confirm="handleCreateGoalFromDraft"
-            @add-key-result="addKeyResult"
-            @remove-key-result="removeKeyResult"
+            @add-key-result="addKeyResultDraft"
+            @remove-key-result="removeKeyResultDraft"
             @update-goal="editableGoal = $event"
+            @update-key-result="updateKeyResultDraft"
           />
         </div>
       </DialogContent>
@@ -293,184 +294,6 @@
               class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
               {{ t('aiAssistant.dialogs.automation.emptyState') }}
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog :open="openChatDialog" @update:open="openChatDialog = $event">
-      <DialogContent class="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{{ t('aiAssistant.dialogs.chat.title') }}</DialogTitle>
-        </DialogHeader>
-        <div class="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
-          <div class="space-y-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  {{ t('aiAssistant.dialogs.chat.recentConversations') }}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  :disabled="conversationListLoading"
-                  @click="loadConversations"
-                >
-                  {{ t('aiAssistant.dialogs.chat.refresh') }}
-                </Button>
-              </div>
-              <div class="max-h-40 space-y-2 overflow-y-auto">
-                <button
-                  v-for="item in conversationList"
-                  :key="item.id"
-                  class="w-full rounded-xl border border-border/60 bg-background/80 px-3 py-2 text-left text-sm hover:bg-muted/40"
-                  @click="selectConversation(item)"
-                >
-                  <div class="flex items-center justify-between gap-2">
-                    <Input
-                      :model-value="
-                        conversationDraftNames[item.id] ?? item.name ?? item.title ?? ''
-                      "
-                      class="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                      @click.stop
-                      @update:model-value="updateConversationDraft(item.id, String($event))"
-                      @blur="renameConversation(item)"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      class="h-7 px-2"
-                      @click.stop="deleteConversation(item.id)"
-                    >
-                      {{ t('aiAssistant.dialogs.chat.delete') }}
-                    </Button>
-                  </div>
-                </button>
-                <p
-                  v-if="!conversationList.length && !conversationListLoading"
-                  class="text-sm text-muted-foreground"
-                >
-                  {{ t('aiAssistant.dialogs.chat.noSavedConversations') }}
-                </p>
-              </div>
-            </div>
-
-            <Input
-              v-model="conversationName"
-              :placeholder="t('aiAssistant.dialogs.chat.conversationPlaceholder')"
-            />
-            <div
-              v-if="!hasProviders"
-              class="rounded-xl border border-amber-300/60 bg-amber-50/80 px-3 py-2 text-sm text-amber-900"
-            >
-              {{ t('aiAssistant.dialogs.chat.providerRequired') }}
-            </div>
-            <Textarea
-              v-model="chatMessage"
-              class="min-h-36"
-              :placeholder="t('aiAssistant.dialogs.chat.messagePlaceholder')"
-            />
-            <div class="grid gap-2 sm:grid-cols-2">
-              <div class="space-y-1">
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  {{ t('aiAssistant.dialogs.chat.provider') }}
-                </p>
-                <Select
-                  :model-value="selectedChatProviderId"
-                  :disabled="!providerList.length"
-                  @update:model-value="
-                    selectedChatProviderId = String($event);
-                    syncChatProviderSelection();
-                  "
-                >
-                  <SelectTrigger>
-                    <SelectValue :placeholder="t('aiAssistant.dialogs.chat.providerPlaceholder')" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="provider in providerList"
-                      :key="provider.id"
-                      :value="provider.id"
-                    >
-                      {{ provider.name || t('common.unknown') }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div class="space-y-1">
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  {{ t('aiAssistant.dialogs.chat.model') }}
-                </p>
-                <Select
-                  :model-value="selectedChatModel"
-                  :disabled="!availableChatModels.length"
-                  @update:model-value="selectedChatModel = String($event)"
-                >
-                  <SelectTrigger>
-                    <SelectValue :placeholder="t('aiAssistant.dialogs.chat.modelPlaceholder')" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="model in availableChatModels"
-                      :key="model.id"
-                      :value="model.id"
-                    >
-                      {{ model.name || model.id }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <Button
-              class="w-full"
-              :disabled="chatLoading || !chatMessage.trim() || !hasProviders"
-              @click="handleSendChat"
-            >
-              {{
-                chatLoading
-                  ? t('aiAssistant.dialogs.chat.sending')
-                  : t('aiAssistant.dialogs.chat.sendMessage')
-              }}
-            </Button>
-            <Button
-              v-if="chatConversationId"
-              variant="outline"
-              class="w-full"
-              @click="resetChatSession"
-            >
-              {{ t('aiAssistant.dialogs.chat.newConversation') }}
-            </Button>
-          </div>
-
-          <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
-            <div v-if="chatTimeline.length" class="max-h-[26rem] space-y-3 overflow-y-auto pr-1">
-              <div
-                v-for="item in chatTimeline"
-                :key="item.id"
-                :class="[
-                  'rounded-2xl p-3 text-sm',
-                  item.role === 'user'
-                    ? 'ml-10 bg-primary text-primary-foreground'
-                    : 'mr-10 border border-border/60 bg-muted/25',
-                ]"
-              >
-                <p class="mb-1 text-[11px] uppercase tracking-[0.18em] opacity-70">
-                  {{
-                    item.role === 'user'
-                      ? t('aiAssistant.dialogs.chat.you')
-                      : t('aiAssistant.dialogs.chat.assistant')
-                  }}
-                </p>
-                <p class="whitespace-pre-wrap leading-6">{{ item.content }}</p>
-              </div>
-            </div>
-
-            <div
-              v-else
-              class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
-            >
-              {{ t('aiAssistant.dialogs.chat.emptyState') }}
             </div>
           </div>
         </div>
@@ -1137,17 +960,18 @@ import { useI18n } from 'vue-i18n';
 import { BarChart3, Bot, MessageCircle, NotebookPen, Search, Sparkles, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import {
+  type AddKeyResultReq,
+  type CreateGoalReq,
+  KeyResultCalculationMethod,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
+import {
   Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Textarea,
 } from '@dailyuse/ui-vue-shadcn';
 import { useAI } from '../composables/useAI';
@@ -1155,8 +979,6 @@ import { useUserSetting } from '../../setting/composables/useUserSetting';
 import { useGoal } from '../../goal/composables/useGoal';
 import { useRepository } from '../../repository/composables/useRepository';
 import { useEditorWorkspaceActions } from '../../editor/composables';
-import { GOAL_SERVICE_KEY } from '../../../di/keys';
-import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import AIGoalDraftEditor from './AIGoalDraftEditor.vue';
 
@@ -1166,20 +988,24 @@ type GoalDraft = {
     title?: string;
     description: string;
     category: string;
-    importance: string;
+    importance: CreateGoalReq['importance'];
+    motivation?: string;
+    feasibilityAnalysis?: string;
+    tags?: string[];
+    suggestedStartDate: number;
+    suggestedEndDate: number;
   };
   keyResults?: Array<{
     title: string;
     description?: string;
+    valueType: AddKeyResultReq['valueType'];
+    calculationMethod: AddKeyResultReq['calculationMethod'];
+    startValue: number;
+    currentValue: number;
     targetValue: number;
     unit: string;
+    weight: number;
   }>;
-};
-
-type ChatItem = {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
 };
 
 type NoteSummary = {
@@ -1191,12 +1017,6 @@ type SavedDraftSummary = {
   id: string;
   name?: string;
   path?: string;
-};
-
-type ConversationSummary = {
-  id: string;
-  name?: string;
-  title?: string;
 };
 
 type ProviderListItem = {
@@ -1269,11 +1089,6 @@ type GoalAutomationResult = {
     message: string;
   }>;
   processingTimeMs: number;
-};
-
-type StreamDoneResult = {
-  userMessage?: { id: string; content: string };
-  assistantMessage?: { id: string; content: string };
 };
 
 type KnowledgeCitation = {
@@ -1367,17 +1182,15 @@ const {
   expandKnowledge,
 } = useAI();
 const { getCategory } = useUserSetting();
-const { createGoal } = useGoal();
+const { createGoal, addKeyResult } = useGoal();
 const { resources, fetchResources, initRepository, createMarkdownNote } = useRepository();
 const { requestOpenResource } = useEditorWorkspaceActions();
-const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 const router = useRouter();
 const { t, locale } = useI18n();
 
 const open = ref(false);
 const openGoalDialog = ref(false);
 const openAutomationDialog = ref(false);
-const openChatDialog = ref(false);
 const openNoteDialog = ref(false);
 const openKnowledgeExpansionDialog = ref(false);
 const openKnowledgeDialog = ref(false);
@@ -1388,31 +1201,24 @@ const goalIdea = ref('');
 const goalLoading = ref(false);
 const goalDraft = ref<GoalDraft | null>(null);
 const creatingGoal = ref(false);
-const editableGoal = ref({
-  name: '',
-  description: '',
-  category: '',
-  importance: ImportanceLevel.Moderate,
-});
+const editableGoal = ref(createEmptyGoalDraft());
 const editableKeyResults = ref<
-  Array<{ title: string; description: string; targetValue: number; unit: string }>
+  Array<{
+    title: string;
+    description: string;
+    valueType: AddKeyResultReq['valueType'];
+    calculationMethod: AddKeyResultReq['calculationMethod'];
+    startValue: number;
+    currentValue: number;
+    targetValue: number;
+    unit: string;
+    weight: number;
+  }>
 >([]);
 const automationIdea = ref('');
 const automationLoading = ref(false);
 const automationExecuting = ref(false);
 const automationResult = ref<GoalAutomationResult | null>(null);
-
-const conversationName = ref('Quick Chat');
-const chatMessage = ref('');
-const chatLoading = ref(false);
-const chatConversationId = ref('');
-const chatTimeline = ref<ChatItem[]>([]);
-const conversationListLoading = ref(false);
-const conversationList = ref<ConversationSummary[]>([]);
-const lastActiveConversationId = ref('');
-const conversationDraftNames = ref<Record<string, string>>({});
-const selectedChatProviderId = ref('');
-const selectedChatModel = ref('');
 
 const noteTitle = ref('');
 const noteTopic = ref('');
@@ -1452,7 +1258,6 @@ const anyDialogOpen = computed(
   () =>
     openGoalDialog.value ||
     openAutomationDialog.value ||
-    openChatDialog.value ||
     openNoteDialog.value ||
     openKnowledgeExpansionDialog.value ||
     openKnowledgeDialog.value ||
@@ -1550,70 +1355,45 @@ const providerSummaryText = computed(() => {
     count: providerList.value.length,
   });
 });
-const selectedChatProvider = computed(() => {
-  if (!providerList.value.length) {
-    return null;
-  }
-
-  return (
-    providerList.value.find((item) => item.id === selectedChatProviderId.value) ||
-    activeProvider.value ||
-    providerList.value[0] ||
-    null
-  );
-});
-const availableChatModels = computed(() => {
-  const provider = selectedChatProvider.value;
-  const models = provider?.availableModels ?? [];
-  if (models.length > 0) {
-    return models;
-  }
-
-  if (provider?.defaultModel) {
-    return [{ id: provider.defaultModel, name: provider.defaultModel }];
-  }
-
-  return [];
-});
 const notePreview = computed(() => {
   const content = noteSummary.value?.resource?.content;
   if (!content) return t('aiAssistant.dialogs.note.previewUnavailable');
   return content.slice(0, 280);
 });
 
+function createEmptyGoalDraft(): {
+  name: string;
+  description: string;
+  category: string;
+  importance: CreateGoalReq['importance'];
+  motivation: string;
+  feasibilityAnalysis: string;
+  tags: string[];
+  startDate: number | null;
+  targetDate: number | null;
+} {
+  return {
+    name: '',
+    description: '',
+    category: '',
+    importance: ImportanceLevel.Moderate,
+    motivation: '',
+    feasibilityAnalysis: '',
+    tags: [],
+    startDate: null,
+    targetDate: null,
+  };
+}
+
 onMounted(() => {
-  void loadProviders().then(() => {
-    syncChatProviderSelection();
-  });
+  void loadProviders();
   void loadCapabilities();
   void initRepository();
-  lastActiveConversationId.value = localStorage.getItem('ai:last-conversation-id') || '';
 });
-
-function syncChatProviderSelection() {
-  if (!providerList.value.length) {
-    selectedChatProviderId.value = '';
-    selectedChatModel.value = '';
-    return;
-  }
-
-  if (!providerList.value.some((item) => item.id === selectedChatProviderId.value)) {
-    selectedChatProviderId.value = activeProvider.value?.id ?? providerList.value[0]?.id ?? '';
-  }
-
-  if (!availableChatModels.value.some((item) => item.id === selectedChatModel.value)) {
-    selectedChatModel.value =
-      selectedChatProvider.value?.defaultModel ??
-      availableChatModels.value[0]?.id ??
-      '';
-  }
-}
 
 function togglePanel() {
   if (!open.value) {
-    void loadProviders().then(() => {
-      syncChatProviderSelection();
-    });
+    void loadProviders();
     void loadCapabilities();
   }
   open.value = !open.value;
@@ -1627,11 +1407,7 @@ async function ensureAIContext(options?: { providers?: boolean; capabilities?: b
   try {
     const tasks: Promise<unknown>[] = [];
     if (options?.providers !== false) {
-      tasks.push(
-        loadProviders().then(() => {
-          syncChatProviderSelection();
-        }),
-      );
+      tasks.push(loadProviders());
     }
     if (options?.capabilities !== false) {
       tasks.push(loadCapabilities());
@@ -1654,6 +1430,12 @@ async function openAutomationDialogPanel() {
   closeFloatingPanel();
   if (!(await ensureAIContext())) return;
   openAutomationDialog.value = true;
+}
+
+async function openChatPage() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext({ capabilities: false }))) return;
+  await router.push('/ai/chat');
 }
 
 async function openNoteDialogPanel() {
@@ -1680,42 +1462,6 @@ async function openAnalyticsDialogPanel() {
   openAnalyticsDialog.value = true;
 }
 
-async function loadConversations() {
-  conversationListLoading.value = true;
-  try {
-    const result = (await service.listConversations({ page: 1, pageSize: 12 })) as {
-      data?: ConversationSummary[];
-    };
-    conversationList.value = result.data ?? [];
-    conversationDraftNames.value = Object.fromEntries(
-      conversationList.value.map((item) => [item.id, item.name || item.title || '']),
-    );
-  } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.loadFailed'));
-  } finally {
-    conversationListLoading.value = false;
-  }
-}
-
-async function handleOpenChatDialog() {
-  closeFloatingPanel();
-  if (!(await ensureAIContext())) return;
-  openChatDialog.value = true;
-  try {
-    await loadConversations();
-    if (lastActiveConversationId.value) {
-      const existing = conversationList.value.find(
-        (item) => item.id === lastActiveConversationId.value,
-      );
-      if (existing) {
-        await selectConversation(existing);
-      }
-    }
-  } catch {
-    // `loadConversations` already surfaced a localized toast.
-  }
-}
-
 async function handleGenerateGoal() {
   goalLoading.value = true;
   try {
@@ -1727,14 +1473,28 @@ async function handleGenerateGoal() {
       name: goalDraft.value.goal.name ?? goalDraft.value.goal.title ?? '',
       description: goalDraft.value.goal.description,
       category: goalDraft.value.goal.category,
-      importance: goalDraft.value.goal.importance as typeof editableGoal.value.importance,
+      importance: goalDraft.value.goal.importance,
+      motivation: goalDraft.value.goal.motivation ?? '',
+      feasibilityAnalysis: goalDraft.value.goal.feasibilityAnalysis ?? '',
+      tags: [...(goalDraft.value.goal.tags ?? [])],
+      startDate: goalDraft.value.goal.suggestedStartDate ?? null,
+      targetDate: goalDraft.value.goal.suggestedEndDate ?? null,
     };
     editableKeyResults.value =
       goalDraft.value.keyResults?.map((item) => ({
         title: item.title,
         description: item.description ?? '',
+        valueType: item.valueType || KeyResultValueType.Incremental,
+        calculationMethod:
+          item.calculationMethod ||
+          (item.valueType === KeyResultValueType.Incremental
+            ? KeyResultCalculationMethod.Sum
+            : KeyResultCalculationMethod.Last),
+        startValue: item.startValue ?? 0,
+        currentValue: item.currentValue ?? item.startValue ?? 0,
         targetValue: item.targetValue,
         unit: item.unit,
+        weight: item.weight ?? 1,
       })) ?? [];
     toast.success(t('aiAssistant.dialogs.generateGoal.draftGenerated'));
   } catch (error) {
@@ -1756,7 +1516,11 @@ async function handleCreateGoalFromDraft() {
       description: editableGoal.value.description,
       category: editableGoal.value.category || undefined,
       importance: editableGoal.value.importance,
-      motivation: goalDraft.value.goal.description,
+      motivation: editableGoal.value.motivation || undefined,
+      feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
+      tags: editableGoal.value.tags.length ? editableGoal.value.tags : undefined,
+      startDate: editableGoal.value.startDate ?? undefined,
+      targetDate: editableGoal.value.targetDate ?? undefined,
     });
 
     if (!created) {
@@ -1766,12 +1530,17 @@ async function handleCreateGoalFromDraft() {
 
     if (editableKeyResults.value.length) {
       for (const item of editableKeyResults.value) {
-        await goalService.createKeyResult(created.id, {
-          ...({} as any),
+        await addKeyResult(created.id, {
+          goalId: created.id as never,
           title: item.title,
           description: item.description || undefined,
+          valueType: item.valueType,
+          calculationMethod: item.calculationMethod,
+          startValue: item.startValue,
           targetValue: item.targetValue,
-          unit: item.unit,
+          currentValue: item.currentValue,
+          unit: item.unit || undefined,
+          weight: item.weight,
         });
       }
     }
@@ -1785,75 +1554,6 @@ async function handleCreateGoalFromDraft() {
     );
   } finally {
     creatingGoal.value = false;
-  }
-}
-
-async function handleSendChat() {
-  chatLoading.value = true;
-  let userDraftId = '';
-  let assistantDraftId = '';
-  try {
-    if (!chatConversationId.value) {
-      const conversation = (await service.createConversation({
-        name: conversationName.value.trim() || t('aiAssistant.dialogs.chat.defaultConversationName'),
-      })) as { id: string };
-      chatConversationId.value = conversation.id;
-      lastActiveConversationId.value = conversation.id;
-      localStorage.setItem('ai:last-conversation-id', conversation.id);
-    }
-
-    const pendingUserMessage = chatMessage.value;
-    userDraftId = `user-draft-${Date.now()}`;
-    assistantDraftId = `draft-${Date.now()}`;
-    chatTimeline.value.push(
-      { id: userDraftId, role: 'user', content: pendingUserMessage },
-      { id: assistantDraftId, role: 'assistant', content: '' },
-    );
-    chatMessage.value = '';
-
-    await service.streamMessage(
-      {
-        conversationId: chatConversationId.value as never,
-        content: pendingUserMessage,
-        ...(selectedChatProvider.value?.id ? { providerId: selectedChatProvider.value.id } : {}),
-        ...(selectedChatModel.value ? { model: selectedChatModel.value } : {}),
-      },
-      {
-        onChunk: (chunk: { role: 'assistant'; content: string }) => {
-          const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
-          if (target) {
-            target.content += chunk.content;
-          }
-        },
-        onDone: async (result: unknown) => {
-          const resolved = (result ?? {}) as StreamDoneResult;
-          const assistantIndex = chatTimeline.value.findIndex((item) => item.id === assistantDraftId);
-          if (assistantIndex >= 0 && resolved.assistantMessage) {
-            chatTimeline.value[assistantIndex] = {
-              id: resolved.assistantMessage.id,
-              role: 'assistant',
-              content: resolved.assistantMessage.content,
-            };
-          }
-          const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
-          if (userIndex >= 0 && resolved.userMessage) {
-            chatTimeline.value[userIndex] = {
-              id: resolved.userMessage.id,
-              role: 'user',
-              content: resolved.userMessage.content,
-            };
-          }
-          await loadConversations();
-        },
-      },
-    );
-  } catch (error) {
-    chatTimeline.value = chatTimeline.value.filter(
-      (item) => item.id !== userDraftId && item.id !== assistantDraftId,
-    );
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.sendFailed'));
-  } finally {
-    chatLoading.value = false;
   }
 }
 
@@ -1899,78 +1599,6 @@ async function handleExecuteAutomation() {
     );
   } finally {
     automationExecuting.value = false;
-  }
-}
-
-function resetChatSession() {
-  chatConversationId.value = '';
-  chatTimeline.value = [];
-  chatMessage.value = '';
-}
-
-async function selectConversation(item: ConversationSummary) {
-  chatConversationId.value = item.id;
-  lastActiveConversationId.value = item.id;
-  localStorage.setItem('ai:last-conversation-id', item.id);
-  conversationName.value =
-    item.name || item.title || t('aiAssistant.dialogs.chat.defaultConversationName');
-  try {
-    const result = (await service.listMessages(item.id, { page: 1, pageSize: 50 })) as {
-      data?: ChatItem[];
-    };
-    chatTimeline.value = result.data ?? [];
-    openChatDialog.value = true;
-  } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.loadFailed'));
-  }
-}
-
-async function deleteConversation(id: string) {
-  try {
-    await service.deleteConversation(id);
-    if (chatConversationId.value === id) {
-      resetChatSession();
-    }
-    if (lastActiveConversationId.value === id) {
-      lastActiveConversationId.value = '';
-      localStorage.removeItem('ai:last-conversation-id');
-    }
-    await loadConversations();
-    toast.success(t('aiAssistant.dialogs.chat.deleted'));
-  } catch (error) {
-    toast.error(
-      error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.deleteFailed'),
-    );
-  }
-}
-
-function updateConversationDraft(id: string, value: string) {
-  conversationDraftNames.value[id] = value;
-}
-
-async function renameConversation(item: ConversationSummary) {
-  const nextName = (conversationDraftNames.value[item.id] || '').trim();
-  const currentName = item.name || item.title || '';
-  if (!nextName || nextName === currentName) return;
-
-  try {
-    const updated = (await (service as any).updateConversation(item.id, { name: nextName })) as {
-      id: string;
-      name: string;
-    };
-    const target = conversationList.value.find((entry) => entry.id === updated.id);
-    if (target) {
-      target.name = updated.name;
-      target.title = updated.name;
-    }
-    if (chatConversationId.value === updated.id) {
-      conversationName.value = updated.name;
-    }
-  } catch (error) {
-    conversationDraftNames.value[item.id] = currentName;
-    toast.error(
-      error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.renameFailed'),
-    );
   }
 }
 
@@ -2204,17 +1832,39 @@ function formatActionStatus(status: NonNullable<GoalAutomationResult['executedAc
   return labels[status];
 }
 
-function addKeyResult() {
+function addKeyResultDraft() {
   editableKeyResults.value.push({
     title: '',
     description: '',
+    valueType: KeyResultValueType.Incremental,
+    calculationMethod: KeyResultCalculationMethod.Sum,
+    startValue: 0,
+    currentValue: 0,
     targetValue: 1,
     unit: t('aiAssistant.goalDraft.unit'),
+    weight: 1,
   });
 }
 
-function removeKeyResult(index: number) {
+function removeKeyResultDraft(index: number) {
   editableKeyResults.value.splice(index, 1);
+}
+
+function updateKeyResultDraft(payload: {
+  index: number;
+  value: {
+    title: string;
+    description: string;
+    valueType: AddKeyResultReq['valueType'];
+    calculationMethod: AddKeyResultReq['calculationMethod'];
+    startValue: number;
+    currentValue: number;
+    targetValue: number;
+    unit: string;
+    weight: number;
+  };
+}) {
+  editableKeyResults.value.splice(payload.index, 1, payload.value);
 }
 
 function resolveKnowledgeExpansionDraftName(): string {

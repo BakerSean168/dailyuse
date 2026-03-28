@@ -30,6 +30,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
+import { getGoalOverallProgress } from '../../utils/progress';
 
 const { t } = useI18n();
 
@@ -90,28 +91,8 @@ const resolveTimeRange = (goal: GoalWithDerivedMetrics | null) => {
   return { start, end };
 };
 
-const getProgressPercentage = (target: number, current: number) => {
-  if (!target || target <= 0) return 0;
-  return Math.min(100, Math.max(0, (current / target) * 100));
-};
-
 const computeGoalProgress = (goal: GoalWithDerivedMetrics | null): number => {
-  const keyResults = goal?.keyResults ?? [];
-  if (!keyResults.length) return 0;
-
-  const progressValues = keyResults.map((kr) =>
-    getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
-  );
-  const weights = keyResults.map((kr) => kr.weight ?? 1);
-  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-
-  if (totalWeight <= 0) {
-    const total = progressValues.reduce((sum, value) => sum + value, 0);
-    return total / keyResults.length;
-  }
-
-  const weightedSum = progressValues.reduce((sum, value, index) => sum + value * weights[index], 0);
-  return weightedSum / totalWeight;
+  return getGoalOverallProgress(goal);
 };
 
 const timeRangeSummary = computed(() => props.goal?.timeRangeSummary ?? null);

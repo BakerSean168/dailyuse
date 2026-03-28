@@ -5,6 +5,7 @@ import {
   type CreateKnowledgeNoteRes,
 } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
+import { toAIControllerFailure } from './ai-controller-errors';
 
 interface AIKnowledgeNoteControllerService {
   createKnowledgeNote(identityId: string, request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
@@ -23,6 +24,10 @@ export class AIKnowledgeNoteController {
       });
     }
 
-    return ok(await this.service.createKnowledgeNote(identityId, parsed.data));
+    try {
+      return ok(await this.service.createKnowledgeNote(identityId, parsed.data));
+    } catch (error) {
+      return toAIControllerFailure(error, 'Knowledge note generation failed');
+    }
   }
 }

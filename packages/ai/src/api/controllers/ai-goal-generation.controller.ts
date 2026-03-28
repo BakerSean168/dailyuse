@@ -9,6 +9,7 @@ import { fail, ok } from '@dailyuse/contracts/result';
 import { GenerateGoalsSchema } from '@dailyuse/contracts/ai';
 import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
+import { toAIControllerFailure } from './ai-controller-errors';
 
 interface AIGoalGenerationControllerService {
   generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<GenerateGoalsRes>;
@@ -27,15 +28,20 @@ export class AIGoalGenerationController {
       });
     }
 
-    const result = await this.service.generateGoal({
-      identityId,
-      idea: parsed.data.idea,
-      providerId: parsed.data.providerId,
-      category: parsed.data.category,
-      timeframe: parsed.data.timeframe,
-      includeKeyResults: parsed.data.includeKeyResults,
-    });
-
-    return ok(result);
+    try {
+      return ok(
+        await this.service.generateGoal({
+          identityId,
+          idea: parsed.data.idea,
+          providerId: parsed.data.providerId,
+          model: parsed.data.model,
+          category: parsed.data.category,
+          timeframe: parsed.data.timeframe,
+          includeKeyResults: parsed.data.includeKeyResults,
+        }),
+      );
+    } catch (error) {
+      return toAIControllerFailure(error, 'Goal generation failed');
+    }
   }
 }

@@ -20,6 +20,7 @@ use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer])
 const { t } = useI18n();
 
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 const props = defineProps<{
   goal: GoalClientDTO | null;
@@ -29,23 +30,13 @@ const fontColor = '#64748b';
 
 const keyResults = computed(() => props.goal?.keyResults || []);
 
-const getProgressPercentage = (target: number, current: number) => {
-  if (!target || target <= 0) return 0;
-  return Math.min(100, Math.max(0, (current / target) * 100));
-};
-
 const krNames = computed(() => props.goal?.keyResults?.map((kr) => kr.title) ?? []);
 const krProgress = computed(
-  () =>
-    props.goal?.keyResults?.map((kr) =>
-      getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
-    ) ?? [],
+  () => props.goal?.keyResults?.map((kr) => getKeyResultProgressPercentage(kr.progress)) ?? [],
 );
 
 const krBarOption = computed(() => {
-  const data = keyResults.value.map((kr) =>
-    getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
-  );
+  const data = keyResults.value.map((kr) => getKeyResultProgressPercentage(kr.progress));
   const max = data.length ? Math.max(...data) : 0;
   const min = data.length ? Math.min(...data) : 0;
   const maxIdx = data.indexOf(max);

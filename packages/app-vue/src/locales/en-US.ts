@@ -99,6 +99,7 @@ export default {
   nav: {
     home: 'Home',
     dashboard: 'Dashboard',
+    aiChat: 'AI Chat',
     goals: 'Goals',
     tasks: 'Tasks',
     schedule: 'Schedule',
@@ -122,6 +123,65 @@ export default {
       'Configure an OpenAI-compatible provider in Settings before using AI features.',
     providerSummaryEmpty: 'No AI provider configured yet.',
     providerSummaryConfigured: '{count} provider(s) configured.',
+    chatPage: {
+      eyebrow: 'AI Workspace',
+      title: 'AI Chat',
+      subtitle:
+        'Keep conversations, model selection, and the composer in one dedicated workspace, similar to Gemini or GPT.',
+      emptyTitle: 'Start with a prompt',
+      emptyDescription:
+        'Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.',
+      chatUnavailable:
+        'The current AI runtime mode does not support chat. Check the AI service configuration first.',
+      composerSummary: 'Using {provider} · {model}',
+      modelPending: 'No model selected',
+      emptyModels:
+        'No model is available yet. Open Settings to configure an AI provider and sync models.',
+      toolIntro: {
+        goal: {
+          title: 'Start Goal Planning',
+          description:
+            'Use the conversation to clarify scope, constraints, success criteria, and timing, then turn it into a structured goal draft.',
+        },
+        knowledgeNote: {
+          title: 'Start A Knowledge Note',
+          description:
+            'Use the conversation to clarify the topic, source, and key takeaways, then create the markdown note directly in the background.',
+        },
+      },
+      workflow: {
+        activeMode: 'Active Tool',
+        toolButton: 'Tools',
+        goalCollectingHint:
+          'Keep adding context in chat, then generate a structured goal draft when ready.',
+        goalDraftReadyHint:
+          'The goal draft is ready. Create it directly or open the editor for final adjustments.',
+        noteCollectingHint:
+          'Keep refining the note through chat, then create it directly in the knowledge base.',
+        noteCreatedHint: 'Knowledge note created at {path}.',
+        generateGoalDraft: 'Generate Goal Draft',
+        regenerateGoalDraft: 'Regenerate',
+        createGoalDirectly: 'Create Goal',
+        editGoalBeforeCreate: 'Edit Before Create',
+        hideGoalEditor: 'Hide Editor',
+        createKnowledgeNote: 'Create Knowledge Note',
+        openCreatedNote: 'Open Note',
+        startAnotherNote: 'New Note Chat',
+        exitTool: 'Exit Tool',
+        goalDraftTitle: 'Goal Draft',
+        noteCreatedTitle: 'Knowledge Note Created',
+        noteTopicFallback: 'Create a knowledge note from this conversation',
+        tools: {
+          chat: 'Chat',
+          goal: 'Generate Goal',
+          knowledgeNote: 'Create Knowledge Note',
+        },
+        defaultConversationNames: {
+          goal: 'Goal Planning',
+          knowledgeNote: 'Knowledge Note',
+        },
+      },
+    },
     actions: {
       generateGoal: 'Generate Goal',
       automateGoalSetup: 'Automate Goal Setup',
@@ -151,10 +211,13 @@ export default {
         product: 'Product',
         engineering: 'Engineering',
         marketing: 'Marketing',
+        work: 'Work',
         personal: 'Personal',
         health: 'Health',
         finance: 'Finance',
         learning: 'Learning',
+        relationship: 'Relationship',
+        other: 'Other',
       },
       importanceLevels: {
         vital: 'Vital',

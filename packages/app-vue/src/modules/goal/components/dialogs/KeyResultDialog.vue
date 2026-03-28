@@ -207,6 +207,7 @@ import {
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { Target, Loader2 } from 'lucide-vue-next';
+import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 const { t } = useI18n();
 
@@ -271,9 +272,7 @@ const isFormValid = computed(() => {
   return title.length > 0 && weight >= 1 && weight <= 5;
 });
 const progressPercentage = computed(() => {
-  const progress = localKeyResult.value.progress;
-  if (!progress.targetValue || progress.targetValue <= 0) return 0;
-  return Math.min(100, Math.max(0, (progress.currentValue / progress.targetValue) * 100));
+  return getKeyResultProgressPercentage(localKeyResult.value.progress);
 });
 
 const keyResultTitle = computed({

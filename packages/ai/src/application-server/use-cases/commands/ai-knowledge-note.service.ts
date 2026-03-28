@@ -59,6 +59,7 @@ export class AIKnowledgeNoteService {
         request.providerId,
       );
       const executionProviderConfig = toChatExecutionProviderConfig(provider, {
+        modelOverride: request.model,
         temperature: 0.4,
       });
       providerMetadata = {
@@ -104,6 +105,7 @@ export class AIKnowledgeNoteService {
           title: request.title,
           targetSubpath: request.targetSubpath,
           selectedProviderId: request.providerId,
+          selectedModel: request.model,
         },
         result: {
           resolvedPath: result.resolvedPath,
@@ -127,6 +129,7 @@ export class AIKnowledgeNoteService {
           title: request.title,
           targetSubpath: request.targetSubpath,
           selectedProviderId: request.providerId,
+          selectedModel: request.model,
         },
         error: error instanceof Error ? error.message : 'Knowledge note generation failed',
         processingMs: Date.now() - startedAt,

@@ -101,10 +101,17 @@ export class ListGoalRecords {
           a.createdAt.getTime() - b.createdAt.getTime() ||
           String(a.id).localeCompare(String(b.id)),
       );
+      const fullHistory = sorted.map((record) => record.value);
+      const finalHistoryValue = progressTemplate.recalculateFromHistory(fullHistory).currentValue;
+      const historyOffset =
+        keyResult.progress.aggregationMethod === 'Sum'
+          ? keyResult.progress.currentValue - finalHistoryValue
+          : 0;
 
       for (const record of sorted) {
         history.push(record.value);
-        result.set(String(record.id), progressTemplate.recalculateFromHistory(history).currentValue);
+        const calculated = progressTemplate.recalculateFromHistory(history).currentValue;
+        result.set(String(record.id), calculated + historyOffset);
       }
     }
 

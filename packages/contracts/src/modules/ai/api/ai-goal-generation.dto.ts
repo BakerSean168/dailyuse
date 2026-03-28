@@ -9,6 +9,7 @@ export const GenerateGoalsSchema = z.object({
   timeframe: z.string().trim().optional(),
   includeKeyResults: z.boolean().default(true).optional(),
   providerId: brandedId<AiProviderConfigId>().optional(),
+  model: z.string().trim().min(1).max(120).optional(),
 });
 
 export type GenerateGoalsReq = z.infer<typeof GenerateGoalsSchema>;

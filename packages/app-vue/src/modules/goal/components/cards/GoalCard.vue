@@ -47,19 +47,6 @@
           {{ goal.description || '' }}
         </p>
 
-        <!-- Progress Bar -->
-        <div class="mt-4 mb-2">
-          <div class="flex justify-between text-[10px] text-muted-foreground mb-1.5">
-            <span>Progress</span>
-            <span class="font-medium">{{ Math.round(overallProgress) }}%</span>
-          </div>
-          <Progress
-            :model-value="overallProgress"
-            class="h-1.5 bg-secondary"
-            :indicator-class="getProgressColorClass(goal.status)"
-          />
-        </div>
-
         <!-- Footer Info -->
         <div class="flex items-center justify-between mt-4 pt-3 border-t border-border/40">
           <div class="flex items-center gap-3 text-xs text-muted-foreground">
@@ -95,7 +82,6 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { Avatar, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
 import {
   Target,
@@ -111,6 +97,7 @@ import {
 import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
+import { getCompletedKeyResultCount } from '../../utils/progress';
 
 const props = defineProps<{
   goal: any;
@@ -148,26 +135,7 @@ const krs = computed(() => props.goal.keyResults ?? []);
 const totalKRCount = computed(() => props.goal.totalKeyResults ?? krs.value.length);
 
 const completedKRCount = computed(() => {
-  if (typeof props.goal.completedKeyResults === 'number') {
-    return props.goal.completedKeyResults;
-  }
-  return krs.value.filter((kr: any) => {
-    if (!kr.progress) return false;
-    return kr.progress.currentValue >= kr.progress.targetValue;
-  }).length;
-});
-
-const overallProgress = computed(() => {
-  if (krs.value.length === 0) return 0;
-  const totalWeight = krs.value.reduce((sum: number, kr: any) => sum + (kr.weight ?? 1), 0);
-  if (totalWeight === 0) return 0;
-  const weightedProgress = krs.value.reduce((sum: number, kr: any) => {
-    const p = kr.progress;
-    if (!p || !p.targetValue) return sum;
-    const pct = Math.min(1, p.currentValue / p.targetValue);
-    return sum + pct * (kr.weight ?? 1);
-  }, 0);
-  return Math.round((weightedProgress / totalWeight) * 100);
+  return getCompletedKeyResultCount(props.goal);
 });
 
 const daysRemaining = computed<number | null>(() => {
@@ -219,14 +187,4 @@ const getStatusColorClass = (status: string) => {
   }
 };
 
-const getProgressColorClass = (status: string) => {
-  switch (status) {
-    case 'Completed':
-      return 'bg-success';
-    case 'Draft':
-      return 'bg-warning';
-    default:
-      return 'bg-primary';
-  }
-};
 </script>
