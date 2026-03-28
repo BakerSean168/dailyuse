@@ -221,14 +221,7 @@ type EditableKeyResult = {
   description: string | null;
   weight: number;
   order: number;
-  progress: {
-    valueType: string;
-    aggregationMethod: string;
-    initialValue: number;
-    targetValue: number;
-    currentValue: number;
-    unit: string | null;
-  };
+  progress: KeyResultClientDTO['progress'];
 };
 
 const emit = defineEmits<{
@@ -312,7 +305,7 @@ const keyResultCurrentValue = computed({
 
 const keyResultCalculationMethod = computed({
   get: () => localKeyResult.value.progress.aggregationMethod || AggregationMethod.Sum,
-  set: (val: string) => {
+  set: (val: KeyResultClientDTO['progress']['aggregationMethod']) => {
     localKeyResult.value.progress.aggregationMethod = val;
   },
 });
@@ -423,8 +416,8 @@ watch([() => visible.value, () => propKeyResult.value], ([newValue]) => {
         weight: propKeyResult.value.weight,
         order: propKeyResult.value.order,
         progress: {
-          valueType: propKeyResult.value.progress.valueType as string,
-          aggregationMethod: propKeyResult.value.progress.aggregationMethod as string,
+          valueType: propKeyResult.value.progress.valueType,
+          aggregationMethod: propKeyResult.value.progress.aggregationMethod,
           initialValue: propKeyResult.value.progress.initialValue,
           targetValue: propKeyResult.value.progress.targetValue,
           currentValue: propKeyResult.value.progress.currentValue,
@@ -446,3 +439,4 @@ defineExpose({
   openForUpdateKeyResult,
 });
 </script>
+

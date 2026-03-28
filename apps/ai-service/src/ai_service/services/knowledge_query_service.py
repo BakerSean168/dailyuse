@@ -326,7 +326,10 @@ class KnowledgeIndexingService:
         ]
 
         try:
-            embeddings = await self._chat_service.embed(embedding_inputs, provider_config)
+            embeddings = await self._chat_service.embed(
+                embedding_inputs,
+                provider_config,
+            )
         except Exception:
             return indexed_resource
 
@@ -512,11 +515,12 @@ class KnowledgeQueryService:
         max_citations: int,
     ) -> list[KnowledgeCitation]:
         question_tokens = set(_tokenize(question))
-        local_question_embedding, provider_question_embedding = (
-            await self._indexing_service.build_query_embeddings(
-                question,
-                provider_config=provider_config,
-            )
+        (
+            local_question_embedding,
+            provider_question_embedding,
+        ) = await self._indexing_service.build_query_embeddings(
+            question,
+            provider_config=provider_config,
         )
         ranked: list[KnowledgeCitation] = []
 

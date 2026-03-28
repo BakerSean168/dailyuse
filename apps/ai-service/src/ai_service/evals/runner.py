@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import shutil
 import json
 import os
+import shutil
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -372,7 +372,9 @@ def build_goal_planning_eval_result(
                 or response.goal.category == case.expected_goal_category
             ),
             detail=(
-                f"Expected category {case.expected_goal_category}, got {response.goal.category}."
+                "Expected category "
+                f"{case.expected_goal_category}, got "
+                f"{response.goal.category}."
                 if case.expected_goal_category is not None
                 and response.goal.category != case.expected_goal_category
                 else "Goal category matches expectations."
@@ -488,7 +490,8 @@ def build_knowledge_grounding_eval_result(
             name="citation_presence_matches_expectation",
             passed=(len(response.citations) > 0) == case.expect_citations,
             detail=(
-                f"Expected citations={case.expect_citations}, got {len(response.citations)}."
+                "Expected citations="
+                f"{case.expect_citations}, got {len(response.citations)}."
                 if (len(response.citations) > 0) != case.expect_citations
                 else "Citation presence matches expectation."
             ),
@@ -662,10 +665,7 @@ def evaluate_quality_gate(
 
     if pass_rate < policy.minimum_pass_rate:
         failures.append(
-            (
-                "pass_rate below minimum: "
-                f"{pass_rate:.4f} < {policy.minimum_pass_rate:.4f}"
-            )
+            f"pass_rate below minimum: {pass_rate:.4f} < {policy.minimum_pass_rate:.4f}"
         )
 
     result_ids = {result.id for result in report_results}
@@ -687,10 +687,8 @@ def evaluate_quality_gate(
         score_drop = baseline.score - current.score
         if score_drop > policy.max_allowed_score_drop:
             failures.append(
-                (
-                    f"score regression for {case_id}: "
-                    f"{current.score:.4f} vs baseline {baseline.score:.4f}"
-                )
+                f"score regression for {case_id}: "
+                f"{current.score:.4f} vs baseline {baseline.score:.4f}"
             )
 
         if policy.require_no_new_failures and baseline.passed and not current.passed:
@@ -873,11 +871,9 @@ async def run() -> int:
     shutil.copyfile(output_path, archive_path)
 
     print(
-        (
-            f"ai-service evals ({archived_report.mode}): "
-            f"{archived_report.passed_cases}/{archived_report.total_cases} passed "
-            f"({archived_report.pass_rate * 100:.1f}%)"
-        )
+        f"ai-service evals ({archived_report.mode}): "
+        f"{archived_report.passed_cases}/{archived_report.total_cases} passed "
+        f"({archived_report.pass_rate * 100:.1f}%)"
     )
     print(f"quality gate: {'passed' if archived_report.gate_passed else 'failed'}")
     if archived_report.failed_case_ids:

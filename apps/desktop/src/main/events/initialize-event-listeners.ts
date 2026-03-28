@@ -9,7 +9,7 @@
  */
 
 import { eventBus } from '@dailyuse/utils';
-import { CreateGoalRecord, GoalProgressCalculator } from '@dailyuse/goal';
+import { CreateGoalRecord } from '@dailyuse/goal';
 import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
 import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
 import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';
@@ -108,7 +108,6 @@ function initializeTaskToGoalProgressListener(): void {
       const createGoalRecord = new CreateGoalRecord(
         goalRepository,
         goalRecordRepository,
-        new GoalProgressCalculator(goalRecordRepository),
       );
 
       const recordResult = await createGoalRecord.execute(
@@ -167,3 +166,4 @@ export function resetEventListeners(): void {
   bus.off('task:instance:completed');
   isInitialized = false;
 }
+

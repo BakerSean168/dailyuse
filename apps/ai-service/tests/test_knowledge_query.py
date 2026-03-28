@@ -52,13 +52,13 @@ class FakeEmbeddingChatService(FakeChatService):
     ) -> list[list[float]]:
         del config
         return [
-            [index + 1.0, index + 2.0, index + 3.0]
-            for index, _text in enumerate(texts)
+            [index + 1.0, index + 2.0, index + 3.0] for index, _text in enumerate(texts)
         ]
 
 
 class FakeSemanticEmbeddingChatService(FakeChatService):
-    """Embedding service that encodes semantic matches independent of lexical overlap."""
+    """Embedding service that encodes semantic matches
+    independent of lexical overlap."""
 
     async def embed(
         self,
@@ -195,7 +195,8 @@ class TestKnowledgeQueryRoute:
             mock_expand.return_value = KnowledgeExpansionResponse(
                 expanded_content=(
                     "# Repository Grounding\n\n"
-                    "Grounded answers should cite the repository path that supplied the evidence."
+                    "Grounded answers should cite the repository path "
+                    "that supplied the evidence."
                 ),
                 citations=[
                     {
@@ -244,7 +245,8 @@ class TestKnowledgeQueryRoute:
 
 @pytest.mark.asyncio
 async def test_hybrid_retrieval_scores_semantically_related_content():
-    """Hybrid retrieval should rank the grounded repository note above an unrelated one."""
+    """Hybrid retrieval should rank the grounded repository note
+    above an unrelated one."""
 
     indexing_service = KnowledgeIndexingService()
     query_service = KnowledgeQueryService(FakeChatService(), indexing_service)
@@ -327,7 +329,8 @@ async def test_provider_embeddings_override_local_vectors_when_available():
 
 @pytest.mark.asyncio
 async def test_query_uses_provider_embeddings_when_indexed_vectors_are_provider_sized():
-    """Query-side citation ranking should use provider embeddings when dimensions match."""
+    """Query-side citation ranking should use provider embeddings
+    when dimensions match."""
 
     chat_service = FakeSemanticEmbeddingChatService()
     indexing_service = KnowledgeIndexingService(chat_service)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -90,33 +91,52 @@ async def test_eval_runner_supports_live_mode_with_stubbed_provider_responses():
                     "Roll this out incrementally with tests and observability so "
                     "provider drift stays visible."
                 ),
-                """{
-                  "goal": {
-                    "title": "Ship live evaluation coverage",
-                    "description": "Add a live evaluation path for provider-backed regression checks before release.",
-                    "motivation": "Live evaluation makes provider drift visible earlier.",
-                    "category": "work",
-                    "importance": "Important",
-                    "tags": ["ai", "evaluation", "live"],
-                    "feasibilityAnalysis": "The existing deterministic harness can be extended with a smaller live suite.",
-                    "aiInsights": "Start with a small live suite and expand once failure handling is clear.",
-                    "suggestedDurationDays": 14
-                  },
-                  "keyResults": [
+                json.dumps(
                     {
-                      "title": "Add live chat eval",
-                      "description": "Cover a rollout guidance prompt with provider-backed execution.",
-                      "targetValue": 1,
-                      "unit": "suite"
-                    },
-                    {
-                      "title": "Add live grounding eval",
-                      "description": "Verify repository-grounded answers still cite the expected document.",
-                      "targetValue": 1,
-                      "unit": "suite"
+                        "goal": {
+                            "title": "Ship live evaluation coverage",
+                            "description": (
+                                "Add a live evaluation path for provider-backed "
+                                "regression checks before release."
+                            ),
+                            "motivation": (
+                                "Live evaluation makes provider drift visible earlier."
+                            ),
+                            "category": "work",
+                            "importance": "Important",
+                            "tags": ["ai", "evaluation", "live"],
+                            "feasibilityAnalysis": (
+                                "The existing deterministic harness can be extended "
+                                "with a smaller live suite."
+                            ),
+                            "aiInsights": (
+                                "Start with a small live suite and expand once "
+                                "failure handling is clear."
+                            ),
+                            "suggestedDurationDays": 14,
+                        },
+                        "keyResults": [
+                            {
+                                "title": "Add live chat eval",
+                                "description": (
+                                    "Cover a rollout guidance prompt with "
+                                    "provider-backed execution."
+                                ),
+                                "targetValue": 1,
+                                "unit": "suite",
+                            },
+                            {
+                                "title": "Add live grounding eval",
+                                "description": (
+                                    "Verify repository-grounded answers still cite "
+                                    "the expected document."
+                                ),
+                                "targetValue": 1,
+                                "unit": "suite",
+                            },
+                        ],
                     }
-                  ]
-                }""",
+                ),
                 (
                     "Retrieval works by selecting relevant excerpts from repository "
                     "resources and answering from that grounded context."

@@ -215,9 +215,15 @@ def build_goal_automation_system_prompt() -> str:
             ),
             "Respond with JSON only.",
             "Do not include markdown code fences.",
-            "Allowed tools: create_goal, create_key_result, create_task_template, search_notes, fetch_stats.",
+            (
+                "Allowed tools: create_goal, create_key_result, "
+                "create_task_template, search_notes, fetch_stats."
+            ),
             "Use create_goal exactly once.",
-            "For create_key_result and create_task_template, set index to the matching array item index.",
+            (
+                "For create_key_result and create_task_template, set index "
+                "to the matching array item index."
+            ),
             "JSON shape:",
             "{",
             '  "summary": string,',
