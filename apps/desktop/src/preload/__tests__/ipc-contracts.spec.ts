@@ -426,6 +426,7 @@ describe('desktop IPC contract alignment', () => {
     await providerAdapter.deleteProvider('provider-1');
     await providerAdapter.testConnection({} as never);
     await providerAdapter.setDefaultProvider({} as never);
+    await providerAdapter.refreshProviderModels('provider-1');
 
     await conversationAdapter.createConversation({} as never);
     await conversationAdapter.updateConversation('conversation-1', {} as never);
@@ -440,5 +441,35 @@ describe('desktop IPC contract alignment', () => {
     await knowledgeAdapter.createKnowledgeNote({} as never);
 
     expectChannelsRegistered(recorder.channels(), channelSet(AIChannels));
+  });
+
+  it('ai provider adapter accepts raw provider-list payloads from desktop IPC', async () => {
+    const recorder = createIpcRecorder((channel) => {
+      if (channel === AIChannels.PROVIDER_LIST) {
+        return {
+          ok: true,
+          data: [
+            {
+              id: 'provider-1',
+              name: 'OpenAI',
+              baseUrl: 'https://api.openai.com/v1',
+              apiKeyMasked: 'sk-****1234',
+              defaultModel: 'gpt-4o-mini',
+              availableModels: [{ id: 'gpt-4o-mini', name: 'gpt-4o-mini' }],
+              isActive: true,
+              isDefault: true,
+            },
+          ],
+        };
+      }
+      return { ok: true, data: null };
+    });
+    const adapter = new AIProviderConfigIpcAdapter(recorder as never);
+
+    const providers = await adapter.getProviders();
+
+    expect(providers).toHaveLength(1);
+    expect(providers[0]?.id).toBe('provider-1');
+    expect(providers[0]?.defaultModel).toBe('gpt-4o-mini');
   });
 });

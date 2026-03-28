@@ -22,7 +22,6 @@ import type {
   GenerateGoalAutomationReq,
   GenerateGoalAutomationRes,
   AIProviderConfigClientDTO,
-  AIProviderConfigSummary,
   CreateAIProviderConfigReq,
   UpdateAIProviderConfigReq,
   TestAIProviderReq,
@@ -120,7 +119,7 @@ export interface AIAnalyticsQueryApiClient {
 
 export interface IAIProviderConfigApiClient {
   createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
-  getProviders(): Promise<AIProviderConfigSummary[]>;
+  getProviders(): Promise<AIProviderConfigClientDTO[]>;
   getProviderById(id: string): Promise<AIProviderConfigClientDTO>;
   updateProvider(
     id: string,
@@ -129,4 +128,5 @@ export interface IAIProviderConfigApiClient {
   deleteProvider(id: string): Promise<void>;
   testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes>;
   setDefaultProvider(request: SetDefaultAIProviderReq): Promise<void>;
+  refreshProviderModels(id: string): Promise<AIProviderConfigClientDTO>;
 }

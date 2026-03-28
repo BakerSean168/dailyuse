@@ -155,5 +155,23 @@ export function registerAIProviderRoutes(
     (req, ctx) => controller.setDefault(req.params!.id, ctx.identityId),
   );
 
+  // POST /:id/refresh-models — Refresh provider models
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/refresh-models',
+      summary: '刷新 AI 提供商模型列表',
+      request: {
+        params: z.object({ id: z.string() }),
+      },
+      responses: {
+        200: successResponse(z.any(), '刷新成功'),
+        404: errorResponse('未找到'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.refreshModels(req.params!.id, ctx.identityId),
+  );
+
   return router;
 }

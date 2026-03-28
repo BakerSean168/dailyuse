@@ -24,6 +24,7 @@ interface AIProviderConfigControllerService {
   deleteProvider(id: string): Promise<void>;
   testConnection(identityId: string, request: TestAIProviderReq): Promise<TestAIProviderRes>;
   setDefaultProvider(id: string, identityId: string): Promise<void>;
+  refreshProviderModels(identityId: string, providerId: string): Promise<AIProviderConfigClientDTO>;
 }
 
 export class AIProviderConfigController {
@@ -84,5 +85,9 @@ export class AIProviderConfigController {
   async setDefault(id: string, identityId: string) {
     await this.service.setDefaultProvider(id, identityId);
     return ok(undefined);
+  }
+
+  async refreshModels(id: string, identityId: string) {
+    return ok(await this.service.refreshProviderModels(identityId, id));
   }
 }

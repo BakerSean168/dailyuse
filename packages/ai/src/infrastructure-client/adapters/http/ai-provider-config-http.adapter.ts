@@ -1,7 +1,6 @@
 import type { IAIProviderConfigApiClient, IResultHttpClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
-  AIProviderConfigSummary,
   CreateAIProviderConfigReq,
   SetDefaultAIProviderReq,
   TestAIProviderReq,
@@ -20,8 +19,8 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return result.data;
   }
 
-  async getProviders(): Promise<AIProviderConfigSummary[]> {
-    const result = await this.httpClient.get<{ data: AIProviderConfigSummary[] }>(this.baseUrl);
+  async getProviders(): Promise<AIProviderConfigClientDTO[]> {
+    const result = await this.httpClient.get<{ data: AIProviderConfigClientDTO[] }>(this.baseUrl);
     if (!result.ok) throw new Error(result.error.message);
     return result.data.data;
   }
@@ -60,5 +59,13 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
       `${this.baseUrl}/${request.providerId}/set-default`,
     );
     if (!result.ok) throw new Error(result.error.message);
+  }
+
+  async refreshProviderModels(id: string): Promise<AIProviderConfigClientDTO> {
+    const result = await this.httpClient.post<AIProviderConfigClientDTO>(
+      `${this.baseUrl}/${id}/refresh-models`,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 }

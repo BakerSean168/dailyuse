@@ -38,6 +38,7 @@ export const SendMessageSchema = z.object({
   conversationId: brandedId<AiConversationId>(),
   content: z.string().trim().min(1),
   providerId: brandedId<AiProviderConfigId>().optional(),
+  model: z.string().trim().min(1).max(120).optional(),
 });
 export type SendMessageReq = z.infer<typeof SendMessageSchema>;
 

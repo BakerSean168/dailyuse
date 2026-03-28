@@ -10,7 +10,7 @@ import {
 import { createLogger } from '@dailyuse/utils';
 import { AiProviderConfigId } from '../../../domain-shared/value-objects/ai-provider-config-id';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
-import type { IAIChatExecutionPort } from '../../ports';
+import type { IAIChatExecutionPort, IAIProviderModelCatalogPort } from '../../ports';
 import { toChatExecutionProviderConfig } from './ai-provider-resolution';
 
 const logger = createLogger('AIProviderConfigService');
@@ -19,6 +19,7 @@ export class AIProviderConfigService {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly chatExecutionPort: IAIChatExecutionPort,
+    private readonly providerModelCatalogPort: IAIProviderModelCatalogPort,
   ) {}
 
   async createProvider(
@@ -96,6 +97,11 @@ export class AIProviderConfigService {
 
   async listProviders(identityId: string): Promise<AIProviderConfigClientDTO[]> {
     const providers = await this.providerConfigRepository.findByIdentityId(identityId);
+    logger.info('AI providers loaded', {
+      identityId,
+      count: providers.length,
+      providerIds: providers.map((provider) => String(provider.id)),
+    });
     return providers.map((provider) => this.toClientDTO(provider));
   }
 
@@ -143,6 +149,48 @@ export class AIProviderConfigService {
   async getDefaultProvider(identityId: string): Promise<AIProviderConfigClientDTO | null> {
     const provider = await this.providerConfigRepository.findDefaultByIdentityId(identityId);
     return provider ? this.toClientDTO(provider) : null;
+  }
+
+  async refreshProviderModels(
+    identityId: string,
+    providerId: string,
+  ): Promise<AIProviderConfigClientDTO> {
+    const provider = await this.providerConfigRepository.findById(providerId);
+    if (!provider || String(provider.identityId) !== identityId) {
+      throw new Error('Provider not found');
+    }
+
+    logger.info('Refreshing AI provider models', {
+      identityId,
+      providerId,
+      baseUrl: provider.baseUrl,
+      currentDefaultModel: provider.defaultModel,
+    });
+
+    const models = await this.providerModelCatalogPort.listModels({
+      baseUrl: provider.baseUrl,
+      apiKey: provider.apiKey,
+    });
+
+    const updated: AIProviderConfigServerDTO = {
+      ...provider,
+      availableModels: models,
+      defaultModel:
+        provider.defaultModel && models.some((item) => item.id === provider.defaultModel)
+          ? provider.defaultModel
+          : models[0]?.id ?? provider.defaultModel,
+      updatedAt: Date.now(),
+      version: provider.version + 1,
+    };
+
+    await this.providerConfigRepository.save(updated);
+    logger.info('AI provider models refreshed', {
+      identityId,
+      providerId,
+      modelCount: models.length,
+      nextDefaultModel: updated.defaultModel,
+    });
+    return this.toClientDTO(updated);
   }
 
   private async resolveProviderConfigForConnectionTest(

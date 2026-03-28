@@ -4,7 +4,7 @@
     class="fixed bottom-6 right-6 z-[11000] flex flex-col items-end gap-3"
   >
     <div
-      v-if="open"
+      v-if="open && !anyDialogOpen"
       class="w-[24rem] rounded-[1.5rem] border border-border/70 bg-background/95 p-4 shadow-2xl backdrop-blur"
     >
       <div class="mb-4 flex items-start justify-between gap-3">
@@ -16,9 +16,9 @@
               <Bot class="h-5 w-5" />
             </div>
             <div>
-              <h3 class="text-sm font-semibold">AI Assistant</h3>
+              <h3 class="text-sm font-semibold">{{ t('aiAssistant.title') }}</h3>
               <p class="text-xs text-muted-foreground">
-                Goal, chat, knowledge, analytics, and automation tools.
+                {{ t('aiAssistant.subtitle') }}
               </p>
             </div>
           </div>
@@ -30,14 +30,20 @@
 
       <div class="mb-4 grid gap-2 sm:grid-cols-2">
         <div class="rounded-2xl border border-border/60 bg-muted/30 p-3">
-          <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Provider</p>
+          <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            {{ t('aiAssistant.provider') }}
+          </p>
           <p class="mt-1 text-sm font-medium">{{ activeProviderName }}</p>
           <p class="mt-1 text-xs text-muted-foreground">{{ providerSummaryText }}</p>
         </div>
         <div class="rounded-2xl border border-border/60 bg-muted/30 p-3">
-          <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Notes Path</p>
+          <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            {{ t('aiAssistant.notesPath') }}
+          </p>
           <p class="mt-1 text-sm font-medium">{{ resolvedNotePath }}</p>
-          <p class="mt-1 text-xs text-muted-foreground">New AI notes are saved here by default.</p>
+          <p class="mt-1 text-xs text-muted-foreground">
+            {{ t('aiAssistant.notesPathHint') }}
+          </p>
         </div>
       </div>
 
@@ -45,7 +51,7 @@
         v-if="!hasProviders"
         class="mb-4 rounded-2xl border border-amber-300/60 bg-amber-50/80 p-3 text-sm text-amber-900"
       >
-        Configure an OpenAI-compatible provider in Settings before using AI actions.
+        {{ t('aiAssistant.configureProviderNotice') }}
       </div>
       <div
         v-if="advancedFeatureNotice"
@@ -64,19 +70,19 @@
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
-          @click="openGoalDialog = true"
+          @click="openGoalDialogPanel"
         >
           <Sparkles class="mr-2 h-4 w-4" />
-          Generate Goal
+          {{ t('aiAssistant.actions.generateGoal') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
           :disabled="!canUseGoalAutomation"
-          @click="openAutomationDialog = true"
+          @click="openAutomationDialogPanel"
         >
           <Sparkles class="mr-2 h-4 w-4" />
-          Automate Goal Setup
+          {{ t('aiAssistant.actions.automateGoalSetup') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
@@ -84,42 +90,42 @@
           @click="handleOpenChatDialog"
         >
           <MessageCircle class="mr-2 h-4 w-4" />
-          AI Chat
+          {{ t('aiAssistant.actions.aiChat') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
-          @click="openNoteDialog = true"
+          @click="openNoteDialogPanel"
         >
           <NotebookPen class="mr-2 h-4 w-4" />
-          Create Knowledge Note
+          {{ t('aiAssistant.actions.createKnowledgeNote') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
           :disabled="!canUseKnowledgeExpansion"
-          @click="openKnowledgeExpansionDialog = true"
+          @click="openKnowledgeExpansionDialogPanel"
         >
           <NotebookPen class="mr-2 h-4 w-4" />
-          Expand Draft With Knowledge
+          {{ t('aiAssistant.actions.expandDraft') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
           :disabled="!canUseKnowledgeQuery"
-          @click="openKnowledgeDialog = true"
+          @click="openKnowledgeDialogPanel"
         >
           <Search class="mr-2 h-4 w-4" />
-          Ask Knowledge Base
+          {{ t('aiAssistant.actions.askKnowledge') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
           variant="outline"
           :disabled="!canUseAnalyticsQuery"
-          @click="openAnalyticsDialog = true"
+          @click="openAnalyticsDialogPanel"
         >
           <BarChart3 class="mr-2 h-4 w-4" />
-          Ask Analytics
+          {{ t('aiAssistant.actions.askAnalytics') }}
         </Button>
         <Button
           class="w-full justify-start rounded-xl"
@@ -128,7 +134,7 @@
           @click="handleOpenEvaluationDialog"
         >
           <BarChart3 class="mr-2 h-4 w-4" />
-          View Quality Reports
+          {{ t('aiAssistant.actions.viewQualityReports') }}
         </Button>
       </div>
     </div>
@@ -140,21 +146,25 @@
     <Dialog :open="openGoalDialog" @update:open="openGoalDialog = $event">
       <DialogContent class="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Generate Goal</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.generateGoal.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
           <div class="space-y-3">
             <Textarea
               v-model="goalIdea"
               class="min-h-44"
-              placeholder="Describe the outcome you want to achieve, the context, and what success looks like..."
+              :placeholder="t('aiAssistant.dialogs.generateGoal.placeholder')"
             />
             <Button
               class="w-full"
               :disabled="goalLoading || goalIdea.trim().length < 10 || !hasProviders"
               @click="handleGenerateGoal"
             >
-              {{ goalLoading ? 'Generating...' : 'Generate Goal Draft' }}
+              {{
+                goalLoading
+                  ? t('aiAssistant.dialogs.generateGoal.generating')
+                  : t('aiAssistant.dialogs.generateGoal.generateDraft')
+              }}
             </Button>
           </div>
 
@@ -174,21 +184,25 @@
     <Dialog :open="openAutomationDialog" @update:open="openAutomationDialog = $event">
       <DialogContent class="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Automate Goal Setup</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.automation.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div class="space-y-3">
             <Textarea
               v-model="automationIdea"
               class="min-h-44"
-              placeholder="Describe the outcome you want, the likely milestones, and what task setup should be created..."
+              :placeholder="t('aiAssistant.dialogs.automation.placeholder')"
             />
             <Button
               class="w-full"
               :disabled="automationLoading || automationIdea.trim().length < 10 || !canUseGoalAutomation"
               @click="handlePlanAutomation"
             >
-              {{ automationLoading ? 'Planning...' : 'Plan Automation' }}
+              {{
+                automationLoading
+                  ? t('aiAssistant.dialogs.automation.planning')
+                  : t('aiAssistant.dialogs.automation.planAutomation')
+              }}
             </Button>
             <Button
               v-if="automationResult?.requiresConfirmation && !automationResult.executedActions?.length"
@@ -197,7 +211,11 @@
               :disabled="automationExecuting"
               @click="handleExecuteAutomation"
             >
-              {{ automationExecuting ? 'Executing...' : 'Confirm And Execute' }}
+              {{
+                automationExecuting
+                  ? t('aiAssistant.dialogs.automation.executing')
+                  : t('aiAssistant.dialogs.automation.confirmAndExecute')
+              }}
             </Button>
             <Button
               v-if="automatedGoalId"
@@ -205,25 +223,31 @@
               variant="outline"
               @click="openAutomatedGoal"
             >
-              Open Created Goal
+              {{ t('aiAssistant.dialogs.automation.openCreatedGoal') }}
             </Button>
           </div>
 
           <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
             <div v-if="automationResult" class="space-y-4">
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Summary</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.summary') }}
+                </p>
                 <p class="mt-2 text-sm leading-6">{{ automationResult.summary }}</p>
               </div>
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Goal</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.goal') }}
+                </p>
                 <p class="mt-2 text-sm font-medium">{{ automationResult.plan.goal.title }}</p>
                 <p class="mt-1 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
                   {{ automationResult.plan.goal.description }}
                 </p>
               </div>
               <div v-if="automationResult.actions.length">
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Actions</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.actions') }}
+                </p>
                 <div class="mt-2 space-y-2">
                   <div
                     v-for="(action, index) in automationResult.actions"
@@ -239,7 +263,7 @@
               </div>
               <div v-if="automationResult.executedActions?.length">
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Execution Result
+                  {{ t('aiAssistant.dialogs.automation.executionResult') }}
                 </p>
                 <div class="mt-2 space-y-2">
                   <div
@@ -258,8 +282,8 @@
                 {{ automationResult.processingTimeMs }} ms ·
                 {{
                   automationResult.requiresConfirmation && !automationResult.executedActions?.length
-                    ? 'awaiting confirmation'
-                    : 'execution recorded'
+                    ? t('aiAssistant.dialogs.automation.awaitingConfirmation')
+                    : t('aiAssistant.dialogs.automation.executionRecorded')
                 }}
               </p>
             </div>
@@ -268,8 +292,7 @@
               v-else
               class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
-              AI will draft the goal, choose explicit tool calls, and wait for confirmation before
-              creating real goal or task entities.
+              {{ t('aiAssistant.dialogs.automation.emptyState') }}
             </div>
           </div>
         </div>
@@ -279,14 +302,14 @@
     <Dialog :open="openChatDialog" @update:open="openChatDialog = $event">
       <DialogContent class="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>AI Chat</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.chat.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
           <div class="space-y-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Recent Conversations
+                  {{ t('aiAssistant.dialogs.chat.recentConversations') }}
                 </p>
                 <Button
                   variant="ghost"
@@ -294,7 +317,7 @@
                   :disabled="conversationListLoading"
                   @click="loadConversations"
                 >
-                  Refresh
+                  {{ t('aiAssistant.dialogs.chat.refresh') }}
                 </Button>
               </div>
               <div class="max-h-40 space-y-2 overflow-y-auto">
@@ -320,7 +343,7 @@
                       class="h-7 px-2"
                       @click.stop="deleteConversation(item.id)"
                     >
-                      Delete
+                      {{ t('aiAssistant.dialogs.chat.delete') }}
                     </Button>
                   </div>
                 </button>
@@ -328,23 +351,87 @@
                   v-if="!conversationList.length && !conversationListLoading"
                   class="text-sm text-muted-foreground"
                 >
-                  No saved conversations yet.
+                  {{ t('aiAssistant.dialogs.chat.noSavedConversations') }}
                 </p>
               </div>
             </div>
 
-            <Input v-model="conversationName" placeholder="Conversation name" />
+            <Input
+              v-model="conversationName"
+              :placeholder="t('aiAssistant.dialogs.chat.conversationPlaceholder')"
+            />
+            <div
+              v-if="!hasProviders"
+              class="rounded-xl border border-amber-300/60 bg-amber-50/80 px-3 py-2 text-sm text-amber-900"
+            >
+              {{ t('aiAssistant.dialogs.chat.providerRequired') }}
+            </div>
             <Textarea
               v-model="chatMessage"
               class="min-h-36"
-              placeholder="Ask a question, brainstorm, or request a quick draft..."
+              :placeholder="t('aiAssistant.dialogs.chat.messagePlaceholder')"
             />
+            <div class="grid gap-2 sm:grid-cols-2">
+              <div class="space-y-1">
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.chat.provider') }}
+                </p>
+                <Select
+                  :model-value="selectedChatProviderId"
+                  :disabled="!providerList.length"
+                  @update:model-value="
+                    selectedChatProviderId = String($event);
+                    syncChatProviderSelection();
+                  "
+                >
+                  <SelectTrigger>
+                    <SelectValue :placeholder="t('aiAssistant.dialogs.chat.providerPlaceholder')" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="provider in providerList"
+                      :key="provider.id"
+                      :value="provider.id"
+                    >
+                      {{ provider.name || t('common.unknown') }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div class="space-y-1">
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.chat.model') }}
+                </p>
+                <Select
+                  :model-value="selectedChatModel"
+                  :disabled="!availableChatModels.length"
+                  @update:model-value="selectedChatModel = String($event)"
+                >
+                  <SelectTrigger>
+                    <SelectValue :placeholder="t('aiAssistant.dialogs.chat.modelPlaceholder')" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="model in availableChatModels"
+                      :key="model.id"
+                      :value="model.id"
+                    >
+                      {{ model.name || model.id }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <Button
               class="w-full"
               :disabled="chatLoading || !chatMessage.trim() || !hasProviders"
               @click="handleSendChat"
             >
-              {{ chatLoading ? 'Sending...' : 'Send Message' }}
+              {{
+                chatLoading
+                  ? t('aiAssistant.dialogs.chat.sending')
+                  : t('aiAssistant.dialogs.chat.sendMessage')
+              }}
             </Button>
             <Button
               v-if="chatConversationId"
@@ -352,7 +439,7 @@
               class="w-full"
               @click="resetChatSession"
             >
-              New Conversation
+              {{ t('aiAssistant.dialogs.chat.newConversation') }}
             </Button>
           </div>
 
@@ -369,7 +456,11 @@
                 ]"
               >
                 <p class="mb-1 text-[11px] uppercase tracking-[0.18em] opacity-70">
-                  {{ item.role === 'user' ? 'You' : 'Assistant' }}
+                  {{
+                    item.role === 'user'
+                      ? t('aiAssistant.dialogs.chat.you')
+                      : t('aiAssistant.dialogs.chat.assistant')
+                  }}
                 </p>
                 <p class="whitespace-pre-wrap leading-6">{{ item.content }}</p>
               </div>
@@ -379,7 +470,7 @@
               v-else
               class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
-              Start a conversation and your chat timeline will appear here.
+              {{ t('aiAssistant.dialogs.chat.emptyState') }}
             </div>
           </div>
         </div>
@@ -389,50 +480,64 @@
     <Dialog :open="openNoteDialog" @update:open="openNoteDialog = $event">
       <DialogContent class="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create Knowledge Note</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.note.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div class="space-y-3">
-            <Input v-model="noteTitle" placeholder="Optional title" />
+            <Input
+              v-model="noteTitle"
+              :placeholder="t('aiAssistant.dialogs.note.optionalTitlePlaceholder')"
+            />
             <Textarea
               v-model="noteTopic"
               class="min-h-44"
-              placeholder="Describe the topic, source context, or what should be included in the note..."
+              :placeholder="t('aiAssistant.dialogs.note.topicPlaceholder')"
             />
             <div
               class="rounded-xl border border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground"
             >
-              Save path: <span class="font-medium text-foreground">{{ resolvedNotePath }}</span>
+              {{ t('aiAssistant.dialogs.note.savePath') }}:
+              <span class="font-medium text-foreground">{{ resolvedNotePath }}</span>
             </div>
             <Button
               class="w-full"
               :disabled="noteLoading || noteTopic.trim().length < 3 || !hasProviders"
               @click="handleCreateNote"
             >
-              {{ noteLoading ? 'Creating...' : 'Create Knowledge Note' }}
+              {{
+                noteLoading
+                  ? t('aiAssistant.dialogs.note.creating')
+                  : t('aiAssistant.dialogs.note.create')
+              }}
             </Button>
           </div>
 
           <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
             <div v-if="noteSummary" class="space-y-4">
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Saved To</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.note.savedTo') }}
+                </p>
                 <p class="mt-1 text-sm font-medium">{{ noteSummary.resolvedPath }}</p>
               </div>
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Resource</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.note.resource') }}
+                </p>
                 <p class="mt-1 text-sm font-medium">
-                  {{ noteSummary.resource?.name || 'New note created' }}
+                  {{ noteSummary.resource?.name || t('aiAssistant.dialogs.note.newNoteCreated') }}
                 </p>
               </div>
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Preview</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.note.preview') }}
+                </p>
                 <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
                   {{ notePreview }}
                 </p>
               </div>
               <Button class="w-full" variant="outline" @click="openCreatedNote">
-                Open Note in Repository
+                {{ t('aiAssistant.dialogs.note.openInRepository') }}
               </Button>
             </div>
 
@@ -440,8 +545,7 @@
               v-else
               class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
-              AI will save the generated markdown note to your configured notes path and show a
-              quick summary here.
+              {{ t('aiAssistant.dialogs.note.emptyState') }}
             </div>
           </div>
         </div>
@@ -451,23 +555,23 @@
     <Dialog :open="openKnowledgeExpansionDialog" @update:open="openKnowledgeExpansionDialog = $event">
       <DialogContent class="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Expand Draft With Knowledge</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.knowledgeExpansion.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
           <div class="space-y-3">
             <Input
               v-model="knowledgeExpansionTitle"
-              placeholder="Optional draft title for saving"
+              :placeholder="t('aiAssistant.dialogs.knowledgeExpansion.optionalDraftTitle')"
             />
             <Textarea
               v-model="knowledgeExpansionInstruction"
               class="min-h-28"
-              placeholder="Describe what should be expanded, clarified, or grounded from your repository knowledge..."
+              :placeholder="t('aiAssistant.dialogs.knowledgeExpansion.instructionPlaceholder')"
             />
             <Textarea
               v-model="knowledgeExpansionDraft"
               class="min-h-56"
-              placeholder="Optional: paste the current draft or outline here. AI will expand it using cited repository context."
+              :placeholder="t('aiAssistant.dialogs.knowledgeExpansion.draftPlaceholder')"
             />
             <Button
               class="w-full"
@@ -478,7 +582,11 @@
               "
               @click="handleExpandKnowledge"
             >
-              {{ knowledgeExpansionLoading ? 'Expanding...' : 'Expand Draft With Knowledge' }}
+              {{
+                knowledgeExpansionLoading
+                  ? t('aiAssistant.dialogs.knowledgeExpansion.expanding')
+                  : t('aiAssistant.dialogs.knowledgeExpansion.expand')
+              }}
             </Button>
             <Button
               class="w-full"
@@ -486,7 +594,7 @@
               :disabled="!knowledgeExpansionResult"
               @click="copyExpandedKnowledge"
             >
-              Copy Expanded Draft
+              {{ t('aiAssistant.dialogs.knowledgeExpansion.copyExpandedDraft') }}
             </Button>
             <Button
               class="w-full"
@@ -494,11 +602,14 @@
               :disabled="knowledgeExpansionSaving || !knowledgeExpansionResult"
               @click="saveExpandedKnowledge"
             >
-              {{ knowledgeExpansionSaving ? 'Saving...' : 'Save Expanded Draft' }}
+              {{
+                knowledgeExpansionSaving
+                  ? t('aiAssistant.dialogs.knowledgeExpansion.saving')
+                  : t('aiAssistant.dialogs.knowledgeExpansion.saveExpandedDraft')
+              }}
             </Button>
             <p class="text-xs text-muted-foreground">
-              Saving creates a markdown draft in the current repository so you can continue editing
-              it locally.
+              {{ t('aiAssistant.dialogs.knowledgeExpansion.saveHint') }}
             </p>
           </div>
 
@@ -506,7 +617,7 @@
             <div v-if="knowledgeExpansionResult" class="space-y-4">
               <div>
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Expanded Draft
+                  {{ t('aiAssistant.dialogs.knowledgeExpansion.expandedDraft') }}
                 </p>
                 <p
                   class="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap text-sm leading-6 text-muted-foreground"
@@ -516,7 +627,7 @@
               </div>
               <div>
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Citations
+                  {{ t('aiAssistant.dialogs.knowledgeExpansion.citations') }}
                 </p>
                 <div class="mt-2 space-y-2">
                   <button
@@ -541,17 +652,23 @@
                 v-if="knowledgeExpansionSavedDraft"
                 class="rounded-xl border border-emerald-300/60 bg-emerald-50/80 p-3"
               >
-                <p class="text-xs uppercase tracking-[0.18em] text-emerald-900">Saved Draft</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-emerald-900">
+                  {{ t('aiAssistant.dialogs.knowledgeExpansion.savedDraft') }}
+                </p>
                 <p class="mt-1 text-sm font-medium text-emerald-950">
                   {{ knowledgeExpansionSavedDraft.path || knowledgeExpansionSavedDraft.name }}
                 </p>
                 <Button class="mt-3 w-full" variant="outline" @click="openExpandedKnowledgeDraft">
-                  Open Saved Draft
+                  {{ t('aiAssistant.dialogs.knowledgeExpansion.openSavedDraft') }}
                 </Button>
               </div>
               <p class="text-xs text-muted-foreground">
-                {{ knowledgeExpansionResult.matchedResourceCount }} resource(s) matched in
-                {{ knowledgeExpansionResult.processingTimeMs }} ms.
+                {{
+                  t('aiAssistant.dialogs.knowledgeExpansion.matchedResources', {
+                    count: knowledgeExpansionResult.matchedResourceCount,
+                    ms: knowledgeExpansionResult.processingTimeMs,
+                  })
+                }}
               </p>
             </div>
 
@@ -559,8 +676,7 @@
               v-else
               class="flex min-h-[26rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
-              Add a draft and an instruction, and AI will expand it using cited repository
-              excerpts.
+              {{ t('aiAssistant.dialogs.knowledgeExpansion.emptyState') }}
             </div>
           </div>
         </div>
@@ -570,21 +686,25 @@
     <Dialog :open="openKnowledgeDialog" @update:open="openKnowledgeDialog = $event">
       <DialogContent class="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Ask Knowledge Base</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.knowledge.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div class="space-y-3">
             <Textarea
               v-model="knowledgeQuestion"
               class="min-h-44"
-              placeholder="Ask about notes, repository knowledge, or stored reference material..."
+              :placeholder="t('aiAssistant.dialogs.knowledge.placeholder')"
             />
             <Button
               class="w-full"
               :disabled="knowledgeLoading || knowledgeQuestion.trim().length < 3 || !canUseKnowledgeQuery"
               @click="handleQueryKnowledge"
             >
-              {{ knowledgeLoading ? 'Searching...' : 'Ask Knowledge Base' }}
+              {{
+                knowledgeLoading
+                  ? t('aiAssistant.dialogs.knowledge.searching')
+                  : t('aiAssistant.dialogs.knowledge.ask')
+              }}
             </Button>
             <Button
               class="w-full"
@@ -592,7 +712,11 @@
               :disabled="reindexLoading || !canUseKnowledgeReindex"
               @click="handleReindexKnowledge"
             >
-              {{ reindexLoading ? 'Reindexing...' : 'Refresh Knowledge Index' }}
+              {{
+                reindexLoading
+                  ? t('aiAssistant.dialogs.knowledge.reindexing')
+                  : t('aiAssistant.dialogs.knowledge.refreshIndex')
+              }}
             </Button>
             <p v-if="reindexSummary" class="text-xs text-muted-foreground">
               {{ reindexSummary }}
@@ -602,14 +726,16 @@
           <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
             <div v-if="knowledgeResult" class="space-y-4">
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Answer</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.knowledge.answer') }}
+                </p>
                 <p class="mt-2 whitespace-pre-wrap text-sm leading-6">
                   {{ knowledgeResult.answer }}
                 </p>
               </div>
               <div>
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Citations
+                  {{ t('aiAssistant.dialogs.knowledge.citations') }}
                 </p>
                 <div class="mt-2 space-y-2">
                   <button
@@ -631,8 +757,12 @@
                 </div>
               </div>
               <p class="text-xs text-muted-foreground">
-                {{ knowledgeResult.matchedResourceCount }} resource(s) matched in
-                {{ knowledgeResult.processingTimeMs }} ms.
+                {{
+                  t('aiAssistant.dialogs.knowledge.matchedResources', {
+                    count: knowledgeResult.matchedResourceCount,
+                    ms: knowledgeResult.processingTimeMs,
+                  })
+                }}
               </p>
             </div>
 
@@ -640,7 +770,7 @@
               v-else
               class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
-              Ask a question and AI will answer from indexed repository resources with citations.
+              {{ t('aiAssistant.dialogs.knowledge.emptyState') }}
             </div>
           </div>
         </div>
@@ -650,35 +780,41 @@
     <Dialog :open="openAnalyticsDialog" @update:open="openAnalyticsDialog = $event">
       <DialogContent class="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Ask Analytics</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.analytics.title') }}</DialogTitle>
         </DialogHeader>
         <div class="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div class="space-y-3">
             <Textarea
               v-model="analyticsQuestion"
               class="min-h-44"
-              placeholder="Ask about goals, tasks, reminders, or dashboard trends..."
+              :placeholder="t('aiAssistant.dialogs.analytics.placeholder')"
             />
             <Button
               class="w-full"
               :disabled="analyticsLoading || analyticsQuestion.trim().length < 3 || !hasProviders"
               @click="handleQueryAnalytics"
             >
-              {{ analyticsLoading ? 'Analyzing...' : 'Ask Analytics' }}
+              {{
+                analyticsLoading
+                  ? t('aiAssistant.dialogs.analytics.analyzing')
+                  : t('aiAssistant.dialogs.analytics.ask')
+              }}
             </Button>
           </div>
 
           <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
             <div v-if="analyticsResult" class="space-y-4">
               <div>
-                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Answer</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.analytics.answer') }}
+                </p>
                 <p class="mt-2 whitespace-pre-wrap text-sm leading-6">
                   {{ analyticsResult.answer }}
                 </p>
               </div>
               <div v-if="analyticsResult.highlights.length">
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Highlights
+                  {{ t('aiAssistant.dialogs.analytics.highlights') }}
                 </p>
                 <div class="mt-2 flex flex-wrap gap-2">
                   <span
@@ -691,7 +827,11 @@
                 </div>
               </div>
               <p class="text-xs text-muted-foreground">
-                Answer generated in {{ analyticsResult.processingTimeMs }} ms.
+                {{
+                  t('aiAssistant.dialogs.analytics.generatedIn', {
+                    ms: analyticsResult.processingTimeMs,
+                  })
+                }}
               </p>
             </div>
 
@@ -699,7 +839,7 @@
               v-else
               class="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
             >
-              Ask a business-style question and AI will answer from controlled analytics context.
+              {{ t('aiAssistant.dialogs.analytics.emptyState') }}
             </div>
           </div>
         </div>
@@ -709,12 +849,16 @@
     <Dialog :open="openEvaluationDialog" @update:open="openEvaluationDialog = $event">
       <DialogContent class="sm:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>AI Quality Reports</DialogTitle>
+          <DialogTitle>{{ t('aiAssistant.dialogs.evaluation.title') }}</DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
           <div class="flex justify-end">
             <Button variant="outline" :disabled="evaluationLoading" @click="loadEvaluationOverview">
-              {{ evaluationLoading ? 'Refreshing...' : 'Refresh Reports' }}
+              {{
+                evaluationLoading
+                  ? t('aiAssistant.dialogs.evaluation.refreshing')
+                  : t('aiAssistant.dialogs.evaluation.refresh')
+              }}
             </Button>
           </div>
 
@@ -723,7 +867,7 @@
               <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
                 <div class="flex items-center justify-between gap-3">
                   <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Deterministic Eval
+                    {{ t('aiAssistant.dialogs.evaluation.deterministicEval') }}
                   </p>
                   <span
                     :class="[
@@ -737,10 +881,10 @@
                   >
                     {{
                       !evaluationOverview.latest.deterministic
-                        ? 'no report'
+                        ? t('aiAssistant.dialogs.evaluation.noReport')
                         : evaluationOverview.latest.deterministic.gatePassed
-                        ? 'gate passed'
-                        : 'gate failed'
+                        ? t('aiAssistant.dialogs.evaluation.gatePassed')
+                        : t('aiAssistant.dialogs.evaluation.gateFailed')
                     }}
                   </span>
                 </div>
@@ -752,7 +896,7 @@
                   <div class="grid gap-2 sm:grid-cols-3">
                     <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Pass Rate
+                        {{ t('aiAssistant.dialogs.evaluation.passRate') }}
                       </p>
                       <p class="mt-1 text-lg font-semibold">
                         {{ formatPassRate(evaluationOverview.latest.deterministic.passRate) }}
@@ -760,7 +904,7 @@
                     </div>
                     <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Cases
+                        {{ t('aiAssistant.dialogs.evaluation.cases') }}
                       </p>
                       <p class="mt-1 text-lg font-semibold">
                         {{ evaluationOverview.latest.deterministic.passedCases }}/{{ evaluationOverview.latest.deterministic.totalCases }}
@@ -768,7 +912,7 @@
                     </div>
                     <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Failures
+                        {{ t('aiAssistant.dialogs.evaluation.failures') }}
                       </p>
                       <p class="mt-1 text-lg font-semibold">
                         {{ evaluationOverview.latest.deterministic.failedCases }}
@@ -777,7 +921,7 @@
                   </div>
                   <div v-if="evaluationOverview.latest.deterministic.gateFailures.length">
                     <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Gate Failures
+                      {{ t('aiAssistant.dialogs.evaluation.gateFailures') }}
                     </p>
                     <div class="mt-2 space-y-2">
                       <div
@@ -791,7 +935,7 @@
                   </div>
                   <div v-if="resolveFailedResults(evaluationOverview.latest.deterministic).length">
                     <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Failed Cases
+                      {{ t('aiAssistant.dialogs.evaluation.failedCases') }}
                     </p>
                     <div class="mt-2 space-y-2">
                       <div
@@ -810,13 +954,13 @@
                   v-else
                   class="mt-3 rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
                 >
-                  No deterministic evaluation report is available yet.
+                  {{ t('aiAssistant.dialogs.evaluation.noDeterministicReport') }}
                 </div>
               </div>
 
               <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Recent Deterministic History
+                  {{ t('aiAssistant.dialogs.evaluation.recentDeterministicHistory') }}
                 </p>
                 <div v-if="evaluationOverview.history.deterministic.length" class="mt-3 space-y-2">
                   <div
@@ -831,11 +975,18 @@
                       </span>
                     </div>
                     <p class="mt-1 text-xs text-muted-foreground">
-                      {{ entry.totalCases - entry.failedCases }}/{{ entry.totalCases }} passed
+                      {{
+                        t('aiAssistant.dialogs.evaluation.archivedSummary', {
+                          passed: entry.totalCases - entry.failedCases,
+                          total: entry.totalCases,
+                        })
+                      }}
                     </p>
                   </div>
                 </div>
-                <p v-else class="mt-3 text-sm text-muted-foreground">No archived deterministic runs yet.</p>
+                <p v-else class="mt-3 text-sm text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.evaluation.noArchivedDeterministicRuns') }}
+                </p>
               </div>
             </div>
 
@@ -843,7 +994,7 @@
               <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
                 <div class="flex items-center justify-between gap-3">
                   <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Live Provider Eval
+                    {{ t('aiAssistant.dialogs.evaluation.liveProviderEval') }}
                   </p>
                   <span
                     :class="[
@@ -857,10 +1008,10 @@
                   >
                     {{
                       !evaluationOverview.latest.live
-                        ? 'no report'
+                        ? t('aiAssistant.dialogs.evaluation.noReport')
                         : evaluationOverview.latest.live.gatePassed
-                          ? 'gate passed'
-                          : 'gate failed'
+                          ? t('aiAssistant.dialogs.evaluation.gatePassed')
+                          : t('aiAssistant.dialogs.evaluation.gateFailed')
                     }}
                   </span>
                 </div>
@@ -872,23 +1023,23 @@
                   <div class="grid gap-2 sm:grid-cols-3">
                     <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Provider
+                        {{ t('aiAssistant.dialogs.evaluation.provider') }}
                       </p>
                       <p class="mt-1 text-lg font-semibold">
-                        {{ evaluationOverview.latest.live.provider || 'unknown' }}
+                        {{ evaluationOverview.latest.live.provider || t('common.unknown') }}
                       </p>
                     </div>
                     <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Model
+                        {{ t('aiAssistant.dialogs.evaluation.model') }}
                       </p>
                       <p class="mt-1 text-lg font-semibold">
-                        {{ evaluationOverview.latest.live.model || 'unknown' }}
+                        {{ evaluationOverview.latest.live.model || t('common.unknown') }}
                       </p>
                     </div>
                     <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Pass Rate
+                        {{ t('aiAssistant.dialogs.evaluation.passRate') }}
                       </p>
                       <p class="mt-1 text-lg font-semibold">
                         {{ formatPassRate(evaluationOverview.latest.live.passRate) }}
@@ -897,7 +1048,7 @@
                   </div>
                   <div v-if="evaluationOverview.latest.live.gateFailures.length">
                     <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Gate Failures
+                      {{ t('aiAssistant.dialogs.evaluation.gateFailures') }}
                     </p>
                     <div class="mt-2 space-y-2">
                       <div
@@ -911,7 +1062,7 @@
                   </div>
                   <div v-if="resolveFailedResults(evaluationOverview.latest.live).length">
                     <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Failed Cases
+                      {{ t('aiAssistant.dialogs.evaluation.failedCases') }}
                     </p>
                     <div class="mt-2 space-y-2">
                       <div
@@ -930,13 +1081,13 @@
                   v-else
                   class="mt-3 rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
                 >
-                  No live provider report is available yet.
+                  {{ t('aiAssistant.dialogs.evaluation.noLiveReport') }}
                 </div>
               </div>
 
               <div class="rounded-2xl border border-border/60 bg-background/80 p-4">
                 <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Recent Live History
+                  {{ t('aiAssistant.dialogs.evaluation.recentLiveHistory') }}
                 </p>
                 <div v-if="evaluationOverview.history.live.length" class="mt-3 space-y-2">
                   <div
@@ -951,11 +1102,14 @@
                       </span>
                     </div>
                     <p class="mt-1 text-xs text-muted-foreground">
-                      {{ entry.provider || 'provider' }} · {{ entry.model || 'model' }}
+                      {{ entry.provider || t('common.unknown') }} ·
+                      {{ entry.model || t('common.unknown') }}
                     </p>
                   </div>
                 </div>
-                <p v-else class="mt-3 text-sm text-muted-foreground">No archived live runs yet.</p>
+                <p v-else class="mt-3 text-sm text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.evaluation.noArchivedLiveRuns') }}
+                </p>
               </div>
             </div>
           </div>
@@ -964,7 +1118,11 @@
             v-else
             class="flex min-h-[18rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground"
           >
-            {{ evaluationLoading ? 'Loading evaluation reports...' : 'No evaluation reports are available yet.' }}
+            {{
+              evaluationLoading
+                ? t('aiAssistant.dialogs.evaluation.loading')
+                : t('aiAssistant.dialogs.evaluation.empty')
+            }}
           </div>
         </div>
       </DialogContent>
@@ -975,6 +1133,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { BarChart3, Bot, MessageCircle, NotebookPen, Search, Sparkles, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import {
@@ -984,6 +1143,11 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Textarea,
 } from '@dailyuse/ui-vue-shadcn';
 import { useAI } from '../composables/useAI';
@@ -1033,6 +1197,19 @@ type ConversationSummary = {
   id: string;
   name?: string;
   title?: string;
+};
+
+type ProviderListItem = {
+  id: string;
+  name?: string;
+  baseUrl?: string;
+  defaultModel?: string | null;
+  availableModels?: Array<{
+    id: string;
+    name?: string;
+  }>;
+  isDefault?: boolean;
+  isActive?: boolean;
 };
 
 type AICapabilities = {
@@ -1195,6 +1372,7 @@ const { resources, fetchResources, initRepository, createMarkdownNote } = useRep
 const { requestOpenResource } = useEditorWorkspaceActions();
 const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 const router = useRouter();
+const { t, locale } = useI18n();
 
 const open = ref(false);
 const openGoalDialog = ref(false);
@@ -1233,6 +1411,8 @@ const conversationListLoading = ref(false);
 const conversationList = ref<ConversationSummary[]>([]);
 const lastActiveConversationId = ref('');
 const conversationDraftNames = ref<Record<string, string>>({});
+const selectedChatProviderId = ref('');
+const selectedChatModel = ref('');
 
 const noteTitle = ref('');
 const noteTopic = ref('');
@@ -1268,6 +1448,17 @@ const aiEnabled = computed(() => aiSettings.value?.enabled ?? true);
 const showFloatingBall = computed(() => aiSettings.value?.showFloatingBall ?? true);
 const knowledgeNoteSubpath = computed(() => aiSettings.value?.knowledgeNoteSubpath ?? '');
 const capabilityState = computed(() => (capabilities.value as AICapabilities | null) ?? null);
+const anyDialogOpen = computed(
+  () =>
+    openGoalDialog.value ||
+    openAutomationDialog.value ||
+    openChatDialog.value ||
+    openNoteDialog.value ||
+    openKnowledgeExpansionDialog.value ||
+    openKnowledgeDialog.value ||
+    openAnalyticsDialog.value ||
+    openEvaluationDialog.value,
+);
 const canUseGoalAutomation = computed(
   () => hasProviders.value && Boolean(capabilityState.value?.supportsGoalAutomation),
 );
@@ -1289,7 +1480,10 @@ const advancedFeatureNotice = computed(() => {
     return '';
   }
 
-  return `${capabilityState.value.advancedFeaturesReason} Current mode: ${capabilityState.value.runtimeMode}.`;
+  return t('aiAssistant.diagnostics.advancedFeatureNotice', {
+    reason: capabilityState.value.advancedFeaturesReason,
+    mode: capabilityState.value.runtimeMode,
+  });
 });
 const knowledgeIndexNotice = computed(() => {
   const diagnostics = capabilityState.value?.knowledgeIndexDiagnostics;
@@ -1299,23 +1493,29 @@ const knowledgeIndexNotice = computed(() => {
 
   const persistenceLabel =
     diagnostics.persistenceBackend === 'prisma-index-table'
-      ? 'server knowledge index table'
+      ? t('aiAssistant.diagnostics.persistenceBackend.prismaIndexTable')
       : diagnostics.persistenceBackend === 'powersync-resource-metadata'
-        ? 'desktop metadata-backed index'
-        : 'legacy resource metadata index';
+        ? t('aiAssistant.diagnostics.persistenceBackend.powersyncResourceMetadata')
+        : t('aiAssistant.diagnostics.persistenceBackend.legacyResourceMetadata');
   const vectorLabel =
     diagnostics.vectorRecallBackend === 'pgvector-ivfflat'
-      ? 'pgvector ANN recall'
+      ? t('aiAssistant.diagnostics.vectorBackend.pgvectorIvfflat')
       : diagnostics.vectorRecallBackend === 'local-js-hybrid'
-        ? 'local hybrid recall'
-        : 'no vector recall';
+        ? t('aiAssistant.diagnostics.vectorBackend.localJsHybrid')
+        : t('aiAssistant.diagnostics.vectorBackend.none');
   const persistenceDetail =
     diagnostics.persistenceStatus === 'fallback' && diagnostics.persistenceReason
       ? ` ${diagnostics.persistenceReason}`
       : '';
   const vectorDetail = diagnostics.vectorRecallReason ? ` ${diagnostics.vectorRecallReason}` : '';
 
-  return `Knowledge index uses ${persistenceLabel}. Vector recall status: ${vectorLabel} (${diagnostics.vectorRecallStatus}).${persistenceDetail}${vectorDetail}`;
+  return t('aiAssistant.diagnostics.knowledgeIndexNotice', {
+    persistenceLabel,
+    vectorLabel,
+    status: diagnostics.vectorRecallStatus,
+    persistenceDetail,
+    vectorDetail,
+  });
 });
 const resolvedNotePath = computed(() =>
   knowledgeNoteSubpath.value ? `notes/${knowledgeNoteSubpath.value}/` : 'notes/',
@@ -1327,7 +1527,7 @@ const automatedGoalId = computed(
 );
 const providerList = computed(() =>
   Array.isArray(providers.value)
-    ? (providers.value as Array<{ name?: string; isDefault?: boolean }>)
+    ? (providers.value as ProviderListItem[])
     : [],
 );
 
@@ -1338,30 +1538,146 @@ const activeProvider = computed(() => {
     null
   );
 });
-const activeProviderName = computed(() => activeProvider.value?.name || 'Not configured');
+const activeProviderName = computed(
+  () => activeProvider.value?.name || t('aiAssistant.notConfigured'),
+);
 const providerSummaryText = computed(() => {
-  if (!providerList.value.length) return 'No provider configured';
-  return `${providerList.value.length} provider${providerList.value.length > 1 ? 's' : ''} available`;
+  if (!providerList.value.length) {
+    return t('aiAssistant.providerSummaryEmpty');
+  }
+
+  return t('aiAssistant.providerSummaryConfigured', {
+    count: providerList.value.length,
+  });
+});
+const selectedChatProvider = computed(() => {
+  if (!providerList.value.length) {
+    return null;
+  }
+
+  return (
+    providerList.value.find((item) => item.id === selectedChatProviderId.value) ||
+    activeProvider.value ||
+    providerList.value[0] ||
+    null
+  );
+});
+const availableChatModels = computed(() => {
+  const provider = selectedChatProvider.value;
+  const models = provider?.availableModels ?? [];
+  if (models.length > 0) {
+    return models;
+  }
+
+  if (provider?.defaultModel) {
+    return [{ id: provider.defaultModel, name: provider.defaultModel }];
+  }
+
+  return [];
 });
 const notePreview = computed(() => {
   const content = noteSummary.value?.resource?.content;
-  if (!content) return 'The note was created successfully.';
+  if (!content) return t('aiAssistant.dialogs.note.previewUnavailable');
   return content.slice(0, 280);
 });
 
 onMounted(() => {
-  void loadProviders();
+  void loadProviders().then(() => {
+    syncChatProviderSelection();
+  });
   void loadCapabilities();
   void initRepository();
   lastActiveConversationId.value = localStorage.getItem('ai:last-conversation-id') || '';
 });
 
+function syncChatProviderSelection() {
+  if (!providerList.value.length) {
+    selectedChatProviderId.value = '';
+    selectedChatModel.value = '';
+    return;
+  }
+
+  if (!providerList.value.some((item) => item.id === selectedChatProviderId.value)) {
+    selectedChatProviderId.value = activeProvider.value?.id ?? providerList.value[0]?.id ?? '';
+  }
+
+  if (!availableChatModels.value.some((item) => item.id === selectedChatModel.value)) {
+    selectedChatModel.value =
+      selectedChatProvider.value?.defaultModel ??
+      availableChatModels.value[0]?.id ??
+      '';
+  }
+}
+
 function togglePanel() {
   if (!open.value) {
-    void loadProviders();
+    void loadProviders().then(() => {
+      syncChatProviderSelection();
+    });
     void loadCapabilities();
   }
   open.value = !open.value;
+}
+
+function closeFloatingPanel() {
+  open.value = false;
+}
+
+async function ensureAIContext(options?: { providers?: boolean; capabilities?: boolean }) {
+  try {
+    const tasks: Promise<unknown>[] = [];
+    if (options?.providers !== false) {
+      tasks.push(
+        loadProviders().then(() => {
+          syncChatProviderSelection();
+        }),
+      );
+    }
+    if (options?.capabilities !== false) {
+      tasks.push(loadCapabilities());
+    }
+    await Promise.all(tasks);
+    return true;
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : t('common.operationFailed'));
+    return false;
+  }
+}
+
+async function openGoalDialogPanel() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
+  openGoalDialog.value = true;
+}
+
+async function openAutomationDialogPanel() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
+  openAutomationDialog.value = true;
+}
+
+async function openNoteDialogPanel() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
+  openNoteDialog.value = true;
+}
+
+async function openKnowledgeExpansionDialogPanel() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
+  openKnowledgeExpansionDialog.value = true;
+}
+
+async function openKnowledgeDialogPanel() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
+  openKnowledgeDialog.value = true;
+}
+
+async function openAnalyticsDialogPanel() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
+  openAnalyticsDialog.value = true;
 }
 
 async function loadConversations() {
@@ -1374,21 +1690,29 @@ async function loadConversations() {
     conversationDraftNames.value = Object.fromEntries(
       conversationList.value.map((item) => [item.id, item.name || item.title || '']),
     );
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.loadFailed'));
   } finally {
     conversationListLoading.value = false;
   }
 }
 
 async function handleOpenChatDialog() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext())) return;
   openChatDialog.value = true;
-  await loadConversations();
-  if (lastActiveConversationId.value) {
-    const existing = conversationList.value.find(
-      (item) => item.id === lastActiveConversationId.value,
-    );
-    if (existing) {
-      await selectConversation(existing);
+  try {
+    await loadConversations();
+    if (lastActiveConversationId.value) {
+      const existing = conversationList.value.find(
+        (item) => item.id === lastActiveConversationId.value,
+      );
+      if (existing) {
+        await selectConversation(existing);
+      }
     }
+  } catch {
+    // `loadConversations` already surfaced a localized toast.
   }
 }
 
@@ -1412,9 +1736,11 @@ async function handleGenerateGoal() {
         targetValue: item.targetValue,
         unit: item.unit,
       })) ?? [];
-    toast.success('Goal draft generated');
+    toast.success(t('aiAssistant.dialogs.generateGoal.draftGenerated'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to generate goal');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.generateGoal.generateFailed'),
+    );
   } finally {
     goalLoading.value = false;
   }
@@ -1434,7 +1760,7 @@ async function handleCreateGoalFromDraft() {
     });
 
     if (!created) {
-      toast.error('Failed to create goal');
+      toast.error(t('aiAssistant.dialogs.generateGoal.createFailed'));
       return;
     }
 
@@ -1450,11 +1776,13 @@ async function handleCreateGoalFromDraft() {
       }
     }
 
-    toast.success('Goal created');
+    toast.success(t('aiAssistant.dialogs.generateGoal.created'));
     openGoalDialog.value = false;
     await router.push(`/goals/${created.id}`);
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to create goal');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.generateGoal.createFailed'),
+    );
   } finally {
     creatingGoal.value = false;
   }
@@ -1467,7 +1795,7 @@ async function handleSendChat() {
   try {
     if (!chatConversationId.value) {
       const conversation = (await service.createConversation({
-        name: conversationName.value.trim() || 'Quick Chat',
+        name: conversationName.value.trim() || t('aiAssistant.dialogs.chat.defaultConversationName'),
       })) as { id: string };
       chatConversationId.value = conversation.id;
       lastActiveConversationId.value = conversation.id;
@@ -1487,6 +1815,8 @@ async function handleSendChat() {
       {
         conversationId: chatConversationId.value as never,
         content: pendingUserMessage,
+        ...(selectedChatProvider.value?.id ? { providerId: selectedChatProvider.value.id } : {}),
+        ...(selectedChatModel.value ? { model: selectedChatModel.value } : {}),
       },
       {
         onChunk: (chunk: { role: 'assistant'; content: string }) => {
@@ -1521,7 +1851,7 @@ async function handleSendChat() {
     chatTimeline.value = chatTimeline.value.filter(
       (item) => item.id !== userDraftId && item.id !== assistantDraftId,
     );
-    toast.error(error instanceof Error ? error.message : 'Failed to send message');
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.sendFailed'));
   } finally {
     chatLoading.value = false;
   }
@@ -1536,9 +1866,11 @@ async function handlePlanAutomation() {
       includeTaskTemplates: true,
       confirm: false,
     })) as GoalAutomationResult;
-    toast.success('Automation plan ready for review');
+    toast.success(t('aiAssistant.dialogs.automation.planReady'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to plan automation');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.automation.planFailed'),
+    );
   } finally {
     automationLoading.value = false;
   }
@@ -1560,9 +1892,11 @@ async function handleExecuteAutomation() {
       approvedPlan: automationResult.value.plan,
       approvedActions: automationResult.value.actions,
     })) as GoalAutomationResult;
-    toast.success('Automation executed');
+    toast.success(t('aiAssistant.dialogs.automation.executed'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to execute automation');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.automation.executeFailed'),
+    );
   } finally {
     automationExecuting.value = false;
   }
@@ -1578,7 +1912,8 @@ async function selectConversation(item: ConversationSummary) {
   chatConversationId.value = item.id;
   lastActiveConversationId.value = item.id;
   localStorage.setItem('ai:last-conversation-id', item.id);
-  conversationName.value = item.name || item.title || 'Quick Chat';
+  conversationName.value =
+    item.name || item.title || t('aiAssistant.dialogs.chat.defaultConversationName');
   try {
     const result = (await service.listMessages(item.id, { page: 1, pageSize: 50 })) as {
       data?: ChatItem[];
@@ -1586,7 +1921,7 @@ async function selectConversation(item: ConversationSummary) {
     chatTimeline.value = result.data ?? [];
     openChatDialog.value = true;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to load conversation');
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.loadFailed'));
   }
 }
 
@@ -1601,9 +1936,11 @@ async function deleteConversation(id: string) {
       localStorage.removeItem('ai:last-conversation-id');
     }
     await loadConversations();
-    toast.success('Conversation deleted');
+    toast.success(t('aiAssistant.dialogs.chat.deleted'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to delete conversation');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.deleteFailed'),
+    );
   }
 }
 
@@ -1631,7 +1968,9 @@ async function renameConversation(item: ConversationSummary) {
     }
   } catch (error) {
     conversationDraftNames.value[item.id] = currentName;
-    toast.error(error instanceof Error ? error.message : 'Failed to rename conversation');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.renameFailed'),
+    );
   }
 }
 
@@ -1644,9 +1983,9 @@ async function handleCreateNote() {
       ...(knowledgeNoteSubpath.value ? { targetSubpath: knowledgeNoteSubpath.value } : {}),
     })) as NoteSummary;
     await fetchResources();
-    toast.success('Knowledge note created');
+    toast.success(t('aiAssistant.dialogs.note.created'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to create note');
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.note.createFailed'));
   } finally {
     noteLoading.value = false;
   }
@@ -1663,9 +2002,11 @@ async function handleExpandKnowledge() {
       maxCitations: 4,
       ...(currentContent ? { currentContent } : {}),
     })) as KnowledgeExpansionResult;
-    toast.success('Draft expanded with repository knowledge');
+    toast.success(t('aiAssistant.dialogs.knowledgeExpansion.expanded'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to expand knowledge draft');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledgeExpansion.expandFailed'),
+    );
   } finally {
     knowledgeExpansionLoading.value = false;
   }
@@ -1679,7 +2020,7 @@ async function handleQueryKnowledge() {
       maxResources: 8,
     })) as typeof knowledgeResult.value;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to query knowledge');
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledge.queryFailed'));
   } finally {
     knowledgeLoading.value = false;
   }
@@ -1697,10 +2038,12 @@ async function handleReindexKnowledge() {
       reusedCount: number;
       failedCount: number;
     };
-    reindexSummary.value = `Indexed ${result.indexedCount}, reused ${result.reusedCount}, failed ${result.failedCount}.`;
-    toast.success('Knowledge index refreshed');
+    reindexSummary.value = t('aiAssistant.dialogs.knowledge.reindexSummary', result);
+    toast.success(t('aiAssistant.dialogs.knowledge.refreshed'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to refresh knowledge index');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledge.refreshFailed'),
+    );
   } finally {
     reindexLoading.value = false;
   }
@@ -1712,12 +2055,12 @@ async function copyExpandedKnowledge() {
   }
 
   if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
-    toast.error('Clipboard is unavailable in this runtime');
+    toast.error(t('aiAssistant.dialogs.knowledgeExpansion.clipboardUnavailable'));
     return;
   }
 
   await navigator.clipboard.writeText(knowledgeExpansionResult.value.expandedContent);
-  toast.success('Expanded draft copied');
+  toast.success(t('aiAssistant.dialogs.knowledgeExpansion.copied'));
 }
 
 async function saveExpandedKnowledge() {
@@ -1733,7 +2076,7 @@ async function saveExpandedKnowledge() {
     );
 
     if (!created) {
-      toast.error('Failed to save expanded draft');
+      toast.error(t('aiAssistant.dialogs.knowledgeExpansion.saveFailed'));
       return;
     }
 
@@ -1743,9 +2086,11 @@ async function saveExpandedKnowledge() {
       path: created.path,
     };
     await fetchResources();
-    toast.success('Expanded draft saved to repository');
+    toast.success(t('aiAssistant.dialogs.knowledgeExpansion.saved'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to save expanded draft');
+    toast.error(
+      error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledgeExpansion.saveFailed'),
+    );
   } finally {
     knowledgeExpansionSaving.value = false;
   }
@@ -1758,13 +2103,15 @@ async function handleQueryAnalytics() {
       query: analyticsQuestion.value.trim(),
     })) as typeof analyticsResult.value;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to query analytics');
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.analytics.queryFailed'));
   } finally {
     analyticsLoading.value = false;
   }
 }
 
 async function handleOpenEvaluationDialog() {
+  closeFloatingPanel();
+  if (!(await ensureAIContext({ providers: false, capabilities: true }))) return;
   openEvaluationDialog.value = true;
   await loadEvaluationOverview();
 }
@@ -1776,7 +2123,7 @@ async function loadEvaluationOverview() {
       historyLimit: 5,
     })) as EvaluationOverview;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Failed to load evaluation reports');
+    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.evaluation.empty'));
   } finally {
     evaluationLoading.value = false;
   }
@@ -1837,11 +2184,11 @@ async function openExpandedKnowledgeDraft() {
 
 function formatAutomationTool(tool: GoalAutomationResult['actions'][number]['tool']) {
   const labels: Record<GoalAutomationResult['actions'][number]['tool'], string> = {
-    create_goal: 'Create Goal',
-    create_key_result: 'Create Key Result',
-    create_task_template: 'Create Task Template',
-    search_notes: 'Search Notes',
-    fetch_stats: 'Fetch Stats',
+    create_goal: t('aiAssistant.dialogs.automation.toolLabels.createGoal'),
+    create_key_result: t('aiAssistant.dialogs.automation.toolLabels.createKeyResult'),
+    create_task_template: t('aiAssistant.dialogs.automation.toolLabels.createTaskTemplate'),
+    search_notes: t('aiAssistant.dialogs.automation.toolLabels.searchNotes'),
+    fetch_stats: t('aiAssistant.dialogs.automation.toolLabels.fetchStats'),
   };
 
   return labels[tool];
@@ -1849,9 +2196,9 @@ function formatAutomationTool(tool: GoalAutomationResult['actions'][number]['too
 
 function formatActionStatus(status: NonNullable<GoalAutomationResult['executedActions']>[number]['status']) {
   const labels = {
-    executed: 'Executed',
-    skipped: 'Skipped',
-    failed: 'Failed',
+    executed: t('aiAssistant.dialogs.automation.statusLabels.executed'),
+    skipped: t('aiAssistant.dialogs.automation.statusLabels.skipped'),
+    failed: t('aiAssistant.dialogs.automation.statusLabels.failed'),
   } as const;
 
   return labels[status];
@@ -1862,7 +2209,7 @@ function addKeyResult() {
     title: '',
     description: '',
     targetValue: 1,
-    unit: 'unit',
+    unit: t('aiAssistant.goalDraft.unit'),
   });
 }
 
@@ -1881,11 +2228,11 @@ function resolveKnowledgeExpansionDraftName(): string {
     return headingMatch[1].trim();
   }
 
-  return `AI Grounded Draft ${new Date().toISOString().slice(0, 10)}`;
+  return `${t('aiAssistant.dialogs.knowledgeExpansion.defaultDraftName')} ${new Date().toISOString().slice(0, 10)}`;
 }
 
 function formatEvalTimestamp(value: string): string {
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString(locale.value);
 }
 
 function formatPassRate(value: number): string {

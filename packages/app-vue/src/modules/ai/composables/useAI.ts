@@ -23,6 +23,16 @@ export function useAI() {
     try {
       const nextProviders = await service.listProviders();
       providers.value = Array.isArray(nextProviders) ? nextProviders : [];
+      console.debug('[AI] providers loaded', {
+        count: providers.value.length,
+        providerIds: providers.value
+          .map((provider) =>
+            typeof provider === 'object' && provider !== null && 'id' in provider
+              ? String((provider as { id: unknown }).id)
+              : 'unknown',
+          )
+          .slice(0, 10),
+      });
       return providers.value;
     } finally {
       isLoadingProviders.value = false;
@@ -61,6 +71,12 @@ export function useAI() {
     await loadProviders();
   }
 
+  async function refreshProviderModels(providerId: string) {
+    const provider = await service.refreshProviderModels(providerId);
+    await loadProviders();
+    return provider;
+  }
+
   function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {
     return service.testProvider(request) as Promise<TestAIProviderRes>;
   }
@@ -82,6 +98,7 @@ export function useAI() {
     updateProvider,
     deleteProvider,
     setDefaultProvider,
+    refreshProviderModels,
     testProvider,
     expandKnowledge,
   };

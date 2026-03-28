@@ -63,6 +63,7 @@ export class AIClientService {
     this.deleteProvider = this.deleteProvider.bind(this);
     this.testProvider = this.testProvider.bind(this);
     this.setDefaultProvider = this.setDefaultProvider.bind(this);
+    this.refreshProviderModels = this.refreshProviderModels.bind(this);
     this.generateGoal = this.generateGoal.bind(this);
     this.automateGoal = this.automateGoal.bind(this);
     this.createConversation = this.createConversation.bind(this);
@@ -115,6 +116,10 @@ export class AIClientService {
   setDefaultProvider(providerId: string) {
     const request: SetDefaultAIProviderReq = { providerId: providerId as SetDefaultAIProviderReq['providerId'] };
     return this.providerApi.setDefaultProvider(request);
+  }
+
+  refreshProviderModels(id: string) {
+    return this.providerApi.refreshProviderModels(id);
   }
 
   generateGoal(request: GenerateGoalsReq) {

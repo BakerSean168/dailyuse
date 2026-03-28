@@ -21,6 +21,10 @@ export type {
 } from './analytics-query.port';
 export type { IAnalyticsReadPort } from './analytics-read.port';
 export type {
+  IAIProviderModelCatalogPort,
+  ProviderModelCatalogInput,
+} from './provider-model-catalog.port';
+export type {
   ChatExecutionCompleteInput,
   ChatExecutionCompleteResult,
   ChatExecutionMessage,

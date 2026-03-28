@@ -55,6 +55,7 @@ const Ch = {
   PROVIDER_DELETE: 'ai:provider:delete',
   PROVIDER_TEST: 'ai:provider:test',
   PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
+  PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
   GOAL_GENERATE: 'ai:goal:generate',
   GOAL_AUTOMATE: 'ai:goal:automate',
   CONVERSATION_CREATE: 'ai:chat:conversation:create',
@@ -202,6 +203,11 @@ export function createAIElectronModule(options: {
           aiModule.api.setDefaultProvider(dto.providerId, requestContext.identityId),
         ),
       );
+      ipcMain.handle(Ch.PROVIDER_REFRESH_MODELS, async (_, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.refreshProviderModels(requestContext.identityId, String(id)),
+        ),
+      );
 
       // -- Goal Generation --
       ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
@@ -261,6 +267,7 @@ export function createAIElectronModule(options: {
             String(dto.conversationId),
             String(dto.content),
             dto.providerId,
+            dto.model,
           ),
         ),
       );

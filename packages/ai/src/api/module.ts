@@ -187,6 +187,7 @@ export function createAIApiModule(options: {
         deleteProvider: handlers.deleteProvider,
         testConnection: handlers.testConnection,
         setDefaultProvider: handlers.setDefaultProvider,
+        refreshProviderModels: handlers.refreshProviderModels,
       });
       const chatController = new AIChatController(
         {

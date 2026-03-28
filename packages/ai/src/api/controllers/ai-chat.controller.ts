@@ -31,6 +31,7 @@ interface AIChatMessageControllerService {
     conversationId: string,
     content: string,
     providerId?: string,
+    model?: string,
   ): Promise<SendMessageRes>;
   streamMessage(
     identityId: string,
@@ -38,6 +39,7 @@ interface AIChatMessageControllerService {
     content: string,
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
     providerId?: string,
+    model?: string,
   ): Promise<{
     userMessage: SendMessageRes['userMessage'];
     assistantMessage: SendMessageRes['assistantMessage'];
@@ -119,6 +121,7 @@ export class AIChatController {
         parsed.data.conversationId,
         parsed.data.content,
         parsed.data.providerId,
+        parsed.data.model,
       ),
     );
   }
@@ -146,6 +149,7 @@ export class AIChatController {
         parsed.data.content,
         onChunk,
         parsed.data.providerId,
+        parsed.data.model,
       ),
     );
   }
@@ -154,6 +158,7 @@ export class AIChatController {
     conversationId: string;
     content: string;
     providerId?: string;
+    model?: string;
   }> {
     const parsed = SendMessageSchema.safeParse(input);
     if (!parsed.success) {
@@ -168,6 +173,7 @@ export class AIChatController {
       conversationId: parsed.data.conversationId,
       content: parsed.data.content,
       providerId: parsed.data.providerId,
+      model: parsed.data.model,
     });
   }
 

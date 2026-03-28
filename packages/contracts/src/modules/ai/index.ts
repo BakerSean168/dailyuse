@@ -14,6 +14,7 @@ export * from './protocol';
 
 // ============ API ============
 export * from './api';
+export * from './configs';
 
 export * from './dtos';
 export * from './entities';

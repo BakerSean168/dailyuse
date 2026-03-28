@@ -57,6 +57,7 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from './chat-execution';
+import { OpenAICompatibleModelCatalogGateway } from './gateways/openai-compatible-model-catalog.gateway';
 
 import type {
   AICapabilities,
@@ -219,6 +220,7 @@ export interface AIApplicationPort {
   listProviders(identityId: string): Promise<AIProviderConfigClientDTO[]>;
   testConnection(identityId: string, req: TestAIProviderReq): Promise<TestAIProviderRes>;
   setDefaultProvider(id: string, identityId: string): Promise<void>;
+  refreshProviderModels(identityId: string, providerId: string): Promise<AIProviderConfigClientDTO>;
 
   // -- Conversations --
   createConversation(identityId: string, name?: string): Promise<AIConversationClientDTO>;
@@ -240,6 +242,7 @@ export interface AIApplicationPort {
     conversationId: string,
     content: string,
     providerId?: string,
+    model?: string,
   ): Promise<SendMessageRes>;
   streamMessage(
     identityId: string,
@@ -247,6 +250,7 @@ export interface AIApplicationPort {
     content: string,
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
     providerId?: string,
+    model?: string,
   ): Promise<{
     userMessage: SendMessageRes['userMessage'];
     assistantMessage: SendMessageRes['assistantMessage'];
@@ -425,6 +429,7 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
   const providerConfigService = new AIProviderConfigService(
     providerConfigRepository,
     chatExecutionPort,
+    new OpenAICompatibleModelCatalogGateway(),
   );
   const chatService = new AIChatApplicationService(
     conversationRepository,
@@ -561,6 +566,8 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       services.providerConfigService.testConnection(identityId, req),
     setDefaultProvider: (id, identityId) =>
       services.providerConfigService.setDefaultProvider(id, identityId),
+    refreshProviderModels: (identityId, providerId) =>
+      services.providerConfigService.refreshProviderModels(identityId, providerId),
 
     // -- Conversations --
     createConversation: (identityId, name) =>
@@ -573,15 +580,16 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     deleteConversation: (id) => services.conversationService.deleteConversation(id),
 
     // -- Chat --
-    sendMessage: (identityId, conversationId, content, providerId) =>
-      services.chatService.sendMessage(identityId, conversationId, content, providerId),
-    streamMessage: (identityId, conversationId, content, onChunk, providerId) =>
+    sendMessage: (identityId, conversationId, content, providerId, model) =>
+      services.chatService.sendMessage(identityId, conversationId, content, providerId, model),
+    streamMessage: (identityId, conversationId, content, onChunk, providerId, model) =>
       services.chatService.sendMessageStream(
         identityId,
         conversationId,
         content,
         onChunk,
         providerId,
+        model,
       ),
 
     // -- Goal Generation --

@@ -46,6 +46,7 @@ export interface IAIService {
   deleteProvider(id: string): Promise<void>;
   testProvider(request: unknown): Promise<unknown>;
   setDefaultProvider(providerId: string): Promise<void>;
+  refreshProviderModels(id: string): Promise<unknown>;
   generateGoal(request: unknown): Promise<unknown>;
   automateGoal(request: unknown): Promise<unknown>;
   createConversation(request: unknown): Promise<unknown>;

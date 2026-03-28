@@ -2,7 +2,6 @@ import type { IAIProviderConfigApiClient, IResultIpcClient } from '../types';
 import { AIChannels } from '@dailyuse/contracts/electron';
 import type {
   AIProviderConfigClientDTO,
-  AIProviderConfigSummary,
   CreateAIProviderConfigReq,
   SetDefaultAIProviderReq,
   TestAIProviderReq,
@@ -22,12 +21,14 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     return result.data;
   }
 
-  async getProviders(): Promise<AIProviderConfigSummary[]> {
-    const result = await this.ipcClient.invoke<{ data: AIProviderConfigSummary[] }>(
+  async getProviders(): Promise<AIProviderConfigClientDTO[]> {
+    const result = await this.ipcClient.invoke<
+      AIProviderConfigClientDTO[] | { data: AIProviderConfigClientDTO[] }
+    >(
       AIChannels.PROVIDER_LIST,
     );
     if (!result.ok) throw new Error(result.error.message);
-    return result.data.data;
+    return Array.isArray(result.data) ? result.data : result.data.data;
   }
 
   async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
@@ -71,5 +72,14 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
   async setDefaultProvider(request: SetDefaultAIProviderReq): Promise<void> {
     const result = await this.ipcClient.invoke<void>(AIChannels.PROVIDER_SET_DEFAULT, request);
     if (!result.ok) throw new Error(result.error.message);
+  }
+
+  async refreshProviderModels(id: string): Promise<AIProviderConfigClientDTO> {
+    const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
+      AIChannels.PROVIDER_REFRESH_MODELS,
+      id,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 }

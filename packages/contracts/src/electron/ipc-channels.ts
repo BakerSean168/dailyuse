@@ -173,6 +173,7 @@ export const AIChannels = {
   PROVIDER_DELETE: 'ai:provider:delete',
   PROVIDER_TEST: 'ai:provider:test',
   PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
+  PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
   GOAL_GENERATE: 'ai:goal:generate',
   GOAL_AUTOMATE: 'ai:goal:automate',
   CONVERSATION_CREATE: 'ai:chat:conversation:create',
