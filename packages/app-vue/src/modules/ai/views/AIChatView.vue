@@ -447,15 +447,6 @@
                   }}
                 </Button>
               </div>
-
-              <p v-if="selectedModel" class="text-xs text-muted-foreground">
-                {{
-                  t('aiAssistant.chatPage.composerSummary', {
-                    provider: selectedModel.providerName,
-                    model: selectedModel.modelName,
-                  })
-                }}
-              </p>
             </div>
           </div>
         </div>
@@ -579,6 +570,8 @@ type NoteSummary = {
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 const WORKFLOW_STORAGE_KEY = 'ai:conversation-workflow-map';
+const LAST_MODEL_STORAGE_KEY = 'ai:last-model-key';
+const CONVERSATION_MODEL_STORAGE_KEY = 'ai:conversation-model-map';
 
 type PersistedWorkflowEntry = {
   mode: WorkflowMode;
@@ -608,6 +601,8 @@ type PersistedWorkflowEntry = {
   noteSummary: NoteSummary | null;
   showGoalDraftEditor: boolean;
 };
+
+type PersistedConversationModelMap = Record<string, string>;
 
 const { t } = useI18n();
 const router = useRouter();
@@ -802,14 +797,96 @@ function getDefaultConversationName(mode: WorkflowMode) {
   return t('aiAssistant.dialogs.chat.defaultConversationName');
 }
 
-function syncSelectedModel() {
+function readLastSelectedModelKey(): string {
+  return localStorage.getItem(LAST_MODEL_STORAGE_KEY) || '';
+}
+
+function writeLastSelectedModelKey(modelKey: string) {
+  if (!modelKey) {
+    localStorage.removeItem(LAST_MODEL_STORAGE_KEY);
+    return;
+  }
+
+  localStorage.setItem(LAST_MODEL_STORAGE_KEY, modelKey);
+}
+
+function readConversationModelStorage(): PersistedConversationModelMap {
+  try {
+    const raw = localStorage.getItem(CONVERSATION_MODEL_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === 'object'
+      ? (parsed as PersistedConversationModelMap)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeConversationModelStorage(next: PersistedConversationModelMap) {
+  localStorage.setItem(CONVERSATION_MODEL_STORAGE_KEY, JSON.stringify(next));
+}
+
+function persistSelectedModel(modelKey: string, conversationId?: string) {
+  writeLastSelectedModelKey(modelKey);
+
+  if (!conversationId) {
+    return;
+  }
+
+  const stored = readConversationModelStorage();
+  if (!modelKey) {
+    delete stored[conversationId];
+  } else {
+    stored[conversationId] = modelKey;
+  }
+  writeConversationModelStorage(stored);
+}
+
+function clearConversationModelSelection(conversationId: string) {
+  if (!conversationId) {
+    return;
+  }
+
+  const stored = readConversationModelStorage();
+  if (!(conversationId in stored)) {
+    return;
+  }
+
+  delete stored[conversationId];
+  writeConversationModelStorage(stored);
+}
+
+function getPersistedModelKey(conversationId?: string): string {
+  if (conversationId) {
+    const conversationModelKey = readConversationModelStorage()[conversationId];
+    if (conversationModelKey) {
+      return conversationModelKey;
+    }
+  }
+
+  return readLastSelectedModelKey();
+}
+
+function syncSelectedModel(preferredModelKey?: string) {
   if (!allModelOptions.value.length) {
     selectedModelKey.value = '';
     return;
   }
 
-  if (allModelOptions.value.some((item) => item.key === selectedModelKey.value)) {
-    return;
+  const preferredCandidates = [preferredModelKey, selectedModelKey.value].filter(
+    (item): item is string => Boolean(item),
+  );
+
+  for (const candidate of preferredCandidates) {
+    if (allModelOptions.value.some((item) => item.key === candidate)) {
+      selectedModelKey.value = candidate;
+      persistSelectedModel(candidate, chatConversationId.value || undefined);
+      return;
+    }
   }
 
   const defaultProvider =
@@ -828,6 +905,7 @@ function syncSelectedModel() {
     allModelOptions.value[0];
 
   selectedModelKey.value = defaultOption?.key || '';
+  persistSelectedModel(selectedModelKey.value, chatConversationId.value || undefined);
 }
 
 function updateLastActiveConversation(id: string) {
@@ -997,6 +1075,7 @@ function openSettings() {
 
 function selectModel(modelKey: string) {
   selectedModelKey.value = modelKey;
+  persistSelectedModel(modelKey, chatConversationId.value || undefined);
 }
 
 function adjustComposerHeight() {
@@ -1057,6 +1136,7 @@ async function selectConversation(item: ConversationSummary) {
   conversationTitle.value =
     item.name || item.title || t('aiAssistant.dialogs.chat.defaultConversationName');
   updateLastActiveConversation(item.id);
+  syncSelectedModel(getPersistedModelKey(item.id));
 
   try {
     const result = (await service.listMessages(item.id, { page: 1, pageSize: 80 })) as {
@@ -1075,6 +1155,7 @@ async function deleteConversation(id: string) {
   try {
     await service.deleteConversation(id);
     clearWorkflowState(id);
+    clearConversationModelSelection(id);
     if (chatConversationId.value === id) {
       startNewConversation();
     }
@@ -1102,6 +1183,7 @@ async function ensureConversationCreated() {
   chatConversationId.value = conversation.id;
   updateLastActiveConversation(conversation.id);
   persistWorkflowState(conversation.id);
+  persistSelectedModel(selectedModelKey.value, conversation.id);
   return conversation.id;
 }
 
@@ -1477,7 +1559,7 @@ watch(
 watch(
   () => allModelOptions.value.map((item) => item.key).join('|'),
   () => {
-    syncSelectedModel();
+    syncSelectedModel(getPersistedModelKey(chatConversationId.value || undefined));
   },
   { immediate: true },
 );
@@ -1516,7 +1598,7 @@ onMounted(async () => {
   try {
     void initRepository();
     await loadProviders();
-    syncSelectedModel();
+    syncSelectedModel(getPersistedModelKey());
     await loadConversationList({ preserveSelection: false });
 
     const preferredConversation =
