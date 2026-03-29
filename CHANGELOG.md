@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.0](https://github.com/BakerSean168/dailyuse/compare/v0.1.0...v0.2.0) (2026-03-29)
+
+
+### Features
+
+* add @nxlv/python plugin and update dependencies ([db72fea](https://github.com/BakerSean168/dailyuse/commit/db72fea047508af1808cf02929293a9690a7411f))
+* Implement structured error handling for desktop authentication and result processing ([75343cc](https://github.com/BakerSean168/dailyuse/commit/75343cc4959da93060cff628cb7862a47d40ec18))
+* Refactor identityId usage in AIChatApplicationService tests for consistency ([f56b83d](https://github.com/BakerSean168/dailyuse/commit/f56b83dd8ea7980f5b367b3086c19f1f6dd38444))
+* 初始化ai-service项目 ([eb1c0a8](https://github.com/BakerSean168/dailyuse/commit/eb1c0a819feeabb7350570e575e25a45d4713ba8))
+* 初步实现 python 服务 ([610720e](https://github.com/BakerSean168/dailyuse/commit/610720e5065ef45813b184ee8d7b6cd109375361))
+* 初步实现chat功能 ([05afce3](https://github.com/BakerSean168/dailyuse/commit/05afce35af8cc2de8149ff5ce1d3b9b1406337b4))
+
+
+### Bug Fixes
+
+* action ([ed2ed15](https://github.com/BakerSean168/dailyuse/commit/ed2ed154355212766fe067e0b9ed698118282ad9))
+* action2 ([2cf6f78](https://github.com/BakerSean168/dailyuse/commit/2cf6f784b58d4676620a572a045fb863996e2f83))
+* action3 ([8e44cf2](https://github.com/BakerSean168/dailyuse/commit/8e44cf2605e2764715fe7d9200d34c36e6c47b87))
+* 修复 ai 模块历史记录问题等，优化goal模块样式布局，在详情页使用环形图展示进度 ([591fdd1](https://github.com/BakerSean168/dailyuse/commit/591fdd1f45f2da2b5afcdae081677d154c0d96ca))
+* 修复 ai 配置问题 ([9d4f154](https://github.com/BakerSean168/dailyuse/commit/9d4f154d1c0d3b9dad24a0f379eb4f2a24e9f80f))
+
+
+### Performance Improvements
+
+* action ([0296b04](https://github.com/BakerSean168/dailyuse/commit/0296b0441ee2cbff2f81ded215301db2e6aacb51))
+* 优化设置项，移除ai悬浮球 ([7fd9dd4](https://github.com/BakerSean168/dailyuse/commit/7fd9dd4ba29e87ea343cdc7d24e6991ac796dd33))
+* 移除多余文本，实现ai模型选则持久化 ([430d8aa](https://github.com/BakerSean168/dailyuse/commit/430d8aa3470d4b16f97b6bd32601546a7762002a))
+
 ## [0.1.0](https://github.com/BakerSean168/dailyuse/compare/v0.0.1...v0.1.0) (2026-03-23)
 
 
