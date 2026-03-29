@@ -4,9 +4,15 @@ on:
   release:
     types:
       - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build and upload assets for (for example v0.1.0)
+        required: true
+        type: string
 
 concurrency:
-  group: release-${{ github.event.release.tag_name }}
+  group: release-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
 permissions:
@@ -17,7 +23,31 @@ env:
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
 jobs:
+  prepare-release:
+    name: Resolve Release Context
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+
+    steps:
+      - name: Resolve release tag
+        id: resolve
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          TAG="${RELEASE_TAG:-$INPUT_TAG}"
+
+          if [ -z "$TAG" ]; then
+            echo "Release tag is required."
+            exit 1
+          fi
+
+          echo "release_tag=$TAG" >> "$GITHUB_OUTPUT"
+
   build-release-assets:
+    needs: prepare-release
     name: Build ${{ matrix.platform }} Assets
     runs-on: ${{ matrix.os }}
     strategy:
@@ -35,7 +65,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ needs.prepare-release.outputs.release_tag }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -60,7 +90,7 @@ jobs:
       - name: Validate release version
         shell: bash
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
         run: |
           EXPECTED_VERSION="${RELEASE_TAG#v}"
           ROOT_VERSION=$(node -p "require('./package.json').version")
@@ -80,45 +110,80 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run-many -t build --all --exclude=api,web,desktop --outputStyle=static
+        run: pnpm nx run-many -t build --all --exclude=api,web,desktop --outputStyle=static
 
       - name: Build desktop application
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run desktop:build:production --outputStyle=static
+        run: pnpm nx run desktop:build:production --outputStyle=static
 
       - name: Package desktop application
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run desktop:dist:${{ matrix.dist_configuration }} --outputStyle=static
+        run: pnpm nx run desktop:dist:${{ matrix.dist_configuration }} --outputStyle=static
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
           name: desktop-${{ matrix.platform }}
-          path: apps/desktop/dist/**/*
+          path: apps/desktop/dist
           if-no-files-found: error
           compression-level: 9
 
   upload-release-assets:
     name: Upload Release Assets
-    needs: build-release-assets
+    if: ${{ always() }}
+    needs:
+      - prepare-release
+      - build-release-assets
     runs-on: ubuntu-latest
 
     steps:
       - name: Download build artifacts
+        id: download-artifacts
         uses: actions/download-artifact@v7
+        continue-on-error: true
         with:
           path: artifacts
-          merge-multiple: true
+
+      - name: Summarize partial build status
+        if: ${{ needs.build-release-assets.result != 'success' }}
+        shell: bash
+        run: |
+          echo "One or more platform builds failed. Uploading any assets that were produced." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate downloaded assets
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          files=(
+            artifacts/**/*.exe
+            artifacts/**/*.zip
+            artifacts/**/*.blockmap
+            artifacts/**/*.AppImage
+            artifacts/**/*.deb
+            artifacts/**/*.rpm
+            artifacts/**/latest*.yml
+          )
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No release assets were found in downloaded artifacts."
+            exit 1
+          fi
+
+          {
+            echo "Assets ready for upload:"
+            printf -- '- %s\n' "${files[@]}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload assets to GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.release.tag_name }}
-          fail_on_unmatched_files: true
+          tag_name: ${{ needs.prepare-release.outputs.release_tag }}
+          fail_on_unmatched_files: false
+          overwrite_files: true
           files: |
             artifacts/**/*Setup.exe
             artifacts/**/*Setup.zip
