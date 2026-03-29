@@ -106,16 +106,13 @@ jobs:
             exit 1
           fi
 
-      - name: Build workspace dependencies
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm nx run-many -t build --all --exclude=api,web,desktop --outputStyle=static
-
       - name: Build desktop application
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        # desktop:build already pulls its Nx build dependencies, so this stays
+        # focused on the desktop release path and avoids unrelated apps such as
+        # the Python ai-service.
         run: pnpm nx run desktop:build:production --outputStyle=static
 
       - name: Package desktop application
