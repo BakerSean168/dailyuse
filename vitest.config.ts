@@ -195,6 +195,18 @@ const contractsSrc = path.resolve(__dirname, './packages/contracts/src');
 const domainResolveAliases = [
   // ── workspace packages (bare imports) ──
   {
+    find: '@dailyuse/database/prisma',
+    replacement: path.resolve(__dirname, './packages/database/src/generated/prisma/client.js'),
+  },
+  {
+    find: '@dailyuse/database/powersync',
+    replacement: path.resolve(__dirname, './packages/database/src/powersync-schema.ts'),
+  },
+  {
+    find: '@dailyuse/database/dashboard-schema',
+    replacement: path.resolve(__dirname, './packages/database/src/dashboard-schema.ts'),
+  },
+  {
     find: '@dailyuse/database',
     replacement: path.resolve(__dirname, './packages/database/src/index.ts'),
   },

@@ -300,6 +300,7 @@ describe('desktop IPC contract alignment', () => {
     await adapter.toggleTemplateEnabled('reminder-template-1');
     await adapter.moveTemplateToGroup('reminder-template-1', 'reminder-group-1');
     await adapter.getUpcomingReminders({ days: 7 });
+    await adapter.getTodaySchedule({ limit: 5, includeExpired: false });
     await adapter.createReminderGroup({} as never);
     await adapter.getReminderGroup('reminder-group-1');
     await adapter.getReminderGroups();
