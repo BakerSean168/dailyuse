@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/BakerSean168/dailyuse/compare/v0.2.0...v0.3.0) (2026-03-29)
+
+
+### Features
+
+* **reminder:** add endpoint and logic for retrieving today's reminder schedule ([0f54230](https://github.com/BakerSean168/dailyuse/commit/0f542308d9acc2fe0d9a285d5d504e5eba0a5164))
+* **task:** implement date range filtering for task instances ([0f54230](https://github.com/BakerSean168/dailyuse/commit/0f542308d9acc2fe0d9a285d5d504e5eba0a5164))
+
+
+### Bug Fixes
+
+* action ([f3861ac](https://github.com/BakerSean168/dailyuse/commit/f3861acb6cffa4b55066f0003986814fe5019bfd))
+* action release assert ([b3607bd](https://github.com/BakerSean168/dailyuse/commit/b3607bd66e5da497cd9fa5a53b442e6c0154a25a))
+
 ## [0.2.0](https://github.com/BakerSean168/dailyuse/compare/v0.1.0...v0.2.0) (2026-03-29)
 
 
