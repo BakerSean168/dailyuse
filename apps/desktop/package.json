@@ -5,6 +5,11 @@
     "email": "lulouhao@stu.sicau.edu.cn"
   },
   "description": "DailyUse",
+  "homepage": "https://github.com/BakerSean168/dailyuse",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BakerSean168/dailyuse.git"
+  },
   "version": "0.2.0",
   "type": "commonjs",
   "scripts": {

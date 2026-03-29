@@ -262,10 +262,15 @@ export class TaskClientService {
     limit?: number;
     templateId?: string;
     status?: string;
-    startDate?: number;
-    endDate?: number;
   }): Promise<Result<TaskInstance[]>> {
     const result = await this.instanceApi.getTaskInstances(params);
+    return mapResult(result, (dtos) =>
+      (Array.isArray(dtos) ? dtos : []).map((dto) => taskInstanceFromDTO(dto)),
+    );
+  }
+
+  async listInstancesByDateRange(from: number, to: number): Promise<Result<TaskInstance[]>> {
+    const result = await this.instanceApi.getTaskInstancesByDateRange(from, to);
     return mapResult(result, (dtos) =>
       (Array.isArray(dtos) ? dtos : []).map((dto) => taskInstanceFromDTO(dto)),
     );

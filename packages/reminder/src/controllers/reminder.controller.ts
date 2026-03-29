@@ -12,6 +12,7 @@ import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
   GetUpcomingRemindersSchema,
+  GetReminderTodayScheduleSchema,
   CreateReminderGroupSchema,
   UpdateReminderGroupSchema,
   SwitchGroupControlModeSchema,
@@ -20,6 +21,10 @@ import {
 import type {
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
+  GetUpcomingRemindersReq,
+  GetUpcomingRemindersRes,
+  GetReminderTodayScheduleReq,
+  GetReminderTodayScheduleRes,
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   SwitchGroupControlModeReq,
@@ -35,7 +40,14 @@ export interface ReminderUseCases {
   // Template CRUD
   createTemplate(data: CreateReminderTemplateReq, ctx: Context): Promise<Result<unknown>>;
   listTemplates(ctx: Context): Promise<Result<ReminderTemplateListRes>>;
-  getUpcomingReminders(params: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
+  getUpcomingReminders(
+    params: GetUpcomingRemindersReq,
+    ctx: Context,
+  ): Promise<Result<GetUpcomingRemindersRes>>;
+  getTodaySchedule(
+    params: GetReminderTodayScheduleReq,
+    ctx: Context,
+  ): Promise<Result<GetReminderTodayScheduleRes>>;
   getTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   updateTemplate(
     id: string,
@@ -111,7 +123,7 @@ export class ReminderController {
   async getUpcomingReminders(
     query: Record<string, unknown>,
     ctx: Context,
-  ): Promise<Result<unknown>> {
+  ): Promise<Result<GetUpcomingRemindersRes>> {
     const parsed = GetUpcomingRemindersSchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -121,6 +133,21 @@ export class ReminderController {
       });
     }
     return this.useCases.getUpcomingReminders(parsed.data, ctx);
+  }
+
+  async getTodaySchedule(
+    query: Record<string, unknown>,
+    ctx: Context,
+  ): Promise<Result<GetReminderTodayScheduleRes>> {
+    const parsed = GetReminderTodayScheduleSchema.safeParse(query);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.getTodaySchedule(parsed.data, ctx);
   }
 
   async getTemplate(id: string, ctx: Context): Promise<Result<unknown>> {

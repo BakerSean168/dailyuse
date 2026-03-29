@@ -242,6 +242,26 @@ export function useTask() {
     }
   }
 
+  async function fetchInstancesByDateRange(startDate: number, endDate: number) {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      let result = await service.listInstancesByDateRange(startDate, endDate);
+
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.listInstancesByDateRange(startDate, endDate);
+      }
+
+      if (result.ok) {
+        store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
+      } else {
+        handleError(result.error.message || t('task.error.loadInstancesFailed'));
+      }
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
   async function startInstance(id: string) {
     let result = await service.startInstance(id);
     if (!result.ok && (await maybeRecoverAuth(result.error))) {
@@ -309,6 +329,7 @@ export function useTask() {
     pauseTemplate,
     archiveTemplate,
     fetchInstances,
+    fetchInstancesByDateRange,
     startInstance,
     completeInstance,
     skipInstance,

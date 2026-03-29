@@ -413,7 +413,10 @@ describe('ReminderLinearView', () => {
       lifecycleSource: 'template',
       effectiveEnabledReason: 'Template controls itself after moving to root.',
     });
-    moveTemplateToGroup.mockResolvedValueOnce(movedTemplate);
+    moveTemplateToGroup.mockImplementationOnce(async () => {
+      templatesRef.value = [movedTemplate];
+      return movedTemplate;
+    });
 
     const TemplateMoveDialogInteractiveStub = defineComponent({
       name: 'TemplateMoveDialogInteractiveStub',
@@ -476,6 +479,70 @@ describe('ReminderLinearView', () => {
     expect(moveTemplateToGroup).toHaveBeenCalledWith('template-1', null);
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Reminder moved back to root');
     expect(wrapper.find('[data-stub="selected-template-card"]').text()).toBe('root');
+  });
+
+  it('refreshes the selected template card immediately after toggling the self switch', async () => {
+    const toggledTemplate = createTemplate({
+      id: 'template-1' as ReminderTemplateClientDTO['id'],
+      selfEnabled: false,
+      effectiveEnabled: false,
+      lifecycleSource: 'template',
+      effectiveEnabledReason: 'Template self switch is paused.',
+    });
+
+    toggleTemplate.mockImplementationOnce(async () => {
+      templatesRef.value = [toggledTemplate];
+      return toggledTemplate;
+    });
+
+    const TemplateDesktopCardInteractiveStub = defineComponent({
+      name: 'TemplateDesktopCardInteractiveStub',
+      props: ['template'],
+      setup(props) {
+        return () =>
+          h(
+            'div',
+            { 'data-stub': 'selected-template-card' },
+            `${props.template?.selfEnabled ? 'self-on' : 'self-off'}|${
+              props.template?.effectiveEnabled ? 'running' : 'paused'
+            }`,
+          );
+      },
+    });
+
+    templatesRef.value = [createTemplate()];
+    preferencesRef.value = createPreferences();
+
+    const wrapper = mount(ReminderLinearView, {
+      global: {
+        plugins: [i18n],
+        stubs: {
+          GridTemplateItem: true,
+          TemplateDesktopCard: TemplateDesktopCardInteractiveStub,
+          TemplateDialog: TemplateDialogStub,
+          GroupDialog: GroupDialogStub,
+          TemplateMoveDialog: TemplateMoveDialogStub,
+        },
+      },
+    });
+
+    const vm = wrapper.vm as unknown as {
+      handleTemplateClick: (template: { id: string }) => void;
+      handleToggleEnabled: (template: { id: string }) => Promise<void>;
+      templateCardRef?: { open: () => void };
+    };
+    vm.templateCardRef = { open: vi.fn() };
+
+    await nextTick();
+
+    vm.handleTemplateClick({ id: 'template-1' as ReminderTemplateClientDTO['id'] });
+    await nextTick();
+    expect(wrapper.find('[data-stub="selected-template-card"]').text()).toBe('self-on|running');
+
+    await vm.handleToggleEnabled({ id: 'template-1' as ReminderTemplateClientDTO['id'] });
+    await nextTick();
+
+    expect(wrapper.find('[data-stub="selected-template-card"]').text()).toBe('self-off|paused');
   });
 
   it('shows paused toast when a template stays overridden by group control', async () => {

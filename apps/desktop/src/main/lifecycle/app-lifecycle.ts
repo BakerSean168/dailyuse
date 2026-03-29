@@ -78,7 +78,7 @@ export function createMainWindow(): BrowserWindow {
     // Development mode: Load Vite dev server
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
     mainWindow.loadURL(devServerUrl);
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     // Production mode: Load bundled HTML
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));

@@ -41,6 +41,7 @@ const Ch = {
   TEMPLATE_MOVE_TO_GROUP: 'reminder:template:move-to-group',
   TEMPLATE_GET_BY_USER: 'reminder:template:get-by-user',
   UPCOMING_GET: 'reminder:upcoming:get',
+  TODAY_SCHEDULE_GET: 'reminder:today-schedule:get',
   GROUP_LIST: 'reminder:group:list',
   GROUP_GET: 'reminder:group:get',
   GROUP_CREATE: 'reminder:group:create',
@@ -135,6 +136,11 @@ export const ReminderElectronModule: IElectronModule = {
     ipcMain.handle(Ch.UPCOMING_GET, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getUpcomingReminders(params ?? {}, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.TODAY_SCHEDULE_GET, async (_event, params) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.getTodaySchedule(params ?? {}, requestContext),
       ),
     );
 

@@ -31,6 +31,9 @@ import {
 import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
+  GetUpcomingRemindersSchema,
+  GetReminderTodayScheduleSchema,
+  ReminderTodayScheduleItemSchema,
   CreateReminderGroupSchema,
   UpdateReminderGroupSchema,
   SwitchGroupControlModeSchema,
@@ -125,15 +128,12 @@ export function registerReminderRoutes(
       path: '/templates/upcoming',
       summary: '获取即将到来的提醒',
       request: {
-        query: z.object({
-          limit: z.string().optional(),
-          beforeTime: z.string().optional(),
-        }),
+        query: GetUpcomingRemindersSchema,
       },
       responses: {
         200: successResponse(
           z.object({
-            data: z.array(ReminderTemplateResponseSchema),
+            data: z.array(ReminderTodayScheduleItemSchema),
             total: z.number(),
           }),
           '获取成功',
@@ -144,8 +144,42 @@ export function registerReminderRoutes(
     (req, ctx) =>
       controller.getUpcomingReminders(
         {
+          days: parseNumber(req.query?.days),
           limit: parseNumber(req.query?.limit),
-          beforeTime: parseString(req.query?.beforeTime),
+          importanceLevel: parseString(req.query?.importanceLevel),
+          type: parseString(req.query?.type),
+        },
+        ctx,
+      ),
+  );
+
+  r.route(
+    {
+      method: 'get',
+      path: '/templates/today-schedule',
+      summary: '获取今天剩余的提醒时间表',
+      request: {
+        query: GetReminderTodayScheduleSchema,
+      },
+      responses: {
+        200: successResponse(
+          z.object({
+            data: z.array(ReminderTodayScheduleItemSchema),
+            total: z.number(),
+          }),
+          '获取成功',
+        ),
+      },
+    },
+    [auth],
+    (req, ctx) =>
+      controller.getTodaySchedule(
+        {
+          limit: parseNumber(req.query?.limit),
+          includeExpired:
+            typeof req.query?.includeExpired === 'string'
+              ? req.query.includeExpired === 'true'
+              : undefined,
         },
         ctx,
       ),

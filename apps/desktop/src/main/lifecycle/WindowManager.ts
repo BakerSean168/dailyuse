@@ -235,7 +235,7 @@ export class WindowManager {
 
     // 开发模式打开 DevTools
     if (this.config.isDev) {
-      this.mainWindow.webContents.openDevTools();
+      this.mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
 
     // 窗口关闭事件
@@ -399,7 +399,6 @@ export class WindowManager {
     //     validatedURL,
     //   });
     // });
-
     // window.webContents.on('render-process-gone', (_event, details) => {
     //   logger.error('Renderer process exited unexpectedly', {
     //     windowType,
@@ -407,7 +406,6 @@ export class WindowManager {
     //     exitCode: details.exitCode,
     //   });
     // });
-
     // window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
     //   logger.info('Renderer console message', {
     //     windowType,

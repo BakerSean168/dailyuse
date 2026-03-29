@@ -16,6 +16,7 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
+  GetReminderTodayScheduleRes,
 } from '@dailyuse/contracts/reminder';
 import type { ControlMode } from '@dailyuse/contracts/reminder';
 
@@ -36,6 +37,7 @@ const REMINDER_CHANNELS = {
   TOGGLE_TEMPLATE: 'reminder:template:toggle-enabled',
   MOVE_TEMPLATE: 'reminder:template:move-to-group',
   GET_UPCOMING: 'reminder:upcoming:get',
+  GET_TODAY_SCHEDULE: 'reminder:today-schedule:get',
   // Group CRUD
   CREATE_GROUP: 'reminder:group:create',
   GET_GROUP: 'reminder:group:get',
@@ -113,6 +115,13 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     type?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.ipcClient.invoke(REMINDER_CHANNELS.GET_UPCOMING, params);
+  }
+
+  async getTodaySchedule(params?: {
+    limit?: number;
+    includeExpired?: boolean;
+  }): Promise<Result<GetReminderTodayScheduleRes>> {
+    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TODAY_SCHEDULE, params);
   }
 
   // ===== 分组 CRUD =====

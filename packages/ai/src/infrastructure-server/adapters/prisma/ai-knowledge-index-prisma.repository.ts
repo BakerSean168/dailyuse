@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import { Prisma, type PrismaClient } from '@dailyuse/database';
+import { Prisma, type PrismaClient } from '@dailyuse/database/prisma';
 import type {
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,
@@ -196,7 +196,9 @@ function toPrismaJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
-function mapEntryRowToIndexedResource(row: KnowledgeIndexEntryRow): KnowledgeIndexedResource | null {
+function mapEntryRowToIndexedResource(
+  row: KnowledgeIndexEntryRow,
+): KnowledgeIndexedResource | null {
   if (row.status !== 'indexed') {
     return null;
   }
@@ -230,7 +232,8 @@ function scoreIndexedResource(
 
   const tokens = new Set(tokenize(trimmedQuery));
   const keywordSet = new Set(resource.keywords.map((keyword) => keyword.toLowerCase()));
-  const haystack = `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
+  const haystack =
+    `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
   let score = 0;
 
   for (const token of tokens) {
@@ -257,7 +260,12 @@ function scoreIndexedResource(
 }
 
 function buildRetrievalEmbeddingSource(resource: KnowledgeIndexedResource): string {
-  return [resource.title ?? '', resource.resourcePath, resource.summary, resource.keywords.join(' ')]
+  return [
+    resource.title ?? '',
+    resource.resourcePath,
+    resource.summary,
+    resource.keywords.join(' '),
+  ]
     .filter((value) => value.length > 0)
     .join(' ');
 }
@@ -274,10 +282,10 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
       this.tableSupportState === 'disabled'
         ? 'fallback'
         : this.vectorSupportState === 'enabled'
-        ? 'enabled'
-        : this.vectorSupportState === 'disabled'
-          ? 'fallback'
-          : 'unknown';
+          ? 'enabled'
+          : this.vectorSupportState === 'disabled'
+            ? 'fallback'
+            : 'unknown';
 
     return {
       persistenceBackend: 'prisma-index-table',
@@ -318,7 +326,11 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
 
     try {
       if (trimmedQuery.length > 0) {
-        const vectorResults = await this.findRelevantWithVectorQuery(identityId, trimmedQuery, scanLimit);
+        const vectorResults = await this.findRelevantWithVectorQuery(
+          identityId,
+          trimmedQuery,
+          scanLimit,
+        );
         if (vectorResults.length > 0) {
           return vectorResults.slice(0, limit);
         }
@@ -453,7 +465,11 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
     }
   }
 
-  async markRequested(identityId: string, resourceIds: string[], requestedAt: number): Promise<void> {
+  async markRequested(
+    identityId: string,
+    resourceIds: string[],
+    requestedAt: number,
+  ): Promise<void> {
     if (resourceIds.length === 0) {
       return;
     }

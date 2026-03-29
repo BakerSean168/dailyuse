@@ -5,6 +5,8 @@ import type {
   UpdateReminderTemplateRes,
   GetUpcomingRemindersReq,
   GetUpcomingRemindersRes,
+  GetReminderTodayScheduleReq,
+  GetReminderTodayScheduleRes,
   CreateReminderGroupReq,
   CreateReminderGroupRes,
   UpdateReminderGroupReq,
@@ -21,6 +23,7 @@ export type ReminderRpcMap = {
   'reminder:create-template': [CreateReminderTemplateReq, CreateReminderTemplateRes];
   'reminder:update-template': [UpdateReminderTemplateReq, UpdateReminderTemplateRes];
   'reminder:get-upcoming': [GetUpcomingRemindersReq, GetUpcomingRemindersRes];
+  'reminder:get-today-schedule': [GetReminderTodayScheduleReq, GetReminderTodayScheduleRes];
   
   // === Template Control ===
   'reminder:enable-template': [{ templateId: string }, ReminderTemplateClientDTO];

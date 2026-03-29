@@ -132,7 +132,7 @@ export function useCalendarView() {
 
     await Promise.all([
       schedule.fetchCalendarEntries(startTime, endTime),
-      task.fetchInstances({ startDate: startTime, endDate: endTime }),
+      task.fetchInstancesByDateRange(startTime, endTime),
       task.fetchTemplates(),
     ]);
   }

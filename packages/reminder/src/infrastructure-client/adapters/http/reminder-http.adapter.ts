@@ -17,6 +17,7 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
+  GetReminderTodayScheduleRes,
 } from '@dailyuse/contracts/reminder';
 import type { ControlMode } from '@dailyuse/contracts/reminder';
 
@@ -81,7 +82,14 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     importanceLevel?: string;
     type?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
-    return this.httpClient.get('/reminders/upcoming', { params });
+    return this.httpClient.get('/reminders/templates/upcoming', { params });
+  }
+
+  async getTodaySchedule(params?: {
+    limit?: number;
+    includeExpired?: boolean;
+  }): Promise<Result<GetReminderTodayScheduleRes>> {
+    return this.httpClient.get('/reminders/templates/today-schedule', { params });
   }
 
   // ===== Group CRUD =====

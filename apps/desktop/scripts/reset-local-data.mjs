@@ -1,17 +1,11 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
+import { resolveLikelyUserDataDirs } from './user-data-paths.mjs';
 
-const USER_DATA_CANDIDATES = ['DailyUse', '@dailyuse/desktop', 'dailyuse-desktop'];
 const WINDOW_STATE_PREFIX = 'window-state-';
 const VALID_SCOPES = new Set(['all', 'auth', 'db']);
-
-function resolveLikelyUserDataDirs() {
-  const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-  return USER_DATA_CANDIDATES.map((dirName) => path.join(appData, dirName));
-}
 
 function collectTargets(userDataDir, scope) {
   const authDir = path.join(userDataDir, 'auth');

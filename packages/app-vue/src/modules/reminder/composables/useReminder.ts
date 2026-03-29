@@ -18,6 +18,7 @@ import type {
   ReminderTemplateListRes,
   ReminderGroupListRes,
   UserReminderPreferencesClientDTO,
+  GetReminderTodayScheduleRes,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -87,6 +88,21 @@ export function useReminder() {
     } finally {
       store.setLoading(false);
     }
+  }
+
+  async function getTodaySchedule(params?: {
+    limit?: number;
+    includeExpired?: boolean;
+  }): Promise<GetReminderTodayScheduleRes | null> {
+    store.setError(null);
+    const result = await executeWithOptionalAuthRecovery<GetReminderTodayScheduleRes>(() =>
+      service.getTodaySchedule(params),
+    );
+    if (result.ok) {
+      return result.data;
+    }
+    handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
+    return null;
   }
 
   async function createTemplate(
@@ -159,6 +175,7 @@ export function useReminder() {
         service.toggleTemplateEnabled(id),
       );
       if (result.ok) {
+        store.updateTemplate(result.data);
         await reloadReminderScene();
         return result.data;
       }
@@ -180,6 +197,7 @@ export function useReminder() {
         service.moveTemplateToGroup(id, groupId),
       );
       if (result.ok) {
+        store.updateTemplate(result.data);
         await reloadReminderScene();
         return result.data;
       }
@@ -360,6 +378,7 @@ export function useReminder() {
     isSaving,
     error,
     fetchTemplates,
+    getTodaySchedule,
     createTemplate,
     updateTemplate,
     deleteTemplate,

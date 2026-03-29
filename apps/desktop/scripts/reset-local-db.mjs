@@ -2,19 +2,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
+import { resolveLikelyUserDataDirs } from './user-data-paths.mjs';
 
 const DB_FILE = 'dailyuse-sync.sqlite';
 const DB_DIR_NAME = 'data';
-
-function resolveLikelyUserDataDirs() {
-  const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-  return [
-    path.join(appData, 'DailyUse'),
-    path.join(appData, '@dailyuse', 'desktop'),
-    path.join(appData, 'dailyuse-desktop'),
-  ];
-}
 
 function collectDbCandidates() {
   const dirs = resolveLikelyUserDataDirs();

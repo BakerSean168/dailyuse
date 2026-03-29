@@ -22,10 +22,18 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     limit?: number;
     templateId?: string;
     status?: string;
-    startDate?: number;
-    endDate?: number;
   }): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.ipcClient.invoke(TaskChannels.INSTANCE_LIST, params);
+  }
+
+  async getTaskInstancesByDateRange(
+    startDate: number,
+    endDate: number,
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE, {
+      startDate,
+      endDate,
+    });
   }
 
   async getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>> {

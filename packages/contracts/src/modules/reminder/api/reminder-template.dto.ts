@@ -112,7 +112,37 @@ export const GetUpcomingRemindersSchema = z.object({
 export type GetUpcomingRemindersReq = z.infer<typeof GetUpcomingRemindersSchema>;
 
 export interface GetUpcomingRemindersRes {
-  data: ReminderTemplateClientDTO[];
+  data: ReminderTodayScheduleItem[];
+  total: number;
+}
+
+export const ReminderTodayScheduleItemSchema = z.object({
+  templateId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  type: z.enum(ReminderType),
+  triggerType: z.enum(TriggerType),
+  importanceLevel: z.enum(ImportanceLevel),
+  nextTriggerAt: z.number().int(),
+  nextTriggerDisplay: z.string(),
+  daysUntilTrigger: z.number().int(),
+  icon: z.string(),
+  color: z.string(),
+  notificationChannels: z.array(z.enum(NotificationChannel)),
+  groupId: z.string().nullable().optional(),
+});
+
+export type ReminderTodayScheduleItem = z.infer<typeof ReminderTodayScheduleItemSchema>;
+
+export const GetReminderTodayScheduleSchema = z.object({
+  limit: z.number().int().min(1).max(200).optional(),
+  includeExpired: z.boolean().optional(),
+});
+
+export type GetReminderTodayScheduleReq = z.infer<typeof GetReminderTodayScheduleSchema>;
+
+export interface GetReminderTodayScheduleRes {
+  data: ReminderTodayScheduleItem[];
   total: number;
 }
 

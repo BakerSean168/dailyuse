@@ -12,7 +12,12 @@
  * - 与业务逻辑耦合最小化
  */
 
-import { ReminderType, ReminderStatus, TriggerType } from '@dailyuse/contracts/reminder';
+import {
+  NotificationChannel,
+  ReminderType,
+  ReminderStatus,
+  TriggerType,
+} from '@dailyuse/contracts/reminder';
 import type {
   FixedTimeTrigger,
   IntervalTrigger,
@@ -46,7 +51,7 @@ export interface UpcomingReminderDTO {
   title: string;
   description?: string;
   type: ReminderType;
-  triggerType: string;
+  triggerType: TriggerType;
   importanceLevel: ImportanceLevel;
 
   // 触发时间
@@ -59,7 +64,7 @@ export interface UpcomingReminderDTO {
   color: string;
 
   // 通知配置
-  notificationChannels: string[];
+  notificationChannels: NotificationChannel[];
 
   // 分组信息
   groupId?: string | null;

@@ -20,6 +20,7 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
+  GetReminderTodayScheduleRes,
 } from '@dailyuse/contracts/reminder';
 import type { ControlMode } from '@dailyuse/contracts/reminder';
 
@@ -66,6 +67,10 @@ export interface IReminderApiClient {
     importanceLevel?: string;
     type?: string;
   }): Promise<Result<GetUpcomingRemindersRes>>;
+  getTodaySchedule(params?: {
+    limit?: number;
+    includeExpired?: boolean;
+  }): Promise<Result<GetReminderTodayScheduleRes>>;
 
   // ===== 分组 CRUD =====
   createReminderGroup(request: CreateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>>;

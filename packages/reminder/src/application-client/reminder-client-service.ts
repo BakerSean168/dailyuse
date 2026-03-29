@@ -24,6 +24,7 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
+  GetReminderTodayScheduleRes,
 } from '@dailyuse/contracts/reminder';
 import type { ControlMode } from '@dailyuse/contracts/reminder';
 import type { IReminderApiClient } from '../infrastructure-client/adapters/types';
@@ -39,6 +40,7 @@ export class ReminderClientService {
     this.toggleTemplateEnabled = this.toggleTemplateEnabled.bind(this);
     this.moveTemplateToGroup = this.moveTemplateToGroup.bind(this);
     this.getUpcomingReminders = this.getUpcomingReminders.bind(this);
+    this.getTodaySchedule = this.getTodaySchedule.bind(this);
     this.createReminderGroup = this.createReminderGroup.bind(this);
     this.getReminderGroup = this.getReminderGroup.bind(this);
     this.getReminderGroups = this.getReminderGroups.bind(this);
@@ -100,6 +102,13 @@ export class ReminderClientService {
     type?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.reminderApi.getUpcomingReminders(params);
+  }
+
+  async getTodaySchedule(params?: {
+    limit?: number;
+    includeExpired?: boolean;
+  }): Promise<Result<GetReminderTodayScheduleRes>> {
+    return this.reminderApi.getTodaySchedule(params);
   }
 
   // ===== 分组 CRUD =====

@@ -110,6 +110,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
+import { endOfDay, isSameDay, startOfDay } from 'date-fns';
 import {
   Card,
   CardContent,
@@ -130,19 +131,31 @@ const emit = defineEmits<{
 const task = useTask();
 const completing = ref<string | null>(null);
 
+const TEMPLATE_FETCH_LIMIT = 200;
+
+function getTodayRange(): { startDate: number; endDate: number } {
+  const now = new Date();
+  return {
+    startDate: startOfDay(now).getTime(),
+    endDate: endOfDay(now).getTime(),
+  };
+}
+
 // ── Load today's data on mount ──
 onMounted(async () => {
-  await Promise.all([task.fetchInstances(), task.fetchTemplates()]);
+  const todayRange = getTodayRange();
+  await Promise.all([
+    task.fetchInstancesByDateRange(todayRange.startDate, todayRange.endDate),
+    task.fetchTemplates({ page: 1, limit: TEMPLATE_FETCH_LIMIT }),
+  ]);
 });
 
 const isLoading = computed(() => task.isLoading.value);
 
 // ── Derive today's instances ──
 const todayInstances = computed<TaskInstanceClientDTO[]>(() => {
-  const todayStr = new Date().toISOString().split('T')[0];
   return (task.instances.value ?? []).filter((inst) => {
-    const dateStr = String(inst.instanceDate).slice(0, 10);
-    return dateStr === todayStr;
+    return isSameDay(new Date(inst.instanceDate), new Date());
   });
 });
 

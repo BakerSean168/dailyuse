@@ -322,7 +322,10 @@ const { t } = useI18n();
 
 const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
-const selectedTemplate = ref<ReminderTemplateClientDTO | null>(null);
+const selectedTemplateId = ref<string | null>(null);
+const selectedTemplate = computed(
+  () => templates.value.find((template) => template.id === selectedTemplateId.value) ?? null,
+);
 const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const defaultTemplateGroupId = ref<string | null>(null);
 const templateCardRef = ref<any>(null);
@@ -359,7 +362,7 @@ function getSidebarGroupSummary(group: ReminderGroupClientDTO) {
 }
 
 function handleTemplateClick(template: ReminderTemplateClientDTO) {
-  selectedTemplate.value = template;
+  selectedTemplateId.value = template.id;
   templateCardRef.value?.open();
 }
 
@@ -415,9 +418,6 @@ async function handleTemplateMoved(templateId: string, groupId: string | null) {
       groupId ? t('reminder.toast.templateMoved') : t('reminder.toast.templateMovedToRoot'),
     );
     movingTemplate.value = null;
-    if (selectedTemplate.value?.id === result.id) {
-      selectedTemplate.value = result;
-    }
   }
 }
 

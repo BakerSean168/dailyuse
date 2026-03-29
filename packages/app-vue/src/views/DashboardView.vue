@@ -26,7 +26,6 @@ import {
   Bell,
   ListTodo,
   AlertTriangle,
-  Clock,
   Calendar,
   ArrowRight,
   TrendingUp,
@@ -45,6 +44,7 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import DailyTodoWidget from '../modules/task/components/widgets/DailyTodoWidget.vue';
+import UpcomingRemindersWidget from '../modules/reminder/components/widgets/UpcomingRemindersWidget.vue';
 
 use([
   TitleComponent,
@@ -62,7 +62,6 @@ const {
   activityTimeline,
   trendDays,
   goalProgress,
-  upcomingSchedule,
   isLoading,
   error,
   fetchDashboard,
@@ -70,7 +69,65 @@ const {
 
 const chartReady = ref(false);
 const chartContainerRef = ref<HTMLElement | null>(null);
+const reminderWidgetRefreshKey = ref(0);
 let chartFrameId: number | null = null;
+let themeObserver: MutationObserver | null = null;
+
+type ChartThemeTokens = {
+  border: string;
+  mutedForeground: string;
+  popover: string;
+  popoverForeground: string;
+  chartBar: string;
+  chartLine: string;
+};
+
+const fallbackThemeTokens = {
+  border: '240 5.9% 90%',
+  mutedForeground: '240 3.8% 46.1%',
+  popover: '0 0% 100%',
+  popoverForeground: '240 10% 3.9%',
+  chartBar: '12 76% 61%',
+  chartLine: '173 58% 39%',
+} satisfies Record<string, string>;
+
+const chartTheme = ref<ChartThemeTokens>({
+  border: `hsl(${fallbackThemeTokens.border})`,
+  mutedForeground: `hsl(${fallbackThemeTokens.mutedForeground})`,
+  popover: `hsl(${fallbackThemeTokens.popover})`,
+  popoverForeground: `hsl(${fallbackThemeTokens.popoverForeground})`,
+  chartBar: `hsl(${fallbackThemeTokens.chartBar})`,
+  chartLine: `hsl(${fallbackThemeTokens.chartLine})`,
+});
+
+function resolveThemeColor(cssVariableName: string, fallbackToken: string, alpha?: number): string {
+  if (typeof window === 'undefined') {
+    return alpha === undefined
+      ? `hsl(${fallbackToken})`
+      : `hsl(${fallbackToken} / ${alpha})`;
+  }
+
+  const token =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue(cssVariableName)
+      .trim() || fallbackToken;
+
+  return alpha === undefined ? `hsl(${token})` : `hsl(${token} / ${alpha})`;
+}
+
+function syncChartTheme() {
+  chartTheme.value = {
+    border: resolveThemeColor('--border', fallbackThemeTokens.border),
+    mutedForeground: resolveThemeColor('--muted-foreground', fallbackThemeTokens.mutedForeground),
+    popover: resolveThemeColor('--popover', fallbackThemeTokens.popover),
+    popoverForeground: resolveThemeColor(
+      '--popover-foreground',
+      fallbackThemeTokens.popoverForeground,
+    ),
+    chartBar: resolveThemeColor('--chart-1', fallbackThemeTokens.chartBar),
+    chartLine: resolveThemeColor('--chart-2', fallbackThemeTokens.chartLine),
+  };
+}
 
 function cancelChartInit() {
   if (chartFrameId !== null) {
@@ -103,7 +160,16 @@ function ensureChartReady() {
 }
 
 onMounted(() => {
-  void fetchDashboard();
+  syncChartTheme();
+  themeObserver = new MutationObserver(() => {
+    syncChartTheme();
+  });
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'data-theme', 'style'],
+  });
+
+  void refreshDashboard();
   void nextTick(() => {
     ensureChartReady();
   });
@@ -123,6 +189,8 @@ watch(isLoading, (loading) => {
 
 onBeforeUnmount(() => {
   cancelChartInit();
+  themeObserver?.disconnect();
+  themeObserver = null;
   chartReady.value = false;
 });
 
@@ -182,32 +250,50 @@ const statCards = computed(() => [
 const trendChartOption = computed(() => ({
   tooltip: {
     trigger: 'axis',
-    backgroundColor: 'hsl(var(--popover))',
-    borderColor: 'hsl(var(--border))',
-    textStyle: { color: 'hsl(var(--popover-foreground))', fontSize: 12 },
+    backgroundColor: chartTheme.value.popover,
+    borderColor: chartTheme.value.border,
+    textStyle: { color: chartTheme.value.popoverForeground, fontSize: 12 },
+    axisPointer: {
+      type: 'line',
+      lineStyle: {
+        color: chartTheme.value.border,
+        width: 1,
+      },
+      label: {
+        show: false,
+      },
+    },
   },
   legend: {
     bottom: 0,
-    textStyle: { color: 'hsl(var(--muted-foreground))', fontSize: 11 },
+    textStyle: { color: chartTheme.value.mutedForeground, fontSize: 11 },
   },
   grid: { top: 16, right: 16, bottom: 36, left: 40 },
   xAxis: {
     type: 'category',
     data: trendDays.value.map((d) => d.date.slice(5)),
-    axisLine: { lineStyle: { color: 'hsl(var(--border))' } },
-    axisLabel: { color: 'hsl(var(--muted-foreground))', fontSize: 11 },
+    axisLine: { lineStyle: { color: chartTheme.value.border } },
+    axisTick: { show: false },
+    axisLabel: { color: chartTheme.value.mutedForeground, fontSize: 11 },
   },
   yAxis: {
     type: 'value',
-    splitLine: { lineStyle: { color: 'hsl(var(--border))', type: 'dashed' } },
-    axisLabel: { color: 'hsl(var(--muted-foreground))', fontSize: 11 },
+    splitLine: { lineStyle: { color: chartTheme.value.border, type: 'dashed' } },
+    axisLabel: { color: chartTheme.value.mutedForeground, fontSize: 11 },
   },
   series: [
     {
       name: '已完成',
       type: 'bar',
       data: trendDays.value.map((d) => d.tasksCompleted),
-      itemStyle: { color: 'hsl(var(--chart-1))', borderRadius: [4, 4, 0, 0] },
+      itemStyle: { color: chartTheme.value.chartBar, borderRadius: [4, 4, 0, 0] },
+      emphasis: {
+        focus: 'none',
+        itemStyle: {
+          color: chartTheme.value.chartBar,
+          borderRadius: [4, 4, 0, 0],
+        },
+      },
       barMaxWidth: 24,
     },
     {
@@ -215,9 +301,19 @@ const trendChartOption = computed(() => ({
       type: 'line',
       data: trendDays.value.map((d) => d.tasksCreated),
       smooth: true,
-      lineStyle: { color: 'hsl(var(--chart-2))', width: 2 },
-      itemStyle: { color: 'hsl(var(--chart-2))' },
+      lineStyle: { color: chartTheme.value.chartLine, width: 2.5 },
+      itemStyle: { color: chartTheme.value.chartLine },
       showSymbol: false,
+      emphasis: {
+        focus: 'none',
+        lineStyle: {
+          color: chartTheme.value.chartLine,
+          width: 2.5,
+        },
+        itemStyle: {
+          color: chartTheme.value.chartLine,
+        },
+      },
     },
   ],
 }));
@@ -239,21 +335,6 @@ function formatTime(ts: number): string {
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
   if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
   return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
-function formatScheduleTime(ts: number): string {
-  const d = new Date(ts);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function formatScheduleDate(ts: number): string {
-  const d = new Date(ts);
-  const today = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  if (d.toDateString() === today.toDateString()) return '今天';
-  if (d.toDateString() === tomorrow.toDateString()) return '明天';
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function activityIcon(type: string) {
@@ -283,6 +364,11 @@ function activityColor(type: string): string {
 function navigateTo(path: string) {
   router.push(path);
 }
+
+async function refreshDashboard() {
+  reminderWidgetRefreshKey.value += 1;
+  await fetchDashboard();
+}
 </script>
 
 <template>
@@ -296,7 +382,7 @@ function navigateTo(path: string) {
         <p class="text-xs text-muted-foreground mt-0.5">全局概览与快速操作</p>
       </div>
       <div class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" :disabled="isLoading" @click="fetchDashboard">
+        <Button variant="ghost" size="sm" :disabled="isLoading" @click="refreshDashboard">
           <RefreshCw class="w-4 h-4 mr-1" :class="{ 'animate-spin': isLoading }" />
           刷新
         </Button>
@@ -466,66 +552,10 @@ function navigateTo(path: string) {
           <!-- Daily Todo Widget -->
           <DailyTodoWidget @view-all="navigateTo('/tasks')" />
 
-          <!-- Upcoming Schedule -->
-          <Card class="border-border/50">
-            <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
-              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
-                <Clock class="w-4 h-4 text-muted-foreground" />
-                即将到来
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                class="h-7 text-xs"
-                @click="navigateTo('/schedule')"
-              >
-                查看全部
-                <ArrowRight class="w-3 h-3 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent class="px-4 pb-4">
-              <template v-if="isLoading">
-                <div class="space-y-3">
-                  <div v-for="i in 4" :key="i" class="flex items-start gap-2">
-                    <Skeleton class="w-10 h-8 rounded" />
-                    <div class="flex-1 space-y-1">
-                      <Skeleton class="h-3 w-full" />
-                      <Skeleton class="h-3 w-20" />
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <template v-else>
-                <div class="space-y-1">
-                  <div
-                    v-for="item in upcomingSchedule"
-                    :key="item.id"
-                    class="flex items-start gap-2.5 py-1.5 rounded-md hover:bg-muted/50 px-1 transition-colors"
-                  >
-                    <div
-                      class="flex flex-col items-center bg-muted/80 rounded px-1.5 py-0.5 shrink-0"
-                    >
-                      <span class="text-[10px] text-muted-foreground leading-none">
-                        {{ formatScheduleDate(item.startTime) }}
-                      </span>
-                      <span class="text-xs font-semibold text-foreground leading-tight">
-                        {{ formatScheduleTime(item.startTime) }}
-                      </span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-xs text-foreground font-medium truncate">
-                        {{ item.title }}
-                      </p>
-                      <p class="text-[11px] text-muted-foreground">
-                        {{ formatScheduleTime(item.startTime) }} -
-                        {{ formatScheduleTime(item.endTime) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </CardContent>
-          </Card>
+          <UpcomingRemindersWidget
+            :refresh-key="reminderWidgetRefreshKey"
+            @view-all="navigateTo('/reminders')"
+          />
         </div>
 
         <!-- ═══ Quick Actions Bar ═══ -->

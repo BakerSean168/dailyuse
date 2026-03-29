@@ -31,10 +31,17 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     limit?: number;
     templateId?: string;
     status?: string;
-    startDate?: number;
-    endDate?: number;
   }): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.get(this.baseUrl, { params });
+  }
+
+  async getTaskInstancesByDateRange(
+    startDate: number,
+    endDate: number,
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
+    return this.httpClient.get(`${this.baseUrl}/by-date-range`, {
+      params: { startDate, endDate },
+    });
   }
 
   async getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>> {

@@ -29,7 +29,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "defaultConfiguration": "development",
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "native-rebuild"],
       "options": {
         "command": "vite",
         "cwd": "apps/desktop"
@@ -43,14 +43,24 @@
     },
     "package": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build", "native-rebuild"],
       "options": {
         "commands": ["electron-builder --dir"],
         "cwd": "apps/desktop",
         "parallel": false
       }
     },
+    "native-rebuild": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "electron-rebuild -f -w better-sqlite3",
+        "cwd": "apps/desktop"
+      }
+    },
     "dist": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build", "native-rebuild"],
       "options": {
         "command": "electron-builder --publish never",
         "cwd": "apps/desktop",

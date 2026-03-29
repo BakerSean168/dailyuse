@@ -25,12 +25,20 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
 import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
 import { ReminderDomainService } from '../domain-server/services/ReminderDomainService';
+import { UpcomingReminderCalculationService } from '../domain-server/services/UpcomingReminderCalculationService';
 import { RecordReminderResponse } from '../application-server/use-cases/commands/record-reminder-response';
 import { AnalyzeReminderFrequency } from '../application-server/use-cases/queries/analyze-reminder-frequency';
 import { AdjustReminderFrequency } from '../application-server/use-cases/commands/adjust-reminder-frequency';
 import { UserReminderPreferences } from '../domain-server/aggregates/user-reminder-preferences';
 import type { ITemplateEffectiveStatus } from '../domain-server/services/ReminderTemplateControlService';
-import type { ReminderTemplateListRes, ReminderGroupListRes } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
+  GetUpcomingRemindersReq,
+  GetUpcomingRemindersRes,
+  GetReminderTodayScheduleReq,
+  GetReminderTodayScheduleRes,
+} from '@dailyuse/contracts/reminder';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the reminder runtime needs from the outside world.
@@ -68,7 +76,14 @@ export interface ReminderApplicationPort {
   // Template CRUD / 模板 CRUD
   createTemplate(data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
   listTemplates(ctx: Context): Promise<Result<ReminderTemplateListRes>>;
-  getUpcomingReminders(params: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
+  getUpcomingReminders(
+    params: GetUpcomingRemindersReq,
+    ctx: Context,
+  ): Promise<Result<GetUpcomingRemindersRes>>;
+  getTodaySchedule(
+    params: GetReminderTodayScheduleReq,
+    ctx: Context,
+  ): Promise<Result<GetReminderTodayScheduleRes>>;
   getTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   updateTemplate(id: string, data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
   deleteTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
@@ -326,12 +341,49 @@ export function createReminderModule(
     },
 
     async getUpcomingReminders(params, ctx) {
-      return ok(
-        await reminderTemplateRepository.findByNextTriggerBefore(
-          params.beforeTime ? new Date(params.beforeTime as string | number).getTime() : Date.now(),
-          ctx.identityId,
-        ),
+      const templates = await reminderTemplateRepository.findByIdentityId(ctx.identityId, {
+        includeDeleted: false,
+      });
+      const filteredTemplates = templates
+        .map((template) => template.toServerDTO())
+        .filter((template) =>
+          params.type ? template.type === params.type : true,
+        )
+        .filter((template) =>
+          params.importanceLevel ? template.importanceLevel === params.importanceLevel : true,
+        );
+
+      const upcoming = UpcomingReminderCalculationService.calculateUpcomingReminders(
+        filteredTemplates,
+        {
+          days: params.days,
+          limit: Number.MAX_SAFE_INTEGER,
+        },
       );
+      const limited = typeof params.limit === 'number' ? upcoming.slice(0, params.limit) : upcoming;
+
+      return ok({
+        data: limited,
+        total: upcoming.length,
+      });
+    },
+
+    async getTodaySchedule(params, ctx) {
+      const templates = await reminderTemplateRepository.findByIdentityId(ctx.identityId, {
+        includeDeleted: false,
+      });
+      const schedule = UpcomingReminderCalculationService.calculateTodaySchedule(
+        templates.map((template) => template.toServerDTO()),
+        {
+          includeExpired: Boolean(params.includeExpired),
+        },
+      );
+      const limited = typeof params.limit === 'number' ? schedule.slice(0, params.limit) : schedule;
+
+      return ok({
+        data: limited,
+        total: schedule.length,
+      });
     },
 
     async getTemplate(id, ctx) {

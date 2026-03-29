@@ -27,7 +27,10 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 import { GoalElectronModule } from '@dailyuse/goal/electron-entry';
 import { GoalPowerSyncRepository } from '@dailyuse/goal/infrastructure-server';
 import { TaskElectronModule } from '@dailyuse/task/electron-entry';
-import { PowerSyncTaskInstanceRepository, PowerSyncTaskTemplateRepository } from '@dailyuse/task/infrastructure-server';
+import {
+  PowerSyncTaskInstanceRepository,
+  PowerSyncTaskTemplateRepository,
+} from '@dailyuse/task/infrastructure-server';
 import { createScheduleElectronModule } from '@dailyuse/schedule/electron-entry';
 import { ReminderElectronModule } from '@dailyuse/reminder/electron-entry';
 import { NotificationElectronModule } from '@dailyuse/notification/electron-entry';
@@ -44,6 +47,7 @@ import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
+import { configureDesktopUserDataPath } from './user-data-path';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 import {
   PowerSyncNotificationPreferenceRepository,
@@ -62,6 +66,8 @@ import { NotificationChannel as ReminderNotificationChannel } from '@dailyuse/co
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
+
+const configuredUserDataPath = configureDesktopUserDataPath();
 
 const AIElectronModule = createAIElectronModule({
   createKnowledgeNotePersistence: (context: IElectronModuleContext) =>
@@ -111,6 +117,7 @@ function mapReminderChannels(channels: readonly string[]): NotificationChannelTy
 async function initializeApp(): Promise<void> {
   const startTime = performance.now();
   console.log('[App] Initializing...');
+  console.log(`[App] userData path: ${configuredUserDataPath}`);
 
   // 1. PowerSync-backed business database runtime
   const db = await openPowerSyncLocalOnly();
@@ -192,7 +199,9 @@ async function initializeApp(): Promise<void> {
 
         if (task.sourceModule === SourceModule.Goal) {
           const goalRepository = new GoalPowerSyncRepository(db);
-          const goal = await goalRepository.findById(task.sourceEntityId, { includeChildren: true });
+          const goal = await goalRepository.findById(task.sourceEntityId, {
+            includeChildren: true,
+          });
           if (
             !goal ||
             goal.deletedAt ||
@@ -217,7 +226,7 @@ async function initializeApp(): Promise<void> {
               ? `目标「${goal.name}」距离截止还有 ${triggerValue} 天。`
               : triggerType === 'TimeProgressPercentage' && triggerValue !== undefined
                 ? `目标「${goal.name}」已达到 ${triggerValue}% 时间进度节点。`
-                : goal.description ?? `目标「${goal.name}」已到达提醒时间。`;
+                : (goal.description ?? `目标「${goal.name}」已到达提醒时间。`);
 
           await createNotification.execute({
             identityId: String(goal.identityId),
@@ -259,7 +268,7 @@ async function initializeApp(): Promise<void> {
           const taskTitle =
             typeof task.metadata.payload['taskTitle'] === 'string'
               ? task.metadata.payload['taskTitle']
-              : template?.title ?? '未命名任务';
+              : (template?.title ?? '未命名任务');
           const reminderType =
             typeof task.metadata.payload['reminderType'] === 'string'
               ? task.metadata.payload['reminderType']
@@ -312,7 +321,8 @@ async function initializeApp(): Promise<void> {
     caseSensitive = false,
   ): Promise<RepositorySearchResponse> => {
     const startedAt = Date.now();
-    const resources = await editorRepositoryModule.resourceRepository.findByRepositoryId(repositoryId);
+    const resources =
+      await editorRepositoryModule.resourceRepository.findByRepositoryId(repositoryId);
     const normalizedQuery = caseSensitive ? query : query.toLowerCase();
 
     const results = resources
@@ -422,16 +432,18 @@ async function initializeApp(): Promise<void> {
               results: repositorySearch.results
                 .slice(request.offset ?? 0, (request.offset ?? 0) + (request.limit ?? 20))
                 .map((item: RepositorySearchItem) => ({
-                resourceId: item.resourceId,
-                resourcePath: item.resourcePath,
-                resourceName: item.resourceName,
-                snippet: item.matches[0]?.lineContent ?? '',
-                score: item.matchCount,
-                highlights: item.matches.map((match: RepositorySearchItem['matches'][number]) => ({
-                  line: match.lineNumber,
-                  text: match.lineContent,
+                  resourceId: item.resourceId,
+                  resourcePath: item.resourcePath,
+                  resourceName: item.resourceName,
+                  snippet: item.matches[0]?.lineContent ?? '',
+                  score: item.matchCount,
+                  highlights: item.matches.map(
+                    (match: RepositorySearchItem['matches'][number]) => ({
+                      line: match.lineNumber,
+                      text: match.lineContent,
+                    }),
+                  ),
                 })),
-              })),
               total: repositorySearch.totalResults,
             };
           },

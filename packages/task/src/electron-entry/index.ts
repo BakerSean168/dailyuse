@@ -50,6 +50,7 @@ const Ch = {
   TEMPLATE_BIND_GOAL: 'task:template:bind-goal',
   TEMPLATE_UNBIND_GOAL: 'task:template:unbind-goal',
   INSTANCE_LIST: 'task:instance:list',
+  INSTANCE_LIST_BY_DATE_RANGE: 'task:instance:list-by-date-range',
   INSTANCE_GET: 'task:instance:get',
   INSTANCE_CREATE: 'task:instance:create',
   INSTANCE_UPDATE: 'task:instance:update',
@@ -228,15 +229,6 @@ export const TaskElectronModule: IElectronModule = {
     // --- Instance channels ---
     ipcMain.handle(Ch.INSTANCE_LIST, (_, params) =>
       withAuthenticatedValue(ctx, async (requestContext) => {
-        if (typeof params?.startDate === 'number' && typeof params?.endDate === 'number') {
-          const result = await handlers.instance.getByDateRange.execute(
-            requestContext.identityId,
-            params.startDate,
-            params.endDate,
-          );
-          return result.ok ? result.data.data : result;
-        }
-
         if (params?.templateId) {
           return handlers.instance.listByTemplate.execute(params.templateId);
         }
@@ -246,6 +238,16 @@ export const TaskElectronModule: IElectronModule = {
         }
 
         return handlers.instance.listByAccount.execute(requestContext.identityId);
+      }),
+    );
+    ipcMain.handle(Ch.INSTANCE_LIST_BY_DATE_RANGE, (_, params) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await handlers.instance.getByDateRange.execute(
+          requestContext.identityId,
+          params?.startDate ?? Date.now(),
+          params?.endDate ?? Date.now() + 86400000 * 7,
+        );
+        return result.ok ? result.data.data : result;
       }),
     );
     ipcMain.handle(Ch.INSTANCE_GET, (_, payload) =>

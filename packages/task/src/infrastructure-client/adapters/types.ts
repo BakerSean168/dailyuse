@@ -90,9 +90,11 @@ export interface ITaskInstanceApiClient {
     limit?: number;
     templateId?: string;
     status?: string;
-    startDate?: number;
-    endDate?: number;
   }): Promise<Result<TaskInstanceClientDTO[]>>;
+  getTaskInstancesByDateRange(
+    startDate: number,
+    endDate: number,
+  ): Promise<Result<TaskInstanceClientDTO[]>>;
   getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>>;
   deleteTaskInstance(id: string): Promise<Result<void>>;
   startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>>;
