@@ -96,6 +96,25 @@ export interface PasswordStrengthStore {
 }
 
 /**
+ * Generate a cryptographically secure random integer between 0 and max - 1
+ */
+function getSecureRandomInt(max: number): number {
+  if (max <= 0) return 0;
+
+  const randomBuffer = new Uint32Array(1);
+  const maxUint32 = 0xffffffff;
+  const limit = maxUint32 - (maxUint32 % max);
+
+  let randomValue;
+  do {
+    globalThis.crypto.getRandomValues(randomBuffer);
+    randomValue = randomBuffer[0];
+  } while (randomValue >= limit);
+
+  return randomValue % max;
+}
+
+/**
  * Create a password strength analyzer
  */
 export function createPasswordStrength(): PasswordStrengthStore {
@@ -137,21 +156,24 @@ export function generatePassword(length = 16): string {
 
   // Ensure at least one of each type
   let password = '';
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += special[Math.floor(Math.random() * special.length)];
+  password += lowercase[getSecureRandomInt(lowercase.length)];
+  password += uppercase[getSecureRandomInt(uppercase.length)];
+  password += numbers[getSecureRandomInt(numbers.length)];
+  password += special[getSecureRandomInt(special.length)];
 
   // Fill the rest randomly
   for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
+    password += allChars[getSecureRandomInt(allChars.length)];
   }
 
-  // Shuffle the password
-  return password
-    .split('')
-    .sort(() => Math.random() - 0.5)
-    .join('');
+  // Shuffle the password using Fisher-Yates
+  const passwordArray = password.split('');
+  for (let i = passwordArray.length - 1; i > 0; i--) {
+    const j = getSecureRandomInt(i + 1);
+    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+  }
+
+  return passwordArray.join('');
 }
 
 /**
@@ -176,12 +198,12 @@ export function generatePassphrase(wordCount = 4, separator = '-'): string {
 
   const passphrase: string[] = [];
   for (let i = 0; i < wordCount; i++) {
-    const randomWord = words[Math.floor(Math.random() * words.length)];
+    const randomWord = words[getSecureRandomInt(words.length)];
     // Capitalize first letter for readability
     passphrase.push(randomWord.charAt(0).toUpperCase() + randomWord.slice(1));
   }
 
   // Add a random number at the end for extra security
-  const randomNumber = Math.floor(Math.random() * 100);
+  const randomNumber = getSecureRandomInt(100);
   return passphrase.join(separator) + separator + randomNumber;
 }
