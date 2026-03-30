@@ -280,6 +280,7 @@ import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import type { TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,

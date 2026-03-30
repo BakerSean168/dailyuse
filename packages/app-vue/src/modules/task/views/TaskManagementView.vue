@@ -83,6 +83,7 @@ import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import type { DependencyType as DependencyTypeValue } from '@dailyuse/contracts/task';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
 import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
