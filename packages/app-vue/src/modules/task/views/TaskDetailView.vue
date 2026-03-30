@@ -172,7 +172,7 @@
                 <div v-if="predecessorRelations.length" class="mt-2 space-y-2">
                   <div
                     v-for="relation in predecessorRelations"
-                    :key="relation.id"
+                    :key="relation.dependency.id"
                     class="flex flex-wrap items-center gap-2 rounded-md border p-3"
                   >
                     <Button
@@ -197,7 +197,7 @@
                 <div v-if="successorRelations.length" class="mt-2 space-y-2">
                   <div
                     v-for="relation in successorRelations"
-                    :key="relation.id"
+                    :key="relation.dependency.id"
                     class="flex flex-wrap items-center gap-2 rounded-md border p-3"
                   >
                     <Button
@@ -284,7 +284,7 @@ import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
 } from '../utils/taskTemplatePresentation';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
 
 const route = useRoute();
@@ -385,6 +385,10 @@ function toGoalBindingPayload(goalBinding: TaskTemplateViewModel['goalBinding'])
   };
 }
 
+function toParentTaskId(parentTaskId: string | null | undefined): TaskTemplateId | null {
+  return parentTaskId ? (parentTaskId as TaskTemplateId) : null;
+}
+
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
   const result = await updateTemplate(id, {
@@ -393,7 +397,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
-    parentTaskId: vm.parentTaskId ?? null,
+    parentTaskId: toParentTaskId(vm.parentTaskId),
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm.goalBinding),

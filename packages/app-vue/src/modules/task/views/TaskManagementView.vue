@@ -84,7 +84,7 @@ import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import type { DependencyType as DependencyTypeValue } from '@dailyuse/contracts/task';
 import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
 
 const router = useRouter();
@@ -181,6 +181,10 @@ function toGoalBindingPayload(template: TaskTemplateViewModel) {
   };
 }
 
+function toParentTaskId(parentTaskId: string | null | undefined): TaskTemplateId | null {
+  return parentTaskId ? (parentTaskId as TaskTemplateId) : null;
+}
+
 function handleCreate() {
   showCreateDialog.value = true;
 }
@@ -193,7 +197,7 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     timeConfig: template.timeConfig as any,
     recurrenceRule: template.recurrenceRule ?? null,
     importance: (template.importance as any) ?? 'Moderate',
-    parentTaskId: template.parentTaskId ?? null,
+    parentTaskId: toParentTaskId(template.parentTaskId),
     tags: template.tags ?? [],
     color: template.color ?? null,
     goalBinding: toGoalBindingPayload(template),
@@ -224,7 +228,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
-    parentTaskId: vm.parentTaskId ?? null,
+    parentTaskId: toParentTaskId(vm.parentTaskId),
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm),
