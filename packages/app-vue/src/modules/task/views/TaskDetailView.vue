@@ -285,7 +285,7 @@ import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
 } from '../utils/taskTemplatePresentation';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
 
 const route = useRoute();
@@ -386,6 +386,10 @@ function toGoalBindingPayload(goalBinding: TaskTemplateViewModel['goalBinding'])
   };
 }
 
+function toParentTaskId(parentTaskId: string | null | undefined): TaskTemplateId | null {
+  return parentTaskId ? (parentTaskId as TaskTemplateId) : null;
+}
+
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
   const result = await updateTemplate(id, {
@@ -394,7 +398,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
-    parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,
+    parentTaskId: toParentTaskId(vm.parentTaskId),
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm.goalBinding),

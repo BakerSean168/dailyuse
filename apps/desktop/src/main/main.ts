@@ -47,7 +47,7 @@ import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
-import { configureDesktopUserDataPath } from './user-data-path';
+import { configureDesktopUserDataPath, ensureDesktopDataPath } from './user-data-path';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 import {
   PowerSyncNotificationPreferenceRepository,
@@ -66,8 +66,12 @@ import { NotificationChannel as ReminderNotificationChannel } from '@dailyuse/co
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
+import { initializeWinstonLogger } from '@dailyuse/utils/winston';
 
 const configuredUserDataPath = configureDesktopUserDataPath();
+// Desktop persisted logs live alongside other runtime data under userData/data.
+const desktopLogsDir = ensureDesktopDataPath('logs');
+initializeWinstonLogger({ logsDir: desktopLogsDir });
 
 const AIElectronModule = createAIElectronModule({
   createKnowledgeNotePersistence: (context: IElectronModuleContext) =>
@@ -116,12 +120,14 @@ function mapReminderChannels(channels: readonly string[]): NotificationChannelTy
  */
 async function initializeApp(): Promise<void> {
   const startTime = performance.now();
-  console.log('[App] Initializing...');
-  console.log(`[App] userData path: ${configuredUserDataPath}`);
+  logger.info('[App] Initializing', {
+    userDataPath: configuredUserDataPath,
+    logsDir: desktopLogsDir,
+  });
 
   // 1. PowerSync-backed business database runtime
   const db = await openPowerSyncLocalOnly();
-  console.log('[App] PowerSync business database initialized');
+  logger.info('[App] PowerSync business database initialized');
 
   // 2. Bootstrap business modules
   const repositoryStorageDir = path.join(app.getPath('userData'), 'repository-storage');
@@ -451,11 +457,11 @@ async function initializeApp(): Promise<void> {
       }),
     )
     .init();
-  console.log('[App] All modules bootstrapped');
+  logger.info('[App] All modules bootstrapped');
 
   // 3. Cross-module event listeners
   await initializeEventListeners();
-  console.log('[App] Event listeners initialized');
+  logger.info('[App] Event listeners initialized');
 
   // 4. Ancillary
   initMemoryMonitorForDev();
@@ -463,10 +469,10 @@ async function initializeApp(): Promise<void> {
   registerDashboardIpcHandler();
 
   const initTime = performance.now() - startTime;
-  console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);
+  logger.info('[App] Initialization complete', { durationMs: Number(initTime.toFixed(2)) });
 
   if (process.env.BENCHMARK_MODE === 'true') {
-    console.log('[BENCHMARK] READY');
+    logger.info('[BENCHMARK] READY');
   }
 }
 
