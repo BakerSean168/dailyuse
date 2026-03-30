@@ -24,6 +24,7 @@ import type {
   UpdateTaskDependencyRequest,
   ValidateDependencyRequest,
   ValidateDependencyResponse,
+  QueryTaskTemplateGraphRes,
 } from '@dailyuse/contracts/task';
 
 // ============ Transport Client Interfaces ============
@@ -54,6 +55,7 @@ export interface ITaskTemplateApiClient {
   getTaskTemplates(
     params?: TaskTemplateListParams,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;
+  getTaskGraph(params?: TaskTemplateListParams): Promise<Result<QueryTaskTemplateGraphRes>>;
   getTaskTemplateById(
     id: string,
     includeChildren?: boolean,

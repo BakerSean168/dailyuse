@@ -1124,6 +1124,23 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.parentTaskId;
   }
 
+  /** Updates the parent task relationship. */
+  public updateParentTaskId(parentTaskId: TaskTemplateId | null): void {
+    if (parentTaskId && String(parentTaskId) === String(this.id)) {
+      throw new InvalidTaskTemplateStateError('Task cannot be its own parent', {
+        templateId: this.id,
+        currentStatus: this._props.status,
+        attemptedAction: 'updateParentTaskId',
+      });
+    }
+
+    this._props.parentTaskId = parentTaskId;
+    this._props.updatedAt = new Date();
+    this.addHistory('parent_task_updated', {
+      parentTaskId: parentTaskId ? String(parentTaskId) : null,
+    });
+  }
+
   // ===== Priority Calculation Methods (OneTime) =====
 
   /**
@@ -1563,6 +1580,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalRecordValue: number;
       progressTrigger: TaskGoalBindingTriggerValue;
     } | null;
+    parentTaskId?: TaskTemplateId;
   }): TaskTemplate {
     if (!params.identityId) {
       throw new InvalidTaskTemplateStateError('Identity ID is required', {
@@ -1609,7 +1627,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalId: (params.goalBinding?.goalId as GoalId | undefined) ?? null,
       keyResultId: (params.goalBinding?.keyResultId as KeyResultId | undefined) ?? null,
       checklist: [],
-      parentTaskId: null,
+      parentTaskId: params.parentTaskId ?? null,
       lastGeneratedDate: null,
       startDate: null,
       dueDate: null,

@@ -9,12 +9,13 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '@/domain-server/value-objects';
+import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
 import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
 import type { TaskTemplateClientDTO, CreateTaskTemplateInput } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import { error, ok } from '@dailyuse/contracts/result';
 
 /**
  * Create Task Template Service
@@ -33,6 +34,13 @@ export class CreateTaskTemplate {
   async execute(
     request: CreateTaskTemplateInput,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
+    if (request.parentTaskId) {
+      const parentTemplate = await this.templateRepository.findById(request.parentTaskId);
+      if (!parentTemplate) {
+        return error('BAD_REQUEST', `Parent task template ${request.parentTaskId} not found`);
+      }
+    }
+
     const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
     const recurrenceRule = request.recurrenceRule
       ? RecurrenceRule.fromDTO(request.recurrenceRule)
@@ -50,6 +58,7 @@ export class CreateTaskTemplate {
       recurrenceRule,
       reminderConfig,
       importance: request.importance,
+      parentTaskId: request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : undefined,
       folderId: request.folderId ?? undefined,
       tags: request.tags,
       color: request.color ?? undefined,

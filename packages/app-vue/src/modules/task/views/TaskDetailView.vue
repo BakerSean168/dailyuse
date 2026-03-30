@@ -107,6 +107,117 @@
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>{{ t('task.detail.relations') }}</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-5">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-sm font-medium text-muted-foreground">
+                  {{ t('task.detail.parentTask') }}
+                </p>
+                <div v-if="parentTemplate" class="mt-2">
+                  <Button variant="outline" size="sm" @click="handleOpenTaskDetail(parentTemplate.id)">
+                    {{ parentTemplate.title }}
+                  </Button>
+                </div>
+                <p v-else class="mt-2 text-sm">{{ t('task.detail.noParentTask') }}</p>
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-muted-foreground">
+                  {{ t('task.detail.dependencyStatus') }}
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">
+                    {{ getDependencyStatusText(detailViewModel.dependencyStatus) }}
+                  </Badge>
+                  <Badge v-if="detailViewModel.isBlocked" variant="destructive">
+                    {{ t('task.detail.blockedState') }}
+                  </Badge>
+                  <Badge v-else variant="secondary">
+                    {{ t('task.detail.readyState') }}
+                  </Badge>
+                </div>
+                <p v-if="detailViewModel.blockingReason" class="mt-2 text-sm text-muted-foreground">
+                  {{ detailViewModel.blockingReason }}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.subtasks') }}
+              </p>
+              <div v-if="childTemplates.length" class="mt-2 flex flex-wrap gap-2">
+                <Button
+                  v-for="child in childTemplates"
+                  :key="child.id"
+                  variant="outline"
+                  size="sm"
+                  @click="handleOpenTaskDetail(child.id)"
+                >
+                  {{ child.title }}
+                </Button>
+              </div>
+              <p v-else class="mt-2 text-sm">{{ t('task.detail.noSubtasks') }}</p>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-sm font-medium text-muted-foreground">
+                  {{ t('task.detail.predecessors') }}
+                </p>
+                <div v-if="predecessorRelations.length" class="mt-2 space-y-2">
+                  <div
+                    v-for="relation in predecessorRelations"
+                    :key="relation.id"
+                    class="flex flex-wrap items-center gap-2 rounded-md border p-3"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      @click="handleOpenTaskDetail(relation.task.id)"
+                    >
+                      {{ relation.task.title }}
+                    </Button>
+                    <Badge variant="secondary">
+                      {{ getDependencyTypeLabel(relation.dependency.dependencyType) }}
+                    </Badge>
+                  </div>
+                </div>
+                <p v-else class="mt-2 text-sm">{{ t('task.detail.noPredecessors') }}</p>
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-muted-foreground">
+                  {{ t('task.detail.successors') }}
+                </p>
+                <div v-if="successorRelations.length" class="mt-2 space-y-2">
+                  <div
+                    v-for="relation in successorRelations"
+                    :key="relation.id"
+                    class="flex flex-wrap items-center gap-2 rounded-md border p-3"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      @click="handleOpenTaskDetail(relation.task.id)"
+                    >
+                      {{ relation.task.title }}
+                    </Button>
+                    <Badge variant="secondary">
+                      {{ getDependencyTypeLabel(relation.dependency.dependencyType) }}
+                    </Badge>
+                  </div>
+                </div>
+                <p v-else class="mt-2 text-sm">{{ t('task.detail.noSuccessors') }}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <!-- Stats Card -->
         <Card>
           <CardHeader>
@@ -139,6 +250,11 @@
       mode="edit"
       :template="editViewModel"
       :saving="isSaving"
+      :available-templates="templateViewModels"
+      :graph-tasks="graphData.nodes"
+      :dependencies="dependencies"
+      :on-create-dependency="handleCreateDependency"
+      :on-delete-dependency="handleDeleteDependency"
       @save="handleSaveEdit"
       @cancel="showEditDialog = false"
     />
@@ -146,7 +262,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, FileQuestion, Pencil } from 'lucide-vue-next';
@@ -162,24 +278,69 @@ import {
 import { useTask } from '../composables/useTask';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
-import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
+import { DependencyType, TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
+import type { TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
 import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
 } from '../utils/taskTemplatePresentation';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import { buildTaskGraphData } from '../types/task-dag.types';
 
 const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
-const { currentTemplate, isLoading, isSaving, fetchTemplate, updateTemplate } = useTask();
+const {
+  templates,
+  dependencies,
+  currentTemplate,
+  isLoading,
+  isSaving,
+  fetchTemplate,
+  fetchTaskGraph,
+  updateTemplate,
+  createDependency,
+  deleteDependency,
+} = useTask();
 
 const showEditDialog = ref(false);
+const templateViewModels = computed(() =>
+  templates.value.map((template) => mapTaskTemplateDtoToViewModel(template, t)),
+);
+const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
 const detailViewModel = computed<TaskTemplateViewModel | null>(() => {
   if (!currentTemplate.value) return null;
   return mapTaskTemplateDtoToViewModel(currentTemplate.value, t);
 });
+
+const parentTemplate = computed(() => {
+  const parentTaskId = detailViewModel.value?.parentTaskId;
+  if (!parentTaskId) {
+    return null;
+  }
+
+  return templateViewModels.value.find((template) => template.id === parentTaskId) ?? null;
+});
+
+const childTemplates = computed(() => {
+  const currentId = detailViewModel.value?.id;
+  if (!currentId) {
+    return [];
+  }
+
+  return templateViewModels.value
+    .filter((template) => template.parentTaskId === currentId)
+    .sort((a, b) => a.title.localeCompare(b.title));
+});
+
+const predecessorRelations = computed(() =>
+  buildDependencyRelations('predecessorTaskId', 'successorTaskId'),
+);
+
+const successorRelations = computed(() =>
+  buildDependencyRelations('successorTaskId', 'predecessorTaskId'),
+);
 
 const statusVariant = computed(() => {
   switch (detailViewModel.value?.status) {
@@ -232,14 +393,92 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
+    parentTaskId: vm.parentTaskId ?? null,
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm.goalBinding),
   });
   if (result) {
     showEditDialog.value = false;
-    await fetchTemplate(id);
+    await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
   }
+}
+
+async function handleCreateDependency(dependency: {
+  predecessorTaskId: string;
+  successorTaskId: string;
+  dependencyType: DependencyType;
+}): Promise<boolean> {
+  const result = await createDependency(dependency);
+  if (!result) {
+    return false;
+  }
+
+  await fetchTaskGraph({ page: 1, limit: 1000 });
+  return true;
+}
+
+async function handleDeleteDependency(dependencyId: string): Promise<boolean> {
+  const deleted = await deleteDependency(dependencyId);
+  if (!deleted) {
+    return false;
+  }
+
+  await fetchTaskGraph({ page: 1, limit: 1000 });
+  return true;
+}
+
+function buildDependencyRelations(
+  taskKey: 'predecessorTaskId' | 'successorTaskId',
+  currentKey: 'predecessorTaskId' | 'successorTaskId',
+) {
+  const currentId = detailViewModel.value?.id;
+  if (!currentId) {
+    return [] as Array<{ dependency: TaskGraphDependencyDTO; task: TaskTemplateViewModel }>;
+  }
+
+  return dependencies.value
+    .filter((dependency) => dependency[currentKey] === currentId)
+    .map((dependency) => {
+      const relatedTask = templateViewModels.value.find(
+        (template) => template.id === dependency[taskKey],
+      );
+      return relatedTask ? { dependency, task: relatedTask } : null;
+    })
+    .filter((relation): relation is { dependency: TaskGraphDependencyDTO; task: TaskTemplateViewModel } => !!relation)
+    .sort((a, b) => a.task.title.localeCompare(b.task.title));
+}
+
+function getDependencyTypeLabel(type: string): string {
+  if (type === DependencyType.FinishToStart) return t('task.dependency.fsLabel');
+  if (type === DependencyType.StartToStart) return t('task.dependency.ssLabel');
+  if (type === DependencyType.FinishToFinish) return t('task.dependency.ffLabel');
+  if (type === DependencyType.StartToFinish) return t('task.dependency.sfLabel');
+  return type;
+}
+
+function getDependencyStatusText(status?: string): string {
+  if (!status) {
+    return t('common.none');
+  }
+
+  if (status === 'Blocked') {
+    return t('task.detail.blockedState');
+  }
+
+  if (status === 'Ready') {
+    return t('task.detail.readyState');
+  }
+
+  return status;
+}
+
+function handleOpenTaskDetail(id: string) {
+  if (id === detailViewModel.value?.id) {
+    return;
+  }
+
+  router.push({ name: 'task-detail', params: { id } });
 }
 
 function formatDate(ts?: number | null): string {
@@ -251,10 +490,25 @@ function getTimeTypeLabel(type?: string | null): string {
   return getTaskTimeTypeLabel(t, type);
 }
 
+async function loadDetailPage(id: string) {
+  if (!id || id === 'new') {
+    return;
+  }
+
+  await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
+}
+
+watch(
+  () => route.params.id,
+  async (id) => {
+    if (typeof id === 'string') {
+      await loadDetailPage(id);
+    }
+  },
+);
+
 onMounted(async () => {
   const id = route.params.id as string;
-  if (id && id !== 'new') {
-    await fetchTemplate(id);
-  }
+  await loadDetailPage(id);
 });
 </script>

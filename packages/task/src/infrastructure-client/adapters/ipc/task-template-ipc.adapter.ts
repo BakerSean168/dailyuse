@@ -15,6 +15,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  QueryTaskTemplateGraphRes,
 } from '@dailyuse/contracts/task';
 
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
@@ -28,6 +29,10 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     params?: TaskTemplateListParams,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_LIST, params);
+  }
+
+  async getTaskGraph(params?: TaskTemplateListParams): Promise<Result<QueryTaskTemplateGraphRes>> {
+    return this.ipcClient.invoke(TaskChannels.TEMPLATE_GRAPH, params);
   }
 
   async getTaskTemplateById(

@@ -1,4 +1,5 @@
 import type { TaskGoalBindingTriggerValue } from '@dailyuse/contracts/task';
+import type { TaskForDAG, TaskGraphData, TaskGraphEdge } from '@dailyuse/task/application-client';
 
 export type UIPriority = 'high' | 'normal' | 'low' | 'urgent';
 
@@ -34,15 +35,9 @@ export interface TaskGoalBindingViewModel {
   keyResultTitle?: string;
 }
 
-export interface TaskForDAGViewModel {
-  id: string;
-  title: string;
-  status?: string;
-  priority?: string | number;
-  estimatedMinutes?: number | null;
-  dueDate?: string | number | null;
-  tags?: string[];
-}
+export type TaskForDAGViewModel = TaskForDAG;
+export type TaskGraphEdgeViewModel = TaskGraphEdge;
+export type TaskGraphDataViewModel = TaskGraphData;
 
 export interface TaskDependencyValidationError {
   code: string;
@@ -87,6 +82,16 @@ export interface TaskTemplateViewModel {
   importance?: string;
   importanceText?: string;
   priority?: number;
+  estimatedMinutes?: number | null;
+  dueDate?: string | number | null;
+  parentTaskId?: string | null;
+  parentTaskTitle?: string | null;
+  predecessorCount?: number;
+  successorCount?: number;
+  childCount?: number;
+  dependencyStatus?: string;
+  isBlocked?: boolean;
+  blockingReason?: string | null;
   recurrenceText?: string;
   tags?: string[];
   tagSummaryText?: string;
@@ -110,6 +115,7 @@ export interface TaskTemplateFormProps {
   modelValue?: TaskTemplateViewModel | null;
   isEditMode?: boolean;
   readonly?: boolean;
+  availableParentTasks?: Array<Pick<TaskTemplateViewModel, 'id' | 'title'>>;
   goals?: GoalBindingOption[];
   keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
   onRequestKeyResults?: (goalId: string) => Promise<KeyResultBindingOption[] | void> | void;

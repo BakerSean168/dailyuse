@@ -40,6 +40,7 @@ export function createTaskTransportHandlers(api: TaskApplicationPort): TaskTrans
       createTemplate: api.createTaskTemplate,
       getTemplate: api.getTaskTemplate,
       listTemplates: api.listTaskTemplates,
+      getTaskGraph: api.getTaskTemplateGraph,
       updateTemplate: api.updateTaskTemplate,
       deleteTemplate: api.deleteTaskTemplate,
       activateTemplate: api.activateTaskTemplate,

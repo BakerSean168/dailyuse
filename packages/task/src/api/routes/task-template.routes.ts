@@ -16,6 +16,7 @@ import {
 import {
   CreateTaskTemplateSchema,
   UpdateTaskTemplateSchema,
+  TaskTemplateGraphResponseSchema,
   TaskTemplateResponseSchema,
   TaskTemplateListResponseSchema,
   GenerateInstancesSchema,
@@ -41,6 +42,20 @@ function getFirstQueryValue(value: unknown): string | undefined {
   }
 
   return typeof value === 'string' ? value : undefined;
+}
+
+function parseTemplateFilters(query: Record<string, unknown> | undefined): ListTaskTemplateFilters {
+  const status = getFirstQueryValue(query?.status) as TaskTemplateStatus | undefined;
+  const folderId = getFirstQueryValue(query?.folderId) as ListTaskTemplateFilters['folderId'];
+  const goalId = getFirstQueryValue(query?.goalId) as ListTaskTemplateFilters['goalId'];
+  const tags = getFirstQueryValue(query?.tags)?.split(',');
+
+  return {
+    status: status ? [status] : undefined,
+    folderId,
+    goalId,
+    tags,
+  };
 }
 
 // ============ Route Registration ============
@@ -95,20 +110,30 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req, ctx) => {
-      const status = getFirstQueryValue(req.query?.status) as TaskTemplateStatus | undefined;
-      const folderId = getFirstQueryValue(
-        req.query?.folderId,
-      ) as ListTaskTemplateFilters['folderId'];
-      const goalId = getFirstQueryValue(req.query?.goalId) as ListTaskTemplateFilters['goalId'];
-      const tags = getFirstQueryValue(req.query?.tags)?.split(',');
+    (req, ctx) => controller.listTemplates(parseTemplateFilters(req.query as Record<string, unknown>), ctx),
+  );
 
-      // Pass filters and full context (identity injected inside controller)
-      return controller.listTemplates(
-        { status: status ? [status] : undefined, folderId, goalId, tags },
-        ctx,
-      );
+  // GET /graph — List templates with dependency graph projection
+  r.route(
+    {
+      method: 'get',
+      path: '/graph',
+      summary: '获取任务模板图数据',
+      request: {
+        query: z.object({
+          status: z.string().optional(),
+          folderId: z.string().optional(),
+          goalId: z.string().optional(),
+          tags: z.string().optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(TaskTemplateGraphResponseSchema, '获取成功'),
+      },
     },
+    [auth],
+    (req, ctx) =>
+      controller.getTaskGraph(parseTemplateFilters(req.query as Record<string, unknown>), ctx),
   );
 
   // GET /by-priority — List templates sorted by priority (must be before /:id)

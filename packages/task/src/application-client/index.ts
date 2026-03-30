@@ -13,3 +13,4 @@ export type {
 } from '../infrastructure-client/adapters/types';
 
 export { TaskClientService } from './task-client-service';
+export * from './types/task-dag.types';

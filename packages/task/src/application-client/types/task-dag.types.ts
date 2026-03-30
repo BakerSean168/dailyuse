@@ -6,8 +6,12 @@
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
-  TaskDependencyServerDTO,
+  TaskGraphDependencyDTO,
+  TaskTimeConfigDTO,
+  DependencyStatus,
+  DependencyType,
 } from '@dailyuse/contracts/task';
+import { PriorityLevel } from '@dailyuse/contracts/shared';
 
 /**
  * 用于 DAG 可视化的任务数据类型
@@ -18,14 +22,40 @@ export interface TaskForDAG {
   title: string;
   description?: string | null;
   status: string; // TaskInstanceStatus or TaskTemplateStatus
-  priorityLevel?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priorityLevel?: PriorityLevel;
   priorityScore?: number; // 0-100 由后端计算
   importance?: string;
   estimatedMinutes?: number | null;
   dueDate?: string;
   tags?: string[];
+  parentTaskId?: string | null;
+  dependencyStatus?: DependencyStatus;
+  isBlocked?: boolean;
+  blockingReason?: string | null;
   templateId?: string; // 如果是实例，指向模板
   instanceDate?: number; // 如果是实例
+}
+
+export const TaskGraphEdgeKind = {
+  Dependency: 'dependency',
+  Hierarchy: 'hierarchy',
+} as const;
+export type TaskGraphEdgeKind = (typeof TaskGraphEdgeKind)[keyof typeof TaskGraphEdgeKind];
+
+export interface TaskGraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  kind: TaskGraphEdgeKind;
+  dependencyType?: DependencyType;
+  lagDays?: number;
+}
+
+export interface TaskGraphData {
+  nodes: TaskForDAG[];
+  edges: TaskGraphEdge[];
+  dependencyEdges: TaskGraphEdge[];
+  hierarchyEdges: TaskGraphEdge[];
 }
 
 /**
@@ -40,8 +70,13 @@ export function taskTemplateToDAG(template: TaskTemplateClientDTO): TaskForDAG {
     priorityLevel: mapPriorityScoreToLevel(template.priority),
     priorityScore: template.priority,
     importance: template.importance,
-    estimatedMinutes: extractEstimatedMinutes(template.timeConfig),
+    estimatedMinutes: extractEstimatedMinutes(template.estimatedMinutes, template.timeConfig),
+    dueDate: template.dueDate ? String(template.dueDate) : undefined,
     tags: template.tags,
+    parentTaskId: template.parentTaskId,
+    dependencyStatus: template.dependencyStatus as DependencyStatus | undefined,
+    isBlocked: template.isBlocked,
+    blockingReason: template.blockingReason,
   };
 }
 
@@ -57,13 +92,56 @@ export function taskInstanceToDAG(
     title: template?.name || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
-    priorityLevel: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
+    priorityLevel: template ? mapPriorityScoreToLevel(template.priority) : PriorityLevel.Medium,
     priorityScore: template?.priority,
     importance: template?.importance,
-    estimatedMinutes: extractEstimatedMinutes(instance.timeConfig),
+    estimatedMinutes: extractEstimatedMinutes(template?.estimatedMinutes, instance.timeConfig),
+    dueDate: template?.dueDate ? String(template.dueDate) : undefined,
     tags: template?.tags || [],
+    parentTaskId: template?.parentTaskId,
+    dependencyStatus: template?.dependencyStatus as DependencyStatus | undefined,
+    isBlocked: template?.isBlocked,
+    blockingReason: template?.blockingReason,
     templateId: instance.templateId,
     instanceDate: instance.instanceDate,
+  };
+}
+
+export function buildTaskGraphData(
+  templates: TaskTemplateClientDTO[],
+  dependencies: TaskGraphDependencyDTO[],
+): TaskGraphData {
+  const nodes = templates.map((template) => taskTemplateToDAG(template));
+  const nodeIds = new Set(nodes.map((node) => node.id));
+
+  const hierarchyEdges = nodes
+    .filter((node) => node.parentTaskId && nodeIds.has(node.parentTaskId))
+    .map((node) => ({
+      id: `hierarchy:${node.parentTaskId}:${node.id}`,
+      source: node.parentTaskId!,
+      target: node.id,
+      kind: TaskGraphEdgeKind.Hierarchy,
+    }));
+
+  const dependencyEdges = dependencies
+    .filter(
+      (dependency) =>
+        nodeIds.has(dependency.predecessorTaskId) && nodeIds.has(dependency.successorTaskId),
+    )
+    .map((dependency) => ({
+      id: dependency.id,
+      source: dependency.predecessorTaskId,
+      target: dependency.successorTaskId,
+      kind: TaskGraphEdgeKind.Dependency,
+      dependencyType: dependency.dependencyType,
+      lagDays: dependency.lagDays,
+    }));
+
+  return {
+    nodes,
+    edges: [...hierarchyEdges, ...dependencyEdges],
+    dependencyEdges,
+    hierarchyEdges,
   };
 }
 
@@ -71,30 +149,32 @@ export function taskInstanceToDAG(
  * 将优先级分数 (0-100) 映射到优先级级别
  * 基于 Story 1.3 的算法
  */
-function mapPriorityScoreToLevel(priorityScore?: number): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-  if (priorityScore === undefined || priorityScore === null) return 'MEDIUM';
+function mapPriorityScoreToLevel(priorityScore?: number): PriorityLevel {
+  if (priorityScore === undefined || priorityScore === null) return PriorityLevel.Medium;
 
   // 优先级分数映射
-  if (priorityScore >= 80) return 'CRITICAL';
-  if (priorityScore >= 60) return 'HIGH';
-  if (priorityScore >= 40) return 'MEDIUM';
-  return 'LOW';
+  if (priorityScore >= 80) return PriorityLevel.Critical;
+  if (priorityScore >= 60) return PriorityLevel.High;
+  if (priorityScore >= 40) return PriorityLevel.Medium;
+  return PriorityLevel.Low;
 }
 
 /**
  * 从 timeConfig 中提取预估时长（分钟）
  */
-function extractEstimatedMinutes(timeConfig: any): number | undefined {
-  if (!timeConfig) return undefined;
-
-  // 根据实际的 timeConfig 结构提取
-  // TODO: 根据实际的 TaskTimeConfig 结构调整
-  if (typeof timeConfig === 'object' && timeConfig.estimatedMinutes) {
-    return timeConfig.estimatedMinutes;
+function extractEstimatedMinutes(
+  estimatedMinutes: number | null | undefined,
+  timeConfig: TaskTimeConfigDTO | null | undefined,
+): number | undefined {
+  if (estimatedMinutes !== undefined && estimatedMinutes !== null) {
+    return estimatedMinutes;
   }
 
-  // 默认估算：如果有具体时间配置，估算为 30 分钟
-  return 30;
+  if (timeConfig?.timeType === 'TimeRange' && timeConfig.timeRange) {
+    return Math.max(0, timeConfig.timeRange.end - timeConfig.timeRange.start);
+  }
+
+  return undefined;
 }
 
 /**
@@ -106,7 +186,7 @@ export interface TaskForWidget {
   title: string;
   description?: string | null;
   status: string;
-  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: PriorityLevel;
   priorityScore?: number;
   scheduledTime?: number | null;
   dueDate?: number | null;
@@ -127,7 +207,7 @@ export function taskInstanceToWidget(
     title: template?.name || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
-    priority: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
+    priority: template ? mapPriorityScoreToLevel(template.priority) : PriorityLevel.Medium,
     priorityScore: template?.priority,
     scheduledTime: instance.timeConfig?.timePoint ?? null,
     dueDate: template?.dueDate ?? null,

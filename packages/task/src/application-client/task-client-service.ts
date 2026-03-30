@@ -21,6 +21,7 @@ import type {
   ValidateDependencyRequest,
   ValidateDependencyResponse,
   TaskDependencyClientDTO,
+  TaskGraphDependencyDTO,
   DependencyChainClientDTO,
   TaskInstanceClientDTO,
   TaskTemplateClientDTO,
@@ -144,6 +145,7 @@ export class TaskClientService {
   ) {
     this.createTemplate = this.createTemplate.bind(this);
     this.listTemplates = this.listTemplates.bind(this);
+    this.getTaskGraph = this.getTaskGraph.bind(this);
     this.getTemplate = this.getTemplate.bind(this);
     this.updateTemplate = this.updateTemplate.bind(this);
     this.deleteTemplate = this.deleteTemplate.bind(this);
@@ -190,6 +192,17 @@ export class TaskClientService {
         total,
       };
     });
+  }
+
+  async getTaskGraph(params?: TaskTemplateListParams): Promise<
+    Result<{ templates: TaskTemplate[]; dependencies: TaskGraphDependencyDTO[]; total: number }>
+  > {
+    const result = await this.templateApi.getTaskGraph(params);
+    return mapResult(result, (data) => ({
+      templates: (data.templates ?? []).map((dto) => taskTemplateFromDTO(dto)),
+      dependencies: data.dependencies ?? [],
+      total: data.total ?? data.templates.length,
+    }));
   }
 
   async getTemplate(id: string): Promise<Result<TaskTemplate>> {

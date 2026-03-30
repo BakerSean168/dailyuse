@@ -113,6 +113,12 @@ export function mapTaskTemplateDtoToViewModel(
     importance: dto.importance,
     importanceText: t(importanceLabelKeys[dto.importance] ?? 'common.unknown'),
     priority: dto.priority ?? 0,
+    estimatedMinutes: dto.estimatedMinutes,
+    dueDate: dto.dueDate ?? null,
+    parentTaskId: dto.parentTaskId,
+    dependencyStatus: dto.dependencyStatus,
+    isBlocked: dto.isBlocked,
+    blockingReason: dto.blockingReason,
     recurrenceText: getTaskRecurrenceText(t, dto),
     tags: dto.tags ?? [],
     tagSummaryText:

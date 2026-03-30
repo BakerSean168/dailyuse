@@ -4,11 +4,16 @@
  */
 
 import { defineStore } from 'pinia';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  TaskGraphDependencyDTO,
+} from '@dailyuse/contracts/task';
 
 export interface TaskState {
   templates: TaskTemplateClientDTO[];
   instances: TaskInstanceClientDTO[];
+  dependencies: TaskGraphDependencyDTO[];
   currentTemplate: TaskTemplateClientDTO | null;
   currentInstance: TaskInstanceClientDTO | null;
   isLoading: boolean;
@@ -21,6 +26,7 @@ export const useTaskStore = defineStore('task', {
   state: (): TaskState => ({
     templates: [],
     instances: [],
+    dependencies: [],
     currentTemplate: null,
     currentInstance: null,
     isLoading: false,
@@ -62,6 +68,9 @@ export const useTaskStore = defineStore('task', {
 
     setInstances(i: TaskInstanceClientDTO[]) {
       this.instances = i;
+    },
+    setDependencies(d: TaskGraphDependencyDTO[]) {
+      this.dependencies = d;
     },
     addInstance(i: TaskInstanceClientDTO) {
       this.instances.push(i);

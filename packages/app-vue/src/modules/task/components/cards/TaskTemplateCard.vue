@@ -2,7 +2,10 @@
   <ActionableWrapper :actions="menuActions">
     <Card
       class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-      :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
+      :class="[
+        `priority-${getPriorityLevel(template.priority ?? 0)}`,
+        highlighted ? 'ring-2 ring-primary ring-offset-2' : '',
+      ]"
       :style="template.color ? { borderTop: `3px solid ${template.color}` } : undefined"
       @click="handleCardClick"
     >
@@ -120,6 +123,72 @@
           </Badge>
         </div>
 
+        <div
+          v-if="
+            template.parentTaskTitle ||
+            (template.childCount ?? 0) > 0 ||
+            (template.predecessorCount ?? 0) > 0 ||
+            (template.successorCount ?? 0) > 0 ||
+            template.isBlocked
+          "
+          class="mt-3 flex flex-wrap gap-1"
+        >
+          <Badge
+            v-if="template.parentTaskTitle"
+            variant="outline"
+            class="max-w-full cursor-pointer text-xs border-info/40 text-info hover:bg-info/10"
+            @click.stop="handleParentTaskClick"
+          >
+            <GitBranch class="mr-1 h-3 w-3 shrink-0" />
+            <span class="truncate">
+              {{ t('task.templateCard.parentTask') }} {{ template.parentTaskTitle }}
+            </span>
+          </Badge>
+          <Badge
+            v-if="(template.childCount ?? 0) > 0"
+            variant="outline"
+            class="cursor-pointer text-xs border-primary/40 text-primary hover:bg-primary/10"
+            @click.stop="handleRelationFilterClick('children')"
+          >
+            <GitBranch class="mr-1 h-3 w-3" />
+            {{ t('task.templateCard.subtasksCount', { count: template.childCount ?? 0 }) }}
+          </Badge>
+          <Badge
+            v-if="(template.predecessorCount ?? 0) > 0"
+            variant="outline"
+            class="cursor-pointer text-xs border-warning/40 text-warning hover:bg-warning/10"
+            @click.stop="handleRelationFilterClick('dependencies')"
+          >
+            <Link2 class="mr-1 h-3 w-3" />
+            {{ t('task.templateCard.predecessorsCount', { count: template.predecessorCount ?? 0 }) }}
+          </Badge>
+          <Badge
+            v-if="(template.successorCount ?? 0) > 0"
+            variant="outline"
+            class="cursor-pointer text-xs border-success/40 text-success hover:bg-success/10"
+            @click.stop="handleRelationFilterClick('dependencies')"
+          >
+            <Link2 class="mr-1 h-3 w-3" />
+            {{ t('task.templateCard.successorsCount', { count: template.successorCount ?? 0 }) }}
+          </Badge>
+          <Badge
+            v-if="template.isBlocked"
+            variant="destructive"
+            class="cursor-pointer text-xs"
+            @click.stop="handleRelationFilterClick('blocked')"
+          >
+            <AlertTriangle class="mr-1 h-3 w-3" />
+            {{ t('task.templateCard.blockedState') }}
+          </Badge>
+        </div>
+
+        <p
+          v-if="template.isBlocked && template.blockingReason"
+          class="mt-2 text-xs text-muted-foreground line-clamp-2"
+        >
+          {{ template.blockingReason }}
+        </p>
+
         <!-- 统计信息 -->
         <div class="mt-3 rounded-lg bg-muted/30 p-3">
           <Separator class="mb-2" />
@@ -181,6 +250,18 @@
 
         <Separator orientation="vertical" class="mx-2 h-6" />
 
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :title="t('task.templateCard.locateInGraph')"
+          @click.stop="handleLocateGraph"
+        >
+          <Network class="h-4 w-4" />
+        </Button>
+
+        <Separator orientation="vertical" class="mx-2 h-6" />
+
         <div class="flex flex-col items-end ml-auto">
           <span class="text-xs text-muted-foreground">
             {{ t('task.templateCard.createdAt') }} {{ template.formattedCreatedAt }}
@@ -226,10 +307,14 @@ import {
   Zap,
   ArrowUp,
   Pin,
+  Link2,
+  GitBranch,
+  AlertTriangle,
   PlayCircle,
   PauseCircle,
   Archive,
   Circle,
+  Network,
 } from 'lucide-vue-next';
 
 const props = withDefaults(
@@ -243,6 +328,7 @@ const props = withDefaults(
     onDelete?: (template: TaskTemplateViewModel) => void | Promise<void>;
     onPause?: (template: TaskTemplateViewModel) => void | Promise<void>;
     onActivate?: (template: TaskTemplateViewModel) => void | Promise<void>;
+    highlighted?: boolean;
     resolveGoalBindingName?: (
       binding: TaskGoalBindingViewModel,
       template: TaskTemplateViewModel,
@@ -265,6 +351,9 @@ const emit = defineEmits<{
   pause: [template: TaskTemplateViewModel];
   resume: [template: TaskTemplateViewModel];
   activate: [template: TaskTemplateViewModel];
+  parentTaskClick: [taskId: string];
+  relationFilterClick: [filter: 'blocked' | 'dependencies' | 'children'];
+  locateGraph: [templateId: string];
 }>();
 
 // --- ActionableWrapper menu actions ---
@@ -450,6 +539,22 @@ const handleActivateTemplate = async () => {
   if (props.onActivate) {
     await props.onActivate(props.template);
   }
+};
+
+const handleParentTaskClick = () => {
+  if (!props.template.parentTaskId) {
+    return;
+  }
+
+  emit('parentTaskClick', props.template.parentTaskId);
+};
+
+const handleRelationFilterClick = (filter: 'blocked' | 'dependencies' | 'children') => {
+  emit('relationFilterClick', filter);
+};
+
+const handleLocateGraph = () => {
+  emit('locateGraph', props.template.id);
 };
 </script>
 

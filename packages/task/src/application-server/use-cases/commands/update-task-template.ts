@@ -6,6 +6,7 @@ import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITask
 import { RecurrenceRule } from '../../../domain-shared/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain-shared/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain-shared/value-objects/task-reminder-config';
+import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
 import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -20,6 +21,13 @@ export class UpdateTaskTemplate {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${id} not found`);
+    }
+
+    if (request.parentTaskId !== undefined) {
+      const parentValidation = await this.validateParentTask(id, request.parentTaskId ?? null);
+      if (!parentValidation.ok) {
+        return parentValidation;
+      }
     }
 
     if (request.name !== undefined) {
@@ -37,6 +45,12 @@ export class UpdateTaskTemplate {
 
     if (request.importance !== undefined) {
       template.updatePriority(request.importance);
+    }
+
+    if (request.parentTaskId !== undefined) {
+      template.updateParentTaskId(
+        request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : null,
+      );
     }
 
     if (request.tags !== undefined) {
@@ -74,5 +88,42 @@ export class UpdateTaskTemplate {
     await this.templateRepository.save(template);
 
     return ok(template.toClientDTO());
+  }
+
+  private async validateParentTask(
+    templateId: string,
+    parentTaskId: string | null,
+  ): Promise<Result<void>> {
+    if (!parentTaskId) {
+      return ok(undefined);
+    }
+
+    if (parentTaskId === templateId) {
+      return error('BAD_REQUEST', 'Task cannot be its own parent');
+    }
+
+    const visited = new Set<string>();
+    let currentParentId: string | null = parentTaskId;
+
+    while (currentParentId) {
+      if (currentParentId === templateId) {
+        return error('BAD_REQUEST', 'Parent task would create a hierarchy cycle');
+      }
+
+      if (visited.has(currentParentId)) {
+        return error('BAD_REQUEST', 'Detected an existing hierarchy cycle in parent tasks');
+      }
+
+      visited.add(currentParentId);
+
+      const parentTemplate = await this.templateRepository.findById(currentParentId);
+      if (!parentTemplate) {
+        return error('BAD_REQUEST', `Parent task template ${currentParentId} not found`);
+      }
+
+      currentParentId = parentTemplate.parentTaskId ? String(parentTemplate.parentTaskId) : null;
+    }
+
+    return ok(undefined);
   }
 }

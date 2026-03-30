@@ -66,18 +66,19 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsOption } from 'echarts';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@dailyuse/ui-vue-shadcn';
 import { Network, AlertTriangle, Download } from 'lucide-vue-next';
-import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
-import type { TaskForDAGViewModel } from '../types';
+import { TaskGraphEdgeKind } from '@dailyuse/task/application-client';
+import type { TaskForDAGViewModel, TaskGraphDataViewModel } from '../types';
 
 use([GraphChart, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
 const props = withDefaults(
   defineProps<{
-    tasks: TaskForDAGViewModel[];
-    dependencies: TaskDependencyClientDTO[];
+    graphData: TaskGraphDataViewModel;
+    activeNodeId?: string | null;
     compact?: boolean;
   }>(),
   {
+    activeNodeId: null,
     compact: false,
   },
 );
@@ -91,14 +92,14 @@ const emit = defineEmits<{
 const layoutType = ref<'force' | 'hierarchical'>('force');
 const showCriticalPath = ref(false);
 
-const adjacency = computed(() => {
+const taskById = computed(() => new Map(props.graphData.nodes.map((task) => [task.id, task])));
+
+const dependencyAdjacency = computed(() => {
   const map = new Map<string, string[]>();
-  props.tasks.forEach((task) => map.set(task.id, []));
-  props.dependencies.forEach((dep) => {
-    const predecessor = dep.predecessorTaskId;
-    const successor = dep.successorTaskId;
-    if (!map.has(predecessor)) map.set(predecessor, []);
-    map.get(predecessor)?.push(successor);
+  props.graphData.nodes.forEach((task) => map.set(task.id, []));
+  props.graphData.dependencyEdges.forEach((edge) => {
+    if (!map.has(edge.source)) map.set(edge.source, []);
+    map.get(edge.source)?.push(edge.target);
   });
   return map;
 });
@@ -108,14 +109,14 @@ const criticalPath = computed(() => {
   const predecessor = new Map<string, string | null>();
   const longest = new Map<string, number>();
 
-  props.tasks.forEach((task) => {
+  props.graphData.nodes.forEach((task) => {
     indegree.set(task.id, 0);
     predecessor.set(task.id, null);
     longest.set(task.id, task.estimatedMinutes || 0);
   });
 
-  props.dependencies.forEach((dep) => {
-    indegree.set(dep.successorTaskId, (indegree.get(dep.successorTaskId) || 0) + 1);
+  props.graphData.dependencyEdges.forEach((edge) => {
+    indegree.set(edge.target, (indegree.get(edge.target) || 0) + 1);
   });
 
   const queue: string[] = [];
@@ -125,8 +126,8 @@ const criticalPath = computed(() => {
 
   while (queue.length) {
     const current = queue.shift()!;
-    for (const next of adjacency.value.get(current) || []) {
-      const nextTask = props.tasks.find((task) => task.id === next);
+    for (const next of dependencyAdjacency.value.get(current) || []) {
+      const nextTask = taskById.value.get(next);
       const candidate = (longest.get(current) || 0) + (nextTask?.estimatedMinutes || 0);
       if (candidate > (longest.get(next) || 0)) {
         longest.set(next, candidate);
@@ -160,39 +161,120 @@ const criticalPath = computed(() => {
 });
 
 const criticalPathDuration = computed(() => criticalPath.value.duration);
+const hierarchyDepths = computed(() => {
+  const depthById = new Map<string, number>();
+  const visiting = new Set<string>();
+
+  const resolveDepth = (taskId: string): number => {
+    if (depthById.has(taskId)) return depthById.get(taskId)!;
+    if (visiting.has(taskId)) return 0;
+
+    visiting.add(taskId);
+    const task = taskById.value.get(taskId);
+    const parentDepth =
+      task?.parentTaskId && taskById.value.has(task.parentTaskId)
+        ? resolveDepth(task.parentTaskId) + 1
+        : 0;
+
+    const predecessorDepths = (props.graphData.dependencyEdges || [])
+      .filter((edge) => edge.target === taskId)
+      .map((edge) => resolveDepth(edge.source) + 1);
+
+    const depth = Math.max(parentDepth, ...predecessorDepths, 0);
+    depthById.set(taskId, depth);
+    visiting.delete(taskId);
+    return depth;
+  };
+
+  props.graphData.nodes.forEach((task) => {
+    resolveDepth(task.id);
+  });
+
+  return depthById;
+});
+
+const hierarchicalPositions = computed(() => {
+  const nodesByDepth = new Map<number, TaskForDAGViewModel[]>();
+
+  props.graphData.nodes.forEach((task) => {
+    const depth = hierarchyDepths.value.get(task.id) ?? 0;
+    const bucket = nodesByDepth.get(depth) ?? [];
+    bucket.push(task);
+    nodesByDepth.set(depth, bucket);
+  });
+
+  const positions = new Map<string, { x: number; y: number }>();
+  [...nodesByDepth.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .forEach(([depth, tasks]) => {
+      tasks.forEach((task, index) => {
+        positions.set(task.id, {
+          x: depth * 260,
+          y: index * 120,
+        });
+      });
+    });
+
+  return positions;
+});
 
 const dagOption = computed<EChartsOption>(() => {
   const criticalSet = new Set(showCriticalPath.value ? criticalPath.value.path : []);
 
-  const nodes = props.tasks.map((task) => ({
-    id: task.id,
-    name: task.title,
-    value: task.estimatedMinutes || 0,
-    symbolSize: criticalSet.has(task.id) ? 52 : 42,
-    itemStyle: {
-      color: criticalSet.has(task.id)
-        ? '#E53935'
-        : task.status === 'COMPLETED'
-          ? '#4CAF50'
-          : '#2196F3',
-    },
-    label: { show: true },
-    task,
-  }));
-
-  const links = props.dependencies.map((dep) => ({
-    source: dep.predecessorTaskId,
-    target: dep.successorTaskId,
-    value: dep.dependencyType,
-    lineStyle: {
-      color:
-        criticalSet.has(dep.predecessorTaskId) && criticalSet.has(dep.successorTaskId)
+  const nodes = props.graphData.nodes.map((task) => {
+    const position = hierarchicalPositions.value.get(task.id);
+    const isBlocked = task.isBlocked || task.dependencyStatus === 'Blocked';
+    const isActiveNode = props.activeNodeId === task.id;
+    return {
+      id: task.id,
+      name: task.title,
+      value: task.estimatedMinutes || 0,
+      x: layoutType.value === 'hierarchical' ? position?.x ?? 0 : undefined,
+      y: layoutType.value === 'hierarchical' ? position?.y ?? 0 : undefined,
+      symbolSize: isActiveNode ? 60 : criticalSet.has(task.id) ? 52 : 42,
+      itemStyle: {
+        color: criticalSet.has(task.id)
           ? '#E53935'
-          : '#9E9E9E',
-      width:
-        criticalSet.has(dep.predecessorTaskId) && criticalSet.has(dep.successorTaskId) ? 3 : 1.5,
-    },
-  }));
+          : isBlocked
+            ? '#F97316'
+            : task.status === 'COMPLETED'
+              ? '#4CAF50'
+              : '#2196F3',
+        borderColor: isActiveNode ? '#0F172A' : '#FFFFFF',
+        borderWidth: isActiveNode ? 4 : 2,
+        shadowBlur: isActiveNode ? 20 : 0,
+        shadowColor: isActiveNode ? 'rgba(15, 23, 42, 0.35)' : 'transparent',
+      },
+      label: { show: true },
+      task,
+    };
+  });
+
+  const links = props.graphData.edges.map((edge) => {
+    const isCriticalDependency =
+      edge.kind === TaskGraphEdgeKind.Dependency &&
+      criticalSet.has(edge.source) &&
+      criticalSet.has(edge.target);
+
+    return {
+      source: edge.source,
+      target: edge.target,
+      value: edge.kind === TaskGraphEdgeKind.Dependency ? edge.dependencyType : edge.kind,
+      lineStyle: {
+        color:
+          edge.kind === TaskGraphEdgeKind.Hierarchy
+            ? '#94A3B8'
+            : isCriticalDependency
+              ? '#E53935'
+              : '#9E9E9E',
+        width: edge.kind === TaskGraphEdgeKind.Hierarchy ? 1.25 : isCriticalDependency ? 3 : 1.5,
+        type: edge.kind === TaskGraphEdgeKind.Hierarchy ? 'dashed' : 'solid',
+      },
+      edgeSymbol: edge.kind === TaskGraphEdgeKind.Hierarchy ? ['none', 'none'] : ['none', 'arrow'],
+      edgeSymbolSize: edge.kind === TaskGraphEdgeKind.Hierarchy ? [0, 0] : [0, 8],
+      edge,
+    };
+  });
 
   return {
     tooltip: {
@@ -200,7 +282,20 @@ const dagOption = computed<EChartsOption>(() => {
       formatter: (params: any) => {
         if (params.dataType === 'node') {
           const task = params.data.task as TaskForDAGViewModel;
-          return `<div><b>${task.title}</b><br/>${t('task.dagVisualization.statusTooltip')} ${task.status || 'UNKNOWN'}<br/>${t('task.dagVisualization.durationTooltip')} ${task.estimatedMinutes || 0} ${t('task.dagVisualization.minuteUnit')}</div>`;
+          const dependencyLine = task.dependencyStatus
+            ? `<br/>Dependency ${task.dependencyStatus}`
+            : '';
+          const blockedLine = task.blockingReason ? `<br/>Blocked ${task.blockingReason}` : '';
+          return `<div><b>${task.title}</b><br/>${t('task.dagVisualization.statusTooltip')} ${task.status || 'UNKNOWN'}<br/>${t('task.dagVisualization.durationTooltip')} ${task.estimatedMinutes || 0} ${t('task.dagVisualization.minuteUnit')}${dependencyLine}${blockedLine}</div>`;
+        }
+        if (params.dataType === 'edge') {
+          const edge = params.data.edge;
+          if (!edge) return '';
+          const relation =
+            edge.kind === TaskGraphEdgeKind.Hierarchy
+              ? 'Hierarchy'
+              : edge.dependencyType || 'Dependency';
+          return `<div><b>${relation}</b><br/>${edge.source} → ${edge.target}</div>`;
         }
         return '';
       },
@@ -224,8 +319,6 @@ const dagOption = computed<EChartsOption>(() => {
           repulsion: 360,
           edgeLength: [80, 180],
         },
-        edgeSymbol: ['none', 'arrow'],
-        edgeSymbolSize: [0, 8],
       } as any,
     ],
   };
@@ -239,8 +332,7 @@ const handleNodeClick = (params: any) => {
 
 const exportJson = () => {
   const payload = {
-    tasks: props.tasks,
-    dependencies: props.dependencies,
+    graphData: props.graphData,
     criticalPath: criticalPath.value,
     exportedAt: new Date().toISOString(),
   };

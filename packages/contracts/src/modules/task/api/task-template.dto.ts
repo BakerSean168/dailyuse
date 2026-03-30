@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '../../../primitives';
+import type { IdentityId, TaskFolderId, GoalId, KeyResultId, TaskTemplateId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../aggregates';
 import { TaskGoalBindingTrigger, TaskType } from '../value-objects';
-import type { RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
+import type { DependencyType, RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
 import type { TaskGoalBindingDTO, TaskTimeConfigDTO } from '../value-objects';
 
 export const TaskTimeConfigSchema = z
@@ -51,6 +51,7 @@ export const CreateTaskTemplateSchema = z.object({
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   reminderConfig: TaskReminderConfigSchema.optional().nullable(),
   importance: z.enum(ImportanceLevel),
+  parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).default([]).optional(),
   color: z.string().optional().nullable(),
@@ -83,6 +84,7 @@ export const UpdateTaskTemplateSchema = z.object({
       description: '重要程度',
     })
     .optional(),
+  parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),
@@ -112,6 +114,22 @@ export interface QueryTaskTemplatesInternal {
 }
 export interface QueryTaskTemplatesRes {
   templates: TaskTemplateClientDTO[];
+  total: number;
+}
+
+export interface TaskGraphDependencyDTO {
+  id: string;
+  predecessorTaskId: string;
+  successorTaskId: string;
+  dependencyType: DependencyType;
+  lagDays?: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface QueryTaskTemplateGraphRes {
+  templates: TaskTemplateClientDTO[];
+  dependencies: TaskGraphDependencyDTO[];
   total: number;
 }
 

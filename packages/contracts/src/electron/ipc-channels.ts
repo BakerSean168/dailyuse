@@ -1,6 +1,7 @@
 export const TaskChannels = {
   TEMPLATE_LIST: 'task:template:list',
   TEMPLATE_GET: 'task:template:get',
+  TEMPLATE_GRAPH: 'task:template:graph',
   TEMPLATE_CREATE: 'task:template:create',
   TEMPLATE_UPDATE: 'task:template:update',
   TEMPLATE_DELETE: 'task:template:delete',

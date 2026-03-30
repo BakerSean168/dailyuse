@@ -49,11 +49,15 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
     <!-- Original Task Card -->
     <TaskTemplateCard
       :template="template"
+      :highlighted="highlighted"
       @click="handleClick"
       @edit="handleEdit"
       @delete="handleDelete"
       @pause="handlePause"
       @resume="handleResume"
+      @parent-task-click="handleParentTaskClick"
+      @relation-filter-click="handleRelationFilterClick"
+      @locate-graph="handleLocateGraph"
     />
   </div>
 </template>
@@ -71,6 +75,7 @@ const { t } = useI18n();
 const props = withDefaults(
   defineProps<{
     template: TaskTemplateViewModel;
+    highlighted?: boolean;
     enableDrag?: boolean;
     canDrop?: (source: TaskTemplateViewModel, target: TaskTemplateViewModel) => boolean;
     onCreateDependency?: (
@@ -91,6 +96,9 @@ const emit = defineEmits<{
   pause: [template: TaskTemplateViewModel];
   resume: [template: TaskTemplateViewModel];
   dependencyCreated: [sourceId: string, targetId: string];
+  parentTaskClick: [taskId: string];
+  relationFilterClick: [filter: 'blocked' | 'dependencies' | 'children'];
+  locateGraph: [templateId: string];
 }>();
 
 // Event handlers for TaskTemplateCard
@@ -113,6 +121,18 @@ const handlePause = (template: TaskTemplateViewModel) => {
 
 const handleResume = (template: TaskTemplateViewModel) => {
   emit('resume', template);
+};
+
+const handleParentTaskClick = (taskId: string) => {
+  emit('parentTaskClick', taskId);
+};
+
+const handleRelationFilterClick = (filter: 'blocked' | 'dependencies' | 'children') => {
+  emit('relationFilterClick', filter);
+};
+
+const handleLocateGraph = (templateId: string) => {
+  emit('locateGraph', templateId);
 };
 
 const isDragging = ref(false);

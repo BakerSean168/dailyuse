@@ -116,7 +116,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DependencyType, type TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import { DependencyType, type TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
 import {
   Card,
   CardHeader,
@@ -145,7 +145,7 @@ import type {
 const props = defineProps<{
   currentTaskId?: string;
   allTasks: TaskForDAGViewModel[];
-  dependencies: TaskDependencyClientDTO[];
+  dependencies: TaskGraphDependencyDTO[];
 }>();
 
 const { t } = useI18n();
@@ -153,7 +153,11 @@ const { t } = useI18n();
 const emit = defineEmits<{
   (
     e: 'dependency-added',
-    dependency: { predecessorTaskId: string; successorTaskId: string; dependencyType: string },
+    dependency: {
+      predecessorTaskId: string;
+      successorTaskId: string;
+      dependencyType: DependencyType;
+    },
   ): void;
   (e: 'dependency-deleted', dependencyId: string): void;
   (e: 'view-graph'): void;
@@ -161,7 +165,7 @@ const emit = defineEmits<{
 
 const newDependency = ref({
   predecessorId: '',
-  dependencyType: DependencyType.FINISH_TO_START,
+  dependencyType: DependencyType.FinishToStart as DependencyType,
 });
 
 const validationError = ref<TaskDependencyValidationError | null>(null);
@@ -211,10 +215,10 @@ const blockingInfo = computed(() => {
 });
 
 const dependencyTypeOptions = computed(() => [
-  { value: 'FS', label: t('task.dependency.fs') },
-  { value: 'SS', label: t('task.dependency.ss') },
-  { value: 'FF', label: t('task.dependency.ff') },
-  { value: 'SF', label: t('task.dependency.sf') },
+  { value: DependencyType.FinishToStart, label: t('task.dependency.fs') },
+  { value: DependencyType.StartToStart, label: t('task.dependency.ss') },
+  { value: DependencyType.FinishToFinish, label: t('task.dependency.ff') },
+  { value: DependencyType.StartToFinish, label: t('task.dependency.sf') },
 ]);
 
 const pathExists = (start: string, target: string): boolean => {
@@ -275,7 +279,7 @@ const handleAddDependency = () => {
   });
 
   newDependency.value.predecessorId = '';
-  newDependency.value.dependencyType = DependencyType.FINISH_TO_START;
+  newDependency.value.dependencyType = DependencyType.FinishToStart;
 };
 
 const getTaskTitle = (id: string): string => {
@@ -283,24 +287,24 @@ const getTaskTitle = (id: string): string => {
 };
 
 const getDependencyTypeColorClass = (type: string): string => {
-  if (type === 'FS') return 'text-primary';
-  if (type === 'SS') return 'text-info';
-  if (type === 'FF') return 'text-success';
-  if (type === 'SF') return 'text-warning';
+  if (type === DependencyType.FinishToStart) return 'text-primary';
+  if (type === DependencyType.StartToStart) return 'text-info';
+  if (type === DependencyType.FinishToFinish) return 'text-success';
+  if (type === DependencyType.StartToFinish) return 'text-warning';
   return 'text-muted-foreground';
 };
 
 const getDependencyTypeIconComponent = (type: string) => {
   // All dependency types use ArrowRight variants
-  if (type === 'SF') return ArrowRightLeft;
+  if (type === DependencyType.StartToFinish) return ArrowRightLeft;
   return ArrowRight;
 };
 
 const getDependencyTypeName = (type: string): string => {
-  if (type === 'FS') return t('task.dependency.fsLabel');
-  if (type === 'SS') return t('task.dependency.ssLabel');
-  if (type === 'FF') return t('task.dependency.ffLabel');
-  if (type === 'SF') return t('task.dependency.sfLabel');
+  if (type === DependencyType.FinishToStart) return t('task.dependency.fsLabel');
+  if (type === DependencyType.StartToStart) return t('task.dependency.ssLabel');
+  if (type === DependencyType.FinishToFinish) return t('task.dependency.ffLabel');
+  if (type === DependencyType.StartToFinish) return t('task.dependency.sfLabel');
   return type;
 };
 </script>

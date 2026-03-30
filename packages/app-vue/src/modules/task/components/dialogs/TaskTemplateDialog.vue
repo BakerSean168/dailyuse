@@ -32,12 +32,23 @@
           :model-value="localTemplate"
           :is-edit-mode="mode === 'edit'"
           :readonly="saving"
+          :available-parent-tasks="availableParentTasks"
           :goals="goalOptions"
           :key-results-by-goal="keyResultsByGoal"
           :on-request-key-results="requestKeyResults"
           @update:model-value="handleTemplateUpdate"
           @update:validation="handleValidationUpdate"
           @close="handleCancel"
+        />
+
+        <DependencyManager
+          v-if="showDependencyManager"
+          class="mt-4"
+          :current-task-id="localTemplate?.id"
+          :all-tasks="graphTasks"
+          :dependencies="dependencies"
+          @dependency-added="handleDependencyAdded"
+          @dependency-deleted="handleDependencyDeleted"
         />
       </div>
 
@@ -69,8 +80,9 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
-import type { TaskTemplateViewModel } from '../types';
-import { TaskType } from '@dailyuse/contracts/task';
+import DependencyManager from '../dependency/DependencyManager.vue';
+import type { TaskForDAGViewModel, TaskTemplateViewModel } from '../types';
+import { TaskType, type DependencyType, type TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/colorPalette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 
@@ -106,6 +118,7 @@ function createBlankTemplate(): TaskTemplateViewModel {
     instanceCount: 0,
     completionRate: 0,
     taskType: TaskType.Recurring,
+    parentTaskId: null,
     color: defaultNamedColor,
   };
 }
@@ -116,11 +129,23 @@ const props = withDefaults(
     template?: TaskTemplateViewModel | null;
     mode?: 'create' | 'edit';
     saving?: boolean;
+    availableTemplates?: TaskTemplateViewModel[];
+    graphTasks?: TaskForDAGViewModel[];
+    dependencies?: TaskGraphDependencyDTO[];
+    onCreateDependency?: (dependency: {
+      predecessorTaskId: string;
+      successorTaskId: string;
+      dependencyType: DependencyType;
+    }) => Promise<boolean> | boolean;
+    onDeleteDependency?: (dependencyId: string) => Promise<boolean> | boolean;
   }>(),
   {
     template: null,
     mode: 'create',
     saving: false,
+    availableTemplates: () => [],
+    graphTasks: () => [],
+    dependencies: () => [],
   },
 );
 
@@ -139,6 +164,57 @@ const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
 const saving = computed(() => props.saving);
 const canSave = computed(() => !!localTemplate.value && isValid.value && !saving.value);
+const graphTasks = computed(() => props.graphTasks ?? []);
+const dependencies = computed(() => props.dependencies ?? []);
+const showDependencyManager = computed(
+  () =>
+    mode.value === 'edit' &&
+    !!localTemplate.value?.id &&
+    graphTasks.value.length > 0 &&
+    !!props.onCreateDependency &&
+    !!props.onDeleteDependency,
+);
+
+const availableParentTasks = computed(() => {
+  const currentId = localTemplate.value?.id;
+  if (!currentId) {
+    return (props.availableTemplates ?? []).map((template) => ({
+      id: template.id,
+      title: template.title,
+    }));
+  }
+
+  const childrenByParent = new Map<string, string[]>();
+  graphTasks.value.forEach((task) => {
+    if (!task.parentTaskId) {
+      return;
+    }
+
+    const children = childrenByParent.get(task.parentTaskId) ?? [];
+    children.push(task.id);
+    childrenByParent.set(task.parentTaskId, children);
+  });
+
+  const blockedIds = new Set<string>([currentId]);
+  const stack = [...(childrenByParent.get(currentId) ?? [])];
+
+  while (stack.length > 0) {
+    const taskId = stack.pop()!;
+    if (blockedIds.has(taskId)) {
+      continue;
+    }
+
+    blockedIds.add(taskId);
+    stack.push(...(childrenByParent.get(taskId) ?? []));
+  }
+
+  return (props.availableTemplates ?? [])
+    .filter((template) => !blockedIds.has(template.id))
+    .map((template) => ({
+      id: template.id,
+      title: template.title,
+    }));
+});
 
 async function loadGoals() {
   await loadGoalOptions();
@@ -213,5 +289,17 @@ const handleCancel = () => {
 const handleSave = () => {
   if (!localTemplate.value || !canSave.value) return;
   emit('save', localTemplate.value);
+};
+
+const handleDependencyAdded = async (dependency: {
+  predecessorTaskId: string;
+  successorTaskId: string;
+  dependencyType: DependencyType;
+}) => {
+  await props.onCreateDependency?.(dependency);
+};
+
+const handleDependencyDeleted = async (dependencyId: string) => {
+  await props.onDeleteDependency?.(dependencyId);
 };
 </script>

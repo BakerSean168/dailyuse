@@ -34,6 +34,7 @@ import type {
   TaskDependencyServerDTO,
   DependencyChainServerDTO,
   DependencyType,
+  QueryTaskTemplateGraphRes,
 } from '@dailyuse/contracts/task';
 import { CreateTaskTemplate } from '../application-server/use-cases/commands/create-task-template';
 import { GetTaskTemplate } from '../application-server/use-cases/queries/get-task-template';
@@ -63,6 +64,7 @@ import { ListTaskTemplatesByPriority } from '../application-server/use-cases/que
 import { ListTaskDependencies } from '../application-server/use-cases/queries/list-task-dependencies';
 import { GetDependencyChain } from '../application-server/use-cases/queries/get-dependency-chain';
 import { ValidateTaskDependency } from '../application-server/use-cases/queries/validate-task-dependency';
+import { GetTaskTemplateGraph } from '../application-server/use-cases/queries/get-task-template-graph';
 
 // ---------------------------------------------------------------------------
 // 1. Dependencies — everything the task server runtime needs from the outside.
@@ -129,6 +131,7 @@ export interface TaskModuleUseCases {
   // Template queries
   readonly getTaskTemplate: GetTaskTemplate;
   readonly listTaskTemplates: ListTaskTemplates;
+  readonly getTaskTemplateGraph: GetTaskTemplateGraph;
   readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
 
   // Instance commands
@@ -177,6 +180,7 @@ export interface TaskApplicationPort {
   // Template queries
   getTaskTemplate: GetTaskTemplate;
   listTaskTemplates: ListTaskTemplates;
+  getTaskTemplateGraph: GetTaskTemplateGraph;
   listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
 
   // Instance commands
@@ -253,6 +257,7 @@ function normalizeRuntimeContributions(
  */
 export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskModuleUseCases {
   const { taskTemplateRepository, taskInstanceRepository, taskDependencyRepository } = dependencies;
+  const listTaskTemplates = new ListTaskTemplates(taskTemplateRepository, taskInstanceRepository);
 
   return {
     // Template commands
@@ -271,7 +276,8 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
 
     // Template queries
     getTaskTemplate: new GetTaskTemplate(taskTemplateRepository, taskInstanceRepository),
-    listTaskTemplates: new ListTaskTemplates(taskTemplateRepository, taskInstanceRepository),
+    listTaskTemplates,
+    getTaskTemplateGraph: new GetTaskTemplateGraph(listTaskTemplates, taskDependencyRepository),
     listTaskTemplatesByPriority: new ListTaskTemplatesByPriority(taskTemplateRepository),
 
     // Instance commands

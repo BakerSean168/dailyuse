@@ -15,6 +15,8 @@ import type {
   CompleteTaskInstanceReq,
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,
+  DependencyType,
+  TaskGraphDependencyDTO,
 } from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 import {
@@ -38,6 +40,7 @@ export function useTask() {
 
   const templates = computed(() => store.templates);
   const instances = computed(() => store.instances);
+  const dependencies = computed(() => store.dependencies);
   const currentTemplate = computed(() => store.currentTemplate);
   const currentInstance = computed(() => store.currentInstance);
   const isLoading = computed(() => store.isLoading);
@@ -61,18 +64,18 @@ export function useTask() {
     try {
       let result = await service.listTemplates(
         sanitizeForIpc({
+          page: query?.page ?? store.pagination.page,
+          limit: query?.limit ?? store.pagination.pageSize,
           ...query,
-          page: store.pagination.page,
-          limit: store.pagination.pageSize,
         }),
       );
 
       if (!result.ok && (await maybeRecoverAuth(result.error))) {
         result = await service.listTemplates(
           sanitizeForIpc({
+            page: query?.page ?? store.pagination.page,
+            limit: query?.limit ?? store.pagination.pageSize,
             ...query,
-            page: store.pagination.page,
-            limit: store.pagination.pageSize,
           }),
         );
       }
@@ -82,6 +85,42 @@ export function useTask() {
           (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),
           result.data.total ?? 0,
         );
+      } else {
+        handleError(result.error.message || t('task.error.loadTemplatesFailed'));
+      }
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
+  async function fetchTaskGraph(query?: TaskTemplateListParams) {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      let result = await service.getTaskGraph(
+        sanitizeForIpc({
+          page: query?.page ?? store.pagination.page,
+          limit: query?.limit ?? store.pagination.pageSize,
+          ...query,
+        }),
+      );
+
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.getTaskGraph(
+          sanitizeForIpc({
+            page: query?.page ?? store.pagination.page,
+            limit: query?.limit ?? store.pagination.pageSize,
+            ...query,
+          }),
+        );
+      }
+
+      if (result.ok) {
+        store.setTemplates(
+          (result.data.templates ?? []).map((template: TaskTemplate) => template.toDTO()),
+          result.data.total ?? 0,
+        );
+        store.setDependencies(result.data.dependencies ?? []);
       } else {
         handleError(result.error.message || t('task.error.loadTemplatesFailed'));
       }
@@ -217,6 +256,54 @@ export function useTask() {
     return null;
   }
 
+  async function createDependency(request: {
+    predecessorTaskId: string;
+    successorTaskId: string;
+    dependencyType: DependencyType;
+  }) {
+    store.setError(null);
+    let result = await service.createDependency(request.successorTaskId, {
+      identityId: '',
+      predecessorTaskId: request.predecessorTaskId,
+      successorTaskId: request.successorTaskId,
+      dependencyType: request.dependencyType,
+    });
+
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.createDependency(request.successorTaskId, {
+        identityId: '',
+        predecessorTaskId: request.predecessorTaskId,
+        successorTaskId: request.successorTaskId,
+        dependencyType: request.dependencyType,
+      });
+    }
+
+    if (result.ok) {
+      toast.success(t('common.success'));
+      return result.data;
+    }
+
+    handleError(result.error.message || t('task.error.operationFailed'));
+    return null;
+  }
+
+  async function deleteDependency(id: string) {
+    store.setError(null);
+    let result = await service.deleteDependency(id);
+
+    if (!result.ok && (await maybeRecoverAuth(result.error))) {
+      result = await service.deleteDependency(id);
+    }
+
+    if (result.ok) {
+      toast.success(t('common.success'));
+      return true;
+    }
+
+    handleError(result.error.message || t('task.error.operationFailed'));
+    return false;
+  }
+
   // ========== Instances ==========
   async function fetchInstances(query?: Record<string, unknown>) {
     store.setLoading(true);
@@ -314,6 +401,7 @@ export function useTask() {
   return {
     templates,
     instances,
+    dependencies,
     currentTemplate,
     currentInstance,
     isLoading,
@@ -321,6 +409,7 @@ export function useTask() {
     error,
     pagination,
     fetchTemplates,
+    fetchTaskGraph,
     fetchTemplate,
     createTemplate,
     updateTemplate,
@@ -328,6 +417,8 @@ export function useTask() {
     activateTemplate,
     pauseTemplate,
     archiveTemplate,
+    createDependency,
+    deleteDependency,
     fetchInstances,
     fetchInstancesByDateRange,
     startInstance,

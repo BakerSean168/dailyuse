@@ -25,6 +25,22 @@ export const TaskTemplateListResponseSchema = z.object({
   total: z.number(),
 });
 
+export const TaskDependencyResponseSchema = z.object({
+  id: z.string(),
+  predecessorTaskId: z.string(),
+  successorTaskId: z.string(),
+  dependencyType: z.string(),
+  lagDays: z.number().optional(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export const TaskTemplateGraphResponseSchema = z.object({
+  templates: z.array(TaskTemplateResponseSchema),
+  dependencies: z.array(TaskDependencyResponseSchema),
+  total: z.number(),
+});
+
 /**
  * TaskInstance Response Schema
  */

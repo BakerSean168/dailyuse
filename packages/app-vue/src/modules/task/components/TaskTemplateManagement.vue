@@ -1,20 +1,37 @@
 <template>
   <div id="task-template-management" class="p-6">
     <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
-      <div class="flex gap-1 border rounded-md">
-        <Button
-          v-for="status in statusFilters"
-          :key="status.value"
-          :variant="currentStatus === status.value ? 'default' : 'ghost'"
-          size="lg"
-          @click="currentStatus = status.value"
-        >
-          <component :is="getStatusIconComponent(status.icon)" class="h-4 w-4 mr-1" />
-          {{ status.label }}
-          <Badge :class="getStatusBadgeClass(status.value)" class="ml-2 text-xs">
-            {{ getTemplateCountByStatus(status.value) }}
-          </Badge>
-        </Button>
+      <div class="flex flex-col gap-3">
+        <div class="flex gap-1 border rounded-md">
+          <Button
+            v-for="status in statusFilters"
+            :key="status.value"
+            :variant="currentStatus === status.value ? 'default' : 'ghost'"
+            size="lg"
+            @click="currentStatus = status.value"
+          >
+            <component :is="getStatusIconComponent(status.icon)" class="h-4 w-4 mr-1" />
+            {{ status.label }}
+            <Badge :class="getStatusBadgeClass(status.value)" class="ml-2 text-xs">
+              {{ getTemplateCountByStatus(status.value) }}
+            </Badge>
+          </Button>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <Button
+            v-for="filter in relationFilters"
+            :key="filter.value"
+            :variant="currentRelationFilter === filter.value ? 'secondary' : 'outline'"
+            size="sm"
+            @click="currentRelationFilter = filter.value"
+          >
+            {{ filter.label }}
+            <Badge variant="secondary" class="ml-2 text-xs">
+              {{ getTemplateCountByRelation(filter.value) }}
+            </Badge>
+          </Button>
+        </div>
       </div>
 
       <div class="flex gap-4 items-center">
@@ -77,6 +94,7 @@
         v-for="template in filteredTemplates"
         :key="template.id"
         :template="template"
+        :highlighted="highlightedTemplateId === template.id"
         :enable-drag="true"
         :on-create-dependency="handleCreateDependency"
         @click="(id) => emit('click-template', id)"
@@ -84,6 +102,9 @@
         @delete="(tpl) => emit('delete-template', tpl)"
         @pause="(tpl) => emit('pause-template', tpl)"
         @resume="(tpl) => emit('resume-template', tpl)"
+        @parent-task-click="(id) => emit('click-template', id)"
+        @relation-filter-click="handleRelationFilterClick"
+        @locate-graph="handleLocateGraph"
       />
     </div>
 
@@ -98,9 +119,10 @@
         <div style="height: 600px">
           <TaskDAGVisualization
             v-if="showDependencyDialog"
-            :tasks="templates as any"
-            :dependencies="dependencies"
+            :graph-data="graphData"
+            :active-node-id="graphFocusTaskId"
             :compact="false"
+            @node-click="handleGraphNodeClick"
           />
         </div>
         <DialogFooter>
@@ -159,11 +181,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, markRaw } from 'vue';
-import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import { computed, nextTick, ref } from 'vue';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
-import type { TaskTemplateViewModel } from './types';
+import type { TaskForDAGViewModel, TaskGraphDataViewModel, TaskTemplateViewModel } from './types';
 import {
   Card,
   CardContent,
@@ -199,10 +220,12 @@ interface StatusFilter {
   icon: string;
 }
 
+type RelationFilter = 'all' | 'blocked' | 'parented' | 'dependencies' | 'children';
+
 const props = withDefaults(
   defineProps<{
     templates: TaskTemplateViewModel[];
-    dependencies: TaskDependencyClientDTO[];
+    graphData: TaskGraphDataViewModel;
     statusFilters?: StatusFilter[];
     onCreateDependency?: (sourceId: string, targetId: string) => Promise<boolean> | boolean;
   }>(),
@@ -240,20 +263,80 @@ const statusFilters = computed(() =>
 );
 
 const currentStatus = ref('ACTIVE');
+const currentRelationFilter = ref<RelationFilter>('all');
+const highlightedTemplateId = ref<string | null>(null);
+const graphFocusTaskId = ref<string | null>(null);
 const showDeleteAllDialog = ref(false);
 const deleteConfirmText = ref('');
 const showDependencyDialog = ref(false);
 
 const templates = computed(() => props.templates || []);
+const statusTemplates = computed(() =>
+  [...templates.value]
+    .filter((template) => template.status === currentStatus.value)
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0)),
+);
+
+const relationFilters = computed(() => [
+  { value: 'all' as const, label: t('task.templateMgmt.relationAll') },
+  { value: 'blocked' as const, label: t('task.templateMgmt.relationBlocked') },
+  { value: 'parented' as const, label: t('task.templateMgmt.relationParented') },
+  { value: 'dependencies' as const, label: t('task.templateMgmt.relationDependencies') },
+  { value: 'children' as const, label: t('task.templateMgmt.relationChildren') },
+]);
 
 const filteredTemplates = computed(() => {
-  return [...templates.value]
-    .filter((template) => template.status === currentStatus.value)
-    .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  return statusTemplates.value.filter((template) => matchesRelationFilter(template));
 });
 
 const getTemplateCountByStatus = (status: string) => {
   return templates.value.filter((template) => template.status === status).length;
+};
+
+const matchesRelationFilter = (template: TaskTemplateViewModel) => {
+  if (currentRelationFilter.value === 'blocked') {
+    return !!template.isBlocked;
+  }
+
+  if (currentRelationFilter.value === 'parented') {
+    return !!template.parentTaskId;
+  }
+
+  if (currentRelationFilter.value === 'dependencies') {
+    return (template.predecessorCount ?? 0) > 0 || (template.successorCount ?? 0) > 0;
+  }
+
+  if (currentRelationFilter.value === 'children') {
+    return (template.childCount ?? 0) > 0;
+  }
+
+  return true;
+};
+
+const getTemplateCountByRelation = (filter: RelationFilter) => {
+  if (filter === 'all') {
+    return statusTemplates.value.length;
+  }
+
+  return statusTemplates.value.filter((template) => {
+    if (filter === 'blocked') {
+      return !!template.isBlocked;
+    }
+
+    if (filter === 'parented') {
+      return !!template.parentTaskId;
+    }
+
+    if (filter === 'dependencies') {
+      return (template.predecessorCount ?? 0) > 0 || (template.successorCount ?? 0) > 0;
+    }
+
+    if (filter === 'children') {
+      return (template.childCount ?? 0) > 0;
+    }
+
+    return true;
+  }).length;
 };
 
 const getStatusBadgeClass = (status: string) => {
@@ -304,6 +387,28 @@ const handleCreateDependency = async (
     return true;
   }
   return false;
+};
+
+const handleRelationFilterClick = (filter: 'blocked' | 'dependencies' | 'children') => {
+  currentRelationFilter.value = filter;
+};
+
+const handleLocateGraph = (templateId: string) => {
+  highlightedTemplateId.value = templateId;
+  graphFocusTaskId.value = templateId;
+  showDependencyDialog.value = true;
+};
+
+const handleGraphNodeClick = async (task: TaskForDAGViewModel) => {
+  currentStatus.value = task.status || 'ACTIVE';
+  currentRelationFilter.value = 'all';
+  highlightedTemplateId.value = task.id;
+  graphFocusTaskId.value = task.id;
+  showDependencyDialog.value = false;
+
+  await nextTick();
+  const target = document.querySelector(`[data-task-id="${task.id}"]`) as HTMLElement | null;
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
 const cancelDeleteAll = () => {

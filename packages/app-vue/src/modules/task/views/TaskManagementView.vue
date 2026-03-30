@@ -29,7 +29,8 @@
       <TaskTemplateManagement
         v-else
         :templates="filteredViewModels"
-        :dependencies="[]"
+        :graph-data="graphData"
+        :on-create-dependency="handleCreateDependency"
         @create-template="handleCreate"
         @click-template="handleClickTemplate"
         @edit-template="handleEdit"
@@ -45,6 +46,8 @@
       v-model="showCreateDialog"
       mode="create"
       :saving="isSaving"
+      :available-templates="viewModels"
+      :graph-tasks="graphData.nodes"
       @save="handleSaveCreate"
       @cancel="showCreateDialog = false"
     />
@@ -56,6 +59,11 @@
       mode="edit"
       :template="editViewModel"
       :saving="isSaving"
+      :available-templates="viewModels"
+      :graph-tasks="graphData.nodes"
+      :dependencies="dependencies"
+      :on-create-dependency="handleCreateDependencyFromDialog"
+      :on-delete-dependency="handleDeleteDependency"
       @save="handleSaveEdit"
       @cancel="showEditDialog = false"
     />
@@ -73,23 +81,27 @@ import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
-import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
+import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
+import type { DependencyType as DependencyTypeValue } from '@dailyuse/contracts/task';
 import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import { buildTaskGraphData } from '../types/task-dag.types';
 
 const router = useRouter();
 const { t } = useI18n();
 const {
   templates,
+  dependencies,
   isLoading,
   isSaving,
-  fetchTemplates,
-  fetchTemplate,
+  fetchTaskGraph,
   createTemplate,
   updateTemplate,
   deleteTemplate,
   activateTemplate,
   pauseTemplate,
+  createDependency,
+  deleteDependency,
 } = useTask();
 
 const searchQuery = ref('');
@@ -97,9 +109,49 @@ const showCreateDialog = ref(false);
 const showEditDialog = ref(false);
 const editViewModel = ref<TaskTemplateViewModel | null>(null);
 
-const viewModels = computed(() =>
-  templates.value.map((dto) => mapTaskTemplateDtoToViewModel(dto, t)),
-);
+const viewModels = computed(() => {
+  const baseViewModels = templates.value.map((dto) => mapTaskTemplateDtoToViewModel(dto, t));
+  const templateById = new Map(baseViewModels.map((template) => [template.id, template]));
+  const predecessorCounts = new Map<string, number>();
+  const successorCounts = new Map<string, number>();
+  const childCounts = new Map<string, number>();
+
+  baseViewModels.forEach((template) => {
+    predecessorCounts.set(template.id, 0);
+    successorCounts.set(template.id, 0);
+    childCounts.set(template.id, 0);
+  });
+
+  dependencies.value.forEach((dependency) => {
+    predecessorCounts.set(
+      dependency.successorTaskId,
+      (predecessorCounts.get(dependency.successorTaskId) ?? 0) + 1,
+    );
+    successorCounts.set(
+      dependency.predecessorTaskId,
+      (successorCounts.get(dependency.predecessorTaskId) ?? 0) + 1,
+    );
+  });
+
+  baseViewModels.forEach((template) => {
+    if (!template.parentTaskId) {
+      return;
+    }
+
+    childCounts.set(template.parentTaskId, (childCounts.get(template.parentTaskId) ?? 0) + 1);
+  });
+
+  return baseViewModels.map((template) => ({
+    ...template,
+    parentTaskTitle: template.parentTaskId
+      ? templateById.get(template.parentTaskId)?.title ?? null
+      : null,
+    predecessorCount: predecessorCounts.get(template.id) ?? 0,
+    successorCount: successorCounts.get(template.id) ?? 0,
+    childCount: childCounts.get(template.id) ?? 0,
+  }));
+});
+const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
 const filteredViewModels = computed(() => {
   if (!searchQuery.value.trim()) return viewModels.value;
@@ -111,6 +163,10 @@ const filteredViewModels = computed(() => {
       t.tags?.some((tag) => tag.toLowerCase().includes(q)),
   );
 });
+
+async function refreshTaskManagement() {
+  await fetchTaskGraph({ page: 1, limit: 1000 });
+}
 
 function toGoalBindingPayload(template: TaskTemplateViewModel) {
   if (!template.goalBinding?.goalId || !template.goalBinding?.keyResultId) {
@@ -137,6 +193,7 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     timeConfig: template.timeConfig as any,
     recurrenceRule: template.recurrenceRule ?? null,
     importance: (template.importance as any) ?? 'Moderate',
+    parentTaskId: template.parentTaskId ?? null,
     tags: template.tags ?? [],
     color: template.color ?? null,
     goalBinding: toGoalBindingPayload(template),
@@ -144,7 +201,7 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
   if (result) {
     showCreateDialog.value = false;
     toast.success(t('task.management.createSuccess'));
-    await fetchTemplates();
+    await refreshTaskManagement();
   }
 }
 
@@ -167,6 +224,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
+    parentTaskId: vm.parentTaskId ?? null,
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm),
@@ -175,8 +233,50 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     showEditDialog.value = false;
     editViewModel.value = null;
     toast.success(t('task.management.editSuccess'));
-    await fetchTemplates();
+    await refreshTaskManagement();
   }
+}
+
+async function handleCreateDependency(
+  predecessorTaskId: string,
+  successorTaskId: string,
+): Promise<boolean> {
+  const result = await createDependency({
+    predecessorTaskId,
+    successorTaskId,
+    dependencyType: DependencyType.FinishToStart,
+  });
+
+  if (!result) {
+    return false;
+  }
+
+  await refreshTaskManagement();
+  return true;
+}
+
+async function handleCreateDependencyFromDialog(dependency: {
+  predecessorTaskId: string;
+  successorTaskId: string;
+  dependencyType: DependencyTypeValue;
+}): Promise<boolean> {
+  const result = await createDependency(dependency);
+  if (!result) {
+    return false;
+  }
+
+  await refreshTaskManagement();
+  return true;
+}
+
+async function handleDeleteDependency(dependencyId: string): Promise<boolean> {
+  const deleted = await deleteDependency(dependencyId);
+  if (!deleted) {
+    return false;
+  }
+
+  await refreshTaskManagement();
+  return true;
 }
 
 async function handleDelete(template: TaskTemplateViewModel) {
@@ -189,11 +289,17 @@ async function handleDelete(template: TaskTemplateViewModel) {
   });
 
   if (!confirmed) return;
-  await deleteTemplate(template.id);
+  const deleted = await deleteTemplate(template.id);
+  if (deleted) {
+    await refreshTaskManagement();
+  }
 }
 
 async function handleResume(template: TaskTemplateViewModel) {
-  await activateTemplate(template.id);
+  const result = await activateTemplate(template.id);
+  if (result) {
+    await refreshTaskManagement();
+  }
 }
 
 async function handlePause(template: TaskTemplateViewModel) {
@@ -207,7 +313,10 @@ async function handlePause(template: TaskTemplateViewModel) {
 
   if (!confirmed) return;
 
-  await pauseTemplate(template.id);
+  const result = await pauseTemplate(template.id);
+  if (result) {
+    await refreshTaskManagement();
+  }
 }
 
 async function handleDeleteAll() {
@@ -224,10 +333,11 @@ async function handleDeleteAll() {
   for (const t_ of templates.value) {
     await deleteTemplate(t_.id);
   }
+  await refreshTaskManagement();
   toast.success(t('task.management.allDeleted'));
 }
 
 onMounted(async () => {
-  await fetchTemplates();
+  await refreshTaskManagement();
 });
 </script>

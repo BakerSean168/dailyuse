@@ -38,6 +38,7 @@ const logger = createLogger('TaskElectron');
 const Ch = {
   TEMPLATE_LIST: 'task:template:list',
   TEMPLATE_GET: 'task:template:get',
+  TEMPLATE_GRAPH: 'task:template:graph',
   TEMPLATE_CREATE: 'task:template:create',
   TEMPLATE_UPDATE: 'task:template:update',
   TEMPLATE_DELETE: 'task:template:delete',
@@ -156,6 +157,17 @@ export const TaskElectronModule: IElectronModule = {
       templateController.getTemplate(
         payload?.id ?? payload,
         payload?.includeChildren ?? false,
+      ),
+    );
+    ipcMain.handle(Ch.TEMPLATE_GRAPH, (_, params) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        templateController.getTaskGraph(
+          normalizeTemplateListParams(
+            requestContext,
+            params && typeof params === 'object' ? (params as Record<string, unknown>) : undefined,
+          ) as any,
+          requestContext,
+        ),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) =>

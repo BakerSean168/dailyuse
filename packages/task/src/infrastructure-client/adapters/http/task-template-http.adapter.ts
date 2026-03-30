@@ -15,6 +15,7 @@ import type {
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
+  QueryTaskTemplateGraphRes,
 } from '@dailyuse/contracts/task';
 
 /**
@@ -37,6 +38,10 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     params?: TaskTemplateListParams,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
     return this.httpClient.get(this.baseUrl, { params });
+  }
+
+  async getTaskGraph(params?: TaskTemplateListParams): Promise<Result<QueryTaskTemplateGraphRes>> {
+    return this.httpClient.get(`${this.baseUrl}/graph`, { params });
   }
 
   async getTaskTemplateById(

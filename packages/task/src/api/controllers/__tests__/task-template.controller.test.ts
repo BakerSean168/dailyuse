@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ok, fail, isOk } from '@dailyuse/contracts/result';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { QueryTaskTemplateGraphRes, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import { TaskTemplateController, type TaskTemplateUseCases } from '../task-template.controller';
 
@@ -13,6 +13,7 @@ function createMockUseCases(): TaskTemplateUseCases {
     createTemplate: { execute: vi.fn() },
     getTemplate: { execute: vi.fn() },
     listTemplates: { execute: vi.fn() },
+    getTaskGraph: { execute: vi.fn() },
     updateTemplate: { execute: vi.fn() },
     deleteTemplate: { execute: vi.fn() },
     activateTemplate: { execute: vi.fn() },
@@ -272,6 +273,38 @@ describe('TaskTemplateController', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.data).toEqual({ templates, total: 1 });
+      }
+    });
+  });
+
+  describe('getTaskGraph', () => {
+    it('should call getTaskGraph use case with identityId and filters', async () => {
+      (useCases.getTaskGraph.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ templates: [], dependencies: [], total: 0 }),
+      );
+
+      await controller.getTaskGraph({ status: ['Active'], tags: ['focus'] }, ctx);
+
+      expect(useCases.getTaskGraph.execute).toHaveBeenCalledOnce();
+      const args = (useCases.getTaskGraph.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(args.identityId).toBe(TEST_IDENTITY_ID);
+      expect(args.status).toEqual(['Active']);
+      expect(args.tags).toEqual(['focus']);
+    });
+
+    it('should return graph payload directly', async () => {
+      const payload: QueryTaskTemplateGraphRes = {
+        templates: [FAKE_TEMPLATE_DTO],
+        dependencies: [],
+        total: 1,
+      };
+      (useCases.getTaskGraph.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok(payload));
+
+      const result = await controller.getTaskGraph(undefined, ctx);
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.data).toEqual(payload);
       }
     });
   });

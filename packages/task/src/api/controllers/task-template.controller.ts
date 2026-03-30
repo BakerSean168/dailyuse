@@ -20,10 +20,10 @@ import {
 } from '@dailyuse/contracts/task';
 import type {
   TaskTemplateClientDTO,
-  TaskTemplateStatus,
   TaskInstanceClientDTO,
   CreateTaskTemplateInput,
   ListTaskTemplateFilters,
+  QueryTaskTemplateGraphRes,
   QueryTaskTemplatesInternal,
 } from '@dailyuse/contracts/task';
 import type { Context } from '@dailyuse/contracts/shared';
@@ -43,11 +43,13 @@ import type { GenerateTaskInstances } from '../../application-server/use-cases/c
 import type { BindTaskToGoal } from '../../application-server/use-cases/commands/bind-task-to-goal';
 import type { UnbindTaskFromGoal } from '../../application-server/use-cases/commands/unbind-task-from-goal';
 import type { ListTaskInstancesByTemplate } from '../../application-server/use-cases/queries/list-task-instances-by-template';
+import type { GetTaskTemplateGraph } from '../../application-server/use-cases/queries/get-task-template-graph';
 
 export interface TaskTemplateUseCases {
   createTemplate: CreateTaskTemplate;
   getTemplate: GetTaskTemplate;
   listTemplates: ListTaskTemplates;
+  getTaskGraph: GetTaskTemplateGraph;
   updateTemplate: UpdateTaskTemplate;
   deleteTemplate: DeleteTaskTemplate;
   activateTemplate: ActivateTaskTemplate;
@@ -68,6 +70,19 @@ export interface TaskTemplateUseCases {
  */
 export class TaskTemplateController {
   constructor(private readonly useCases: TaskTemplateUseCases) {}
+
+  private toTemplateQuery(
+    filters: ListTaskTemplateFilters | undefined,
+    ctx: Context,
+  ): QueryTaskTemplatesInternal {
+    return {
+      identityId: IdentityId.of(ctx.identityId),
+      status: filters?.status,
+      folderId: filters?.folderId as TaskFolderId | undefined,
+      goalId: filters?.goalId as GoalId | undefined,
+      tags: filters?.tags,
+    };
+  }
 
   /**
    * Create new task template (with Zod validation)
@@ -93,6 +108,7 @@ export class TaskTemplateController {
       recurrenceRule: parsed.data.recurrenceRule,
       reminderConfig: parsed.data.reminderConfig,
       importance: parsed.data.importance,
+      parentTaskId: parsed.data.parentTaskId,
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,
       color: parsed.data.color,
@@ -132,22 +148,29 @@ export class TaskTemplateController {
     filters: ListTaskTemplateFilters | undefined,
     ctx: Context,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
-    // Assemble internal query with identityId from Context
-    const query: QueryTaskTemplatesInternal = {
-      identityId: IdentityId.of(ctx.identityId),
-      status: filters?.status,
-      folderId: filters?.folderId as TaskFolderId | undefined,
-      goalId: filters?.goalId as GoalId | undefined,
-      tags: filters?.tags,
-    };
-
-    const result = await this.useCases.listTemplates.execute(query);
+    const result = await this.useCases.listTemplates.execute(this.toTemplateQuery(filters, ctx));
 
     if (!isOk(result)) {
       return result as Result<{ templates: TaskTemplateClientDTO[]; total: number }>;
     }
 
     return ok({ templates: result.data.templates, total: result.data.total });
+  }
+
+  /**
+   * List templates together with the dependency edges between them.
+   */
+  async getTaskGraph(
+    filters: ListTaskTemplateFilters | undefined,
+    ctx: Context,
+  ): Promise<Result<QueryTaskTemplateGraphRes>> {
+    const result = await this.useCases.getTaskGraph.execute(this.toTemplateQuery(filters, ctx));
+
+    if (!isOk(result)) {
+      return result as Result<QueryTaskTemplateGraphRes>;
+    }
+
+    return ok(result.data);
   }
 
   /**
@@ -170,6 +193,7 @@ export class TaskTemplateController {
       recurrenceRule: parsed.data.recurrenceRule,
       reminderConfig: parsed.data.reminderConfig,
       importance: parsed.data.importance,
+      parentTaskId: parsed.data.parentTaskId,
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,
       color: parsed.data.color,

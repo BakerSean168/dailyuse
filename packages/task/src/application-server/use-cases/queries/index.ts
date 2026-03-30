@@ -2,6 +2,7 @@
 export * from './get-task-dashboard';
 export * from './get-task-instance';
 export * from './get-task-instances-by-date-range';
+export * from './get-task-template-graph';
 export * from './get-task-template';
 export * from './list-task-dependencies';
 export * from './list-task-instances-by-account';
