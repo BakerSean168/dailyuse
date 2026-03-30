@@ -280,7 +280,6 @@ import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import type { TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
@@ -386,10 +385,6 @@ function toGoalBindingPayload(goalBinding: TaskTemplateViewModel['goalBinding'])
   };
 }
 
-function toParentTaskId(parentTaskId: string | null | undefined): TaskTemplateId | null {
-  return parentTaskId ? (parentTaskId as TaskTemplateId) : null;
-}
-
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
   const result = await updateTemplate(id, {
@@ -398,7 +393,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
-    parentTaskId: toParentTaskId(vm.parentTaskId),
+    parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm.goalBinding),

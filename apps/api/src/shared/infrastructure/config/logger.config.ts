@@ -4,18 +4,11 @@
  * @date 2025-01-22
  */
 
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { initializeWinstonLogger } from '@dailyuse/utils/winston';
-import { env } from './env.js';
+import { LoggerFactory } from '@dailyuse/utils';
+import { WinstonLogger } from '@dailyuse/utils/winston';
+import { env, isProduction } from './env.js';
 
 const logLevel = env.LOG_LEVEL;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PROJECT_ROOT = resolve(__dirname, '../../../../../../');
-// API logs are stored in the repository data directory so local development and
-// server-style runs share a predictable persisted location outside build output.
-const API_LOGS_DIR = resolve(PROJECT_ROOT, 'data', 'logs');
 
 /**
  * 初始化日志系统。
@@ -24,8 +17,14 @@ const API_LOGS_DIR = resolve(PROJECT_ROOT, 'data', 'logs');
  * 注册 WinstonLogger 提供者，配置日志级别和生产环境行为。
  */
 export function initializeLogger(): void {
-  initializeWinstonLogger({
-    logsDir: API_LOGS_DIR,
+  // 注册 WinstonLogger 提供者
+  LoggerFactory.registerProvider((context) => {
+    const logger = new WinstonLogger(context);
+    // WinstonLogger 内部已经配置了 Console 和 DailyRotateFile
+    return logger;
+  });
+
+  LoggerFactory.configure({
     level: logLevel,
     enableInProduction: true,
   });

@@ -1,12 +1,30 @@
-import mitt, { type Emitter, type Handler } from 'mitt';
+import mitt, { type Emitter, type EventType, type Handler } from 'mitt';
 import { createLogger } from '../logger';
-import { generateUUID } from '../shared/uuid';
 
 // 基础类型约束
 type EventMap = Record<string, any>;
 type RpcMap = Record<string, [any, any]>;
 
 const logger = createLogger('CrossPlatformEventBus');
+// 生成 UUID 的跨平台实现
+function generateUUID(): string {
+  // 如果在 Node.js 环境中，使用 crypto
+  if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  // 如果在现代浏览器环境中，使用 Web Crypto API
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  // 降级方案：简单的 UUID v4 实现
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 /**
  * 跨平台统一事件系统

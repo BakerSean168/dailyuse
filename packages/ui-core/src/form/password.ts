@@ -96,25 +96,6 @@ export interface PasswordStrengthStore {
 }
 
 /**
- * Generate a cryptographically secure random integer between 0 and max - 1
- */
-function getSecureRandomInt(max: number): number {
-  if (max <= 0) return 0;
-
-  const randomBuffer = new Uint32Array(1);
-  const maxUint32 = 0xffffffff;
-  const limit = maxUint32 - (maxUint32 % max);
-
-  let randomValue;
-  do {
-    globalThis.crypto.getRandomValues(randomBuffer);
-    randomValue = randomBuffer[0];
-  } while (randomValue >= limit);
-
-  return randomValue % max;
-}
-
-/**
  * Create a password strength analyzer
  */
 export function createPasswordStrength(): PasswordStrengthStore {
@@ -144,6 +125,55 @@ export function createPasswordStrength(): PasswordStrengthStore {
 }
 
 /**
+ * Generate a cryptographically secure random integer between 0 (inclusive) and max (exclusive)
+ */
+function getSecureRandomInt(max: number): number {
+  if (max <= 0) return 0;
+
+  // Try to use Web Crypto API if available
+  const cryptoObj =
+    typeof globalThis !== 'undefined' && globalThis.crypto
+      ? globalThis.crypto
+      : typeof crypto !== 'undefined'
+      ? crypto
+      : null;
+
+  if (cryptoObj?.getRandomValues) {
+    const randomBuffer = new Uint32Array(1);
+    const maxUint32 = 0xffffffff;
+
+    // Avoid modulo bias
+    const limit = maxUint32 - (maxUint32 % max);
+
+    let randomValue;
+    do {
+      cryptoObj.getRandomValues(randomBuffer);
+      randomValue = randomBuffer[0];
+    } while (randomValue >= limit);
+
+    return randomValue % max;
+  }
+
+  // Fallback
+  console.warn(
+    'Crypto.getRandomValues is not available, falling back to insecure Math.random()'
+  );
+  return Math.floor(Math.random() * max);
+}
+
+/**
+ * Cryptographically secure array shuffle (Fisher-Yates)
+ */
+function secureShuffle<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = getSecureRandomInt(i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+/**
  * Generate a random password
  */
 export function generatePassword(length = 16): string {
@@ -166,14 +196,8 @@ export function generatePassword(length = 16): string {
     password += allChars[getSecureRandomInt(allChars.length)];
   }
 
-  // Shuffle the password using Fisher-Yates
-  const passwordArray = password.split('');
-  for (let i = passwordArray.length - 1; i > 0; i--) {
-    const j = getSecureRandomInt(i + 1);
-    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
-  }
-
-  return passwordArray.join('');
+  // Shuffle the password
+  return secureShuffle(password.split('')).join('');
 }
 
 /**

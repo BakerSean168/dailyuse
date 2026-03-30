@@ -1,5 +1,4 @@
 import { app } from 'electron';
-import fs from 'node:fs';
 import path from 'node:path';
 
 export const DESKTOP_PRODUCT_NAME = 'DailyUse';
@@ -39,17 +38,4 @@ export function configureDesktopUserDataPath(): string {
   app.setPath('userData', userDataPath);
 
   return userDataPath;
-}
-
-export function resolveDesktopDataPath(...segments: string[]): string {
-  return path.join(app.getPath('userData'), 'data', ...segments);
-}
-
-export function ensureDesktopDataPath(...segments: string[]): string {
-  // Desktop runtime data that should survive restarts lives under
-  // `<userData>/data`. Callers append their own leaf directories such as
-  // `logs`, while this helper guarantees the directory exists first.
-  const targetPath = resolveDesktopDataPath(...segments);
-  fs.mkdirSync(targetPath, { recursive: true });
-  return targetPath;
 }

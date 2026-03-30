@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { generateUUID } from '@dailyuse/utils';
+import { v4 as uuidv4 } from 'uuid';
 import {
   Card,
   CardContent,
@@ -230,7 +230,7 @@ const handleAbsoluteTimeChange = (timeValue: string, alertIndex: number) => {
 
 const addAlert = () => {
   const newAlert: ReminderAlert = {
-    id: generateUUID(),
+    id: uuidv4(),
     timing: {
       type: 'relative' as const,
       minutesBefore: 15,

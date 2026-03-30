@@ -1,0 +1,15 @@
+{
+  "enabledPlugins": [],
+  "alwaysUpdateLinks": true,
+  "useMarkdownLinks": false,
+  "attachmentFolderPath": "./assets",
+  "newLinkFormat": "shortest",
+  "strictLineBreaks": false,
+  "foldHeading": false,
+  "foldIndent": false,
+  "showFrontmatter": false,
+  "showLineNumber": false,
+  "spellcheck": false,
+  "promptDelete": false,
+  "readableLineLength": false
+}

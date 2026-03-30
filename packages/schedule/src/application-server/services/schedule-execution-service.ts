@@ -10,7 +10,6 @@
  * 架构位置：应用层（Application Layer）
  */
 
-import { createLogger } from '@dailyuse/utils';
 import type {
   IScheduleExecutionRepository,
 } from '../../domain-server/repositories/IScheduleExecutionRepository';
@@ -18,8 +17,6 @@ import type {
   IScheduleTaskRepository,
 } from '../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
-
-const logger = createLogger('ScheduleExecutionService');
 
 /**
  * Execution Engine interface - to be provided by infrastructure layer
@@ -53,25 +50,25 @@ export class ScheduleExecutionService {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      logger.warn('ScheduleExecutionService already initialized');
+      console.warn('⚠️  ScheduleExecutionService already initialized');
       return;
     }
 
     try {
-      logger.info('Initializing Schedule Execution Engine');
+      console.log('🚀 Initializing Schedule Execution Engine...');
 
       // 从数据库加载所有活跃的调度任务
       const activeTasks = await this.taskRepository.findByStatus('active' as any);
 
-      logger.info('Found active schedule tasks', { count: activeTasks.length });
+      console.log(`📊 Found ${activeTasks.length} active schedule tasks`);
 
       // 启动执行引擎
       await this.executionEngine.start(activeTasks);
 
       this.isInitialized = true;
-      logger.info('Schedule Execution Engine started successfully');
+      console.log('✅ Schedule Execution Engine started successfully');
     } catch (error) {
-      logger.error('Failed to start Schedule Execution Engine', { error });
+      console.error('❌ Failed to start Schedule Execution Engine:', error);
       // 不抛出错误，允许应用继续启动
     }
   }
@@ -81,17 +78,17 @@ export class ScheduleExecutionService {
    */
   async shutdown(): Promise<void> {
     if (!this.isInitialized) {
-      logger.warn('ScheduleExecutionService not initialized');
+      console.warn('⚠️  ScheduleExecutionService not initialized');
       return;
     }
 
     try {
-      logger.info('Stopping Schedule Execution Engine');
+      console.log('⏹️  Stopping Schedule Execution Engine...');
       await this.executionEngine.stop();
       this.isInitialized = false;
-      logger.info('Schedule Execution Engine stopped');
+      console.log('✅ Schedule Execution Engine stopped');
     } catch (error) {
-      logger.error('Failed to stop Schedule Execution Engine', { error });
+      console.error('❌ Failed to stop Schedule Execution Engine:', error);
     }
   }
 
@@ -102,7 +99,7 @@ export class ScheduleExecutionService {
    */
   async addTask(task: ScheduleTask): Promise<void> {
     if (!this.executionEngine.isEngineRunning()) {
-      logger.warn('Execution engine is not running, skipping task addition');
+      console.warn('⚠️  Execution engine is not running, skipping task addition');
       return;
     }
 
@@ -116,7 +113,7 @@ export class ScheduleExecutionService {
    */
   async removeTask(taskId: string): Promise<void> {
     if (!this.executionEngine.isEngineRunning()) {
-      logger.warn('Execution engine is not running, skipping task removal');
+      console.warn('⚠️  Execution engine is not running, skipping task removal');
       return;
     }
 

@@ -68,6 +68,7 @@ export default defineConfig({
     'reflect-metadata',
     'rxjs',
     'diff-match-patch',
+    'uuid',
     'bree',
   ],
 
