@@ -867,7 +867,8 @@ export class SessionManager {
    * Get or create a persistent guest identity ID.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
-    const tokenData = this.tokenManager.getCachedTokenData();
+    const tokenData =
+      this.tokenManager.getCachedTokenData() ?? (await this.tokenManager.loadTokens());
     const cachedGuestId = tokenData?.identityId;
     const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
 
@@ -933,7 +934,8 @@ export class SessionManager {
 
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
-    const tokenData = this.tokenManager.getCachedTokenData();
+    const tokenData =
+      this.tokenManager.getCachedTokenData() ?? (await this.tokenManager.loadTokens());
     const cachedGuestId = tokenData?.identityId;
 
     if (cachedGuestId && this.isGuestToken(tokenData)) {
