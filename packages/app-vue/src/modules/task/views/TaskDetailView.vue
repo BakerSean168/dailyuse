@@ -172,7 +172,7 @@
                 <div v-if="predecessorRelations.length" class="mt-2 space-y-2">
                   <div
                     v-for="relation in predecessorRelations"
-                    :key="relation.id"
+                    :key="relation.dependency.id"
                     class="flex flex-wrap items-center gap-2 rounded-md border p-3"
                   >
                     <Button
@@ -197,7 +197,7 @@
                 <div v-if="successorRelations.length" class="mt-2 space-y-2">
                   <div
                     v-for="relation in successorRelations"
-                    :key="relation.id"
+                    :key="relation.dependency.id"
                     class="flex flex-wrap items-center gap-2 rounded-md border p-3"
                   >
                     <Button
@@ -280,6 +280,7 @@ import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import type { TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import {
   getTaskTimeTypeLabel,
   mapTaskTemplateDtoToViewModel,
@@ -393,7 +394,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
-    parentTaskId: vm.parentTaskId ?? null,
+    parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,
     tags: vm.tags ?? [],
     color: vm.color ?? null,
     goalBinding: toGoalBindingPayload(vm.goalBinding),
