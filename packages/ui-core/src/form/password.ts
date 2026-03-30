@@ -125,6 +125,55 @@ export function createPasswordStrength(): PasswordStrengthStore {
 }
 
 /**
+ * Generate a cryptographically secure random integer between 0 (inclusive) and max (exclusive)
+ */
+function getSecureRandomInt(max: number): number {
+  if (max <= 0) return 0;
+
+  // Try to use Web Crypto API if available
+  const cryptoObj =
+    typeof globalThis !== 'undefined' && globalThis.crypto
+      ? globalThis.crypto
+      : typeof crypto !== 'undefined'
+      ? crypto
+      : null;
+
+  if (cryptoObj?.getRandomValues) {
+    const randomBuffer = new Uint32Array(1);
+    const maxUint32 = 0xffffffff;
+
+    // Avoid modulo bias
+    const limit = maxUint32 - (maxUint32 % max);
+
+    let randomValue;
+    do {
+      cryptoObj.getRandomValues(randomBuffer);
+      randomValue = randomBuffer[0];
+    } while (randomValue >= limit);
+
+    return randomValue % max;
+  }
+
+  // Fallback
+  console.warn(
+    'Crypto.getRandomValues is not available, falling back to insecure Math.random()'
+  );
+  return Math.floor(Math.random() * max);
+}
+
+/**
+ * Cryptographically secure array shuffle (Fisher-Yates)
+ */
+function secureShuffle<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = getSecureRandomInt(i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+/**
  * Generate a random password
  */
 export function generatePassword(length = 16): string {
@@ -137,21 +186,18 @@ export function generatePassword(length = 16): string {
 
   // Ensure at least one of each type
   let password = '';
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += special[Math.floor(Math.random() * special.length)];
+  password += lowercase[getSecureRandomInt(lowercase.length)];
+  password += uppercase[getSecureRandomInt(uppercase.length)];
+  password += numbers[getSecureRandomInt(numbers.length)];
+  password += special[getSecureRandomInt(special.length)];
 
   // Fill the rest randomly
   for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
+    password += allChars[getSecureRandomInt(allChars.length)];
   }
 
   // Shuffle the password
-  return password
-    .split('')
-    .sort(() => Math.random() - 0.5)
-    .join('');
+  return secureShuffle(password.split('')).join('');
 }
 
 /**
@@ -176,12 +222,12 @@ export function generatePassphrase(wordCount = 4, separator = '-'): string {
 
   const passphrase: string[] = [];
   for (let i = 0; i < wordCount; i++) {
-    const randomWord = words[Math.floor(Math.random() * words.length)];
+    const randomWord = words[getSecureRandomInt(words.length)];
     // Capitalize first letter for readability
     passphrase.push(randomWord.charAt(0).toUpperCase() + randomWord.slice(1));
   }
 
   // Add a random number at the end for extra security
-  const randomNumber = Math.floor(Math.random() * 100);
+  const randomNumber = getSecureRandomInt(100);
   return passphrase.join(separator) + separator + randomNumber;
 }
