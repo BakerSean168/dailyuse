@@ -96,6 +96,25 @@ export interface PasswordStrengthStore {
 }
 
 /**
+ * Generate a cryptographically secure random integer between 0 and max - 1
+ */
+function getSecureRandomInt(max: number): number {
+  if (max <= 0) return 0;
+
+  const randomBuffer = new Uint32Array(1);
+  const maxUint32 = 0xffffffff;
+  const limit = maxUint32 - (maxUint32 % max);
+
+  let randomValue;
+  do {
+    globalThis.crypto.getRandomValues(randomBuffer);
+    randomValue = randomBuffer[0];
+  } while (randomValue >= limit);
+
+  return randomValue % max;
+}
+
+/**
  * Create a password strength analyzer
  */
 export function createPasswordStrength(): PasswordStrengthStore {
@@ -196,8 +215,14 @@ export function generatePassword(length = 16): string {
     password += allChars[getSecureRandomInt(allChars.length)];
   }
 
-  // Shuffle the password
-  return secureShuffle(password.split('')).join('');
+  // Shuffle the password using Fisher-Yates
+  const passwordArray = password.split('');
+  for (let i = passwordArray.length - 1; i > 0; i--) {
+    const j = getSecureRandomInt(i + 1);
+    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+  }
+
+  return passwordArray.join('');
 }
 
 /**
