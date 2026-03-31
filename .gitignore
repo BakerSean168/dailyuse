@@ -127,3 +127,7 @@ tmp/
 .pnpm-store/
 
 docs/thesis/
+
+__pycache__/
+*.py[cod]
+*$py.class
