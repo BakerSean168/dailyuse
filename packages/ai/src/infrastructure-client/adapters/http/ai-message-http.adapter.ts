@@ -111,13 +111,13 @@ async function* parseSSE(
 
     buffer += decoder.decode(value, { stream: true });
     while (true) {
-      const boundaryIndex = buffer.indexOf('\n\n');
-      if (boundaryIndex < 0) {
+      const boundary = findSSEBoundary(buffer);
+      if (!boundary) {
         break;
       }
 
-      const rawEvent = buffer.slice(0, boundaryIndex);
-      buffer = buffer.slice(boundaryIndex + 2);
+      const rawEvent = buffer.slice(0, boundary.index);
+      buffer = buffer.slice(boundary.index + boundary.length);
 
       let event = 'message';
       const dataLines: string[] = [];
@@ -137,4 +137,18 @@ async function* parseSSE(
       };
     }
   }
+}
+
+function findSSEBoundary(buffer: string): { index: number; length: number } | null {
+  const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
+  if (crlfBoundaryIndex >= 0) {
+    return { index: crlfBoundaryIndex, length: 4 };
+  }
+
+  const lfBoundaryIndex = buffer.indexOf('\n\n');
+  if (lfBoundaryIndex >= 0) {
+    return { index: lfBoundaryIndex, length: 2 };
+  }
+
+  return null;
 }

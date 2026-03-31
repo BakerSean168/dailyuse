@@ -261,7 +261,7 @@ export function createAuthenticationModule(
         return ok(await useCases.register.execute(data, cx));
       } catch (err) {
         if (err instanceof UserAlreadyExistsError) {
-          return fail({ code: 'CONFLICT', message: err.message });
+          return fail({ code: err.code, message: err.message, context: err.context });
         }
         throw err;
       }

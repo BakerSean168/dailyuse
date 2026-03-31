@@ -19,7 +19,7 @@ import type {
 } from '@dailyuse/contracts/account';
 
 export class AccountHttpAdapter implements IAccountApiClient {
-  private readonly baseUrl = '/api/accounts';
+  private readonly baseUrl = '/accounts';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 

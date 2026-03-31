@@ -55,6 +55,17 @@ export default {
       rose: 'Rose',
     },
   },
+  errors: {
+    UNAUTHORIZED: 'Your session is no longer valid. Please sign in again.',
+    FORBIDDEN: 'You do not have permission to perform this action.',
+    NOT_FOUND: 'The requested item was not found or has been removed.',
+    CONFLICT: 'This request conflicts with existing data. Please try again.',
+    VALIDATION_ERROR: 'Some submitted data is invalid. Please review and try again.',
+    SERVICE_UNAVAILABLE: 'The service is temporarily unavailable. Please try again later.',
+    INTERNAL_ERROR: 'The service encountered an error. Please try again later.',
+    TIMEOUT: 'The request timed out. Please try again.',
+    UNKNOWN: 'The operation failed. Please try again.',
+  },
 
   // ── Menu actions (from menu-labels.ts) ─────────────────
   menu: {
@@ -803,6 +814,42 @@ export default {
   },
   // ── Authentication module ────────────────────────────────
   auth: {
+    page: {
+      description: 'Sign in to continue into your workspace',
+      emailPlaceholder: 'name@example.com',
+      or: 'or',
+      guestMode: 'Guest Mode',
+      guestLoading: 'Starting guest mode...',
+      legalNotice: 'By continuing, you agree to the Terms of Service and Privacy Policy.',
+      locales: {
+        zhCN: '中文',
+        enUS: 'EN',
+      },
+      themes: {
+        auto: 'System',
+        light: 'Light',
+        dark: 'Dark',
+      },
+    },
+    desktop: {
+      title: 'DailyUse Desktop',
+      description: 'You choose the account. Auto-login only runs when you explicitly enable it.',
+      tabs: {
+        login: 'Login',
+        register: 'Register',
+        quickLogin: 'Quick Login',
+      },
+      rememberPassword: 'Remember password',
+      autoLogin: 'Auto-login',
+      autoLoginHint:
+        'The app only restores the session automatically when auto-login is enabled. Otherwise the sign-in window is always shown first.',
+      createAccount: 'Create account',
+      quickLoginDescription:
+        'Keep previously used accounts on this device so you can switch quickly, similar to QQ or Steam.',
+      noRememberedAccounts: 'No remembered accounts are stored on this device yet.',
+      nicknamePolicy:
+        'The account center now uses nickname as the single display name instead of a separate display name field.',
+    },
     login: {
       title: 'Login',
       description: 'Sign in to your account to continue',
@@ -853,7 +900,19 @@ export default {
     validation: {
       emailInvalid: 'Please enter a valid email address',
       passwordLength: 'Password must be at least 8 characters',
+      loginCredentialsRequired: 'Please enter your email and password',
+      registerFieldsRequired: 'Please complete all required fields',
       passwordMismatch: 'Passwords do not match',
+      guestModeUnavailable: 'Guest mode is only available on desktop',
+    },
+    errors: {
+      USER_ALREADY_EXISTS: 'An account with this email already exists',
+      CONFLICT: 'This request conflicts with existing data. Please try again.',
+      UNAUTHORIZED: 'Incorrect email or password',
+      VALIDATION_ERROR: 'Some fields are invalid. Please review your input.',
+      SERVICE_UNAVAILABLE: 'Authentication is temporarily unavailable. Please try again later.',
+      INTERNAL_ERROR: 'The authentication service encountered an error. Please try again later.',
+      UNKNOWN: 'Authentication failed. Please try again.',
     },
     smsCode: {
       countdown: 'Resend in {n}s',
@@ -872,6 +931,9 @@ export default {
       smsCodeFailed: 'Failed to send verification code',
       sendFailed: 'Send failed',
       loggedOut: 'Logged out',
+      guestModeEntered: 'Guest mode started',
+      guestModeLocalOnly: 'Guest data stays only on this device',
+      guestModeFailed: 'Failed to start guest mode',
       loadSessionsFailed: 'Failed to load sessions',
       loadFailed: 'Load failed',
       sessionRevoked: 'Session revoked',
@@ -887,6 +949,7 @@ export default {
       passwordReset: 'Password reset',
       loginWithNew: 'Please sign in with your new password',
       resetPasswordFailed: 'Failed to reset password',
+      removeRememberedAccountFailed: 'Failed to remove remembered account',
     },
   },
 
@@ -896,6 +959,8 @@ export default {
     center: 'Account Center',
     description:
       'Your nickname is the primary display name and will be saved to the current account.',
+    guestLabel: 'Local guest',
+    logoutHandlerUnavailable: 'The logout handler is currently unavailable',
     actions: {
       logout: 'Log Out',
       saveProfile: 'Save Profile',
@@ -942,6 +1007,9 @@ export default {
       accountClosed: 'Account closed',
       closeAccountFailed: 'Failed to close account',
       closeFailed: 'Close failed',
+      guestProfileUpdateUnavailable: 'Guest mode cannot update profile data',
+      guestSettingsUpdateUnavailable: 'Guest mode cannot update account settings',
+      guestCloseAccountUnavailable: 'Guest mode cannot close the account',
     },
     logoutHint: 'You can safely sign out here and return to the login page right away.',
     logoutConfirm: {

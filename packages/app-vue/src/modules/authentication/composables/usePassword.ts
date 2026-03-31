@@ -18,6 +18,7 @@ import type {
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function usePassword() {
   const store = useAuthenticationStore();
@@ -25,6 +26,13 @@ export function usePassword() {
   const { t } = useI18n();
 
   const isLoading = ref(false);
+
+  function getPasswordErrorMessage(error: unknown, fallbackKey: string) {
+    return translateResultError(error, t, {
+      scope: 'auth',
+      fallbackKey,
+    });
+  }
 
   // ========== 修改密码 ==========
 
@@ -45,7 +53,7 @@ export function usePassword() {
       return true;
     }
     toast.error(t('auth.toast.operationFailed'), {
-      description: result.error.message || t('auth.toast.changePasswordFailed'),
+      description: getPasswordErrorMessage(result.error, 'auth.toast.changePasswordFailed'),
     });
     return false;
   }
@@ -64,7 +72,7 @@ export function usePassword() {
       return true;
     }
     toast.error(t('auth.toast.operationFailed'), {
-      description: result.error.message || t('auth.toast.sendResetEmailFailed'),
+      description: getPasswordErrorMessage(result.error, 'auth.toast.sendResetEmailFailed'),
     });
     return false;
   }
@@ -81,7 +89,7 @@ export function usePassword() {
       return true;
     }
     toast.error(t('auth.toast.operationFailed'), {
-      description: result.error.message || t('auth.toast.resetPasswordFailed'),
+      description: getPasswordErrorMessage(result.error, 'auth.toast.resetPasswordFailed'),
     });
     return false;
   }

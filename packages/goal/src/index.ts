@@ -81,4 +81,7 @@ export {
   type GoalModuleUseCases,
 } from './infrastructure-server';
 export * from './infrastructure-client';
-export * from './electron-entry';
+
+// 注意：electron-entry 不在主入口导出
+// 需要 Electron 支持的消费者应显式导入：@dailyuse/goal/electron-entry
+// 这样可以避免服务端代码（如 api）被迫加载 Electron 依赖

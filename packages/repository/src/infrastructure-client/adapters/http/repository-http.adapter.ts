@@ -80,7 +80,7 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
   // ===== File Tree =====
 
   async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
-    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/tree`);
+    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/folders`);
   }
 
   // ===== Search =====

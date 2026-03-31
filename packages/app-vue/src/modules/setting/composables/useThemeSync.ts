@@ -1,6 +1,6 @@
 import { onScopeDispose, watch } from 'vue';
 import { WindowChannels } from '@dailyuse/contracts/electron';
-import { useUserSettingStore } from '../stores/userSettingStore';
+import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -36,19 +36,19 @@ export function applyThemeMode(theme: ThemeMode | string | null | undefined): vo
 }
 
 export function useThemeSync() {
-  const store = useUserSettingStore();
+  const store = usePresentationPreferenceStore();
   const mediaQuery = window.matchMedia(MEDIA_QUERY);
 
   const syncTheme = () => {
-    applyThemeMode(store.getValue('appearance.theme') as ThemeMode | undefined);
+    applyThemeMode(store.theme);
   };
 
   syncTheme();
 
-  watch(() => store.getValue('appearance.theme'), syncTheme);
+  watch(() => store.theme, syncTheme);
 
   const handleSystemThemeChange = () => {
-    if ((store.getValue('appearance.theme') as ThemeMode | undefined) === 'auto') {
+    if (store.theme === 'auto') {
       syncTheme();
     }
   };

@@ -21,6 +21,7 @@ import { useAuthenticationStore } from '../../authentication/stores/authenticati
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { AuthMode } from '@dailyuse/contracts/authentication';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useAccount() {
   const accountStore = useAccountStore();
@@ -37,6 +38,10 @@ export function useAccount() {
   const email = computed(() => accountStore.getEmail);
   const isGuest = computed(() => authStore.authMode === AuthMode.GUEST);
 
+  function getAccountErrorMessage(error: unknown, fallbackKey: string) {
+    return translateResultError(error, t, { fallbackKey });
+  }
+
   // ========== 资料管理 ==========
 
   async function loadMyProfile(): Promise<boolean> {
@@ -46,8 +51,8 @@ export function useAccount() {
         id: authStore.currentIdentity?.id as any,
         email: null,
         profile: {
-          nickname: '本地访客',
-          bio: '访客模式',
+          nickname: t('account.guestLabel'),
+          bio: t('auth.page.guestMode'),
           avatarUrl: null,
         },
         settings: {
@@ -71,7 +76,7 @@ export function useAccount() {
       accountStore.setCurrentAccount(result.data.toDTO());
       return true;
     } else {
-      const message = result.error.message || t('account.toast.loadProfileFailed');
+      const message = getAccountErrorMessage(result.error, 'account.toast.loadProfileFailed');
       accountStore.setError(message);
       toast.error(t('account.toast.loadFailed'), { description: message });
       return false;
@@ -80,7 +85,7 @@ export function useAccount() {
 
   async function updateMyProfile(req: UpdateAccountReq): Promise<boolean> {
     if (authStore.authMode === AuthMode.GUEST) {
-      toast.error('访客模式下无法更新资料');
+      toast.error(t('account.toast.guestProfileUpdateUnavailable'));
       return false;
     }
 
@@ -93,7 +98,7 @@ export function useAccount() {
       toast.success(t('account.toast.profileUpdated'));
       return true;
     } else {
-      const message = result.error.message || t('account.toast.updateProfileFailed');
+      const message = getAccountErrorMessage(result.error, 'account.toast.updateProfileFailed');
       accountStore.setError(message);
       toast.error(t('account.toast.updateFailed'), { description: message });
       return false;
@@ -108,7 +113,7 @@ export function useAccount() {
     if (result.ok) {
       return result.data.available;
     } else {
-      const message = result.error.message || t('account.toast.checkAvailabilityFailed');
+      const message = getAccountErrorMessage(result.error, 'account.toast.checkAvailabilityFailed');
       toast.error(t('account.toast.checkFailed'), { description: message });
       return false;
     }
@@ -116,7 +121,7 @@ export function useAccount() {
 
   async function updateSettings(req: UpdateAccountSettingsReq): Promise<boolean> {
     if (authStore.authMode === AuthMode.GUEST) {
-      toast.error('访客模式下无法更新设置');
+      toast.error(t('account.toast.guestSettingsUpdateUnavailable'));
       return false;
     }
     accountStore.setLoading(true);
@@ -135,7 +140,7 @@ export function useAccount() {
       return true;
     }
 
-    const message = result.error.message || t('account.toast.updateFailed');
+    const message = getAccountErrorMessage(result.error, 'account.toast.updateFailed');
     accountStore.setError(message);
     toast.error(t('account.toast.updateFailed'), { description: message });
     return false;
@@ -143,7 +148,7 @@ export function useAccount() {
 
   async function closeAccount(req: CloseAccountReq): Promise<boolean> {
     if (authStore.authMode === AuthMode.GUEST) {
-      toast.error('访客模式下无法注销账户');
+      toast.error(t('account.toast.guestCloseAccountUnavailable'));
       return false;
     }
     accountStore.setLoading(true);
@@ -154,7 +159,7 @@ export function useAccount() {
       toast.success(t('account.toast.accountClosed'));
       return true;
     } else {
-      const message = result.error.message || t('account.toast.closeAccountFailed');
+      const message = getAccountErrorMessage(result.error, 'account.toast.closeAccountFailed');
       accountStore.setError(message);
       toast.error(t('account.toast.closeFailed'), { description: message });
       return false;

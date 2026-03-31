@@ -14,6 +14,8 @@ import {
   useAuthenticationStore,
   createI18nPlugin,
   registerNotificationInitializationTasks,
+  applyThemeMode,
+  usePresentationPreferenceStore,
 } from '@dailyuse/app-vue';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
@@ -50,8 +52,12 @@ async function startApp() {
   pinia.use(piniaPluginPersistedstate);
   app.use(pinia);
 
+  const presentationStore = usePresentationPreferenceStore();
+  applyThemeMode(presentationStore.theme);
+  document.documentElement.lang = presentationStore.locale;
+
   // I18n — must be after Pinia (locale bridge reads store) but before Router
-  app.use(createI18nPlugin('zh-CN'));
+  app.use(createI18nPlugin(presentationStore.locale));
 
   // Router (Web History)
   const router = createAppRouter({

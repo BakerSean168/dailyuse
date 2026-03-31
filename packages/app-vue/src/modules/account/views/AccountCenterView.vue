@@ -21,6 +21,7 @@ import { LogOut } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { useAccount } from '../composables/useAccount';
 import { LOGOUT_HANDLER_KEY } from '../../../di/keys';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 const { t } = useI18n();
 const logout = inject(LOGOUT_HANDLER_KEY);
@@ -76,8 +77,8 @@ async function handleLogout() {
 
   if (!logout) {
     console.error('[AccountCenter] Logout handler is not provided');
-    toast.error(t('auth.toast.logout'), {
-      description: 'Logout handler is unavailable',
+    toast.error(t('auth.toast.operationFailed'), {
+      description: t('account.logoutHandlerUnavailable'),
     });
     return;
   }
@@ -88,8 +89,10 @@ async function handleLogout() {
     console.info('[AccountCenter] Logout handler resolved successfully');
     toast.success(t('auth.toast.loggedOut'));
   } catch (error) {
-    toast.error(t('auth.toast.logout'), {
-      description: error instanceof Error ? error.message : String(error),
+    toast.error(t('auth.toast.operationFailed'), {
+      description: translateResultError(error, t, {
+        fallbackKey: 'common.operationFailed',
+      }),
     });
   }
 }
@@ -119,7 +122,7 @@ onMounted(() => {
           <div class="space-y-1">
             <div class="text-2xl font-semibold">{{ form.nickname }}</div>
             <div class="text-sm text-muted-foreground">
-              {{ currentAccount?.email?.address || '本地访客' }}
+              {{ currentAccount?.email?.address || t('account.guestLabel') }}
             </div>
           </div>
         </div>

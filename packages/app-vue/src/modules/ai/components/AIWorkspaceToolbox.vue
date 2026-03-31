@@ -272,6 +272,7 @@ import { useAI } from '../composables/useAI';
 import { useRepository } from '../../repository/composables/useRepository';
 import { useEditorWorkspaceActions } from '../../editor/composables';
 import AIEvaluationOverviewDialog from './AIEvaluationOverviewDialog.vue';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 import type {
   EvaluationOverview,
   GoalAutomationResult,
@@ -337,6 +338,10 @@ const canUseAnalyticsQuery = computed(() => hasProviders.value && Boolean(capabi
 const canUseEvaluationReports = computed(() => Boolean(capabilityState.value?.supportsEvaluationReports));
 const automatedGoalId = computed(() => automationResult.value?.executedActions?.find((action) => action.tool === 'create_goal')?.entityId ?? '');
 
+function getAIErrorMessage(error: unknown, fallbackKey: string) {
+  return translateResultError(error, t, { fallbackKey });
+}
+
 onMounted(() => {
   void loadProviders();
   void loadCapabilities();
@@ -356,7 +361,7 @@ async function ensureAIContext(options?: { providers?: boolean; capabilities?: b
     await Promise.all(tasks);
     return true;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('common.operationFailed'));
+    toast.error(getAIErrorMessage(error, 'common.operationFailed'));
     return false;
   }
 }
@@ -398,7 +403,7 @@ async function handlePlanAutomation() {
     }))) as GoalAutomationResult;
     toast.success(t('aiAssistant.dialogs.automation.planReady'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.automation.planFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.automation.planFailed'));
   } finally {
     automationLoading.value = false;
   }
@@ -419,7 +424,7 @@ async function handleExecuteAutomation() {
     }))) as GoalAutomationResult;
     toast.success(t('aiAssistant.dialogs.automation.executed'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.automation.executeFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.automation.executeFailed'));
   } finally {
     automationExecuting.value = false;
   }
@@ -438,7 +443,7 @@ async function handleExpandKnowledge() {
     }))) as KnowledgeExpansionResult;
     toast.success(t('aiAssistant.dialogs.knowledgeExpansion.expanded'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledgeExpansion.expandFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.knowledgeExpansion.expandFailed'));
   } finally {
     knowledgeExpansionLoading.value = false;
   }
@@ -452,7 +457,7 @@ async function handleQueryKnowledge() {
       maxResources: 8,
     }))) as KnowledgeQueryResult;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledge.queryFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.knowledge.queryFailed'));
   } finally {
     knowledgeLoading.value = false;
   }
@@ -470,7 +475,7 @@ async function handleReindexKnowledge() {
     reindexSummary.value = t('aiAssistant.dialogs.knowledge.reindexSummary', result);
     toast.success(t('aiAssistant.dialogs.knowledge.refreshed'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledge.refreshFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.knowledge.refreshFailed'));
   } finally {
     reindexLoading.value = false;
   }
@@ -502,7 +507,7 @@ async function saveExpandedKnowledge() {
     await fetchResources();
     toast.success(t('aiAssistant.dialogs.knowledgeExpansion.saved'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.knowledgeExpansion.saveFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.knowledgeExpansion.saveFailed'));
   } finally {
     knowledgeExpansionSaving.value = false;
   }
@@ -515,7 +520,7 @@ async function handleQueryAnalytics() {
       query: analyticsQuestion.value.trim(),
     }))) as typeof analyticsResult.value;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.analytics.queryFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.analytics.queryFailed'));
   } finally {
     analyticsLoading.value = false;
   }
@@ -526,7 +531,7 @@ async function loadEvaluationOverview() {
   try {
     evaluationOverview.value = (await service.getEvaluationOverview({ historyLimit: 5 })) as EvaluationOverview;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.evaluation.empty'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.evaluation.empty'));
   } finally {
     evaluationLoading.value = false;
   }

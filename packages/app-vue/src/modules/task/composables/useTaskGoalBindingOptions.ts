@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Goal, KeyResult } from '@dailyuse/goal/domain-client';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -7,6 +8,7 @@ import {
   getDesktopAuthApi,
   recoverDesktopAuthIfNeeded,
 } from '../../../shared/utils/desktopAuthRecovery';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 type GoalLike = Goal | { toDTO?: () => Record<string, any> } | Record<string, any>;
 type KeyResultLike = KeyResult | { toDTO?: () => Record<string, any> } | Record<string, any>;
@@ -52,6 +54,7 @@ const GOAL_BINDING_PAGE_SIZE = 100;
 
 export function useTaskGoalBindingOptions() {
   const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
+  const { t } = useI18n();
 
   const goals = ref<GoalBindingOption[]>([]);
   const keyResultsByGoal = ref<Record<string, KeyResultBindingOption[]>>({});
@@ -93,7 +96,9 @@ export function useTaskGoalBindingOptions() {
         }
 
         if (!result.ok) {
-          loadError.value = result.error.message;
+          loadError.value = translateResultError(result.error, t, {
+            fallbackKey: 'goal.error.loadListFailed',
+          });
           goals.value = [];
           console.error('[TaskGoalBindingOptions] Failed to load goals', result.error);
           return [];
@@ -136,7 +141,9 @@ export function useTaskGoalBindingOptions() {
       }
 
       if (!result.ok) {
-        loadError.value = result.error.message;
+        loadError.value = translateResultError(result.error, t, {
+          fallbackKey: 'goal.error.loadKRFailed',
+        });
         keyResultsByGoal.value = {
           ...keyResultsByGoal.value,
           [goalId]: [],

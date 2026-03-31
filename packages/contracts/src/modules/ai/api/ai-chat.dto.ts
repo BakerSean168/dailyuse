@@ -16,9 +16,11 @@ export const UpdateConversationSchema = z.object({
 export type UpdateConversationReq = z.infer<typeof UpdateConversationSchema>;
 export type UpdateConversationRes = AIConversationClientDTO;
 
+const positiveIntFromQuery = z.coerce.number().int().min(1);
+
 export const ListConversationsSchema = z.object({
-  page: z.number().int().min(1).default(1).optional(),
-  pageSize: z.number().int().min(1).max(100).default(20).optional(),
+  page: positiveIntFromQuery.optional().default(1),
+  pageSize: positiveIntFromQuery.max(100).optional().default(20),
 });
 export type ListConversationsQuery = z.infer<typeof ListConversationsSchema>;
 
@@ -56,8 +58,8 @@ export interface SendMessageRes {
 
 export const ListMessagesSchema = z.object({
   conversationId: brandedId<AiConversationId>(),
-  page: z.number().int().min(1).default(1).optional(),
-  pageSize: z.number().int().min(1).max(100).default(50).optional(),
+  page: positiveIntFromQuery.optional().default(1),
+  pageSize: positiveIntFromQuery.max(100).optional().default(50),
 });
 export type ListMessagesQuery = z.infer<typeof ListMessagesSchema>;
 

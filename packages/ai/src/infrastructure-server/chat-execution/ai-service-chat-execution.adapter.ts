@@ -86,20 +86,33 @@ export class AIServiceChatExecutionAdapter implements IAIChatExecutionPort {
 
     for await (const event of parseSSE(response)) {
       if (event.event === 'message' && event.data) {
-        const payload = JSON.parse(event.data) as {
-          content?: string;
-          finish_reason?: string | null;
-        };
-        yield {
-          content: payload.content ?? '',
-          finishReason: payload.finish_reason ?? undefined,
-        };
+        try {
+          const payload = JSON.parse(event.data) as {
+            content?: string;
+            finish_reason?: string | null;
+          };
+          // Always yield message events, even if content is empty (for finish_reason)
+          yield {
+            content: payload.content ?? '',
+            finishReason: payload.finish_reason ?? undefined,
+          };
+        } catch (parseError) {
+          console.error('[AIServiceAdapter] Failed to parse SSE message', { 
+            rawData: event.data, 
+            error: parseError instanceof Error ? parseError.message : String(parseError) 
+          });
+          continue;
+        }
         continue;
       }
 
       if (event.event === 'error') {
-        const payload = event.data ? JSON.parse(event.data) as { detail?: string } : {};
-        throw new Error(payload.detail ?? 'ai-service stream failed');
+        try {
+          const payload = event.data ? (JSON.parse(event.data) as { detail?: string }) : {};
+          throw new Error(payload.detail ?? 'ai-service stream error');
+        } catch (e) {
+          throw new Error(`ai-service returned error: ${event.data || 'unknown'}`);
+        }
       }
 
       if (event.event === 'done') {
@@ -153,13 +166,13 @@ async function* parseSSE(
 
     buffer += decoder.decode(value, { stream: true });
     while (true) {
-      const boundaryIndex = buffer.indexOf('\n\n');
-      if (boundaryIndex < 0) {
+      const boundary = findSSEBoundary(buffer);
+      if (!boundary) {
         break;
       }
 
-      const rawEvent = buffer.slice(0, boundaryIndex);
-      buffer = buffer.slice(boundaryIndex + 2);
+      const rawEvent = buffer.slice(0, boundary.index);
+      buffer = buffer.slice(boundary.index + boundary.length);
 
       let event = 'message';
       const dataLines: string[] = [];
@@ -179,4 +192,18 @@ async function* parseSSE(
       };
     }
   }
+}
+
+function findSSEBoundary(buffer: string): { index: number; length: number } | null {
+  const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
+  if (crlfBoundaryIndex >= 0) {
+    return { index: crlfBoundaryIndex, length: 4 };
+  }
+
+  const lfBoundaryIndex = buffer.indexOf('\n\n');
+  if (lfBoundaryIndex >= 0) {
+    return { index: lfBoundaryIndex, length: 2 };
+  }
+
+  return null;
 }

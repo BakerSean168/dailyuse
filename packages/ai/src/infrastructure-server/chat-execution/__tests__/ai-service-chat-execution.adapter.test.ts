@@ -9,6 +9,25 @@ import {
   signInternalRequest,
 } from '..';
 
+function createSseResponse(events: string[]): Response {
+  const encoder = new TextEncoder();
+
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        for (const event of events) {
+          controller.enqueue(encoder.encode(event));
+        }
+        controller.close();
+      },
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' },
+    },
+  );
+}
+
 describe('AIServiceChatExecutionAdapter', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -83,5 +102,40 @@ describe('AIServiceChatExecutionAdapter', () => {
     expect((init.headers as Record<string, string>)[INTERNAL_SIGNATURE_HEADER]).toBe(
       signature.signature,
     );
+  });
+
+  it('parses CRLF-delimited SSE chunks from ai-service', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      createSseResponse([
+        'event: message\r\ndata: {"content":"2","finish_reason":"stop"}\r\n\r\n',
+        'event: done\r\ndata: \r\n\r\n',
+      ]),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = new AIServiceChatExecutionAdapter({
+      baseUrl: 'http://127.0.0.1:8100',
+      serviceSecret: 'shared-secret',
+      serviceName: 'dailyuse-api',
+      timeoutMs: 5_000,
+    });
+
+    const chunks: Array<{ content: string; finishReason?: string }> = [];
+    for await (const chunk of adapter.stream({
+      identityId: 'identity-1',
+      requestId: 'request-1',
+      messages: [{ role: 'user', content: '1+1' }],
+      providerConfig: {
+        provider: 'gemini',
+        model: 'gemini-2.5-flash',
+        apiKey: 'provider-key',
+        baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+        temperature: 0.7,
+      },
+    })) {
+      chunks.push(chunk);
+    }
+
+    expect(chunks).toEqual([{ content: '2', finishReason: 'stop' }]);
   });
 });

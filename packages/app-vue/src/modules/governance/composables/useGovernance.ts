@@ -25,6 +25,7 @@ import type {
   RuleStatus,
   UpdateRuleReq,
 } from '../types';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 type HydratedRule = RuleClientDTO & {
   readonly createdAt: Date;
@@ -64,6 +65,10 @@ export function useGovernance() {
   const ruleEntities = shallowRef<HydratedRule[]>([]);
   const currentRuleEntity = shallowRef<HydratedRule | null>(null);
 
+  function setGovernanceError(error: unknown, fallbackKey: string) {
+    store.setError(translateResultError(error, t, { fallbackKey }));
+  }
+
   async function refreshHydratedRules(): Promise<void> {
     const entities = await Promise.all(rules.value.map((rule) => hydrateRule(rule)));
     ruleEntities.value = entities.filter(
@@ -99,7 +104,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
-        store.setError(result.error.message || t('governance.error.loadListFailed'));
+        setGovernanceError(result.error, 'governance.error.loadListFailed');
       }
     } finally {
       store.setLoading(false);
@@ -121,7 +126,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      store.setError(result.error.message || t('governance.error.loadRuleFailed'));
+      setGovernanceError(result.error, 'governance.error.loadRuleFailed');
       return null;
     } finally {
       store.setLoading(false);
@@ -138,7 +143,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      store.setError(result.error.message || t('governance.error.createRuleFailed'));
+      setGovernanceError(result.error, 'governance.error.createRuleFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -155,7 +160,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      store.setError(result.error.message || t('governance.error.updateRuleFailed'));
+      setGovernanceError(result.error, 'governance.error.updateRuleFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -171,7 +176,7 @@ export function useGovernance() {
         store.removeRule(id);
         return true;
       }
-      store.setError(result.error.message || t('governance.error.deleteRuleFailed'));
+      setGovernanceError(result.error, 'governance.error.deleteRuleFailed');
       return false;
     } finally {
       savingId.value = null;
@@ -199,7 +204,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
-        store.setError(result.error.message || t('governance.error.searchRuleFailed'));
+        setGovernanceError(result.error, 'governance.error.searchRuleFailed');
       }
     } finally {
       store.setLoading(false);
@@ -218,7 +223,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRevisions(result.data.items ?? ([] as RuleRevisionClientDTO[]));
       } else {
-        store.setError(result.error.message || t('governance.error.loadRevisionFailed'));
+        setGovernanceError(result.error, 'governance.error.loadRevisionFailed');
       }
     } finally {
       store.setLoading(false);

@@ -33,6 +33,7 @@ import type {
   CreateGoalRecordReq,
   CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useGoal() {
   const store = useGoalStore();
@@ -52,13 +53,16 @@ export function useGoal() {
   const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(msg: string, err?: ResultError, scope?: string): void {
-    store.setError(msg);
-    if (!err) {
-      console.error(msg);
+  function handleError(error: unknown, fallbackKey: string, scope?: string): void {
+    const message = translateResultError(error, t, { fallbackKey });
+    store.setError(message);
+
+    if (!error || typeof error !== 'object') {
+      console.error(message);
       return;
     }
 
+    const err = error as ResultError;
     const details = err.details?.map((detail) => ({
       field: detail.field,
       code: detail.code,
@@ -71,6 +75,7 @@ export function useGoal() {
       message: err.message,
       details,
       context: err.context,
+      translatedMessage: message,
     });
   }
 
@@ -97,13 +102,13 @@ export function useGoal() {
         );
       } else {
         handleError(
-          result.error.message || t('goal.error.loadListFailed'),
           result.error,
+          'goal.error.loadListFailed',
           'fetchGoals',
         );
       }
     } catch (e: any) {
-      handleError(e?.message || t('goal.error.loadListException'));
+      handleError(e, 'goal.error.loadListException');
     } finally {
       store.setLoading(false);
     }
@@ -123,7 +128,7 @@ export function useGoal() {
         store.setCurrentGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || t('goal.error.loadFailed'), result.error, 'fetchGoal');
+        handleError(result.error, 'goal.error.loadFailed', 'fetchGoal');
         return null;
       }
     } finally {
@@ -142,8 +147,8 @@ export function useGoal() {
         return dto;
       } else {
         handleError(
-          result.error.message || t('goal.error.createFailed'),
           result.error,
+          'goal.error.createFailed',
           'createGoal',
         );
         return null;
@@ -164,8 +169,8 @@ export function useGoal() {
         return dto;
       } else {
         handleError(
-          result.error.message || t('goal.error.updateFailed'),
           result.error,
+          'goal.error.updateFailed',
           'updateGoal',
         );
         return null;
@@ -185,8 +190,8 @@ export function useGoal() {
         return true;
       } else {
         handleError(
-          result.error.message || t('goal.error.deleteFailed'),
           result.error,
+          'goal.error.deleteFailed',
           'deleteGoal',
         );
         return false;
@@ -202,8 +207,8 @@ export function useGoal() {
       store.setGoalFolders((result.data ?? []).map((f: GoalFolder) => f.toDTO()));
     } else {
       handleError(
-        result.error.message || t('goal.error.loadFoldersFailed'),
         result.error,
+        'goal.error.loadFoldersFailed',
         'fetchFolders',
       );
     }
@@ -217,8 +222,8 @@ export function useGoal() {
       return dto;
     } else {
       handleError(
-        result.error.message || t('goal.error.createFolderFailed'),
         result.error,
+        'goal.error.createFolderFailed',
         'createFolder',
       );
       return null;
@@ -233,8 +238,8 @@ export function useGoal() {
       return dto;
     } else {
       handleError(
-        result.error.message || t('goal.error.updateFolderFailed'),
         result.error,
+        'goal.error.updateFolderFailed',
         'updateFolder',
       );
       return null;
@@ -248,8 +253,8 @@ export function useGoal() {
       return true;
     } else {
       handleError(
-        result.error.message || t('goal.error.deleteFolderFailed'),
         result.error,
+        'goal.error.deleteFolderFailed',
         'deleteFolder',
       );
       return false;
@@ -262,8 +267,8 @@ export function useGoal() {
       store.setKeyResults((result.data.keyResults ?? []).map((kr: KeyResult) => kr.toDTO()));
     } else {
       handleError(
-        result.error.message || t('goal.error.loadKRFailed'),
         result.error,
+        'goal.error.loadKRFailed',
         'fetchKeyResults',
       );
     }
@@ -277,8 +282,8 @@ export function useGoal() {
       return dto;
     } else {
       handleError(
-        result.error.message || t('goal.error.addKRFailed'),
         result.error,
+        'goal.error.addKRFailed',
         'addKeyResult',
       );
       return null;
@@ -293,8 +298,8 @@ export function useGoal() {
       return dto;
     } else {
       handleError(
-        result.error.message || t('goal.error.updateKRFailed'),
         result.error,
+        'goal.error.updateKRFailed',
         'updateKeyResult',
       );
       return null;
@@ -308,8 +313,8 @@ export function useGoal() {
       return true;
     } else {
       handleError(
-        result.error.message || t('goal.error.deleteKRFailed'),
         result.error,
+        'goal.error.deleteKRFailed',
         'deleteKeyResult',
       );
       return false;
@@ -322,8 +327,8 @@ export function useGoal() {
       store.setGoalRecords((result.data.records ?? []).map((r: GoalRecord) => r.toDTO()));
     } else {
       handleError(
-        result.error.message || t('goal.error.loadRecordsFailed'),
         result.error,
+        'goal.error.loadRecordsFailed',
         'fetchRecords',
       );
     }
@@ -338,8 +343,8 @@ export function useGoal() {
       return dto;
     } else {
       handleError(
-        result.error.message || t('goal.error.createRecordFailed'),
         result.error,
+        'goal.error.createRecordFailed',
         'createRecord',
       );
       return null;
@@ -375,8 +380,8 @@ export function useGoal() {
         return result.data;
       } else {
         handleError(
-          result.error.message || t('goal.error.loadAggregateViewFailed'),
           result.error,
+          'goal.error.loadAggregateViewFailed',
           'getGoalAggregateView',
         );
         return null;
@@ -392,8 +397,8 @@ export function useGoal() {
       store.setGoalReviews((result.data.reviews ?? []).map((r: GoalReview) => r.toDTO()));
     } else {
       handleError(
-        result.error.message || t('goal.error.loadReviewsFailed'),
         result.error,
+        'goal.error.loadReviewsFailed',
         'fetchReviews',
       );
     }
@@ -407,8 +412,8 @@ export function useGoal() {
       return dto;
     } else {
       handleError(
-        result.error.message || t('goal.error.createReviewFailed'),
         result.error,
+        'goal.error.createReviewFailed',
         'createReview',
       );
       return null;

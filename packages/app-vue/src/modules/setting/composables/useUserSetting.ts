@@ -9,22 +9,26 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserSettingStore } from '../stores/userSettingStore';
+import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useUserSetting() {
   const { t } = useI18n();
   const service = useStrictInject(SETTING_SERVICE_KEY, 'SettingService');
   const store = useUserSettingStore();
+  const presentationStore = usePresentationPreferenceStore();
 
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const userSetting = computed(() => store.userSetting);
   const defaults = computed(() => store.defaults);
 
-  function handleError(message: string): void {
+  function handleError(error: unknown, fallbackKey: string): void {
+    const message = translateResultError(error, t, { fallbackKey });
     store.setError(message);
     console.error(message);
   }
@@ -47,8 +51,10 @@ export function useUserSetting() {
     try {
       const data = await service.getUserSettings();
       store.setUserSetting(data);
+      store.setInitialized(true);
+      presentationStore.syncFromUserSetting(data.preferences);
     } catch (e: unknown) {
-      handleError((e as Error).message || t('setting.errors.loadFailed'));
+      handleError(e, 'setting.errors.loadFailed');
     } finally {
       store.setLoading(false);
     }
@@ -71,9 +77,11 @@ export function useUserSetting() {
         sanitizeForIpc(partial) as Record<string, unknown>,
       );
       store.setUserSetting(data);
+      store.setInitialized(true);
+      presentationStore.syncFromUserSetting(data.preferences);
       return data;
     } catch (e: unknown) {
-      handleError((e as Error).message || t('setting.errors.updateFailed'));
+      handleError(e, 'setting.errors.updateFailed');
       return null;
     }
   }
@@ -83,8 +91,10 @@ export function useUserSetting() {
     try {
       const data = await service.resetUserSettings();
       store.setUserSetting(data);
+      store.setInitialized(true);
+      presentationStore.syncFromUserSetting(data.preferences);
     } catch (e: unknown) {
-      handleError((e as Error).message || t('setting.errors.resetFailed'));
+      handleError(e, 'setting.errors.resetFailed');
     }
   }
 
@@ -92,7 +102,7 @@ export function useUserSetting() {
     try {
       return await service.exportSettings();
     } catch (e: unknown) {
-      handleError((e as Error).message || t('setting.errors.exportFailed'));
+      handleError(e, 'setting.errors.exportFailed');
       return null;
     }
   }
@@ -102,8 +112,10 @@ export function useUserSetting() {
     try {
       const result = await service.importSettings(sanitizeForIpc(data) as string);
       store.setUserSetting(result);
+      store.setInitialized(true);
+      presentationStore.syncFromUserSetting(result.preferences);
     } catch (e: unknown) {
-      handleError((e as Error).message || t('setting.errors.importFailed'));
+      handleError(e, 'setting.errors.importFailed');
     }
   }
 

@@ -5,11 +5,22 @@
  */
 
 // Store
+export { usePresentationPreferenceStore } from './stores/presentationPreferenceStore';
+export type {
+  PresentationPreferenceState,
+  PresentationThemeMode,
+} from './stores/presentationPreferenceStore';
 export { useUserSettingStore } from './stores/userSettingStore';
 export type { UserSettingStoreType } from './stores/userSettingStore';
 
 // Composables
-export { useUserSetting, useLocaleSync, useThemeSync, applyThemeMode } from './composables';
+export {
+  useUserSetting,
+  usePresentationBootstrap,
+  useLocaleSync,
+  useThemeSync,
+  applyThemeMode,
+} from './composables';
 
 // Routes
 export { settingRoutes } from './router';

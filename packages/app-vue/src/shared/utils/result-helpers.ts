@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { getI18nGlobal } from '../../plugins/i18n';
+import { translateResultError } from './translateResultError';
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { message?: string } };
 
@@ -17,7 +18,16 @@ export function useResultHandler() {
       onSuccess(result.data);
       return result.data;
     }
-    error.value = result.error.message || msg;
+    const t = getI18nGlobal()?.t;
+    if (!t) {
+      error.value = result.error.message || msg;
+      return null;
+    }
+
+    const translated = translateResultError(result.error, t, {
+      fallbackKey: 'common.operationFailed',
+    });
+    error.value = translated === t('common.operationFailed') ? msg : translated;
     return null;
   }
 

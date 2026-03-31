@@ -11,7 +11,7 @@
 
 import { watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useUserSettingStore } from '../stores/userSettingStore';
+import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 import { setMenuLocale } from '../../../components/shared/menu-labels';
 import type { SupportedLocale } from '../../../components/shared/menu-labels';
 
@@ -23,13 +23,16 @@ function isSupportedLocale(v: unknown): v is SupportedLocale {
 
 export function useLocaleSync() {
   const { locale } = useI18n({ useScope: 'global' });
-  const store = useUserSettingStore();
+  const store = usePresentationPreferenceStore();
 
   // Immediate sync + reactive watch
   const syncLocale = () => {
-    const lang = store.getValue('locale.language');
+    const lang = store.locale;
     if (isSupportedLocale(lang) && lang !== locale.value) {
       locale.value = lang;
+    }
+
+    if (isSupportedLocale(lang)) {
       setMenuLocale(lang);
       document.documentElement.lang = lang;
     }
@@ -39,7 +42,7 @@ export function useLocaleSync() {
   syncLocale();
 
   // Watch for subsequent store changes
-  watch(() => store.getValue('locale.language'), syncLocale);
+  watch(() => store.locale, syncLocale);
 
   return { locale };
 }

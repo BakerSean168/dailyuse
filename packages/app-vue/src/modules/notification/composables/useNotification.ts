@@ -11,6 +11,7 @@ import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useNotification() {
   const service = useStrictInject(NOTIFICATION_SERVICE_KEY, 'NotificationService');
@@ -24,7 +25,8 @@ export function useNotification() {
   const pagination = computed(() => store.pagination);
   const hasUnread = computed(() => store.unreadCount > 0);
 
-  function handleError(message: string): void {
+  function handleError(error: unknown, fallbackKey: string): void {
+    const message = translateResultError(error, t, { fallbackKey });
     store.setError(message);
     console.error(message);
   }
@@ -43,7 +45,7 @@ export function useNotification() {
       if (result.ok) {
         store.setNotifications(result.data.notifications ?? [], result.data.total ?? 0);
       } else {
-        handleError(result.error.message || t('notification.error.fetchFailed'));
+        handleError(result.error, 'notification.error.fetchFailed');
       }
     } finally {
       store.setLoading(false);
@@ -56,7 +58,7 @@ export function useNotification() {
       store.updateNotification(result.data);
       store.decrementUnread();
     } else {
-      handleError(result.error.message || t('notification.error.markReadFailed'));
+      handleError(result.error, 'notification.error.markReadFailed');
     }
   }
 
@@ -73,7 +75,7 @@ export function useNotification() {
       });
       store.setUnreadCount(0);
     } else {
-      handleError(result.error.message || t('notification.error.markAllReadFailed'));
+      handleError(result.error, 'notification.error.markAllReadFailed');
     }
   }
 
@@ -82,7 +84,7 @@ export function useNotification() {
     if (result.ok) {
       store.removeNotification(id);
     } else {
-      handleError(result.error.message || t('notification.error.deleteFailed'));
+      handleError(result.error, 'notification.error.deleteFailed');
     }
   }
 
@@ -97,7 +99,7 @@ export function useNotification() {
       store.setNotifications([], 0);
       store.setUnreadCount(0);
     } else {
-      handleError(result.error.message || t('notification.error.deleteFailed'));
+      handleError(result.error, 'notification.error.deleteFailed');
     }
   }
 
@@ -106,7 +108,7 @@ export function useNotification() {
     if (result.ok) {
       store.setUnreadCount(result.data.count ?? 0);
     } else {
-      handleError(result.error.message || t('notification.error.refreshStatsFailed'));
+      handleError(result.error, 'notification.error.refreshStatsFailed');
     }
   }
 

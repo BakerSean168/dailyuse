@@ -238,6 +238,7 @@ import {
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
 import { Calendar as CalendarIcon } from 'lucide-vue-next';
+import { translateResultError } from '../../../../../shared/utils/translateResultError';
 
 const { t } = useI18n();
 
@@ -328,6 +329,12 @@ const parseDateInput = (dateStr: string): number | null => {
   return new Date(dateStr + 'T00:00:00').getTime();
 };
 
+function getTimeConfigErrorMessage(error: unknown) {
+  return translateResultError(error, t, {
+    fallbackKey: 'task.timeConfig.updateFailed',
+  });
+}
+
 /**
  * Combine hour + minute into minute-of-day (0-1439)
  */
@@ -410,8 +417,7 @@ const handleDateChange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新日期失败:', error);
-    validationError.value =
-      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    validationError.value = getTimeConfigErrorMessage(error);
     emit('update:validation', false);
   }
 };
@@ -438,8 +444,7 @@ const rebuildTimePoint = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间点失败:', error);
-    validationError.value =
-      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    validationError.value = getTimeConfigErrorMessage(error);
     emit('update:validation', false);
   }
 };
@@ -476,8 +481,7 @@ const rebuildTimeRange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间段失败:', error);
-    validationError.value =
-      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    validationError.value = getTimeConfigErrorMessage(error);
     emit('update:validation', false);
   }
 };
@@ -522,8 +526,7 @@ const handleTimeTypeChange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间类型失败:', error);
-    validationError.value =
-      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    validationError.value = getTimeConfigErrorMessage(error);
     emit('update:validation', false);
   }
 };

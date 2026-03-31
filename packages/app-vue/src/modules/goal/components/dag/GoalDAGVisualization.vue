@@ -166,6 +166,7 @@ import { useGoal } from '../../composables/useGoal';
 import { useResizeObserver } from '@vueuse/core';
 import ExportDialog from './ExportDialog.vue';
 import { dagExportService, type ExportOptions } from '../../application/services/DAGExportService';
+import { translateResultError } from '../../../../shared/utils/translateResultError';
 
 use([TitleComponent, TooltipComponent, LegendComponent, GraphChart, CanvasRenderer]);
 
@@ -201,6 +202,10 @@ const isRetrying = ref(false);
 const currentZoom = ref(1);
 const currentCenter = ref<[number, number]>([0, 0]);
 const isUpdatingViewport = ref(false); // 防止循环更新
+
+function getGoalDagErrorMessage(error: unknown, fallbackKey: string) {
+  return translateResultError(error, t, { fallbackKey });
+}
 
 // 计算属性
 const aggregateGoal = computed<GoalClientDTO | null>(() => aggregateView.value?.goal ?? null);
@@ -659,7 +664,7 @@ const loadGoalData = async () => {
     aggregateView.value = result;
   } catch (error) {
     console.error('Failed to load goal aggregate view:', error);
-    loadError.value = error instanceof Error ? error.message : t('goal.dag.loadDataFailed');
+    loadError.value = getGoalDagErrorMessage(error, 'goal.dag.loadDataFailed');
   } finally {
     isLoading.value = false;
   }

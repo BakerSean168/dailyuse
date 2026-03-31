@@ -6,10 +6,11 @@
  */
 
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { getI18nGlobal } from '../../../plugins/i18n';
 import type { DashboardData } from '../types';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 // ── Default empty state ──
 
@@ -33,6 +34,7 @@ const emptyData: DashboardData = {
 
 export function useDashboard() {
   const dashboardService = useStrictInject(DASHBOARD_SERVICE_KEY, 'DashboardService');
+  const { t } = useI18n();
 
   const data = ref<DashboardData>({ ...emptyData });
   const isLoading = ref(false);
@@ -60,10 +62,9 @@ export function useDashboard() {
           upcomingSchedule: result.data.upcomingSchedule ?? [],
         };
       } else {
-        error.value =
-          result.error.message ||
-          getI18nGlobal()?.t('dashboard.error.loadFailed') ||
-          'Failed to load dashboard data';
+        error.value = translateResultError(result.error, t, {
+          fallbackKey: 'dashboard.error.loadFailed',
+        });
         console.error('[dashboard]', error.value);
       }
     } finally {

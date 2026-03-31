@@ -176,8 +176,8 @@ export function fromHttpResponse<T>(response: HttpResponse<T>): Result<T, Result
     timestamp: response.timestamp,
   };
 
-  if (response.ok && response.data !== undefined) {
-    return ok(response.data, meta);
+  if (response.ok) {
+    return ok(response.data as T, meta);
   }
 
   return fail(

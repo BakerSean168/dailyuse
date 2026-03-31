@@ -376,6 +376,7 @@ import {
 import { KnowledgeNoteSubpathSchema } from '@dailyuse/contracts/setting';
 import { useUserSetting } from '../composables/useUserSetting';
 import { useAI } from '../../ai/composables/useAI';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 interface AIFormState {
   knowledgeNoteSubpath: string;
@@ -461,6 +462,10 @@ const presetApiKeys = reactive<Record<string, string>>({
   openai: '',
   openrouter: '',
 });
+
+function getAISettingErrorMessage(error: unknown, fallbackKey: string) {
+  return translateResultError(error, t, { fallbackKey });
+}
 
 const aiSettings = computed(() => getCategory('ai'));
 
@@ -549,7 +554,15 @@ const providerTestDetails = computed(() => {
       .filter(Boolean)
       .join(' · ');
   }
-  return [providerTestResult.value.error, latency].filter(Boolean).join(' · ');
+  return [
+    getAISettingErrorMessage(
+      providerTestResult.value.error ? { message: providerTestResult.value.error } : null,
+      'setting.ai.providerTestFailed',
+    ),
+    latency,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 });
 
 async function patchAISettings(patch: Partial<AIFormState>) {
@@ -728,8 +741,7 @@ async function handleRefreshModels(providerId: string) {
     });
     toast.success(t('setting.ai.providerModelsRefreshed'));
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : t('setting.ai.providerModelsRefreshFailed');
+    const message = getAISettingErrorMessage(error, 'setting.ai.providerModelsRefreshFailed');
     console.debug('[AISettings] refreshProviderModels:error', {
       providerId,
       message,
@@ -778,7 +790,7 @@ async function submitQuickProvider(template: AIProviderTemplate) {
     presetApiKeys[template.id] = '';
     await handleRefreshModels(String(provider.id));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('setting.ai.providerActionFailed'));
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
   } finally {
     quickProviderSubmittingId.value = null;
   }
@@ -829,7 +841,7 @@ async function submitProvider() {
 
     populateForm(hydratedProvider);
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('setting.ai.providerActionFailed'));
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
   } finally {
     isSubmittingProvider.value = false;
   }
@@ -849,10 +861,17 @@ async function testProviderConnection() {
     if (providerTestResult.value.ok) {
       toast.success(t('setting.ai.providerTestPassed'));
     } else {
-      toast.error(providerTestResult.value.error || t('setting.ai.providerTestFailed'));
+      toast.error(
+        getAISettingErrorMessage(
+          providerTestResult.value.error
+            ? { message: providerTestResult.value.error }
+            : null,
+          'setting.ai.providerTestFailed',
+        ),
+      );
     }
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('setting.ai.providerTestFailed'));
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerTestFailed'));
   } finally {
     isTestingProvider.value = false;
   }
@@ -863,7 +882,7 @@ async function handleSetDefault(providerId: string) {
     await setDefaultProvider(providerId);
     toast.success(t('setting.ai.providerDefaultUpdated'));
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('setting.ai.providerActionFailed'));
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
   }
 }
 
@@ -875,7 +894,7 @@ async function handleDeleteProvider(providerId: string) {
       resetProviderForm();
     }
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('setting.ai.providerActionFailed'));
+    toast.error(getAISettingErrorMessage(error, 'setting.ai.providerActionFailed'));
   }
 }
 </script>

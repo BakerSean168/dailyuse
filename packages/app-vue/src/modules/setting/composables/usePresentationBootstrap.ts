@@ -1,0 +1,85 @@
+import { watch } from 'vue';
+import { useAuthenticationStore } from '../../authentication/stores/authenticationStore';
+import { SETTING_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
+import { useUserSettingStore } from '../stores/userSettingStore';
+import { getI18nGlobal } from '../../../plugins/i18n';
+import { translateResultError } from '../../../shared/utils/translateResultError';
+
+export function usePresentationBootstrap() {
+  const authStore = useAuthenticationStore();
+  const userSettingStore = useUserSettingStore();
+  const presentationStore = usePresentationPreferenceStore();
+  const settingService = useStrictInject(SETTING_SERVICE_KEY, 'SettingService');
+
+  let loadingPromise: Promise<void> | null = null;
+
+  if (userSettingStore.userSetting) {
+    presentationStore.syncFromUserSetting(userSettingStore.userSetting.preferences);
+  }
+
+  async function loadUserSettings(): Promise<void> {
+    if (!authStore.isAuthenticated) {
+      return;
+    }
+
+    if (loadingPromise) {
+      return loadingPromise;
+    }
+
+    loadingPromise = (async () => {
+      userSettingStore.setLoading(true);
+      userSettingStore.setError(null);
+
+      try {
+        const data = await settingService.getUserSettings();
+        userSettingStore.setUserSetting(data);
+        userSettingStore.setInitialized(true);
+        presentationStore.syncFromUserSetting(data.preferences);
+      } catch (error) {
+        const t = getI18nGlobal()?.t;
+        userSettingStore.setError(
+          t
+            ? translateResultError(error, t, {
+                fallbackKey: 'setting.errors.loadFailed',
+              })
+            : error instanceof Error
+              ? error.message
+              : String(error),
+        );
+      } finally {
+        userSettingStore.setLoading(false);
+        loadingPromise = null;
+      }
+    })();
+
+    return loadingPromise;
+  }
+
+  watch(
+    () => authStore.isAuthenticated,
+    (isAuthenticated) => {
+      if (isAuthenticated) {
+        void loadUserSettings();
+        return;
+      }
+
+      userSettingStore.reset();
+    },
+    { immediate: true },
+  );
+
+  watch(
+    () => userSettingStore.userSetting,
+    (setting) => {
+      if (setting) {
+        presentationStore.syncFromUserSetting(setting.preferences);
+      }
+    },
+  );
+
+  return {
+    loadUserSettings,
+  };
+}

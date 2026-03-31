@@ -34,6 +34,10 @@ function createSseResponse(events: string[]): Response {
   );
 }
 
+function createCrlfSseEvent(event: string, data: unknown): string {
+  return `event: ${event}\r\ndata: ${JSON.stringify(data)}\r\n\r\n`;
+}
+
 describe('AIMessageHttpAdapter', () => {
   it('preserves result error code for sendMessage failures', async () => {
     const httpClient = createHttpClientStub({
@@ -115,5 +119,41 @@ describe('AIMessageHttpAdapter', () => {
       message: '请求过于频繁',
       details: [{ code: 'RETRY_LATER', message: 'slow down' }],
     } satisfies Partial<ResultClientError>);
+  });
+
+  it('parses CRLF-delimited SSE messages and done events', async () => {
+    const onChunk = vi.fn();
+    const onDone = vi.fn();
+    const httpClient = createHttpClientStub({
+      stream: vi.fn().mockResolvedValue(
+        createSseResponse([
+          createCrlfSseEvent('message', { role: 'assistant', content: '2' }),
+          createCrlfSseEvent('done', {
+            userMessage: { id: 'user-1', content: '1+1' },
+            assistantMessage: { id: 'assistant-1', content: '2' },
+            tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+            providerId: 'provider-1',
+            processingTimeMs: 123,
+          }),
+        ]),
+      ),
+    });
+    const adapter = new AIMessageHttpAdapter(httpClient);
+
+    await expect(
+      adapter.streamMessage(
+        { conversationId: 'conv-1' as never, content: '1+1' },
+        { onChunk, onDone },
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(onChunk).toHaveBeenCalledWith({ role: 'assistant', content: '2' });
+    expect(onDone).toHaveBeenCalledWith({
+      userMessage: { id: 'user-1', content: '1+1' },
+      assistantMessage: { id: 'assistant-1', content: '2' },
+      tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+      providerId: 'provider-1',
+      processingTimeMs: 123,
+    });
   });
 });

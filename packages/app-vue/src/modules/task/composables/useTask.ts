@@ -23,6 +23,7 @@ import {
   getDesktopAuthApi,
   recoverDesktopAuthIfNeeded,
 } from '../../../shared/utils/desktopAuthRecovery';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 type TaskTemplateListParams = {
   page?: number;
@@ -48,7 +49,8 @@ export function useTask() {
   const pagination = computed(() => store.pagination);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(message: string): void {
+  function handleError(error: unknown, fallbackKey: string): void {
+    const message = translateResultError(error, t, { fallbackKey });
     store.setError(message);
     toast.error(t('task.error.operationFailed'), { description: message });
   }
@@ -86,7 +88,7 @@ export function useTask() {
           result.data.total ?? 0,
         );
       } else {
-        handleError(result.error.message || t('task.error.loadTemplatesFailed'));
+        handleError(result.error, 'task.error.loadTemplatesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -122,7 +124,7 @@ export function useTask() {
         );
         store.setDependencies(result.data.dependencies ?? []);
       } else {
-        handleError(result.error.message || t('task.error.loadTemplatesFailed'));
+        handleError(result.error, 'task.error.loadTemplatesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -142,7 +144,7 @@ export function useTask() {
         store.setCurrentTemplate(dto);
         return dto;
       }
-      handleError(result.error.message || t('task.error.loadTemplatesFailed'));
+      handleError(result.error, 'task.error.loadTemplatesFailed');
       return null;
     } finally {
       store.setLoading(false);
@@ -163,7 +165,7 @@ export function useTask() {
         toast.success(t('task.error.createSuccess'));
         return dto;
       }
-      handleError(result.error.message || t('task.error.createFailed'));
+      handleError(result.error, 'task.error.createFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -184,7 +186,7 @@ export function useTask() {
         toast.success(t('task.error.updateSuccess'));
         return dto;
       }
-      handleError(result.error.message || t('task.error.updateFailed'));
+      handleError(result.error, 'task.error.updateFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -204,7 +206,7 @@ export function useTask() {
         toast.success(t('task.error.deleteSuccess'));
         return true;
       }
-      handleError(result.error.message || t('task.error.deleteFailed'));
+      handleError(result.error, 'task.error.deleteFailed');
       return false;
     } finally {
       savingId.value = null;
@@ -222,7 +224,7 @@ export function useTask() {
       toast.success(t('task.error.activateSuccess'));
       return dto;
     }
-    handleError(result.error.message || t('task.error.activateFailed'));
+    handleError(result.error, 'task.error.activateFailed');
     return null;
   }
 
@@ -237,7 +239,7 @@ export function useTask() {
       toast.success(t('task.error.pauseSuccess'));
       return dto;
     }
-    handleError(result.error.message || t('task.error.pauseFailed'));
+    handleError(result.error, 'task.error.pauseFailed');
     return null;
   }
 
@@ -252,7 +254,7 @@ export function useTask() {
       toast.success(t('task.error.archiveSuccess'));
       return dto;
     }
-    handleError(result.error.message || t('task.error.archiveFailed'));
+    handleError(result.error, 'task.error.archiveFailed');
     return null;
   }
 
@@ -283,7 +285,7 @@ export function useTask() {
       return result.data;
     }
 
-    handleError(result.error.message || t('task.error.operationFailed'));
+    handleError(result.error, 'task.error.operationFailed');
     return null;
   }
 
@@ -300,7 +302,7 @@ export function useTask() {
       return true;
     }
 
-    handleError(result.error.message || t('task.error.operationFailed'));
+    handleError(result.error, 'task.error.operationFailed');
     return false;
   }
 
@@ -322,7 +324,7 @@ export function useTask() {
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
       } else {
-        handleError(result.error.message || t('task.error.loadInstancesFailed'));
+        handleError(result.error, 'task.error.loadInstancesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -342,7 +344,7 @@ export function useTask() {
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
       } else {
-        handleError(result.error.message || t('task.error.loadInstancesFailed'));
+        handleError(result.error, 'task.error.loadInstancesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -359,7 +361,7 @@ export function useTask() {
       store.updateInstance(dto);
       return dto;
     }
-    handleError(result.error.message || t('task.error.startFailed'));
+    handleError(result.error, 'task.error.startFailed');
     return null;
   }
 
@@ -374,7 +376,7 @@ export function useTask() {
       toast.success(t('task.error.completeSuccess'));
       return dto;
     }
-    handleError(result.error.message || t('task.error.completeFailed'));
+    handleError(result.error, 'task.error.completeFailed');
     return null;
   }
 
@@ -389,7 +391,7 @@ export function useTask() {
       toast.success(t('task.error.skipSuccess'));
       return dto;
     }
-    handleError(result.error.message || t('task.error.skipFailed'));
+    handleError(result.error, 'task.error.skipFailed');
     return null;
   }
 

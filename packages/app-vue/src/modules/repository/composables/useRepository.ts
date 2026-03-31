@@ -24,6 +24,8 @@ import {
   recoverDesktopAuthIfNeeded,
   type DesktopAuthApi,
 } from '../../../shared/utils/desktopAuthRecovery';
+import { getI18nGlobal } from '../../../plugins/i18n';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -827,10 +829,18 @@ function guessMimeType(fileName: string): string {
 }
 
 function getResultErrorMessage(
-  result: { error?: { message?: string } },
+  result: { error?: { code?: string; message?: string } },
   fallbackMessage: string,
 ): string {
-  return result.error?.message || fallbackMessage;
+  const t = getI18nGlobal()?.t;
+  if (!t) {
+    return result.error?.message || fallbackMessage;
+  }
+
+  const translated = translateResultError(result.error, t, {
+    fallbackKey: 'common.operationFailed',
+  });
+  return translated === t('common.operationFailed') ? fallbackMessage : translated;
 }
 
 function reorderBookmarkCollection(

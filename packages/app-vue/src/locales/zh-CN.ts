@@ -55,6 +55,17 @@ export default {
       rose: '玫瑰色',
     },
   },
+  errors: {
+    UNAUTHORIZED: '当前登录状态无效，请重新登录',
+    FORBIDDEN: '你没有权限执行此操作',
+    NOT_FOUND: '请求的内容不存在或已被移除',
+    CONFLICT: '当前操作与现有数据冲突，请稍后再试',
+    VALIDATION_ERROR: '提交信息不合法，请检查后重试',
+    SERVICE_UNAVAILABLE: '服务暂不可用，请稍后再试',
+    INTERNAL_ERROR: '服务出现异常，请稍后再试',
+    TIMEOUT: '请求超时，请稍后再试',
+    UNKNOWN: '操作失败，请稍后再试',
+  },
 
   // ── Menu actions (from menu-labels.ts) ─────────────────
   menu: {
@@ -775,6 +786,40 @@ export default {
   },
   // ── Authentication module ────────────────────────────────
   auth: {
+    page: {
+      description: '登录你的账户以继续使用工作区',
+      emailPlaceholder: 'name@example.com',
+      or: '或者',
+      guestMode: '访客模式',
+      guestLoading: '进入访客模式...',
+      legalNotice: '继续即表示您同意服务条款与隐私政策。',
+      locales: {
+        zhCN: '中文',
+        enUS: 'EN',
+      },
+      themes: {
+        auto: '系统',
+        light: '浅色',
+        dark: '深色',
+      },
+    },
+    desktop: {
+      title: 'DailyUse Desktop',
+      description: '账号由你选择，自动登录只会在你主动开启后生效。',
+      tabs: {
+        login: '登录',
+        register: '注册',
+        quickLogin: '快速登录',
+      },
+      rememberPassword: '记住密码',
+      autoLogin: '自动登录',
+      autoLoginHint:
+        '只有你明确勾选“自动登录”，下次启动才会直接尝试恢复会话；否则始终先显示登录窗口。',
+      createAccount: '创建账号',
+      quickLoginDescription: '保留这台设备上登录过的账号，像 QQ / Steam 一样快速切换。',
+      noRememberedAccounts: '本机还没有保存过登录账号。',
+      nicknamePolicy: '个人中心里的展示名统一使用 nickname，不再额外区分 display name。',
+    },
     login: {
       title: '登录',
       description: '登录您的账户以继续',
@@ -825,7 +870,19 @@ export default {
     validation: {
       emailInvalid: '请输入有效的邮箱地址',
       passwordLength: '密码长度至少为 8 位',
+      loginCredentialsRequired: '请填写邮箱和密码',
+      registerFieldsRequired: '请填写所有字段',
       passwordMismatch: '两次输入的密码不一致',
+      guestModeUnavailable: '访客模式仅在桌面端可用',
+    },
+    errors: {
+      USER_ALREADY_EXISTS: '该邮箱已被注册',
+      CONFLICT: '当前操作与现有数据冲突，请稍后再试',
+      UNAUTHORIZED: '邮箱或密码错误',
+      VALIDATION_ERROR: '提交信息不合法，请检查后重试',
+      SERVICE_UNAVAILABLE: '认证服务暂不可用，请稍后再试',
+      INTERNAL_ERROR: '认证服务异常，请稍后再试',
+      UNKNOWN: '认证失败，请稍后再试',
     },
     smsCode: {
       countdown: '{n}秒后重发',
@@ -844,6 +901,9 @@ export default {
       smsCodeFailed: '验证码发送失败',
       sendFailed: '发送失败',
       loggedOut: '已退出登录',
+      guestModeEntered: '已进入访客模式',
+      guestModeLocalOnly: '访客数据仅保存在本地设备',
+      guestModeFailed: '访客模式失败',
       loadSessionsFailed: '加载会话列表失败',
       loadFailed: '加载失败',
       sessionRevoked: '会话已撤销',
@@ -859,6 +919,7 @@ export default {
       passwordReset: '密码已重置',
       loginWithNew: '请使用新密码登录',
       resetPasswordFailed: '重置密码失败',
+      removeRememberedAccountFailed: '移除记住的账号失败',
     },
   },
 
@@ -867,6 +928,8 @@ export default {
     title: '个人中心',
     center: '个人中心',
     description: '昵称就是你的唯一展示名，修改后会直接持久化到当前账号。',
+    guestLabel: '本地访客',
+    logoutHandlerUnavailable: '退出登录服务当前不可用',
     actions: {
       logout: '退出登录',
       saveProfile: '保存资料',
@@ -913,6 +976,9 @@ export default {
       accountClosed: '账户已注销',
       closeAccountFailed: '注销账户失败',
       closeFailed: '注销失败',
+      guestProfileUpdateUnavailable: '访客模式下无法更新资料',
+      guestSettingsUpdateUnavailable: '访客模式下无法更新设置',
+      guestCloseAccountUnavailable: '访客模式下无法注销账户',
     },
     logoutHint: '你可以在这里安全退出当前账户，会立即返回登录页。',
     logoutConfirm: {

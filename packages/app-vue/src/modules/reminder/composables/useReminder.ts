@@ -29,6 +29,7 @@ import {
   getDesktopAuthApi,
   recoverDesktopAuthIfNeeded,
 } from '../../../shared/utils/desktopAuthRecovery';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useReminder() {
   const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
@@ -44,9 +45,10 @@ export function useReminder() {
   const error = computed(() => store.error);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(msg: string): void {
-    store.setError(msg);
-    console.error(msg);
+  function handleError(error: unknown, fallbackKey: string): void {
+    const message = translateResultError(error, t, { fallbackKey });
+    store.setError(message);
+    console.error(message);
   }
 
   async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
@@ -83,7 +85,7 @@ export function useReminder() {
         const templates = result.data.templates;
         store.setTemplates(templates, templates.length);
       } else {
-        handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
+        handleError(result.error, 'reminder.error.loadTemplatesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -101,7 +103,7 @@ export function useReminder() {
     if (result.ok) {
       return result.data;
     }
-    handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
+    handleError(result.error, 'reminder.error.loadTemplatesFailed');
     return null;
   }
 
@@ -118,7 +120,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       } else {
-        handleError(result.error.message || t('reminder.error.createTemplateFailed'));
+        handleError(result.error, 'reminder.error.createTemplateFailed');
         return null;
       }
     } finally {
@@ -140,7 +142,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       } else {
-        handleError(result.error.message || t('reminder.error.updateTemplateFailed'));
+        handleError(result.error, 'reminder.error.updateTemplateFailed');
         return null;
       }
     } finally {
@@ -159,7 +161,7 @@ export function useReminder() {
         await reloadReminderScene();
         return true;
       } else {
-        handleError(result.error.message || t('reminder.error.deleteTemplateFailed'));
+        handleError(result.error, 'reminder.error.deleteTemplateFailed');
         return false;
       }
     } finally {
@@ -179,7 +181,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error.message || t('reminder.error.toggleTemplateFailed'));
+      handleError(result.error, 'reminder.error.toggleTemplateFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -201,7 +203,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error.message || t('reminder.error.moveTemplateFailed'));
+      handleError(result.error, 'reminder.error.moveTemplateFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -224,7 +226,7 @@ export function useReminder() {
         const groups = result.data.groups;
         store.setGroups(groups);
       } else {
-        handleError(result.error.message || t('reminder.error.loadGroupsFailed'));
+        handleError(result.error, 'reminder.error.loadGroupsFailed');
       }
     } finally {
       store.setLoading(false);
@@ -242,7 +244,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       } else {
-        handleError(result.error.message || t('reminder.error.createGroupFailed'));
+        handleError(result.error, 'reminder.error.createGroupFailed');
         return null;
       }
     } finally {
@@ -264,7 +266,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       } else {
-        handleError(result.error.message || t('reminder.error.updateGroupFailed'));
+        handleError(result.error, 'reminder.error.updateGroupFailed');
         return null;
       }
     } finally {
@@ -281,7 +283,7 @@ export function useReminder() {
         await reloadReminderScene();
         return true;
       } else {
-        handleError(result.error.message || t('reminder.error.deleteGroupFailed'));
+        handleError(result.error, 'reminder.error.deleteGroupFailed');
         return false;
       }
     } finally {
@@ -300,7 +302,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error.message || t('reminder.error.toggleGroupFailed'));
+      handleError(result.error, 'reminder.error.toggleGroupFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -321,7 +323,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error.message || t('reminder.error.updateGroupFailed'));
+      handleError(result.error, 'reminder.error.updateGroupFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -341,7 +343,7 @@ export function useReminder() {
       store.setPreferences(result.data);
       return result.data;
     }
-    handleError(result.error.message || t('reminder.error.loadPreferencesFailed'));
+    handleError(result.error, 'reminder.error.loadPreferencesFailed');
     return null;
   }
 
@@ -363,7 +365,7 @@ export function useReminder() {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error.message || t('reminder.error.updatePreferencesFailed'));
+      handleError(result.error, 'reminder.error.updatePreferencesFailed');
       return null;
     } finally {
       savingId.value = null;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { UserRound, Trash2, Sparkles } from 'lucide-vue-next';
 import {
   Button,
@@ -35,6 +36,7 @@ const {
   removeRememberedAccount,
   isLoading,
 } = useAuth();
+const { t } = useI18n();
 
 const mode = ref<'login' | 'register' | 'quick-login'>('login');
 const rememberedAccounts = ref<RememberedAccountItem[]>([]);
@@ -84,7 +86,7 @@ async function loadRememberedAccounts() {
 
 async function handleLogin() {
   if (!email.value || !password.value) {
-    toast.error('请填写邮箱和密码');
+    toast.error(t('auth.validation.loginCredentialsRequired'));
     return;
   }
 
@@ -98,12 +100,12 @@ async function handleLogin() {
 
 async function handleRegister() {
   if (!registerEmail.value || !registerPassword.value || !registerConfirmPassword.value) {
-    toast.error('请填写完整注册信息');
+    toast.error(t('auth.validation.registerFieldsRequired'));
     return;
   }
 
   if (registerPassword.value !== registerConfirmPassword.value) {
-    toast.error('两次密码不一致');
+    toast.error(t('auth.validation.passwordMismatch'));
     return;
   }
 
@@ -146,7 +148,7 @@ onMounted(() => {
           <div class="min-w-0 space-y-1">
             <h1 class="text-xl font-semibold tracking-tight">DailyUse Desktop</h1>
             <p class="text-sm leading-6 text-muted-foreground">
-              账号由你选择，自动登录只会在你主动开启后生效。
+              {{ t('auth.desktop.description') }}
             </p>
           </div>
         </div>
@@ -155,14 +157,20 @@ onMounted(() => {
           <TabsList
             class="grid h-auto w-full grid-cols-3 rounded-2xl border border-border/70 bg-muted/80 p-1 backdrop-blur-sm"
           >
-            <TabsTrigger value="login" class="rounded-xl">登录</TabsTrigger>
-            <TabsTrigger value="register" class="rounded-xl">注册</TabsTrigger>
-            <TabsTrigger value="quick-login" class="rounded-xl">快速登录</TabsTrigger>
+            <TabsTrigger value="login" class="rounded-xl">{{
+              t('auth.desktop.tabs.login')
+            }}</TabsTrigger>
+            <TabsTrigger value="register" class="rounded-xl">{{
+              t('auth.desktop.tabs.register')
+            }}</TabsTrigger>
+            <TabsTrigger value="quick-login" class="rounded-xl">{{
+              t('auth.desktop.tabs.quickLogin')
+            }}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" class="mt-0 space-y-4">
             <div class="space-y-2">
-              <Label for="login-email">邮箱</Label>
+              <Label for="login-email">{{ t('auth.field.email') }}</Label>
               <Input
                 id="login-email"
                 v-model="email"
@@ -172,12 +180,12 @@ onMounted(() => {
               />
             </div>
             <div class="space-y-2">
-              <Label for="login-password">密码</Label>
+              <Label for="login-password">{{ t('auth.field.password') }}</Label>
               <Input
                 id="login-password"
                 v-model="password"
                 type="password"
-                placeholder="请输入密码"
+                :placeholder="t('auth.placeholder.password')"
                 :disabled="isLoading"
                 @keyup.enter="handleLogin"
               />
@@ -186,31 +194,31 @@ onMounted(() => {
             <div class="space-y-3 rounded-2xl border border-border/70 bg-muted/60 p-4">
               <label class="flex items-center gap-3 text-sm">
                 <Checkbox v-model:checked="rememberPassword" :disabled="isLoading" />
-                <span>记住密码</span>
+                <span>{{ t('auth.desktop.rememberPassword') }}</span>
               </label>
               <label class="flex items-center gap-3 text-sm">
                 <Checkbox v-model:checked="autoLogin" :disabled="isLoading" />
-                <span>自动登录</span>
+                <span>{{ t('auth.desktop.autoLogin') }}</span>
               </label>
               <p class="text-xs leading-5 text-muted-foreground">
-                只有你明确勾选“自动登录”，下次启动才会直接尝试恢复会话；否则始终先显示登录窗口。
+                {{ t('auth.desktop.autoLoginHint') }}
               </p>
             </div>
 
             <div class="flex flex-wrap gap-3">
               <Button class="min-w-32 flex-1" :disabled="isLoading" @click="handleLogin"
-                >登录</Button
+                >{{ t('auth.login.submit') }}</Button
               >
               <Button variant="outline" :disabled="isLoading" @click="enterGuestMode">
                 <UserRound class="mr-2 h-4 w-4" />
-                访客模式
+                {{ t('auth.page.guestMode') }}
               </Button>
             </div>
           </TabsContent>
 
           <TabsContent value="register" class="mt-0 space-y-4">
             <div class="space-y-2">
-              <Label for="register-email">邮箱</Label>
+              <Label for="register-email">{{ t('auth.field.email') }}</Label>
               <Input
                 id="register-email"
                 v-model="registerEmail"
@@ -220,7 +228,7 @@ onMounted(() => {
               />
             </div>
             <div class="space-y-2">
-              <Label for="register-password">密码</Label>
+              <Label for="register-password">{{ t('auth.field.password') }}</Label>
               <Input
                 id="register-password"
                 v-model="registerPassword"
@@ -229,7 +237,7 @@ onMounted(() => {
               />
             </div>
             <div class="space-y-2">
-              <Label for="register-confirm-password">确认密码</Label>
+              <Label for="register-confirm-password">{{ t('auth.field.confirmPassword') }}</Label>
               <Input
                 id="register-confirm-password"
                 v-model="registerConfirmPassword"
@@ -239,14 +247,16 @@ onMounted(() => {
               />
             </div>
 
-            <Button class="w-full" :disabled="isLoading" @click="handleRegister">创建账号</Button>
+            <Button class="w-full" :disabled="isLoading" @click="handleRegister">{{
+              t('auth.desktop.createAccount')
+            }}</Button>
           </TabsContent>
 
           <TabsContent value="quick-login" class="mt-0 space-y-4">
             <div
               class="rounded-2xl border border-border/70 bg-muted/60 p-4 text-sm text-muted-foreground"
             >
-              保留这台设备上登录过的账号，像 QQ / Steam 一样快速切换。
+              {{ t('auth.desktop.quickLoginDescription') }}
             </div>
 
             <ScrollArea class="max-h-[15rem] pr-3">
@@ -270,8 +280,10 @@ onMounted(() => {
                       {{ account.identifier }}
                     </div>
                     <div class="mt-2 flex gap-2 text-[11px] text-muted-foreground">
-                      <span v-if="account.rememberPassword">记住密码</span>
-                      <span v-if="account.autoLogin">自动登录</span>
+                      <span v-if="account.rememberPassword">{{
+                        t('auth.desktop.rememberPassword')
+                      }}</span>
+                      <span v-if="account.autoLogin">{{ t('auth.desktop.autoLogin') }}</span>
                     </div>
                   </div>
                   <Button
@@ -288,13 +300,13 @@ onMounted(() => {
                   v-if="rememberedAccounts.length === 0"
                   class="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground"
                 >
-                  本机还没有保存过登录账号。
+                  {{ t('auth.desktop.noRememberedAccounts') }}
                 </div>
               </div>
             </ScrollArea>
 
             <div class="rounded-2xl bg-accent/60 px-4 py-3 text-sm text-accent-foreground">
-              个人中心里的展示名统一使用 `nickname`，不再额外区分 display name。
+              {{ t('auth.desktop.nicknamePolicy') }}
             </div>
           </TabsContent>
         </Tabs>

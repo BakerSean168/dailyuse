@@ -13,6 +13,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useSession() {
   const store = useAuthenticationStore();
@@ -23,6 +24,13 @@ export function useSession() {
   const activeSessions = computed(() => store.activeSessions);
   const currentSession = computed(() => store.currentSession);
   const sessionCount = computed(() => store.getActiveSessionCount);
+
+  function getSessionErrorMessage(error: unknown, fallbackKey: string) {
+    return translateResultError(error, t, {
+      scope: 'auth',
+      fallbackKey,
+    });
+  }
 
   // ========== 会话操作 ==========
 
@@ -37,7 +45,7 @@ export function useSession() {
       store.setActiveSessions(result.data.sessions);
       return true;
     }
-    const message = result.error.message || t('auth.toast.loadSessionsFailed');
+    const message = getSessionErrorMessage(result.error, 'auth.toast.loadSessionsFailed');
     store.setError(message);
     toast.error(t('auth.toast.loadFailed'), { description: message });
     return false;
@@ -57,7 +65,7 @@ export function useSession() {
       toast.success(t('auth.toast.sessionRevoked'));
       return true;
     }
-    const message = result.error.message || t('auth.toast.revokeSessionFailed');
+    const message = getSessionErrorMessage(result.error, 'auth.toast.revokeSessionFailed');
     store.setError(message);
     toast.error(t('auth.toast.operationFailed'), { description: message });
     return false;

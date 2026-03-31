@@ -118,8 +118,8 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
     timestamp: ipcResult.meta.timestamp,
   } : undefined;
 
-  if (ipcResult.ok && ipcResult.data !== undefined) {
-    return ok(ipcResult.data, meta);
+  if (ipcResult.ok) {
+    return ok(ipcResult.data as T, meta);
   }
 
   const error: ResultError = {

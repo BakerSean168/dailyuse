@@ -25,6 +25,7 @@ import { WindowChannels } from '@dailyuse/contracts/electron';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useAuth() {
   const store = useAuthenticationStore();
@@ -65,6 +66,16 @@ export function useAuth() {
     store.setError(null);
   }
 
+  function getLocalizedAuthError(
+    errorLike: unknown,
+    fallbackKey: string,
+  ): string {
+    return translateResultError(errorLike, t, {
+      scope: 'auth',
+      fallbackKey,
+    });
+  }
+
   // ========== 登录 ==========
 
   async function loginByEmail(req: LoginByEmailReq): Promise<boolean> {
@@ -79,15 +90,16 @@ export function useAuth() {
           t('auth.toast.welcomeBack'),
         );
       }
-      const message = result.error?.message || t('auth.toast.loginFailed');
+      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.loginFailed'), { description: message });
       return false;
     } catch (e) {
       store.setLoading(false);
-      const message = t('auth.toast.loginFailed');
-      store.setError(message);
-      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      console.error('[auth] loginByEmail failed', e);
+      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
+      store.setError(description);
+      toast.error(t('auth.toast.loginFailed'), { description });
       return false;
     } finally {
       store.setLoading(false);
@@ -106,15 +118,16 @@ export function useAuth() {
           t('auth.toast.welcomeBack'),
         );
       }
-      const message = result.error?.message || t('auth.toast.loginFailed');
+      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.loginFailed'), { description: message });
       return false;
     } catch (e) {
       store.setLoading(false);
-      const message = t('auth.toast.loginFailed');
-      store.setError(message);
-      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      console.error('[auth] loginByPhone failed', e);
+      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
+      store.setError(description);
+      toast.error(t('auth.toast.loginFailed'), { description });
       return false;
     } finally {
       store.setLoading(false);
@@ -135,15 +148,16 @@ export function useAuth() {
           t('auth.toast.welcomeJoin'),
         );
       }
-      const message = result.error?.message || t('auth.toast.registerFailed');
+      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.registerFailed'), { description: message });
       return false;
     } catch (e) {
       store.setLoading(false);
-      const message = t('auth.toast.registerFailed');
-      store.setError(message);
-      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      console.error('[auth] registerByEmail failed', e);
+      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
+      store.setError(description);
+      toast.error(t('auth.toast.registerFailed'), { description });
       return false;
     } finally {
       store.setLoading(false);
@@ -162,15 +176,16 @@ export function useAuth() {
           t('auth.toast.welcomeJoin'),
         );
       }
-      const message = result.error?.message || t('auth.toast.registerFailed');
+      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.registerFailed'), { description: message });
       return false;
     } catch (e) {
       store.setLoading(false);
-      const message = t('auth.toast.registerFailed');
-      store.setError(message);
-      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      console.error('[auth] registerByPhone failed', e);
+      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
+      store.setError(description);
+      toast.error(t('auth.toast.registerFailed'), { description });
       return false;
     } finally {
       store.setLoading(false);
@@ -188,7 +203,7 @@ export function useAuth() {
       toast.success(t('auth.toast.smsCodeSent'), { description: t('auth.toast.checkSms') });
       return true;
     }
-    const message = result.error.message || t('auth.toast.smsCodeFailed');
+    const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
     toast.error(t('auth.toast.sendFailed'), { description: message });
     return false;
   }
@@ -235,7 +250,9 @@ export function useAuth() {
 
   async function enterGuestMode(): Promise<boolean> {
     if (!hasDesktopWindowBridge()) {
-      toast.error(t('auth.toast.loginFailed'), { description: '访客模式仅在桌面端可用' });
+      toast.error(t('auth.toast.guestModeFailed'), {
+        description: t('auth.validation.guestModeUnavailable'),
+      });
       return false;
     }
 
@@ -246,9 +263,9 @@ export function useAuth() {
       if (result.ok) {
         const currentUser = await service.getCurrentUser();
         if (!currentUser.ok) {
-          const message = currentUser.error?.message || '获取访客身份失败';
+          const message = getLocalizedAuthError(currentUser.error, 'auth.errors.UNKNOWN');
           store.setError(message);
-          toast.error('访客模式失败', { description: message });
+          toast.error(t('auth.toast.guestModeFailed'), { description: message });
           return false;
         }
 
@@ -257,18 +274,21 @@ export function useAuth() {
         store.setAuthMode(AuthMode.GUEST);
         store.setAccessToken('guest-local-token');
         store.setRefreshToken('guest-local-token');
-        toast.success('已进入访客模式', { description: '数据仅保存在本地' });
+        toast.success(t('auth.toast.guestModeEntered'), {
+          description: t('auth.toast.guestModeLocalOnly'),
+        });
         await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
         return true;
       }
-      const message = result.error?.message || '进入访客模式失败';
+      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
-      toast.error('访客模式失败', { description: message });
+      toast.error(t('auth.toast.guestModeFailed'), { description: message });
       return false;
     } catch (e) {
-      const message = e instanceof Error ? e.message : '进入访客模式失败';
+      console.error('[auth] enterGuestMode failed', e);
+      const message = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
       store.setError(message);
-      toast.error('访客模式失败', { description: message });
+      toast.error(t('auth.toast.guestModeFailed'), { description: message });
       return false;
     } finally {
       store.setLoading(false);
@@ -289,7 +309,9 @@ export function useAuth() {
       return true;
     }
 
-    toast.error('移除账号失败', { description: result.error.message });
+    toast.error(t('auth.toast.removeRememberedAccountFailed'), {
+      description: getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN'),
+    });
     return false;
   }
 

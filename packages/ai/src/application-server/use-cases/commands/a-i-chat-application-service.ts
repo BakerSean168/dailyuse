@@ -185,23 +185,52 @@ export class AIChatApplicationService {
         model: executionProviderConfig.model,
       };
 
-      for await (const chunk of this.chatExecutionPort.stream({
-        identityId,
-        messages,
-        providerConfig: executionProviderConfig,
-        requestId,
-      })) {
-        if (!chunk.content && !chunk.finishReason) {
-          continue;
+      try {
+        for await (const chunk of this.chatExecutionPort.stream({
+          identityId,
+          messages,
+          providerConfig: executionProviderConfig,
+          requestId,
+        })) {
+          // Accumulate all content chunks
+          fullContent += chunk.content;
+          
+          // Track finish reason  
+          if (chunk.finishReason) {
+            finishReason = chunk.finishReason;
+          }
+          
+          // Notify client of each chunk received
+          if (chunk.content) {
+            onChunk({
+              content: chunk.content,
+              role: 'assistant',
+            });
+          }
         }
-        fullContent += chunk.content;
-        finishReason = chunk.finishReason ?? finishReason;
-        if (chunk.content) {
-          onChunk({
-            content: chunk.content,
-            role: 'assistant',
-          });
+      } catch (streamError) {
+        // Log stream interruption but don't fail if we got partial content
+        logger.warn('[AIChatApplicationService] Stream processing error', {
+          streamError: streamError instanceof Error ? streamError.message : String(streamError),
+          contentReceived: fullContent.length,
+          requestId,
+        });
+        // Re-throw if we got nothing at all
+        if (fullContent.length === 0) {
+          throw streamError;
         }
+        // Otherwise continue - we have partial content
+      }
+
+      // Validate that we got a proper completion signal
+      if (finishReason === 'error' || (!finishReason && fullContent.length === 0)) {
+        const errorMsg = `AI stream failed to complete: finish_reason="${finishReason}", content_length=${fullContent.length}`;
+        logger.error('[AIChatApplicationService] Stream validation failed', {
+          finishReason,
+          contentLength: fullContent.length,
+          requestId,
+        });
+        throw new Error(errorMsg);
       }
 
       const assistantMessage = await this.saveMessage(
@@ -348,10 +377,12 @@ export class AIChatApplicationService {
 
     return [
       systemMessage,
-      ...history.map((message) => ({
-        role: this.toExecutionRole(message.role),
-        content: message.content,
-      })),
+      ...history
+        .filter((message) => typeof message.content === 'string' && message.content.trim().length > 0)
+        .map((message) => ({
+          role: this.toExecutionRole(message.role),
+          content: message.content,
+        })),
     ];
   }
 

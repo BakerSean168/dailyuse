@@ -85,39 +85,35 @@
             {{ currentConversationLabel }}
           </h1>
 
-          <div class="flex items-center gap-2">
-            <AIWorkspaceToolbox :selected-provider-id="selectedModel?.providerId ?? null" />
-
-            <div class="flex items-center gap-1 md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                :title="t('aiAssistant.dialogs.chat.newConversation')"
-                @click="startNewConversation()"
-              >
-                <Plus class="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                :title="t('aiAssistant.dialogs.chat.refresh')"
-                :disabled="conversationListLoading"
-                @click="loadConversationList"
-              >
-                <RefreshCcw class="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                :title="t('nav.settings')"
-                @click="openSettings"
-              >
-                <Settings2 class="h-4 w-4" />
-              </Button>
-            </div>
+          <div class="flex items-center gap-1 md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :title="t('aiAssistant.dialogs.chat.newConversation')"
+              @click="startNewConversation()"
+            >
+              <Plus class="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :title="t('aiAssistant.dialogs.chat.refresh')"
+              :disabled="conversationListLoading"
+              @click="loadConversationList"
+            >
+              <RefreshCcw class="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :title="t('nav.settings')"
+              @click="openSettings"
+            >
+              <Settings2 class="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -388,7 +384,7 @@
                         {{ currentToolButtonLabel }}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" class="w-56">
+                    <DropdownMenuContent align="start" class="w-64">
                       <DropdownMenuItem @click="startNewConversation()">
                         <MessageSquare class="mr-2 h-4 w-4" />
                         {{ t('aiAssistant.chatPage.workflow.tools.chat') }}
@@ -400,6 +396,27 @@
                       <DropdownMenuItem @click="startNewConversation('knowledge-note')">
                         <NotebookPen class="mr-2 h-4 w-4" />
                         {{ t('aiAssistant.chatPage.workflow.tools.knowledgeNote') }}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem disabled>
+                        <WandSparkles class="mr-2 h-4 w-4" />
+                        {{ t('aiAssistant.actions.automateGoalSetup') }}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled>
+                        <NotebookPen class="mr-2 h-4 w-4" />
+                        {{ t('aiAssistant.actions.expandDraft') }}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled>
+                        <Search class="mr-2 h-4 w-4" />
+                        {{ t('aiAssistant.actions.askKnowledge') }}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled>
+                        <BarChart3 class="mr-2 h-4 w-4" />
+                        {{ t('aiAssistant.actions.askAnalytics') }}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled>
+                        <ClipboardCheck class="mr-2 h-4 w-4" />
+                        {{ t('aiAssistant.actions.viewQualityReports') }}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -465,21 +482,27 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   ArrowUp,
+  BarChart3,
   Bot,
+  ClipboardCheck,
   MessageSquare,
   NotebookPen,
   Plus,
   RefreshCcw,
+  Search,
   Settings2,
   Sparkles,
   Trash2,
+  WandSparkles,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Select,
   SelectContent,
@@ -502,7 +525,6 @@ import { useRepository } from '../../repository/composables/useRepository';
 import { useUserSetting } from '../../setting/composables/useUserSetting';
 import { useEditorWorkspaceActions } from '../../editor/composables';
 import AIGoalDraftEditor from '../components/AIGoalDraftEditor.vue';
-import AIWorkspaceToolbox from '../components/AIWorkspaceToolbox.vue';
 
 type WorkflowMode = 'chat' | 'goal' | 'knowledge-note';
 
@@ -1112,6 +1134,10 @@ function typingPlaceholder(item: ChatItem) {
   return item.role === 'assistant' && chatLoading.value ? '...' : '';
 }
 
+function getAIErrorMessage(error: unknown, fallbackKey: string) {
+  return translateResultError(error, t, { fallbackKey });
+}
+
 async function loadConversationList(options?: { preserveSelection?: boolean }) {
   conversationListLoading.value = true;
   try {
@@ -1129,7 +1155,7 @@ async function loadConversationList(options?: { preserveSelection?: boolean }) {
       }
     }
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.loadFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.chat.loadFailed'));
   } finally {
     conversationListLoading.value = false;
   }
@@ -1150,7 +1176,7 @@ async function selectConversation(item: ConversationSummary) {
     chatTimeline.value = (result.data ?? []).map((message, index) => normalizeChatItem(message, index));
     restoreWorkflowState(item.id);
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.loadFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.chat.loadFailed'));
   } finally {
     suspendWorkflowPersistence.value = false;
   }
@@ -1170,9 +1196,7 @@ async function deleteConversation(id: string) {
     await loadConversationList();
     toast.success(t('aiAssistant.dialogs.chat.deleted'));
   } catch (error) {
-    toast.error(
-      error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.deleteFailed'),
-    );
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.chat.deleteFailed'));
   }
 }
 
@@ -1302,9 +1326,7 @@ async function generateGoalDraftFromConversation() {
     toast.success(t('aiAssistant.dialogs.generateGoal.draftGenerated'));
     scrollMessagesToBottom();
   } catch (error) {
-    toast.error(
-      error instanceof Error ? error.message : t('aiAssistant.dialogs.generateGoal.generateFailed'),
-    );
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.generateGoal.generateFailed'));
   } finally {
     goalDraftLoading.value = false;
   }
@@ -1352,9 +1374,7 @@ async function handleCreateGoalFromDraft() {
     toast.success(t('aiAssistant.dialogs.generateGoal.created'));
     await router.push(`/goals/${created.id}`);
   } catch (error) {
-    toast.error(
-      error instanceof Error ? error.message : t('aiAssistant.dialogs.generateGoal.createFailed'),
-    );
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.generateGoal.createFailed'));
   } finally {
     creatingGoal.value = false;
   }
@@ -1384,7 +1404,7 @@ async function createKnowledgeNoteFromConversation() {
     toast.success(t('aiAssistant.dialogs.note.created'));
     scrollMessagesToBottom();
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.note.createFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.note.createFailed'));
   } finally {
     noteCreating.value = false;
   }
@@ -1519,7 +1539,7 @@ async function handleSendChat() {
     chatTimeline.value = chatTimeline.value.filter(
       (item) => item.id !== userDraftId && item.id !== assistantDraftId,
     );
-    toast.error(error instanceof Error ? error.message : t('aiAssistant.dialogs.chat.sendFailed'));
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.chat.sendFailed'));
   } finally {
     chatLoading.value = false;
   }
@@ -1615,7 +1635,7 @@ onMounted(async () => {
       await selectConversation(preferredConversation);
     }
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('common.operationFailed'));
+    toast.error(getAIErrorMessage(error, 'common.operationFailed'));
   }
 
   await nextTick();

@@ -3,5 +3,6 @@
  */
 
 export { useUserSetting } from './useUserSetting';
+export { usePresentationBootstrap } from './usePresentationBootstrap';
 export { useLocaleSync } from './useLocaleSync';
 export { applyThemeMode, useThemeSync } from './useThemeSync';

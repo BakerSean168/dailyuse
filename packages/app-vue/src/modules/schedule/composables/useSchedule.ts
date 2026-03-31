@@ -17,6 +17,7 @@ import type {
   CreateScheduleRequest,
 } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useSchedule() {
   const { t } = useI18n();
@@ -34,7 +35,8 @@ export function useSchedule() {
   const pagination = computed(() => store.pagination);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(message: string): void {
+  function handleError(error: unknown, fallbackKey: string): void {
+    const message = translateResultError(error, t, { fallbackKey });
     store.setError(message);
     console.error(message);
   }
@@ -50,7 +52,7 @@ export function useSchedule() {
           result.data.total ?? 0,
         );
       } else {
-        handleError(result.error.message || t('schedule.error.loadTasksFailed'));
+        handleError(result.error, 'schedule.error.loadTasksFailed');
       }
     } finally {
       store.setLoading(false);
@@ -67,7 +69,7 @@ export function useSchedule() {
         store.setCurrentTask(dto);
         return dto;
       }
-      handleError(result.error.message || t('schedule.error.loadTasksFailed'));
+      handleError(result.error, 'schedule.error.loadTasksFailed');
       return null;
     } finally {
       store.setLoading(false);
@@ -86,7 +88,7 @@ export function useSchedule() {
         store.addTask(dto);
         return dto;
       }
-      handleError(result.error.message || t('schedule.error.createTaskFailed'));
+      handleError(result.error, 'schedule.error.createTaskFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -109,7 +111,7 @@ export function useSchedule() {
         store.removeTask(id);
         return true;
       }
-      handleError(result.error.message || t('schedule.error.deleteTaskFailed'));
+      handleError(result.error, 'schedule.error.deleteTaskFailed');
       return false;
     } finally {
       savingId.value = null;
@@ -119,7 +121,7 @@ export function useSchedule() {
   async function pauseTask(id: string) {
     const result = await service.pauseTask(id);
     if (!result.ok) {
-      handleError(result.error.message || t('schedule.error.pauseTaskFailed'));
+      handleError(result.error, 'schedule.error.pauseTaskFailed');
       return null;
     }
     const refreshed = await service.getTaskById(id);
@@ -128,14 +130,14 @@ export function useSchedule() {
       store.updateTask(dto);
       return dto;
     }
-    handleError(refreshed.error.message || t('schedule.error.pauseRefreshFailed'));
+    handleError(refreshed.error, 'schedule.error.pauseRefreshFailed');
     return null;
   }
 
   async function resumeTask(id: string) {
     const result = await service.resumeTask(id);
     if (!result.ok) {
-      handleError(result.error.message || t('schedule.error.resumeTaskFailed'));
+      handleError(result.error, 'schedule.error.resumeTaskFailed');
       return null;
     }
     const refreshed = await service.getTaskById(id);
@@ -144,7 +146,7 @@ export function useSchedule() {
       store.updateTask(dto);
       return dto;
     }
-    handleError(refreshed.error.message || t('schedule.error.resumeRefreshFailed'));
+    handleError(refreshed.error, 'schedule.error.resumeRefreshFailed');
     return null;
   }
 
@@ -171,7 +173,7 @@ export function useSchedule() {
         store.setCalendarEntries(result.data);
         return result.data;
       }
-      handleError(result.error.message || t('schedule.error.loadCalendarEntriesFailed'));
+      handleError(result.error, 'schedule.error.loadCalendarEntriesFailed');
       return [];
     } finally {
       store.setLoading(false);
@@ -201,10 +203,10 @@ export function useSchedule() {
         store.setCalendarEntries([...store.calendarEntries, createdEntry]);
         return createdEntry;
       }
-      handleError(result.error.message || t('schedule.error.createCalendarEntryFailed'));
+      handleError(result.error, 'schedule.error.createCalendarEntryFailed');
       return null;
     } catch (e: any) {
-      handleError(e?.message || t('schedule.error.createCalendarEntryFailed'));
+      handleError(e, 'schedule.error.createCalendarEntryFailed');
       return null;
     }
   }
@@ -217,10 +219,10 @@ export function useSchedule() {
         store.setCalendarEntries(store.calendarEntries.filter((e) => e.id !== id));
         return true;
       }
-      handleError(result.error.message || t('schedule.error.deleteCalendarEntryFailed'));
+      handleError(result.error, 'schedule.error.deleteCalendarEntryFailed');
       return false;
     } catch (e: any) {
-      handleError(e?.message || t('schedule.error.deleteCalendarEntryFailed'));
+      handleError(e, 'schedule.error.deleteCalendarEntryFailed');
       return false;
     }
   }

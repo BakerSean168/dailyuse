@@ -7,6 +7,7 @@
 
 import { ref, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export interface AutoSaveConfig {
   /** 自动保存间隔（毫秒） */
@@ -69,7 +70,9 @@ export function useAutoSave(config: AutoSaveConfig) {
     } catch (error) {
       console.error('Save error:', error);
       saveStatus.value = 'error';
-      saveError.value = error instanceof Error ? error.message : t('editor.autoSave.saveError');
+      saveError.value = translateResultError(error, t, {
+        fallbackKey: 'editor.autoSave.saveError',
+      });
       return false;
     } finally {
       isSaving.value = false;

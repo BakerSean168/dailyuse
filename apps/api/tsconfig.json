@@ -59,11 +59,15 @@
     // 本地路径别名配置
     // ============================================================
 
-    // 路径别名：项目内部走 @/，少量共享包走源码直连
-    // 避免 typecheck 隐式依赖上游包 dist 产物
+    // 路径别名规范：
+    // - 项目内部别名走 src
+    // - 源码白名单包显式走 src（开发态深度联调）
+    // - 其他运行时包移除别名，走 package.json exports → dist（正确的包边界）
     "paths": {
       // 项目内部别名：@/ 指向 src 目录
       "@/*": ["./src/*"],
+
+      // 源码白名单：仅保留开发态需要深度联调的基础设施包
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/*": [
         "../../packages/contracts/src/modules/*/index.ts",
@@ -72,26 +76,16 @@
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/utils": ["../../packages/utils/src/index.ts"],
       "@dailyuse/utils/*": ["../../packages/utils/src/*/index.ts", "../../packages/utils/src/*.ts"],
-      "@dailyuse/governance": ["../../packages/governance/dist/index.d.ts"],
-      "@dailyuse/governance/api": ["../../packages/governance/dist/api/index.d.ts"],
-      "@dailyuse/account": ["../../packages/account/dist/index.d.ts"],
-      "@dailyuse/account/api": ["../../packages/account/dist/api/index.d.ts"],
-      "@dailyuse/authentication": ["../../packages/authentication/dist/index.d.ts"],
-      "@dailyuse/authentication/api": ["../../packages/authentication/dist/api/index.d.ts"],
       "@dailyuse/editor": ["../../packages/editor/src/index.ts"],
       "@dailyuse/editor/*": [
         "../../packages/editor/src/*/index.ts",
         "../../packages/editor/src/*.ts"
       ],
-      "@dailyuse/goal": ["../../packages/goal/dist/index.d.ts"],
-      "@dailyuse/goal/api": ["../../packages/goal/dist/api/index.d.ts"],
       "@dailyuse/dashboard": ["../../packages/dashboard/src/index.ts"],
       "@dailyuse/dashboard/*": [
         "../../packages/dashboard/src/*/index.ts",
         "../../packages/dashboard/src/*.ts"
       ],
-      "@dailyuse/reminder": ["../../packages/reminder/dist/index.d.ts"],
-      "@dailyuse/reminder/api": ["../../packages/reminder/dist/api/index.d.ts"],
       "@dailyuse/notification": ["../../packages/notification/src/index.ts"],
       "@dailyuse/notification/*": [
         "../../packages/notification/src/*/index.ts",
@@ -107,18 +101,22 @@
         "../../packages/schedule/src/*/index.ts",
         "../../packages/schedule/src/*.ts"
       ],
-      "@dailyuse/setting": ["../../packages/setting/dist/index.d.ts"],
-      "@dailyuse/setting/api": ["../../packages/setting/dist/api/index.d.ts"],
-      "@dailyuse/task": ["../../packages/task/dist/index.d.ts"],
-      "@dailyuse/task/api": ["../../packages/task/dist/api/index.d.ts"],
-      "@dailyuse/ai": ["../../packages/ai/dist/index.d.ts"],
-      "@dailyuse/ai/api": ["../../packages/ai/dist/api/index.d.ts"],
-      "@dailyuse/ai/application-server": ["../../packages/ai/dist/application-server/index.d.ts"],
       "@dailyuse/repository/infrastructure-server": [
         "../../packages/repository/src/infrastructure-server/index.ts"
       ]
 
-      // 其他 @dailyuse/* 仍优先通过 package.json exports → dist 解析
+      // 运行时包（已删除）：
+      // - @dailyuse/authentication / @dailyuse/authentication/api
+      // - @dailyuse/account / @dailyuse/account/api
+      // - @dailyuse/governance / @dailyuse/governance/api
+      // - @dailyuse/goal / @dailyuse/goal/api
+      // - @dailyuse/reminder / @dailyuse/reminder/api
+      // - @dailyuse/setting / @dailyuse/setting/api
+      // - @dailyuse/task / @dailyuse/task/api
+      // - @dailyuse/ai / @dailyuse/ai/api / @dailyuse/ai/application-server
+      //
+      // 现在这些包通过 package.json 的 dependencies + exports 正常解析，
+      // 开发运行时（tsx）不会被误导到 .d.ts 声明文件。
     }
   },
 

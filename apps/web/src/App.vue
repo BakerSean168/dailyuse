@@ -15,10 +15,14 @@ import {
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
+  useLocaleSync,
+  usePresentationBootstrap,
   useThemeSync,
 } from '@dailyuse/app-vue';
 
 useThemeSync();
+useLocaleSync();
+usePresentationBootstrap();
 </script>
 
 <template>
