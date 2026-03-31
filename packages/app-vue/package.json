@@ -21,6 +21,7 @@
     "@dailyuse/account": "workspace:*",
     "@dailyuse/ai": "workspace:*",
     "@dailyuse/authentication": "workspace:*",
+    "@dailyuse/assets": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/goal": "workspace:*",
     "@dailyuse/governance": "workspace:*",

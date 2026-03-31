@@ -1,7 +1,7 @@
 {
   "name": "@dailyuse/ipc-client",
   "version": "0.0.1",
-  "description": "DailyUse IPC Client — Electron IPC communication with Result Pattern",
+  "description": "Memoflow IPC Client — Electron IPC communication with Result Pattern",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -26,3 +26,5 @@
   ],
   "sideEffects": false
 }
+
+

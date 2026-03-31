@@ -1,6 +1,6 @@
 # @dailyuse/patterns
 
-通用设计模式和框架库，为 DailyUse 应用提供可复用的基础组件。
+通用设计模式和框架库，为 Memoflow 应用提供可复用的基础组件。
 
 ## 概述
 
@@ -131,3 +131,5 @@ pnpm nx typecheck patterns
 ## 许可证
 
 MIT
+
+

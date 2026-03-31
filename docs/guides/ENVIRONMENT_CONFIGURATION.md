@@ -2,7 +2,7 @@
 
 ## 概述
 
-DailyUse 采用 **12-Factor App** 标准的多环境配置策略，提供清晰的开发者体验和安全的生产部署。
+Memoflow 采用 **12-Factor App** 标准的多环境配置策略，提供清晰的开发者体验和安全的生产部署。
 
 ## 配置文件结构
 
@@ -88,8 +88,8 @@ docker-compose -f docker-compose.prod.yml --env-file .env.production.local up -d
 | `DATABASE_URL` | url | ✅ | PostgreSQL 连接字符串 |
 | `DB_HOST` | string | - | 数据库主机（可选，用于变量替换） |
 | `DB_PORT` | number | `5432` | 数据库端口 |
-| `DB_NAME` | string | `dailyuse` | 数据库名 |
-| `DB_USER` | string | `dailyuse` | 数据库用户 |
+| `DB_NAME` | string | `Memoflow` | 数据库名 |
+| `DB_USER` | string | `Memoflow` | 数据库用户 |
 | `DB_PASSWORD` | string | - | 数据库密码 |
 
 ### Redis 缓存配置
@@ -259,3 +259,5 @@ services:
 - [apps/api/src/shared/infrastructure/config/env.schema.ts](../../apps/api/src/shared/infrastructure/config/env.schema.ts) - Zod Schema 定义
 - [.env.example](../../.env.example) - 完整配置示例
 - [docker-compose.prod.yml](../../docker-compose.prod.yml) - Docker 生产配置
+
+

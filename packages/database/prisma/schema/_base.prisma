@@ -1,5 +1,5 @@
 // =============================================================
-// DailyUse Database Schema — Base Configuration
+// Memoflow Database Schema — Base Configuration
 // =============================================================
 //
 // This file contains the generator and datasource configuration
@@ -14,3 +14,4 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+

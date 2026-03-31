@@ -1,5 +1,5 @@
 // 测试前端事件监听的调试脚本
-console.log('🧪 DailyUse 前端事件调试器启动');
+console.log('🧪 知行 Memoflow 前端事件调试器启动');
 
 // 检查事件总线是否存在
 if (typeof window !== 'undefined' && window.eventBus) {

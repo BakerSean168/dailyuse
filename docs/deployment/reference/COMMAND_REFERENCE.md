@@ -29,15 +29,15 @@ pnpm nx serve api
 
 ```bash
 # 构建镜像
-docker build -t dailyuse-api:v1.0.3 -f Dockerfile.api .
+docker build -t Memoflow-api:v1.0.3 -f Dockerfile.api .
 
 # 标记镜像
-docker tag dailyuse-api:v1.0.3 \
-  crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.3
+docker tag Memoflow-api:v1.0.3 \
+  crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.3
 
 # 推送镜像
 docker push \
-  crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.3
+  crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.3
 
 # 完整脚本（推荐）
 ./scripts/build-and-push.sh v1.0.3
@@ -90,7 +90,7 @@ docker-compose pull api && docker-compose up -d api --force-recreate
 
 ```bash
 # 进入容器 shell
-docker exec -it dailyuse-api /bin/bash
+docker exec -it Memoflow-api /bin/bash
 
 # 查看容器资源使用
 docker stats
@@ -164,10 +164,10 @@ docker-compose logs api | grep -i "cors\|auth\|connection"
 
 ```bash
 # 编辑 .env 文件
-nano /opt/dailyuse/.env
+nano /opt/memoflow/.env
 
 # 验证 .env 格式
-cat /opt/dailyuse/.env | grep -v "^#" | grep -v "^$"
+cat /opt/memoflow/.env | grep -v "^#" | grep -v "^$"
 
 # 重新加载环境变量（需重启容器）
 docker-compose restart api
@@ -177,13 +177,13 @@ docker-compose restart api
 
 ```bash
 # 进入 PostgreSQL
-docker exec -it dailyuse-postgres psql -U postgres
+docker exec -it Memoflow-postgres psql -U postgres
 
 # 列出数据库
 \l
 
 # 连接数据库
-\c dailyuse
+\c Memoflow
 
 # 查看表
 \dt
@@ -192,17 +192,17 @@ docker exec -it dailyuse-postgres psql -U postgres
 \q
 
 # 直接执行 SQL
-docker exec dailyuse-postgres psql -U postgres -c "SELECT 1"
+docker exec Memoflow-postgres psql -U postgres -c "SELECT 1"
 ```
 
 ### Redis 管理
 
 ```bash
 # 进入 Redis CLI
-docker exec -it dailyuse-redis redis-cli
+docker exec -it Memoflow-redis redis-cli
 
 # 或使用密码
-docker exec -it dailyuse-redis redis-cli -a "password"
+docker exec -it Memoflow-redis redis-cli -a "password"
 
 # 常用命令
 PING                    # 测试连接
@@ -226,23 +226,23 @@ exit
 
 ```bash
 # 导出整个数据库
-docker exec dailyuse-postgres pg_dump -U postgres dailyuse > backup.sql
+docker exec Memoflow-postgres pg_dump -U postgres Memoflow > backup.sql
 
 # 导出单个表
-docker exec dailyuse-postgres pg_dump -U postgres dailyuse -t table_name > table_backup.sql
+docker exec Memoflow-postgres pg_dump -U postgres Memoflow -t table_name > table_backup.sql
 
 # 压缩备份
-docker exec dailyuse-postgres pg_dump -U postgres dailyuse | gzip > backup.sql.gz
+docker exec Memoflow-postgres pg_dump -U postgres Memoflow | gzip > backup.sql.gz
 ```
 
 ### 恢复数据库
 
 ```bash
 # 从备份恢复
-docker exec -i dailyuse-postgres psql -U postgres < backup.sql
+docker exec -i Memoflow-postgres psql -U postgres < backup.sql
 
 # 从压缩备份恢复
-cat backup.sql.gz | gunzip | docker exec -i dailyuse-postgres psql -U postgres
+cat backup.sql.gz | gunzip | docker exec -i Memoflow-postgres psql -U postgres
 ```
 
 ### 证书管理
@@ -274,7 +274,7 @@ docker-compose ps
 docker-compose logs api | tail -50
 
 # 检查网络
-docker network inspect dailyuse_default
+docker network inspect Memoflow_default
 
 # 检查磁盘空间
 df -h
@@ -295,7 +295,7 @@ docker system prune -a
 docker-compose up -d
 
 # 重新拉取镜像
-docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:latest
+docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:latest
 
 # 登录 Docker Registry
 docker login crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
@@ -321,7 +321,7 @@ df -h
 docker stats
 
 # 清理日志
-docker exec dailyuse-api truncate -s 0 /var/log/app.log
+docker exec Memoflow-api truncate -s 0 /var/log/app.log
 
 # 清理 Docker 资源
 docker container prune --force
@@ -329,7 +329,7 @@ docker image prune -a --force
 docker volume prune --force
 
 # 旋转日志
-logrotate /etc/logrotate.d/dailyuse -f
+logrotate /etc/logrotate.d/Memoflow -f
 ```
 
 ### 监控
@@ -342,7 +342,7 @@ watch -n 1 'docker stats --no-stream'
 watch -n 5 'df -h | grep -E "Filesystem|/opt"'
 
 # 监控日志大小
-watch -n 10 'du -sh /opt/dailyuse/logs/*'
+watch -n 10 'du -sh /opt/memoflow/logs/*'
 ```
 
 ---
@@ -353,7 +353,7 @@ watch -n 10 'du -sh /opt/dailyuse/logs/*'
 
 ```bash
 # 1️⃣ 本地验证（开发机）
-cd d:\myPrograms\DailyUse
+cd d:\myPrograms\dailyuse
 pnpm nx run api:typecheck
 pnpm nx run api:test
 pnpm nx run api:build
@@ -361,15 +361,15 @@ pnpm nx run api:build
 # 2️⃣ 构建和推送镜像
 ./scripts/build-and-push.sh v1.0.3
 # 或手动
-docker build -t dailyuse-api:v1.0.3 -f Dockerfile.api .
-docker tag dailyuse-api:v1.0.3 crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.3
-docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.3
+docker build -t Memoflow-api:v1.0.3 -f Dockerfile.api .
+docker tag Memoflow-api:v1.0.3 crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.3
+docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.3
 
 # 3️⃣ 连接到服务器
 ssh root@your.server.ip
 
 # 4️⃣ 进入部署目录
-cd /opt/dailyuse
+cd /opt/Memoflow
 
 # 5️⃣ 拉取最新镜像并更新
 docker-compose pull
@@ -401,10 +401,10 @@ curl http://localhost:3000/api/health/redis
 | 重启服务 | `docker-compose restart api` | 重启 API 服务 |
 | 更新镜像 | `docker-compose pull && docker-compose up -d` | 更新所有服务 |
 | 健康检查 | `curl http://localhost:3000/healthz` | 快速健康检查 |
-| 进入容器 | `docker exec -it dailyuse-api /bin/bash` | 交互式 shell |
+| 进入容器 | `docker exec -it Memoflow-api /bin/bash` | 交互式 shell |
 | 查看资源 | `docker stats` | 实时资源监控 |
 | 清理资源 | `docker system prune -a` | 清理无用资源 |
-| 备份数据库 | `docker exec dailyuse-postgres pg_dump -U postgres dailyuse > backup.sql` | 备份 DB |
+| 备份数据库 | `docker exec Memoflow-postgres pg_dump -U postgres Memoflow > backup.sql` | 备份 DB |
 
 ---
 
@@ -437,3 +437,5 @@ healthz        # 等同于 curl -s http://localhost:3000/healthz | jq .
 - [../03-deploy.md](../03-deploy.md) - 完整部署说明
 - [../04-verify.md](../04-verify.md) - 验证步骤
 - [../05-troubleshooting.md](../05-troubleshooting.md) - 故障排除
+
+

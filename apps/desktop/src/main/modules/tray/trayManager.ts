@@ -6,9 +6,9 @@
  * @module modules/tray/trayManager
  */
 
-import { Tray, Menu, app, nativeImage, type BrowserWindow } from 'electron';
-import { assetManifest } from '@dailyuse/assets';
-import { resolveAssetPath, resolveAssetPathFromKey } from '../../utils/asset-path';
+import { Tray, Menu, app, type BrowserWindow, type NativeImage } from 'electron';
+import { APP_DISPLAY_NAME } from '@dailyuse/assets';
+import { resolveTrayIcon } from '../../utils/app-icon';
 
 /**
  * @class TrayManager
@@ -18,9 +18,8 @@ export class TrayManager {
   private tray: Tray | null = null;
   private flashTimer: NodeJS.Timeout | null = null;
   private isFlashing = false;
-  private isIconTransparent = false;
-  private readonly iconPath: string;
-  private readonly transparentIconPath: string; // Or generate programmatically
+  private readonly iconImage: NativeImage | string;
+  private readonly trayGuid?: string;
 
   /**
    * @constructor
@@ -29,13 +28,20 @@ export class TrayManager {
    * @param {BrowserWindow} mainWindow - The main application window.
    */
   constructor(private mainWindow: BrowserWindow) {
-    this.iconPath =
-      resolveAssetPathFromKey('images', 'logo32', assetManifest) ??
-      resolveAssetPath('images/logos/DailyUse-32.png');
-    this.transparentIconPath =
-      resolveAssetPathFromKey('images', 'logo16', assetManifest) ??
-      resolveAssetPath('images/logos/DailyUse-16.png');
+    const trayIcon = resolveTrayIcon();
+    this.iconImage = trayIcon.image;
+    this.trayGuid = trayIcon.guid;
     this.init();
+  }
+
+  setMainWindow(mainWindow: BrowserWindow): void {
+    this.mainWindow = mainWindow;
+  }
+
+  destroy(): void {
+    this.stopFlashing();
+    this.tray?.destroy();
+    this.tray = null;
   }
 
   /**
@@ -44,9 +50,8 @@ export class TrayManager {
    */
   private init(): void {
     try {
-      const icon = nativeImage.createFromPath(this.iconPath);
-      this.tray = new Tray(icon);
-      this.tray.setToolTip('DailyUse');
+      this.tray = this.trayGuid ? new Tray(this.iconImage, this.trayGuid) : new Tray(this.iconImage);
+      this.tray.setToolTip(APP_DISPLAY_NAME);
       this.updateContextMenu();
 
       this.tray.on('click', () => {
@@ -111,11 +116,8 @@ export class TrayManager {
     this.isFlashing = true;
     this.flashTimer = setInterval(() => {
       if (!this.tray) return;
-      this.isIconTransparent = !this.isIconTransparent;
       // Note: This requires two icon files or programmatic image manipulation
-      // For now, we simulate by doing nothing or verify path existence
-      // const icon = this.isIconTransparent ? this.transparentIconPath : this.iconPath;
-      // this.tray.setImage(icon);
+      // For now, keep the icon stable and reserve this hook for future variants.
     }, 500);
   }
 
@@ -133,7 +135,7 @@ export class TrayManager {
     }
 
     if (this.tray) {
-      this.tray.setImage(this.iconPath);
+      this.tray.setImage(this.iconImage);
     }
   }
 }

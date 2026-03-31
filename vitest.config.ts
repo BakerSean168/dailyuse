@@ -8,7 +8,7 @@ import path from 'node:path';
 process.setMaxListeners(32);
 
 /**
- * Vitest Configuration for DailyUse Monorepo
+ * Vitest Configuration for Memoflow Monorepo
  *
  * This file configures all test projects in the monorepo using the test.projects field.
  * Each project can have its own configuration while inheriting common settings.
@@ -582,7 +582,7 @@ export default defineConfig({
           testTimeout: 30000,
           passWithNoTests: false,
           env: {
-            DATABASE_URL: 'postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test',
+            DATABASE_URL: 'postgresql://test_user:test_pass@127.0.0.1:5433/Memoflow_test',
           },
           globalSetup: [
             path.resolve(__dirname, './packages/task/src/__tests__/integration-global-setup.ts'),
@@ -739,3 +739,5 @@ export default defineConfig({
     bail: process.env.CI ? 1 : 0,
   },
 });
+
+

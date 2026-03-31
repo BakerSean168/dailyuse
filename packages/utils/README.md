@@ -1,6 +1,6 @@
 # @dailyuse/utils
 
-Core utility library for the DailyUse application, providing cross-platform support for logging, domain modeling, event handling, and frontend utilities.
+Core utility library for the Memoflow application, providing cross-platform support for logging, domain modeling, event handling, and frontend utilities.
 
 ## 📦 Installation
 
@@ -104,3 +104,5 @@ const headers = createAuthHeader(token);
 - **Time/Date**: `Time`, `Date` helpers.
 - **UUID**: UUID generation.
 - **Response**: Standard API response wrappers (`Result`, `Either`).
+
+

@@ -203,7 +203,7 @@ export class NotificationService {
     try {
       const iconPath =
         resolveAssetPathFromKey('images', 'logo128', assetManifest) ??
-        resolveAssetPath('images/logos/DailyUse-128.png');
+        resolveAssetPath('images/logos/Memoflow-128.png');
       this.defaultIcon = nativeImage.createFromPath(iconPath);
     } catch (err) {
       console.warn('[NotificationService] Failed to load default icon:', err);

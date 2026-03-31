@@ -1,8 +1,8 @@
-# DailyUse Sync API 规范
+# Memoflow Sync API 规范
 
 ## 📖 概述
 
-本目录包含 DailyUse 多设备同步服务的 OpenAPI 3.0 规范文件。
+本目录包含 Memoflow 多设备同步服务的 OpenAPI 3.0 规范文件。
 
 ## 📁 文件说明
 
@@ -144,5 +144,6 @@ localStorage.setItem('lastSyncVersion', lastVersion);
 
 ---
 
-**维护者**: DailyUse Team  
+**维护者**: Memoflow Team  
 **最后更新**: 2025-12-07
+

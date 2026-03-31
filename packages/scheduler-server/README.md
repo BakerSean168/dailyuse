@@ -195,7 +195,7 @@ if (scheduler.isRegistered('old-task')) {
 await scheduler.register('new-task', '0 0 * * *', handler);
 ```
 
-## 与 DailyUse 架构的集成
+## 与 Memoflow 架构的集成
 
 ### Architecture Layers
 
@@ -263,3 +263,5 @@ pnpm run build
 ## 许可证
 
 MIT
+
+

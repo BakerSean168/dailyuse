@@ -4,7 +4,7 @@
 > **技术版本**: Electron 39.2.6 + React 19.2.1  
 > **核心理念**: Desktop 不是从零构建，而是**组装来自 L1-L4 的现成积木**
 
-本文档展示 Desktop 应用如何从底层开始逐层依赖和组装 DailyUse 的五层架构。
+本文档展示 Desktop 应用如何从底层开始逐层依赖和组装 Memoflow 的五层架构。
 
 注：本文保留了较多容器时代的历史示例。当前代码主路径已经迁移到
 module composition roots、shared IPC contracts、preload allowlists、module-owned lifecycle。
@@ -58,7 +58,7 @@ Desktop 应用
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                   DailyUse Desktop Application                          │
+│                   Memoflow Desktop Application                          │
 │            Electron 39.2.6 + React 19.2.1 + Monorepo 积木              │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
@@ -106,7 +106,7 @@ Desktop 应用
 │  ║                             ▼                                 ║   │
 │  ║  ┌────────────────────────────────────────────────────────┐  ║   │
 │  ║  │  PowerSync (local-first SQLite runtime)               │  ║   │
-│  ║  │  └─ dailyuse.db                                       │  ║   │
+│  ║  │  └─ Memoflow.db                                       │  ║   │
 │  ║  └────────────────────────────────────────────────────────┘  ║   │
 │  ║                                                                ║   │
 │  ║  + Electron 特定功能                                          ║   │
@@ -516,10 +516,12 @@ export class ScheduleController {
 
 ## 相关文档
 
-- [拼项目.md - DailyUse 积木拼接架构](./拼项目.md) - 详细的五层架构理论
+- [拼项目.md - Memoflow 积木拼接架构](./拼项目.md) - 详细的五层架构理论
 - [Schedule 模块完整实现](../sprint-artifacts/EPIC-016-schedule-optimization.md) - Story 1-4
 
 ---
 
-**维护者**: DailyUse Team  
+**维护者**: Memoflow Team  
 **最后更新**: 2026-01-08
+
+

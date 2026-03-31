@@ -1,5 +1,5 @@
 # =============================================================================
-# DailyUse 本地基础设施 Docker Compose
+# Memoflow 本地基础设施 Docker Compose
 # =============================================================================
 # 通过 profiles 区分环境，按需启动对应容器：
 #
@@ -22,11 +22,11 @@ services:
   postgres-dev:
     profiles: [dev]
     image: pgvector/pgvector:pg16
-    container_name: dailyuse-dev-db
+    container_name: Memoflow-dev-db
     environment:
-      POSTGRES_USER: dailyuse
-      POSTGRES_PASSWORD: dailyuse123
-      POSTGRES_DB: dailyuse
+      POSTGRES_USER: Memoflow
+      POSTGRES_PASSWORD: Memoflow123
+      POSTGRES_DB: Memoflow
     ports:
       - '5432:5432'
     volumes:
@@ -36,7 +36,7 @@ services:
       - -c
       - wal_level=logical
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U dailyuse -d dailyuse']
+      test: ['CMD-SHELL', 'pg_isready -U Memoflow -d Memoflow']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,14 +47,14 @@ services:
   redis-dev:
     profiles: [dev]
     image: redis:7-alpine
-    container_name: dailyuse-dev-redis
+    container_name: Memoflow-dev-redis
     ports:
       - '6384:6379'
     volumes:
       - redis-dev-data:/data
-    command: redis-server --appendonly yes --requirepass dailyuse123
+    command: redis-server --appendonly yes --requirepass Memoflow123
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', 'dailyuse123', '--no-auth-warning', 'ping']
+      test: ['CMD', 'redis-cli', '-a', 'Memoflow123', '--no-auth-warning', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,7 +65,7 @@ services:
   powersync-dev:
     profiles: [dev]
     image: journeyapps/powersync-service:latest
-    container_name: dailyuse-dev-powersync
+    container_name: Memoflow-dev-powersync
     ports:
       - '8080:8080'
     depends_on:
@@ -75,8 +75,8 @@ services:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml
     command: ['start', '-c', '/config/powersync.yaml']
     environment:
-      PS_SOURCE_URI: postgresql://dailyuse:dailyuse123@postgres-dev:5432/dailyuse
-      PS_STORAGE_URI: postgresql://dailyuse:dailyuse123@postgres-dev:5432/dailyuse
+      PS_SOURCE_URI: postgresql://Memoflow:Memoflow123@postgres-dev:5432/Memoflow
+      PS_STORAGE_URI: postgresql://Memoflow:Memoflow123@postgres-dev:5432/Memoflow
       PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:-iPsCAeT3UnpBpzEuLxRxsnj3GCGLp8UQrv5_WGLGR4Q0nw8OX_wmYGb4pGIzcnYsjM_JkmzZZxxtdS_lT6pWcQs9UdZbSxb1XDD_nRjohdrFvFEjGrATte05qm1Aj2VzmJnowh1tBC_QhVpljjQLBhfbQupgB4H-nuD4HKuzCYQ2-lo-zr2zRVQM9MBsuSFgijPHdHdejKqCKje4VIFjz-zxygoUvxtct3Fcloz06wtURLu5qSwHVAKOgwyHz008iSEZdvm7FfK0M931PH8iZKMb_2OIXDgc_vfIcXw5fadGo3qCgb0hFTE5WK3kHYlRxTCKDPCdznsdW_ZwIwXGvQ}
       PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       PS_JWK_KID: ${POWERSYNC_KEY_ID:-powersync-dev-d90f228f}
@@ -102,11 +102,11 @@ services:
   postgres-test:
     profiles: [test]
     image: pgvector/pgvector:pg15
-    container_name: dailyuse-test-db
+    container_name: Memoflow-test-db
     environment:
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_pass
-      POSTGRES_DB: dailyuse_test
+      POSTGRES_DB: Memoflow_test
     ports:
       - '5433:5432'
     tmpfs:
@@ -120,7 +120,7 @@ services:
       - -c
       - full_page_writes=off
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U test_user -d dailyuse_test']
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d Memoflow_test']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -131,6 +131,7 @@ services:
 # =============================================================================
 volumes:
   postgres-dev-data:
-    name: dailyuse-dev-db-data
+    name: Memoflow-dev-db-data
   redis-dev-data:
-    name: dailyuse-dev-redis-data
+    name: Memoflow-dev-redis-data
+

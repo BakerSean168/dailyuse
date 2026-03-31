@@ -832,7 +832,7 @@ export default {
       },
     },
     desktop: {
-      title: 'DailyUse Desktop',
+      title: 'Memoflow Desktop',
       description: 'You choose the account. Auto-login only runs when you explicitly enable it.',
       tabs: {
         login: 'Login',

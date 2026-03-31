@@ -5,7 +5,7 @@
 
 ## 背景
 
-在 DailyUse 项目中，我们有三个应用层（API/Web/Desktop）需要保持 API 接口的一致性。当前存在以下问题：
+在 Memoflow 项目中，我们有三个应用层（API/Web/Desktop）需要保持 API 接口的一致性。当前存在以下问题：
 
 ### 1. 方法命名不一致
 
@@ -309,3 +309,5 @@ async function createGoal(request: CreateGoalRequest) {
 - ADR-001: 项目结构
 - ADR-002: 分层架构
 - ADR-005: 共享包策略
+
+

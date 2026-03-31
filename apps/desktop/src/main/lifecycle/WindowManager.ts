@@ -20,6 +20,8 @@ import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/el
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktopChrome';
 import type { DesktopChromeTheme } from './desktopChrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
+import { resolveWindowIconPath } from '../utils/app-icon';
+import { bindDesktopFeaturesWindow } from '../desktop-features';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -158,6 +160,7 @@ export class WindowManager {
         nodeIntegration: false,
         sandbox: false,
       },
+      icon: resolveWindowIconPath(),
       show: false,
     });
 
@@ -215,6 +218,7 @@ export class WindowManager {
         nodeIntegration: false,
         sandbox: false,
       },
+      icon: resolveWindowIconPath(),
       show: false,
     });
 
@@ -275,6 +279,7 @@ export class WindowManager {
 
       // 3. 显示主窗口
       mainWin.show();
+      bindDesktopFeaturesWindow(mainWin);
       startScheduleRuntime();
 
       // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
@@ -318,6 +323,7 @@ export class WindowManager {
 
       // 3. 显示登录窗口
       loginWin.show();
+      bindDesktopFeaturesWindow(loginWin);
 
       // 4. 关闭主窗口
       setTimeout(() => {

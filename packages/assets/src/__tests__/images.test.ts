@@ -4,12 +4,12 @@ import { logo, logo128, logos, defaultAvatar } from '../images';
 describe('@dailyuse/assets - Images', () => {
   it('should export logo paths', () => {
     expect(logo).toBeDefined();
-    expect(logo).toContain('DailyUse.svg');
+    expect(logo).toContain('Memoflow.svg');
   });
 
   it('should export logo128', () => {
     expect(logo128).toBeDefined();
-    expect(logo128).toContain('DailyUse-128.png');
+    expect(logo128).toContain('Memoflow-128.png');
   });
 
   it('should export logos object', () => {
@@ -30,6 +30,8 @@ describe('@dailyuse/assets - Images', () => {
     expect(logos.png48).toBeDefined();
     expect(logos.png128).toBeDefined();
     expect(logos.png256).toBeDefined();
+    expect(logos.trayWin16).toBeDefined();
+    expect(logos.trayWin32).toBeDefined();
     expect(logos.ico).toBeDefined();
   });
 });

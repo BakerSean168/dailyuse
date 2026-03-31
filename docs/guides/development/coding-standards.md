@@ -7,7 +7,7 @@ tags:
   - vue
   - express
   - architecture
-description: DailyUse项目代码规范 - TypeScript、Vue 3、Express编码规范与架构最佳实践
+description: Memoflow项目代码规范 - TypeScript、Vue 3、Express编码规范与架构最佳实践
 created: 2025-11-23T16:00:00
 updated: 2025-01-22T00:00:00
 ---
@@ -37,7 +37,7 @@ updated: 2025-01-22T00:00:00
 
 | 规则              | 说明                                   | 详情                                                                                 |
 | ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------ |
-| **1️⃣ 类型集中化** | 所有共享类型放在 `@dailyuse/contracts` | [查看详情](../../standards/patterns.md#rule-1-type-centralization-dailyusecontracts) |
+| **1️⃣ 类型集中化** | 所有共享类型放在 `@dailyuse/contracts` | [查看详情](../../standards/patterns.md#rule-1-type-centralization-Memoflowcontracts) |
 | **2️⃣ API响应**    | 使用 `ok: boolean`                     | [查看详情](../../standards/patterns.md#rule-2-api-response-format)                   |
 | **3️⃣ 层隔离**     | Domain 不导入 Infrastructure           | [查看详情](../../standards/patterns.md#rule-3-layer-isolation)                       |
 
@@ -705,7 +705,7 @@ trim_trailing_whitespace = false
 
 发现规范问题或有改进建议？
 
-1. 提交 [GitHub Issue](https://github.com/BakerSean168/DailyUse/issues)
+1. 提交 [GitHub Issue](https://github.com/BakerSean168/dailyuse/issues)
 2. 使用标签 `coding-standards`
 3. 描述问题或建议
 
@@ -714,3 +714,6 @@ trim_trailing_whitespace = false
 **最后更新**: 2025-11-23  
 **维护者**: @BakerSean168  
 **版本**: v2.0
+
+
+

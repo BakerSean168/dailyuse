@@ -5,7 +5,7 @@ tags:
   - git
   - workflow
   - version-control
-description: DailyUse Git工作流 - 分支策略、提交规范、协作流程
+description: Memoflow Git工作流 - 分支策略、提交规范、协作流程
 created: 2025-11-23T16:20:00
 updated: 2025-01-22T00:00:00
 ---
@@ -713,3 +713,4 @@ pnpm commitlint --edit $1
 **最后更新**: 2025-11-23  
 **维护者**: @BakerSean168  
 **版本**: v2.0
+

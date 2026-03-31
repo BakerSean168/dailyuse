@@ -48,6 +48,7 @@ import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-autom
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
 import { configureDesktopUserDataPath } from './user-data-path';
+import { configureDesktopShellIdentity } from './utils/app-icon';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 import {
   PowerSyncNotificationPreferenceRepository,
@@ -68,6 +69,7 @@ import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
 
 const configuredUserDataPath = configureDesktopUserDataPath();
+configureDesktopShellIdentity();
 
 const AIElectronModule = createAIElectronModule({
   createKnowledgeNotePersistence: (context: IElectronModuleContext) =>

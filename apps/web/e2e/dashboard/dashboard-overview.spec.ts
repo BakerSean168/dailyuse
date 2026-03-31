@@ -43,7 +43,7 @@ test.describe('Dashboard Overview', () => {
 
     // Should include app name
     const title = await page.title();
-    expect(title).toContain('DailyUse');
+    expect(title).toContain('Memoflow');
   });
 
   test('[P0] should display Dashboard in navigation menu', async ({ page }) => {

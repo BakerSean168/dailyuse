@@ -1,6 +1,6 @@
-# 📦 DailyUse 部署完整指南
+# 📦 Memoflow 部署完整指南
 
-> **项目**：DailyUse v1.0.3  
+> **项目**：Memoflow v1.0.3  
 > **最后更新**：2025-01-11  
 > **状态**：✅ 生产部署就绪
 
@@ -12,7 +12,7 @@
 
 ```powershell
 # 1️⃣ 本地构建（Windows PowerShell）
-cd d:\myPrograms\DailyUse
+cd d:\myPrograms\dailyuse
 .\scripts\deploy-prod.ps1 -Version v1.0.3
 
 # 2️⃣ 服务器准备（SSH）
@@ -114,7 +114,7 @@ docs/deployment/
 ```
 仓库：crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
 命名空间：bakersean
-镜像名：dailyuse-api
+镜像名：Memoflow-api
 版本：v1.0.3
 ```
 
@@ -241,3 +241,5 @@ GET /api/info   → 应用信息
 ---
 
 **祝部署顺利！** 🚀
+
+

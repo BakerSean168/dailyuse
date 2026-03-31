@@ -2,7 +2,7 @@
   "name": "@dailyuse/http-client",
   "version": "0.0.1",
   "private": false,
-  "description": "DailyUse HTTP Client — Axios wrapper with Result Pattern support",
+  "description": "Memoflow HTTP Client — Axios wrapper with Result Pattern support",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,3 +26,5 @@
   ],
   "sideEffects": false
 }
+
+

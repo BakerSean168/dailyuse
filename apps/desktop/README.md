@@ -1,10 +1,10 @@
-# DailyUse Desktop Application
+# 知行 (Memoflow) Desktop Application
 
-The **DailyUse Desktop** application is a comprehensive productivity tool built with [Electron](https://www.electronjs.org/), [React](https://reactjs.org/), and [TypeScript](https://www.typescriptlang.org/). It follows a Domain-Driven Design (DDD) architecture and leverages modern web technologies to provide a robust, cross-platform user experience.
+The **知行 (Memoflow) Desktop** application is a comprehensive productivity tool built with [Electron](https://www.electronjs.org/), [React](https://reactjs.org/), and [TypeScript](https://www.typescriptlang.org/). It follows a Domain-Driven Design (DDD) architecture and leverages modern web technologies to provide a robust, cross-platform user experience.
 
 ## 🚀 Purpose
 
-DailyUse aims to integrate personal productivity management into a single, cohesive interface. It combines:
+Memoflow aims to integrate personal productivity management into a single, cohesive interface. It combines:
 *   **Goal Management**: Track long-term objectives and key results (OKRs).
 *   **Task Management**: Manage daily to-dos, recurring tasks, and dependencies.
 *   **Scheduling**: Calendar integration for time-blocking and event management.

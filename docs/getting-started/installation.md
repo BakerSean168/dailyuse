@@ -3,14 +3,14 @@ tags:
   - getting-started
   - installation
   - setup
-description: DailyUse完整安装指南
+description: Memoflow完整安装指南
 created: 2025-11-23T15:00:00
 updated: 2025-11-23T15:00:00
 ---
 
 # 📦 Installation Guide
 
-完整的 DailyUse 安装和环境配置指南。
+完整的 Memoflow 安装和环境配置指南。
 
 ## 📋 前置要求
 
@@ -120,10 +120,10 @@ pnpm --version  # 应显示 9.x.x
 ```powershell
 # 启动 PostgreSQL 容器
 docker run -d `
-  --name dailyuse-postgres `
-  -e POSTGRES_USER=dailyuse `
+  --name Memoflow-postgres `
+  -e POSTGRES_USER=Memoflow `
   -e POSTGRES_PASSWORD=dev123456 `
-  -e POSTGRES_DB=dailyuse `
+  -e POSTGRES_DB=Memoflow `
   -p 5432:5432 `
   postgres:16-alpine
 ```
@@ -135,7 +135,7 @@ brew install postgresql@16
 brew services start postgresql@16
 
 # 创建数据库
-createdb dailyuse
+createdb Memoflow
 ```
 
 **Linux**:
@@ -146,14 +146,14 @@ sudo systemctl start postgresql
 
 # 创建数据库和用户
 sudo -u postgres psql
-CREATE DATABASE dailyuse;
-CREATE USER dailyuse WITH PASSWORD 'dev123456';
-GRANT ALL PRIVILEGES ON DATABASE dailyuse TO dailyuse;
+CREATE DATABASE Memoflow;
+CREATE USER Memoflow WITH PASSWORD 'dev123456';
+GRANT ALL PRIVILEGES ON DATABASE Memoflow TO Memoflow;
 ```
 
 **验证安装**:
 ```bash
-psql -U dailyuse -d dailyuse -h localhost
+psql -U Memoflow -d Memoflow -h localhost
 # 应该能成功连接
 ```
 
@@ -163,7 +163,7 @@ psql -U dailyuse -d dailyuse -h localhost
 ```powershell
 # 启动 Redis 容器
 docker run -d `
-  --name dailyuse-redis `
+  --name Memoflow-redis `
   -p 6379:6379 `
   redis:7-alpine
 ```
@@ -191,13 +191,13 @@ redis-cli ping  # 应返回 PONG
 
 ```bash
 # 克隆仓库
-git clone https://github.com/BakerSean168/DailyUse.git
-cd DailyUse
+git clone https://github.com/BakerSean168/dailyuse.git
+cd dailyuse
 
 # 如果你是贡献者，克隆你的 Fork
-git clone https://github.com/YOUR_USERNAME/DailyUse.git
-cd DailyUse
-git remote add upstream https://github.com/BakerSean168/DailyUse.git
+git clone https://github.com/YOUR_USERNAME/dailyuse.git
+cd dailyuse
+git remote add upstream https://github.com/BakerSean168/dailyuse.git
 ```
 
 ### 5. 安装项目依赖
@@ -225,7 +225,7 @@ cp .env.example .env
 **编辑 `.env` 文件**:
 ```bash
 # 数据库配置
-DATABASE_URL="postgresql://dailyuse:dev123456@localhost:5432/dailyuse"
+DATABASE_URL="postgresql://Memoflow:dev123456@localhost:5432/Memoflow"
 
 # Redis 配置
 REDIS_URL="redis://localhost:6379"
@@ -348,7 +348,7 @@ redis-cli ping
 
 # 如果没有运行
 # Docker
-docker start dailyuse-redis
+docker start Memoflow-redis
 
 # macOS
 brew services start redis
@@ -404,10 +404,13 @@ pnpm nx serve api --port=3001
 如果遇到问题：
 
 1. 查看 [[../guides/troubleshooting/common-errors|常见错误]] 文档
-2. 搜索 [GitHub Issues](https://github.com/BakerSean168/DailyUse/issues)
-3. 在 [Discussions](https://github.com/BakerSean168/DailyUse/discussions) 提问
+2. 搜索 [GitHub Issues](https://github.com/BakerSean168/dailyuse/issues)
+3. 在 [Discussions](https://github.com/BakerSean168/dailyuse/discussions) 提问
 4. 联系维护者: baker.sean168@gmail.com
 
 ---
 
 **注意**: 开发环境配置因系统而异，如果遇到问题，欢迎提 Issue 或改进文档！
+
+
+

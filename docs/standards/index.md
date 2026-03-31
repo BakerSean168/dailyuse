@@ -3,7 +3,7 @@ tags:
   - standards
   - index
   - reference
-description: DailyUse项目规范索引 - 项目的系统规则库
+description: Memoflow项目规范索引 - 项目的系统规则库
 created: 2025-01-22T00:00:00
 updated: 2025-01-22T00:00:00
 ---
@@ -11,7 +11,7 @@ updated: 2025-01-22T00:00:00
 # Project Standards & Context
 
 > **CRITICAL INSTRUCTION FOR AGENTS:**
-> You are working on the **DailyUse** project. These documents are your **Source of Truth**.
+> You are working on the **Memoflow** project. These documents are your **Source of Truth**.
 > You MUST align all your code generation, refactoring, and analysis with the rules defined below.
 
 ## 📚 Standards Library (系统规则库)
@@ -69,3 +69,5 @@ governance 模块作为项目的**代码活文档**，展示了全部 DDD 最佳
 ### 架构决策记录
 
 - [📝 ADR Index](../architecture/adr/README.md) - 重要的架构决策记录
+
+

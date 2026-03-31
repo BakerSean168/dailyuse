@@ -141,10 +141,10 @@ describe('NotificationTemplate Aggregate Root', () => {
     it('should substitute variables in title and content', () => {
       const tmpl = aTemplate();
 
-      const result = tmpl.render({ name: 'Alice', app: 'DailyUse' });
+      const result = tmpl.render({ name: 'Alice', app: 'Memoflow' });
 
       expect(result.title).toBe('Hello Alice');
-      expect(result.content).toBe('Welcome to DailyUse, Alice!');
+      expect(result.content).toBe('Welcome to Memoflow, Alice!');
     });
 
     it('should replace multiple occurrences of the same variable', () => {
@@ -236,7 +236,7 @@ describe('NotificationTemplate Aggregate Root', () => {
     it('should return valid when all variables are provided', () => {
       const tmpl = aTemplate();
 
-      const result = tmpl.validateVariables({ name: 'Alice', app: 'DailyUse' });
+      const result = tmpl.validateVariables({ name: 'Alice', app: 'Memoflow' });
 
       expect(result.isValid).toBe(true);
       expect(result.missingVariables).toEqual([]);

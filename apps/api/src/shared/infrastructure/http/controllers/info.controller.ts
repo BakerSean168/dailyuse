@@ -73,7 +73,7 @@ export const infoController = {
     let packageInfo = {
       name: '@dailyuse/api',
       version: '0.0.0',
-      description: 'DailyUse API Server',
+      description: 'Memoflow API Server',
     };
     
     try {
@@ -94,7 +94,7 @@ export const infoController = {
     const response: AppInfoResponse = {
       name: packageInfo.name,
       version: packageInfo.version,
-      description: packageInfo.description || 'DailyUse API Server',
+      description: packageInfo.description || 'Memoflow API Server',
       environment: env.NODE_ENV,
       nodeVersion: process.version,
       uptime: {

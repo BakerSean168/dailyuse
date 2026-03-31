@@ -10,7 +10,7 @@ updated: 2026-03-14T00:00:00
 
 # Governance 活文档
 
-`@dailyuse/governance` 是 DailyUse 当前用于展示 DDD / Clean Architecture / Result / Zod / split-route 最佳实践的参考模块。
+`@dailyuse/governance` 是 Memoflow 当前用于展示 DDD / Clean Architecture / Result / Zod / split-route 最佳实践的参考模块。
 
 ## 你应该先看什么
 
@@ -61,3 +61,5 @@ updated: 2026-03-14T00:00:00
 3. `packages/governance/ARCHITECTURE.md`
 4. `CHANGE_PLAYBOOK.md`
 5. 具体代码文件
+
+

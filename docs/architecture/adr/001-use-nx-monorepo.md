@@ -17,7 +17,7 @@ updated: 2025-11-23T15:00:00
 
 ## 背景
 
-DailyUse 项目包含多个应用（Web、Desktop、API）和多个共享包（contracts、utils、domain 层等）。我们需要决定如何组织代码仓库结构。
+Memoflow 项目包含多个应用（Web、Desktop、API）和多个共享包（contracts、utils、domain 层等）。我们需要决定如何组织代码仓库结构。
 
 ### 可选方案
 
@@ -77,7 +77,7 @@ DailyUse 项目包含多个应用（Web、Desktop、API）和多个共享包（c
 ### 项目结构
 
 ```
-DailyUse/
+dailyuse/
 ├── apps/
 │   ├── api/          # API 服务
 │   ├── web/          # Web 应用
@@ -149,3 +149,6 @@ DailyUse/
 ---
 
 **教训**: Monorepo 对于包含多个相关应用的项目是正确选择，Nx 提供的工具链大大提升了开发体验。
+
+
+

@@ -1,7 +1,7 @@
 # Web Application 架构文档
 
 > **更新时间**: 2025-12-16  
-> **应用**: DailyUse Web Application  
+> **应用**: Memoflow Web Application  
 > **技术栈**: Vue 3.4 + Vuetify 3.11 + Pinia 3.0 + TypeScript 5.8  
 > **架构模式**: DDD 模块化 + 状态管理 + 组件化
 
@@ -11,7 +11,7 @@
 
 ### 执行摘要
 
-DailyUse Web Application 是一个基于 Vue 3 Composition API 的现代化单页应用（SPA），采用 Vuetify 3 Material Design 组件库。使用 Pinia 进行状态管理，支持状态持久化、国际化（i18n）、实时通信（SSE）和响应式设计。
+Memoflow Web Application 是一个基于 Vue 3 Composition API 的现代化单页应用（SPA），采用 Vuetify 3 Material Design 组件库。使用 Pinia 进行状态管理，支持状态持久化、国际化（i18n）、实时通信（SSE）和响应式设计。
 
 ### 核心特性
 
@@ -293,7 +293,7 @@ modules/[module-name]/
 
 ### 概述
 
-Pattern A 是 DailyUse Web 应用中 Presentation → Application → Infrastructure 层之间的标准数据流和职责划分模式。
+Pattern A 是 Memoflow Web 应用中 Presentation → Application → Infrastructure 层之间的标准数据流和职责划分模式。
 
 ### 架构图
 
@@ -672,7 +672,7 @@ export const useGoalStore = defineStore('goal', {
 
   // 持久化配置
   persist: {
-    key: 'dailyuse-goal-store',
+    key: 'Memoflow-goal-store',
     storage: localStorage,
     paths: ['goals', 'currentGoal'], // 只持久化这些字段
   },
@@ -750,7 +750,7 @@ router.beforeEach(async (to, from, next) => {
 
 // 全局后置钩子 - 页面标题
 router.afterEach((to) => {
-  document.title = to.meta.title || 'DailyUse';
+  document.title = to.meta.title || 'Memoflow';
 });
 \\\
 
@@ -1094,3 +1094,5 @@ test('create goal flow', async ({ page }) => {
 
 **文档维护**: BMAD v6 Analyst  
 **最后更新**: 2025-12-02 (Pattern A 架构规范添加)
+
+

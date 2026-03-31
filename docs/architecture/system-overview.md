@@ -1,4 +1,4 @@
-# DailyUse 项目概览
+# Memoflow 项目概览
 
 > **更新时间**: 2025-12-16
 > **文档版本**: 2.0.0
@@ -10,7 +10,7 @@
 
 > 更新说明（2026-03）：本文档部分历史段落仍提及 SQLite/better-sqlite3。desktop 当前运行时已迁移为 PowerSync local-first。
 
-**DailyUse** 是一个基�?Electron + Vue 3/React 19 + TypeScript 的现代化个人效率管理平台，采�?Nx Monorepo 架构。该项目结合了桌面应用、Web 应用和后�?API 服务，为用户提供跨平台的生产力工具�?
+**Memoflow** 是一个基�?Electron + Vue 3/React 19 + TypeScript 的现代化个人效率管理平台，采�?Nx Monorepo 架构。该项目结合了桌面应用、Web 应用和后�?API 服务，为用户提供跨平台的生产力工具�?
 
 ### 核心特�?
 
@@ -32,7 +32,7 @@
 ### 架构组成
 
 ```
-DailyUse/
+dailyuse/
 ├── apps/                       # 应用程序 (3个独立应�?
 �?  ├── api/                   # Node.js 后端 API 服务
 �?  ├── web/                   # Vue 3 Web 应用
@@ -513,8 +513,8 @@ Desktop 应用采用 Electron 多进程架构：
 
 ```bash
 # 克隆仓库
-git clone https://github.com/BakerSean168/DailyUse.git
-cd DailyUse
+git clone https://github.com/BakerSean168/dailyuse.git
+cd dailyuse
 
 # 安装依赖
 pnpm install
@@ -596,7 +596,7 @@ pnpm build:desktop
 
 ## 🔗 相关链接
 
-- \*_主仓�?_: [GitHub - BakerSean168/DailyUse](https://github.com/BakerSean168/DailyUse)
+- \*_主仓�?_: [GitHub - BakerSean168/Memoflow](https://github.com/BakerSean168/dailyuse)
 - **Nx 文档**: [https://nx.dev](https://nx.dev)
 - **Vue 3 文档**: [https://vuejs.org](https://vuejs.org)
 - **React 文档**: [https://react.dev](https://react.dev)
@@ -607,3 +607,6 @@ pnpm build:desktop
 
 **文档维护**: 本文档由 BMAD v6 Analyst 自动生成  
 \*_最后更�?_: 2025-12-16
+
+
+

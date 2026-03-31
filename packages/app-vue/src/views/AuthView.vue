@@ -7,6 +7,7 @@
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { APP_DISPLAY_NAME, logo128 } from '@dailyuse/assets';
 import {
   Card,
   CardContent,
@@ -161,9 +162,9 @@ function setTheme(theme: PresentationThemeMode) {
         <div
           class="mx-auto w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4"
         >
-          <span class="text-2xl font-bold text-primary">D</span>
+          <img :src="logo128" :alt="APP_DISPLAY_NAME" class="h-10 w-10 rounded-lg object-cover" />
         </div>
-        <CardTitle class="text-2xl font-semibold tracking-tight">DailyUse</CardTitle>
+        <CardTitle class="text-2xl font-semibold tracking-tight">{{ APP_DISPLAY_NAME }}</CardTitle>
         <CardDescription>{{ t('auth.page.description') }}</CardDescription>
       </CardHeader>
       <CardContent class="grid gap-4">

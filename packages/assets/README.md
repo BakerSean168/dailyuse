@@ -1,6 +1,6 @@
 # @dailyuse/assets
 
-共享静态资源库，包含图片、音频、字体等资源文件。
+共享静态资源库，包含知行（Memoflow）的图片、音频、字体等资源文件。
 
 ## 📦 特性
 
@@ -33,7 +33,7 @@ import { logo, logo128 } from '@dailyuse/assets/images';
 
 // 在 Vue 组件中
 <template>
-  <img :src="logo" alt="DailyUse Logo" />
+  <img :src="logo" alt="知行 Memoflow Logo" />
 </template>
 ```
 
@@ -62,6 +62,14 @@ applyDocumentIcons({
 1. 将资源文件放入对应目录
 2. 在 `index.ts` 中导出
 3. 在消费项目中使用
+
+### 生成品牌图标
+
+```bash
+pnpm nx run assets:generate-icons
+```
+
+这个目标会基于 `src/images/logos/Memoflow-Icon.png` 生成共享 `svg/png/ico/icns`，并同步写入 Web 与 Electron 的入口图标文件。
 
 不要把共享资源放进工作区根 `public/`。该目录已经废弃，不再作为应用运行时资源来源。
 

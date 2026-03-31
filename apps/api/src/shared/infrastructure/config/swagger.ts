@@ -39,7 +39,7 @@ export function setupSwagger(app: Express): void {
   app.get('/api/docs', (req, res, next) => {
     swaggerUi.setup(getDocument(), {
       explorer: true,
-      customSiteTitle: 'DailyUse API 文档',
+      customSiteTitle: 'Memoflow API 文档',
       swaggerOptions: {
         filter: true,
         showRequestHeaders: true,

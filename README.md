@@ -1,4 +1,4 @@
-# DailyUse - 智能个人效率管理平台
+# Memoflow - 智能个人效率管理平台
 
 [![pnpm](https://img.shields.io/badge/pnpm-v10.13.0-orange)](https://pnpm.io/)
 [![Nx](https://img.shields.io/badge/Nx-v21.4.1-blue)](https://nx.dev/)
@@ -27,7 +27,7 @@
 ## 📁 项目结构
 
 ```
-DailyUse/                    # 根目录
+dailyuse/                    # 根目录
 ├── apps/                    # 应用程序
 │   ├── desktop/            # Electron 桌面应用 (React)
 │   ├── web/                # Vue 3 Web 应用
@@ -44,3 +44,5 @@ DailyUse/                    # 根目录
     ├── MCP-Configuration-Guide.md
     └── pnpm-MCP-Best-Practices.md
 ```
+
+

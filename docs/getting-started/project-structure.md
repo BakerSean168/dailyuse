@@ -3,19 +3,19 @@ tags:
   - getting-started
   - structure
   - architecture
-description: DailyUse项目结构详解
+description: Memoflow项目结构详解
 created: 2025-11-23T15:00:00
 updated: 2025-11-23T15:00:00
 ---
 
 # 📁 Project Structure
 
-了解 DailyUse 的项目结构，帮助你快速定位代码和理解组织方式。
+了解 Memoflow 的项目结构，帮助你快速定位代码和理解组织方式。
 
 ## 📂 目录概览
 
 ```
-DailyUse/
+dailyuse/
 ├── apps/                    # 应用程序
 │   ├── api/                # API 服务
 │   ├── web/                # Web 应用
@@ -339,3 +339,5 @@ module/
 # 生成依赖图
 pnpm nx graph
 ```
+
+

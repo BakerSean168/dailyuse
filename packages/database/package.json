@@ -1,7 +1,7 @@
 {
   "name": "@dailyuse/database",
   "version": "0.0.1",
-  "description": "DailyUse Shared Database Infrastructure — Prisma Schema, Client, and Connection Management",
+  "description": "Memoflow Shared Database Infrastructure — Prisma Schema, Client, and Connection Management",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -54,3 +54,5 @@
   ],
   "sideEffects": false
 }
+
+

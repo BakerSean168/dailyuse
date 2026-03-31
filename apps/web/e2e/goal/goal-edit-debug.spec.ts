@@ -34,7 +34,7 @@ test('Goal 编辑对话框调试', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   // 截图
-  await page.screenshot({ path: '/workspaces/DailyUse/goal-edit-dialog-debug.png', fullPage: true });
+  await page.screenshot({ path: '/workspaces/Memoflow/goal-edit-dialog-debug.png', fullPage: true });
   console.log('编辑对话框截图已保存');
 
   // 检查对话框是否存在

@@ -1,6 +1,6 @@
 # Test System Documentation
 
-This directory documents the DailyUse monorepo test infrastructure.
+This directory documents the Memoflow monorepo test infrastructure.
 
 ## Contents
 
@@ -44,3 +44,4 @@ docker compose -f docker-compose.test.yml up -d
 | web              | application           | 0 (no test files yet)           | happy-dom         |
 
 **Total: 668 tests across 34 test files, 12 projects**
+

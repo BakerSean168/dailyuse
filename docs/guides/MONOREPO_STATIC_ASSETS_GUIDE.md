@@ -11,7 +11,7 @@
 5. [方案三：共享 UI 库内嵌资源](#方案三共享-ui-库内嵌资源)
 6. [打包工具配置](#打包工具配置)
 7. [引入方式对比](#引入方式对比)
-8. [DailyUse 项目建议](#dailyuse-项目建议)
+8. [Memoflow 项目建议](#Memoflow-项目建议)
 9. [参考资料](#参考资料)
 
 ---
@@ -488,11 +488,11 @@ declare module '*.woff2?url' {
 
 ---
 
-## DailyUse 项目建议
+## Memoflow 项目建议
 
 ### 6.1 当前问题
 
-DailyUse 项目的 `@dailyuse/assets` 包存在以下问题：
+Memoflow 项目的 `@dailyuse/assets` 包存在以下问题：
 
 1. **静态资源未复制到 dist**：使用 `new URL()` 模式但未将原始文件复制到 dist 目录
 2. **构建配置不完整**：Vite 配置缺少静态资源复制逻辑
@@ -608,7 +608,7 @@ export default defineConfig({
 
 ## 结论
 
-对于 DailyUse 这样的多应用 Monorepo 项目，**推荐使用独立静态资源包方案**：
+对于 Memoflow 这样的多应用 Monorepo 项目，**推荐使用独立静态资源包方案**：
 
 1. 创建 `@dailyuse/assets` 包统一管理所有静态资源
 2. 使用 `new URL()` 模式导出资源 URL
@@ -621,3 +621,5 @@ export default defineConfig({
 - **版本控制**：资源版本与代码版本一致
 - **类型安全**：完整的 TypeScript 支持
 - **按需加载**：支持 tree-shaking 和动态导入
+
+

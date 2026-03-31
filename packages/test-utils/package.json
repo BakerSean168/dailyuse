@@ -2,7 +2,7 @@
   "name": "@dailyuse/test-utils",
   "version": "0.0.1",
   "type": "module",
-  "description": "Unified testing utilities for DailyUse monorepo",
+  "description": "Unified testing utilities for Memoflow monorepo",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -26,3 +26,5 @@
     "typescript": "^5.9.3"
   }
 }
+
+

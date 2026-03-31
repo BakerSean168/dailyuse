@@ -1,7 +1,7 @@
 /**
  * @dailyuse/test-utils
  *
- * Unified testing utilities for the DailyUse monorepo.
+ * Unified testing utilities for the Memoflow monorepo.
  *
  * Sub-modules:
  * - helpers:  Random data generators, Result matchers, async waitFor
@@ -75,3 +75,5 @@ export {
 
 // Setup (re-export selectively to avoid pulling in node:child_process for unit tests)
 export type {} from './setup/database.js';
+
+

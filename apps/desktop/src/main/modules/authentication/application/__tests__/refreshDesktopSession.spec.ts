@@ -107,7 +107,7 @@ describe('refreshDesktopSession', () => {
           deviceName: 'Test Desktop',
           os: 'Windows',
           osVersion: '11',
-          browser: 'DailyUse',
+          browser: 'Memoflow',
           appVersion: '1.0.0',
           ipAddress: '127.0.0.1',
           userAgent: 'Vitest',

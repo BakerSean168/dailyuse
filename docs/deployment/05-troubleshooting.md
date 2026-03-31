@@ -9,7 +9,7 @@
 
 | 症状 | 可能原因 | 检查命令 |
 |------|--------|--------|
-| "镜像拉取超时" | 网络问题 / 镜像不存在 | `docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:latest` |
+| "镜像拉取超时" | 网络问题 / 镜像不存在 | `docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:latest` |
 | "容器立即退出" | 环境变量缺失 / 编译错误 | `docker-compose logs api` |
 | "连接拒绝" | 端口被占用 / 防火墙阻止 | `netstat -tuln \| grep 3000` |
 | "无法连接数据库" | DB 容器未启动 / 密码错误 | `docker-compose logs postgres` |
@@ -29,7 +29,7 @@ Error response from daemon: pull access denied, repository does not exist
 **解决步骤：**
 ```bash
 # 1. 确认镜像存在
-curl -u username:password https://crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/v2/bakersean/dailyuse-api/tags/list
+curl -u username:password https://crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/v2/bakersean/Memoflow-api/tags/list
 
 # 2. 重新登录
 docker logout
@@ -37,7 +37,7 @@ docker login crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
 # 输入正确的用户名和密码
 
 # 3. 重新拉取
-docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:latest
+docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:latest
 
 # 4. 重启容器
 docker-compose down
@@ -46,19 +46,19 @@ docker-compose up -d
 
 #### 错误：`manifest not found`
 ```
-Error: manifest for dailyuse-api:v1.0.3 not found
+Error: manifest for Memoflow-api:v1.0.3 not found
 ```
 
 **解决步骤：**
 ```bash
 # 1. 检查可用标签
-docker search crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api
+docker search crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api
 
 # 2. 使用 latest 标签
-docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:latest
+docker pull crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:latest
 
 # 3. 更新 docker-compose.yml 中的镜像版本
-sed -i 's/dailyuse-api:v[0-9.]*$/dailyuse-api:latest/' docker-compose.yml
+sed -i 's/Memoflow-api:v[0-9.]*$/Memoflow-api:latest/' docker-compose.yml
 ```
 
 ---
@@ -83,7 +83,7 @@ docker-compose ps -a
 | 环境变量缺失 | `Error: DATABASE_URL is required` | 检查 .env 文件：`cat .env \| grep DATABASE_URL` |
 | TypeScript 编译错误 | `Cannot find module` | 重建镜像：`docker-compose down && docker pull ... && docker-compose up -d` |
 | 端口被占用 | `listen EADDRINUSE` | 释放端口：`sudo lsof -i :3000 \| kill -9` |
-| 权限问题 | `EACCES: permission denied` | 检查文件权限：`ls -la /opt/dailyuse/` |
+| 权限问题 | `EACCES: permission denied` | 检查文件权限：`ls -la /opt/memoflow/` |
 
 **解决步骤：**
 ```bash
@@ -91,7 +91,7 @@ docker-compose ps -a
 docker-compose logs api --tail=200
 
 # 2. 重新检查环境变量
-cat /opt/dailyuse/.env
+cat /opt/memoflow/.env
 # 确保所有必需变量存在
 
 # 3. 重启容器
@@ -116,8 +116,8 @@ docker-compose ps postgres
 docker-compose logs postgres | tail -50
 
 # 3. 测试连接
-docker exec dailyuse-api psql \
-  postgresql://postgres:password@postgres:5432/dailyuse \
+docker exec Memoflow-api psql \
+  postgresql://postgres:password@postgres:5432/Memoflow \
   -c "SELECT 1"
 
 # 4. 如果容器不健康，重启
@@ -127,28 +127,28 @@ sleep 30
 docker-compose logs postgres
 ```
 
-#### 错误：`database "dailyuse" does not exist`
+#### 错误：`database "Memoflow" does not exist`
 
 ```bash
 # 1. 连接到 PostgreSQL 并创建数据库
-docker exec -it dailyuse-postgres psql -U postgres
+docker exec -it Memoflow-postgres psql -U postgres
 
 # 在 psql 中执行：
-CREATE DATABASE dailyuse OWNER postgres;
+CREATE DATABASE Memoflow OWNER postgres;
 \q
 
 # 2. 或者直接运行
-docker exec dailyuse-postgres createdb -U postgres dailyuse
+docker exec Memoflow-postgres createdb -U postgres Memoflow
 
 # 3. 验证数据库创建
-docker exec dailyuse-postgres psql -U postgres -l | grep dailyuse
+docker exec Memoflow-postgres psql -U postgres -l | grep Memoflow
 ```
 
 #### 错误：`FATAL: password authentication failed`
 
 ```bash
 # 1. 检查 .env 中的密码配置
-grep DATABASE_PASSWORD /opt/dailyuse/.env
+grep DATABASE_PASSWORD /opt/memoflow/.env
 
 # 2. 重置密码（需要重启容器）
 docker-compose down
@@ -157,10 +157,10 @@ docker-compose up -d postgres
 sleep 10
 
 # 3. 设置新密码
-docker exec dailyuse-postgres psql -U postgres -c "ALTER USER postgres PASSWORD 'new_password';"
+docker exec Memoflow-postgres psql -U postgres -c "ALTER USER postgres PASSWORD 'new_password';"
 
 # 4. 更新 .env
-sed -i 's/DATABASE_PASSWORD=.*/DATABASE_PASSWORD=new_password/' /opt/dailyuse/.env
+sed -i 's/DATABASE_PASSWORD=.*/DATABASE_PASSWORD=new_password/' /opt/memoflow/.env
 
 # 5. 重启 API 服务
 docker-compose down
@@ -181,15 +181,15 @@ docker-compose ps redis
 docker-compose logs redis
 
 # 3. 测试连接
-docker exec dailyuse-api redis-cli -h redis ping
+docker exec Memoflow-api redis-cli -h redis ping
 # 预期：PONG
 
 # 4. 重启 Redis
 docker-compose restart redis
 
 # 5. 检查 Redis 数据
-docker exec dailyuse-redis redis-cli DBSIZE
-docker exec dailyuse-redis redis-cli KEYS '*'
+docker exec Memoflow-redis redis-cli DBSIZE
+docker exec Memoflow-redis redis-cli KEYS '*'
 ```
 
 ---
@@ -208,7 +208,7 @@ curl -v -H "Origin: https://yourdomain.com" http://localhost:3000/api/health
 # 查找：Access-Control-Allow-Origin, Access-Control-Allow-Credentials
 
 # 3. 检查 .env 中的 CORS 配置
-grep CORS /opt/dailyuse/.env
+grep CORS /opt/memoflow/.env
 ```
 
 **常见 CORS 问题和解决：**
@@ -222,16 +222,16 @@ grep CORS /opt/dailyuse/.env
 **CORS 配置修复：**
 ```bash
 # 1. 备份原配置
-cp /opt/dailyuse/.env /opt/dailyuse/.env.bak
+cp /opt/memoflow/.env /opt/memoflow/.env.bak
 
 # 2. 更新 CORS 配置（选择一个方案）
 
 # 方案 A：生产环境（具体域名）
-sed -i "s|CORS_ORIGIN=.*|CORS_ORIGIN=https://yourdomain.com,https://www.yourdomain.com|" /opt/dailyuse/.env
+sed -i "s|CORS_ORIGIN=.*|CORS_ORIGIN=https://yourdomain.com,https://www.yourdomain.com|" /opt/memoflow/.env
 
 # 方案 B：开发环境（任何源）
-sed -i "s|CORS_ORIGIN=.*|CORS_ORIGIN=*|" /opt/dailyuse/.env
-sed -i "s|CORS_CREDENTIALS=.*|CORS_CREDENTIALS=false|" /opt/dailyuse/.env
+sed -i "s|CORS_ORIGIN=.*|CORS_ORIGIN=*|" /opt/memoflow/.env
+sed -i "s|CORS_CREDENTIALS=.*|CORS_CREDENTIALS=false|" /opt/memoflow/.env
 
 # 3. 重启 API 服务
 docker-compose restart api
@@ -275,7 +275,7 @@ sudo fuser -k 3000/tcp
 
 # 3. 更改端口（如无法释放原端口）
 # 编辑 .env
-sed -i 's/API_PORT=3000/API_PORT=3001/' /opt/dailyuse/.env
+sed -i 's/API_PORT=3000/API_PORT=3001/' /opt/memoflow/.env
 
 # 4. 重启容器
 docker-compose down
@@ -306,7 +306,7 @@ docker container prune --force
 docker volume prune --force
 
 # 4. 清理日志
-docker exec dailyuse-api truncate -s 0 /var/log/app.log
+docker exec Memoflow-api truncate -s 0 /var/log/app.log
 
 # 5. 重启 Docker
 systemctl restart docker
@@ -319,7 +319,7 @@ systemctl restart docker
 ### 完整诊断脚本
 ```bash
 #!/bin/bash
-echo "=== DailyUse Deployment Diagnostic ==="
+echo "=== Memoflow Deployment Diagnostic ==="
 
 echo -e "\n1. Docker 状态"
 docker --version
@@ -331,15 +331,15 @@ docker-compose ps
 docker-compose logs api | tail -20
 
 echo -e "\n3. 网络连通性"
-docker exec dailyuse-api ping postgres -c 1
-docker exec dailyuse-api ping redis -c 1
-docker exec dailyuse-api curl -s http://localhost:3000/healthz | jq .
+docker exec Memoflow-api ping postgres -c 1
+docker exec Memoflow-api ping redis -c 1
+docker exec Memoflow-api curl -s http://localhost:3000/healthz | jq .
 
 echo -e "\n4. 环境配置"
-grep -E "^(NODE_ENV|API_PORT|DATABASE_|CORS_|JWT_)" /opt/dailyuse/.env
+grep -E "^(NODE_ENV|API_PORT|DATABASE_|CORS_|JWT_)" /opt/memoflow/.env
 
 echo -e "\n5. 磁盘和内存"
-df -h /opt/dailyuse
+df -h /opt/Memoflow
 docker stats --no-stream
 
 echo -e "\n6. 防火墙规则"
@@ -350,11 +350,11 @@ echo "=== 诊断完成 ==="
 
 **保存并运行：**
 ```bash
-cat > /opt/dailyuse/diagnose.sh << 'EOF'
+cat > /opt/memoflow/diagnose.sh << 'EOF'
 # 上面的脚本内容
 EOF
 
-chmod +x /opt/dailyuse/diagnose.sh
+chmod +x /opt/memoflow/diagnose.sh
 ./diagnose.sh
 ```
 
@@ -370,15 +370,15 @@ chmod +x /opt/dailyuse/diagnose.sh
 
 2. **进入容器调试**
    ```bash
-   docker exec -it dailyuse-api /bin/bash
+   docker exec -it Memoflow-api /bin/bash
    # 然后可以运行命令进行调试
    ```
 
 3. **检查关键文件**
    ```bash
-   cat /opt/dailyuse/.env
-   cat /opt/dailyuse/docker-compose.prod.yml
-   ls -la /opt/dailyuse/data/
+   cat /opt/memoflow/.env
+   cat /opt/memoflow/docker-compose.prod.yml
+   ls -la /opt/memoflow/data/
    ```
 
 4. **查看完整指南**
@@ -394,10 +394,10 @@ chmod +x /opt/dailyuse/diagnose.sh
 
 | 日志类型 | 位置 | 查看命令 |
 |--------|------|--------|
-| API 应用日志 | `/opt/dailyuse/logs/api/` | `docker-compose logs api` |
+| API 应用日志 | `/opt/memoflow/logs/api/` | `docker-compose logs api` |
 | PostgreSQL 日志 | 容器日志 | `docker-compose logs postgres` |
 | Redis 日志 | 容器日志 | `docker-compose logs redis` |
-| Nginx 日志 | `/var/log/nginx/dailyuse.*.log` | `tail -f /var/log/nginx/dailyuse.access.log` |
+| Nginx 日志 | `/var/log/nginx/Memoflow.*.log` | `tail -f /var/log/nginx/Memoflow.access.log` |
 | Docker 系统日志 | `/var/log/docker.log` | `journalctl -u docker` |
 
 ---
@@ -406,3 +406,4 @@ chmod +x /opt/dailyuse/diagnose.sh
 1. 容器日志：`docker-compose logs [service-name]`
 2. 系统日志：`journalctl -xe`
 3. Docker 日志：`docker logs [container-id]`
+

@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
 import {
+  createAssetsAliasEntries,
   createContractsAliasEntries,
   createUiVueSourceAliasEntries,
   createWorkspaceSourceAliasEntries,
@@ -56,10 +57,11 @@ export default defineConfig(({ mode, command }) => {
 
   const devWorkspaceAliases = isDev
     ? [
+        ...createAssetsAliasEntries(workspaceRoot),
         ...createUiVueSourceAliasEntries(workspaceRoot),
         ...createContractsAliasEntries(workspaceRoot),
       ]
-    : [];
+    : createAssetsAliasEntries(workspaceRoot);
 
   const resolveAliases = [
     ...directWorkspaceAliases,

@@ -1,7 +1,7 @@
 # API Backend 架构文档
 
 > **更新时间**: 2025-12-16  
-> **应用**: DailyUse API Backend  
+> **应用**: Memoflow API Backend  
 > **技术栈**: Node.js 22+ / Express 5.2 / Prisma 6.17 / PostgreSQL  
 > **架构模式**: DDD + Event-Driven
 
@@ -11,7 +11,7 @@
 
 ### 执行摘要
 
-DailyUse API Backend 是一个基于 Express 框架的 RESTful API 服务，采用领域驱动设计（DDD）和事件驱动架构。使用 Prisma ORM 管理 PostgreSQL 数据库，支持 JWT 认证、Swagger API 文档和实时 SSE 通信。
+Memoflow API Backend 是一个基于 Express 框架的 RESTful API 服务，采用领域驱动设计（DDD）和事件驱动架构。使用 Prisma ORM 管理 PostgreSQL 数据库，支持 JWT 认证、Swagger API 文档和实时 SSE 通信。
 
 ### 核心特性
 
@@ -433,8 +433,8 @@ eventBus.on('goal.created', async (event) => {
 # .env
 NODE_ENV=development
 PORT=3888
-DATABASE_URL=postgresql://user:pass@localhost:5432/dailyuse
-SHADOW_DATABASE_URL=postgresql://user:pass@localhost:5432/dailyuse_shadow
+DATABASE_URL=postgresql://user:pass@localhost:5432/Memoflow
+SHADOW_DATABASE_URL=postgresql://user:pass@localhost:5432/Memoflow_shadow
 JWT_SECRET=your-secret-key
 JWT_EXPIRES_IN=1h
 REFRESH_TOKEN_EXPIRES_IN=30d
@@ -574,3 +574,5 @@ CMD ["node", "dist/index.js"]
 
 **文档维护**: BMAD v6 Analyst  
 **最后更新**: 2025-10-28 14:28:07
+
+

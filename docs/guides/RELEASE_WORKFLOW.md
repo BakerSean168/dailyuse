@@ -115,9 +115,9 @@ git push origin feat/add-dark-mode
 
 ### Downloads
 
-- DailyUse-0.2.0-Setup.exe (Windows)
-- DailyUse-0.2.0.dmg (macOS)
-- DailyUse-0.2.0.AppImage (Linux)
+- Memoflow-0.2.0-Setup.exe (Windows)
+- Memoflow-0.2.0.dmg (macOS)
+- Memoflow-0.2.0.AppImage (Linux)
 ```
 
 ---
@@ -339,3 +339,5 @@ git tag -d v0.0.0-test
 
 **最后更新**: 2025-12-18
 **维护者**: @bakersean
+
+

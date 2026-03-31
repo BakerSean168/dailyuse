@@ -4,7 +4,7 @@ tags:
   - development
   - logging
   - troubleshooting
-description: DailyUse logging and troubleshooting tools guide for API, Desktop, and PowerSync
+description: Memoflow logging and troubleshooting tools guide for API, Desktop, and PowerSync
 created: 2026-03-10T00:00:00
 updated: 2026-03-10T00:00:00
 ---
@@ -19,8 +19,8 @@ This guide explains where logs are written, where to read them, and which tools 
 - API persisted logs: `apps/api/logs/app-YYYY-MM-DD.log` and `apps/api/logs/error-YYYY-MM-DD.log`
 - Desktop runtime logs: terminal running `nx serve desktop`
 - Desktop persisted logs: not enabled by default (currently console-first)
-- PowerSync service logs: `docker logs -f dailyuse-dev-powersync`
-- Postgres service logs: `docker logs -f dailyuse-dev-db`
+- PowerSync service logs: `docker logs -f Memoflow-dev-powersync`
+- Postgres service logs: `docker logs -f Memoflow-dev-db`
 
 ## Logging architecture in this repo
 
@@ -53,8 +53,8 @@ This guide explains where logs are written, where to read them, and which tools 
 
 ```bash
 docker ps
-docker logs -f dailyuse-dev-powersync
-docker logs -f dailyuse-dev-db
+docker logs -f Memoflow-dev-powersync
+docker logs -f Memoflow-dev-db
 ```
 
 ## Recommended troubleshooting workflow
@@ -90,11 +90,13 @@ Then keep both terminals open.
 
 - `nx serve api`: start API in watch mode
 - `nx serve desktop`: start Desktop in dev mode
-- `docker logs -f dailyuse-dev-powersync`: inspect sync service behavior
-- `docker logs -f dailyuse-dev-db`: inspect Postgres container status
+- `docker logs -f Memoflow-dev-powersync`: inspect sync service behavior
+- `docker logs -f Memoflow-dev-db`: inspect Postgres container status
 - `pnpm nx run api:prisma-studio`: inspect DB records visually
 
 ## Current limitations and next step
 
 - Desktop does not yet have file-persisted logger wired like API.
 - If needed, add Desktop logger bootstrap that registers a Node-capable provider for main process file logging.
+
+

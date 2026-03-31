@@ -1,7 +1,7 @@
 {
   "name": "@dailyuse/patterns",
   "version": "0.0.1",
-  "description": "Reusable design patterns and utilities for DailyUse applications",
+  "description": "Reusable design patterns and utilities for Memoflow applications",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -39,3 +39,5 @@
     "vitest": "4.0.18"
   }
 }
+
+

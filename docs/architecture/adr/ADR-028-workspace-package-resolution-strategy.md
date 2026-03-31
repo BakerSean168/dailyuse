@@ -6,7 +6,7 @@
 
 ## Context
 
-DailyUse is an Nx + pnpm monorepo with three different resolution environments running at the same time:
+Memoflow is an Nx + pnpm monorepo with three different resolution environments running at the same time:
 
 - TypeScript compiler and IDE navigation (`tsconfig.base.json`, project `tsconfig.json`)
 - Browser and renderer bundlers (`apps/web` and `apps/desktop` via Vite)
@@ -367,7 +367,7 @@ Rejected because:
 
 ## Summary
 
-DailyUse officially uses:
+Memoflow officially uses:
 
 - `tsconfig` for compile-time workspace source awareness
 - Vite alias for development-time app runtime source resolution
@@ -382,3 +382,5 @@ In short:
 - **TypeScript paths do not replace Vite alias**
 - **Vite alias does not replace dependency declarations**
 - **dependency declarations do not replace `exports`**
+
+

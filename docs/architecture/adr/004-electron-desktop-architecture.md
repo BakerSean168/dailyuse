@@ -22,7 +22,7 @@ updated: 2025-12-03
 
 ## 背景
 
-DailyUse 目前是一个 Web 应用，后端运行在远程服务器上。为了提供更好的用户体验，我们计划扩展到 Electron 桌面应用，实现：
+Memoflow 目前是一个 Web 应用，后端运行在远程服务器上。为了提供更好的用户体验，我们计划扩展到 Electron 桌面应用，实现：
 
 1. **离线优先 (Local-First)** - 无网络时仍可完整使用
 2. **本地数据存储** - 数据存储在用户本地，隐私性更好
@@ -551,7 +551,7 @@ export class GoalPrismaRepository implements IGoalRepository {
 import { createPrismaClient } from '@dailyuse/infra/adapters/prisma';
 
 // PostgreSQL 连接 (通过环境变量)
-// DATABASE_URL=postgresql://user:pass@localhost:5432/dailyuse
+// DATABASE_URL=postgresql://user:pass@localhost:5432/Memoflow
 const prisma = createPrismaClient({ provider: 'postgresql' });
 ```
 
@@ -565,7 +565,7 @@ import { createPrismaClient, disconnectPrisma } from '@dailyuse/infra/adapters/p
 
 export async function initDatabase() {
   // SQLite 数据库存储在用户数据目录
-  const dbPath = path.join(app.getPath('userData'), 'dailyuse.db');
+  const dbPath = path.join(app.getPath('userData'), 'Memoflow.db');
   const databaseUrl = `file:${dbPath}`;
 
   const prisma = createPrismaClient({
@@ -884,3 +884,5 @@ const aiService = navigator.onLine
 ---
 
 **教训**: Local-First 架构需要预先设计好数据同步策略。使用 Prisma 统一 ORM 可以大幅减少维护成本，但需要注意 Electron 打包配置。UI 框架变更应该与架构提取分开进行，降低风险。
+
+

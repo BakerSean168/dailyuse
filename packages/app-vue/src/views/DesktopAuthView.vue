@@ -146,7 +146,7 @@ onMounted(() => {
             <Sparkles class="h-5 w-5" />
           </div>
           <div class="min-w-0 space-y-1">
-            <h1 class="text-xl font-semibold tracking-tight">DailyUse Desktop</h1>
+            <h1 class="text-xl font-semibold tracking-tight">{{ t('auth.desktop.title') }}</h1>
             <p class="text-sm leading-6 text-muted-foreground">
               {{ t('auth.desktop.description') }}
             </p>

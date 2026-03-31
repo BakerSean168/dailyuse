@@ -1,9 +1,9 @@
 # =============================================================================
-# DailyUse 生产环境 Docker Compose 配置
+# Memoflow 生产环境 Docker Compose 配置
 # =============================================================================
 # 版本: v1.0.0
 # 部署架构: 单服务器全栈部署（PostgreSQL + Redis + API + Web）
-# 镜像仓库: docker.io/dailyuse (需在 .env 中配置)
+# 镜像仓库: docker.io/Memoflow (需在 .env 中配置)
 # 
 # 使用说明:
 # 1. 复制 .env.prod.example 为 .env
@@ -25,7 +25,7 @@ services:
   # ===========================================================================
   postgres:
     image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/postgres:16-alpine
-    container_name: dailyuse-prod-db
+    container_name: Memoflow-prod-db
     restart: always
     
     # 环境变量 - 通过 .env 文件注入
@@ -48,11 +48,11 @@ services:
     
     # 网络配置 - 连接到应用内部网络
     networks:
-      - dailyuse-network
+      - Memoflow-network
     
     # 健康检查 - 确保数据库完全启动后才启动依赖服务
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dailyuse} -d ${DB_NAME:-dailyuse}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-Memoflow} -d ${DB_NAME:-Memoflow}"]
       interval: 10s      # 每 10 秒检查一次
       timeout: 5s        # 超时时间 5 秒
       retries: 5         # 失败 5 次后标记为 unhealthy
@@ -81,7 +81,7 @@ services:
   # ===========================================================================
   redis:
     image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/redis:7-alpine
-    container_name: dailyuse-prod-redis
+    container_name: Memoflow-prod-redis
     restart: always
     
     # 启动命令 - 配置 Redis 参数
@@ -107,7 +107,7 @@ services:
       # - ./configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
     
     networks:
-      - dailyuse-network
+      - Memoflow-network
     
     # 健康检查
     healthcheck:
@@ -135,13 +135,13 @@ services:
   #   - 业务逻辑处理
   #   - 数据库操作（Prisma ORM）
   #   - 定时任务调度
-  # 镜像: docker.io/dailyuse/dailyuse-api:v1.0.0（已预构建并推送）
+  # 镜像: docker.io/memoflow/Memoflow-api:v1.0.0（已预构建并推送）
   # 端口: 3000（内网）+ Nginx Proxy Manager 反向代理（公网 HTTPS）
   # ===========================================================================
   api:
     # 使用预构建的镜像（而非本地 build）
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-dailyuse}/dailyuse-api:${API_TAG:-v1.0.6}
-    container_name: dailyuse-prod-api
+    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-Memoflow}/Memoflow-api:${API_TAG:-v1.0.6}
+    container_name: Memoflow-prod-api
     restart: always
     
     # 健康检查 - 使用 K8s 标准路径 /healthz
@@ -216,7 +216,7 @@ services:
         condition: service_healthy
     
     networks:
-      - dailyuse-network
+      - Memoflow-network
     
     # 可选：挂载日志目录、上传文件目录等
     volumes:
@@ -242,13 +242,13 @@ services:
   #   - 静态资源托管（Nginx）
   #   - SPA 路由配置（Vue Router）
   #   - 反向代理到 API（可选，建议用 NPM 统一管理）
-  # 镜像: docker.io/dailyuse/dailyuse-web:v1.0.0（已预构建并推送）
+  # 镜像: docker.io/memoflow/Memoflow-web:v1.0.0（已预构建并推送）
   # 端口: 80（内网）+ Nginx Proxy Manager 反向代理（公网 HTTPS）
   # ===========================================================================
   web:
     # 使用预构建的镜像
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-dailyuse}/dailyuse-web:${WEB_TAG:-v1.0.1}
-    container_name: dailyuse-prod-web
+    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-Memoflow}/Memoflow-web:${WEB_TAG:-v1.0.1}
+    container_name: Memoflow-prod-web
     restart: always
     
     # 端口映射 - Web 前端端口（建议通过 Nginx Proxy Manager 反向代理）
@@ -262,7 +262,7 @@ services:
         condition: service_healthy
     
     networks:
-      - dailyuse-network
+      - Memoflow-network
     
     # 环境变量（编译时已固定，此处主要用于文档说明）
     # 注意：Vite 构建的 SPA 在编译时已将 API 地址打包进 JS，
@@ -300,7 +300,7 @@ services:
 # 例如：API 通过 postgres:5432 访问数据库，而非 IP 地址
 # =============================================================================
 networks:
-  dailyuse-network:
+  Memoflow-network:
     driver: bridge
     # 可选：自定义网络配置
     # ipam:
@@ -321,7 +321,7 @@ volumes:
     # driver_opts:
     #   type: none
     #   o: bind
-    #   device: /data/dailyuse/postgres
+    #   device: /data/memoflow/postgres
   
   # Redis 数据存储（AOF 持久化文件）
   redis-prod-data:
@@ -362,12 +362,13 @@ volumes:
 #   docker compose -f docker-compose.prod.yml down -v
 #
 # 进入容器内部调试:
-#   docker exec -it dailyuse-prod-api sh
-#   docker exec -it dailyuse-prod-db psql -U dailyuse -d dailyuse
+#   docker exec -it Memoflow-prod-api sh
+#   docker exec -it Memoflow-prod-db psql -U Memoflow -d Memoflow
 #
 # 备份数据库:
-#   docker exec dailyuse-prod-db pg_dump -U dailyuse dailyuse > backup.sql
+#   docker exec Memoflow-prod-db pg_dump -U Memoflow Memoflow > backup.sql
 #
 # 恢复数据库:
-#   docker exec -i dailyuse-prod-db psql -U dailyuse dailyuse < backup.sql
+#   docker exec -i Memoflow-prod-db psql -U Memoflow Memoflow < backup.sql
 # =============================================================================
+

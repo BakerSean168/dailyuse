@@ -85,3 +85,22 @@ export function createUiVueSourceAliasEntries(workspaceRoot: string): Alias[] {
     },
   ];
 }
+
+export function createAssetsAliasEntries(workspaceRoot: string): Alias[] {
+  const assetsRoot = resolveFromWorkspace(workspaceRoot, 'packages/assets/src');
+
+  return [
+    {
+      find: /^@dailyuse\/assets\/audio$/,
+      replacement: `${assetsRoot}/audio/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/assets\/images$/,
+      replacement: `${assetsRoot}/images/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/assets$/,
+      replacement: `${assetsRoot}/index.ts`,
+    },
+  ];
+}

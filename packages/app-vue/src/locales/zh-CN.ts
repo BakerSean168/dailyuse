@@ -804,7 +804,7 @@ export default {
       },
     },
     desktop: {
-      title: 'DailyUse Desktop',
+      title: '知行 Memoflow',
       description: '账号由你选择，自动登录只会在你主动开启后生效。',
       tabs: {
         login: '登录',

@@ -23,9 +23,9 @@ Region:    cn-hangzhou (杭州)
 ### 2.1 已推送的镜像
 
 #### 应用镜像
-- ✅ `dailyuse-api:v1.0.2` - Express API 后端 **（推荐，修复了 Prisma client 缺失问题）**
-- `dailyuse-api:v1.0.1` - Express API 后端（有 Prisma 依赖问题，不推荐）
-- `dailyuse-web:v1.0.1` - Vue SPA 前端 + Nginx
+- ✅ `Memoflow-api:v1.0.2` - Express API 后端 **（推荐，修复了 Prisma client 缺失问题）**
+- `Memoflow-api:v1.0.1` - Express API 后端（有 Prisma 依赖问题，不推荐）
+- `Memoflow-web:v1.0.1` - Vue SPA 前端 + Nginx
 
 #### 基础设施镜像
 - `postgres:16-alpine` - PostgreSQL 16
@@ -54,8 +54,8 @@ IMAGE_NAMESPACE=bakersean
 TAG=v1.0.2
 
 # PostgreSQL 配置
-DB_NAME=dailyuse
-DB_USER=dailyuse
+DB_NAME=Memoflow
+DB_USER=Memoflow
 DB_PASSWORD=<强密码，建议使用: openssl rand -base64 32>
 DB_PORT=5432
 
@@ -114,10 +114,10 @@ docker compose -f docker-compose.prod.yml ps
 
 # 输出示例：
 # NAME                       STATUS
-# dailyuse-prod-db          Up 2 minutes (healthy)
-# dailyuse-prod-redis       Up 2 minutes (healthy)
-# dailyuse-prod-api         Up 2 minutes (healthy)
-# dailyuse-prod-web         Up 2 minutes (healthy)
+# Memoflow-prod-db          Up 2 minutes (healthy)
+# Memoflow-prod-redis       Up 2 minutes (healthy)
+# Memoflow-prod-api         Up 2 minutes (healthy)
+# Memoflow-prod-web         Up 2 minutes (healthy)
 ```
 
 ## 5. 镜像拉取原理
@@ -132,10 +132,10 @@ redis:
   image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/redis:7-alpine
 
 api:
-  image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-dailyuse}/dailyuse-api:${TAG:-v1.0.0}
+  image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-Memoflow}/Memoflow-api:${TAG:-v1.0.0}
 
 web:
-  image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-dailyuse}/dailyuse-web:${TAG:-v1.0.0}
+  image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-Memoflow}/Memoflow-web:${TAG:-v1.0.0}
 ```
 
 **工作原理**：
@@ -171,14 +171,14 @@ web:
 
 ```bash
 # 构建 API 镜像
-docker build -f Dockerfile.api -t crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.2 .
+docker build -f Dockerfile.api -t crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.2 .
 
 # 构建 Web 镜像
-docker build -f Dockerfile.web -t crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-web:v1.0.2 .
+docker build -f Dockerfile.web -t crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-web:v1.0.2 .
 
 # 推送到 ACR
-docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.2
-docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-web:v1.0.2
+docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.2
+docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-web:v1.0.2
 ```
 
 ## 7. 常见问题
@@ -250,7 +250,7 @@ docker images | grep crpi-3po0rmvmxgu205ms
 2. 克隆项目：
    ```bash
    git clone <repo-url>
-   cd DailyUse
+   cd dailyuse
    cp .env.prod.example .env
    ```
 3. 修改 `.env` 中的敏感信息（数据库密码、Redis 密码等）
@@ -288,7 +288,7 @@ git status  # 验证 .env 未被追踪
 # 登录阿里云控制台 → 容器镜像服务 → 镜像列表 → 安全扫描
 
 # 本地检查：使用 Trivy 扫描镜像漏洞
-trivy image crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.1
+trivy image crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/Memoflow-api:v1.0.1
 ```
 
 ## 9. 性能优化
@@ -350,11 +350,11 @@ docker compose -f docker-compose.prod.yml logs -f
 docker stats
 
 # 查看具体容器的统计数据
-docker stats dailyuse-prod-api
+docker stats Memoflow-prod-api
 
 # 输出示例：
 # CONTAINER ID   NAME                  CPU %   MEM USAGE / LIMIT
-# abc123def456   dailyuse-prod-api     0.5%    120MiB / 256MiB
+# abc123def456   Memoflow-prod-api     0.5%    120MiB / 256MiB
 ```
 
 ## 11. 参考资源
@@ -372,3 +372,5 @@ docker stats dailyuse-prod-api
 - [DOCKER_BUILD_GUIDE.md](./DOCKER_BUILD_GUIDE.md) - Docker 构建深度指南
 - [docker-compose.prod.yml](../../docker-compose.prod.yml) - 生产环境配置
 - [.env.prod.example](../../.env.prod.example) - 环境变量示例
+
+

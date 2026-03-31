@@ -1,6 +1,6 @@
 # E2E Testing Guide
 
-本指南介绍如何运行和维护 DailyUse 的 E2E 测试。
+本指南介绍如何运行和维护知行（Memoflow）的 E2E 测试。
 
 ## 📋 目录
 
@@ -554,4 +554,4 @@ pnpm exec playwright show-trace trace.zip
 ---
 
 **最后更新**: 2025-10-23  
-**维护者**: DailyUse Development Team
+**维护者**: Memoflow Development Team

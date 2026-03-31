@@ -1,12 +1,12 @@
-# DailyUse AI Python Integration Implementation Plan
+# Memoflow AI Python Integration Implementation Plan
 
 Status: Active Implementation Update  
 Date: 2026-03-27  
-Scope: `dailyuse` monorepo AI architecture, implementation phases, and rollout strategy
+Scope: `Memoflow` monorepo AI architecture, implementation phases, and rollout strategy
 
 ## 1. Document Purpose
 
-This document defines the recommended architecture and implementation plan for introducing a Python AI service into the `dailyuse` monorepo.
+This document defines the recommended architecture and implementation plan for introducing a Python AI service into the `Memoflow` monorepo.
 
 The goal is not to replace the existing TypeScript AI module wholesale. The goal is to:
 
@@ -864,3 +864,5 @@ The recommended next implementation step is:
 3. Revisit local desktop Python only after the remote-backed quality loop is mature.
 
 This gives the highest next signal with lower risk than shipping local Python packaging too early.
+
+

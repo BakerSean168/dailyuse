@@ -35,11 +35,16 @@ export async function initializeDesktopFeatures(mainWindow: BrowserWindow): Prom
 
   // 3. 开机自启管理器
   autoLaunchManager = new AutoLaunchManager({
-    name: 'DailyUse',
+    name: 'Memoflow',
     isHidden: true,
   });
   await autoLaunchManager.init();
   console.log('[Desktop Features] Auto-launch manager initialized');
+}
+
+export function bindDesktopFeaturesWindow(mainWindow: BrowserWindow): void {
+  trayManager?.setMainWindow(mainWindow);
+  shortcutManager?.setMainWindow(mainWindow);
 }
 
 /**
@@ -56,7 +61,9 @@ export async function cleanupDesktopFeatures(): Promise<void> {
   }
 
   // TrayManager 无需显式销毁，Electron 会自动处理
-  // trayManager 实例置空即可
+  if (trayManager) {
+    trayManager.destroy();
+  }
   console.log('[Desktop Features] Tray cleanup completed');
 
   trayManager = null;

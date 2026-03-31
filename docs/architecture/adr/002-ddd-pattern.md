@@ -18,7 +18,7 @@ updated: 2025-11-23T15:00:00
 
 ## 背景
 
-DailyUse 是一个功能丰富的个人效率管理系统，包含目标管理、任务管理、日程调度等多个业务领域。随着项目复杂度增加，我们需要一种能够：
+Memoflow 是一个功能丰富的个人效率管理系统，包含目标管理、任务管理、日程调度等多个业务领域。随着项目复杂度增加，我们需要一种能够：
 
 1. 清晰表达业务逻辑
 2. 隔离业务逻辑和技术实现
@@ -591,9 +591,9 @@ export class GoalIpcAdapter implements IGoalApiClient {
 | [ddd-forum](https://github.com/stemmlerjs/ddd-forum)                      | 2k+   | TypeScript + Clean Architecture |
 | [IDDD_Samples](https://github.com/VaughnVernon/IDDD_Samples)              | 4k+   | Java 参考实现，Event Sourcing   |
 
-### DailyUse 的架构选择
+### Memoflow 的架构选择
 
-| 方面                   | 主流方案                  | DailyUse 选择                      | 理由                   |
+| 方面                   | 主流方案                  | Memoflow 选择                      | 理由                   |
 | ---------------------- | ------------------------- | ---------------------------------- | ---------------------- |
 | **DI 框架**            | TSyringe/InversifyJS      | 自定义 DIContainer                 | 轻量、无装饰器依赖     |
 | **CQRS**               | 完全分离 Commands/Queries | 暂未分离                           | 复杂度权衡，后续可演进 |
@@ -611,7 +611,7 @@ src/
 ├── repositories/    ← 所有 Repository
 └── entities/        ← 所有 Entity
 
-# Vertical Slicing (垂直切片 - DailyUse 采用)
+# Vertical Slicing (垂直切片 - Memoflow 采用)
 packages/
 ├── domain-client/src/
 │   ├── goal/        ← Goal 模块完整领域
@@ -695,3 +695,5 @@ export class GetGoalHandler implements IQueryHandler<GetGoalQuery> {
 ---
 
 **教训**: DDD 不是银弹，但对于复杂业务系统是正确选择。关键是找到合适的应用边界，不要过度设计简单模块。Container 属于 Infrastructure 层，Domain 和 Application 层应通过构造函数注入依赖，保持对 DI 实现的无知。
+
+

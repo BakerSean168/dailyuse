@@ -44,6 +44,10 @@ export class ShortcutManager {
     this.registerDefaultShortcuts();
   }
 
+  setMainWindow(mainWindow: BrowserWindow): void {
+    this.mainWindow = mainWindow;
+  }
+
   /**
    * @method registerDefaultShortcuts
    * @description Registers default application shortcuts.

@@ -9,7 +9,7 @@ updated: 2025-11-23T15:00:00
 
 # 🚀 Getting Started
 
-欢迎来到 DailyUse！这里是你的起点。
+欢迎来到 Memoflow！这里是你的起点。
 
 ## 📖 学习路径
 
@@ -79,3 +79,4 @@ updated: 2025-11-23T15:00:00
 ---
 
 **准备好了吗？** 从 [[quick-start|Quick Start]] 开始！🚀
+

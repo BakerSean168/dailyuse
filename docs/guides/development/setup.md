@@ -12,7 +12,7 @@ updated: 2025-01-22T00:00:00
 
 # 🛠 开发环境配置
 
-配置高效的 DailyUse 开发环境，包括编辑器、工具和插件。
+配置高效的 Memoflow 开发环境，包括编辑器、工具和插件。
 
 > **关联标准**: 🏷️ [standards/naming.md](../../standards/naming.md) | 📐 [standards/tech-stack.md](../../standards/tech-stack.md)
 
@@ -249,8 +249,8 @@ pnpm nx run api:prisma-studio
 ```
 Host: localhost
 Port: 5432
-Database: dailyuse
-Username: dailyuse
+Database: Memoflow
+Username: Memoflow
 Password: dev123456
 ```
 
@@ -272,7 +272,7 @@ PostgreSQL 官方管理工具。
 
 ```bash
 # 项目根目录
-tools/postman/DailyUse.postman_collection.json
+tools/postman/memoflow.postman_collection.json
 ```
 
 ### Insomnia
@@ -541,8 +541,10 @@ pnpm nx serve web
 
 - [[../../contributing/README|贡献指南]]
 - [[../troubleshooting/common-errors|常见错误]]
-- [GitHub Discussions](https://github.com/BakerSean168/DailyUse/discussions)
+- [GitHub Discussions](https://github.com/BakerSean168/dailyuse/discussions)
 
 ---
 
 **提示**: 配置完成后，建议创建一个新分支并尝试提交代码，验证 Git Hooks 是否正常工作。
+
+

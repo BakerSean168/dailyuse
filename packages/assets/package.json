@@ -1,7 +1,7 @@
 {
   "name": "@dailyuse/assets",
   "version": "0.0.1",
-  "description": "Shared static assets for DailyUse applications (images, audio, fonts)",
+  "description": "Shared static assets for Memoflow applications (images, audio, fonts)",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -38,3 +38,5 @@
   "author": "BakerSean168",
   "license": "MIT"
 }
+
+

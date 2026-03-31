@@ -120,7 +120,7 @@ const AIApiModule = createAIApiModule({
 });
 
 async function bootstrap(): Promise<void> {
-  logger.info('Starting DailyUse API server...', {
+  logger.info('Starting Memoflow API server...', {
     ...getStartupInfo(),
     port: env.API_PORT,
     nodeEnv: env.NODE_ENV,

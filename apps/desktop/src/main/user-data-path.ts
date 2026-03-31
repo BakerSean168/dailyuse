@@ -1,7 +1,6 @@
 import { app } from 'electron';
 import path from 'node:path';
-
-export const DESKTOP_PRODUCT_NAME = 'DailyUse';
+import { DESKTOP_PRODUCT_NAME } from '@dailyuse/assets';
 
 export const DESKTOP_USER_DATA_DIRS = Object.freeze({
   production: DESKTOP_PRODUCT_NAME,

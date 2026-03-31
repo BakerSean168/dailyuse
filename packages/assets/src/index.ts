@@ -11,5 +11,6 @@
 
 export * from './images';
 export * from './audio';
+export * from './brand';
 export * from './manifest';
 export * from './document';

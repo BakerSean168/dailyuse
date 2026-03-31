@@ -30,6 +30,7 @@ import { getRememberedAccountsService } from '../modules/authentication/infrastr
 import { getDesktopAuthService } from '../auth/desktop-auth-context';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
 import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
+import { resolveWindowIconPath } from '../utils/app-icon';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -62,6 +63,7 @@ export function createMainWindow(): BrowserWindow {
       nodeIntegration: false,
       sandbox: false,
     },
+    icon: resolveWindowIconPath(),
     show: false,
   });
 

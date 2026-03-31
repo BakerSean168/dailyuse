@@ -1,7 +1,7 @@
 {
   "name": "@dailyuse/governance",
   "version": "0.0.1",
-  "description": "治理模块 - DailyUse 架构规则与代码标准的活文档库",
+  "description": "治理模块 - Memoflow 架构规则与代码标准的活文档库",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -67,3 +67,5 @@
     "@types/express": "^5.0.0"
   }
 }
+
+

@@ -54,7 +54,7 @@ export const Read: Story = {
   args: {
     notification: mockNotification({
       title: '系统升级完成',
-      content: 'DailyUse v2.3.0 已成功部署，包含多项性能优化。',
+      content: 'Memoflow v2.3.0 已成功部署，包含多项性能优化。',
       type: 'SYSTEM',
       category: 'System',
       importance: 'Minor',

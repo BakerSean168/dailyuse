@@ -124,7 +124,7 @@ export const AllRead: Story = {
       }),
       mockNotification({
         id: '2',
-        title: '欢迎使用 DailyUse',
+        title: '欢迎使用知行 (Memoflow)',
         content: '感谢注册，开始您的高效之旅！',
         isRead: true,
         readAt: dayAgo,

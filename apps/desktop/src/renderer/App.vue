@@ -6,7 +6,7 @@
  * on Windows/Linux and native traffic lights preserved on macOS.
  */
 import { computed, onBeforeUnmount, onMounted, reactive } from 'vue';
-import { logo48 } from '@dailyuse/assets';
+import { APP_TITLE_NAME, logo48 } from '@dailyuse/assets';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { useRoute, useRouter } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
@@ -115,7 +115,7 @@ useThemeSync();
             <img :src="logo48" alt="" class="desktop-titlebar__logo" />
           </span>
           <span class="desktop-titlebar__brand-copy">
-            <span class="desktop-titlebar__brand-name">DailyUse</span>
+            <span class="desktop-titlebar__brand-name">{{ APP_TITLE_NAME }}</span>
           </span>
         </button>
 

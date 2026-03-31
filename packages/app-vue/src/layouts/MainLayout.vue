@@ -2,6 +2,7 @@
 import { computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { APP_NAME_ZH } from '@dailyuse/assets';
 import { BOTTOM_NAVIGATION_KEY, MAIN_NAVIGATION_KEY } from '../di/keys';
 import { defaultMainNavigation, defaultBottomNavigation } from '../di/navigation';
 
@@ -34,7 +35,7 @@ const navigateTo = (path: string) => {
         class="text-left font-bold px-2 py-2 rounded hover:bg-sidebar-accent"
         @click="navigateTo('/')"
       >
-        DailyUse
+        {{ APP_NAME_ZH }}
       </button>
 
       <nav class="flex-1 space-y-1">

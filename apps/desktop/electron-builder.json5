@@ -1,9 +1,9 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.dailyuse.app", // 修改为更规范的应用ID格式
+  "appId": "com.memoflow.app",
   "asar": true,
-  "productName": "DailyUse",
+  "productName": "Memoflow",
   "directories": {
     "output": "dist", // 修改输出目录，与 GitHub Actions 保持一致
     "buildResources": "build" // 添加资源目录配置
@@ -14,6 +14,7 @@
     "package.json"
   ],
   "mac": {
+    "icon": "build/icon.icns",
     "target": [
       "dmg",
       "zip"  // 添加 zip 格式支持自动更新
@@ -22,7 +23,7 @@
     "category": "public.app-category.productivity" // 添加应用类别
   },
   "win": {
-    "icon": "../../packages/assets/src/images/logos/DailyUse-256.png",
+    "icon": "build/icon.ico",
     "target": [
       {
         "target": "nsis",
@@ -42,8 +43,8 @@
     "allowElevation": true,   // 允许请求提升权限（如需要管理员权限）
     "createDesktopShortcut": true,    // 创建桌面快捷方式
     "createStartMenuShortcut": true,   // 创建开始菜单快捷方式
-    "shortcutName": "DailyUse",       // 快捷方式的名称
-    "uninstallDisplayName": "DailyUse", // 在控制面板中显示的卸载程序名称
+    "shortcutName": "知行 (Memoflow)",
+    "uninstallDisplayName": "知行 (Memoflow)",
     "deleteAppDataOnUninstall": false,  // 卸载时是否删除用户数据
     "displayLanguageSelector": true,    // 显示安装程序语言选择界面
     "installerLanguages": [            // 支持的安装程序语言
@@ -52,6 +53,7 @@
     ],
   },
   "linux": {
+    "icon": "build/icon.png",
     "target": [
       "AppImage",
       "deb",  // 添加 deb 格式

@@ -58,8 +58,8 @@ updated: 2025-11-23T17:25:00
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/BakerSean168/DailyUse.git
-cd DailyUse
+git clone https://github.com/BakerSean168/dailyuse.git
+cd dailyuse
 ```
 
 ### 2. 安装依赖
@@ -175,18 +175,18 @@ docker-compose restart redis
 
 ```env
 # .env.local
-DATABASE_URL="postgresql://dailyuse:dailyuse123@localhost:5432/dailyuse_dev"
+DATABASE_URL="postgresql://Memoflow:Memoflow123@localhost:5432/Memoflow_dev"
 
-POSTGRES_USER=dailyuse
-POSTGRES_PASSWORD=dailyuse123
-POSTGRES_DB=dailyuse_dev
+POSTGRES_USER=Memoflow
+POSTGRES_PASSWORD=Memoflow123
+POSTGRES_DB=Memoflow_dev
 ```
 
 **管理数据库**:
 
 ```bash
 # 使用psql连接
-docker exec -it dailyuse-postgres psql -U dailyuse -d dailyuse_dev
+docker exec -it Memoflow-postgres psql -U Memoflow -d Memoflow_dev
 
 # 查看所有表
 \dt
@@ -202,10 +202,10 @@ docker exec -it dailyuse-postgres psql -U dailyuse -d dailyuse_dev
 
 ```bash
 # 备份数据库
-docker exec dailyuse-postgres pg_dump -U dailyuse dailyuse_dev > backup.sql
+docker exec Memoflow-postgres pg_dump -U Memoflow Memoflow_dev > backup.sql
 
 # 恢复数据库
-docker exec -i dailyuse-postgres psql -U dailyuse dailyuse_dev < backup.sql
+docker exec -i Memoflow-postgres psql -U Memoflow Memoflow_dev < backup.sql
 ```
 
 ### Redis配置
@@ -223,7 +223,7 @@ REDIS_PORT=6379
 
 ```bash
 # 进入Redis CLI
-docker exec -it dailyuse-redis redis-cli
+docker exec -it Memoflow-redis redis-cli
 
 # 查看所有键
 KEYS *
@@ -263,7 +263,7 @@ vim .env.local
 
 ```env
 # 数据库
-DATABASE_URL="postgresql://dailyuse:dailyuse123@localhost:5432/dailyuse_dev"
+DATABASE_URL="postgresql://Memoflow:Memoflow123@localhost:5432/Memoflow_dev"
 
 # Redis
 REDIS_URL="redis://localhost:6379"
@@ -289,7 +289,7 @@ SMTP_HOST="localhost"
 SMTP_PORT=1025
 SMTP_USER=""
 SMTP_PASS=""
-EMAIL_FROM="noreply@dailyuse.local"
+EMAIL_FROM="noreply@Memoflow.local"
 
 # 文件上传
 UPLOAD_DIR="./uploads"
@@ -608,3 +608,6 @@ export default defineConfig({
 **最后更新**: 2025-11-23  
 **维护者**: @BakerSean168  
 **版本**: v2.0
+
+
+

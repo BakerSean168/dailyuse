@@ -15,10 +15,10 @@ LOG_LEVEL=debug
 
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=dailyuse_dev
+DATABASE_NAME=Memoflow_dev
 DATABASE_USER=postgres
 DATABASE_PASSWORD=postgres
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/dailyuse_dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/Memoflow_dev
 
 REDIS_HOST=localhost
 REDIS_PORT=6379
@@ -40,10 +40,10 @@ LOG_LEVEL=warn
 
 DATABASE_HOST=postgres
 DATABASE_PORT=5432
-DATABASE_NAME=dailyuse
+DATABASE_NAME=Memoflow
 DATABASE_USER=postgres
 DATABASE_PASSWORD=your_secure_password_here_min_16_chars
-DATABASE_URL=postgresql://postgres:your_secure_password_here@postgres:5432/dailyuse
+DATABASE_URL=postgresql://postgres:your_secure_password_here@postgres:5432/Memoflow
 
 REDIS_HOST=redis
 REDIS_PORT=6379
@@ -90,7 +90,7 @@ APP_VERSION=1.0.3
 |------|------|--------|------|------|
 | `DATABASE_HOST` | 数据库主机 | `postgres` / `db.example.com` | ✅ | Docker 容器名或主机名 |
 | `DATABASE_PORT` | 数据库端口 | `5432` | ✅ | PostgreSQL 默认端口 |
-| `DATABASE_NAME` | 数据库名 | `dailyuse` | ✅ | 必须提前创建 |
+| `DATABASE_NAME` | 数据库名 | `Memoflow` | ✅ | 必须提前创建 |
 | `DATABASE_USER` | 数据库用户 | `postgres` | ✅ | 非 root 用户更安全 |
 | `DATABASE_PASSWORD` | 数据库密码 | `SecurePass123!` | ✅ | 最少 16 个字符（生产） |
 | `DATABASE_URL` | 完整连接字符串 | `postgresql://...` | ✅ | Prisma ORM 使用 |
@@ -100,18 +100,18 @@ APP_VERSION=1.0.3
 # 开发环境
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=dailyuse_dev
+DATABASE_NAME=Memoflow_dev
 DATABASE_USER=postgres
 DATABASE_PASSWORD=postgres
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/dailyuse_dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/Memoflow_dev
 
 # 生产环境
 DATABASE_HOST=db-primary.internal
 DATABASE_PORT=5432
-DATABASE_NAME=dailyuse_prod
+DATABASE_NAME=Memoflow_prod
 DATABASE_USER=app_user
 DATABASE_PASSWORD=SecurePassword123!@#
-DATABASE_URL=postgresql://app_user:SecurePassword123!@#@db-primary.internal:5432/dailyuse_prod
+DATABASE_URL=postgresql://app_user:SecurePassword123!@#@db-primary.internal:5432/Memoflow_prod
 ```
 
 **验证数据库连接：**
@@ -267,7 +267,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=noreply@yourdomain.com
 SMTP_PASSWORD=app-specific-password-here
-SMTP_FROM=DailyUse <noreply@yourdomain.com>
+SMTP_FROM=Memoflow <noreply@yourdomain.com>
 
 # OpenAI 配置
 OPENAI_API_KEY=sk-proj-1234567890abcdefghijklmnopqrstuvwxyz
@@ -408,10 +408,10 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ### ❌ 错误 1：DATABASE_URL 格式错误
 ```env
 # ❌ 错误格式
-DATABASE_URL=localhost:5432/dailyuse
+DATABASE_URL=localhost:5432/Memoflow
 
 # ✅ 正确格式
-DATABASE_URL=postgresql://postgres:password@localhost:5432/dailyuse
+DATABASE_URL=postgresql://postgres:password@localhost:5432/Memoflow
 ```
 
 ### ❌ 错误 2：CORS_ORIGIN 与 CORS_CREDENTIALS 冲突
@@ -451,13 +451,13 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
 DB_PASS=password
-DB_NAME=dailyuse
+DB_NAME=Memoflow
 
 # 可以引用其他变量
 DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 
 # 解析后
-DATABASE_URL=postgresql://postgres:password@localhost:5432/dailyuse
+DATABASE_URL=postgresql://postgres:password@localhost:5432/Memoflow
 ```
 
 ---
@@ -470,7 +470,7 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/dailyuse
 docker-compose logs api | grep "Environment loaded"
 
 # 或进入容器检查
-docker exec dailyuse-api env | grep -E "^(DATABASE_|REDIS_|JWT_|CORS_)"
+docker exec Memoflow-api env | grep -E "^(DATABASE_|REDIS_|JWT_|CORS_)"
 ```
 
 **验证环境配置：**
@@ -485,3 +485,4 @@ env | grep -E "^(NODE_ENV|DATABASE_URL|JWT_SECRET|CORS_ORIGIN)"
 ---
 
 更多帮助见 [../README.md](../README.md) 或 [../05-troubleshooting.md](../05-troubleshooting.md)。
+

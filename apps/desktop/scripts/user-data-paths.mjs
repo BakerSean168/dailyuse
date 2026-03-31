@@ -2,9 +2,9 @@ import os from 'node:os';
 import path from 'node:path';
 
 const CANONICAL_USER_DATA_DIR_SEGMENTS = Object.freeze([
-  ['DailyUse'],
-  ['DailyUse-Dev'],
-  ['DailyUse-Test'],
+  ['Memoflow'],
+  ['Memoflow-Dev'],
+  ['Memoflow-Test'],
 ]);
 
 const LEGACY_USER_DATA_DIR_SEGMENTS = Object.freeze([

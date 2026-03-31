@@ -3,7 +3,7 @@ tags:
   - getting-started
   - quick-start
   - tutorial
-description: 5分钟快速启动DailyUse项目
+description: 5分钟快速启动Memoflow项目
 created: 2025-11-23T15:00:00
 updated: 2025-11-23T15:00:00
 ---
@@ -23,8 +23,8 @@ updated: 2025-11-23T15:00:00
 ### 1. 克隆项目（30秒）
 
 ```bash
-git clone https://github.com/BakerSean168/DailyUse.git
-cd DailyUse
+git clone https://github.com/BakerSean168/dailyuse.git
+cd dailyuse
 ```
 
 ### 2. 安装依赖（2分钟）
@@ -129,3 +129,5 @@ pnpm format           # 格式化代码
 **难度**: ⭐ 简单
 
 准备好深入了解了吗？继续阅读 [[installation|详细安装指南]]！
+
+

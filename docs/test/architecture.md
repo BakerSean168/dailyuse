@@ -2,7 +2,7 @@
 
 ## Three-Layer Testing Strategy
 
-The DailyUse monorepo uses a three-layer testing strategy, with the **task** module as the reference implementation.
+The Memoflow monorepo uses a three-layer testing strategy, with the **task** module as the reference implementation.
 
 ```
 Layer 3: API Smoke Tests (Supertest)
@@ -122,3 +122,5 @@ A single regex can't route both layouts. Solution:
 ```
 
 Incorrect ordering will cause the bare alias to match `@dailyuse/contracts/task` and resolve to `src/index.ts/task` (ENOTDIR error).
+
+

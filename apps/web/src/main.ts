@@ -8,7 +8,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHistory } from 'vue-router';
-import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
+import { APP_TITLE_NAME, applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
 import {
   createAppRouter,
   useAuthenticationStore,
@@ -68,7 +68,7 @@ async function startApp() {
   router.afterEach((to) => {
     progressDone();
     const title = to.meta.title as string | undefined;
-    document.title = title ? `${title} - DailyUse` : 'DailyUse';
+    document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
   });
   app.use(router);
 
