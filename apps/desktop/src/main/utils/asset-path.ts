@@ -60,5 +60,10 @@ export function resolveAssetPathFromKey(
     return null;
   }
 
-  return resolveAssetPath(assetPath.replace(/^\.\//, ''));
+  const normalizedAssetPath = assetPath.replace(/^\.\/+/, '');
+  const resolvedRelativePath = normalizedAssetPath.startsWith(`${type}/`)
+    ? normalizedAssetPath
+    : `${type}/${normalizedAssetPath}`;
+
+  return resolveAssetPath(resolvedRelativePath);
 }
