@@ -815,6 +815,9 @@ importers:
       '@dailyuse/ai':
         specifier: workspace:*
         version: link:../ai
+      '@dailyuse/assets':
+        specifier: workspace:*
+        version: link:../assets
       '@dailyuse/authentication':
         specifier: workspace:*
         version: link:../authentication
@@ -18240,7 +18243,7 @@ snapshots:
       '@electron/asar': 3.4.1
       debug: 4.4.3
       fs-extra: 7.0.1
-      lodash: 4.17.23
+      lodash: 4.17.21
       temp: 0.9.4
     optionalDependencies:
       '@electron/windows-sign': 1.2.2
