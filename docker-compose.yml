@@ -102,13 +102,13 @@ services:
   postgres-test:
     profiles: [test]
     image: pgvector/pgvector:pg15
-    container_name: Memoflow-test-db
+    container_name: ${TEST_DB_CONTAINER:-Memoflow-test-db}
     environment:
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_pass
-      POSTGRES_DB: Memoflow_test
+      POSTGRES_USER: ${TEST_DB_USER:-test_user}
+      POSTGRES_PASSWORD: ${TEST_DB_PASS:-test_pass}
+      POSTGRES_DB: ${TEST_DB_NAME:-Memoflow_test}
     ports:
-      - '5433:5432'
+      - '${TEST_DB_PORT:-5433}:5432'
     tmpfs:
       - /var/lib/postgresql/data:rw
     command:
@@ -120,7 +120,11 @@ services:
       - -c
       - full_page_writes=off
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U test_user -d Memoflow_test']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${TEST_DB_USER:-test_user} -d ${TEST_DB_NAME:-Memoflow_test}',
+        ]
       interval: 5s
       timeout: 5s
       retries: 5

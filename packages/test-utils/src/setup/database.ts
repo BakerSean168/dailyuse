@@ -35,12 +35,12 @@ import { resolve } from 'node:path';
 
 // ─── Constants ──────────────────────────────────────────────────────
 
-const TEST_DB_USER = 'test_user';
-const TEST_DB_PASS = 'test_pass';
-const TEST_DB_NAME = 'dailyuse_test';
-const TEST_DB_HOST = '127.0.0.1';
-const TEST_DB_PORT = 5433;
-const TEST_DB_CONTAINER = 'dailyuse-test-db';
+const TEST_DB_USER = process.env.TEST_DB_USER ?? 'test_user';
+const TEST_DB_PASS = process.env.TEST_DB_PASS ?? 'test_pass';
+const TEST_DB_NAME = process.env.TEST_DB_NAME ?? 'Memoflow_test';
+const TEST_DB_HOST = process.env.TEST_DB_HOST ?? '127.0.0.1';
+const TEST_DB_PORT = Number(process.env.TEST_DB_PORT ?? '5433');
+const TEST_DB_CONTAINER = process.env.TEST_DB_CONTAINER ?? 'Memoflow-test-db';
 const LEGACY_TEST_COMPOSE_FILE = 'docker-compose.test.yml';
 const WORKSPACE_COMPOSE_FILE = 'docker-compose.yml';
 const TEST_COMPOSE_SERVICE = 'postgres-test';

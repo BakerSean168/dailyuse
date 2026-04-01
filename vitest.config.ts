@@ -582,7 +582,10 @@ export default defineConfig({
           testTimeout: 30000,
           passWithNoTests: false,
           env: {
-            DATABASE_URL: 'postgresql://test_user:test_pass@127.0.0.1:5433/Memoflow_test',
+            DATABASE_URL:
+              process.env.TEST_DATABASE_URL ??
+              process.env.DATABASE_URL ??
+              'postgresql://test_user:test_pass@127.0.0.1:5433/Memoflow_test',
           },
           globalSetup: [
             path.resolve(__dirname, './packages/task/src/__tests__/integration-global-setup.ts'),

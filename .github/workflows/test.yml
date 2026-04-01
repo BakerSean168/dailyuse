@@ -20,6 +20,11 @@ env:
   CI: 'true'
   NODE_ENV: test
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  TEST_DB_USER: test_user
+  TEST_DB_PASS: test_pass
+  TEST_DB_NAME: Memoflow_test
+  TEST_DB_PORT: '5433'
+  TEST_DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/Memoflow_test
 
 jobs:
   unit-and-smoke:
@@ -64,19 +69,19 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-          POSTGRES_DB: dailyuse_test
+          POSTGRES_USER: ${{ env.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASS }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
         ports:
-          - 5433:5432
+          - ${{ env.TEST_DB_PORT }}:5432
         options: >-
-          --health-cmd "pg_isready -U test_user -d dailyuse_test"
+          --health-cmd "pg_isready -U ${{ env.TEST_DB_USER }} -d ${{ env.TEST_DB_NAME }}"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test
+      DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       JWT_SECRET: test-jwt-secret-not-for-production
       TZ: UTC
 
