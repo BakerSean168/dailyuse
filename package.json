@@ -142,6 +142,7 @@
     "@vitest/coverage-v8": "4.0.18",
     "@vitest/ui": "4.0.18",
     "@vue/test-utils": "^2.4.6",
+    "eas-cli": "18.4.0",
     "electron": "39.2.6",
     "electron-rebuild": "3.2.9",
     "esbuild-plugin-vue": "0.2.4",
@@ -217,5 +218,3 @@
     }
   }
 }
-
-

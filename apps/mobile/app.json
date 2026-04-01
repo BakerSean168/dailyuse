@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Memoflow Mobile",
+    "slug": "memoflow-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/icon-1024.png",
+    "scheme": "memoflow",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#181A1F",
+        "foregroundImage": "./assets/brand/adaptive-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bakersean.memoflowmobile"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/brand/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#181A1F",
+          "image": "./assets/brand/splash-icon.png",
+          "imageWidth": 144
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "793b4b76-9963-4506-9264-82c147fb20a0"
+      }
+    },
+    "owner": "bakersean"
+  }
+}

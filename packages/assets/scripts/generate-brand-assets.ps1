@@ -361,4 +361,12 @@ Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow.ico') -DestinationPa
 Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow.icns') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.icns')
 Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.png')
 
+$mobileBrandDirectory = Join-Path $workspaceRoot 'apps\mobile\assets\brand'
+New-DirectoryIfMissing -Path $mobileBrandDirectory
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-32.png') -DestinationPath (Join-Path $mobileBrandDirectory 'favicon.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $mobileBrandDirectory 'logo-512.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $mobileBrandDirectory 'splash-icon.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-1024.png') -DestinationPath (Join-Path $mobileBrandDirectory 'icon-1024.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-1024.png') -DestinationPath (Join-Path $mobileBrandDirectory 'adaptive-icon-foreground.png')
+
 Write-Host 'Memoflow brand assets generated successfully.'
