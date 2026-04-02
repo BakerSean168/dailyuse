@@ -12,9 +12,8 @@ export { Logger } from './Logger';
 // export { WinstonLogger } from './WinstonLogger';
 export { LoggerFactory, createLogger } from './LoggerFactory';
 
-// 传输器
+// 前端安全传输器
 export { ConsoleTransport } from './transports/ConsoleTransport';
-export { FileTransport } from './transports/FileTransport';
 export { HttpTransport } from './transports/HttpTransport';
 
 // 便捷导出

@@ -28,6 +28,14 @@
           "image": "./assets/brand/splash-icon.png",
           "imageWidth": 144
         }
+      ],
+      "expo-document-picker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to upload files.",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to take photos."
+        }
       ]
     ],
     "experiments": {

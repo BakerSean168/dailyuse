@@ -1,0 +1,82 @@
+import { useEffect, useState } from 'react';
+
+import type { ReminderTemplateClientDTO, ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
+
+import { useAppSession } from './use-app-session';
+import { useReminderService } from './use-reminder-service';
+
+export function useReminders() {
+  const service = useReminderService();
+  const { isRemoteAuthenticated } = useAppSession();
+  const [templates, setTemplates] = useState<ReminderTemplateClientDTO[]>([]);
+  const [todaySchedule, setTodaySchedule] = useState<ReminderTodayScheduleItem[]>([]);
+  const [isLoading, setIsLoading] = useState(isRemoteAuthenticated);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    if (!isRemoteAuthenticated) {
+      setTemplates([]);
+      setTodaySchedule([]);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const [templateResult, scheduleResult] = await Promise.all([
+      service.getUserTemplates(),
+      service.getTodaySchedule({ limit: 20, includeExpired: false }),
+    ]);
+
+    if (!templateResult.ok) {
+      setTemplates([]);
+      setTodaySchedule([]);
+      setError(templateResult.error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!scheduleResult.ok) {
+      setTemplates(templateResult.data);
+      setTodaySchedule([]);
+      setError(scheduleResult.error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    setTemplates(templateResult.data);
+    setTodaySchedule(scheduleResult.data.data);
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    void load();
+  }, [isRemoteAuthenticated]);
+
+  async function refresh() {
+    await load();
+  }
+
+  async function toggleTemplateEnabled(id: string) {
+    const result = await service.toggleTemplateEnabled(id);
+    if (!result.ok) {
+      setError(result.error.message);
+      return false;
+    }
+
+    await load();
+    return true;
+  }
+
+  return {
+    error,
+    isLoading,
+    isRemoteAuthenticated,
+    refresh,
+    templates,
+    todaySchedule,
+    toggleTemplateEnabled,
+  };
+}

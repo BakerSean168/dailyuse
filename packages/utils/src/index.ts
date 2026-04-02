@@ -34,5 +34,5 @@ export * from './frontend/index';
 export * from './initializationManager';
 export * from './webInitializationManager';
 
-// 日志系统
+// 日志系统（仅导出跨平台安全入口；Node 专属实现走 '@dailyuse/utils/winston'）
 export * from './logger/index';

@@ -9,8 +9,8 @@
 
 // Import ResultCode from codes.ts to avoid circular dependency issues
 import { ResultCode } from './codes';
-import type { Result, ResultError, ResultMeta, ResultErrorDetail, PageInfo } from './index';
-import { ok, fail, isOk } from './index';
+import type { Result, ResultError, ResultMeta, ResultErrorDetail, PageInfo } from './core';
+import { ok, fail, isOk } from './core';
 
 // ============================================================================
 // HTTP Response Types

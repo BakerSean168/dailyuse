@@ -9,8 +9,8 @@
 
 // Import ResultCode from codes.ts to avoid circular dependency issues
 import { ResultCode } from './codes';
-import type { Result, ResultError, ResultMeta } from './index';
-import { ok, fail, isOk, toResultErrorException } from './index';
+import type { Result, ResultError, ResultMeta } from './core';
+import { ok, fail, isOk, toResultErrorException } from './core';
 
 // ============================================================================
 // IPC Result Types

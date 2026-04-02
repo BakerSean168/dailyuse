@@ -1,0 +1,2 @@
+export { NotificationsScreen as default } from '@dailyuse/app-react';
+

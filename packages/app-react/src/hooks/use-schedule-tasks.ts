@@ -1,0 +1,151 @@
+import { useEffect, useState } from 'react';
+
+import type { ScheduleTaskStatus, SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
+
+import { useAppSession } from './use-app-session';
+import { useScheduleService } from './use-schedule-service';
+
+export type ScheduleTaskSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  status: ScheduleTaskStatus;
+  sourceModule: SourceModule;
+  sourceModuleDisplay: string;
+  nextRunAtFormatted: string;
+  lastRunAtFormatted: string;
+  executionSummary: string;
+  healthStatus: string;
+  isOverdue: boolean;
+  enabled: boolean;
+  enabledDisplay: string;
+  priority: TaskPriority;
+  priorityDisplay: string;
+  tags: string[];
+  nextRunAt: number | null;
+  lastRunAt: number | null;
+  executionCount: number;
+  consecutiveFailures: number;
+};
+
+export type ScheduleStatusFilter = 'all' | ScheduleTaskStatus;
+
+function mapScheduleTask(task: ScheduleTask): ScheduleTaskSummary {
+  return {
+    id: String(task.id),
+    name: task.name,
+    description: task.description,
+    status: task.status,
+    sourceModule: task.sourceModule,
+    sourceModuleDisplay: task.sourceModuleDisplay,
+    nextRunAtFormatted: task.nextRunAtFormatted,
+    lastRunAtFormatted: task.lastRunAtFormatted,
+    executionSummary: task.executionSummary,
+    healthStatus: task.healthStatus,
+    isOverdue: task.isOverdue,
+    enabled: task.enabled,
+    enabledDisplay: task.enabledDisplay,
+    priority: task.metadata.priority,
+    priorityDisplay: task.metadata.priorityDisplay,
+    tags: task.metadata.tags,
+    nextRunAt: task.execution.nextRunAt?.getTime() ?? null,
+    lastRunAt: task.execution.lastRunAt?.getTime() ?? null,
+    executionCount: task.execution.executionCount,
+    consecutiveFailures: task.execution.consecutiveFailures,
+  };
+}
+
+export function useScheduleTasks() {
+  const service = useScheduleService();
+  const { isRemoteAuthenticated } = useAppSession();
+
+  const [tasks, setTasks] = useState<ScheduleTaskSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ScheduleStatusFilter>('all');
+
+  useEffect(() => {
+    if (!isRemoteAuthenticated) {
+      setTasks([]);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadTasks() {
+      setIsLoading(true);
+      setError(null);
+
+      const result = await service.getTasks();
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setTasks([]);
+        setError(result.error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      setTasks(result.data.tasks.map((task) => mapScheduleTask(task)));
+      setIsLoading(false);
+    }
+
+    void loadTasks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isRemoteAuthenticated, service]);
+
+  async function refresh() {
+    if (!isRemoteAuthenticated) {
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await service.getTasks();
+    if (!result.ok) {
+      setTasks([]);
+      setError(result.error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    setTasks(result.data.tasks.map((task) => mapScheduleTask(task)));
+    setError(null);
+    setIsLoading(false);
+  }
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredTasks = tasks.filter((task) => {
+    if (statusFilter !== 'all' && task.status !== statusFilter) {
+      return false;
+    }
+
+    if (normalizedQuery.length === 0) {
+      return true;
+    }
+
+    const text = [task.name, task.description ?? '', task.sourceModuleDisplay, task.tags.join(' ')].join(' ').toLowerCase();
+    return text.includes(normalizedQuery);
+  });
+
+  return {
+    error,
+    filteredTasks,
+    isLoading,
+    isRemoteAuthenticated,
+    refresh,
+    searchQuery,
+    setSearchQuery,
+    setStatusFilter,
+    statusFilter,
+    tasks,
+  };
+}
