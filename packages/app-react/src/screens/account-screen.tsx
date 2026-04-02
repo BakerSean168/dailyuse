@@ -26,28 +26,39 @@ export function AccountScreen() {
   const router = useRouter();
   const { signOut } = useAppSession();
   const { account, error, isLoading, isRemoteAuthenticated, refresh } = useAccountProfile();
+  const actionSections = [
+    {
+      title: 'Account',
+      description: '账户相关快捷入口。',
+      items: [
+        {
+          label: 'Settings',
+          description: '打开偏好设置。',
+          onPress: () => router.push('./settings'),
+        },
+      ],
+    },
+  ];
 
   return (
     <PageShell
+      actionMenuSubtitle="账户页快捷入口。"
+      actionSections={actionSections}
       eyebrow="More"
       title="Account"
-      subtitle="账户资料和语言/主题/时区摘要已经接入共享 account client。"
+      subtitle="账户资料和偏好摘要。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="账户页先作为 read-only 摘要页落地。">
-        <PrimaryButton label="Back to More" onPress={() => router.back()} variant="secondary" />
-      </SectionCard>
-
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="账户模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可查看账户资料。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看账户资料。
+            Sign in with a remote account to load your profile.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
           {error ? (
-            <SectionCard title="Account load failed" description="后端返回错误时先直接展示。">
+            <SectionCard title="Account load failed" description="Unable to load account profile.">
               <ThemedText type="small" themeColor="warning">
                 {error}
               </ThemedText>

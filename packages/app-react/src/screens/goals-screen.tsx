@@ -53,39 +53,47 @@ export function GoalsScreen() {
 
   const completedCount = goals.filter((item) => item.status === GoalStatus.Completed).length;
   const totalKeyResults = goals.reduce((sum, item) => sum + item.totalKeyResults, 0);
+  const actionSections = [
+    {
+      title: 'Goals',
+      description: '创建和辅助跳转从内容区收回到页面抽屉。',
+      items: [
+        {
+          label: 'Create goal',
+          description: '进入目标创建页。',
+          onPress: () => router.push('./editor'),
+        },
+        {
+          label: 'Compare',
+          description: '打开目标对比视图。',
+          onPress: () => router.push('./compare'),
+        },
+      ],
+    },
+  ];
 
   return (
     <PageShell
+      actionMenuSubtitle="目标页的入口统一收进左上角。"
+      actionSections={actionSections}
       eyebrow="Goals"
       title="Goal tracking"
-      subtitle="目标模块已经接入共享 goal client。当前先落列表、筛选、详情、编辑和 review 入口。"
+      subtitle="目标列表、筛选和对比。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
     >
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="目标模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可查看目标数据。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看目标列表。
+            Sign in with a remote account to load goals.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
           <SectionCard
-            title="Overview"
-            description="目标页先作为聚合入口，后面再继续接 key result 和 focus 流。"
+            title="Summary"
+            description="目标数量、完成情况和关键结果。"
           >
-            <View style={styles.actionRow}>
-              <PrimaryButton
-                label="Create goal"
-                onPress={() => router.push('./editor')}
-                variant="secondary"
-              />
-              <PrimaryButton
-                label="Compare"
-                onPress={() => router.push('./compare')}
-                variant="ghost"
-              />
-            </View>
             <View style={styles.pillRow}>
               <StatusPill label={`${goals.length} goals`} tone="tint" />
               <StatusPill label={`${completedCount} completed`} tone="success" />
@@ -95,7 +103,7 @@ export function GoalsScreen() {
 
           <SectionCard
             title="Search and filters"
-            description="移动端先用轻量筛选，后面再换成更完整的 sheet。"
+            description="按关键词和状态筛选目标。"
           >
             <PrimaryTextField
               autoCapitalize="none"
@@ -140,7 +148,7 @@ export function GoalsScreen() {
           </SectionCard>
 
           {error ? (
-            <SectionCard title="Goal load failed" description="后端返回错误时先直接展示。">
+            <SectionCard title="Goal load failed" description="Unable to load goals.">
               <ThemedText type="small" themeColor="warning">
                 {error}
               </ThemedText>
@@ -171,11 +179,6 @@ export function GoalsScreen() {
 }
 
 const styles = StyleSheet.create({
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
   pillRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

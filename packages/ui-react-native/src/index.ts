@@ -1,4 +1,5 @@
 export * from './components/feature-tile';
+export * from './components/page-action-drawer';
 export * from './components/page-shell';
 export * from './components/primary-button';
 export * from './components/primary-text-field';

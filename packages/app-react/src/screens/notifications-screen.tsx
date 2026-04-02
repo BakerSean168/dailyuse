@@ -26,6 +26,20 @@ export function NotificationsScreen() {
   const [isMutating, setIsMutating] = useState(false);
   const [readFilter, setReadFilter] = useState<ReadFilter>('all');
   const [keyword, setKeyword] = useState('');
+  const actionSections = [
+    {
+      title: 'Notifications',
+      description: '通知页快捷操作。',
+      items: [
+        {
+          label: 'Mark all as read',
+          description: '将当前未读通知全部标记为已读。',
+          disabled: isMutating || unreadCount === 0,
+          onPress: handleMarkAllAsRead,
+        },
+      ],
+    },
+  ];
 
   const filteredNotifications = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase();
@@ -61,24 +75,22 @@ export function NotificationsScreen() {
 
   return (
     <PageShell
+      actionMenuSubtitle="通知页快捷操作。"
+      actionSections={actionSections}
       eyebrow="More"
       title="Notifications"
-      subtitle="通知模块现在支持筛选、详情下钻和批量已读，不再只是只读消息流。"
+      subtitle="消息收件箱和未读处理。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="More 栈下用独立 screen 承接通知列表和详情。">
-        <PrimaryButton label="Back to More" onPress={() => router.back()} variant="secondary" />
-      </SectionCard>
-
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="通知模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可查看通知。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看通知流。
+            Sign in with a remote account to load your inbox.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
-          <SectionCard title="Overview" description="支持未读统计、筛选和详情下钻。">
+          <SectionCard title="Summary" description="通知总量、未读数和当前筛选结果。">
             <View style={styles.pillRow}>
               <StatusPill label={`${notifications.length} notifications`} tone="tint" />
               <StatusPill label={`${unreadCount} unread`} tone={unreadCount > 0 ? 'warning' : 'success'} />
@@ -92,7 +104,7 @@ export function NotificationsScreen() {
             />
           </SectionCard>
 
-          <SectionCard title="Filters" description="先保留最小可用的已读筛选和关键词搜索。">
+          <SectionCard title="Filters" description="按关键词和已读状态筛选。">
             <PrimaryTextField value={keyword} onChangeText={setKeyword} placeholder="Search notifications" />
             <View style={styles.actionRow}>
               <PrimaryButton label="All" onPress={() => setReadFilter('all')} variant={readFilter === 'all' ? 'solid' : 'ghost'} />
@@ -102,7 +114,7 @@ export function NotificationsScreen() {
           </SectionCard>
 
           {error ? (
-            <SectionCard title="Notification load failed" description="后端返回错误时先直接展示。">
+            <SectionCard title="Notification load failed" description="Unable to load notifications.">
               <ThemedText type="small" themeColor="warning">{error}</ThemedText>
             </SectionCard>
           ) : null}

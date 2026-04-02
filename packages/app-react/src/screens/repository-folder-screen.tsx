@@ -54,6 +54,7 @@ export function RepositoryFolderScreen() {
   const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [moveTargetId, setMoveTargetId] = useState<string | null>(null);
+  const childFolders = items.filter((item) => item.type === 'folder');
 
   // ===== Rename handlers =====
 
@@ -161,25 +162,83 @@ export function RepositoryFolderScreen() {
     }
   }
 
+  const actionSections = [
+    {
+      title: 'Navigation',
+      description: '目录切换和返回动作集中到这里。',
+      items: [
+        {
+          label: 'Back',
+          description: '返回上一页。',
+          onPress: () => router.back(),
+        },
+        {
+          label: 'Go up',
+          description: '进入上一级目录。',
+          disabled: isAtRoot,
+          onPress: navigateUp,
+        },
+        {
+          label: 'To repository',
+          description: '回到仓库总览页。',
+          onPress: () => router.push('./repository'),
+        },
+      ],
+    },
+    {
+      title: 'Path',
+      description: '从当前路径快速跳到任意上级目录。',
+      items: breadcrumbs.map((crumb) => ({
+        label: crumb.name,
+        description: crumb.id ? 'Open this folder' : 'Repository root',
+        onPress: () => {
+          void navigateToFolder(crumb.id, crumb.name);
+        },
+      })),
+    },
+    {
+      title: 'Folders',
+      description: '当前目录下的文件夹入口。',
+      items:
+        childFolders.length > 0
+          ? childFolders.map((folder) => ({
+              label: folder.name,
+              description: folder.path,
+              onPress: () => {
+                void navigateToFolder(folder.id, folder.name);
+              },
+            }))
+          : [
+              {
+                label: 'No child folders',
+                description: '当前目录下没有更多文件夹。',
+                disabled: true,
+              },
+            ],
+    },
+    {
+      title: 'Actions',
+      description: '文件夹级快捷动作。',
+      items: [
+        {
+          label: 'New folder',
+          description: '在当前目录下创建新文件夹。',
+          disabled: isMutating || editMode !== 'none',
+          onPress: startCreateFolder,
+        },
+      ],
+    },
+  ];
+
   return (
     <PageShell
+      actionMenuSubtitle="文件夹路径和目录动作已经移到左上角抽屉。"
+      actionSections={actionSections}
       eyebrow="Repository"
       title="Folder Browser"
       subtitle="浏览文件夹结构，支持创建、重命名、移动和删除。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
     >
-      <SectionCard title="Navigation">
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back" onPress={() => router.back()} variant="secondary" />
-          {!isAtRoot && <PrimaryButton label="Go up" onPress={navigateUp} variant="secondary" />}
-          <PrimaryButton
-            label="To Repository"
-            onPress={() => router.push('./repository')}
-            variant="ghost"
-          />
-        </View>
-      </SectionCard>
-
       {!isRemoteAuthenticated ? (
         <SectionCard title="Remote sign-in required" description="需要远程登录才能访问仓库。">
           <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
@@ -188,40 +247,6 @@ export function RepositoryFolderScreen() {
         <SectionCard title="No repository" description="当前账户没有关联仓库。" />
       ) : (
         <>
-          {/* Breadcrumbs */}
-          <SectionCard title="Location">
-            <View style={styles.breadcrumbRow}>
-              {breadcrumbs.map((crumb, index) => (
-                <View key={crumb.id ?? 'root'} style={styles.breadcrumbItem}>
-                  <PrimaryButton
-                    label={crumb.name}
-                    onPress={() => navigateToFolder(crumb.id, crumb.name)}
-                    variant={index === breadcrumbs.length - 1 ? 'solid' : 'ghost'}
-                    disabled={index === breadcrumbs.length - 1}
-                  />
-                  {index < breadcrumbs.length - 1 && (
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {' '}
-                      /{' '}
-                    </ThemedText>
-                  )}
-                </View>
-              ))}
-            </View>
-          </SectionCard>
-
-          {/* Actions */}
-          <SectionCard title="Actions">
-            <View style={styles.actionRow}>
-              <PrimaryButton
-                label="New folder"
-                onPress={startCreateFolder}
-                disabled={isMutating || editMode !== 'none'}
-              />
-            </View>
-          </SectionCard>
-
-          {/* Edit panel */}
           {editMode !== 'none' && (
             <SectionCard
               title={
@@ -292,7 +317,6 @@ export function RepositoryFolderScreen() {
             </SectionCard>
           )}
 
-          {/* Error display */}
           {error && (
             <SectionCard title="Error">
               <ThemedText type="small" themeColor="warning">
@@ -301,7 +325,6 @@ export function RepositoryFolderScreen() {
             </SectionCard>
           )}
 
-          {/* Contents */}
           <SectionCard
             title={`Contents (${items.length})`}
             description="点击文件夹进入，点击文件打开编辑器。"

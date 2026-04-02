@@ -95,6 +95,29 @@ export function ScheduleScreen() {
   const overdueCount = tasks.filter((item) => item.isOverdue).length;
   const conflictCount = entries.filter((item) => item.hasConflict).length;
   const taskLanes = useMemo(() => buildTaskLanes(filteredTasks), [filteredTasks]);
+  const actionSections = [
+    {
+      title: 'Views',
+      description: '主线跳转和创建动作收进页面抽屉。',
+      items: [
+        {
+          label: 'Calendar',
+          description: '切到月历视图。',
+          onPress: () => router.push('./calendar'),
+        },
+        {
+          label: 'Week view',
+          description: '切到周视图。',
+          onPress: () => router.push('./week'),
+        },
+        {
+          label: 'Create event',
+          description: '创建一个新的日程事件。',
+          onPress: () => router.push('./event-editor'),
+        },
+      ],
+    },
+  ];
 
   async function runAction(taskId: string, action: 'pause' | 'resume' | 'complete' | 'cancel') {
     setMutatingId(taskId);
@@ -126,28 +149,22 @@ export function ScheduleScreen() {
 
   return (
     <PageShell
+      actionMenuSubtitle="页面切换和创建动作从内容区移到左上角。"
+      actionSections={actionSections}
       eyebrow="Schedule"
       title="Agenda and reminders"
-      subtitle="调度页现在承接 task lanes、agenda、calendar/week 入口和 event editor。"
+      subtitle="日程、任务分组和 agenda。"
       refreshControl={<RefreshControl refreshing={isLoading || isAgendaLoading} onRefresh={handleRefresh} />}>
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="调度模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可查看日程数据。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看日程任务。
+            Sign in with a remote account to load schedule data.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
-          <SectionCard title="Navigation" description="日程主线已经拆成 list、calendar、week、editor 四个入口。">
-            <View style={styles.actionRow}>
-              <PrimaryButton label="Calendar" onPress={() => router.push('./calendar')} variant="secondary" />
-              <PrimaryButton label="Week view" onPress={() => router.push('./week')} variant="ghost" />
-              <PrimaryButton label="Create event" onPress={() => router.push('./event-editor')} />
-            </View>
-          </SectionCard>
-
-          <SectionCard title="Overview" description="任务执行流和 agenda 事件已经合并到同一页。">
+          <SectionCard title="Summary" description="任务、agenda 和冲突总览。">
             <View style={styles.pillRow}>
               <StatusPill label={`${tasks.length} schedule tasks`} tone="tint" />
               <StatusPill label={`${activeCount} active`} tone="success" />
@@ -157,7 +174,7 @@ export function ScheduleScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Search and filters" description="任务列表先保留关键词和状态筛选，agenda 事件按日期自动分组。">
+          <SectionCard title="Search and filters" description="按关键词和状态筛选日程任务。">
             <PrimaryTextField
               autoCapitalize="none"
               autoCorrect={false}
@@ -179,25 +196,25 @@ export function ScheduleScreen() {
           </SectionCard>
 
           {error ? (
-            <SectionCard title="Schedule load failed" description="调度任务加载失败时先直接展示错误。">
+            <SectionCard title="Schedule load failed" description="Unable to load schedule tasks.">
               <ThemedText type="small" themeColor="warning">{error}</ThemedText>
               <PrimaryButton label="Retry" onPress={handleRefresh} variant="secondary" />
             </SectionCard>
           ) : null}
 
           {agendaError ? (
-            <SectionCard title="Agenda load failed" description="agenda 事件加载失败时单独提示。">
+            <SectionCard title="Agenda load failed" description="Unable to load agenda events.">
               <ThemedText type="small" themeColor="warning">{agendaError}</ThemedText>
             </SectionCard>
           ) : null}
 
           {actionError ? (
-            <SectionCard title="Task action failed" description="状态动作失败时直接展示错误。">
+            <SectionCard title="Task action failed" description="Unable to update schedule task.">
               <ThemedText type="small" themeColor="warning">{actionError}</ThemedText>
             </SectionCard>
           ) : null}
 
-          <SectionCard title="Task lanes" description="按移动端高频关注顺序把调度任务分成 overdue、today、next 7 days。">
+          <SectionCard title="Task lanes" description="按时间窗口查看调度任务。">
             <View style={styles.listColumn}>
               {taskLanes.length > 0 ? (
                 taskLanes.map((lane) => (
@@ -227,7 +244,7 @@ export function ScheduleScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Agenda" description="未来两周的日程事件按天分组，并直接提供编辑入口。">
+          <SectionCard title="Agenda" description="未来两周的事件列表。">
             <View style={styles.listColumn}>
               {groupedEntries.length > 0 ? (
                 groupedEntries.map((group) => (

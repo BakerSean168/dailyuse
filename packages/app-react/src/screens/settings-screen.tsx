@@ -68,27 +68,45 @@ export function SettingsScreen() {
     await resetCategory(category);
   }
 
+  const actionSections = [
+    {
+      title: 'Settings',
+      description: '偏好设置快捷操作。',
+      items: [
+        {
+          label: 'Reset all settings',
+          description: '恢复全部偏好设置。',
+          disabled: isMutating || !settings,
+          onPress: () => handleReset(),
+        },
+        {
+          label: 'Account',
+          description: '查看账户资料。',
+          onPress: () => router.push('./account'),
+        },
+      ],
+    },
+  ];
+
   return (
     <PageShell
+      actionMenuSubtitle="偏好设置快捷操作。"
+      actionSections={actionSections}
       eyebrow="More"
       title="Settings"
-      subtitle="设置页已经从只读摘要升级成带快速动作的移动端偏好面板。"
+      subtitle="主题、语言、通知和其他偏好。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="设置页先承接偏好摘要和快速切换动作。">
-        <PrimaryButton label="Back to More" onPress={() => router.back()} variant="secondary" />
-      </SectionCard>
-
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="设置模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可同步设置。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看设置。
+            Sign in with a remote account to load your settings.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
           {error ? (
-            <SectionCard title="Settings load failed" description="后端返回错误时先直接展示。">
+            <SectionCard title="Settings load failed" description="Unable to load settings.">
               <ThemedText type="small" themeColor="warning">
                 {error}
               </ThemedText>
@@ -97,7 +115,7 @@ export function SettingsScreen() {
 
           {settings ? (
             <>
-              <SectionCard title="Overview" description="先展示当前设置实体和分类数量。">
+              <SectionCard title="Summary" description="设置版本和分类状态。">
                 <View style={styles.pillRow}>
                   <StatusPill label={`${categories.length} categories`} tone="tint" />
                   <StatusPill label={`Version ${settings.version}`} tone="textSecondary" />
@@ -107,7 +125,7 @@ export function SettingsScreen() {
               </SectionCard>
 
               {appearance ? (
-                <SectionCard title="Appearance" description="先提供移动端高频的主题切换动作。">
+                <SectionCard title="Appearance" description="主题模式和重置。">
                   <View style={styles.pillRow}>
                     <StatusPill label={`Theme ${appearance.theme}`} tone="tint" />
                   </View>
@@ -134,7 +152,7 @@ export function SettingsScreen() {
               ) : null}
 
               {notification ? (
-                <SectionCard title="Notifications" description="先把邮件、推送、应用内和声音开关做成快速动作。">
+                <SectionCard title="Notifications" description="通知渠道和声音开关。">
                   <View style={styles.pillRow}>
                     <StatusPill label={`Email ${notification.email ? 'on' : 'off'}`} tone={notification.email ? 'success' : 'textSecondary'} />
                     <StatusPill label={`Push ${notification.push ? 'on' : 'off'}`} tone={notification.push ? 'success' : 'textSecondary'} />
@@ -156,7 +174,7 @@ export function SettingsScreen() {
                   <SectionCard
                     key={category}
                     title={category}
-                    description="其他分类当前先展示摘要，后续再拆成专门的移动端设置页。">
+                    description="Category summary.">
                     <ThemedText type="small" themeColor="textSecondary">
                       {summarizePreference(value)}
                     </ThemedText>

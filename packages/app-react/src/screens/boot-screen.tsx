@@ -8,7 +8,7 @@ import { MaxContentWidth, Spacing, ThemedText, ThemedView } from '@dailyuse/ui-r
 
 export function BootScreen() {
   return (
-    <ThemedView style={styles.page}>
+    <ThemedView type="background" style={styles.page}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.hero}>
           <AnimatedIcon />

@@ -166,8 +166,33 @@ export function TaskDetailScreen() {
     await refresh();
   }
 
+  const actionSections = [
+    {
+      title: 'Navigation',
+      description: '详情页的返回和编辑入口收进这里。',
+      items: [
+        {
+          label: 'Back to list',
+          description: '返回任务列表。',
+          onPress: () => router.back(),
+        },
+        ...(taskId
+          ? [
+              {
+                label: 'Edit template',
+                description: '打开模板编辑页。',
+                onPress: () => router.push(`../editor?id=${taskId}`),
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
   return (
     <PageShell
+      actionMenuSubtitle="任务详情的跳转入口已集中到左上角。"
+      actionSections={actionSections}
       eyebrow="Tasks"
       title={template ? template.name : 'Task detail'}
       subtitle="移动端详情页先聚焦关键信息和实例流，复杂关系图和高级编辑不会直接照搬桌面布局。"
@@ -175,18 +200,6 @@ export function TaskDetailScreen() {
         <RefreshControl refreshing={isLoading || instancesLoading} onRefresh={refreshAll} />
       }
     >
-      <SectionCard title="Navigation" description="先把详情、编辑和列表间的下钻链路打通。">
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back to list" onPress={() => router.back()} variant="secondary" />
-          {taskId ? (
-            <PrimaryButton
-              label="Edit template"
-              onPress={() => router.push(`../editor?id=${taskId}`)}
-            />
-          ) : null}
-        </View>
-      </SectionCard>
-
       {!taskId ? (
         <SectionCard title="Missing task id" description="当前路由没有携带任务标识，无法加载详情。">
           <PrimaryButton

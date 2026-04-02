@@ -85,21 +85,38 @@ export function ScheduleCalendarScreen() {
     () => groupedEntries.slice().sort((left, right) => right.items.length - left.items.length).slice(0, 3),
     [groupedEntries],
   );
+  const actionSections = [
+    {
+      title: 'Views',
+      description: '视图切换和新建入口集中在页面抽屉。',
+      items: [
+        {
+          label: 'Back',
+          description: '返回日程主列表。',
+          onPress: () => router.back(),
+        },
+        {
+          label: 'Week view',
+          description: '切到周视图。',
+          onPress: () => router.push('./week'),
+        },
+        {
+          label: 'Create event',
+          description: '创建新的日程事件。',
+          onPress: () => router.push('./event-editor'),
+        },
+      ],
+    },
+  ];
 
   return (
     <PageShell
+      actionMenuSubtitle="月历切换和创建动作已移到左上角。"
+      actionSections={actionSections}
       eyebrow="Schedule"
       title="Calendar"
       subtitle="月历页先提供月份热力概览和高密度日期入口。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="在 month、week、editor 之间切换。">
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back" onPress={() => router.back()} variant="secondary" />
-          <PrimaryButton label="Week view" onPress={() => router.push('./week')} variant="ghost" />
-          <PrimaryButton label="Create event" onPress={() => router.push('./event-editor')} />
-        </View>
-      </SectionCard>
-
       <SectionCard title={formatMonthLabel(monthAnchor)} description="按天展示事件密度和冲突数量。">
         <View style={styles.actionRow}>
           <PrimaryButton label="Prev month" onPress={() => setMonthAnchor((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))} variant="ghost" />

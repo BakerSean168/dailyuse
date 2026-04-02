@@ -1,9 +1,19 @@
-import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, type ScrollViewProps, type StyleProp, type ViewStyle } from 'react-native';
+import { useMemo, useState, type ReactNode } from 'react';
+import {
+  PanResponder,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ScrollViewProps,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomTabInset, MaxContentWidth, Spacing } from '../constants/theme';
 import { useTheme } from '../hooks/use-theme';
+import { PageActionDrawer, type PageActionSection } from './page-action-drawer';
+import { PrimaryButton } from './primary-button';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
@@ -12,10 +22,16 @@ export type PageShellProps = Omit<ScrollViewProps, 'contentContainerStyle'> & {
   subtitle?: string;
   eyebrow?: string;
   headerSlot?: ReactNode;
+  actionSections?: PageActionSection[];
+  actionMenuLabel?: string;
+  actionMenuSubtitle?: string;
   contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
 export function PageShell({
+  actionMenuLabel = 'Page',
+  actionMenuSubtitle,
+  actionSections,
   children,
   contentContainerStyle,
   eyebrow,
@@ -26,9 +42,29 @@ export function PageShell({
 }: PageShellProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const [isActionDrawerOpen, setIsActionDrawerOpen] = useState(false);
+  const hasActionSections = (actionSections?.length ?? 0) > 0;
+
+  const edgeSwipeResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (event, gestureState) =>
+          hasActionSections &&
+          !isActionDrawerOpen &&
+          event.nativeEvent.pageX <= 32 &&
+          gestureState.dx > 18 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
+        onPanResponderRelease: (_, gestureState) => {
+          if (gestureState.dx > 32) {
+            setIsActionDrawerOpen(true);
+          }
+        },
+      }),
+    [hasActionSections, isActionDrawerOpen],
+  );
 
   return (
-    <ThemedView style={styles.root}>
+    <ThemedView type="background" style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -43,6 +79,21 @@ export function PageShell({
           ]}
           {...props}>
           <ThemedView style={styles.header}>
+            {hasActionSections || headerSlot ? (
+              <View style={styles.headerChrome}>
+                {hasActionSections ? (
+                  <PrimaryButton
+                    label={actionMenuLabel}
+                    onPress={() => setIsActionDrawerOpen(true)}
+                    style={styles.headerButton}
+                    variant="secondary"
+                  />
+                ) : (
+                  <View />
+                )}
+                {headerSlot ? <View style={styles.headerSlotWrap}>{headerSlot}</View> : null}
+              </View>
+            ) : null}
             {eyebrow ? (
               <ThemedText type="smallBold" themeColor="tint" style={styles.eyebrow}>
                 {eyebrow}
@@ -54,12 +105,29 @@ export function PageShell({
                 {subtitle}
               </ThemedText>
             ) : null}
-            {headerSlot}
           </ThemedView>
 
           <ThemedView style={styles.body}>{children}</ThemedView>
         </ScrollView>
       </SafeAreaView>
+
+      {hasActionSections && !isActionDrawerOpen ? (
+        <View
+          {...edgeSwipeResponder.panHandlers}
+          pointerEvents="box-only"
+          style={styles.swipeEdge}
+        />
+      ) : null}
+
+      {hasActionSections ? (
+        <PageActionDrawer
+          sections={actionSections ?? []}
+          subtitle={actionMenuSubtitle}
+          title={title}
+          visible={isActionDrawerOpen}
+          onClose={() => setIsActionDrawerOpen(false)}
+        />
+      ) : null}
     </ThemedView>
   );
 }
@@ -67,6 +135,13 @@ export function PageShell({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  swipeEdge: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 24,
   },
   safeArea: {
     flex: 1,
@@ -85,6 +160,21 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.one,
     paddingBottom: Spacing.four,
+  },
+  headerChrome: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  headerButton: {
+    minHeight: 42,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
+  },
+  headerSlotWrap: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   eyebrow: {
     textTransform: 'uppercase',

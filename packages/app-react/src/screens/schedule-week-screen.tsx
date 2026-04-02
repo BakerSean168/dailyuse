@@ -52,21 +52,38 @@ export function ScheduleWeekScreen() {
     () => groupedEntries.reduce((sum, group) => sum + group.items.filter((item) => item.hasConflict).length, 0),
     [groupedEntries],
   );
+  const actionSections = [
+    {
+      title: 'Views',
+      description: '周视图切换和创建动作收进页面抽屉。',
+      items: [
+        {
+          label: 'Back',
+          description: '返回日程主列表。',
+          onPress: () => router.back(),
+        },
+        {
+          label: 'Calendar',
+          description: '切到月历视图。',
+          onPress: () => router.push('./calendar'),
+        },
+        {
+          label: 'Create event',
+          description: '创建一个新的事件。',
+          onPress: () => router.push('./event-editor'),
+        },
+      ],
+    },
+  ];
 
   return (
     <PageShell
+      actionMenuSubtitle="周视图的全局操作已经集中到左上角。"
+      actionSections={actionSections}
       eyebrow="Schedule"
       title="Week view"
       subtitle="周视图先按天分组，保留移动端更自然的单列 agenda 结构。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="周视图和月历、编辑器互通。">
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back" onPress={() => router.back()} variant="secondary" />
-          <PrimaryButton label="Calendar" onPress={() => router.push('./calendar')} variant="ghost" />
-          <PrimaryButton label="Create event" onPress={() => router.push('./event-editor')} />
-        </View>
-      </SectionCard>
-
       <SectionCard title={formatRangeLabel(weekAnchor, weekEnd)} description="未来和历史周都可以快速滑动查看。">
         <View style={styles.actionRow}>
           <PrimaryButton label="Prev week" onPress={() => setWeekAnchor((current) => startOfWeek(new Date(current.getTime() - 7 * 24 * 60 * 60 * 1000)))} variant="ghost" />

@@ -67,6 +67,56 @@ export function RepositoryScreen() {
     () => (activeResource?.content ?? '') !== editorContent,
     [activeResource?.content, editorContent],
   );
+  const actionSections = [
+    {
+      title: 'Workspace',
+      description: '仓库的全局入口和快捷操作集中到页面抽屉。',
+      items: [
+        {
+          label: 'Browse folders',
+          description: '打开文件夹浏览页。',
+          onPress: () => router.push('./repository-folder'),
+        },
+        {
+          label: 'Clear search',
+          description: '清空当前搜索词。',
+          disabled: searchQuery.trim().length === 0,
+          onPress: () => setSearchQuery(''),
+        },
+      ],
+    },
+    {
+      title: 'Selection',
+      description: '当前打开资源的快捷动作。',
+      items: activeResource
+        ? [
+            {
+              label: 'Open dedicated editor',
+              description: '跳转到独立编辑页。',
+              onPress: () => router.push(`./note-editor?resourceId=${activeResource.id}`),
+            },
+            {
+              label: hasUnsavedChanges ? 'Save resource' : 'No unsaved changes',
+              description: '保存当前内联编辑内容。',
+              disabled: !hasUnsavedChanges || isMutating,
+              onPress: handleSaveResource,
+            },
+            {
+              label: 'Delete resource',
+              description: '删除当前选中的资源。',
+              disabled: isMutating,
+              onPress: handleDeleteResource,
+            },
+          ]
+        : [
+            {
+              label: 'Select a resource',
+              description: '先在列表里选中文件，再使用这里的快捷动作。',
+              disabled: true,
+            },
+          ],
+    },
+  ];
 
   async function handleCreateNote() {
     const name = newNoteName.trim();
@@ -94,31 +144,19 @@ export function RepositoryScreen() {
 
   return (
     <PageShell
+      actionMenuSubtitle="仓库中的文件夹入口和资源动作集中到左上角。"
+      actionSections={actionSections}
       eyebrow="More"
       title="Repository"
-      subtitle="仓库页现在支持 bookmark、远程搜索、独立 note editor route 和资源删除。"
+      subtitle="仓库资源、书签和编辑器。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
     >
-      <SectionCard
-        title="Navigation"
-        description="仓库和编辑器先收在 More 栈，按移动端多步流重做。"
-      >
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back to More" onPress={() => router.back()} variant="secondary" />
-          <PrimaryButton
-            label="Browse folders"
-            onPress={() => router.push('./repository-folder')}
-            variant="secondary"
-          />
-        </View>
-      </SectionCard>
-
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="仓库模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可访问仓库和资源。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看仓库和资源。
+            Sign in with a remote account to load repository data.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
@@ -141,7 +179,7 @@ export function RepositoryScreen() {
 
           <SectionCard
             title="Search resources"
-            description="本地列表过滤和远程全文搜索现在分开处理。"
+            description="按标题、路径或内容搜索资源。"
           >
             <PrimaryTextField
               value={searchQuery}
@@ -162,7 +200,7 @@ export function RepositoryScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Bookmarks" description="高频资源先通过书签固定到移动端入口。">
+          <SectionCard title="Bookmarks" description="常用资源。">
             <View style={styles.listColumn}>
               {bookmarks.length > 0 ? (
                 bookmarks.map((bookmark) => (
@@ -192,7 +230,7 @@ export function RepositoryScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Create note" description="先提供最小可用的新建 markdown 入口。">
+          <SectionCard title="Create note" description="创建新的 Markdown 笔记。">
             <PrimaryTextField
               value={newNoteName}
               onChangeText={setNewNoteName}
@@ -216,7 +254,7 @@ export function RepositoryScreen() {
 
           <SectionCard
             title="Upload files"
-            description={`从设备选择文件或拍照上传到仓库。当前最大文件大小 ${maxFileSizeText}。`}>
+            description={`从设备选择文件或拍照上传。最大文件大小 ${maxFileSizeText}。`}>
             <View style={styles.actionRow}>
               <PrimaryButton
                 label={isUploading ? 'Uploading…' : 'Choose files'}
@@ -256,7 +294,7 @@ export function RepositoryScreen() {
           </SectionCard>
 
           {error ? (
-            <SectionCard title="Repository request failed" description="当前先直接展示错误。">
+            <SectionCard title="Repository request failed" description="Unable to load repository data.">
               <ThemedText type="small" themeColor="warning">
                 {error}
               </ThemedText>
@@ -265,7 +303,7 @@ export function RepositoryScreen() {
 
           <SectionCard
             title="Remote search results"
-            description="全文搜索结果保留匹配摘要，方便移动端快速跳转。"
+            description="远程全文搜索结果。"
           >
             <View style={styles.listColumn}>
               {remoteSearchResults.length > 0 ? (
@@ -314,7 +352,7 @@ export function RepositoryScreen() {
 
           <SectionCard
             title="Resources"
-            description="资源列表现在支持打开、收藏和跳转独立编辑 route。"
+            description="资源列表和快捷操作。"
           >
             <View style={styles.listColumn}>
               {filteredResources.length > 0 ? (
@@ -369,7 +407,7 @@ export function RepositoryScreen() {
             title={
               activeResource ? `Inline editor: ${activeResource.displayName}` : 'Inline editor'
             }
-            description="内联编辑仍然保留，同时支持跳转独立 note editor route。"
+            description="当前选中资源的编辑区。"
           >
             {activeResource ? (
               <>
@@ -412,7 +450,7 @@ export function RepositoryScreen() {
               </>
             ) : (
               <ThemedText type="small" themeColor="textSecondary">
-                先从上面的资源列表或搜索结果选择一个文件进入编辑器。
+                Select a file to start editing.
               </ThemedText>
             )}
           </SectionCard>

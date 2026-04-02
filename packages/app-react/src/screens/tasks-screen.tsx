@@ -55,28 +55,42 @@ export function TasksScreen() {
   const activeCount = templates.filter((item) => item.status === TaskTemplateStatus.Active).length;
   const blockedCount = templates.filter((item) => item.isBlocked).length;
   const totalPending = templates.reduce((sum, item) => sum + item.pendingInstanceCount, 0);
+  const actionSections = [
+    {
+      title: 'Workspace',
+      description: '列表级跳转和创建动作统一收进页面抽屉。',
+      items: [
+        {
+          label: 'Create template',
+          description: '进入任务模板创建页。',
+          onPress: () => router.push('./editor'),
+        },
+      ],
+    },
+  ];
 
   return (
     <PageShell
+      actionMenuSubtitle="任务页把高频入口收敛到左上角。"
+      actionSections={actionSections}
       eyebrow="Tasks"
       title="Task workspace"
-      subtitle="任务模块现在已经有真实列表、排序和 blocked 过滤，下一步主要是依赖关系和更深的实例流。"
+      subtitle="任务列表、筛选和模板管理。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
       {!isRemoteAuthenticated ? (
         <SectionCard
-          title="Remote sign-in required"
-          description="任务模块当前直接请求后端，需要远程认证会话。Guest 和 demo 模式不会加载任务数据。">
+          title="Sign in required"
+          description="登录后可查看任务数据。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看任务列表。
+            Sign in with a remote account to load tasks.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
           <SectionCard
-            title="Overview"
-            description="先给移动端任务首页一个稳定的摘要层，后面再把今日待办和最近更新接进首页。"
-            footer={<PrimaryButton label="Create template" onPress={() => router.push('./editor')} />}>
+            title="Summary"
+            description="模板数量、活跃状态和待办实例。">
             <View style={styles.overviewRow}>
               <StatusPill label={`${templates.length} templates`} tone="tint" />
               <StatusPill label={`${activeCount} active`} tone="success" />
@@ -85,7 +99,7 @@ export function TasksScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Search and filters" description="先把高频筛选和排序做成常驻区，后面再收口成 sheet。">
+          <SectionCard title="Search and filters" description="按关键词、状态和排序筛选任务。">
             <PrimaryTextField
               autoCapitalize="none"
               autoCorrect={false}
@@ -123,7 +137,7 @@ export function TasksScreen() {
           </SectionCard>
 
           {error ? (
-            <SectionCard title="Task load failed" description="后端返回错误时先明确展示，不做静默 fallback。">
+            <SectionCard title="Task load failed" description="Unable to load tasks.">
               <ThemedText type="small" themeColor="warning">{error}</ThemedText>
               <PrimaryButton label="Retry" onPress={refresh} variant="secondary" />
             </SectionCard>

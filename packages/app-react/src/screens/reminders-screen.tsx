@@ -21,6 +21,19 @@ export function RemindersScreen() {
   const { signOut } = useAppSession();
   const { error, isLoading, isRemoteAuthenticated, refresh, templates, todaySchedule, toggleTemplateEnabled } = useReminders();
   const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const actionSections = [
+    {
+      title: 'Reminders',
+      description: '提醒模块快捷操作。',
+      items: [
+        {
+          label: 'Create template',
+          description: '新建提醒模板。',
+          onPress: () => router.push('./reminder-editor'),
+        },
+      ],
+    },
+  ];
 
   async function handleToggle(id: string) {
     setMutatingId(id);
@@ -30,27 +43,22 @@ export function RemindersScreen() {
 
   return (
     <PageShell
+      actionMenuSubtitle="提醒模板和快捷操作。"
+      actionSections={actionSections}
       eyebrow="More"
       title="Reminders"
-      subtitle="提醒模块现在支持详情和创建编辑入口，不再只停留在模板列表。"
+      subtitle="今天的提醒和全部模板。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="当前 reminders 先放在 More 栈，后面再评估是否升到主导航。">
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back to More" onPress={() => router.back()} variant="secondary" />
-          <PrimaryButton label="Create template" onPress={() => router.push('./reminder-editor')} />
-        </View>
-      </SectionCard>
-
       {!isRemoteAuthenticated ? (
-        <SectionCard title="Remote sign-in required" description="提醒模块依赖远程认证会话。">
+        <SectionCard title="Sign in required" description="登录后可查看提醒和模板。">
           <ThemedText type="small" themeColor="textSecondary">
-            先退出当前 shell，然后用邮箱登录进入移动端，再回来查看提醒数据。
+            Sign in with a remote account to load reminder data.
           </ThemedText>
-          <PrimaryButton fullWidth label="Return to sign-in" onPress={signOut} />
+          <PrimaryButton fullWidth label="Go to sign-in" onPress={signOut} />
         </SectionCard>
       ) : (
         <>
-          <SectionCard title="Overview" description="模板、今日提醒和详情编辑入口已经收进同一页。">
+          <SectionCard title="Summary" description="模板数量和今日触发情况。">
             <View style={styles.pillRow}>
               <StatusPill label={`${templates.length} templates`} tone="tint" />
               <StatusPill label={`${todaySchedule.length} today`} tone="success" />
@@ -58,12 +66,12 @@ export function RemindersScreen() {
           </SectionCard>
 
           {error ? (
-            <SectionCard title="Reminder load failed" description="后端返回错误时先直接展示。">
+            <SectionCard title="Reminder load failed" description="Unable to load reminders.">
               <ThemedText type="small" themeColor="warning">{error}</ThemedText>
             </SectionCard>
           ) : null}
 
-          <SectionCard title="Today schedule" description="今天会触发的提醒先在这里做单列摘要。">
+          <SectionCard title="Today" description="即将触发的提醒。">
             <View style={styles.listColumn}>
               {todaySchedule.length > 0 ? (
                 todaySchedule.map((item) => (
@@ -84,8 +92,8 @@ export function RemindersScreen() {
           </SectionCard>
 
           {!isLoading && templates.length === 0 ? (
-            <SectionCard title="No reminder templates" description="当前账号还没有提醒模板。">
-              <ThemedText type="small" themeColor="textSecondary">现在已经可以直接从移动端创建模板。</ThemedText>
+            <SectionCard title="No reminder templates" description="Create your first reminder template.">
+              <PrimaryButton label="Create template" onPress={() => router.push('./reminder-editor')} />
             </SectionCard>
           ) : null}
 

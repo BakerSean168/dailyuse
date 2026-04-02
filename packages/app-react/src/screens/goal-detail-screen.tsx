@@ -72,20 +72,42 @@ export function GoalDetailScreen() {
     await refresh();
   }
 
+  const actionSections = [
+    {
+      title: 'Navigation',
+      description: '详情页下钻和返回操作集中在这里。',
+      items: [
+        {
+          label: 'Back to list',
+          description: '返回目标列表。',
+          onPress: () => router.back(),
+        },
+        ...(goalId
+          ? [
+              {
+                label: 'Edit goal',
+                description: '打开目标编辑页。',
+                onPress: () => router.push(`./editor?id=${goalId}`),
+              },
+              {
+                label: 'Reviews',
+                description: '查看该目标的 review。',
+                onPress: () => router.push(`./review?id=${goalId}`),
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
   return (
     <PageShell
+      actionMenuSubtitle="详情页的跳转和次级入口收进左上角。"
+      actionSections={actionSections}
       eyebrow="Goals"
       title={goal ? goal.name : 'Goal detail'}
       subtitle="移动端详情页先聚焦目标概览、关键结果、review 和状态动作，不照搬桌面多区域布局。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}>
-      <SectionCard title="Navigation" description="先打通列表、详情、编辑、关键结果和 review 的下钻。">
-        <View style={styles.actionRow}>
-          <PrimaryButton label="Back to list" onPress={() => router.back()} variant="secondary" />
-          {goalId ? <PrimaryButton label="Edit goal" onPress={() => router.push(`./editor?id=${goalId}`)} /> : null}
-          {goalId ? <PrimaryButton label="Reviews" onPress={() => router.push(`./review?id=${goalId}`)} variant="ghost" /> : null}
-        </View>
-      </SectionCard>
-
       {error ? (
         <SectionCard title="Goal detail failed" description="详情请求失败时直接展示错误。">
           <ThemedText type="small" themeColor="warning">{error}</ThemedText>
