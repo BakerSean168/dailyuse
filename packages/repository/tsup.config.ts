@@ -28,6 +28,7 @@ export default defineConfig({
     '@dailyuse/domain-shared',
     '@dailyuse/domain-shared/shared',
     'express',
+    'multer',
     'zod',
   ],
 });

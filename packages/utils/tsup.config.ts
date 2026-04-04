@@ -10,7 +10,7 @@
  * - 打包速度快，适合频繁修改
  */
 
-import { baseLibraryConfig } from '../../tools/build/tsup.base.config';
+import { baseLibraryConfig } from '../../tools/build/tsup.base.config.ts';
 
 const config = baseLibraryConfig('@dailyuse/utils');
 

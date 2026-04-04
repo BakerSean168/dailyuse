@@ -1,245 +1,265 @@
-# 📦 Memoflow 部署完整指南
+# Docker 部署说明
 
-> **项目**：Memoflow v1.0.3  
-> **最后更新**：2025-01-11  
-> **状态**：✅ 生产部署就绪
+本文档是当前仓库唯一有效的 Docker 生产部署说明，覆盖 `web`、`api`、`ai-service` 三个业务镜像，以及 `postgres`、`redis` 两个基础服务。
 
----
+## 部署结构
 
-## 🚀 5分钟快速开始
+生产编排文件是根目录的 `docker-compose.prod.yml`，包含以下服务：
 
-### 最简方式（3 步）
+- `postgres`
+- `redis`
+- `ai-service`
+- `api`
+- `web`
+
+镜像来源：
+
+- `dailyuse-api`
+- `dailyuse-web`
+- `dailyuse-ai-service`
+
+镜像仓库和 tag 由 `.env.production.local` 中的以下变量控制：
+
+- `REGISTRY`
+- `IMAGE_NAMESPACE`
+- `API_TAG`
+- `WEB_TAG`
+- `AI_SERVICE_TAG`
+
+## 相关文件
+
+- `Dockerfile.api`
+- `Dockerfile.web`
+- `Dockerfile.ai-service`
+- `docker-compose.prod.yml`
+- `.env.production`
+- `.env.production.local`
+- `tools/docker/publish-images.ps1`
+
+## 发布策略
+
+本仓库的发布方式分成两段：
+
+1. 在构建机执行 Nx 构建和 Docker 构建，并把镜像推送到仓库。
+2. 在服务器执行 `docker compose pull` 和 `docker compose up -d` 完成部署。
+
+不要再手工分别执行旧的 `docker build`、`docker tag`、`docker push` 流程；统一使用发布脚本。
+
+### Tag 规则
+
+默认 tag 为不可变版本号，格式如下：
+
+```text
+v<package.json version>-prod.<UTC时间戳>-<12位git sha>
+```
+
+示例：
+
+```text
+v0.3.0-prod.20260403-150338-93dca44f0df1
+```
+
+每次推送时还会额外同步一个滚动标签：
+
+```text
+prod-latest
+```
+
+建议：
+
+- 正式部署使用不可变 tag。
+- 快速追最新镜像时使用 `prod-latest` 做观察或临时验证。
+- `.env.production.local` 始终保存当前已发布的不可变 tag，避免线上状态不可追踪。
+
+## 构建并推送镜像
+
+前提：
+
+- 本机已安装 Docker。
+- 本机可以执行 `pnpm nx ...`。
+- 本机已登录阿里云 ACR。
+- `.env.production.local` 已设置 `REGISTRY` 和 `IMAGE_NAMESPACE`。
+
+登录仓库：
 
 ```powershell
-# 1️⃣ 本地构建（Windows PowerShell）
-cd d:\myPrograms\dailyuse
-.\scripts\deploy-prod.ps1 -Version v1.0.3
-
-# 2️⃣ 服务器准备（SSH）
-ssh user@your-server-ip
-cd /path/to/deployment
-# 创建 .env.production.local（详见下方）
-
-# 3️⃣ 执行部署（服务器上）
-docker-compose -f docker-compose.prod.yml --env-file .env.production.local pull
-docker-compose -f docker-compose.prod.yml --env-file .env.production.local up -d
-curl http://localhost:3000/healthz
+docker login crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
 ```
 
----
+推荐方式：
 
-## 📚 完整文档导航
-
-### 按场景选择
-
-| 你的情况 | 文档 | 耗时 |
-|--------|------|------|
-| **DATABASE_URL 启动失败** | **[🔧 环境配置修复报告](ENV_CONFIG_FIX_REPORT.md)** | **5分钟** |
-| **搞混了环境变量配置** | **[🎯 环境变量困惑解除器](ENV_CONFUSION_RESOLVER.md)** | **10分钟** |
-| 想快速了解部署流程 | [01-quick-start.md](01-quick-start.md) | 5分钟 |
-| 要详细构建步骤 | [02-build.md](02-build.md) | 10分钟 |
-| 要详细部署步骤 | [03-deploy.md](03-deploy.md) | 5分钟 |
-| 需要验证部署成功 | [04-verify.md](04-verify.md) | 5分钟 |
-| 遇到部署问题 | [05-troubleshooting.md](05-troubleshooting.md) | 自助排查 |
-| 需要快速命令 | [reference/COMMAND_REFERENCE.md](reference/COMMAND_REFERENCE.md) | 可复制粘贴 |
-| 理解加载优先级 | [ENV_LOADING_MECHANISM.md](ENV_LOADING_MECHANISM.md) | 深入理解 |
-| Docker 最佳实践 | [DOCKER_ENV_CONFIGURATION.md](DOCKER_ENV_CONFIGURATION.md) | 深入理解 |
-| 快速生成密码 | [ENV_QUICK_REFERENCE.md](ENV_QUICK_REFERENCE.md) | 实操指南 |
-| 设置环境变量 | [configs/ENVIRONMENT_CONFIGURATION.md](configs/ENVIRONMENT_CONFIGURATION.md) | 参考 |
-| 配置 CORS | [configs/CORS_CONFIGURATION.md](configs/CORS_CONFIGURATION.md) | 参考 |
-
----
-
-## 📁 文件结构
-
-```
-docs/deployment/
-├── README.md                                 ← 你在这里
-├── 01-quick-start.md                        快速开始（5分钟版）
-├── 02-build.md                              构建 Docker 镜像详解
-├── 03-deploy.md                             部署到生产环境详解
-├── 04-verify.md                             验证部署成功
-├── 05-troubleshooting.md                    故障排查指南
-│
-├── configs/                                  配置文件和说明
-│   ├── ENVIRONMENT_CONFIGURATION.md         环境变量详解
-│   ├── CORS_CONFIGURATION.md                CORS 配置说明
-│   ├── .env.example                         完整配置模板
-│   ├── .env.development                     开发环境（参考）
-│   └── .env.production                      生产环境（参考）
-│
-├── reference/
-│   └── COMMAND_REFERENCE.md                 快速命令参考（可复制粘贴）
-│
-└── docker/
-    └── README.md                            Docker 配置说明
+```powershell
+pnpm docker:prod:push
 ```
 
----
+等价命令：
 
-## 🎯 部署完整流程
-
-```
-【第一阶段】本地构建 (10 分钟)
-  ├─ 验证编译
-  ├─ 构建 Docker 镜像
-  ├─ 推送到阿里云 ACR
-  └─ 验证镜像
-
-【第二阶段】服务器准备 (3 分钟)
-  ├─ SSH 连接
-  ├─ 创建 .env.production.local
-  └─ 设置文件权限
-
-【第三阶段】执行部署 (3 分钟)
-  ├─ 停止旧服务
-  ├─ 拉取新镜像
-  ├─ 启动新服务
-  └─ 等待就绪
-
-【第四阶段】验证部署 (2 分钟)
-  ├─ 容器状态检查
-  ├─ API 端点验证
-  ├─ 日志检查
-  └─ 前端访问验证
-
-总耗时：15-20 分钟 ✅
+```powershell
+pwsh -File ./tools/docker/publish-images.ps1 -EnvFile .env.production.local -Push
 ```
 
----
+脚本会自动执行：
 
-## 🔑 关键信息
+1. `pnpm nx build api`
+2. `pnpm nx build web --configuration=production`
+3. 构建 `api`、`web`、`ai-service` 三张镜像
+4. 推送不可变 tag
+5. 推送 `prod-latest`
+6. 回写 `.env.production.local` 中的 `API_TAG`、`WEB_TAG`、`AI_SERVICE_TAG`
 
-### 镜像仓库
-```
-仓库：crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
-命名空间：bakersean
-镜像名：Memoflow-api
-版本：v1.0.3
-```
+如果需要手工指定 tag：
 
-### 必填环境变量
-```
-NODE_ENV=production
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
-JWT_SECRET=your-strong-secret-min-32-chars
-CORS_ORIGIN=https://yourdomain.com
-API_TAG=v1.0.3
+```powershell
+pwsh -File ./tools/docker/publish-images.ps1 `
+  -EnvFile .env.production.local `
+  -Tag v0.3.0-prod.manual-20260404 `
+  -Push
 ```
 
-### 健康检查端点
+如果只构建不推送：
+
+```powershell
+pnpm docker:prod:build
 ```
-GET /healthz    → 健康状态
-GET /readyz     → 就绪状态
-GET /api/info   → 应用信息
+
+## 服务器部署
+
+服务器需要准备：
+
+- Docker
+- Docker Compose 插件
+- 项目根目录内的 `docker-compose.prod.yml`
+- 一份仅保存在服务器上的 `.env.production.local`
+- 对阿里云 ACR 的拉取权限
+
+### 1. 准备环境文件
+
+建议以 `.env.production` 为基础，在服务器创建 `.env.production.local`，至少补齐这些配置：
+
+- `REGISTRY`
+- `IMAGE_NAMESPACE`
+- `API_TAG`
+- `WEB_TAG`
+- `AI_SERVICE_TAG`
+- `DB_PASSWORD`
+- `REDIS_PASSWORD`
+- `JWT_SECRET`
+- `SERVICE_SECRET`
+- `CORS_ORIGIN`
+
+`SERVICE_SECRET` 用于 `api` 和 `ai-service` 之间的内部鉴权，必须保持一致。
+
+### 2. 如有端口冲突，先改 host 端口
+
+当前生产 compose 支持独立 host 端口变量：
+
+- `POSTGRES_HOST_PORT`
+- `REDIS_HOST_PORT`
+- `API_HOST_PORT`
+- `WEB_HOST_PORT`
+- `AI_SERVICE_HOST_PORT`
+
+容器内部端口保持固定，不要修改服务间通信端口：
+
+- `postgres:5432`
+- `redis:6379`
+- `ai-service:8100`
+- `api:3000`
+- `web:80`
+
+### 3. 拉取并启动
+
+```powershell
+docker compose -f docker-compose.prod.yml --env-file .env.production.local pull
+docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
 ```
 
----
+首次部署或配置变更后，建议额外检查展开结果：
 
-## ⚠️ 重要提示
+```powershell
+docker compose -f docker-compose.prod.yml --env-file .env.production.local config
+```
 
-### 🔒 安全
-- ❌ 不要提交 `.env.production.local` 到 Git
-- ✅ 设置权限：`chmod 600 .env.production.local`
-- ✅ JWT_SECRET 使用强随机字符串（至少 32 字符）
+## 验证部署
 
-### ⚙️ 配置
-- 📝 DATABASE_URL：PostgreSQL 完整连接字符串
-- 📝 REDIS_URL：Redis 连接地址
-- 📝 CORS_ORIGIN：包含所有前端域名（逗号分隔）
+检查容器状态：
 
-### 🔄 部署特性
-- ✓ 数据库迁移自动应用
-- ✓ 旧 token 自动兼容（JWT_SECRET 保持一致）
-- ✓ CORS 已修复（credentials 条件化）
-- ✓ 环境变量通过 Zod 验证
+```powershell
+docker compose -f docker-compose.prod.yml --env-file .env.production.local ps
+```
 
----
+检查日志：
 
-## 🚨 常见问题速查
+```powershell
+docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f api
+docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f web
+docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f ai-service
+```
 
-| 问题 | 快速解决 |
-|------|--------|
-| 编译失败 | 查看 [02-build.md](02-build.md) 第一步 |
-| CORS 错误 | 查看 [configs/CORS_CONFIGURATION.md](configs/CORS_CONFIGURATION.md) |
-| 数据库连接失败 | 查看 [05-troubleshooting.md](05-troubleshooting.md) 第 5 点 |
-| 环境变量缺失 | 查看 [05-troubleshooting.md](05-troubleshooting.md) 第 8 点 |
-| 需要回滚 | 查看 [reference/COMMAND_REFERENCE.md](reference/COMMAND_REFERENCE.md) |
+检查健康端点：
 
----
+```powershell
+curl http://127.0.0.1:3000/healthz
+curl http://127.0.0.1:8100/healthz
+```
 
-## 📖 选择合适的文档
+如果 `WEB_HOST_PORT=8080`，还可以直接访问：
 
-### 👨‍💻 开发者
-→ [01-quick-start.md](01-quick-start.md) - 5分钟了解部署步骤
+```text
+http://<server-ip>:8080
+```
 
-### 👨‍💼 运维人员
-1. [02-build.md](02-build.md) - 构建详解
-2. [03-deploy.md](03-deploy.md) - 部署详解
-3. [04-verify.md](04-verify.md) - 验证详解
-4. [05-troubleshooting.md](05-troubleshooting.md) - 故障排查
+## 升级与回滚
 
-### 🔧 配置管理员
-- [configs/ENVIRONMENT_CONFIGURATION.md](configs/ENVIRONMENT_CONFIGURATION.md) - 环境变量
-- [configs/CORS_CONFIGURATION.md](configs/CORS_CONFIGURATION.md) - CORS 配置
+升级流程：
 
-### 🏃 急于部署的人
-→ [reference/COMMAND_REFERENCE.md](reference/COMMAND_REFERENCE.md) - 可复制粘贴命令
+1. 在构建机执行 `pnpm docker:prod:push`
+2. 把新的 `API_TAG`、`WEB_TAG`、`AI_SERVICE_TAG` 同步到服务器
+3. 在服务器执行 `pull` 和 `up -d`
 
----
+回滚流程：
 
-## ✅ 快速检查清单
+1. 把服务器 `.env.production.local` 中三项 tag 改回上一个已知版本
+2. 重新执行：
 
-部署前：
-- [ ] 本地编译通过：`pnpm nx run api:typecheck`
-- [ ] Docker 已安装：`docker --version`
-- [ ] 阿里云登录：`docker login crpi-...`
+```powershell
+docker compose -f docker-compose.prod.yml --env-file .env.production.local pull
+docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
+```
 
-部署中：
-- [ ] 镜像已推送到 ACR
-- [ ] 配置文件已创建：`.env.production.local`
-- [ ] 文件权限正确：`chmod 600`
+因为 tag 是不可变的，所以回滚只需要切回旧 tag，不需要重新构建镜像。
 
-部署后：
-- [ ] 容器都是 `Up` 状态
-- [ ] `/healthz` 返回 200 OK
-- [ ] API 日志无 ERROR
-- [ ] 前端能正常调用 API
+## 常见问题
 
----
+### 1. `docker compose up -d` 端口冲突
 
-## 📊 预期耗时
+说明主机已有服务占用端口。优先修改以下变量，而不是修改容器内部端口：
 
-| 阶段 | 耗时 | 说明 |
-|------|------|------|
-| 本地准备 | 2 分钟 | 验证环境 |
-| 本地构建 | 5-8 分钟 | 编译 + Docker 构建 |
-| 镜像推送 | 2-3 分钟 | 推送到 ACR |
-| 服务器准备 | 2-3 分钟 | 配置文件准备 |
-| 部署执行 | 2-3 分钟 | docker-compose |
-| 验证 | 1-2 分钟 | 健康检查 |
-| **总计** | **15-20 分钟** | **完整周期** |
+- `POSTGRES_HOST_PORT`
+- `REDIS_HOST_PORT`
+- `API_HOST_PORT`
+- `WEB_HOST_PORT`
+- `AI_SERVICE_HOST_PORT`
 
----
+### 2. `api` 启动后访问 AI 失败
 
-## 🎯 下一步
+优先检查：
 
-1. **快速开始** → 打开 [01-quick-start.md](01-quick-start.md)
-2. **立即部署** → 运行脚本或查看 [reference/COMMAND_REFERENCE.md](reference/COMMAND_REFERENCE.md)
-3. **遇到问题** → 查阅 [05-troubleshooting.md](05-troubleshooting.md)
+- `SERVICE_SECRET` 是否在 `api` 和 `ai-service` 中一致
+- `ai-service` 是否为 healthy
+- `AI_SERVICE_BASE_URL` 是否保持为 `http://ai-service:8100`
 
----
+### 3. 推送成功但服务器拉不到镜像
 
-## 📞 获取帮助
+优先检查：
 
-1. **快速命令** → [reference/COMMAND_REFERENCE.md](reference/COMMAND_REFERENCE.md)
-2. **详细步骤** → 按序阅读 01-05.md
-3. **故障排查** → [05-troubleshooting.md](05-troubleshooting.md)
-4. **环境配置** → [configs/](configs/)
+- 服务器是否执行过 `docker login`
+- `REGISTRY` 和 `IMAGE_NAMESPACE` 是否正确
+- 服务器上的 tag 是否和构建机发布出的 tag 一致
 
----
+## 约束
 
-**祝部署顺利！** 🚀
-
-
+- 不提交 `.env.production.local`
+- 不在文档中维护手工 build/tag/push 的旧流程
+- 不使用 `latest` 作为正式发布唯一标识
+- 不在服务器上直接做工作区源码构建，生产服务器只负责拉镜像和启动容器

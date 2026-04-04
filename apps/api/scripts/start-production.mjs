@@ -1,0 +1,81 @@
+import { existsSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { spawn, spawnSync } from 'node:child_process';
+
+const workspaceRoot = resolve(process.cwd(), '../..');
+const apiRoot = process.cwd();
+const migrationsDir = resolve(workspaceRoot, 'packages/database/prisma/migrations');
+
+function resolveDatabaseUrl() {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+
+  if (!process.env.DB_HOST) {
+    throw new Error('DATABASE_URL or DB_HOST must be set before starting the API container');
+  }
+
+  const username = encodeURIComponent(process.env.DB_USER || 'dailyuse');
+  const password = process.env.DB_PASSWORD
+    ? `:${encodeURIComponent(process.env.DB_PASSWORD)}`
+    : '';
+  const port = process.env.DB_PORT || '5432';
+  const database = encodeURIComponent(process.env.DB_NAME || 'dailyuse');
+  const url = `postgresql://${username}${password}@${process.env.DB_HOST}:${port}/${database}?schema=public`;
+  process.env.DATABASE_URL = url;
+  return url;
+}
+
+function run(command, args, cwd) {
+  const result = spawnSync(command, args, {
+    cwd,
+    env: process.env,
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  });
+
+  if (result.status !== 0) {
+    throw new Error(`${command} ${args.join(' ')} failed with exit code ${result.status ?? 1}`);
+  }
+}
+
+function hasMigrations() {
+  if (!existsSync(migrationsDir)) {
+    return false;
+  }
+
+  return readdirSync(migrationsDir).length > 0;
+}
+
+async function main() {
+  resolveDatabaseUrl();
+
+  console.log('[startup] Initializing database schema...');
+  if (hasMigrations()) {
+    run('pnpm', ['nx', 'run', 'database:prisma-migrate-deploy'], workspaceRoot);
+  } else {
+    console.log('[startup] No Prisma migrations found. Falling back to prisma db push.');
+    run('pnpm', ['nx', 'run', 'database:prisma-push'], workspaceRoot);
+  }
+
+  console.log('[startup] Starting API process...');
+  const child = spawn('node', ['--import', 'tsx', 'dist/main.js'], {
+    cwd: apiRoot,
+    env: process.env,
+    stdio: 'inherit',
+  });
+
+  child.on('exit', (code, signal) => {
+    if (signal) {
+      process.kill(process.pid, signal);
+      return;
+    }
+    process.exit(code ?? 0);
+  });
+}
+
+main().catch((error) => {
+  console.error('[startup] Failed to initialize API container');
+  console.error(error);
+  process.exit(1);
+});

@@ -10,7 +10,7 @@
  * - 支持 tree-shaking 和代码分割
  */
 
-import { createTsupConfig } from '../../tools/build/tsup.base.config';
+import { createTsupConfig } from '../../tools/build/tsup.base.config.ts';
 
 export default createTsupConfig({
   packageName: '@dailyuse/domain-shared',

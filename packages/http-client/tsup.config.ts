@@ -5,7 +5,7 @@
  * 打包工具：tsup (基于 esbuild)
  */
 
-import { baseLibraryConfig } from '../../tools/build/tsup.base.config';
+import { baseLibraryConfig } from '../../tools/build/tsup.base.config.ts';
 
 const config = baseLibraryConfig('@dailyuse/http-client');
 

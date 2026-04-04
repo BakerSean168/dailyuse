@@ -8,21 +8,34 @@ from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _find_workspace_root() -> Path:
-    """Locate the monorepo root so ai-service shares the root env files."""
+def _find_workspace_root() -> Path | None:
+    """Locate the monorepo root so ai-service can share root env files.
+
+    In local monorepo development we want the same root env stack as the rest
+    of the workspace. In a Docker runtime image, however, only the service code
+    is copied and the workspace markers do not exist. Returning ``None`` lets
+    the service fall back to plain process environment variables there.
+    """
 
     current_file = Path(__file__).resolve()
     for candidate in current_file.parents:
         if (candidate / "pnpm-workspace.yaml").exists():
             return candidate
 
-    raise RuntimeError("Could not locate workspace root for ai-service settings.")
+    return None
 
 
 def _workspace_env_files() -> tuple[str, ...]:
-    """Return the workspace-root env file stack in override order."""
+    """Return the workspace-root env file stack in override order.
+
+    When running outside the monorepo, return an empty tuple so pydantic reads
+    only the container/process environment.
+    """
 
     workspace_root = _find_workspace_root()
+    if workspace_root is None:
+        return ()
+
     node_env = os.getenv("NODE_ENV", "development")
     env_files = (
         workspace_root / ".env",

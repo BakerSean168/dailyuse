@@ -13,6 +13,29 @@ declare global {
   var __dailyuse_prisma: PrismaClient | undefined;
 }
 
+function resolveDatabaseConnectionString(): string {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+
+  const host = process.env.DB_HOST;
+  if (!host) {
+    throw new Error('DATABASE_URL or DB_HOST must be set before initializing PrismaClient');
+  }
+
+  const username = encodeURIComponent(process.env.DB_USER || 'dailyuse');
+  const password = process.env.DB_PASSWORD
+    ? `:${encodeURIComponent(process.env.DB_PASSWORD)}`
+    : '';
+  const port = process.env.DB_PORT || '5432';
+  const database = encodeURIComponent(process.env.DB_NAME || 'dailyuse');
+  const connectionString =
+    `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
+
+  process.env.DATABASE_URL = connectionString;
+  return connectionString;
+}
+
 /**
  * 共享 PrismaClient 单例。
  *
@@ -24,9 +47,11 @@ export const prisma: PrismaClient = (() => {
     return globalThis.__dailyuse_prisma;
   }
 
+  const connectionString = resolveDatabaseConnectionString();
+
   // ✅ 直接传 connectionString 给 adapter（Prisma 7 推荐方式）
   const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
   });
 
   // 创建 PrismaClient

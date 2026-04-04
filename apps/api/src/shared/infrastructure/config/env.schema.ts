@@ -7,6 +7,13 @@
 
 import { z } from 'zod';
 
+const emptyStringToUndefined = (value: unknown) => {
+  if (typeof value === 'string' && value.trim() === '') {
+    return undefined;
+  }
+  return value;
+};
+
 /**
  * 环境变量 Schema
  *
@@ -35,7 +42,9 @@ export const envSchema = z.object({
   // ========== 数据库配置 ==========
   // 完整连接字符串（可选，如果提供则优先使用）
   // 否则应用会从分解式配置自动生成
-  DATABASE_URL: z.string().url().optional().describe('PostgreSQL 连接字符串（可选，优先使用）'),
+  DATABASE_URL: z
+    .preprocess(emptyStringToUndefined, z.string().url().optional())
+    .describe('PostgreSQL 连接字符串（可选，优先使用）'),
 
   // 分解式配置（用于 docker-compose 等场景）
   // Docker 最佳实践：使用分解配置而非完整 URL
@@ -47,7 +56,9 @@ export const envSchema = z.object({
   DB_PASSWORD: z.string().default(''),
 
   // ========== Redis 缓存配置 ==========
-  REDIS_URL: z.string().url().optional().describe('Redis 连接字符串 (优先使用)'),
+  REDIS_URL: z.preprocess(emptyStringToUndefined, z.string().url().optional()).describe(
+    'Redis 连接字符串 (优先使用)',
+  ),
 
   REDIS_HOST: z.string().default('localhost'),
 
@@ -65,9 +76,7 @@ export const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('30d').describe('JWT 刷新 Token 有效期'),
 
   REFRESH_TOKEN_SECRET: z
-    .string()
-    .min(32)
-    .optional()
+    .preprocess(emptyStringToUndefined, z.string().min(32).optional())
     .describe('刷新 Token 签名密钥 (默认使用 JWT_SECRET)'),
 
   // ========== CORS 配置 ==========
@@ -82,18 +91,19 @@ export const envSchema = z.object({
 
   OPENAI_MODEL: z.string().default('gpt-4-turbo-preview'),
 
-  OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
+  OPENAI_BASE_URL: z.preprocess(
+    emptyStringToUndefined,
+    z.string().url().default('https://api.openai.com/v1'),
+  ),
 
   // 七牛云 AI
   QI_NIU_YUN_API_KEY: z.string().optional(),
-  QI_NIU_YUN_BASE_URL: z.string().url().optional(),
+  QI_NIU_YUN_BASE_URL: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
   QI_NIU_YUN_MODEL_ID: z.string().optional(),
 
   // AI Provider 加密密钥
   AI_PROVIDER_ENCRYPTION_KEY: z
-    .string()
-    .length(32)
-    .optional()
+    .preprocess(emptyStringToUndefined, z.string().length(32).optional())
     .describe('AI Provider 配置加密密钥 (32字节)'),
 
   // ========== 邮件服务配置 ==========
@@ -110,7 +120,7 @@ export const envSchema = z.object({
     .describe('最大上传文件大小 (字节)'),
 
   // ========== 监控配置 ==========
-  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
 
   // ========== 功能开关 ==========
   ENABLE_DAILY_ANALYSIS: z

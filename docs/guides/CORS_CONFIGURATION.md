@@ -266,4 +266,4 @@ A: 检查以下几点：
 
 - [apps/api/src/app.ts](../../apps/api/src/app.ts) - CORS 中间件实现
 - [docker-compose.prod.yml](../../docker-compose.prod.yml) - Docker 配置
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - 完整部署指南
+- [../deployment/README.md](../deployment/README.md) - Docker 部署说明

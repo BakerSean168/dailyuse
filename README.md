@@ -8,6 +8,10 @@
 
 一个基于 Electron + Vue 3 + TypeScript 的现代化个人效率管理应用，采用 Nx Monorepo 架构和 pnpm 包管理。
 
+## 文档
+
+- Docker 生产部署文档：`docs/deployment/README.md`
+
 ## 🚀 技术栈
 
 ### 核心框架

@@ -10,7 +10,7 @@
  * - 消费者只拉取需要的模块
  */
 
-import { createTsupConfig } from '../../tools/build/tsup.base.config';
+import { createTsupConfig } from '../../tools/build/tsup.base.config.ts';
 
 export default createTsupConfig({
   packageName: '@dailyuse/contracts',

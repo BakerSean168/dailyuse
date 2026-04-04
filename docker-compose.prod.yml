@@ -1,374 +1,172 @@
-# =============================================================================
-# Memoflow 生产环境 Docker Compose 配置
-# =============================================================================
-# 版本: v1.0.0
-# 部署架构: 单服务器全栈部署（PostgreSQL + Redis + API + Web）
-# 镜像仓库: docker.io/Memoflow (需在 .env 中配置)
-# 
-# 使用说明:
-# 1. 复制 .env.prod.example 为 .env
-# 2. 修改 .env 中的敏感信息（数据库密码、JWT 密钥等）
-# 3. 确保防火墙开放必要端口（如果使用 Nginx Proxy Manager 则只需内网端口）
-# 4. 启动: docker compose -f docker-compose.prod.yml --env-file .env up -d
-# 5. 查看日志: docker compose -f docker-compose.prod.yml logs -f
-# 6. 停止: docker compose -f docker-compose.prod.yml down
-# =============================================================================
-
 services:
-  # ===========================================================================
-  # 基础设施层 - PostgreSQL 数据库
-  # ===========================================================================
-  # 功能: 存储应用的所有业务数据（用户、任务、目标等）
-  # 版本: PostgreSQL 16 Alpine（轻量级，适合生产环境）
-  # 持久化: postgres-prod-data 卷
-  # 端口: 默认 5432（仅内网访问，不建议暴露到公网）
-  # ===========================================================================
   postgres:
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/postgres:16-alpine
-    container_name: Memoflow-prod-db
-    restart: always
-    
-    # 环境变量 - 通过 .env 文件注入
+    image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:?请在.env中设置数据库名}
-      POSTGRES_USER: ${DB_USER:?请在.env中设置数据库用户}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?请在.env中设置数据库密码}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"  # 初始化参数
-    
-    # 端口映射 - 仅用于本地管理工具连接（如 DBeaver、pgAdmin）
-    # 如果服务器有防火墙，建议不对外暴露此端口
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME}
+      POSTGRES_USER: ${DB_USER:?set DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+      TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - "${DB_PORT:-5432}:5432"
-    
-    # 数据持久化 - 确保数据库重启后数据不丢失
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres-prod-data:/var/lib/postgresql/data
-      # 可选：自定义初始化脚本
-      # - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    
-    # 网络配置 - 连接到应用内部网络
     networks:
-      - Memoflow-network
-    
-    # 健康检查 - 确保数据库完全启动后才启动依赖服务
+      - dailyuse-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-Memoflow} -d ${DB_NAME:-Memoflow}"]
-      interval: 10s      # 每 10 秒检查一次
-      timeout: 5s        # 超时时间 5 秒
-      retries: 5         # 失败 5 次后标记为 unhealthy
-      start_period: 10s  # 启动后 10 秒才开始健康检查
-    
-    # 资源限制 - 防止单个容器占用过多资源
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'        # 最多使用 1 个 CPU 核心
-          memory: 512M       # 最多使用 512MB 内存
-        reservations:
-          cpus: '0.5'        # 保留 0.5 个 CPU 核心
-          memory: 256M       # 保留 256MB 内存
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:?set DB_USER} -d ${DB_NAME:?set DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-  # ===========================================================================
-  # 基础设施层 - Redis 缓存
-  # ===========================================================================
-  # 功能: 
-  #   - 缓存热点数据（如用户会话、统计数据）
-  #   - 任务队列（定时任务、后台作业）
-  #   - 分布式锁
-  # 版本: Redis 7 Alpine
-  # 持久化: AOF（Append-Only File，每秒同步一次）
-  # 端口: 默认 6379（仅内网访问）
-  # ===========================================================================
   redis:
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/redis:7-alpine
-    container_name: Memoflow-prod-redis
-    restart: always
-    
-    # 启动命令 - 配置 Redis 参数
-    command: >
-      redis-server
-      --appendonly yes                     
-      --appendfsync everysec              
-      --requirepass ${REDIS_PASSWORD:?请在.env中设置Redis密码}  
-      --maxmemory 256mb                    
-      --maxmemory-policy allkeys-lru       
-      --tcp-backlog 511                    
-      --timeout 300                        
-      --tcp-keepalive 60                   
-    
-    # 端口映射 - 仅用于本地 Redis 客户端连接（如 RedisInsight）
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - yes
+      - --appendfsync
+      - everysec
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
-    
-    # 数据持久化
+      - "${REDIS_HOST_PORT:-6379}:6379"
     volumes:
       - redis-prod-data:/data
-      # 可选：自定义 Redis 配置文件
-      # - ./configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
-    
     networks:
-      - Memoflow-network
-    
-    # 健康检查
+      - dailyuse-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?set REDIS_PASSWORD}", "--no-auth-warning", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 5s
-    
-    # 资源限制
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
 
-  # ===========================================================================
-  # 应用层 - API 后端服务
-  # ===========================================================================
-  # 功能: 
-  #   - RESTful API 接口（Express.js）
-  #   - 业务逻辑处理
-  #   - 数据库操作（Prisma ORM）
-  #   - 定时任务调度
-  # 镜像: docker.io/memoflow/Memoflow-api:v1.0.0（已预构建并推送）
-  # 端口: 3000（内网）+ Nginx Proxy Manager 反向代理（公网 HTTPS）
-  # ===========================================================================
-  api:
-    # 使用预构建的镜像（而非本地 build）
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-Memoflow}/Memoflow-api:${API_TAG:-v1.0.6}
-    container_name: Memoflow-prod-api
-    restart: always
-    
-    # 健康检查 - 使用 K8s 标准路径 /healthz
+  ai-service:
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-ai-service:${AI_SERVICE_TAG:-v0.3.0-prod}
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: dailyuse-ai-service
+      APP_VERSION: ${APP_VERSION:-0.3.0}
+      SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      REQUEST_TIMEOUT_SECONDS: ${AI_SERVICE_REQUEST_TIMEOUT_SECONDS:-60}
+      CONNECT_TIMEOUT_SECONDS: ${AI_SERVICE_CONNECT_TIMEOUT_SECONDS:-10}
+      INTERNAL_REQUEST_MAX_SKEW_SECONDS: ${INTERNAL_REQUEST_MAX_SKEW_SECONDS:-300}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
+      DEV_BYPASS_AUTH: ${DEV_BYPASS_AUTH:-false}
+      AI_SERVICE_EVAL_PROVIDER: ${AI_SERVICE_EVAL_PROVIDER:-}
+      AI_SERVICE_EVAL_MODEL: ${AI_SERVICE_EVAL_MODEL:-}
+      AI_SERVICE_EVAL_API_KEY: ${AI_SERVICE_EVAL_API_KEY:-}
+      AI_SERVICE_EVAL_BASE_URL: ${AI_SERVICE_EVAL_BASE_URL:-}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${AI_SERVICE_HOST_PORT:-8100}:8100"
+    networks:
+      - dailyuse-network
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/healthz', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8100/healthz').status == 200 else 1)"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    
-    # 环境变量配置
-    environment:
-      # ===== 应用基础配置 =====
-      NODE_ENV: production
-      LOG_LEVEL: ${LOG_LEVEL:-info}              # 日志级别: debug | info | warn | error
-      API_PORT: 3000
-      API_HOST: 0.0.0.0                          # 监听所有网卡（容器内部）
-      
-      # ===== 数据库连接（分解配置 - Docker 最佳实践） =====
-      # 应用会自动从这些变量拼接成 DATABASE_URL
-      # 格式: postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
-      # ⚠️ 重要：必须与 postgres 服务的 POSTGRES_USER 一致！
-      DB_HOST: postgres                          # Docker 网络中的服务名
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:?请在.env中设置数据库名}
-      DB_USER: ${DB_USER:?请在.env中设置数据库用户}        # ⚠️ 必须与 postgres 服务的 POSTGRES_USER 一致
-      DB_PASSWORD: ${DB_PASSWORD:?请在.env中设置数据库密码}
-      
-      # ⚠️ CRITICAL: 显式设置 DATABASE_URL 供 Prisma CLI 命令使用
-      # ⚠️ 重要：DATABASE_URL 必须在 .env 文件中预先构造（密码需 URL 编码）
-      # 避免在这里做变量替换，因为特殊字符(/, =, @等)会破坏 URL 解析
-      # 正确的密码格式：QoebYoIhEQOQGuNq9YHJbZebpfJSR5dMxEN%2FD36GdYA%3D (/ = %2F, = = %3D)
-      DATABASE_URL: ${DATABASE_URL:?请在.env中设置DATABASE_URL}
-      
-      # ===== Redis 连接 =====      # 应用会自动从这些变量拼接成 REDIS_URL
-      # ⚠️ 重要：必须与 redis 服务的 requirepass 一致！      REDIS_HOST: redis                          # Docker 网络中的服务名
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:?请在.env.production.local中设置Redis密码}
-      REDIS_DB: 0
-      
-      # ===== JWT 认证配置 =====
-      JWT_SECRET: ${JWT_SECRET:?必须在.env或.env.production.local中设置}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
-      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-${JWT_SECRET}}
-      
-      # ===== CORS 配置 =====
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}                            # 允许的前端域名（生产环境应设置具体域名）
-      
-      # ===== 文件上传配置 =====
-      UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-10485760}             # 最大上传大小 (10MB)
-      
-      # ===== 邮件服务配置（可选）=====
-      # SMTP_HOST: ${SMTP_HOST}
-      # SMTP_PORT: ${SMTP_PORT:-587}
-      # SMTP_USER: ${SMTP_USER}
-      # SMTP_PASS: ${SMTP_PASS}
-      
-      # ===== 第三方服务（可选）=====
-      # OPENAI_API_KEY: ${OPENAI_API_KEY}                       # AI 功能
-      # ALIYUN_ACCESS_KEY: ${ALIYUN_ACCESS_KEY}                 # 阿里云 OSS
-    
-    # 端口映射 - API 接口端口（建议通过 Nginx Proxy Manager 反向代理）
-    ports:
-      - "${API_PORT:-3000}:3000"
-    
-    # 依赖服务 - 等待数据库和 Redis 健康后再启动
+      start_period: 20s
+
+  api:
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-api:${API_TAG:-v0.3.0-prod}
+    restart: unless-stopped
+    init: true
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    
-    networks:
-      - Memoflow-network
-    
-    # 可选：挂载日志目录、上传文件目录等
-    volumes:
-      - api-logs:/app/logs                     # API 日志持久化
-      - api-uploads:/app/uploads               # 用户上传文件
-      # 如果需要热重载配置文件（不推荐生产环境）:
-      # - ./apps/api/.env:/app/.env:ro
-    
-    # 资源限制
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 768M
-        reservations:
-          cpus: '0.5'
-          memory: 384M
-
-  # ===========================================================================
-  # 应用层 - Web 前端服务
-  # ===========================================================================
-  # 功能: 
-  #   - 静态资源托管（Nginx）
-  #   - SPA 路由配置（Vue Router）
-  #   - 反向代理到 API（可选，建议用 NPM 统一管理）
-  # 镜像: docker.io/memoflow/Memoflow-web:v1.0.0（已预构建并推送）
-  # 端口: 80（内网）+ Nginx Proxy Manager 反向代理（公网 HTTPS）
-  # ===========================================================================
-  web:
-    # 使用预构建的镜像
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-Memoflow}/Memoflow-web:${WEB_TAG:-v1.0.1}
-    container_name: Memoflow-prod-web
-    restart: always
-    
-    # 端口映射 - Web 前端端口（建议通过 Nginx Proxy Manager 反向代理）
-    # 如果使用 NPM，可以改为非标准端口（如 8080）避免冲突
+      ai-service:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-DailyUse}
+      APP_VERSION: ${APP_VERSION:-0.3.0}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
+      API_PORT: 3000
+      API_HOST: 0.0.0.0
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?set DB_NAME}
+      DB_USER: ${DB_USER:?set DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB:-0}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-10485760}
+      ENABLE_DAILY_ANALYSIS: ${ENABLE_DAILY_ANALYSIS:-true}
+      USE_PRIORITY_QUEUE_SCHEDULER: ${USE_PRIORITY_QUEUE_SCHEDULER:-true}
+      AI_PROVIDER_ENCRYPTION_KEY: ${AI_PROVIDER_ENCRYPTION_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      QI_NIU_YUN_API_KEY: ${QI_NIU_YUN_API_KEY:-}
+      QI_NIU_YUN_BASE_URL: ${QI_NIU_YUN_BASE_URL:-}
+      QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
+      AI_SERVICE_BASE_URL: http://ai-service:8100
+      AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
+      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-dailyuse-api}
+      AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
+      POWERSYNC_URL: ${POWERSYNC_URL:-}
+      POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:-}
+      POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:-}
+      POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:-powersync-key}
+      TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - "${WEB_PORT:-8080}:80"
-    
-    # 依赖 API 服务（确保 API 先启动）
+      - "${API_HOST_PORT:-3000}:3000"
+    volumes:
+      - api-logs:/app/apps/api/logs
+      - api-uploads:/app/uploads
+      - repository-storage:/tmp/dailyuse-repository-storage
+    networks:
+      - dailyuse-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('node:http').get('http://127.0.0.1:3000/healthz', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  web:
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-web:${WEB_TAG:-v0.3.0-prod}
+    restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
-    
+    ports:
+      - "${WEB_HOST_PORT:-8080}:80"
     networks:
-      - Memoflow-network
-    
-    # 环境变量（编译时已固定，此处主要用于文档说明）
-    # 注意：Vite 构建的 SPA 在编译时已将 API 地址打包进 JS，
-    #       如需动态配置，需使用 window.env 或 runtime config 方案
-    environment:
-      # 如果前端需要运行时配置 API 地址，可以在 Nginx 中注入 JS 配置文件
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
-    
-    # 可选：挂载自定义 Nginx 配置（如果需要覆盖镜像内的配置）
-    # volumes:
-    #   - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    
-    # 健康检查
+      - dailyuse-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
-    
-    # 资源限制（静态资源服务占用资源较少）
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
 
-# =============================================================================
-# 网络配置
-# =============================================================================
-# 创建一个隔离的内部网络，所有容器在此网络内通过服务名互相通信
-# 例如：API 通过 postgres:5432 访问数据库，而非 IP 地址
-# =============================================================================
 networks:
-  Memoflow-network:
+  dailyuse-network:
     driver: bridge
-    # 可选：自定义网络配置
-    # ipam:
-    #   config:
-    #     - subnet: 172.20.0.0/16
 
-# =============================================================================
-# 数据卷配置
-# =============================================================================
-# 持久化存储，确保容器删除后数据不丢失
-# 备份建议：定期使用 docker volume 或 rsync 备份这些卷
-# =============================================================================
 volumes:
-  # PostgreSQL 数据存储
   postgres-prod-data:
-    driver: local
-    # 可选：使用宿主机目录（方便备份）
-    # driver_opts:
-    #   type: none
-    #   o: bind
-    #   device: /data/memoflow/postgres
-  
-  # Redis 数据存储（AOF 持久化文件）
   redis-prod-data:
-    driver: local
-  
-  # API 日志文件
   api-logs:
-    driver: local
-  
-  # 用户上传文件（头像、附件等）
   api-uploads:
-    driver: local
-
-# =============================================================================
-# 运维命令速查
-# =============================================================================
-# 启动所有服务:
-#   docker compose -f docker-compose.prod.yml --env-file .env up -d
-#
-# 查看服务状态:
-#   docker compose -f docker-compose.prod.yml ps
-#
-# 查看实时日志:
-#   docker compose -f docker-compose.prod.yml logs -f
-#   docker compose -f docker-compose.prod.yml logs -f api   # 仅查看 API 日志
-#
-# 重启某个服务:
-#   docker compose -f docker-compose.prod.yml restart web
-#
-# 更新镜像并重启:
-#   docker compose -f docker-compose.prod.yml pull
-#   docker compose -f docker-compose.prod.yml up -d
-#
-# 停止所有服务:
-#   docker compose -f docker-compose.prod.yml down
-#
-# 停止并删除数据卷（危险操作！会删除所有数据）:
-#   docker compose -f docker-compose.prod.yml down -v
-#
-# 进入容器内部调试:
-#   docker exec -it Memoflow-prod-api sh
-#   docker exec -it Memoflow-prod-db psql -U Memoflow -d Memoflow
-#
-# 备份数据库:
-#   docker exec Memoflow-prod-db pg_dump -U Memoflow Memoflow > backup.sql
-#
-# 恢复数据库:
-#   docker exec -i Memoflow-prod-db psql -U Memoflow Memoflow < backup.sql
-# =============================================================================
-
+  repository-storage:

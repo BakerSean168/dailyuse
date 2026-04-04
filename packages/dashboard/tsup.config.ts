@@ -1,4 +1,4 @@
-import { baseLibraryConfig } from '../../tools/build/tsup.base.config';
+import { baseLibraryConfig } from '../../tools/build/tsup.base.config.ts';
 
 const config = baseLibraryConfig('@dailyuse/dashboard');
 
