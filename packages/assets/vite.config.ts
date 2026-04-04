@@ -44,6 +44,7 @@ function copyAssetsPlugin() {
 }
 
 export default defineConfig({
+  assetsInclude: ['**/*.icns'],
   plugins: [
     dts({
       include: ['src/**/*.ts'],

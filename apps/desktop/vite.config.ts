@@ -116,6 +116,7 @@ export default defineConfig(({ command, mode }) => {
   ];
 
   return {
+    assetsInclude: ['**/*.icns'],
     resolve: {
       conditions: ['import', 'module', 'default'],
       alias: rendererAliases,

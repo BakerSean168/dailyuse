@@ -4,6 +4,7 @@ import { spawn, spawnSync } from 'node:child_process';
 
 const workspaceRoot = resolve(process.cwd(), '../..');
 const apiRoot = process.cwd();
+const databaseRoot = resolve(workspaceRoot, 'packages/database');
 const migrationsDir = resolve(workspaceRoot, 'packages/database/prisma/migrations');
 
 function resolveDatabaseUrl() {
@@ -52,10 +53,14 @@ async function main() {
 
   console.log('[startup] Initializing database schema...');
   if (hasMigrations()) {
-    run('pnpm', ['nx', 'run', 'database:prisma-migrate-deploy'], workspaceRoot);
+    run(
+      'pnpm',
+      ['exec', 'prisma', 'migrate', 'deploy', '--config', './prisma/prisma.config.ts'],
+      databaseRoot,
+    );
   } else {
     console.log('[startup] No Prisma migrations found. Falling back to prisma db push.');
-    run('pnpm', ['nx', 'run', 'database:prisma-push'], workspaceRoot);
+    run('pnpm', ['exec', 'prisma', 'db', 'push', '--config', './prisma/prisma.config.ts'], databaseRoot);
   }
 
   console.log('[startup] Starting API process...');

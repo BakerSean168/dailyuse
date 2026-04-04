@@ -28,6 +28,11 @@ declare module '*.ico' {
   export default src;
 }
 
+declare module '*.icns' {
+  const src: string;
+  export default src;
+}
+
 declare module '*.mp3' {
   const src: string;
   export default src;

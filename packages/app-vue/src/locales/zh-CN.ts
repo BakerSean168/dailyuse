@@ -788,7 +788,7 @@ export default {
   auth: {
     page: {
       description: '登录你的账户以继续使用工作区',
-      emailPlaceholder: 'name@example.com',
+      emailPlaceholder: "name{'@'}example.com",
       or: '或者',
       guestMode: '访客模式',
       guestLoading: '进入访客模式...',

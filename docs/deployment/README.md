@@ -107,6 +107,13 @@ pwsh -File ./tools/docker/publish-images.ps1 -EnvFile .env.production.local -Pus
 5. 推送 `prod-latest`
 6. 回写 `.env.production.local` 中的 `API_TAG`、`WEB_TAG`、`AI_SERVICE_TAG`
 
+默认会优先使用 Nx 缓存。如果需要强制跳过 Nx 缓存重新构建：
+
+```powershell
+pnpm docker:prod:build:rebuild
+pnpm docker:prod:push:rebuild
+```
+
 如果需要手工指定 tag：
 
 ```powershell
@@ -120,6 +127,49 @@ pwsh -File ./tools/docker/publish-images.ps1 `
 
 ```powershell
 pnpm docker:prod:build
+```
+
+## 本地 Docker 验证
+
+本地从当前源码直接启动容器时，不要直接使用 `docker-compose.prod.yml` 单文件，因为它默认面向“拉取远端镜像”。本仓库现在提供了本地 override 文件：
+
+- `docker-compose.prod.yml`
+- `docker-compose.local.yml`
+
+本地验证命令：
+
+```powershell
+pnpm docker:local:up
+```
+
+等价命令：
+
+```powershell
+docker compose -f docker-compose.prod.yml -f docker-compose.local.yml --env-file .env.production.local up --build -d
+```
+
+说明：
+
+- `pnpm docker:local:up` 现在通过 `tools/docker/local-compose.mjs` 执行本地验证流程。
+- 默认会先在宿主机执行带缓存的 Nx 构建：
+  - `pnpm nx build api`
+  - `pnpm nx build web --configuration=production`
+- 随后执行 `docker compose ... up --build -d`，让 Docker 复用层缓存并把最新宿主机产物打进本地镜像。
+- `docker-compose.local.yml` 会把业务镜像切到本地 tag，避免去远端仓库拉取 `api`、`web`、`ai-service`。
+- `postgres` 和 `redis` 仍然使用官方基础镜像。
+- `.env.production.local` 只用于 compose 注入运行时环境变量，不会被复制进镜像层。
+- 如果 `.env.production.local` 没有设置 `SERVICE_SECRET`，本地脚本会自动注入一个仅用于本地验证的默认值；正式服务器部署仍然必须显式配置真实 `SERVICE_SECRET`。
+- 如果需要完全绕过 Nx 缓存并强制 Docker 无缓存重建，请使用 `pnpm docker:local:rebuild`。
+
+停止与查看日志：
+
+```powershell
+pnpm docker:local:build-prep
+pnpm docker:local:build-prep:rebuild
+pnpm docker:local:ps
+pnpm docker:local:logs
+pnpm docker:local:down
+pnpm docker:local:rebuild
 ```
 
 ## 服务器部署

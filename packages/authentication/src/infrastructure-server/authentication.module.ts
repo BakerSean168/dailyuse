@@ -19,6 +19,7 @@ import type { IPasswordHasher } from '../domain-shared';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
+import { ResultCode } from '@dailyuse/contracts/result';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
@@ -261,7 +262,14 @@ export function createAuthenticationModule(
         return ok(await useCases.register.execute(data, cx));
       } catch (err) {
         if (err instanceof UserAlreadyExistsError) {
-          return fail({ code: err.code, message: err.message, context: err.context });
+          return fail({
+            code: ResultCode.CONFLICT,
+            message: err.message,
+            context: {
+              ...(err.context ?? {}),
+              domainCode: err.code,
+            },
+          });
         }
         throw err;
       }

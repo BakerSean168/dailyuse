@@ -72,8 +72,8 @@ export default defineConfig({
     'bree',
   ],
 
-  // Watch mode in development
-  watch: process.env.NODE_ENV === 'development',
+  // Build targets must be one-shot and must not inherit watch mode from ambient NODE_ENV.
+  watch: false,
 
   // Success message
   onSuccess: async () => {

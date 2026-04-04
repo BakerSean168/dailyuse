@@ -76,6 +76,7 @@ export default defineConfig(({ mode, command }) => {
   const proxyTarget = env.PROXY_TARGET_URL || env.API_URL || 'http://localhost:3000';
 
   return {
+    assetsInclude: ['**/*.icns'],
     worker: {
       format: 'es',
     },
@@ -145,6 +146,7 @@ export default defineConfig(({ mode, command }) => {
     build: {
       target: 'esnext',
       sourcemap: isDev,
+      emptyOutDir: true,
     },
     test: {
       globals: true,

@@ -1,0 +1,27 @@
+services:
+  ai-service:
+    image: dailyuse-ai-service:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-service
+      args:
+        VERSION: local
+
+  api:
+    image: dailyuse-api:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      args:
+        VERSION: local
+
+  web:
+    image: dailyuse-web:local
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        VERSION: local

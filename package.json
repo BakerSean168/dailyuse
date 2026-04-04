@@ -56,8 +56,17 @@
     "docker:test:up": "docker compose --profile test up -d",
     "docker:test:down": "docker compose --profile test down",
     "docker:test:reset": "docker compose --profile test down && docker compose --profile test up -d",
+    "docker:local:build-prep": "node ./tools/docker/local-compose.mjs build-prep",
+    "docker:local:build-prep:rebuild": "node ./tools/docker/local-compose.mjs build-prep:rebuild",
+    "docker:local:up": "node ./tools/docker/local-compose.mjs up",
+    "docker:local:rebuild": "node ./tools/docker/local-compose.mjs rebuild",
+    "docker:local:down": "node ./tools/docker/local-compose.mjs down",
+    "docker:local:ps": "node ./tools/docker/local-compose.mjs ps",
+    "docker:local:logs": "node ./tools/docker/local-compose.mjs logs",
     "docker:prod:build": "pwsh -File ./tools/docker/publish-images.ps1",
+    "docker:prod:build:rebuild": "pwsh -File ./tools/docker/publish-images.ps1 -SkipNxCache",
     "docker:prod:push": "pwsh -File ./tools/docker/publish-images.ps1 -Push",
+    "docker:prod:push:rebuild": "pwsh -File ./tools/docker/publish-images.ps1 -Push -SkipNxCache",
     "// ========== Code Quality ==========": "",
     "lint": "nx run-many -t lint --all --parallel=5",
     "lint:fix": "nx run-many -t lint --all --parallel=5 --fix",
@@ -196,7 +205,6 @@
       "@swc/core",
       "electron-winstaller",
       "esbuild",
-      "argon2",
       "lzma-native",
       "maplibre-gl",
       "nx",
@@ -204,6 +212,7 @@
       "vue-demi"
     ],
     "onlyBuiltDependencies": [
+      "argon2",
       "better-sqlite3",
       "electron",
       "msw"

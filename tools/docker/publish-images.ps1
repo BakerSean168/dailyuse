@@ -2,7 +2,8 @@ param(
   [string]$EnvFile = ".env.production.local",
   [string]$Tag,
   [switch]$Push,
-  [switch]$SkipEnvUpdate
+  [switch]$SkipEnvUpdate,
+  [switch]$SkipNxCache
 )
 
 $ErrorActionPreference = "Stop"
@@ -84,10 +85,21 @@ function Invoke-WorkspaceBuild {
   param([string]$Command)
 
   Write-Host ">> $Command"
-  & pwsh -Command $Command
+  $prefixedCommand = "`$env:NX_DAEMON='false'; `$env:NX_ISOLATE_PLUGINS='false'; $Command"
+  & pwsh -Command $prefixedCommand
   if ($LASTEXITCODE -ne 0) {
     throw "workspace build failed: $Command"
   }
+}
+
+function Get-NxBuildCommand {
+  param([string]$BaseCommand)
+
+  if ($SkipNxCache) {
+    return "$BaseCommand --skipNxCache"
+  }
+
+  return $BaseCommand
 }
 
 function Invoke-DockerPush {
@@ -172,8 +184,8 @@ $images = @(
   }
 )
 
-Invoke-WorkspaceBuild -Command "pnpm nx build api"
-Invoke-WorkspaceBuild -Command "pnpm nx build web --configuration=production"
+Invoke-WorkspaceBuild -Command (Get-NxBuildCommand -BaseCommand "pnpm nx build api")
+Invoke-WorkspaceBuild -Command (Get-NxBuildCommand -BaseCommand "pnpm nx build web --configuration=production")
 
 foreach ($image in $images) {
   $buildArgs = @{}

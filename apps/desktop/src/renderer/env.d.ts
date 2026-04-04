@@ -7,6 +7,11 @@ declare module '*.vue' {
   export default component;
 }
 
+declare module '*.icns' {
+  const src: string;
+  export default src;
+}
+
 interface ElectronAPI {
   invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
   on: (channel: string, callback: (...args: unknown[]) => void) => void;

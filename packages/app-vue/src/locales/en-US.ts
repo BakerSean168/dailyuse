@@ -816,7 +816,7 @@ export default {
   auth: {
     page: {
       description: 'Sign in to continue into your workspace',
-      emailPlaceholder: 'name@example.com',
+      emailPlaceholder: "name{'@'}example.com",
       or: 'or',
       guestMode: 'Guest Mode',
       guestLoading: 'Starting guest mode...',
