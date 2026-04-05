@@ -69,8 +69,8 @@ export function useFolderNavigation(repositoryId?: string) {
 
         // Extract top-level folders from tree (folders have simpler structure)
         const topFolders: FolderClientDTO[] = treeResult.data.tree
-          .filter((node): node is TreeNode & { type: 'folder' } => node.type === 'folder')
-          .map((node) => ({
+          .filter((node: TreeNode): node is TreeNode & { type: 'folder' } => node.type === 'folder')
+          .map((node: TreeNode & { type: 'folder' }) => ({
             id: node.id,
             repositoryId: node.repositoryId,
             parentId: node.parentId,
@@ -95,7 +95,9 @@ export function useFolderNavigation(repositoryId?: string) {
 
         // Use actual resource list for root-level files (folderId is null)
         if (resourcesResult.ok) {
-          const rootResources = resourcesResult.data.filter((r) => r.folderId === null);
+          const rootResources = resourcesResult.data.filter(
+            (resource: ResourceClientDTO) => resource.folderId === null,
+          );
           setResources(rootResources);
         } else {
           setResources([]);
@@ -127,7 +129,9 @@ export function useFolderNavigation(repositoryId?: string) {
       if (folderId === null) {
         setBreadcrumbs([{ id: null, name: 'Root' }]);
       } else {
-        const existingIndex = breadcrumbs.findIndex((b) => b.id === folderId);
+        const existingIndex = breadcrumbs.findIndex(
+          (breadcrumb: FolderBreadcrumb) => breadcrumb.id === folderId,
+        );
         if (existingIndex >= 0) {
           setBreadcrumbs(breadcrumbs.slice(0, existingIndex + 1));
         } else {
@@ -312,24 +316,24 @@ export function useFolderNavigation(repositoryId?: string) {
 
   // Convert to unified items for simpler UI rendering
   const items: FolderNavigationItem[] = [
-    ...folders.map((f) => ({
-      id: f.id,
-      name: f.name,
+    ...folders.map((folder: FolderClientDTO) => ({
+      id: folder.id,
+      name: folder.name,
       type: 'folder' as const,
-      path: f.path,
-      parentId: f.parentId,
-      hasChildren: f.hasChildren,
-      updatedAt: f.updatedAt,
+      path: folder.path,
+      parentId: folder.parentId,
+      hasChildren: folder.hasChildren,
+      updatedAt: folder.updatedAt,
     })),
-    ...resources.map((r) => ({
-      id: String(r.id),
-      name: r.name,
+    ...resources.map((resource: ResourceClientDTO) => ({
+      id: String(resource.id),
+      name: resource.name,
       type: 'file' as const,
-      path: r.path,
-      parentId: r.folderId ? String(r.folderId) : null,
-      size: r.size,
-      extension: r.extension,
-      updatedAt: r.updatedAt,
+      path: resource.path,
+      parentId: resource.folderId ? String(resource.folderId) : null,
+      size: resource.size,
+      extension: resource.extension,
+      updatedAt: resource.updatedAt,
     })),
   ];
 

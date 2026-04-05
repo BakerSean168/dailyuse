@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import type { KeyResult } from '@dailyuse/goal/domain-client';
+
 import { useAppSession } from './use-app-session';
 import { mapGoalDetail, type GoalDetail } from './use-goals';
 import { useGoalService } from './use-goal-service';
@@ -58,7 +60,13 @@ export function useGoalDetail(goalId: string | null) {
         return;
       }
 
-      setGoal(mapGoalDetail(goalResult.data, keyResultResult.data.keyResults.map((item) => item.toDTO()), reviewResult.data.reviews.length));
+      setGoal(
+        mapGoalDetail(
+          goalResult.data,
+          keyResultResult.data.keyResults.map((item: KeyResult) => item.toDTO()),
+          reviewResult.data.reviews.length,
+        ),
+      );
       setIsLoading(false);
     }
 
@@ -102,7 +110,13 @@ export function useGoalDetail(goalId: string | null) {
       return;
     }
 
-    setGoal(mapGoalDetail(goalResult.data, keyResultResult.data.keyResults.map((item) => item.toDTO()), reviewResult.data.reviews.length));
+    setGoal(
+      mapGoalDetail(
+        goalResult.data,
+        keyResultResult.data.keyResults.map((item: KeyResult) => item.toDTO()),
+        reviewResult.data.reviews.length,
+      ),
+    );
     setError(null);
     setIsLoading(false);
   }

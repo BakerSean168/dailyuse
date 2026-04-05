@@ -1,21 +1,8 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "strict": true,
-    "baseUrl": "../..",
-    "paths": {
-      "@dailyuse/ai": ["packages/ai/src/index.ts"],
-      "@dailyuse/ai/*": ["packages/ai/src/*/index.ts"],
-      "@dailyuse/ui-react-native": ["packages/ui-react-native/src/index.ts"],
-      "@dailyuse/authentication": ["packages/authentication/src/index.ts"],
-      "@dailyuse/authentication/*": ["packages/authentication/src/*/index.ts"],
-      "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
-      "@dailyuse/contracts/*": [
-        "packages/contracts/src/modules/*/index.ts",
-        "packages/contracts/src/*/index.ts"
-      ],
-      "@dailyuse/http-client": ["packages/http-client/src/index.ts"]
-    }
+    "jsx": "react-native"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { GoalReviewClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalReview } from '@dailyuse/goal/domain-client';
 
 import { useAppSession } from './use-app-session';
 import { useGoalService } from './use-goal-service';
@@ -60,8 +61,8 @@ export function useGoalReviews(goalId: string | null) {
     }
 
     const mapped = result.data.reviews
-      .map((review) => mapReview(review.toDTO()))
-      .sort((left, right) => right.reviewedAt - left.reviewedAt);
+      .map((review: GoalReview) => mapReview(review.toDTO()))
+      .sort((left: GoalReviewSummary, right: GoalReviewSummary) => right.reviewedAt - left.reviewedAt);
     setReviews(mapped);
     setIsLoading(false);
   }
