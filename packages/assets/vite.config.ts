@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+/// <reference types="vitest" />
+import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'fs';
 import dts from 'vite-plugin-dts';
@@ -45,7 +46,21 @@ function copyAssetsPlugin() {
 
 export default defineConfig({
   assetsInclude: ['**/*.icns'],
+  resolve: {
+    alias: process.env.VITEST ? [
+      { find: /\.icns$/, replacement: resolve(__dirname, 'src/images/logos/Memoflow.svg') }
+    ] : []
+  },
   plugins: [
+    {
+      name: 'mock-icns-for-vitest',
+      enforce: 'pre',
+      load(id) {
+        if (id.includes('.icns')) {
+          return `export default "/mock.icns";`;
+        }
+      }
+    },
     dts({
       include: ['src/**/*.ts'],
       outDir: 'dist',
@@ -65,7 +80,7 @@ export default defineConfig({
       fileName: (format, entryName) => `${entryName}.js`,
     },
     outDir: 'dist',
-    emptyDirOutDir: true,
+    emptyOutDir: true,
     // 复制静态资源
     copyPublicDir: false,
     rollupOptions: {
@@ -77,4 +92,13 @@ export default defineConfig({
   },
   // 确保资源 URL 正确处理
   base: './',
+  test: {
+    environment: 'node',
+    // 强制 Vite 将其视作 external asset 或者直接 mock
+    server: {
+      deps: {
+        inline: [/\.icns$/],
+      },
+    },
+  },
 });
