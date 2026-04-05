@@ -4,6 +4,8 @@
     "strict": true,
     "baseUrl": "../..",
     "paths": {
+      "@dailyuse/ai": ["packages/ai/src/index.ts"],
+      "@dailyuse/ai/*": ["packages/ai/src/*/index.ts"],
       "@dailyuse/ui-react-native": ["packages/ui-react-native/src/index.ts"],
       "@dailyuse/authentication": ["packages/authentication/src/index.ts"],
       "@dailyuse/authentication/*": ["packages/authentication/src/*/index.ts"],

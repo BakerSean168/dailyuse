@@ -11,7 +11,13 @@ import { errorCodeToHttpStatus, extractStructuredResultError } from '@dailyuse/c
 const logger = createLogger('ErrorHandler');
 
 function isCorsRejectionError(err: unknown): err is { message: string } {
-  return typeof err === 'object' && err !== null && err['message'] === 'Not allowed by CORS';
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'message' in err &&
+    typeof err.message === 'string' &&
+    err.message === 'Not allowed by CORS'
+  );
 }
 
 /**

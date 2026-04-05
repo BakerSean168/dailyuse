@@ -34,6 +34,13 @@
       "options": {
         "lintFilePatterns": ["packages/ui-vue-shadcn/**/*.{ts,tsx}"]
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vue-tsc --noEmit -p tsconfig.typecheck.json",
+        "cwd": "packages/ui-vue-shadcn"
+      }
     }
   }
 }

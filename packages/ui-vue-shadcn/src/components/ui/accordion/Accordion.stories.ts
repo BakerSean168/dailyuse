@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from '.';
 
-const meta = {
+const meta: Meta<typeof Accordion> = {
   title: 'Atoms/Accordion',
   component: Accordion,
   tags: ['autodocs'],
-} satisfies Meta<typeof Accordion>;
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Accordion>;
 
 export const Single: Story = {
   render: () => ({

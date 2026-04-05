@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Calendar } from '.';
 
-const meta = {
+const meta: Meta<typeof Calendar> = {
   title: 'Atoms/Calendar',
   component: Calendar,
   tags: ['autodocs'],
-} satisfies Meta<typeof Calendar>;
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Calendar>;
 
 export const Default: Story = {
   render: () => ({

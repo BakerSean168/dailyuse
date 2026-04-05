@@ -160,13 +160,11 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      let conversation = activeConversation;
-      if (!conversation) {
-        const created = await service.createConversation({
+      const conversation =
+        activeConversation ??
+        (await service.createConversation({
           name: content.slice(0, 40) || 'New conversation',
-        });
-        conversation = created;
-      }
+        }));
 
       const request: SendMessageReq = {
         conversationId: conversation.id as SendMessageReq['conversationId'],
@@ -208,12 +206,14 @@ export function useAIWorkspace() {
           formattedTime: formatMessageTime(timestamp),
         };
 
-        setActiveConversation({
+        const optimisticConversation: AIConversationClientDTO = {
           ...conversation,
           lastMessageAt: timestamp,
           messageCount: conversation.messageCount + 2,
           messages: [...(conversation.messages ?? []), userMessage, assistantMessage],
-        });
+        };
+
+        setActiveConversation(optimisticConversation);
         setIsStreaming(true);
 
         await service.streamMessage(request, {

@@ -10,6 +10,12 @@
       "@/assets/*": [
         "apps/mobile/assets/*"
       ],
+      "@dailyuse/ai": [
+        "packages/ai/src/index.ts"
+      ],
+      "@dailyuse/ai/*": [
+        "packages/ai/src/*/index.ts"
+      ],
       "@dailyuse/app-react": [
         "packages/app-react/src/index.ts"
       ],

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { AlertDialogContentEmits, AlertDialogContentProps } from 'radix-vue'
-import type { HTMLAttributes } from 'vue'
+import type { Component, HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
 import {
-  AlertDialogContent,
+  AlertDialogContent as AlertDialogContentPrimitive,
 
   AlertDialogOverlay,
   AlertDialogPortal,
@@ -21,6 +21,7 @@ const delegatedProps = computed(() => {
 })
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const AlertDialogContent = AlertDialogContentPrimitive as Component
 </script>
 
 <template>
