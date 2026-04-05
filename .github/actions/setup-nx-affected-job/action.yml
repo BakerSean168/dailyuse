@@ -54,7 +54,8 @@ runs:
           fi
         else
           NX_BASE_VALUE="${{ github.event.before }}"
-          if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
+          if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ] || ! git rev-parse --verify "$NX_BASE_VALUE^{commit}" >/dev/null 2>&1; then
+            echo "Warning: NX_BASE_VALUE ($NX_BASE_VALUE) is empty, zero, or unreachable (e.g. force push). Falling back to HEAD~1"
             NX_BASE_VALUE=$(git rev-parse HEAD~1)
           fi
         fi
