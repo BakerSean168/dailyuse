@@ -332,6 +332,7 @@ function createPackageResolveAliases(
 }
 
 export default defineConfig({
+  assetsInclude: ['**/*.icns'],
   test: {
     // Global configuration that affects all projects
     // Coverage is configured at workspace level
