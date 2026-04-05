@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.4.0](https://github.com/BakerSean168/dailyuse/compare/v0.3.0...v0.4.0) (2026-04-05)
+
+
+### Features
+
+* add user data path utilities and enhance logging ([cdba01b](https://github.com/BakerSean168/dailyuse/commit/cdba01b94c17c4f141061226cda724663aabeedf))
+* deploy ([ca80405](https://github.com/BakerSean168/dailyuse/commit/ca80405c1f7ea9742ef12cccc81be496e6727039))
+* enhance page navigation with action drawers and improve UI consistency ([93dca44](https://github.com/BakerSean168/dailyuse/commit/93dca44f0df133d4732edfe088a2940ef0825aee))
+* enhance test database configuration with environment variables ([09836a1](https://github.com/BakerSean168/dailyuse/commit/09836a14b16dbf9e185dc1e4c7366598bde2912f))
+* implement centralized error handling middleware, Docker CI/CD pipeline, and IPC result adapters for cross-platform consistency. ([8a7c5e3](https://github.com/BakerSean168/dailyuse/commit/8a7c5e3bea046ea34c3f44db23e6d01626a8b944))
+* implement global error middleware, add AI workspace hook, and configure UI/mobile project structures ([cad47f1](https://github.com/BakerSean168/dailyuse/commit/cad47f16880434fa3e1db00d16d9683937854163))
+* 任务模板依赖图和依赖相关属性增强 ([79a0ee1](https://github.com/BakerSean168/dailyuse/commit/79a0ee1eda18eeabf0a1901517f7c5ef237e4254))
+* 初始化react-native，手机端 ([c797cbd](https://github.com/BakerSean168/dailyuse/commit/c797cbd4271dbba1ee5628367dc0765a4f4b7525))
+* 初步实现 mobile 端 ([4c27377](https://github.com/BakerSean168/dailyuse/commit/4c27377ad5d4ccf3ceeaf351ce4730f38868515f))
+
+
+### Bug Fixes
+
+* action1 ([bf7906b](https://github.com/BakerSean168/dailyuse/commit/bf7906ba03e900ddf2b4798219a829826fe27141))
+* action2 ([96fb889](https://github.com/BakerSean168/dailyuse/commit/96fb8890ea5c99bcc970c7a2bc99baca0ba8e2d7))
+* action3 ([a65596e](https://github.com/BakerSean168/dailyuse/commit/a65596ee1acc053f92458bf4f28d3d8723be221b))
+* **ai:** normalize result errors and polish web chat workspace ([706ab26](https://github.com/BakerSean168/dailyuse/commit/706ab26c2f0dba4907203d06922613fc8f2aa1c1))
+* docker deploy fix ([02f0e70](https://github.com/BakerSean168/dailyuse/commit/02f0e70f9a81e5776d9eff52578ed6db3881b5db))
+* hardcode database credentials in test workflow for consistency ([3545c43](https://github.com/BakerSean168/dailyuse/commit/3545c43bfa4a957c5ee93d4a28ba5d054c4ff5d2))
+* taskId 问题 ([4eaf02a](https://github.com/BakerSean168/dailyuse/commit/4eaf02a638f1916700bb7ee5fa9d56d64b9fe516))
+* **ui-core:** use cryptographically secure randomness for passwords ([5dd7137](https://github.com/BakerSean168/dailyuse/commit/5dd713774fcb40d681e5a947ed10628f377896e2))
+* **ui-core:** use cryptographically secure randomness for passwords ([cde3118](https://github.com/BakerSean168/dailyuse/commit/cde31188535c3c3bc41309107ad10220e1c618da))
+* update lodash version and add assets dependency in pnpm-lock.yaml ([ce8b792](https://github.com/BakerSean168/dailyuse/commit/ce8b79281149d6d5ad0981da72ee3a2aaab6702e))
+* 修复冷启动后访客模式的 id 会重新生成而非 读取磁盘上已有 guest token 的问题 ([d05b8e2](https://github.com/BakerSean168/dailyuse/commit/d05b8e2e962bb73c4975a39ea1d912f5b726313c))
+* 修复图标路径错误导致托盘图片空白的问题 ([bb361b3](https://github.com/BakerSean168/dailyuse/commit/bb361b391bf850c96cf667687d2906895449774c))
+
+
+### Performance Improvements
+
+* uuid 库移除的锁文件更改 ([1d6bd6b](https://github.com/BakerSean168/dailyuse/commit/1d6bd6b6b6c30659369727e19fb698bee555d8d3))
+* 优化 uuid相关方法移除 uuid库 ， 使用 原生 crypto.randomUUID 的方法，并且统一工具函数，移除重复文件 ([ef60854](https://github.com/BakerSean168/dailyuse/commit/ef60854a15b66dabc4b5973e62f02f5f9c8dda5f))
+
 ## [0.3.0](https://github.com/BakerSean168/memoflow/compare/v0.2.0...v0.3.0) (2026-03-29)
 
 
@@ -360,5 +397,3 @@
 ### Miscellaneous Chores
 
 * release 0.0.1 ([014a43e](https://github.com/BakerSean168/memoflow/commit/014a43ee09b3cfa1931334ad22d4b819325c2a0e))
-
-
