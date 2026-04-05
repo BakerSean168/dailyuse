@@ -27,6 +27,7 @@
  */
 
 import {
+  extractStructuredResultError,
   type Result,
   type IpcResult,
   type ResultErrorDetail,
@@ -34,7 +35,6 @@ import {
   fail,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
-import { isDomainError } from '../errors/DomainError';
 
 // ============================================================================
 // Types
@@ -98,26 +98,22 @@ export function ipcAdapter<T>(
       const result = await controllerFn(args, context);
       return toIpcResult(result);
     } catch (err) {
-      if (isDomainError(err)) {
+      const structuredError = extractStructuredResultError(err);
+      if (structuredError) {
         return toIpcResult(
           fail({
-            code: err.code,
-            message: err.message,
-            context: err.context,
+            code: structuredError.code,
+            message: structuredError.message,
+            details: structuredError.details,
+            context: structuredError.context,
+            cause: structuredError.cause,
           }),
         );
       }
 
-      // Recognize DomainError (or any Error with a string `code`) and preserve code
-      const code =
-        err instanceof Error &&
-        'code' in err &&
-        typeof (err as Record<string, unknown>).code === 'string'
-          ? ((err as Record<string, unknown>).code as string)
-          : 'INTERNAL_ERROR';
       return toIpcResult(
         fail({
-          code,
+          code: 'INTERNAL_ERROR',
           message: err instanceof Error ? err.message : 'Unknown error',
         }),
       );
@@ -192,25 +188,22 @@ export function ipcAdapterWithValidation<TInput, TOutput>(
       const result = await controllerFn(parsed.data, context);
       return toIpcResult(result);
     } catch (err) {
-      if (isDomainError(err)) {
+      const structuredError = extractStructuredResultError(err);
+      if (structuredError) {
         return toIpcResult(
           fail({
-            code: err.code,
-            message: err.message,
-            context: err.context,
+            code: structuredError.code,
+            message: structuredError.message,
+            details: structuredError.details,
+            context: structuredError.context,
+            cause: structuredError.cause,
           }),
         );
       }
 
-      const code =
-        err instanceof Error &&
-        'code' in err &&
-        typeof (err as Record<string, unknown>).code === 'string'
-          ? ((err as Record<string, unknown>).code as string)
-          : 'INTERNAL_ERROR';
       return toIpcResult(
         fail({
-          code,
+          code: 'INTERNAL_ERROR',
           message: err instanceof Error ? err.message : 'Unknown error',
         }),
       );

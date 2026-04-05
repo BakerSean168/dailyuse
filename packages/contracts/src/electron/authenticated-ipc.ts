@@ -1,4 +1,4 @@
-import { fail, ok, type IpcResult } from '../result';
+import { extractStructuredResultError, fail, ok, type IpcResult } from '../result';
 import type { IElectronModuleContext } from './index';
 import type { Context } from '../shared';
 import { isElectronAuthResolutionError } from './auth-context';
@@ -43,6 +43,17 @@ export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOp
         return fail({
           code: error.code,
           message: error.code === 'AUTH_REQUIRED' ? authRequiredMessage : authRestoringMessage,
+        });
+      }
+
+      const structuredError = extractStructuredResultError(error);
+      if (structuredError) {
+        return fail({
+          code: structuredError.code,
+          message: structuredError.message,
+          details: structuredError.details,
+          context: structuredError.context,
+          cause: structuredError.cause,
         });
       }
 

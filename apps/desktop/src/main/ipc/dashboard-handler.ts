@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { isElectronAuthResolutionError } from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
+import { extractStructuredResultError, fail, ok } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
 import { getDesktopDashboardData } from '../services/dashboard-read-service';
@@ -28,6 +28,17 @@ export function registerDashboardIpcHandler(): void {
         return fail({
           code: 'AUTH_REQUIRED',
           message: 'Authentication required',
+        });
+      }
+
+      const structuredError = extractStructuredResultError(error);
+      if (structuredError) {
+        return fail({
+          code: structuredError.code,
+          message: structuredError.message,
+          details: structuredError.details,
+          context: structuredError.context,
+          cause: structuredError.cause,
         });
       }
 

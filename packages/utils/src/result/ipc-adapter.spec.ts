@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { ipcAdapter, ipcAdapterWithValidation } from './ipc-adapter';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { ok, fail, ResultErrorException } from '@dailyuse/contracts/result';
 import { ConflictError } from '../errors/DomainError';
 
 // ============================================================================
@@ -108,6 +108,31 @@ describe('ipcAdapter', () => {
     expect(result.error?.context).toEqual({
       count: 2,
       repositoryIds: ['repo-1'],
+    });
+  });
+
+  it('should preserve structured result errors thrown by the controller', async () => {
+    const controllerFn = vi.fn().mockRejectedValue(
+      new ResultErrorException(
+        'Forbidden',
+        'FORBIDDEN',
+        [{ code: 'MISSING_ROLE', message: 'admin required' }],
+        { source: 'ipc-spec' },
+        403,
+      ),
+    );
+    const handler = ipcAdapter(controllerFn);
+
+    const result = await handler(createMockEvent(), {});
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'Forbidden',
+        details: [{ code: 'MISSING_ROLE', message: 'admin required' }],
+        context: { source: 'ipc-spec' },
+      },
     });
   });
 });

@@ -396,19 +396,89 @@ export class GoalService {
 
 ### 异常处理
 
-#### ✅ 使用 Express 统一错误处理（HTTP 错误语义清晰）
+#### ✅ 使用显式 `Result.fail(...)` 表达可预期失败
+
+这是项目当前应推广的主范式，也是长期目标。
+
+对于以下场景，优先返回结构化失败，而不是抛普通异常：
+
+- 业务校验失败
+- 资源不存在
+- 权限不足
+- 状态冲突
+- 参数不合法
 
 ```typescript
-// ✅ Good
-if (!goal) {
-  throw new NotFoundException(`Goal with ID ${id} not found`);
+// ✅ Good - 失败语义在创建点就明确
+async function getGoal(id: string): AsyncResult<GoalDTO> {
+  const goal = await goalRepository.findById(id);
+  if (!goal) {
+    return fail({ code: 'NOT_FOUND', message: `Goal not found: ${id}` });
+  }
+
+  return ok(goal);
+}
+```
+
+```typescript
+// ❌ Bad - 抛普通 Error，依赖边界层猜测语义
+async function getGoal(id: string): Promise<GoalDTO> {
+  const goal = await goalRepository.findById(id);
+  if (!goal) {
+    throw new Error(`Goal not found: ${id}`);
+  }
+
+  return goal;
+}
+```
+
+#### ✅ 把异常转换视为兜底，而不是主流程
+
+```typescript
+// ✅ Good - adapter/middleware 可以处理异常，但新代码不应依赖它表达正常失败路径
+const result = await controller.get(id);
+if (!result.ok) {
+  return result;
 }
 
-// ❌ Bad - 抛出普通Error
+// ❌ Bad - 把异常当成常规控制流
 if (!goal) {
   throw new Error('Goal not found');
 }
 ```
+
+#### ✅ `throw` 只保留给真正异常场景
+
+适合继续使用 `throw` 的场景：
+
+- 编程错误
+- 不变量被破坏
+- 启动期配置错误
+- 第三方库抛出的异常
+- 尚未迁移完成的遗留实现
+
+不适合使用 `throw` 的场景：
+
+- “用户输入不合法”
+- “这条数据不存在”
+- “当前状态不允许执行”
+- “权限不足”
+
+#### ✅ DomainError 是兼容工具，不是首选主路径
+
+`DomainError` 仍然可以使用，但在新代码里应优先考虑：
+
+- **应用层直接返回 `Result.fail(...)`**
+
+而不是：
+
+- 先 `throw new DomainError(...)`
+- 再依赖 HTTP / IPC / Client adapter 把它还原成失败结果
+
+长期方向是：
+
+- 边界层保留结构化异常兼容能力
+- 业务主路径尽量显式返回 `Result.fail(...)`
 
 ### DTO验证
 

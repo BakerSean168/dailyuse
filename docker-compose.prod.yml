@@ -1,6 +1,20 @@
+# =============================================================================
+# Memoflow 生产环境 Docker Compose
+# =============================================================================
+# 启动全部服务：
+#   docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
+#
+# Caddy 自动管理 HTTPS 证书（Let's Encrypt）。
+# Watchtower 自动监测 prod-latest 镜像更新并滚动重启业务容器。
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # 基础设施
+  # ---------------------------------------------------------------------------
+
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:?set DB_NAME}
@@ -9,7 +23,7 @@ services:
       POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - "${POSTGRES_HOST_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres-prod-data:/var/lib/postgresql/data
     networks:
@@ -33,7 +47,7 @@ services:
       - --requirepass
       - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
     ports:
-      - "${REDIS_HOST_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
     volumes:
       - redis-prod-data:/data
     networks:
@@ -45,10 +59,16 @@ services:
       retries: 5
       start_period: 5s
 
+  # ---------------------------------------------------------------------------
+  # 业务服务（Watchtower 自动更新 prod-latest 镜像）
+  # ---------------------------------------------------------------------------
+
   ai-service:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-ai-service:${AI_SERVICE_TAG:-v0.3.0-prod}
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-ai-service:${AI_SERVICE_TAG:-prod-latest}
     restart: unless-stopped
     init: true
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     environment:
       NODE_ENV: production
       SERVICE_NAME: dailyuse-ai-service
@@ -66,8 +86,6 @@ services:
       AI_SERVICE_EVAL_API_KEY: ${AI_SERVICE_EVAL_API_KEY:-}
       AI_SERVICE_EVAL_BASE_URL: ${AI_SERVICE_EVAL_BASE_URL:-}
       TZ: ${TZ:-Asia/Shanghai}
-    ports:
-      - "${AI_SERVICE_HOST_PORT:-8100}:8100"
     networks:
       - dailyuse-network
     healthcheck:
@@ -78,9 +96,11 @@ services:
       start_period: 20s
 
   api:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-api:${API_TAG:-v0.3.0-prod}
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-api:${API_TAG:-prod-latest}
     restart: unless-stopped
     init: true
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,8 +148,6 @@ services:
       POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:-powersync-key}
       TZ: ${TZ:-Asia/Shanghai}
-    ports:
-      - "${API_HOST_PORT:-3000}:3000"
     volumes:
       - api-logs:/app/apps/api/logs
       - api-uploads:/app/uploads
@@ -144,13 +162,13 @@ services:
       start_period: 40s
 
   web:
-    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-web:${WEB_TAG:-v0.3.0-prod}
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-web:${WEB_TAG:-prod-latest}
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     depends_on:
       api:
         condition: service_healthy
-    ports:
-      - "${WEB_HOST_PORT:-8080}:80"
     networks:
       - dailyuse-network
     healthcheck:
@@ -159,6 +177,45 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # 入口与自动化
+  # ---------------------------------------------------------------------------
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-dailyuse.bakersean.top}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@bakersean.top}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - dailyuse-network
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: ${WATCHTOWER_POLL_INTERVAL:-300}
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_ROLLING_RESTART: "true"
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker/config.json:/config.json:ro
+    networks:
+      - dailyuse-network
 
 networks:
   dailyuse-network:
@@ -170,3 +227,5 @@ volumes:
   api-logs:
   api-uploads:
   repository-storage:
+  caddy-data:
+  caddy-config:

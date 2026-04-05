@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { IElectronModuleContext } from './index';
 import { createAuthenticatedIpcWrapper } from './authenticated-ipc';
 import { ElectronAuthResolutionError } from './auth-context';
+import { ResultErrorException } from '../result';
 
 function createContext(overrides?: {
   requireRequestContext?: () => Promise<{ identityId: string; deviceId: string }>;
@@ -44,6 +45,31 @@ describe('createAuthenticatedIpcWrapper', () => {
     expect(result).toEqual({
       ok: false,
       error: { code: 'INTERNAL_ERROR', message: 'Internal IPC error' },
+    });
+  });
+
+  it('preserves structured result errors thrown by handlers', async () => {
+    const ctx = createContext();
+    const withAuthenticatedValue = createAuthenticatedIpcWrapper();
+
+    const result = await withAuthenticatedValue(ctx, async () => {
+      throw new ResultErrorException(
+        'Access denied',
+        'FORBIDDEN',
+        [{ code: 'MISSING_ROLE', message: 'admin required' }],
+        { source: 'spec' },
+        403,
+      );
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'Access denied',
+        details: [{ code: 'MISSING_ROLE', message: 'admin required' }],
+        context: { source: 'spec' },
+      },
     });
   });
 

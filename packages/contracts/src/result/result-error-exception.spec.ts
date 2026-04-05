@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { unwrapOrThrowError } from './index';
+import { extractStructuredResultError, unwrapOrThrowError, ResultErrorException } from './index';
 
 describe('ResultErrorException', () => {
   it('preserves structured error metadata when unwrapping a failure result', () => {
@@ -22,5 +22,33 @@ describe('ResultErrorException', () => {
         context: { source: 'test' },
       }),
     );
+  });
+
+  it('extracts structured metadata from ResultErrorException', () => {
+    const extracted = extractStructuredResultError(
+      new ResultErrorException(
+        'Access denied',
+        'FORBIDDEN',
+        [{ code: 'MISSING_ROLE', message: 'admin required' }],
+        { source: 'spec' },
+        403,
+      ),
+    );
+
+    expect(extracted).toEqual({
+      code: 'FORBIDDEN',
+      message: 'Access denied',
+      details: [{ code: 'MISSING_ROLE', message: 'admin required' }],
+      context: { source: 'spec' },
+      cause: undefined,
+      statusCode: 403,
+    });
+  });
+
+  it('does not treat arbitrary node-style errors as structured result errors', () => {
+    const error = new Error('missing file') as Error & { code: string };
+    error.code = 'ENOENT';
+
+    expect(extractStructuredResultError(error)).toBeNull();
   });
 });

@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { expressAdapter, expressAdapterWithValidation, formatZodErrors } from './express-adapter';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { ok, fail, ResultErrorException } from '@dailyuse/contracts/result';
 import { ConflictError } from '../errors/DomainError';
 
 // ============================================================================
@@ -207,6 +207,32 @@ describe('expressAdapter', () => {
     expect(res.body.error.context).toEqual({
       count: 2,
       repositoryIds: ['repo-1'],
+    });
+  });
+
+  it('should preserve structured result errors thrown by the controller', async () => {
+    const controllerFn = vi.fn().mockRejectedValue(
+      new ResultErrorException(
+        'Access denied',
+        'FORBIDDEN',
+        [{ code: 'MISSING_ROLE', message: 'admin required' }],
+        { source: 'express-spec' },
+        403,
+      ),
+    );
+    const handler = expressAdapter(controllerFn);
+
+    const req = createMockReq();
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toEqual({
+      code: 'FORBIDDEN',
+      message: 'Access denied',
+      details: [{ code: 'MISSING_ROLE', message: 'admin required' }],
+      context: { source: 'express-spec' },
     });
   });
 });

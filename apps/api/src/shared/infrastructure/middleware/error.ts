@@ -5,10 +5,14 @@
  */
 
 import type { Express, Request, Response, NextFunction } from 'express';
-import { createLogger, isDomainError, mapPrismaError } from '@dailyuse/utils';
-import { errorCodeToHttpStatus } from '@dailyuse/contracts/result';
+import { createLogger, mapPrismaError } from '@dailyuse/utils';
+import { errorCodeToHttpStatus, extractStructuredResultError } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ErrorHandler');
+
+function isCorsRejectionError(err: unknown): err is { message: string } {
+  return typeof err === 'object' && err !== null && err['message'] === 'Not allowed by CORS';
+}
 
 /**
  * 应用全局错误处理中间件
@@ -28,13 +32,26 @@ export function applyErrorHandlers(app: Express): void {
       message: err?.message,
     });
 
-    // 1. Domain errors — safe to expose code + message
-    if (isDomainError(err)) {
-      const status = errorCodeToHttpStatus(err.code);
+    // 0. CORS rejections — expected client-side access control failures
+    if (isCorsRejectionError(err)) {
+      res.status(403).json({
+        ok: false,
+        code: 'FORBIDDEN',
+        message: err.message,
+      });
+      return;
+    }
+
+    // 1. Structured result/domain errors — safe to expose code + message
+    const structuredError = extractStructuredResultError(err);
+    if (structuredError) {
+      const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
       res.status(status).json({
         ok: false,
-        code: err.code,
-        message: err.message,
+        code: structuredError.code,
+        message: structuredError.message,
+        ...(structuredError.details ? { details: structuredError.details } : {}),
+        ...(structuredError.context ? { context: structuredError.context } : {}),
       });
       return;
     }

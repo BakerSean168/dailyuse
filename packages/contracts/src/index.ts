@@ -65,6 +65,7 @@ export {
   flatMap,
   tryCatch,
   tryCatchSync,
+  extractStructuredResultError,
   // Pagination
   okPaged,
   // Batch
@@ -95,6 +96,7 @@ export type {
   ResultError,
   ResultErrorDetail,
   ResultMeta,
+  StructuredResultError,
   AsyncResult,
   PageInfo,
   PagedList,

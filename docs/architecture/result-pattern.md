@@ -59,6 +59,89 @@ const result = await tryCatch(() => fetchUser(id))
 - **tRPC** procedure returns
 - **Zod** safe parse
 
+## 🧭 长期目标与范式
+
+### 长期目标
+
+项目的长期目标不是“把异常映射得更聪明”，而是：
+
+- **在可预期的失败路径上，优先显式返回 `Result.fail(...)`**
+- **不要依赖 `throw new Error(...)` 再由适配器、中间件或客户端去猜测错误语义**
+
+这条原则适用于：
+
+- Application Use Case
+- Controller / Transport Handler
+- HTTP / IPC Client Adapter
+- 跨模块调用边界
+
+### 推荐范式
+
+```typescript
+// ✅ 推荐：可预期失败显式返回 Result.fail
+async function getById(id: string): AsyncResult<User> {
+  const user = await repo.findById(id);
+  if (!user) {
+    return ResultErrors.notFound(`User not found: ${id}`);
+  }
+  return ok(user);
+}
+```
+
+```typescript
+// ❌ 不推荐：先 throw，再依赖边界层猜测语义
+async function getById(id: string): Promise<User> {
+  const user = await repo.findById(id);
+  if (!user) {
+    throw new Error(`User not found: ${id}`);
+  }
+  return user;
+}
+```
+
+### 为什么这是更优雅、更根本的方式
+
+`Result.fail(...)` 比 `throw new Error(...)` 更适合作为项目的主范式，因为它：
+
+1. **语义显式**：错误码、消息、details、context 在创建点就明确，不需要后续猜测
+2. **跨边界稳定**：HTTP、IPC、客户端、测试都能稳定拿到同一份失败语义
+3. **避免错误丢失**：不会在 adapter / middleware / client 中被压成笼统的 `INTERNAL_ERROR`
+4. **更易测试**：测试可以直接断言 `result.error.code`，不必依赖异常链
+5. **更易演进**：调用方在类型层面就知道这里存在失败分支
+
+### `throw` 的保留使用场景
+
+这不意味着项目里完全禁止 `throw`。`throw` 应保留给以下情况：
+
+- 真正的编程错误或不变量破坏
+- 启动期配置错误
+- 第三方库直接抛出的异常
+- 当前遗留代码尚未迁移到 Result Pattern
+- 极底层值对象 / 聚合内部的强约束校验
+
+但在 **跨层、跨模块、跨进程、跨网络** 的边界上，长期目标仍然是：
+
+- **把可预期失败收敛为显式 `Result.fail(...)`**
+- **把 `throw` 限制在真正异常的场景**
+
+### DomainError 的定位
+
+`DomainError` 仍然是合法工具，但它更适合作为：
+
+- 领域内部强约束的表达方式
+- 旧代码与新范式之间的兼容桥梁
+- adapter / middleware 识别结构化异常的兜底支持
+
+长期来看，项目希望减少“依赖抛出 `DomainError` 再在边界层转换”的比例，
+优先采用：
+
+- **在应用层或传输层直接返回 `Result.fail(...)`**
+
+也就是说：
+
+- `DomainError` 是可兼容的
+- `Result.fail(...)` 才是主范式
+
 ## 📦 使用方式
 
 ### 基础使用
@@ -167,6 +250,27 @@ async getById(id: string): AsyncResult<User> {
 }
 ```
 
+### Phase 1.5: 减少“throw + 边界转换”的路径
+
+从现在开始，新增代码默认遵循：
+
+- 业务可预期失败：`return fail(...)`
+- 参数/校验失败：`return fail({ code: 'VALIDATION_ERROR', ... })`
+- 权限失败：`return fail({ code: 'FORBIDDEN' | 'UNAUTHORIZED', ... })`
+- 冲突/不存在：`return fail({ code: 'CONFLICT' | 'NOT_FOUND', ... })`
+
+不要默认写成：
+
+- `throw new Error(...)`
+- `throw new DomainError(...)` 然后等待边界层转换
+
+边界层的异常转换能力应该被视为：
+
+- **兼容机制**
+- **遗留代码兜底**
+
+而不是新代码的首选表达方式。
+
 ### Phase 2: 更新 IPC Handler
 
 使用 `createIpcHandler` 包装现有逻辑：
@@ -237,3 +341,9 @@ Result Pattern 提供了：
 3. **函数式组合** - map/flatMap/tryCatch
 4. **错误工厂** - 便捷的常用错误创建
 5. **渐进式迁移** - 与现有代码兼容
+
+项目在错误处理上的长期方向也应明确为：
+
+- **新代码优先显式返回 `Result.fail(...)`**
+- **尽量不要依赖 `throw` 再由边界层做语义恢复**
+- **让错误语义在创建点就完整且稳定**

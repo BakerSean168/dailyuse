@@ -29,6 +29,7 @@
  */
 
 import {
+  extractStructuredResultError,
   type Result,
   type ResultErrorDetail,
   isOk,
@@ -36,7 +37,6 @@ import {
   createHttpResponseBuilder,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
-import { isDomainError } from '../errors/DomainError';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
 
 // ============================================================================
@@ -164,10 +164,19 @@ export function expressAdapter<T>(
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
-      // 1. Domain errors — safe to expose code + message (developer-crafted)
-      if (isDomainError(err)) {
-        const status = err.httpStatus ?? errorCodeToHttpStatus(err.code);
-        res.status(status).json(responseBuilder.error(err.code, err.message, undefined, err.context));
+      const structuredError = extractStructuredResultError(err);
+      if (structuredError) {
+        const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
+        res
+          .status(status)
+          .json(
+            responseBuilder.error(
+              structuredError.code,
+              structuredError.message,
+              structuredError.details,
+              structuredError.context,
+            ),
+          );
         return;
       }
 
@@ -265,10 +274,19 @@ export function expressAdapterWithValidation<TInput, TOutput>(
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
-      // 1. Domain errors — safe to expose code + message (developer-crafted)
-      if (isDomainError(err)) {
-        const status = err.httpStatus ?? errorCodeToHttpStatus(err.code);
-        res.status(status).json(responseBuilder.error(err.code, err.message, undefined, err.context));
+      const structuredError = extractStructuredResultError(err);
+      if (structuredError) {
+        const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
+        res
+          .status(status)
+          .json(
+            responseBuilder.error(
+              structuredError.code,
+              structuredError.message,
+              structuredError.details,
+              structuredError.context,
+            ),
+          );
         return;
       }
 

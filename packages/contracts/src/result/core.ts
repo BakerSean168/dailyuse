@@ -41,6 +41,10 @@ export interface ResultError {
   cause?: unknown;
 }
 
+export interface StructuredResultError extends ResultError {
+  statusCode?: number;
+}
+
 export class ResultErrorException extends Error {
   constructor(
     message: string,
@@ -53,6 +57,53 @@ export class ResultErrorException extends Error {
     super(message);
     this.name = 'ResultErrorException';
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+export function extractStructuredResultError(error: unknown): StructuredResultError | null {
+  if (error instanceof ResultErrorException) {
+    return {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      context: error.context,
+      cause: error.cause,
+      statusCode: error.statusCode,
+    };
+  }
+
+  if (!isRecord(error)) {
+    return null;
+  }
+
+  const code = typeof error.code === 'string' ? error.code : undefined;
+  const message = typeof error.message === 'string' ? error.message : undefined;
+  if (!code || !message) {
+    return null;
+  }
+
+  const details = Array.isArray(error.details) ? (error.details as ResultErrorDetail[]) : undefined;
+  const context = isRecord(error.context) ? error.context : undefined;
+  const statusCode =
+    typeof error.statusCode === 'number'
+      ? error.statusCode
+      : typeof error.httpStatus === 'number'
+        ? error.httpStatus
+        : undefined;
+  const cause = 'cause' in error ? error.cause : undefined;
+
+  if (!(error instanceof Error)) {
+    return { code, message, details, context, cause, statusCode };
+  }
+
+  if (statusCode !== undefined || details !== undefined || context !== undefined) {
+    return { code, message, details, context, cause, statusCode };
+  }
+
+  return null;
 }
 
 export type Result<T, E = ResultError> = SuccessResult<T> | FailureResult<E>;

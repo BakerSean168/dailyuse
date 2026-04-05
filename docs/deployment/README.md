@@ -1,30 +1,36 @@
 # Docker 部署说明
 
-本文档是当前仓库唯一有效的 Docker 生产部署说明，覆盖 `web`、`api`、`ai-service` 三个业务镜像，以及 `postgres`、`redis` 两个基础服务。
+本文档是当前仓库唯一有效的 Docker 生产部署说明，覆盖 `web`、`api`、`ai-service` 三个业务镜像，以及 `postgres`、`redis` 两个基础服务，外加 `caddy`（HTTPS 反向代理）和 `watchtower`（自动镜像更新）。
 
-## 部署结构
+## 部署架构
 
-生产编排文件是根目录的 `docker-compose.prod.yml`，包含以下服务：
+```
+互联网
+  │
+  ▼
+Caddy (:443 HTTPS, 自动 Let's Encrypt)
+  │
+  ▼
+Nginx/Web (:80, 静态文件 + /api/ 代理)
+  │
+  ├── API (:3000) ──▶ PostgreSQL (:5432)
+  │                 ──▶ Redis (:6379)
+  │                 ──▶ AI Service (:8100)
+  │
+  └── Watchtower (轮询 ACR 镜像更新 → 自动滚动重启)
+```
 
-- `postgres`
-- `redis`
-- `ai-service`
-- `api`
-- `web`
+### 服务清单
 
-镜像来源：
-
-- `dailyuse-api`
-- `dailyuse-web`
-- `dailyuse-ai-service`
-
-镜像仓库和 tag 由 `.env.production.local` 中的以下变量控制：
-
-- `REGISTRY`
-- `IMAGE_NAMESPACE`
-- `API_TAG`
-- `WEB_TAG`
-- `AI_SERVICE_TAG`
+| 服务 | 镜像 | 说明 |
+|------|------|------|
+| `postgres` | `pgvector/pgvector:pg16` | 主数据库（含 pgvector 扩展） |
+| `redis` | `redis:7-alpine` | 缓存 / 队列 |
+| `ai-service` | `dailyuse-ai-service:prod-latest` | AI 分析 (Python/uvicorn) |
+| `api` | `dailyuse-api:prod-latest` | 后端 API (Node.js) |
+| `web` | `dailyuse-web:prod-latest` | 前端 SPA (Nginx) |
+| `caddy` | `caddy:2-alpine` | HTTPS 入口，自动证书 |
+| `watchtower` | `containrrr/watchtower` | 自动拉取镜像并重启 |
 
 ## 相关文件
 
@@ -32,284 +38,203 @@
 - `Dockerfile.web`
 - `Dockerfile.ai-service`
 - `docker-compose.prod.yml`
+- `docker-compose.local.yml`
+- `Caddyfile`
 - `.env.production`
-- `.env.production.local`
-- `tools/docker/publish-images.ps1`
+- `.env.production.local`（不提交 Git）
+- `.github/workflows/docker-deploy.yml`
+- `tools/docker/publish-images.ps1`（本地手动构建，可选）
 
-## 发布策略
+## 发布流程（自动化）
 
-本仓库的发布方式分成两段：
+推送 Git tag 即可触发完整发布：
 
-1. 在构建机执行 Nx 构建和 Docker 构建，并把镜像推送到仓库。
-2. 在服务器执行 `docker compose pull` 和 `docker compose up -d` 完成部署。
+```bash
+git tag v0.4.0
+git push --tags
+```
 
-不要再手工分别执行旧的 `docker build`、`docker tag`、`docker push` 流程；统一使用发布脚本。
+GitHub Actions 自动执行：
+
+1. `pnpm nx build api` + `pnpm nx build web --configuration=production`
+2. 构建 `api`、`web`、`ai-service` 三张 Docker 镜像
+3. 推送不可变 tag（如 `v0.4.0-prod.20260404-150338-93dca44f0df1`）
+4. 推送滚动 tag `prod-latest`
+
+服务器侧 Watchtower 自动检测 `prod-latest` 更新（默认 5 分钟轮询），拉取新镜像并滚动重启业务容器。**无需 SSH 到服务器执行任何操作。**
 
 ### Tag 规则
 
-默认 tag 为不可变版本号，格式如下：
+不可变 tag 格式：
 
 ```text
 v<package.json version>-prod.<UTC时间戳>-<12位git sha>
 ```
 
-示例：
+示例：`v0.3.0-prod.20260403-150338-93dca44f0df1`
 
-```text
-v0.3.0-prod.20260403-150338-93dca44f0df1
-```
+每次推送时还会额外同步一个滚动 tag：`prod-latest`。
 
-每次推送时还会额外同步一个滚动标签：
+### 手动构建（本地，可选）
 
-```text
-prod-latest
-```
-
-建议：
-
-- 正式部署使用不可变 tag。
-- 快速追最新镜像时使用 `prod-latest` 做观察或临时验证。
-- `.env.production.local` 始终保存当前已发布的不可变 tag，避免线上状态不可追踪。
-
-## 构建并推送镜像
-
-前提：
-
-- 本机已安装 Docker。
-- 本机可以执行 `pnpm nx ...`。
-- 本机已登录阿里云 ACR。
-- `.env.production.local` 已设置 `REGISTRY` 和 `IMAGE_NAMESPACE`。
-
-登录仓库：
+仍然可以在本地执行手动构建：
 
 ```powershell
-docker login crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
+pnpm docker:prod:push            # 构建 + 推送
+pnpm docker:prod:push:rebuild    # 跳过 Nx 缓存
 ```
 
-推荐方式：
+### GitHub Actions 需要的 Secrets
 
-```powershell
-pnpm docker:prod:push
+在仓库 Settings → Secrets and variables → Actions 中配置：
+
+| Secret | 说明 | 示例 |
+|--------|------|------|
+| `ACR_REGISTRY` | 阿里云 ACR 地址 | `crpi-xxx.cn-hangzhou.personal.cr.aliyuncs.com` |
+| `ACR_USERNAME` | ACR 登录用户 | — |
+| `ACR_PASSWORD` | ACR 登录密码 | — |
+| `ACR_NAMESPACE` | ACR 命名空间 | `dailyuse` |
+
+## 服务器首次部署
+
+### 1. 准备服务器
+
+```bash
+# 安装 Docker + Compose 插件
+curl -fsSL https://get.docker.com | sh
+sudo systemctl enable docker
+
+# 登录阿里云 ACR（Watchtower 需要）
+docker login crpi-xxx.cn-hangzhou.personal.cr.aliyuncs.com
+
+# 创建项目目录
+mkdir -p /opt/dailyuse && cd /opt/dailyuse
 ```
 
-等价命令：
+### 2. 上传部署文件
 
-```powershell
-pwsh -File ./tools/docker/publish-images.ps1 -EnvFile .env.production.local -Push
-```
-
-脚本会自动执行：
-
-1. `pnpm nx build api`
-2. `pnpm nx build web --configuration=production`
-3. 构建 `api`、`web`、`ai-service` 三张镜像
-4. 推送不可变 tag
-5. 推送 `prod-latest`
-6. 回写 `.env.production.local` 中的 `API_TAG`、`WEB_TAG`、`AI_SERVICE_TAG`
-
-默认会优先使用 Nx 缓存。如果需要强制跳过 Nx 缓存重新构建：
-
-```powershell
-pnpm docker:prod:build:rebuild
-pnpm docker:prod:push:rebuild
-```
-
-如果需要手工指定 tag：
-
-```powershell
-pwsh -File ./tools/docker/publish-images.ps1 `
-  -EnvFile .env.production.local `
-  -Tag v0.3.0-prod.manual-20260404 `
-  -Push
-```
-
-如果只构建不推送：
-
-```powershell
-pnpm docker:prod:build
-```
-
-## 本地 Docker 验证
-
-本地从当前源码直接启动容器时，不要直接使用 `docker-compose.prod.yml` 单文件，因为它默认面向“拉取远端镜像”。本仓库现在提供了本地 override 文件：
+将以下文件上传到 `/opt/dailyuse/`：
 
 - `docker-compose.prod.yml`
-- `docker-compose.local.yml`
+- `Caddyfile`
 
-本地验证命令：
+### 3. 创建环境文件
 
-```powershell
-pnpm docker:local:up
+```bash
+cat > .env.production.local << 'EOF'
+# 镜像仓库
+REGISTRY=crpi-xxx.cn-hangzhou.personal.cr.aliyuncs.com
+IMAGE_NAMESPACE=dailyuse
+
+# 数据库
+DB_NAME=Memoflow
+DB_USER=Memoflow
+DB_PASSWORD=<生成的强密码>
+
+# Redis
+REDIS_PASSWORD=<生成的强密码>
+
+# JWT
+JWT_SECRET=<生成的强密钥>
+
+# 内部鉴权（api ↔ ai-service）
+SERVICE_SECRET=<生成的强密钥>
+
+# CORS
+CORS_ORIGIN=https://dailyuse.bakersean.top
+
+# 域名（须与 DNS 一致）
+APP_DOMAIN=dailyuse.bakersean.top
+ACME_EMAIL=admin@bakersean.top
+
+# Watchtower 轮询间隔（秒）
+WATCHTOWER_POLL_INTERVAL=300
+EOF
+
+chmod 600 .env.production.local
 ```
 
-等价命令：
+生成强密钥：`openssl rand -base64 32`
 
-```powershell
-docker compose -f docker-compose.prod.yml -f docker-compose.local.yml --env-file .env.production.local up --build -d
-```
+### 4. 启动
 
-说明：
-
-- `pnpm docker:local:up` 现在通过 `tools/docker/local-compose.mjs` 执行本地验证流程。
-- 默认会先在宿主机执行带缓存的 Nx 构建：
-  - `pnpm nx build api`
-  - `pnpm nx build web --configuration=production`
-- 随后执行 `docker compose ... up --build -d`，让 Docker 复用层缓存并把最新宿主机产物打进本地镜像。
-- `docker-compose.local.yml` 会把业务镜像切到本地 tag，避免去远端仓库拉取 `api`、`web`、`ai-service`。
-- `postgres` 和 `redis` 仍然使用官方基础镜像。
-- `.env.production.local` 只用于 compose 注入运行时环境变量，不会被复制进镜像层。
-- 如果 `.env.production.local` 没有设置 `SERVICE_SECRET`，本地脚本会自动注入一个仅用于本地验证的默认值；正式服务器部署仍然必须显式配置真实 `SERVICE_SECRET`。
-- 如果需要完全绕过 Nx 缓存并强制 Docker 无缓存重建，请使用 `pnpm docker:local:rebuild`。
-
-停止与查看日志：
-
-```powershell
-pnpm docker:local:build-prep
-pnpm docker:local:build-prep:rebuild
-pnpm docker:local:ps
-pnpm docker:local:logs
-pnpm docker:local:down
-pnpm docker:local:rebuild
-```
-
-## 服务器部署
-
-服务器需要准备：
-
-- Docker
-- Docker Compose 插件
-- 项目根目录内的 `docker-compose.prod.yml`
-- 一份仅保存在服务器上的 `.env.production.local`
-- 对阿里云 ACR 的拉取权限
-
-### 1. 准备环境文件
-
-建议以 `.env.production` 为基础，在服务器创建 `.env.production.local`，至少补齐这些配置：
-
-- `REGISTRY`
-- `IMAGE_NAMESPACE`
-- `API_TAG`
-- `WEB_TAG`
-- `AI_SERVICE_TAG`
-- `DB_PASSWORD`
-- `REDIS_PASSWORD`
-- `JWT_SECRET`
-- `SERVICE_SECRET`
-- `CORS_ORIGIN`
-
-`SERVICE_SECRET` 用于 `api` 和 `ai-service` 之间的内部鉴权，必须保持一致。
-
-### 2. 如有端口冲突，先改 host 端口
-
-当前生产 compose 支持独立 host 端口变量：
-
-- `POSTGRES_HOST_PORT`
-- `REDIS_HOST_PORT`
-- `API_HOST_PORT`
-- `WEB_HOST_PORT`
-- `AI_SERVICE_HOST_PORT`
-
-容器内部端口保持固定，不要修改服务间通信端口：
-
-- `postgres:5432`
-- `redis:6379`
-- `ai-service:8100`
-- `api:3000`
-- `web:80`
-
-### 3. 拉取并启动
-
-```powershell
-docker compose -f docker-compose.prod.yml --env-file .env.production.local pull
+```bash
 docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
 ```
 
-首次部署或配置变更后，建议额外检查展开结果：
+首次启动时 Caddy 会自动向 Let's Encrypt 申请 HTTPS 证书（需要 80/443 端口可达且域名已解析到服务器 IP）。
 
-```powershell
-docker compose -f docker-compose.prod.yml --env-file .env.production.local config
-```
+### 5. 验证
 
-## 验证部署
-
-检查容器状态：
-
-```powershell
+```bash
+# 容器状态
 docker compose -f docker-compose.prod.yml --env-file .env.production.local ps
-```
 
-检查日志：
-
-```powershell
-docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f api
-docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f web
-docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f ai-service
-```
-
-检查健康端点：
-
-```powershell
+# 健康检查
 curl http://127.0.0.1:3000/healthz
 curl http://127.0.0.1:8100/healthz
-```
 
-如果 `WEB_HOST_PORT=8080`，还可以直接访问：
+# HTTPS 访问
+curl https://dailyuse.bakersean.top
 
-```text
-http://<server-ip>:8080
+# 日志
+docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f api
+docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f caddy
+docker compose -f docker-compose.prod.yml --env-file .env.production.local logs -f watchtower
 ```
 
 ## 升级与回滚
 
-升级流程：
+### 自动升级（常规）
 
-1. 在构建机执行 `pnpm docker:prod:push`
-2. 把新的 `API_TAG`、`WEB_TAG`、`AI_SERVICE_TAG` 同步到服务器
-3. 在服务器执行 `pull` 和 `up -d`
+1. 本地 `git tag vX.Y.Z && git push --tags`
+2. GitHub Actions 自动构建推送
+3. Watchtower 自动检测并滚动重启
 
-回滚流程：
+### 手动回滚
 
-1. 把服务器 `.env.production.local` 中三项 tag 改回上一个已知版本
-2. 重新执行：
+```bash
+# 1. 指定旧的不可变 tag
+# 编辑 .env.production.local，修改：
+#   API_TAG=v0.3.0-prod.20260403-xxx
+#   WEB_TAG=v0.3.0-prod.20260403-xxx
+#   AI_SERVICE_TAG=v0.3.0-prod.20260403-xxx
 
-```powershell
+# 2. 拉取并重启
 docker compose -f docker-compose.prod.yml --env-file .env.production.local pull
 docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
 ```
 
-因为 tag 是不可变的，所以回滚只需要切回旧 tag，不需要重新构建镜像。
+回滚后如需恢复自动更新，将 tag 改回 `prod-latest`。
 
-## 常见问题
+## 本地 Docker 验证
 
-### 1. `docker compose up -d` 端口冲突
+```powershell
+pnpm docker:local:up       # 构建 + 启动
+pnpm docker:local:ps       # 查看状态
+pnpm docker:local:logs     # 查看日志
+pnpm docker:local:down     # 停止
+pnpm docker:local:rebuild  # 完全重建
+```
 
-说明主机已有服务占用端口。优先修改以下变量，而不是修改容器内部端口：
+本地验证使用 `docker-compose.local.yml` overlay，业务镜像从本地源码构建，不从远端拉取。
 
-- `POSTGRES_HOST_PORT`
-- `REDIS_HOST_PORT`
-- `API_HOST_PORT`
-- `WEB_HOST_PORT`
-- `AI_SERVICE_HOST_PORT`
+## 端口说明
 
-### 2. `api` 启动后访问 AI 失败
+生产环境端口绑定策略：
 
-优先检查：
-
-- `SERVICE_SECRET` 是否在 `api` 和 `ai-service` 中一致
-- `ai-service` 是否为 healthy
-- `AI_SERVICE_BASE_URL` 是否保持为 `http://ai-service:8100`
-
-### 3. 推送成功但服务器拉不到镜像
-
-优先检查：
-
-- 服务器是否执行过 `docker login`
-- `REGISTRY` 和 `IMAGE_NAMESPACE` 是否正确
-- 服务器上的 tag 是否和构建机发布出的 tag 一致
+| 服务 | 容器端口 | 宿主机绑定 | 说明 |
+|------|----------|------------|------|
+| `caddy` | 80, 443 | `0.0.0.0` | 唯一的公网入口（HTTPS） |
+| `postgres` | 5432 | `127.0.0.1` | 仅本机管理 |
+| `redis` | 6379 | `127.0.0.1` | 仅本机管理 |
+| `api` | 3000 | 不暴露 | 通过 Nginx 反向代理 |
+| `web` | 80 | 不暴露 | 通过 Caddy 反向代理 |
+| `ai-service` | 8100 | 不暴露 | 仅 API 内部调用 |
 
 ## 约束
 
 - 不提交 `.env.production.local`
-- 不在文档中维护手工 build/tag/push 的旧流程
-- 不使用 `latest` 作为正式发布唯一标识
 - 不在服务器上直接做工作区源码构建，生产服务器只负责拉镜像和启动容器
+- 不使用 `latest` 作为正式发布唯一标识（使用 `prod-latest` 搭配不可变 tag）
+- 回滚时切换到不可变 tag，恢复后切回 `prod-latest`
