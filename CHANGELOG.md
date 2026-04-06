@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.0](https://github.com/BakerSean168/dailyuse/compare/v0.4.0...v0.5.0) (2026-04-06)
+
+
+### Features
+
+* initialize web application with Vite configuration, MSW mock handlers, and comprehensive E2E test suite ([54e3859](https://github.com/BakerSean168/dailyuse/commit/54e3859babd507313a251e1ad02d6cf139846a4d))
+
+
+### Bug Fixes
+
+* add MSW handlers for settings and utility functions for component testing ([de83382](https://github.com/BakerSean168/dailyuse/commit/de833826d387a18300c343d71be0767a41d61e62))
+* **deploy:** stabilize production web delivery ([8ffcd65](https://github.com/BakerSean168/dailyuse/commit/8ffcd65fd16e3bc3fdab774893c5df6385a88847))
+* 修复 github action 构建产物流程的错误：1. 明确 electron 版本。 2. 把 argon2 也明确原生编译 ([a3edbea](https://github.com/BakerSean168/dailyuse/commit/a3edbea4ad874d023979ae275185dc59aa53fd51))
+* 修复锁文件不一致导致的报错 ([be38d2f](https://github.com/BakerSean168/dailyuse/commit/be38d2fea2184e2c6eb4ecaedaa9bffd879c72d0))
+
+
+### Performance Improvements
+
+* web端首包构建优化，拆分auth和主页面的js ([c76065c](https://github.com/BakerSean168/dailyuse/commit/c76065c080fe9d5ef13774d20dbe12291ac7549f))
+
 ## [0.4.0](https://github.com/BakerSean168/dailyuse/compare/v0.3.0...v0.4.0) (2026-04-05)
 
 
