@@ -53,7 +53,7 @@ test.describe('Task DAG Visualization', () => {
     for (const taskTitle of testTasks) {
       try {
         await cleanupTask(page, taskTitle);
-      } catch (error) {
+      } catch {
         console.log(`Failed to cleanup ${taskTitle}`);
       }
     }
@@ -259,7 +259,7 @@ test.describe('Task DAG Visualization', () => {
       console.log('|  Status: Downloaded                                        |');
       console.log('+============================================================+\n');
       
-    } catch (error) {
+    } catch {
       console.log('[WARN]  Export functionality not yet implemented or unavailable');
       console.log('Test marked as passed with caveat\n');
     }

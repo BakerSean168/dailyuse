@@ -302,7 +302,7 @@ test.describe('Shortcut Settings', () => {
     expect(savedValue).toMatch(/Ctrl.*Alt.*M|?.*?.*M/i);
   });
 
-  test('should display platform-specific key symbols on Mac', async ({ page, browserName }) => {
+  test('should display platform-specific key symbols on Mac', async ({ page }) => {
     // ?? Mac ???????
     if (process.platform !== 'darwin') {
       test.skip();

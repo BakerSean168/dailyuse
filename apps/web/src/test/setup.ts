@@ -2,6 +2,12 @@ import { createPinia, setActivePinia } from 'pinia';
 import { vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
+const globalWithMocks = globalThis as typeof globalThis & {
+  IntersectionObserver: typeof IntersectionObserver;
+  ResizeObserver: typeof ResizeObserver;
+  fetch: typeof fetch;
+};
+
 // 创建全局 Pinia 实例
 const pinia = createPinia();
 setActivePinia(pinia);
@@ -25,21 +31,21 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-(globalThis as any).IntersectionObserver = vi.fn().mockImplementation(() => ({
+globalWithMocks.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver
-(globalThis as any).ResizeObserver = vi.fn().mockImplementation(() => ({
+globalWithMocks.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as unknown as typeof ResizeObserver;
 
 // Mock fetch
-(globalThis as any).fetch = vi.fn();
+globalWithMocks.fetch = vi.fn() as unknown as typeof fetch;
 
 // Mock console methods to reduce noise in tests
 console.warn = vi.fn();

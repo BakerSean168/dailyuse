@@ -3,7 +3,7 @@
  * 测试日程事件的创建、读取、更新、删除功能
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Schedule CRUD Operations', () => {
   const baseUrl = 'http://localhost:3001';
@@ -180,7 +180,7 @@ test.describe('Schedule CRUD Operations', () => {
 
 // ===== Helper Functions =====
 
-async function createTestSchedule(page: any, title: string) {
+async function createTestSchedule(page: Page, title: string) {
   const createButton = page.locator('button:has-text("创建日程")').first();
   await createButton.click();
   await expect(page.locator('text=创建日程事件')).toBeVisible();
@@ -200,7 +200,7 @@ async function createTestSchedule(page: any, title: string) {
   await page.waitForTimeout(1000);
 }
 
-async function cleanupTestSchedule(page: any, title: string) {
+async function cleanupTestSchedule(page: Page, title: string) {
   try {
     const scheduleCard = page.locator(`text=${title}`).locator('..').locator('..');
     const deleteButton = scheduleCard.locator('button:has-text("删除")').or(

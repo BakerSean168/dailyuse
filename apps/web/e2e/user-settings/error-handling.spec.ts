@@ -35,7 +35,7 @@ test.describe('Settings Error Handling', () => {
     await context.setOffline(false);
   });
 
-  test('should retry failed requests automatically', async ({ page, context }) => {
+  test('should retry failed requests automatically', async ({ page }) => {
     let requestCount = 0;
 
     // ???????????
@@ -186,7 +186,7 @@ test.describe('Settings Error Handling', () => {
     // ????
     await page.getByRole('tab', { name: /??|Appearance/i }).click();
     const html = page.locator('html');
-    const originalTheme = await html.getAttribute('class');
+    const previousTheme = await html.getAttribute('class');
 
     const themeSelect = page
       .locator('select, [role="combobox"]')
@@ -199,7 +199,7 @@ test.describe('Settings Error Handling', () => {
     const newTheme = await html.getAttribute('class');
 
     // ????UI???(????)
-    expect(newTheme).not.toBe(originalTheme);
+    expect(newTheme).not.toBe(previousTheme);
 
     // ????
     await context.setOffline(false);
@@ -225,7 +225,6 @@ test.describe('Settings Error Handling', () => {
     // ????
     await page.getByRole('tab', { name: /??|Appearance/i }).click();
     const html = page.locator('html');
-    const originalTheme = await html.getAttribute('class');
 
     const themeSelect = page
       .locator('select, [role="combobox"]')

@@ -3,7 +3,7 @@
  * 测试日程周视图功能
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Schedule Week View', () => {
   const baseUrl = 'http://localhost:3001';
@@ -154,7 +154,7 @@ test.describe('Schedule Week View', () => {
 
 // ===== Helper Functions =====
 
-async function createTestSchedule(page: any, title: string) {
+async function createTestSchedule(page: Page, title: string) {
   const createButton = page.locator('button:has-text("创建")').or(
     page.locator('button:has(svg.mdi-plus)')
   ).first();

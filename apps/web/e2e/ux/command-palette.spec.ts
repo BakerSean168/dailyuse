@@ -55,7 +55,7 @@ test.describe('Command Palette', () => {
     for (const taskTitle of testTasks) {
       try {
         await cleanupTask(page, taskTitle);
-      } catch (error) {
+      } catch {
         console.log(`Failed to cleanup ${taskTitle}`);
       }
     }
@@ -399,7 +399,7 @@ test.describe('Command Palette', () => {
       // Cancel the dialog
       await page.keyboard.press('Escape');
       await page.waitForTimeout(300);
-    } catch (error) {
+    } catch {
       console.log('[WARN]  Quick task creation not available or requires different approach\n');
     }
 
@@ -415,7 +415,7 @@ test.describe('Command Palette', () => {
       await page.screenshot({ path: 'test-results/61-quick-navigate.png', fullPage: true });
 
       console.log('[PASS] Quick navigation triggered\n');
-    } catch (error) {
+    } catch {
       console.log('[WARN]  Quick navigation not available\n');
     }
 

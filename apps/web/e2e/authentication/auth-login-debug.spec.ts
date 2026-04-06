@@ -24,7 +24,7 @@ test.describe('Login Debug', () => {
           try {
             const data = JSON.parse(request.postData() || '{}');
             console.log(`   Body:`, JSON.stringify(data, null, 2));
-          } catch (e) {
+          } catch {
             console.log(`   Body:`, request.postData());
           }
         }
@@ -42,7 +42,7 @@ test.describe('Login Debug', () => {
           if (body) {
             console.log(`   Response:`, body.substring(0, 500));
           }
-        } catch (e) {
+        } catch {
           console.log(`   (Unable to read response body)`);
         }
       }

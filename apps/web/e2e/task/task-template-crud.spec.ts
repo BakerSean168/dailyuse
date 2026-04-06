@@ -3,7 +3,7 @@
  * 测试任务模板的创建、读取、更新、删除功能
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Task Template CRUD Operations', () => {
   const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
@@ -173,7 +173,7 @@ test.describe('Task Template CRUD Operations', () => {
 
 // ===== Helper Functions =====
 
-async function createTestTemplate(page: any, title: string) {
+async function createTestTemplate(page: Page, title: string) {
   // 优先使用主按钮，如果不可见则使用空状态按钮
   const createButton = page.locator('[data-testid="create-task-template-button"]');
   const firstButton = page.locator('[data-testid="create-first-task-template-button"]');
@@ -204,7 +204,7 @@ async function createTestTemplate(page: any, title: string) {
   await page.waitForTimeout(1000);
 }
 
-async function cleanupTestTemplate(page: any, title: string) {
+async function cleanupTestTemplate(page: Page, title: string) {
   try {
     const templateCard = page.locator(`text=${title}`).locator('..').locator('..');
     // 使用 data-testid

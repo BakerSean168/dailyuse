@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('Debug: 查看登录后的任务页面', async ({ page }) => {
   // 1. 登录

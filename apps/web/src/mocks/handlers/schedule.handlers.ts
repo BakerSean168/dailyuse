@@ -10,8 +10,6 @@ import { http, HttpResponse } from 'msw';
 import {
   createMockScheduleTask,
   createMockScheduleTaskList,
-  createMockScheduleExecution,
-  createMockScheduleExecutionList,
 } from '@dailyuse/contracts/mocks';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { faker } from '@faker-js/faker';

@@ -10,6 +10,11 @@ import {
   TEST_USER,
 } from './helpers/testHelpers';
 
+type ReminderWindowState = Window &
+  typeof globalThis & {
+    __sse_connected?: boolean;
+  };
+
 /**
  * Reminder E2E ????
  *
@@ -153,12 +158,16 @@ test.describe('Reminder E2E Flow', () => {
 
     // ?? SSE ????
     const sseConnected = await page.evaluate(() => {
-      return (window as any).__sse_connected === true;
+      const reminderWindow = window as ReminderWindowState;
+      return reminderWindow.__sse_connected === true;
     });
 
     // ?????,???? 10 ?
     if (!sseConnected) {
-      await page.waitForFunction(() => (window as any).__sse_connected === true, {
+      await page.waitForFunction(() => {
+        const reminderWindow = window as ReminderWindowState;
+        return reminderWindow.__sse_connected === true;
+      }, {
         timeout: 10000,
       });
     }
@@ -166,7 +175,10 @@ test.describe('Reminder E2E Flow', () => {
     console.log('[PASS] SSE ?????');
 
     // ??
-    const finalState = await page.evaluate(() => (window as any).__sse_connected);
+    const finalState = await page.evaluate(() => {
+      const reminderWindow = window as ReminderWindowState;
+      return reminderWindow.__sse_connected;
+    });
     expect(finalState).toBe(true);
   });
 });

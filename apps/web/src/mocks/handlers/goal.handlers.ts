@@ -18,7 +18,7 @@ import {
   createMockGoalReview,
   createMockGoalReviewList,
 } from '@dailyuse/contracts/mocks';
-import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, GoalFolderClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const GOALS = `${API_BASE}/goals`;
@@ -34,6 +34,9 @@ const toGoalId = (p: string | readonly string[] | undefined) =>
 
 const toFolderId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as GoalFolderClientDTO['id'];
+
+const toKeyResultId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as GoalRecordClientDTO['keyResultId'];
 
 export function createMockGoalAggregateResponse(goalId: GoalClientDTO['id']) {
   const goal = createMockGoal({ id: goalId });
@@ -255,12 +258,8 @@ export const goalHandlers = [
 
   http.get(`${GOALS}/:goalId/key-results/:keyResultId/records`, ({ params }) => {
     const goalId = toGoalId(params['goalId']);
-    const keyResultId = (
-      Array.isArray(params['keyResultId'])
-        ? params['keyResultId'][0]
-        : (params['keyResultId'] ?? '')
-    ) as string;
-    const records = createMockGoalRecordList(3, { goalId, keyResultId: keyResultId as any });
+    const keyResultId = toKeyResultId(params['keyResultId']);
+    const records = createMockGoalRecordList(3, { goalId, keyResultId });
     return HttpResponse.json({
       ok: true,
       code: 200,
@@ -272,11 +271,7 @@ export const goalHandlers = [
 
   http.post(`${GOALS}/:goalId/key-results/:keyResultId/records`, async ({ params, request }) => {
     const goalId = toGoalId(params['goalId']);
-    const keyResultId = (
-      Array.isArray(params['keyResultId'])
-        ? params['keyResultId'][0]
-        : (params['keyResultId'] ?? '')
-    ) as string;
+    const keyResultId = toKeyResultId(params['keyResultId']);
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
       {
@@ -285,7 +280,7 @@ export const goalHandlers = [
         message: 'Created',
         data: createMockGoalRecord({
           goalId,
-          keyResultId: keyResultId as any,
+          keyResultId,
           ...(body as object),
         }),
         timestamp: Date.now(),

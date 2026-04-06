@@ -1,6 +1,19 @@
 import { Page } from '@playwright/test';
 import { API_CONFIG, WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
 
+type SSEEventRecord = {
+  type: string;
+  data: string;
+  timestamp: number;
+};
+
+type SSEWindowState = Window &
+  typeof globalThis & {
+    __sse_connected?: boolean;
+    __sseEvents?: SSEEventRecord[];
+    EventSource: typeof EventSource;
+  };
+
 /**
  * ========================================
  * 测试用户配置
@@ -145,7 +158,7 @@ export async function login(
       { timeout: TIMEOUT_CONFIG.LOGIN }
     );
     console.log('[Auth] 已离开登录页面');
-  } catch (error) {
+  } catch {
     // 方式2: 检查是否有错误提示
     const errorSnackbar = page.locator('[data-testid="login-error-snackbar"]');
     if (await errorSnackbar.isVisible()) {
@@ -173,8 +186,8 @@ export async function waitForSSEConnection(page: Page, timeout: number = 10000) 
   // 等待 EventSource 连接
   await page.waitForFunction(
     () => {
-      // 检查全局状态或特定标识
-      return (window as any).__sse_connected === true;
+      const sseWindow = window as SSEWindowState;
+      return sseWindow.__sse_connected === true;
     },
     { timeout },
   );
@@ -185,25 +198,30 @@ export async function waitForSSEConnection(page: Page, timeout: number = 10000) 
 /**
  * 监听 SSE 事件
  */
-export async function captureSSEEvents(page: Page): Promise<any[]> {
-  const events: any[] = [];
-
+export async function captureSSEEvents(page: Page): Promise<void> {
   // 注入监听器到页面上下文
   await page.evaluate(() => {
+    const sseWindow = window as SSEWindowState;
+
     // 保存原始 EventSource
-    const OriginalEventSource = window.EventSource;
+    const OriginalEventSource = sseWindow.EventSource;
 
     // 创建事件收集器
-    (window as any).__sseEvents = [];
+    sseWindow.__sseEvents = [];
 
     // 重写 EventSource
-    (window as any).EventSource = class extends OriginalEventSource {
+    sseWindow.EventSource = class extends OriginalEventSource {
       constructor(url: string | URL, eventSourceInitDict?: EventSourceInit) {
         super(url, eventSourceInitDict);
 
+        const pushEvent = (event: SSEEventRecord) => {
+          sseWindow.__sseEvents ??= [];
+          sseWindow.__sseEvents.push(event);
+        };
+
         // 监听所有消息
         this.addEventListener('message', (event) => {
-          (window as any).__sseEvents.push({
+          pushEvent({
             type: 'message',
             data: event.data,
             timestamp: Date.now(),
@@ -218,8 +236,8 @@ export async function captureSSEEvents(page: Page): Promise<any[]> {
           'schedule:popup-reminder',
           'schedule:sound-reminder',
         ].forEach((eventType) => {
-          this.addEventListener(eventType, (event: any) => {
-            (window as any).__sseEvents.push({
+          this.addEventListener(eventType, (event: MessageEvent<string>) => {
+            pushEvent({
               type: eventType,
               data: event.data,
               timestamp: Date.now(),
@@ -229,22 +247,20 @@ export async function captureSSEEvents(page: Page): Promise<any[]> {
 
         // 标记连接状态
         this.addEventListener('open', () => {
-          (window as any).__sse_connected = true;
+          sseWindow.__sse_connected = true;
         });
       }
     };
   });
-
-  // 返回获取事件的函数
-  return events;
 }
 
 /**
  * 获取捕获的 SSE 事件
  */
-export async function getSSEEvents(page: Page): Promise<any[]> {
+export async function getSSEEvents(page: Page): Promise<SSEEventRecord[]> {
   const events = await page.evaluate(() => {
-    return (window as any).__sseEvents || [];
+    const sseWindow = window as SSEWindowState;
+    return sseWindow.__sseEvents || [];
   });
   return events;
 }
@@ -254,7 +270,8 @@ export async function getSSEEvents(page: Page): Promise<any[]> {
  */
 export async function clearSSEEvents(page: Page) {
   await page.evaluate(() => {
-    (window as any).__sseEvents = [];
+    const sseWindow = window as SSEWindowState;
+    sseWindow.__sseEvents = [];
   });
 }
 

@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
-import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
+import { WEB_CONFIG } from '../config';
 
 test('Goal 对话框调试', async ({ page }) => {
   console.log('登录...');

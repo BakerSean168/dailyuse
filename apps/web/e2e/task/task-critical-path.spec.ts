@@ -59,7 +59,7 @@ test.describe('Task Critical Path Analysis', () => {
     for (const taskTitle of testTasks) {
       try {
         await cleanupTask(page, taskTitle);
-      } catch (error) {
+      } catch {
         console.log(`Failed to cleanup ${taskTitle}`);
       }
     }

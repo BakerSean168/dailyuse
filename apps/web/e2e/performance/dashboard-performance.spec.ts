@@ -15,6 +15,17 @@ import { test, expect } from '@playwright/test';
 import { login } from '../helpers/testHelpers';
 import { WEB_CONFIG } from '../config';
 
+type LargestContentfulPaintLike = PerformanceEntry & {
+  renderTime?: number;
+  loadTime?: number;
+};
+
+type PerformanceWithMemory = Performance & {
+  memory?: {
+    usedJSHeapSize: number;
+  };
+};
+
 test.describe('Dashboard Page Performance Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Login
@@ -74,7 +85,7 @@ test.describe('Dashboard Page Performance Tests', () => {
 
         const observer = new PerformanceObserver((list) => {
           const entries = list.getEntries();
-          const lastEntry = entries[entries.length - 1] as any;
+          const lastEntry = entries[entries.length - 1] as LargestContentfulPaintLike;
           lcpValue = lastEntry.renderTime || lastEntry.loadTime;
         });
 
@@ -273,8 +284,9 @@ test.describe('Dashboard Page Performance Tests', () => {
 
     // Get initial memory usage
     const initialMemory = await page.evaluate(() => {
-      if ((performance as any).memory) {
-        return (performance as any).memory.usedJSHeapSize;
+      const perf = performance as PerformanceWithMemory;
+      if (perf.memory) {
+        return perf.memory.usedJSHeapSize;
       }
       return 0;
     });
@@ -287,8 +299,9 @@ test.describe('Dashboard Page Performance Tests', () => {
 
     // Get final memory usage
     const finalMemory = await page.evaluate(() => {
-      if ((performance as any).memory) {
-        return (performance as any).memory.usedJSHeapSize;
+      const perf = performance as PerformanceWithMemory;
+      if (perf.memory) {
+        return perf.memory.usedJSHeapSize;
       }
       return 0;
     });

@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type ProxyOptions } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
@@ -75,6 +75,30 @@ export default defineConfig(({ mode, command }) => {
   // Proxy target for API requests (local dev only)
   const proxyTarget = env.PROXY_TARGET_URL || env.API_URL || 'http://localhost:3000';
 
+  const apiProxy: ProxyOptions = {
+    target: proxyTarget,
+    changeOrigin: true,
+    secure: false,
+    ws: true, // 支持 WebSocket
+    // 禁用压缩，否则会破坏 SSE 流
+    compress: false,
+    // SSE 特定配置
+    onProxyRes: (proxyRes, req) => {
+      // 确保 SSE 流不被缓冲和压缩
+      if (req.url?.includes('/sse/')) {
+        // 删除可能存在的压缩相关头
+        delete proxyRes.headers['content-encoding'];
+        // 防止下游再次压缩
+        proxyRes.headers['x-no-compression'] = 'true';
+      }
+    },
+    configure: (proxy) => {
+      proxy.on('error', (err) => {
+        console.error('[proxy]', err);
+      });
+    },
+  };
+
   return {
     assetsInclude: ['**/*.icns'],
     worker: {
@@ -113,29 +137,7 @@ export default defineConfig(({ mode, command }) => {
       proxy:
         mode === 'development'
           ? {
-              '/api/v1': {
-                target: proxyTarget,
-                changeOrigin: true,
-                secure: false,
-                ws: true, // 支持 WebSocket
-                // 禁用压缩，否则会破坏 SSE 流
-                compress: false,
-                // SSE 特定配置
-                onProxyRes: (proxyRes: any, req: any, res: any) => {
-                  // 确保 SSE 流不被缓冲和压缩
-                  if (req.url?.includes('/sse/')) {
-                    // 删除可能存在的压缩相关头
-                    delete proxyRes.headers['content-encoding'];
-                    // 防止下游再次压缩
-                    proxyRes.headers['x-no-compression'] = 'true';
-                  }
-                },
-                configure: (proxy, _options) => {
-                  proxy.on('error', (err, _req, _res) => {
-                    console.error('[proxy]', err);
-                  });
-                },
-              },
+              '/api/v1': apiProxy,
             }
           : undefined,
     },

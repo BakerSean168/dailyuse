@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 const baseUrl = 'http://localhost:5173';
-const apiUrl = 'http://localhost:3888';
 
 test.describe('Debug Dialog', () => {
   test.beforeEach(async ({ page }) => {

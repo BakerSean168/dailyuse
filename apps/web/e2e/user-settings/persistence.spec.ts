@@ -96,7 +96,7 @@ test.describe('Settings Persistence', () => {
     expect(reloadedShortcut).toBe(customShortcut);
   });
 
-  test('should persist settings after logout and login', async ({ page, context }) => {
+  test('should persist settings after logout and login', async ({ page }) => {
     // ????
     await page.getByRole('tab', { name: /??|Appearance/i }).click();
     const themeSelect = page
@@ -237,7 +237,6 @@ test.describe('Settings Persistence', () => {
   test('should handle localStorage quota exceeded', async ({ page }) => {
     // ?? localStorage ??
     await page.evaluate(() => {
-      const originalSetItem = Storage.prototype.setItem;
       Storage.prototype.setItem = function () {
         throw new DOMException('QuotaExceededError');
       };

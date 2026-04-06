@@ -7,11 +7,18 @@
 
 import { http, HttpResponse } from 'msw';
 import { createMockUserSetting } from '@dailyuse/contracts/mocks';
+import type {
+  PreferenceCategory,
+  UserSettingPreferences,
+} from '@dailyuse/contracts/setting';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const BASE = `${API_BASE}/settings`;
 
 let mockUserSetting = createMockUserSetting();
+
+const isPreferenceCategory = (category: string): category is PreferenceCategory =>
+  category in mockUserSetting.preferences;
 
 export const settingHandlers = [
   // GET /api/v1/settings — get user settings
@@ -30,11 +37,12 @@ export const settingHandlers = [
     const category = params.category as string;
     const patch = (await request.json()) as Record<string, unknown>;
 
-    if (mockUserSetting.preferences && (mockUserSetting.preferences as any)[category]) {
-      (mockUserSetting.preferences as any)[category] = {
-        ...(mockUserSetting.preferences as any)[category],
+    if (mockUserSetting.preferences && isPreferenceCategory(category)) {
+      const preferences = mockUserSetting.preferences as UserSettingPreferences;
+      preferences[category] = {
+        ...preferences[category],
         ...patch,
-      };
+      } as UserSettingPreferences[typeof category];
     }
     mockUserSetting = { ...mockUserSetting, updatedAt: Date.now() };
 

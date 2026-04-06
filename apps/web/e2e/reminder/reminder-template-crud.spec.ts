@@ -3,7 +3,7 @@
  * 测试提醒模板的创建、读取、更新、删除功能
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Reminder Template CRUD Operations', () => {
   const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
@@ -151,7 +151,7 @@ test.describe('Reminder Template CRUD Operations', () => {
 
 // ===== Helper Functions =====
 
-async function createTestReminder(page: any, title: string) {
+async function createTestReminder(page: Page, title: string) {
   // 使用 data-testid 选择器
   const createButton = page.locator('[data-testid="create-reminder-template-button"]');
   await createButton.click();
@@ -172,7 +172,7 @@ async function createTestReminder(page: any, title: string) {
   await page.waitForTimeout(1000);
 }
 
-async function cleanupTestReminder(page: any, title: string) {
+async function cleanupTestReminder(page: Page, title: string) {
   try {
     const templateCard = page.locator(`text=${title}`).locator('..').locator('..');
     const deleteButton = templateCard.locator('button:has-text("删除")').or(

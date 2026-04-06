@@ -9,7 +9,6 @@ import { http, HttpResponse } from 'msw';
 import {
   createMockRule,
   createMockRuleList,
-  createMockRuleRevision,
   createMockRuleRevisionList,
 } from '@dailyuse/contracts/mocks';
 
@@ -102,9 +101,7 @@ export const governanceHandlers = [
   }),
 
   // GET /api/v1/governance/rules/search — search rules
-  http.get(`${BASE}/search`, ({ request }) => {
-    const url = new URL(request.url);
-    const query = url.searchParams.get('query') || '';
+  http.get(`${BASE}/search`, () => {
     const rules = createMockRuleList(5);
 
     return HttpResponse.json({

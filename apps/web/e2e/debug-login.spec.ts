@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('debug login flow', async ({ page }) => {
   const baseUrl = 'http://localhost:5173';
@@ -62,7 +62,7 @@ test('debug login flow', async ({ page }) => {
     await page.waitForURL((url) => !url.pathname.includes('/auth'), { timeout: 10000 });
     console.log('16. 成功！新 URL:', page.url());
     await page.screenshot({ path: 'test-results/debug-05-success.png', fullPage: true });
-  } catch (error) {
+  } catch {
     console.log('16. 超时！仍在:', page.url());
     await page.screenshot({ path: 'test-results/debug-05-timeout.png', fullPage: true });
     

@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia';
-import { mount, VueWrapper } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
 import type { Component } from 'vue';
 
@@ -17,8 +17,8 @@ export function createTestPinia() {
  */
 export function mountWithPinia<T extends Component>(
   component: T,
-  options: any = {},
-): VueWrapper<any> {
+  options: Parameters<typeof mount>[1] = {},
+) {
   const pinia = createTestPinia();
 
   return mount(component, {
@@ -55,7 +55,7 @@ export function createMockApplicationService() {
 /**
  * 创建 mock store
  */
-export function createMockStore(initialState: any = {}) {
+export function createMockStore(initialState: Record<string, unknown> = {}) {
   return {
     ...initialState,
     $reset: vi.fn(),
@@ -107,7 +107,7 @@ export function createMockEditorStore() {
 /**
  * 创建 mock 实体
  */
-export function createMockEntity(overrides: any = {}) {
+export function createMockEntity(overrides: Record<string, unknown> = {}) {
   return {
     id: 'mock-uuid',
     name: 'Mock Entity',

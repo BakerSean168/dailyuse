@@ -54,7 +54,7 @@ test.describe('Task Drag & Drop', () => {
     for (const taskTitle of testTasks) {
       try {
         await cleanupTask(page, taskTitle);
-      } catch (error) {
+      } catch {
         console.log(`Failed to cleanup ${taskTitle}`);
       }
     }
@@ -422,9 +422,6 @@ test.describe('Task Drag & Drop', () => {
     // Note: Task reordering might not be implemented
     // This test is exploratory to document behavior
 
-    const sourceTask = taskPage.taskCard('E2E Drag - Task 4');
-    const targetTask = taskPage.taskCard('E2E Drag - Task 2');
-
     try {
       await taskPage.dragTaskTo('E2E Drag - Task 4', 'E2E Drag - Task 2');
       await page.waitForTimeout(500);
@@ -441,7 +438,7 @@ test.describe('Task Drag & Drop', () => {
       console.log('|  Feature: Task reordering via drag-drop                   |');
       console.log('|  Status: [PASS] Supported                                      |');
       console.log('+============================================================+\n');
-    } catch (error) {
+    } catch {
       console.log('[WARN]  Task reordering not implemented or not supported\n');
       console.log('This is expected - reordering may be future feature\n');
 
