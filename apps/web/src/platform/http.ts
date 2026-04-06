@@ -11,7 +11,7 @@
  */
 
 import { ResultHttpClient, type TokenProvider } from '@dailyuse/http-client';
-import { useAuthenticationStore } from '@dailyuse/app-vue';
+import { useAuthenticationStore } from '../../../../packages/app-vue/src/modules/authentication/stores/authenticationStore';
 
 // ────────────────────────────────────────
 // Token Provider（延迟获取 Store 避免循环引用）

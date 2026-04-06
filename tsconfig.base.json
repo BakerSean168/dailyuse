@@ -72,10 +72,15 @@
 
       // ✅ UI 组件包
       "@dailyuse/ui-core": ["packages/ui-core/src/index.ts"],
+      "@dailyuse/ui-core/*": ["packages/ui-core/src/*", "packages/ui-core/src/*/index.ts"],
       "@dailyuse/ui-react-native": ["packages/ui-react-native/src/index.ts"],
       "@dailyuse/app-react": ["packages/app-react/src/index.ts"],
       "@dailyuse/app-vue": ["packages/app-vue/src/index.ts"],
       "@dailyuse/ui-vue-shadcn": ["packages/ui-vue-shadcn/src/index.ts"],
+      "@dailyuse/ui-vue-shadcn/*": [
+        "packages/ui-vue-shadcn/src/*",
+        "packages/ui-vue-shadcn/src/*/index.ts"
+      ],
       "@dailyuse/dashboard": ["packages/dashboard/src/index.ts"],
       "@dailyuse/dashboard/*": ["packages/dashboard/src/*/index.ts", "packages/dashboard/src/*.ts"],
 
@@ -90,5 +95,3 @@
     }
   }
 }
-
-

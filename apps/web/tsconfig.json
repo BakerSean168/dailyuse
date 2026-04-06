@@ -54,10 +54,15 @@
     // 路径别名
     "paths": {
       // 项目内部别名：@/ 指向 src 目录
+      "@/components/ui/*": ["../../packages/ui-vue-shadcn/src/components/ui/*/index.ts"],
+      "@/lib/*": ["../../packages/ui-vue-shadcn/src/lib/*"],
       "@/*": ["./src/*"],
 
       // ✅ 开发态源码白名单：仅保留当前需要深度联调的 workspace 包
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
+      "@dailyuse/ui-vue-shadcn/components/ui/*": [
+        "../../packages/ui-vue-shadcn/src/components/ui/*/index.ts"
+      ],
       "@dailyuse/authentication/application-client": [
         "../../packages/authentication/src/application-client/index.ts"
       ],

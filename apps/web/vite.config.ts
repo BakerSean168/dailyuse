@@ -55,17 +55,17 @@ export default defineConfig(({ mode, command }) => {
     webDevWorkspaceEntries,
   );
 
-  const devWorkspaceAliases = isDev
-    ? [
-        ...createAssetsAliasEntries(workspaceRoot),
-        ...createUiVueSourceAliasEntries(workspaceRoot),
-        ...createContractsAliasEntries(workspaceRoot),
-      ]
-    : createAssetsAliasEntries(workspaceRoot);
+  const sharedWorkspaceAliases = [
+    ...createAssetsAliasEntries(workspaceRoot),
+    ...createUiVueSourceAliasEntries(workspaceRoot),
+  ];
+
+  const envSpecificAliases = isDev ? createContractsAliasEntries(workspaceRoot) : [];
 
   const resolveAliases = [
     ...directWorkspaceAliases,
-    ...devWorkspaceAliases,
+    ...sharedWorkspaceAliases,
+    ...envSpecificAliases,
     {
       find: '@',
       replacement: path.resolve(__dirname, './src'),

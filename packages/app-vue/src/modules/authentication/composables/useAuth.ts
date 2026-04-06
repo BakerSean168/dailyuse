@@ -36,6 +36,15 @@ export function useAuth() {
   const hasDesktopWindowBridge = () =>
     typeof window !== 'undefined' && typeof (window as any).electronAPI?.invoke === 'function';
 
+  const redirectWithReload = (path: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.replace(path);
+      return;
+    }
+
+    void router.push(path);
+  };
+
   async function completeAuthSuccess(
     data: AuthResponseDTO,
     title: string,
@@ -49,7 +58,7 @@ export function useAuth() {
       return true;
     }
 
-    await router.push('/');
+    redirectWithReload('/');
     return true;
   }
 
@@ -241,7 +250,7 @@ export function useAuth() {
       if (hasDesktopWindowBridge()) {
         await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_LOGIN);
       } else {
-        await router.push('/auth');
+        redirectWithReload('/auth');
       }
     }
   }

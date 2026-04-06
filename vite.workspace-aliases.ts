@@ -68,8 +68,16 @@ export function createUiVueSourceAliasEntries(workspaceRoot: string): Alias[] {
 
   return [
     {
+      find: /^@dailyuse\/ui-vue-shadcn\/(.+)$/,
+      replacement: `${uiVueRoot}/$1`,
+    },
+    {
       find: /^@dailyuse\/ui-vue-shadcn$/,
       replacement: `${uiVueRoot}/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/ui-core\/(.+)$/,
+      replacement: `${uiCoreRoot}/$1`,
     },
     {
       find: /^@dailyuse\/ui-core$/,

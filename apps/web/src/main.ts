@@ -1,27 +1,12 @@
 /**
- * Web App Entry Point
+ * Web entry dispatcher.
  *
- * 薄壳：Vue 3 + Pinia + app-vue Router + Platform DI
+ * Keep the initial entry tiny so `/auth` can boot without downloading the
+ * full authenticated application shell.
  */
 
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import { createWebHistory } from 'vue-router';
-import { APP_TITLE_NAME, applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
-import {
-  createAppRouter,
-  useAuthenticationStore,
-  createI18nPlugin,
-  registerNotificationInitializationTasks,
-  applyThemeMode,
-  usePresentationPreferenceStore,
-} from '@dailyuse/app-vue';
-import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
+import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
 
-import App from './App.vue';
-import { installWebServices } from './platform/di';
 import './styles/index.css';
 
 // Polyfill crypto.randomUUID for non-secure contexts
@@ -33,53 +18,33 @@ if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
   };
 }
 
+function isAuthRoute(pathname: string): boolean {
+  return pathname === '/auth' || pathname.startsWith('/auth/');
+}
+
+async function startMockWorkerIfEnabled() {
+  if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_API === 'true') {
+    const { worker } = await import('./mocks/browser');
+    await worker.start({ onUnhandledRequest: 'bypass' });
+  }
+}
+
 async function startApp() {
   applyDocumentIcons({
     faviconHref: logoIco,
     appleTouchIconHref: logo128,
   });
 
-  // MSW mock in development
-  if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_API === 'true') {
-    const { worker } = await import('./mocks/browser');
-    await worker.start({ onUnhandledRequest: 'bypass' });
+  await startMockWorkerIfEnabled();
+
+  if (isAuthRoute(window.location.pathname)) {
+    const { bootstrapAuthApp } = await import('./bootstrap/auth');
+    await bootstrapAuthApp();
+    return;
   }
 
-  const app = createApp(App);
-
-  // Pinia
-  const pinia = createPinia();
-  pinia.use(piniaPluginPersistedstate);
-  app.use(pinia);
-
-  const presentationStore = usePresentationPreferenceStore();
-  applyThemeMode(presentationStore.theme);
-  document.documentElement.lang = presentationStore.locale;
-
-  // I18n — must be after Pinia (locale bridge reads store) but before Router
-  app.use(createI18nPlugin(presentationStore.locale));
-
-  // Router (Web History)
-  const router = createAppRouter({
-    history: createWebHistory(),
-    isAuthenticated: () => useAuthenticationStore().isAuthenticated,
-  });
-  router.beforeEach(() => progressStart());
-  router.afterEach((to) => {
-    progressDone();
-    const title = to.meta.title as string | undefined;
-    document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
-  });
-  app.use(router);
-
-  // Platform DI — HTTP-backed services + navigation
-  app.use(installWebServices);
-
-  // App-Vue module initialization tasks
-  registerNotificationInitializationTasks();
-  await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
-
-  app.mount('#app');
+  const { bootstrapMainApp } = await import('./bootstrap/app');
+  await bootstrapMainApp();
 }
 
-startApp();
+void startApp();
