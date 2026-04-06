@@ -1,30 +1,10 @@
 /**
- * Desktop Renderer Entry Point (Vue 3 Thin Shell)
+ * Desktop renderer entry dispatcher.
  *
- * Mirrors the web app's main.ts but uses:
- * - Hash history (file:// protocol compatibility)
- * - IPC adapters instead of HTTP adapters
- * - Electron-specific features (titlebar, tray, shortcuts)
+ * Keep startup tiny so `#/auth` can boot without paying for the entire
+ * authenticated renderer shell.
  */
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import { createWebHashHistory } from 'vue-router';
-import { APP_TITLE_NAME, applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
-
-import {
-  createAppRouter,
-  useAuthenticationStore,
-  createI18nPlugin,
-  registerNotificationInitializationTasks,
-  DesktopAuthView,
-} from '@dailyuse/app-vue';
-import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
-
-import App from './App.vue';
-import { installIpcServices } from './platform/di';
-import { initElectronFeatures } from './platform/electron';
+import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
 
 import './styles/index.css';
 
@@ -75,56 +55,22 @@ function ensureElectronBridgeAvailable(): void {
   );
 }
 
-/**
- * Validates Pinia-persisted auth state against the main process session.
- *
- * If the renderer thinks it is authenticated (from a previous session) but
- * the main process has no live session, we try `auth:initialize` first
- * (which restores from encrypted tokens / SQLite). If that also fails,
- * we clear the store so the router guard redirects to login.
- */
-async function syncRendererAuthState(): Promise<void> {
-  const store = useAuthenticationStore();
-  if (!store.isAuthenticated) return; // nothing persisted — skip sync
-
-  try {
-    // 1. Ask main process for current auth status
-    const status = await window.electronAPI!.invoke('auth:get-status') as {
-      authenticated: boolean;
-      mode?: string;
-    };
-
-    if (status.authenticated) return; // main process agrees — all good
-
-    // 2. Main process has no session — try restoring it
-    const initResult = await window.electronAPI!.invoke('auth:initialize') as {
-      ok?: boolean;
-      hasValidSession?: boolean;
-    };
-
-    if (initResult?.ok && initResult?.hasValidSession) return; // restored
-
-    // 3. Could not restore — clear stale renderer state
-    console.warn('[Auth Sync] Main process has no valid session, clearing renderer auth state');
-    store.reset();
-  } catch (err) {
-    // IPC failure during startup (e.g. module not yet registered) — clear to be safe
-    console.error('[Auth Sync] Failed to sync with main process:', err);
-    store.reset();
-  }
+function getHashPath(): string {
+  const hash = window.location.hash;
+  const rawPath = hash.startsWith('#') ? hash.slice(1) : hash;
+  const [path = '/'] = rawPath.split(/[?#]/, 1);
+  return path || '/';
 }
 
-async function startApp() {
+function isAuthHashRoute(path: string): boolean {
+  return path === '/auth' || path.startsWith('/auth/');
+}
+
+async function startRenderer() {
   applyDocumentIcons({
     faviconHref: logoIco,
     appleTouchIconHref: logo128,
   });
-
-  const app = createApp(App);
-
-  app.config.errorHandler = (error) => {
-    renderStartupError(error);
-  };
 
   window.addEventListener('error', (event) => {
     renderStartupError(event.error ?? event.message);
@@ -136,59 +82,16 @@ async function startApp() {
 
   ensureElectronBridgeAvailable();
 
-  // Pinia
-  const pinia = createPinia();
-  pinia.use(piniaPluginPersistedstate);
-  app.use(pinia);
+  if (isAuthHashRoute(getHashPath())) {
+    const { bootstrapAuthApp } = await import('./bootstrap/auth');
+    await bootstrapAuthApp();
+    return;
+  }
 
-  // I18n — required before any app-vue composable or global component uses useI18n()
-  app.use(createI18nPlugin('zh-CN'));
-
-  // ── Sync renderer auth state with main process ────────────────
-  // Pinia persistence may hold stale tokens from a previous session.
-  // Verify that the main process actually has a live session before
-  // the router guard allows access to protected routes.
-  await syncRendererAuthState();
-
-  // Router (Hash mode for Electron file:// protocol)
-  const router = createAppRouter({
-    history: createWebHashHistory(),
-    isAuthenticated: () => useAuthenticationStore().isAuthenticated,
-    authView: DesktopAuthView,
-    additionalTopLevelRoutes: [
-      {
-        path: '/custom-notification',
-        name: 'custom-notification',
-        component: () => import('./CustomNotificationView.vue'),
-        meta: { requiresAuth: false, layout: 'empty' },
-      },
-    ],
-  });
-
-  router.beforeEach(() => {
-    progressStart();
-  });
-
-  router.afterEach((to) => {
-    progressDone();
-    const title = to.meta.title as string | undefined;
-    document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
-  });
-
-  app.use(router);
-
-  // DI — inject IPC-backed service instances
-  app.use(installIpcServices);
-
-  registerNotificationInitializationTasks();
-  await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
-
-  // Electron-specific features
-  initElectronFeatures(app);
-
-  app.mount('#app');
+  const { bootstrapMainApp } = await import('./bootstrap/app');
+  await bootstrapMainApp();
 }
 
-startApp().catch((error) => {
+startRenderer().catch((error) => {
   renderStartupError(error);
 });
