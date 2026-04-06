@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.1](https://github.com/BakerSean168/dailyuse/compare/v0.5.0...v0.5.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* 修复 native-rebuid 构建指令 ([0f0347f](https://github.com/BakerSean168/dailyuse/commit/0f0347f6e3cea4bc512d2fdb7f5b635810ccacac))
+
+
+### Performance Improvements
+
+* 在desktop 端的 render也差分 auth 和 主应用 ([d648d2c](https://github.com/BakerSean168/dailyuse/commit/d648d2c186ec50025c208035d40d43505ef28a00))
+
 ## [0.5.0](https://github.com/BakerSean168/dailyuse/compare/v0.4.0...v0.5.0) (2026-04-06)
 
 
