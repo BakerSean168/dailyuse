@@ -54,7 +54,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "electron-rebuild -f -w better-sqlite3",
+        "command": "electron-rebuild -f -w better-sqlite3 -w argon2",
         "cwd": "apps/desktop"
       }
     },

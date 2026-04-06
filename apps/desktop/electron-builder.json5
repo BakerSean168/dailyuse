@@ -3,6 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.memoflow.app",
   "asar": true,
+  "electronVersion": "39.2.6",
   "productName": "Memoflow",
   "directories": {
     "output": "dist", // 修改输出目录，与 GitHub Actions 保持一致
