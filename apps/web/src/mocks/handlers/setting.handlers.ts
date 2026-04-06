@@ -20,6 +20,17 @@ let mockUserSetting = createMockUserSetting();
 const isPreferenceCategory = (category: string): category is PreferenceCategory =>
   category in mockUserSetting.preferences;
 
+function applyPreferencePatch<K extends PreferenceCategory>(
+  preferences: UserSettingPreferences,
+  category: K,
+  patch: Partial<UserSettingPreferences[K]>,
+) {
+  preferences[category] = {
+    ...preferences[category],
+    ...patch,
+  };
+}
+
 export const settingHandlers = [
   // GET /api/v1/settings — get user settings
   http.get(BASE, () => {
@@ -38,11 +49,11 @@ export const settingHandlers = [
     const patch = (await request.json()) as Record<string, unknown>;
 
     if (mockUserSetting.preferences && isPreferenceCategory(category)) {
-      const preferences = mockUserSetting.preferences as UserSettingPreferences;
-      preferences[category] = {
-        ...preferences[category],
-        ...patch,
-      } as UserSettingPreferences[typeof category];
+      applyPreferencePatch(
+        mockUserSetting.preferences,
+        category,
+        patch as Partial<UserSettingPreferences[typeof category]>,
+      );
     }
     mockUserSetting = { ...mockUserSetting, updatedAt: Date.now() };
 

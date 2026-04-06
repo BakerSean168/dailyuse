@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
 import type { Component } from 'vue';
+import type { ComponentMountingOptions } from '@vue/test-utils';
 
 /**
  * 创建测试用的 Pinia 实例
@@ -17,17 +18,18 @@ export function createTestPinia() {
  */
 export function mountWithPinia<T extends Component>(
   component: T,
-  options: Parameters<typeof mount>[1] = {},
+  options?: ComponentMountingOptions<T>,
 ) {
   const pinia = createTestPinia();
-
-  return mount(component, {
+  const mergedOptions: ComponentMountingOptions<T> = {
+    ...(options ?? {}),
     global: {
       plugins: [pinia],
-      ...options.global,
+      ...(options?.global ?? {}),
     },
-    ...options,
-  });
+  };
+
+  return mount(component, mergedOptions);
 }
 
 /**
