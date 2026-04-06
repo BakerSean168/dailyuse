@@ -7,9 +7,9 @@
  * 4. HTML: Network First (确保获取最新版本)
  */
 
-const CACHE_NAME = 'dailyuse-cache-v1';
-const STATIC_CACHE_NAME = 'dailyuse-static-v1';
-const DYNAMIC_CACHE_NAME = 'dailyuse-dynamic-v1';
+const CACHE_NAME = 'dailyuse-cache-v2';
+const STATIC_CACHE_NAME = 'dailyuse-static-v2';
+const DYNAMIC_CACHE_NAME = 'dailyuse-dynamic-v2';
 
 // 需要预缓存的核心资源（应用外壳）
 const PRECACHE_URLS = [
@@ -101,6 +101,10 @@ self.addEventListener('activate', (event) => {
  * 检查是否应该缓存该请求
  */
 function shouldCache(url) {
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return false;
+  }
+
   // 检查是否在不缓存列表中
   if (NO_CACHE_PATTERNS.some((pattern) => pattern.test(url))) {
     return false;
@@ -122,6 +126,12 @@ function isNavigationRequest(request) {
  * Cache First 策略 - 静态资源
  */
 async function cacheFirst(request) {
+  const url = request.url;
+
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return fetch(request);
+  }
+
   const cachedResponse = await caches.match(request);
   
   if (cachedResponse) {
@@ -158,6 +168,12 @@ async function cacheFirst(request) {
  * Network First 策略 - HTML 和 API
  */
 async function networkFirst(request) {
+  const url = request.url;
+
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return fetch(request);
+  }
+
   try {
     const networkResponse = await fetch(request);
     
@@ -187,6 +203,10 @@ async function networkFirst(request) {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = request.url;
+
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return;
+  }
   
   // 跳过非 GET 请求
   if (request.method !== 'GET') {
