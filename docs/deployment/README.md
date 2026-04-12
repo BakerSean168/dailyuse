@@ -21,16 +21,20 @@ Internet
   v
 Caddy :80/:443
   |
-  v
-web 容器内 Nginx :80
+  +--> dailyuse.example.com        -> web:80
+  |                                   |
+  |                                   +--> /      -> 前端静态资源
+  |                                   +--> /api/* -> api:3000
   |
-  +--> /            -> 前端静态资源
+  +--> sync.dailyuse.example.com   -> powersync:8080
+                                          |
+                                          +--> postgres:5432
+
+api:3000
   |
-  +--> /api/*       -> api:3000
-                           |
-                           +--> postgres:5432
-                           +--> redis:6379
-                           +--> ai-service:8100
+  +--> postgres:5432
+  +--> redis:6379
+  +--> ai-service:8100
 
 watchtower
   |
@@ -42,6 +46,7 @@ watchtower
 - 外网入口只有 `caddy`
 - `web` 容器内部已经自带 Nginx，不需要再额外引入 Nginx Proxy Manager
 - `web` 的 Nginx 配置以仓库根目录 [`nginx.conf`](D:\home\projects\dailyuse\nginx.conf) 为唯一来源
+- `powersync` 通过独立子域名走 `caddy -> powersync:8080`
 - 数据库和 Redis 只绑定到 `127.0.0.1`，不暴露公网
 - 业务镜像优先从阿里云 ACR 拉取
 - 基础设施镜像如果拉不下来，走本地离线打包上传
@@ -91,6 +96,7 @@ watchtower
 | `redis` | `redis:7-alpine` | 缓存 / 队列 | 本地离线预加载 |
 | `ai-service` | `${REGISTRY}/${IMAGE_NAMESPACE}/dailyuse-ai-service` | AI 服务 | 阿里云 ACR |
 | `api` | `${REGISTRY}/${IMAGE_NAMESPACE}/dailyuse-api` | 后端 API | 阿里云 ACR |
+| `powersync` | `journeyapps/powersync-service:latest` | Desktop / Web 实时同步服务 | 本地离线预加载 |
 | `web` | `${REGISTRY}/${IMAGE_NAMESPACE}/dailyuse-web` | 前端站点 | 阿里云 ACR |
 | `caddy` | `caddy:2-alpine` | HTTPS 入口 | 本地离线预加载 |
 | `watchtower` | `containrrr/watchtower` | 自动更新 | 本地离线预加载 |
@@ -98,7 +104,7 @@ watchtower
 其中：
 
 - `postgres` 和 `redis` 只绑定宿主机 `127.0.0.1`
-- `api`、`web`、`ai-service` 都不直接暴露到公网
+- `api`、`web`、`ai-service`、`powersync` 都不直接暴露到公网
 - `caddy` 暴露 `80/443`
 - `watchtower` 通过 `/var/run/docker.sock` 管理容器更新
 
@@ -109,13 +115,18 @@ watchtower
 - `Caddy`
   - 负责公网 `80/443`
   - 负责 TLS 证书申请与续期
-  - 负责把外部请求转发给 `web`
+  - 负责把主站域名转发给 `web`
+  - 负责把同步子域名转发给 `powersync`
 - `web` 容器内 Nginx
   - 负责前端静态资源
   - 负责 SPA 路由回退到 `index.html`
   - 负责把 `/api/*` 转发到 Docker 网络内的 `api:3000`
+- `powersync`
+  - 负责订阅 Postgres 逻辑复制
+  - 负责把 Postgres 变化下发给 desktop / web 客户端
 - `api`
   - 只处理业务逻辑、鉴权、参数校验、CORS 白名单
+  - 负责签发 PowerSync token，并返回公网同步 endpoint
 
 这意味着浏览器主链路应始终走同源访问：
 
@@ -124,6 +135,17 @@ https://dailyuse.bakersean.top
   ├─ /            -> web 静态资源
   └─ /api/*       -> web(Nginx) -> api
 ```
+
+Desktop / Web 同步链路应为：
+
+```text
+desktop / web client
+  ├─ GET https://dailyuse.bakersean.top/api/v1/powersync/token
+  └─ connect https://sync.dailyuse.bakersean.top
+```
+
+补充一点：生产编排里的 `powersync` 连接 Postgres 时，不再使用手拼 `uri`。
+这里改成了 `hostname / port / database / username / password` 的字段式配置，直接复用 `DB_*` 变量，避免密码里包含 `/`、`=`、`@`、`:` 时把 DSN 解析坏。
 
 不推荐把前端改成直接跨域访问单独 API 域名作为主方案。  
 `API` 侧保留 CORS 白名单是安全兜底，不是主访问路径。
@@ -152,6 +174,7 @@ pgvector/pgvector:pg16
 redis:7-alpine
 caddy:2-alpine
 containrrr/watchtower
+journeyapps/powersync-service:latest
 ```
 
 你本地如果已经生成了 [`dailyuse-infra-images.tar`](D:\home\projects\dailyuse\dailyuse-infra-images.tar)，就直接复用它。
@@ -163,12 +186,14 @@ docker pull pgvector/pgvector:pg16
 docker pull redis:7-alpine
 docker pull caddy:2-alpine
 docker pull containrrr/watchtower
+docker pull journeyapps/powersync-service:latest
 
 docker save \
   pgvector/pgvector:pg16 \
   redis:7-alpine \
   caddy:2-alpine \
   containrrr/watchtower \
+  journeyapps/powersync-service:latest \
   -o dailyuse-infra-images.tar
 ```
 
@@ -284,7 +309,7 @@ ssh ali-dailyuse "docker images --format '{{.Repository}}:{{.Tag}}' | grep -E 'p
 ### 6.2 第二步：先启动核心服务
 
 ```bash
-ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis ai-service api web caddy"
+ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis ai-service api powersync web caddy"
 ```
 
 这一步的意义：
@@ -304,6 +329,7 @@ ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml 
 - `redis` 是否 healthy
 - `ai-service` 是否 healthy
 - `api` 是否 healthy
+- `powersync` 是否 healthy
 - `web` 是否 healthy
 - `caddy` 是否 running
 
@@ -313,6 +339,7 @@ ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml 
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 postgres"
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 ai-service"
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 api"
+ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 powersync"
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
 ```
 
@@ -381,7 +408,7 @@ scp dailyuse-infra-images.tar ali-dailyuse:/opt/dailyuse/
 ```bash
 ssh ali-dailyuse "cd /opt/dailyuse && docker load -i dailyuse-infra-images.tar"
 ssh ali-dailyuse "cd /opt/dailyuse && ls -lah"
-ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis ai-service api web caddy"
+ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d postgres redis ai-service api powersync web caddy"
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local ps"
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local logs --tail=100 caddy"
 ssh ali-dailyuse "cd /opt/dailyuse && docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d watchtower"
@@ -421,12 +448,29 @@ SERVICE_SECRET=...
 
 ```env
 APP_DOMAIN=<你的域名>
+POWERSYNC_DOMAIN=sync.<你的域名>
 ACME_EMAIL=<你的邮箱>
 CORS_ORIGIN=https://<你的域名>
 ALLOWED_ORIGINS=https://<你的域名>
 ```
 
-### 8.5 AI 相关
+### 8.5 PowerSync 相关
+
+```env
+POWERSYNC_URL=https://sync.<你的域名>
+POWERSYNC_PRIVATE_KEY=<base64-encoded-pem>
+POWERSYNC_PUBLIC_KEY_N=<jwk-n>
+POWERSYNC_PUBLIC_KEY_E=AQAB
+POWERSYNC_KEY_ID=<key-id>
+```
+
+注意：
+
+- `POWERSYNC_URL` 必须是 desktop 能直接访问的公网 HTTPS 地址
+- `POWERSYNC_DOMAIN` 必须有 DNS 解析，并指向同一台服务器
+- `postgres` 在生产环境必须启用 `wal_level=logical`
+
+### 8.6 AI 相关
 
 按你的实际供应商填写：
 
@@ -446,9 +490,12 @@ OPENAI_BASE_URL=...
 2. 前端访问 `/api/` 的请求能正常返回，不是 502/504。
 3. `api` 健康检查通过：`/healthz`
 4. `ai-service` 健康检查通过：`/healthz`
-5. `postgres`、`redis` 状态是 healthy
-6. 数据持久化卷已创建：`postgres-prod-data`、`redis-prod-data`、`api-uploads`
-7. Watchtower 启动后没有认证错误、没有疯狂重启容器
+5. `powersync` 健康检查通过：`/probes/liveness`
+6. `postgres`、`redis` 状态是 healthy
+7. `desktop` 登录后能从 `/api/v1/powersync/token` 获取 token
+8. Web 与 Desktop 各创建一个 goal 后，双端都能看到两个 goal
+9. 数据持久化卷已创建：`postgres-prod-data`、`redis-prod-data`、`api-uploads`
+10. Watchtower 启动后没有认证错误、没有疯狂重启容器
 
 查看卷：
 

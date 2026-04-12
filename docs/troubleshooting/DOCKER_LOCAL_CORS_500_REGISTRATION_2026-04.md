@@ -173,7 +173,7 @@ Error: Not allowed by CORS
 
 ### 1. 修正本地 Docker 测试的 CORS 默认值
 
-在 [docker-compose.local-test.yml](D:\home\projects\dailyuse\docker-compose.local-test.yml) 中为 `api` 增加了本地测试专用覆盖：
+在 [docker-compose.local.yml](D:\home\projects\dailyuse\docker-compose.local.yml) 中为 `api` 增加了本地测试专用覆盖：
 
 - `http://localhost:8080`
 - `http://127.0.0.1:8080`

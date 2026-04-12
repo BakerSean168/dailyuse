@@ -11,13 +11,21 @@
 replication:
   connections:
     - type: postgresql
-      uri: !env PS_SOURCE_URI
+      hostname: !env PS_SOURCE_HOSTNAME
+      port: !env PS_SOURCE_PORT
+      database: !env PS_SOURCE_DATABASE
+      username: !env PS_SOURCE_USERNAME
+      password: !env PS_SOURCE_PASSWORD
       sslmode: disable # Development; use 'verify-full' in production
 
 # Sync bucket storage (can reuse the same Postgres instance)
 storage:
   type: postgresql
-  uri: !env PS_STORAGE_URI
+  hostname: !env PS_STORAGE_HOSTNAME
+  port: !env PS_STORAGE_PORT
+  database: !env PS_STORAGE_DATABASE
+  username: !env PS_STORAGE_USERNAME
+  password: !env PS_STORAGE_PASSWORD
   sslmode: disable
 
 # PowerSync API server port
@@ -139,4 +147,3 @@ client_auth:
         e: !env PS_JWK_E
         alg: RS256
         kid: !env PS_JWK_KID
-

@@ -2,7 +2,8 @@
 # Memoflow Caddy 反向代理配置
 # =============================================================================
 # Caddy 自动申请和续期 Let's Encrypt HTTPS 证书。
-# 所有流量通过 HTTPS 进入 Caddy，再转发到内部 Nginx (web:80)。
+# 主站域名通过 HTTPS 进入 Caddy，再转发到内部 Nginx (web:80)。
+# 同步子域名通过 HTTPS 进入 Caddy，再转发到 PowerSync (powersync:8080)。
 # Nginx 负责静态文件服务、SPA 路由和 /api/ 反向代理。
 # =============================================================================
 
@@ -15,6 +16,23 @@
 	reverse_proxy web:80
 
 	# 安全头（Caddy 层补充，Nginx 层也有）
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+{$POWERSYNC_DOMAIN} {
+	reverse_proxy powersync:8080
+
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options "nosniff"

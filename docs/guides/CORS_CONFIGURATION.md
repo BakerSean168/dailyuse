@@ -61,7 +61,7 @@ CORS_ORIGIN=https://yourdomain.com,https://app.yourdomain.com
 CORS_ORIGIN=http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:8080
 ```
 
-如果使用 `docker-compose.local-test.yml` 在本地通过 `http://localhost:8080` 访问 Web，
+如果使用 `docker-compose.local.yml` 在本地通过 `http://localhost:8080` 访问 Web，
 也必须把 `http://localhost:8080` 和 `http://127.0.0.1:8080` 加入允许列表。
 
 ### 方案 C：允许所有来源（不推荐）

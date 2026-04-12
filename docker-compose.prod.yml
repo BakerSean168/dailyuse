@@ -26,6 +26,14 @@ services:
       - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres-prod-data:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
     networks:
       - dailyuse-network
     healthcheck:
@@ -142,11 +150,11 @@ services:
       AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
       AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-dailyuse-api}
       AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
-      POWERSYNC_URL: ${POWERSYNC_URL:-}
-      POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:-}
-      POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:-}
+      POWERSYNC_URL: ${POWERSYNC_URL:?set POWERSYNC_URL}
+      POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:?set POWERSYNC_PRIVATE_KEY}
+      POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
       POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
-      POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:-powersync-key}
+      POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - api-logs:/app/apps/api/logs
@@ -160,6 +168,45 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  powersync:
+    image: journeyapps/powersync-service:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["start", "-c", "/config/powersync.yaml"]
+    environment:
+      PS_SOURCE_HOSTNAME: postgres
+      PS_SOURCE_PORT: 5432
+      PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_SOURCE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_SOURCE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_STORAGE_HOSTNAME: postgres
+      PS_STORAGE_PORT: 5432
+      PS_STORAGE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_STORAGE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_STORAGE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
+      PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      PS_JWK_KID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+    networks:
+      - dailyuse-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const http = require('http'); const req = http.get('http://127.0.0.1:8080/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   web:
     image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/dailyuse-web:${WEB_TAG:-prod-latest}
@@ -188,12 +235,15 @@ services:
     depends_on:
       web:
         condition: service_healthy
+      powersync:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
     environment:
       APP_DOMAIN: ${APP_DOMAIN:-dailyuse.bakersean.top}
+      POWERSYNC_DOMAIN: ${POWERSYNC_DOMAIN:?set POWERSYNC_DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL:-admin@bakersean.top}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro

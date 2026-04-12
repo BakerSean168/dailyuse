@@ -1,4 +1,78 @@
+#
+# =============================================================================
+# DailyUse 本地 Docker 编排（完整 prod-like 本地模式）
+# =============================================================================
+# 用法：
+#   docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
+#
+# 设计目标：
+#   - 单文件启动，不再叠加 prod/local/local-test 多层 compose
+#   - 尽量保持与生产拓扑一致：postgres + redis + ai-service + api + powersync + web
+#   - 使用本地构建镜像，便于修改代码后快速验证
+#   - 不引入 caddy/watchtower，改为直接暴露调试端口
+#
+# 本地访问入口：
+#   - Web:       http://localhost:8080
+#   - API:       http://localhost:3000
+#   - AI:        http://localhost:8100
+#   - PowerSync: http://localhost:8081
+# =============================================================================
+
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME}
+      POSTGRES_USER: ${DB_USER:?set DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres-local-data:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+    networks:
+      - dailyuse-local-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:?set DB_USER} -d ${DB_NAME:?set DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - yes
+      - --appendfsync
+      - everysec
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-local-data:/data
+    networks:
+      - dailyuse-local-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?set REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
   ai-service:
     image: dailyuse-ai-service:local
     pull_policy: never
@@ -7,6 +81,35 @@ services:
       dockerfile: Dockerfile.ai-service
       args:
         VERSION: local
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: dailyuse-ai-service
+      APP_VERSION: ${APP_VERSION:-0.3.0}
+      SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      REQUEST_TIMEOUT_SECONDS: ${AI_SERVICE_REQUEST_TIMEOUT_SECONDS:-60}
+      CONNECT_TIMEOUT_SECONDS: ${AI_SERVICE_CONNECT_TIMEOUT_SECONDS:-10}
+      INTERNAL_REQUEST_MAX_SKEW_SECONDS: ${INTERNAL_REQUEST_MAX_SKEW_SECONDS:-300}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      DEV_BYPASS_AUTH: ${DEV_BYPASS_AUTH:-false}
+      AI_SERVICE_EVAL_PROVIDER: ${AI_SERVICE_EVAL_PROVIDER:-}
+      AI_SERVICE_EVAL_MODEL: ${AI_SERVICE_EVAL_MODEL:-}
+      AI_SERVICE_EVAL_API_KEY: ${AI_SERVICE_EVAL_API_KEY:-}
+      AI_SERVICE_EVAL_BASE_URL: ${AI_SERVICE_EVAL_BASE_URL:-}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "8100:8100"
+    networks:
+      - dailyuse-local-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8100/healthz').status == 200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   api:
     image: dailyuse-api:local
@@ -16,6 +119,110 @@ services:
       dockerfile: Dockerfile.api
       args:
         VERSION: local
+    restart: unless-stopped
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-DailyUse}
+      APP_VERSION: ${APP_VERSION:-0.3.0}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
+      API_PORT: 3000
+      API_HOST: 0.0.0.0
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:?set DB_NAME}
+      DB_USER: ${DB_USER:?set DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB:-0}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      CORS_ORIGIN: ${LOCAL_DOCKER_CORS_ORIGIN:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000}
+      UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-10485760}
+      ENABLE_DAILY_ANALYSIS: ${ENABLE_DAILY_ANALYSIS:-true}
+      USE_PRIORITY_QUEUE_SCHEDULER: ${USE_PRIORITY_QUEUE_SCHEDULER:-true}
+      AI_PROVIDER_ENCRYPTION_KEY: ${AI_PROVIDER_ENCRYPTION_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      QI_NIU_YUN_API_KEY: ${QI_NIU_YUN_API_KEY:-}
+      QI_NIU_YUN_BASE_URL: ${QI_NIU_YUN_BASE_URL:-}
+      QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
+      AI_SERVICE_BASE_URL: http://ai-service:8100
+      AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
+      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-dailyuse-api}
+      AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
+      POWERSYNC_URL: ${POWERSYNC_URL:?set POWERSYNC_URL}
+      POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:?set POWERSYNC_PRIVATE_KEY}
+      POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
+      POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "3000:3000"
+    volumes:
+      - api-local-logs:/app/apps/api/logs
+      - api-local-uploads:/app/uploads
+      - repository-local-storage:/tmp/dailyuse-repository-storage
+    networks:
+      - dailyuse-local-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('node:http').get('http://127.0.0.1:3000/healthz', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  powersync:
+    image: journeyapps/powersync-service:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["start", "-c", "/config/powersync.yaml"]
+    environment:
+      PS_SOURCE_HOSTNAME: postgres
+      PS_SOURCE_PORT: 5432
+      PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_SOURCE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_SOURCE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_STORAGE_HOSTNAME: postgres
+      PS_STORAGE_PORT: 5432
+      PS_STORAGE_DATABASE: ${DB_NAME:?set DB_NAME}
+      PS_STORAGE_USERNAME: ${DB_USER:?set DB_USER}
+      PS_STORAGE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
+      PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      PS_JWK_KID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${POWERSYNC_HOST_PORT:-8081}:8080"
+    volumes:
+      - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+    networks:
+      - dailyuse-local-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const http = require('http'); const req = http.get('http://127.0.0.1:8080/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   web:
     image: dailyuse-web:local
@@ -25,3 +232,28 @@ services:
       dockerfile: Dockerfile.web
       args:
         VERSION: local
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    networks:
+      - dailyuse-local-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  dailyuse-local-network:
+    driver: bridge
+
+volumes:
+  postgres-local-data:
+  redis-local-data:
+  api-local-logs:
+  api-local-uploads:
+  repository-local-storage:

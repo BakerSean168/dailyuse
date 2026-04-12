@@ -3,14 +3,14 @@ import { spawnSync } from 'node:child_process';
 
 const command = process.argv[2] ?? 'up';
 const envFile = '.env.production.local';
-const composeArgs = ['compose', '-f', 'docker-compose.prod.yml', '-f', 'docker-compose.local.yml', '--env-file', envFile];
+const composeArgs = ['compose', '-f', 'docker-compose.local.yml', '--env-file', envFile];
 
-function readEnvFileKeys(path) {
+function readEnvFileMap(path) {
   if (!existsSync(path)) {
-    return new Set();
+    return new Map();
   }
 
-  const keys = new Set();
+  const values = new Map();
   const lines = readFileSync(path, 'utf8').split(/\r?\n/u);
 
   for (const line of lines) {
@@ -24,10 +24,18 @@ function readEnvFileKeys(path) {
       continue;
     }
 
-    keys.add(trimmed.slice(0, separatorIndex).trim());
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    const value = rawValue.replace(/\s+#.*$/u, '').trim();
+
+    values.set(key, value);
   }
 
-  return keys;
+  return values;
+}
+
+function readEnvFileKeys(path) {
+  return new Set(readEnvFileMap(path).keys());
 }
 
 function run(bin, args, env) {
@@ -52,10 +60,26 @@ function createRuntimeEnv() {
     NX_ISOLATE_PLUGINS: 'false',
   };
   const envKeys = readEnvFileKeys(envFile);
+  const developmentEnv = readEnvFileMap('.env.development');
 
   if (!env.SERVICE_SECRET && !envKeys.has('SERVICE_SECRET')) {
     env.SERVICE_SECRET = 'local-dev-secret';
     console.log('[docker:local] SERVICE_SECRET is not set in .env.production.local, using a local default for Docker validation.');
+  }
+
+  const powerSyncFallbacks = {
+    POWERSYNC_URL: 'http://localhost:8081',
+    POWERSYNC_KEY_ID: developmentEnv.get('POWERSYNC_KEY_ID') ?? 'powersync-dev-d90f228f',
+    POWERSYNC_PRIVATE_KEY: developmentEnv.get('POWERSYNC_PRIVATE_KEY') ?? '',
+    POWERSYNC_PUBLIC_KEY_N: developmentEnv.get('POWERSYNC_PUBLIC_KEY_N') ?? '',
+    POWERSYNC_PUBLIC_KEY_E: developmentEnv.get('POWERSYNC_PUBLIC_KEY_E') ?? 'AQAB',
+  };
+
+  for (const [key, fallback] of Object.entries(powerSyncFallbacks)) {
+    if (!env[key] && !envKeys.has(key) && fallback) {
+      env[key] = fallback;
+      console.log(`[docker:local] ${key} is not set in .env.production.local, using a local default.`);
+    }
   }
 
   return env;
