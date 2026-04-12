@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/BakerSean168/dailyuse.git"
   },
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "commonjs",
   "scripts": {
     "dev": "nx serve",
