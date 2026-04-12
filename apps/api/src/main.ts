@@ -17,6 +17,7 @@ import { initializeLogger, getStartupInfo } from './shared/infrastructure/config
 import { createLogger } from '@dailyuse/utils';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { ApiBootstrapper } from './bootstrap';
+import { ensurePowerSyncPublication } from './shared/infrastructure/database/ensure-powersync-publication.js';
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
@@ -39,7 +40,10 @@ import { RepositoryApiModule } from '@dailyuse/repository/api';
 import { createScheduleApiModule } from '@dailyuse/schedule/api';
 import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
-import { TaskInstancePrismaRepository, TaskTemplatePrismaRepository } from '@dailyuse/task/infrastructure-server';
+import {
+  TaskInstancePrismaRepository,
+  TaskTemplatePrismaRepository,
+} from '@dailyuse/task/infrastructure-server';
 import { createAIApiModule } from '@dailyuse/ai';
 import type { AIApiModuleContext } from '@dailyuse/ai/api';
 import { createSettingModule, UserSettingPrismaRepository } from '@dailyuse/setting';
@@ -128,11 +132,18 @@ async function bootstrap(): Promise<void> {
   });
 
   // 1. 数据库连接
+  let databaseConnected = false;
   try {
     await connectDatabase();
+    databaseConnected = true;
     logger.info('Database connected successfully');
   } catch (dbError) {
     logger.warn('Database connection failed, starting in limited mode', dbError);
+  }
+
+  if (databaseConnected) {
+    logger.info('Ensuring PowerSync publication exists');
+    await ensurePowerSyncPublication();
   }
 
   // 2. 白名单注册 & 启动
@@ -180,7 +191,9 @@ async function bootstrap(): Promise<void> {
 
         if (task.sourceModule === SourceModule.Goal) {
           const goalRepository = new GoalPrismaRepository(prisma);
-          const goal = await goalRepository.findById(task.sourceEntityId, { includeChildren: true });
+          const goal = await goalRepository.findById(task.sourceEntityId, {
+            includeChildren: true,
+          });
           if (
             !goal ||
             goal.deletedAt ||
@@ -205,7 +218,7 @@ async function bootstrap(): Promise<void> {
               ? `目标「${goal.name}」距离截止还有 ${triggerValue} 天。`
               : triggerType === 'TimeProgressPercentage' && triggerValue !== undefined
                 ? `目标「${goal.name}」已达到 ${triggerValue}% 时间进度节点。`
-                : goal.description ?? `目标「${goal.name}」已到达提醒时间。`;
+                : (goal.description ?? `目标「${goal.name}」已到达提醒时间。`);
 
           await createNotification.execute({
             identityId: String(goal.identityId),
@@ -247,7 +260,7 @@ async function bootstrap(): Promise<void> {
           const taskTitle =
             typeof task.metadata.payload['taskTitle'] === 'string'
               ? task.metadata.payload['taskTitle']
-              : template?.title ?? '未命名任务';
+              : (template?.title ?? '未命名任务');
           const reminderType =
             typeof task.metadata.payload['reminderType'] === 'string'
               ? task.metadata.payload['reminderType']

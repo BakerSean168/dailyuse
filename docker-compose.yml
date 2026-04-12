@@ -121,10 +121,7 @@ services:
       - full_page_writes=off
     healthcheck:
       test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${TEST_DB_USER:-test_user} -d ${TEST_DB_NAME:-Memoflow_test}',
-        ]
+        ['CMD-SHELL', 'pg_isready -U ${TEST_DB_USER:-test_user} -d ${TEST_DB_NAME:-Memoflow_test}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -138,4 +135,3 @@ volumes:
     name: Memoflow-dev-db-data
   redis-dev-data:
     name: Memoflow-dev-redis-data
-
