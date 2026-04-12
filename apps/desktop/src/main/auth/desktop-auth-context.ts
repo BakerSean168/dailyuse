@@ -42,14 +42,14 @@ async function resolveRequestContext(
     return directContext;
   }
 
-  const currentUser = await service.getCurrentUser();
-  if (currentUser.identity?.id) {
+  const identityId = service.getCurrentIdentityId();
+  if (identityId) {
     const fallbackContext = {
-      identityId: String(currentUser.identity.id),
+      identityId,
       deviceId: 'desktop-app',
     } satisfies Context;
 
-    logger.warn('Recovered request context from current user fallback', fallbackContext);
+    logger.warn('Recovered request context from identity fallback', fallbackContext);
     return fallbackContext;
   }
 

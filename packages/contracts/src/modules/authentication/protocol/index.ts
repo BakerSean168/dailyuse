@@ -19,6 +19,7 @@ export type {
   SessionInfo,
   DeviceInfoClientDTO,
   AuthStatus,
+  AuthBootstrapSnapshot,
   AuthStatusDTO,
   AuthOperationResult,
   EmailLoginCredentials,

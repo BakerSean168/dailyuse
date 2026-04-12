@@ -37,7 +37,7 @@ export function usePassword() {
   // ========== 修改密码 ==========
 
   async function changePassword(req: ChangePasswordReq): Promise<boolean> {
-    if (!store.accessToken) {
+    if (!store.isAuthenticated) {
       toast.error(t('auth.toast.pleaseLogin'));
       return false;
     }

@@ -8,6 +8,8 @@
  * - Network-aware session management
  */
 
+import type { CurrentUserDTO } from '../api/session.dto';
+
 // ============================================================================
 // Auth Mode & Connection Status
 // ============================================================================
@@ -254,6 +256,14 @@ export interface AuthStatus {
   canSync: boolean;
   needsReauth: boolean;
   lastOnlineAt?: string;
+}
+
+/**
+ * Desktop renderer bootstrap snapshot.
+ */
+export interface AuthBootstrapSnapshot {
+  status: AuthStatus;
+  currentUser: CurrentUserDTO | null;
 }
 
 /**

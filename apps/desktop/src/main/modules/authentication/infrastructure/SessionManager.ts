@@ -12,8 +12,9 @@
  */
 
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import { app } from 'electron';
-import { machineIdSync } from 'node-machine-id';
 import * as os from 'os';
 import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
 import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
@@ -202,15 +203,17 @@ export class SessionManager {
         return { ok: false, needsReLogin: true };
       }
 
-      const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
-      if (!tokenData.identityId.startsWith(expectedIdentityPrefix)) {
-        this.logger.warn('Discarding stored tokens with unsupported identity prefix', {
-          identityId: tokenData.identityId,
-          expectedPrefix: expectedIdentityPrefix,
-        });
-        await this.tokenManager.clearTokens();
-        this.currentSession = null;
-        return { ok: false, needsReLogin: true };
+      if (this.isGuestToken(tokenData)) {
+        const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
+        if (!tokenData.identityId.startsWith(expectedIdentityPrefix)) {
+          this.logger.warn('Discarding stale guest token with unsupported identity prefix', {
+            identityId: tokenData.identityId,
+            expectedPrefix: expectedIdentityPrefix,
+          });
+          await this.tokenManager.clearTokens();
+          this.currentSession = null;
+          return { ok: false, needsReLogin: true };
+        }
       }
 
       // 2. Check if the refresh token is expired
@@ -607,6 +610,10 @@ export class SessionManager {
       deviceInfo: device.toDTO(),
     });
 
+    this.logger.info('Persisting online session locally', {
+      identityId: params.identityId,
+      sessionId: params.sessionId,
+    });
     await this.sessionRepository.save(session);
     this.currentSession = session;
 
@@ -915,10 +922,18 @@ export class SessionManager {
       deviceInfo: device.toDTO(),
     });
 
+    this.logger.info('Persisting new guest session locally', {
+      guestId,
+      sessionId: session.id,
+    });
     await this.sessionRepository.save(session);
     this.currentSession = session;
 
     // Save guest tokens locally
+    this.logger.info('Persisting guest tokens locally', {
+      guestId,
+      sessionId: session.id,
+    });
     await this.tokenManager.saveTokens({
       accessToken: SessionManager.GUEST_ACCESS_TOKEN,
       refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
@@ -962,7 +977,7 @@ export class SessionManager {
 
   /** Generate device info. */
   private generateDeviceInfo(): DeviceInfoClientDTO {
-    const machineId = machineIdSync(true);
+    const machineId = this.getOrCreateInstallationDeviceId();
     const platform = os.platform();
     const release = os.release();
     const hostname = os.hostname();
@@ -979,6 +994,33 @@ export class SessionManager {
       firstSeenAt: now,
       lastSeenAt: now,
     };
+  }
+
+  private getOrCreateInstallationDeviceId(): string {
+    const authDir = path.join(app.getPath('userData'), 'auth');
+    const deviceIdPath = path.join(authDir, 'device-id');
+
+    try {
+      if (fs.existsSync(deviceIdPath)) {
+        const persistedId = fs.readFileSync(deviceIdPath, 'utf8').trim();
+        if (persistedId.length > 0) {
+          return persistedId;
+        }
+      }
+    } catch (error) {
+      this.logger.warn('Failed to read persisted desktop device id, regenerating', { error });
+    }
+
+    const generatedId = crypto.randomUUID();
+
+    try {
+      fs.mkdirSync(authDir, { recursive: true });
+      fs.writeFileSync(deviceIdPath, generatedId, 'utf8');
+    } catch (error) {
+      this.logger.warn('Failed to persist desktop device id, using in-memory fallback', { error });
+    }
+
+    return generatedId;
   }
 
   /** Generate a device fingerprint. */

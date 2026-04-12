@@ -50,7 +50,9 @@ export async function loginDesktopAccount(
     try {
       loginUrl = remoteGateway.createLoginUrl();
     } catch (error) {
-      logger.error('Failed to resolve login API URL from desktop config', { error });
+      logger.error('Failed to resolve login API URL from desktop config', {
+        error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+      });
       return {
         ok: false,
         error: createConfigError(
@@ -64,7 +66,7 @@ export async function loginDesktopAccount(
     const response = await remoteGateway.login({
       email: request.email,
       password: request.password,
-    });
+    }, loginUrl);
 
     if (!response.ok) {
       const message =
@@ -122,7 +124,7 @@ export async function loginDesktopAccount(
     };
   } catch (error) {
     logger.warn('Remote login request failed, allowing offline fallback', {
-      error,
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
       onlineSnapshot,
     });
     return {

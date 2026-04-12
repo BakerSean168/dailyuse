@@ -46,6 +46,7 @@ const Ch = {
   ENTER_GUEST_MODE: 'auth:enter-guest-mode',
   GET_CURRENT_USER: 'auth:get-current-user',
   GET_STATUS: 'auth:get-status',
+  GET_BOOTSTRAP_SNAPSHOT: 'auth:get-bootstrap-snapshot',
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
@@ -154,6 +155,7 @@ export const DesktopAuthElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.ENTER_GUEST_MODE, () => desktopService.enterGuestMode());
     ipcMain.handle(Ch.GET_STATUS, () => desktopService.getStatus());
+    ipcMain.handle(Ch.GET_BOOTSTRAP_SNAPSHOT, () => desktopService.buildBootstrapSnapshot());
     ipcMain.handle(Ch.INITIALIZE, () => desktopService.initialize());
     ipcMain.handle(Ch.AUTO_LOGIN, () => desktopService.autoLogin());
     ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LIST, () => desktopService.getRememberedAccounts());

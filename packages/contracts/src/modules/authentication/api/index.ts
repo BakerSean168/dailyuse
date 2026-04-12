@@ -1,6 +1,6 @@
 /**
  * Authentication API - Unified Exports
- * 
+ *
  * 统一导出所有认证相关的 API 定义
  * 使用方式: import { LoginByEmailReq, RegisterByEmailReq } from '@contracts/authentication/api';
  */
@@ -12,3 +12,4 @@ export * from './password.dto';
 export * from './oauth.dto';
 export * from './session.dto';
 export * from './response-schemas';
+export type { AuthBootstrapSnapshot } from '../protocol/desktop-auth.types';

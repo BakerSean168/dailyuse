@@ -35,7 +35,7 @@ export function useSession() {
   // ========== 会话操作 ==========
 
   async function loadSessions(): Promise<boolean> {
-    if (!store.accessToken) return false;
+    if (!store.isAuthenticated) return false;
 
     store.setLoading(true);
     const result = await service.listSessions();
@@ -52,7 +52,7 @@ export function useSession() {
   }
 
   async function revokeSession(sessionId: string): Promise<boolean> {
-    if (!store.accessToken) return false;
+    if (!store.isAuthenticated) return false;
 
     store.setLoading(true);
     const result = await service.revokeSession({ sessionId } as Parameters<

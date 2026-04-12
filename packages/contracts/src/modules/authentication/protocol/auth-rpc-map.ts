@@ -33,6 +33,7 @@ import type {
   OAuthCallbackReq,
   OAuthCallbackRes,
 } from '../api';
+import type { AuthBootstrapSnapshot } from './desktop-auth.types';
 
 export type AuthRpcMap = {
   // Registration
@@ -47,6 +48,7 @@ export type AuthRpcMap = {
 
   // Session
   'auth:get-current-user': [GetCurrentUserReq, GetCurrentUserRes];
+  'auth:get-bootstrap-snapshot': [void, AuthBootstrapSnapshot];
   'auth:refresh-token': [RefreshTokenReq, RefreshTokenRes];
   'auth:session:list': [ListSessionsReq, ListSessionsRes];
   'auth:session:revoke': [RevokeSessionReq, RevokeSessionRes];

@@ -167,7 +167,7 @@ export class WindowManager {
     this.loginWindow.setMenuBarVisibility(false);
     this.loginWindow.removeMenu();
 
-    this.attachWindowDiagnostics();
+    this.attachWindowDiagnostics(this.loginWindow, 'login');
     this.attachWindowControlStateSync(this.loginWindow);
 
     // 准备好后显示
@@ -225,7 +225,7 @@ export class WindowManager {
     this.mainWindow.setMenuBarVisibility(false);
     this.mainWindow.removeMenu();
 
-    this.attachWindowDiagnostics();
+    this.attachWindowDiagnostics(this.mainWindow, 'main');
     this.attachWindowControlStateSync(this.mainWindow);
 
     // 准备好后显示
@@ -378,7 +378,7 @@ export class WindowManager {
       });
     } else {
       // 生产模式：加载打包的 HTML
-      const htmlPath = path.join(__dirname, '../../renderer/index.html');
+      const htmlPath = path.join(__dirname, '../dist-renderer/index.html');
       if (route === '/') {
         void window.loadFile(htmlPath).catch((error) => {
           logger.error('Failed to load renderer HTML file', { route, htmlPath, error });
@@ -396,31 +396,33 @@ export class WindowManager {
     }
   }
 
-  private attachWindowDiagnostics(): void {
-    // window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    //   logger.error('Window failed to load content', {
-    //     windowType,
-    //     errorCode,
-    //     errorDescription,
-    //     validatedURL,
-    //   });
-    // });
-    // window.webContents.on('render-process-gone', (_event, details) => {
-    //   logger.error('Renderer process exited unexpectedly', {
-    //     windowType,
-    //     reason: details.reason,
-    //     exitCode: details.exitCode,
-    //   });
-    // });
-    // window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-    //   logger.info('Renderer console message', {
-    //     windowType,
-    //     level,
-    //     message,
-    //     line,
-    //     sourceId,
-    //   });
-    // });
+  private attachWindowDiagnostics(window: BrowserWindow, windowType: WindowType): void {
+    window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+      logger.error('Window failed to load content', {
+        windowType,
+        errorCode,
+        errorDescription,
+        validatedURL,
+      });
+    });
+
+    window.webContents.on('render-process-gone', (_event, details) => {
+      logger.error('Renderer process exited unexpectedly', {
+        windowType,
+        reason: details.reason,
+        exitCode: details.exitCode,
+      });
+    });
+
+    window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+      logger.info('Renderer console message', {
+        windowType,
+        level,
+        message,
+        line,
+        sourceId,
+      });
+    });
   }
 
   private getWindowForSender(webContentsId?: number): BrowserWindow | null {

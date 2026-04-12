@@ -14,6 +14,7 @@ import type {
   AuthIdentityClientDTO,
   AuthSessionClientDTO,
   AuthResponseDTO,
+  AuthBootstrapSnapshot,
 } from '@dailyuse/contracts/authentication';
 
 // ============ State Interface ============
@@ -40,11 +41,11 @@ export interface AuthenticationState {
   isLoading: boolean;
   error: string | null;
 
-  // 令牌过期时间
-  tokenExpiresAt: number | null;
-
   // 是否正在初始化
   isInitializing: boolean;
+
+  // Desktop 启动快照（仅桌面端使用，不持久化）
+  desktopBootstrapSnapshot: AuthBootstrapSnapshot | null;
 }
 
 // ============ Store ============
@@ -58,32 +59,24 @@ export const useAuthenticationStore = defineStore('authentication', {
     currentSession: null,
     isLoading: false,
     error: null,
-    tokenExpiresAt: null,
     isInitializing: false,
+    desktopBootstrapSnapshot: null,
   }),
 
   getters: {
     // ========== 认证状态 ==========
     /**
-     * Derived from persisted state — survives page refresh.
-     * True when both identity and access token are present.
+     * Desktop prefers the runtime bootstrap snapshot.
+     * Web falls back to persisted identity + token.
      */
-    isAuthenticated: (state) => state.currentIdentity !== null && state.accessToken !== null,
+    isAuthenticated: (state) =>
+      state.desktopBootstrapSnapshot
+        ? state.desktopBootstrapSnapshot.status.authenticated
+        : state.currentIdentity !== null && state.accessToken !== null,
 
     getIdentityId: (state) => state.currentIdentity?.id ?? null,
 
     getIdentityStatus: (state) => state.currentIdentity?.status ?? null,
-
-    isTokenExpired: (state) => {
-      if (!state.tokenExpiresAt) return true;
-      return Date.now() >= state.tokenExpiresAt;
-    },
-
-    getTokenExpiresIn: (state) => {
-      if (!state.tokenExpiresAt) return 0;
-      const remaining = state.tokenExpiresAt - Date.now();
-      return Math.max(0, remaining);
-    },
 
     // ========== 会话状态 ==========
     getActiveSessionCount: (state) => state.activeSessions?.length ?? 0,
@@ -106,7 +99,6 @@ export const useAuthenticationStore = defineStore('authentication', {
     // ========== Token Actions ==========
     setAccessToken(token: string | null, expiresAt?: number) {
       this.accessToken = token;
-      this.tokenExpiresAt = token && typeof expiresAt === 'number' ? expiresAt : null;
     },
 
     setRefreshToken(token: string | null) {
@@ -116,7 +108,6 @@ export const useAuthenticationStore = defineStore('authentication', {
     clearTokens() {
       this.accessToken = null;
       this.refreshToken = null;
-      this.tokenExpiresAt = null;
     },
 
     // ========== Session Actions ==========
@@ -150,6 +141,19 @@ export const useAuthenticationStore = defineStore('authentication', {
       this.isInitializing = value;
     },
 
+    hydrateDesktopBootstrapSnapshot(snapshot: AuthBootstrapSnapshot) {
+      this.desktopBootstrapSnapshot = snapshot;
+      this.authMode = snapshot.status.mode;
+      this.currentIdentity = snapshot.currentUser?.identity ?? null;
+      this.currentSession = snapshot.currentUser?.session ?? null;
+      this.activeSessions = snapshot.currentUser?.session ? [snapshot.currentUser.session] : [];
+      this.accessToken = null;
+      this.refreshToken = null;
+      this.error = null;
+      this.isLoading = false;
+      this.isInitializing = false;
+    },
+
     // ========== Auth Response Handler ==========
     /**
      * 处理认证响应（登录/注册成功后统一调用）
@@ -176,19 +180,13 @@ export const useAuthenticationStore = defineStore('authentication', {
       this.currentSession = null;
       this.isLoading = false;
       this.error = null;
-      this.tokenExpiresAt = null;
       this.isInitializing = false;
+      this.desktopBootstrapSnapshot = null;
     },
   },
 
   persist: {
-    // 持久化令牌和身份（isAuthenticated is now a derived getter）
-    pick: [
-      'accessToken',
-      'refreshToken',
-      'currentIdentity',
-      'authMode',
-      'tokenExpiresAt',
-    ] as string[],
+    // 持久化令牌和身份（desktop bootstrap snapshot is runtime-only）
+    pick: ['accessToken', 'refreshToken', 'currentIdentity', 'authMode'] as string[],
   },
 });

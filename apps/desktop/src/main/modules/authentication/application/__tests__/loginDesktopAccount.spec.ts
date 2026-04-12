@@ -76,6 +76,37 @@ describe('loginDesktopAccount', () => {
     });
   });
 
+  it('returns CONFIG_ERROR when desktop API base URL cannot be resolved', async () => {
+    const logger = createLogger();
+
+    const result = await loginDesktopAccount(
+      {
+        email: 'user@example.com',
+        password: 'secret123',
+      },
+      {
+        isOnline: () => true,
+        remoteGateway: {
+          createLoginUrl: () => {
+            throw new Error('Desktop API base URL is not configured');
+          },
+          login: vi.fn(),
+        },
+        logger,
+      },
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        code: 'CONFIG_ERROR',
+        message: 'Desktop API base URL is not configured',
+        shouldFallbackToOffline: false,
+      },
+    });
+    expect(logger.error).toHaveBeenCalledOnce();
+  });
+
   it('returns ONLINE_USER response when API login succeeds', async () => {
     const authPayload = {
       accessToken: 'access-token',

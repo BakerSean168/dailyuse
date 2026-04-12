@@ -9,6 +9,7 @@ import {
   createI18nPlugin,
   registerNotificationInitializationTasks,
   DesktopAuthView,
+  hydrateDesktopBootstrapAuthState,
 } from '@dailyuse/app-vue';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
@@ -17,30 +18,13 @@ import App from '../App.vue';
 import { installDesktopAppServices } from '../platform/di-app';
 import { initElectronFeatures } from '../platform/electron';
 
-async function syncRendererAuthState(): Promise<void> {
-  const store = useAuthenticationStore();
-  if (!store.isAuthenticated) return;
-
+async function hydrateRendererAuthState(): Promise<boolean> {
   try {
-    const status = (await window.electronAPI!.invoke('auth:get-status')) as {
-      authenticated: boolean;
-      mode?: string;
-    };
-
-    if (status.authenticated) return;
-
-    const initResult = (await window.electronAPI!.invoke('auth:initialize')) as {
-      ok?: boolean;
-      hasValidSession?: boolean;
-    };
-
-    if (initResult?.ok && initResult?.hasValidSession) return;
-
-    console.warn('[Auth Sync] Main process has no valid session, clearing renderer auth state');
-    store.reset();
+    return await hydrateDesktopBootstrapAuthState(window.electronAPI);
   } catch (err) {
-    console.error('[Auth Sync] Failed to sync with main process:', err);
-    store.reset();
+    console.error('[Auth Sync] Failed to hydrate desktop auth snapshot:', err);
+    useAuthenticationStore().reset();
+    return false;
   }
 }
 
@@ -53,7 +37,7 @@ export async function bootstrapMainApp() {
 
   app.use(createI18nPlugin('zh-CN'));
 
-  await syncRendererAuthState();
+  const hasDesktopAuthSnapshot = await hydrateRendererAuthState();
 
   const router = createAppRouter({
     history: createWebHashHistory(),
@@ -87,4 +71,10 @@ export async function bootstrapMainApp() {
 
   initElectronFeatures(app);
   app.mount('#app');
+
+  if (hasDesktopAuthSnapshot && useAuthenticationStore().isAuthenticated) {
+    queueMicrotask(() => {
+      void router.replace('/');
+    });
+  }
 }

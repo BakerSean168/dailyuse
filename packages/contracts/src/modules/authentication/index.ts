@@ -7,4 +7,5 @@ export * from './api';
 export * from './domain/events';
 export * from './network';
 export type { RememberedDesktopAccountDTO } from './protocol/desktop-auth.types';
+export { AuthIdentityStatus } from './value-objects';
 export { CurrentUserResponseSchema, SessionListResponseSchema } from './api/response-schemas';

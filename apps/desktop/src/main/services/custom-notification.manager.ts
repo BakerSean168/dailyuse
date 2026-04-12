@@ -101,7 +101,9 @@ export class CustomNotificationManager {
     if (this.isDev) {
       win.loadURL(`${this.devServerUrl}#/custom-notification`);
     } else {
-      win.loadFile(path.join(__dirname, '../../renderer/index.html'), { hash: '/custom-notification' });
+      win.loadFile(path.join(__dirname, '../dist-renderer/index.html'), {
+        hash: '/custom-notification',
+      });
     }
 
     win.webContents.on('did-finish-load', () => {

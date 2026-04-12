@@ -7,6 +7,7 @@
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 import * as path from 'path';
+import * as fs from 'fs';
 import type { ILogger, LogLevelString } from './types';
 
 export class WinstonLogger implements ILogger {
@@ -15,6 +16,9 @@ export class WinstonLogger implements ILogger {
 
   constructor(context: string, options?: winston.LoggerOptions) {
     this.context = context;
+    const logDir = process.env.LOG_DIR || 'logs';
+
+    fs.mkdirSync(logDir, { recursive: true });
 
     // Default configuration
     const defaultOptions: winston.LoggerOptions = {
@@ -38,7 +42,7 @@ export class WinstonLogger implements ILogger {
         }),
         // File transport (Daily Rotate)
         new winston.transports.DailyRotateFile({
-          filename: 'logs/app-%DATE%.log',
+          filename: path.join(logDir, 'app-%DATE%.log'),
           datePattern: 'YYYY-MM-DD',
           zippedArchive: true,
           maxSize: '20m',
@@ -50,7 +54,7 @@ export class WinstonLogger implements ILogger {
         }),
         // Error file transport
         new winston.transports.DailyRotateFile({
-          filename: 'logs/error-%DATE%.log',
+          filename: path.join(logDir, 'error-%DATE%.log'),
           datePattern: 'YYYY-MM-DD',
           zippedArchive: true,
           maxSize: '20m',

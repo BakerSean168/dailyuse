@@ -8,7 +8,7 @@
     "build": {
       "executor": "nx:run-commands",
       "outputs": [
-        "{workspaceRoot}/apps/desktop/dist",
+        "{workspaceRoot}/apps/desktop/dist-renderer",
         "{workspaceRoot}/apps/desktop/dist-electron"
       ],
       "defaultConfiguration": "production",
@@ -45,7 +45,10 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build", "native-rebuild"],
       "options": {
-        "commands": ["electron-builder --dir"],
+        "commands": [
+          "electron-builder --dir",
+          "node ./scripts/verify-packaged-runtime-deps.mjs"
+        ],
         "cwd": "apps/desktop",
         "parallel": false
       }
@@ -54,7 +57,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "electron-rebuild -f -w better-sqlite3,argon2",
+        "command": "pnpm exec electron-rebuild -f -w better-sqlite3,argon2",
         "cwd": "apps/desktop"
       }
     },
@@ -62,16 +65,25 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build", "native-rebuild"],
       "options": {
-        "command": "electron-builder --publish never",
+        "commands": [
+          "electron-builder --publish never",
+          "node ./scripts/verify-packaged-runtime-deps.mjs"
+        ],
         "cwd": "apps/desktop",
         "parallel": false
       },
       "configurations": {
         "windows": {
-          "command": "electron-builder --win --x64 --publish never"
+          "commands": [
+            "electron-builder --win --x64 --publish never",
+            "node ./scripts/verify-packaged-runtime-deps.mjs"
+          ]
         },
         "linux": {
-          "command": "electron-builder --linux AppImage deb rpm --x64 --publish never"
+          "commands": [
+            "electron-builder --linux AppImage deb rpm --x64 --publish never",
+            "node ./scripts/verify-packaged-runtime-deps.mjs"
+          ]
         }
       }
     },

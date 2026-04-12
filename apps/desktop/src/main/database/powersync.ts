@@ -25,9 +25,10 @@ import type {
   PowerSyncCredentials,
   CrudTransaction,
 } from '@powersync/common';
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, app } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import { Worker } from 'node:worker_threads';
 
 import { PowerSyncAppSchema } from '@dailyuse/database/powersync';
 import { getTokenManager } from '../modules/authentication/infrastructure';
@@ -56,6 +57,37 @@ function getSyncDatabasePath(): string {
     fs.mkdirSync(dbDir, { recursive: true });
   }
   return dbPath;
+}
+
+function resolvePackagedWorkerPath(workerPath: string): string {
+  if (!app.isPackaged) {
+    return workerPath;
+  }
+
+  const asarSegment = `${path.sep}app.asar${path.sep}`;
+  const unpackedSegment = `${path.sep}app.asar.unpacked${path.sep}`;
+
+  if (!workerPath.includes(asarSegment)) {
+    return workerPath;
+  }
+
+  const candidatePath = workerPath.replace(asarSegment, unpackedSegment);
+  return fs.existsSync(candidatePath) ? candidatePath : workerPath;
+}
+
+function createPowerSyncDatabase(dbPath: string): PowerSyncDatabase {
+  return new PowerSyncDatabase({
+    schema: PowerSyncAppSchema,
+    database: {
+      dbFilename: dbPath,
+      openWorker: (filename, options) => {
+        const resolvedFilename =
+          typeof filename === 'string' ? resolvePackagedWorkerPath(filename) : filename;
+
+        return new Worker(resolvedFilename, options);
+      },
+    },
+  });
 }
 
 // ──────────────────────────────────────────────
@@ -240,10 +272,7 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
     const dbPath = getSyncDatabasePath();
     console.log(`[PowerSync] Initializing sync database: ${dbPath}`);
 
-    const db = new PowerSyncDatabase({
-      schema: PowerSyncAppSchema,
-      database: { dbFilename: dbPath },
-    });
+    const db = createPowerSyncDatabase(dbPath);
 
     const connector = new DesktopPowerSyncConnector();
     await db.connect(connector);
@@ -289,10 +318,10 @@ export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
     const dbPath = getSyncDatabasePath();
     console.log(`[PowerSync] Opening local-only database: ${dbPath}`);
 
-    const db = new PowerSyncDatabase({
-      schema: PowerSyncAppSchema,
-      database: { dbFilename: dbPath },
-    });
+    const db = createPowerSyncDatabase(dbPath);
+    console.log('[PowerSync] Waiting for local-only database to become ready...');
+    await db.waitForReady();
+    console.log('[PowerSync] Local-only database is ready');
 
     powerSyncDb = db;
     syncConnected = false;

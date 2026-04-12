@@ -5,6 +5,8 @@
  * 支持环境变量和默认配置
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { app } from 'electron';
 
 /**
@@ -15,6 +17,15 @@ export interface ApiConfig {
   timeout: number;
 }
 
+interface DesktopRuntimeConfigFile {
+  apiBaseUrl?: string;
+  apiOrigin?: string;
+  apiPath?: string;
+}
+
+const DEFAULT_API_PATH = '/api/v1';
+const PACKAGED_DEFAULT_API_ORIGIN = 'https://dailyuse.bakersean.top';
+
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
@@ -23,7 +34,7 @@ function isAbsoluteHttpUrl(value: string): boolean {
   return /^https?:\/\//.test(value);
 }
 
-function normalizeBaseUrl(baseUrl: string, defaultPath = '/api/v1'): string {
+function normalizeBaseUrl(baseUrl: string, defaultPath = DEFAULT_API_PATH): string {
   const trimmed = trimTrailingSlash(baseUrl);
 
   if (/\/api\/v\d+$/i.test(trimmed)) {
@@ -35,6 +46,48 @@ function normalizeBaseUrl(baseUrl: string, defaultPath = '/api/v1'): string {
 
 function getApiScheme(hostOrUrl: string): 'http' | 'https' {
   return /localhost|127\.0\.0\.1/i.test(hostOrUrl) ? 'http' : 'https';
+}
+
+function tryReadRuntimeConfig(configPath: string): DesktopRuntimeConfigFile | null {
+  try {
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as DesktopRuntimeConfigFile;
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveRuntimeConfigBaseUrl(): string | null {
+  const candidatePaths = [path.join(app.getPath('userData'), 'config', 'desktop-runtime.json')];
+
+  if (typeof process.resourcesPath === 'string' && process.resourcesPath.length > 0) {
+    candidatePaths.push(path.join(process.resourcesPath, 'desktop-runtime.json'));
+  }
+
+  for (const configPath of candidatePaths) {
+    const config = tryReadRuntimeConfig(configPath);
+    if (!config) {
+      continue;
+    }
+
+    if (typeof config.apiBaseUrl === 'string' && isAbsoluteHttpUrl(config.apiBaseUrl)) {
+      return normalizeBaseUrl(config.apiBaseUrl, DEFAULT_API_PATH);
+    }
+
+    if (typeof config.apiOrigin === 'string' && isAbsoluteHttpUrl(config.apiOrigin)) {
+      const apiPath =
+        typeof config.apiPath === 'string' && config.apiPath.trim().length > 0
+          ? config.apiPath
+          : DEFAULT_API_PATH;
+      return normalizeBaseUrl(config.apiOrigin, apiPath);
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -60,6 +113,11 @@ export function getApiBaseUrl(): string {
     return normalizeBaseUrl(directBaseUrl);
   }
 
+  const runtimeConfigBaseUrl = resolveRuntimeConfigBaseUrl();
+  if (runtimeConfigBaseUrl) {
+    return runtimeConfigBaseUrl;
+  }
+
   if (VITE_API_BASE_URL && isAbsoluteHttpUrl(VITE_API_BASE_URL)) {
     return normalizeBaseUrl(VITE_API_BASE_URL, '');
   }
@@ -82,6 +140,10 @@ export function getApiBaseUrl(): string {
 
   if (!app.isPackaged && VITE_API_BASE_URL && isAbsoluteHttpUrl(VITE_API_BASE_URL)) {
     return normalizeBaseUrl(VITE_API_BASE_URL, '');
+  }
+
+  if (app.isPackaged) {
+    return normalizeBaseUrl(PACKAGED_DEFAULT_API_ORIGIN, DEFAULT_API_PATH);
   }
 
   throw new Error(

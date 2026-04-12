@@ -2,6 +2,7 @@ import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
 
 import type { AuthRemoteGateway, RegisterApiResponse } from './AuthRemoteGateway';
 import {
+  createConfigError,
   createOfflineAuthError,
   createRemoteUnreachableError,
   createTerminalAuthError,
@@ -42,7 +43,20 @@ export async function registerDesktopAccount(
   }
 
   try {
-    const registerUrl = remoteGateway.createRegisterUrl();
+    let registerUrl: string;
+    try {
+      registerUrl = remoteGateway.createRegisterUrl();
+    } catch (error) {
+      logger.error('Failed to resolve register API URL from desktop config', {
+        error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+      });
+      return {
+        ok: false,
+        error: createConfigError(
+          error instanceof Error ? error.message : 'Desktop API base URL is not configured',
+        ),
+      };
+    }
 
     logger.info('Calling register API', { registerUrl });
 
@@ -50,7 +64,7 @@ export async function registerDesktopAccount(
       email: request.email,
       password: request.password,
       username: request.username,
-    });
+    }, registerUrl);
 
     const { data } = response;
 
@@ -96,7 +110,9 @@ export async function registerDesktopAccount(
       },
     };
   } catch (error) {
-    logger.error('Registration request failed', { error });
+    logger.error('Registration request failed', {
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
 
     if (error instanceof TypeError) {
       return {

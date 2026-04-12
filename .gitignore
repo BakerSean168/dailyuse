@@ -13,6 +13,8 @@ node_modules
 # Build outputs
 build
 dist
+dist-package
+dist-renderer
 dist-electron
 dist-ssr
 *.local

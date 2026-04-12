@@ -56,8 +56,11 @@ export class AuthRemoteGateway {
     return this.createApiUrlFn('/auth/refresh');
   }
 
-  async register(request: RegistrationRequestPayload): Promise<RegisterApiResult> {
-    const response = await this.fetchImpl(this.createRegisterUrl(), {
+  async register(
+    request: RegistrationRequestPayload,
+    registerUrl: string = this.createRegisterUrl(),
+  ): Promise<RegisterApiResult> {
+    const response = await this.fetchImpl(registerUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,8 +80,11 @@ export class AuthRemoteGateway {
     };
   }
 
-  async login(request: { email: string; password: string }): Promise<LoginApiResult> {
-    const response = await this.fetchImpl(this.createLoginUrl(), {
+  async login(
+    request: { email: string; password: string },
+    loginUrl: string = this.createLoginUrl(),
+  ): Promise<LoginApiResult> {
+    const response = await this.fetchImpl(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -98,8 +104,11 @@ export class AuthRemoteGateway {
     };
   }
 
-  async refreshToken(request: RefreshSessionRequest): Promise<RefreshApiResult> {
-    const response = await this.fetchImpl(this.createRefreshUrl(), {
+  async refreshToken(
+    request: RefreshSessionRequest,
+    refreshUrl: string = this.createRefreshUrl(),
+  ): Promise<RefreshApiResult> {
+    const response = await this.fetchImpl(refreshUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

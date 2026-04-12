@@ -907,7 +907,16 @@ export default {
     },
     errors: {
       USER_ALREADY_EXISTS: 'An account with this email already exists',
+      AUTH_FAILED: 'Incorrect email or password',
       CONFLICT: 'This request conflicts with existing data. Please try again.',
+      OFFLINE: 'No network connection is available. Please try again after reconnecting.',
+      REMOTE_UNREACHABLE:
+        'The authentication service could not be reached. Please verify the deployed service is accessible.',
+      CONFIG_ERROR:
+        'The desktop app is missing its authentication service URL. Please check the desktop runtime configuration.',
+      LOGIN_FAILED: 'Login failed. Please try again.',
+      REGISTER_FAILED: 'Registration failed. Please try again.',
+      REGISTER_ERROR: 'Registration failed. Please try again.',
       UNAUTHORIZED: 'Incorrect email or password',
       VALIDATION_ERROR: 'Some fields are invalid. Please review your input.',
       SERVICE_UNAVAILABLE: 'Authentication is temporarily unavailable. Please try again later.',

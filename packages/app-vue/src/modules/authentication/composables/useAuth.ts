@@ -26,15 +26,16 @@ import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { translateResultError } from '../../../shared/utils/translateResultError';
+import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktopBootstrapAuth';
+
+const isDesktopEnvironment = () =>
+  typeof window !== 'undefined' && typeof (window as any).electronAPI?.invoke === 'function';
 
 export function useAuth() {
   const store = useAuthenticationStore();
   const router = useRouter();
   const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
   const { t } = useI18n();
-
-  const hasDesktopWindowBridge = () =>
-    typeof window !== 'undefined' && typeof (window as any).electronAPI?.invoke === 'function';
 
   const redirectWithReload = (path: string) => {
     if (typeof window !== 'undefined') {
@@ -50,10 +51,14 @@ export function useAuth() {
     title: string,
     description: string,
   ): Promise<boolean> {
-    handleAuthSuccess(data);
+    if (isDesktopEnvironment()) {
+      store.reset();
+    } else {
+      handleAuthSuccess(data);
+    }
     toast.success(title, { description });
 
-    if (hasDesktopWindowBridge()) {
+    if (isDesktopEnvironment()) {
       await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
       return true;
     }
@@ -67,7 +72,6 @@ export function useAuth() {
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const currentIdentity = computed(() => store.currentIdentity);
-  const accessToken = computed(() => store.accessToken);
 
   // ========== 认证响应统一处理 ==========
   function handleAuthSuccess(data: AuthResponseDTO) {
@@ -75,10 +79,7 @@ export function useAuth() {
     store.setError(null);
   }
 
-  function getLocalizedAuthError(
-    errorLike: unknown,
-    fallbackKey: string,
-  ): string {
+  function getLocalizedAuthError(errorLike: unknown, fallbackKey: string): string {
     return translateResultError(errorLike, t, {
       scope: 'auth',
       fallbackKey,
@@ -220,6 +221,13 @@ export function useAuth() {
   // ========== 令牌刷新 ==========
 
   async function refreshToken(): Promise<boolean> {
+    if (!store.isAuthenticated) return false;
+
+    if (isDesktopEnvironment()) {
+      const hydrated = await hydrateDesktopBootstrapAuthState((window as any).electronAPI);
+      return hydrated;
+    }
+
     const currentRefreshToken = store.refreshToken;
     if (!currentRefreshToken) return false;
 
@@ -238,7 +246,7 @@ export function useAuth() {
 
   async function logout(): Promise<void> {
     try {
-      if (store.accessToken) {
+      if (store.isAuthenticated) {
         const result = await service.logout();
         if (!result.ok) {
           console.warn('Logout API call failed:', result.error.message);
@@ -247,7 +255,7 @@ export function useAuth() {
     } finally {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
-      if (hasDesktopWindowBridge()) {
+      if (isDesktopEnvironment()) {
         await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_LOGIN);
       } else {
         redirectWithReload('/auth');
@@ -258,7 +266,7 @@ export function useAuth() {
   // ========== 访客模式 (Desktop Only) ==========
 
   async function enterGuestMode(): Promise<boolean> {
-    if (!hasDesktopWindowBridge()) {
+    if (!isDesktopEnvironment()) {
       toast.error(t('auth.toast.guestModeFailed'), {
         description: t('auth.validation.guestModeUnavailable'),
       });
@@ -270,19 +278,7 @@ export function useAuth() {
     try {
       const result = await service.enterGuestMode();
       if (result.ok) {
-        const currentUser = await service.getCurrentUser();
-        if (!currentUser.ok) {
-          const message = getLocalizedAuthError(currentUser.error, 'auth.errors.UNKNOWN');
-          store.setError(message);
-          toast.error(t('auth.toast.guestModeFailed'), { description: message });
-          return false;
-        }
-
-        store.setCurrentIdentity(currentUser.data.identity);
-        store.setCurrentSession(currentUser.data.session);
-        store.setAuthMode(AuthMode.GUEST);
-        store.setAccessToken('guest-local-token');
-        store.setRefreshToken('guest-local-token');
+        store.reset();
         toast.success(t('auth.toast.guestModeEntered'), {
           description: t('auth.toast.guestModeLocalOnly'),
         });
@@ -330,8 +326,6 @@ export function useAuth() {
     isLoading,
     error,
     currentIdentity,
-    accessToken,
-
     // Actions
     loginByEmail,
     loginByPhone,

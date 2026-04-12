@@ -15,7 +15,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/contracts/dist"],
       "options": {
-        "command": "rimraf dist && tsup --clean=false",
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
         "cwd": "packages/contracts"
       },
       "cache": true

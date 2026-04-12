@@ -13,6 +13,7 @@
  *   4. Hand off to the lifecycle manager (window creation, shutdown)
  */
 
+import './runtime-init';
 import path from 'node:path';
 import { app } from 'electron';
 import type { IElectronModuleContext } from '@dailyuse/contracts/electron';
@@ -47,7 +48,6 @@ import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
-import { configureDesktopUserDataPath } from './user-data-path';
 import { configureDesktopShellIdentity } from './utils/app-icon';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 import {
@@ -67,8 +67,9 @@ import { NotificationChannel as ReminderNotificationChannel } from '@dailyuse/co
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
+import { getConfiguredDesktopUserDataPath } from './runtime-init';
 
-const configuredUserDataPath = configureDesktopUserDataPath();
+const configuredUserDataPath = getConfiguredDesktopUserDataPath();
 configureDesktopShellIdentity();
 
 const AIElectronModule = createAIElectronModule({

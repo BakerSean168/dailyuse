@@ -31,12 +31,14 @@ import { getDesktopAuthService } from '../auth/desktop-auth-context';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
 import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import { resolveWindowIconPath } from '../utils/app-icon';
+import { createLogger } from '@dailyuse/utils';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
+const logger = createLogger('AppLifecycle');
 
 /**
  * Creates the main application window.
@@ -83,7 +85,7 @@ export function createMainWindow(): BrowserWindow {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     // Production mode: Load bundled HTML
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../dist-renderer/index.html'));
   }
 
   mainWindow.on('closed', () => {
@@ -263,13 +265,23 @@ function setupSecurityHandlers(): void {
  */
 export function registerAppLifecycleHandlers(initializeApp: () => Promise<void>): void {
   // Create window when application is ready
-  app.whenReady().then(() => handleAppReady(initializeApp));
+  app
+    .whenReady()
+    .then(() => handleAppReady(initializeApp))
+    .catch((error) => {
+      logger.error('App ready sequence failed', error);
+      app.quit();
+    });
 
   // Handle all windows closed
   app.on('window-all-closed', handleWindowAllClosed);
 
   // Cleanup before quit
-  app.on('before-quit', () => handleBeforeQuit());
+  app.on('before-quit', () => {
+    void handleBeforeQuit().catch((error) => {
+      logger.error('Before-quit cleanup failed', error);
+    });
+  });
 
   // Set security handlers
   setupSecurityHandlers();

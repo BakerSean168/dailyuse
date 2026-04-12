@@ -81,7 +81,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version-file: apps/desktop/.python-version
 
       - name: Install Linux packaging dependencies
         if: runner.os == 'Linux'
@@ -134,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: desktop-${{ matrix.platform }}
-          path: apps/desktop/dist
+          path: apps/desktop/dist-package
           if-no-files-found: error
           compression-level: 9
 

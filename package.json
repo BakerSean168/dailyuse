@@ -155,7 +155,7 @@
     "@vue/test-utils": "^2.4.6",
     "eas-cli": "18.4.0",
     "electron": "39.2.6",
-    "electron-rebuild": "3.2.9",
+    "@electron/rebuild": "4.0.3",
     "esbuild-plugin-vue": "0.2.4",
     "eslint": "^9.0.0",
     "eslint-plugin-storybook": "10.2.8",
@@ -177,7 +177,7 @@
     "shadcn-vue": "2.4.3",
     "storybook": "^10.2.8",
     "tailwindcss": "4.1.18",
-    "tslib": "^2.3.0",
+    "tslib": "^2.8.1",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",
@@ -191,7 +191,7 @@
   "pnpm": {
     "overrides": {
       "@types/node": "22.13.14",
-      "@electron/rebuild": "^4.0.1",
+      "@electron/rebuild": "4.0.3",
       "vite": "^7.3.1",
       "jiti": "2.4.2"
     },

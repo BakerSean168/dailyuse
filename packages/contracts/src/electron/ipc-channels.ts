@@ -135,6 +135,7 @@ export const AuthChannels = {
   ENTER_GUEST_MODE: 'auth:enter-guest-mode',
   GET_CURRENT_USER: 'auth:get-current-user',
   GET_STATUS: 'auth:get-status',
+  GET_BOOTSTRAP_SNAPSHOT: 'auth:get-bootstrap-snapshot',
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',

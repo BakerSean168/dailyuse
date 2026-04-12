@@ -56,6 +56,7 @@ import {
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
   type TokenStorageData,
+  type AuthBootstrapSnapshot,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
@@ -373,7 +374,7 @@ export class AuthDesktopApplicationService {
       if (!remoteResult.ok && !remoteResult.error.shouldFallbackToOffline) {
         return toIpcResult(
           fail({
-            code: 'LOGIN_FAILED',
+            code: remoteResult.error.code,
             message: remoteResult.error.message,
           }),
         );
@@ -869,6 +870,13 @@ export class AuthDesktopApplicationService {
     };
   }
 
+  async buildBootstrapSnapshot(): Promise<AuthBootstrapSnapshot> {
+    const status = await this.getStatus();
+    const currentUser = status.authenticated ? await this.getCurrentUser().catch(() => null) : null;
+
+    return { status, currentUser };
+  }
+
   /**
    * 获取 Token 状态
    */
@@ -1239,9 +1247,7 @@ export class AuthDesktopApplicationService {
       return false;
     }
 
-    return (
-      tokenData.accessToken === 'local-token' && tokenData.refreshToken === 'local-token'
-    );
+    return tokenData.accessToken === 'local-token' && tokenData.refreshToken === 'local-token';
   }
 
   private getProjectionFallbackEmail(identityId: string): string | null {

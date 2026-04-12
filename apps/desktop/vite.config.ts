@@ -5,6 +5,12 @@ import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import {
+  bundledDatabaseSubpaths,
+  electronExternalWorkspacePackages,
+  electronJsExternalPackages,
+  electronNativeModules,
+} from './runtime-external.config.mjs';
+import {
   createAssetsAliasEntries,
   createContractsAliasEntries,
   createUiVueSourceAliasEntries,
@@ -24,36 +30,19 @@ const desktopRendererDevWorkspaceEntries = [
   ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
 ] as const;
 
-// Native modules — must be externalized (cannot be bundled by Vite)
-const nativeModules = ['electron', 'argon2'];
+const nativeModules = electronNativeModules;
+const workspaceExternal = electronExternalWorkspacePackages;
+const electronMainExternalList = [...nativeModules, ...electronJsExternalPackages];
 
-// Third-party packages that leak into the main process via workspace package
-// dist files (e.g. @dailyuse/task uses date-fns, @dailyuse/repository uses
-// gray-matter). They are pure-JS so they can be resolved at runtime from
-// node_modules; externalizing them avoids Rollup resolution errors.
-const thirdPartyLeaks = ['date-fns', 'gray-matter', '@powersync/node', '@powersync/common'];
-
-// Workspace packages that must stay external in the main process bundle.
-// Keep only the root @dailyuse/database package external so Prisma-related
-// paths are never bundled, but allow the pure schema subpath
-// @dailyuse/database/powersync to be bundled into the desktop main process.
-const workspaceExternal = ['@dailyuse/database'];
-
-// Main process external: native modules + leaked third-party packages
-// All @dailyuse/* workspace packages are now bundled into main.js
-// so electron-builder doesn't need to search the pnpm monorepo
-const electronMainExternalList = [...nativeModules, ...thirdPartyLeaks];
-
-// Rollup external function: matches exact strings from the list above.
-// For @dailyuse/database, keep the package root and Prisma-related subpaths
-// external, but bundle pure schema subpaths so CJS main-process output does not
-// need to require import-only package exports at runtime.
+// Keep only the Prisma-backed database runtime external. Pure schema subpaths
+// stay bundled so the main process does not depend on import-only workspace
+// exports at runtime.
 function isElectronMainExternal(id: string): boolean {
   if (electronMainExternalList.includes(id)) return true;
   for (const pkg of workspaceExternal) {
     if (id === pkg) return true;
     if (pkg === '@dailyuse/database' && id.startsWith(pkg + '/')) {
-      return !['@dailyuse/database/powersync', '@dailyuse/database/dashboard-schema'].includes(id);
+      return !bundledDatabaseSubpaths.includes(id);
     }
   }
   return false;
@@ -129,6 +118,7 @@ export default defineConfig(({ command, mode }) => {
     },
     base: './',
     build: {
+      outDir: 'dist-renderer',
       rollupOptions: {
         input: path.resolve(__dirname, 'index.html'),
         external: nativeModules,
