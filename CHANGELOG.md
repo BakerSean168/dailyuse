@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.2](https://github.com/BakerSean168/dailyuse/compare/v0.5.1...v0.5.2) (2026-04-12)
+
+
+### Bug Fixes
+
+* remove token expiration handling from auth state updates ([b824d29](https://github.com/BakerSean168/dailyuse/commit/b824d29c9d65c23dfb1e729c9928a76fc5f683d6))
+* 修复桌面端构建问题，把powersync放到 asarUnpack 中。 还有优化构建目录，差分 package 和 renderer。 ([99ee1b9](https://github.com/BakerSean168/dailyuse/commit/99ee1b918165e346ef5f938a8c784e547e74f0a9))
+
+
+### Performance Improvements
+
+* 优化desktop端的 powersync 同步数据库的连接语义和认证逻辑 ([7d7294a](https://github.com/BakerSean168/dailyuse/commit/7d7294a634f69ee71f80f5940ab85aea49adf9ed))
+* 优化配置，添加powersync的容器 ([08ce381](https://github.com/BakerSean168/dailyuse/commit/08ce38147e01781355920320c9388903ef55a4b5))
+
 ## [0.5.1](https://github.com/BakerSean168/dailyuse/compare/v0.5.0...v0.5.1) (2026-04-06)
 
 
