@@ -34,6 +34,7 @@ import { PowerSyncAppSchema } from '@dailyuse/database/powersync';
 import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { getUnifiedDatabasePath } from './paths';
+import { serializeCrudTransaction } from './powersync-crud';
 
 // ──────────────────────────────────────────────
 // Module state
@@ -177,15 +178,10 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
 
     while ((transaction = await database.getNextCrudTransaction()) !== null) {
       try {
-        const ops = transaction.crud.map((op) => ({
-          table: op.table,
-          op: op.op,
-          id: op.id,
-          data: op.opData,
-        }));
+        const ops = serializeCrudTransaction(transaction);
 
         const tableCounts = ops.reduce<Record<string, number>>((acc, op) => {
-          acc[op.table] = (acc[op.table] ?? 0) + 1;
+          acc[op.type] = (acc[op.type] ?? 0) + 1;
           return acc;
         }, {});
         const includesGoals = Object.keys(tableCounts).some((table) => table.includes('goal'));
@@ -342,24 +338,34 @@ export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
 }
 
 /**
- * Upgrades a local-only PowerSync instance to sync mode by attaching a connector.
- * Used when OFFLINE_USER recovers network and gets promoted to ONLINE_USER.
+ * Ensures the PowerSync database is running in sync mode.
+ *
+ * If a local-only instance already exists, it is promoted by attaching a
+ * connector. If no instance exists yet, a new sync-mode connection is created.
  */
-export async function promotePowerSyncToSync(): Promise<void> {
+export async function ensurePowerSyncSyncMode(): Promise<PowerSyncDatabase> {
   if (!powerSyncDb) {
-    console.warn('[PowerSync] No database instance to promote — call connectPowerSync() instead');
-    return;
+    console.log('[PowerSync] No local instance open, establishing sync mode directly');
+    return await connectPowerSync();
   }
 
   if (syncConnected) {
     console.log('[PowerSync] Already in sync mode');
-    return;
+    return powerSyncDb;
   }
 
   const connector = new DesktopPowerSyncConnector();
   await powerSyncDb.connect(connector);
   syncConnected = true;
   console.log('[PowerSync] Promoted to sync mode');
+  return powerSyncDb;
+}
+
+/**
+ * @deprecated Use ensurePowerSyncSyncMode() for a self-contained sync-mode entrypoint.
+ */
+export async function promotePowerSyncToSync(): Promise<void> {
+  await ensurePowerSyncSyncMode();
 }
 
 /**

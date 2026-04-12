@@ -35,11 +35,9 @@ import {
   type RefreshSessionRequest,
   type RefreshSessionResponse,
   type LoginRequest,
-  type LoginResponse,
   type DeviceInfoClientDTO,
 } from '@dailyuse/contracts/authentication';
 import { TokenManager, getTokenManager, type TokenData } from './TokenManager';
-import { getNetworkStateManager } from './NetworkStateManager';
 
 // ============ Internal Types ============
 
@@ -57,6 +55,16 @@ export interface AutoLoginResult extends ContractAutoLoginResult {
 export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
   device: DeviceInfoClientDTO;
 }
+
+type OfflineLoginResponse = {
+  ok: boolean;
+  sessionId?: string;
+  accessToken?: string;
+  identityId?: string;
+  expiresIn?: number;
+  error?: string;
+  authMode?: AuthMode;
+};
 
 // ============ SessionManager ============
 
@@ -94,7 +102,6 @@ export class SessionManager {
   private apiRefreshToken:
     | ((request: RefreshSessionRequest) => Promise<RefreshSessionResponse>)
     | null = null;
-  private apiLogin: ((request: LoginRequest) => Promise<LoginResponse>) | null = null;
 
   private constructor(
     sessionRepository: IAuthSessionRepository,
@@ -160,8 +167,7 @@ export class SessionManager {
 
     // 3. If a valid session exists, start auto-refresh
     if (restoreResult.ok && this.currentSession) {
-      this.startAutoRefresh();
-      this.startActivityTracking();
+      this.startCurrentSessionLifecycle();
     }
 
     this.isInitialized = true;
@@ -305,6 +311,7 @@ export class SessionManager {
       if (Date.now() < tokenData.accessTokenExpiresAt) {
         const restoreResult = await this.restoreSession();
         if (restoreResult.ok) {
+          this.startCurrentSessionLifecycle();
           return {
             ok: true,
             authenticated: true,
@@ -320,6 +327,8 @@ export class SessionManager {
       if (!refreshResult.ok) {
         return { ok: false, authenticated: false, error: refreshResult.error };
       }
+
+      this.startCurrentSessionLifecycle();
 
       return {
         ok: true,
@@ -350,8 +359,12 @@ export class SessionManager {
         return { ok: false, error: 'No tokens to refresh' };
       }
 
-      // If no API callback is set, use local refresh
-      if (!this.apiRefreshToken) {
+      // Local-only and guest sessions must never hit the remote refresh API.
+      if (
+        this.isLocalOnlyToken(tokenData) ||
+        this.isGuestToken(tokenData) ||
+        !this.apiRefreshToken
+      ) {
         return await this.localRefresh(tokenData);
       }
 
@@ -371,10 +384,7 @@ export class SessionManager {
         }
 
         // Update the session
-        if (this.currentSession) {
-          this.currentSession.updateRefreshTokenHash(result.accessToken);
-          await this.sessionRepository.save(this.currentSession);
-        }
+        await this.syncCurrentSessionExpiry((result.expiresIn ?? 3600) * 1000);
 
         this.logger.info('Session refreshed successfully via API');
       }
@@ -399,10 +409,7 @@ export class SessionManager {
     await this.tokenManager.updateAccessToken(tokenData.accessToken, newExpiresIn);
 
     // Update the session
-    if (this.currentSession) {
-      this.currentSession.updateRefreshTokenHash(tokenData.accessToken);
-      await this.sessionRepository.save(this.currentSession);
-    }
+    await this.syncCurrentSessionExpiry(newExpiresIn * 1000);
 
     return {
       ok: true,
@@ -413,77 +420,14 @@ export class SessionManager {
 
   // ============ Login/Logout ============
 
-  /**
-   * Login (network-aware hybrid).
-   *
-   * 1. Online: try remote API login -> cache offline credentials on success -> ONLINE_USER
-   * 2. Online but network error: fall back to local verification -> OFFLINE_USER
-   * 3. Online but auth failure (401/403): return error directly, no fallback
-   * 4. Offline: verify against locally stored credentials -> OFFLINE_USER
-   * 5. No local credentials: return error requiring initial online login
-   */
-  async login(request: LoginRequest): Promise<LoginResponse> {
-    this.logger.info('Login attempt', { identifier: request.identifier });
+  /** Login using locally cached credentials only. */
+  async loginOffline(request: LoginRequest): Promise<OfflineLoginResponse> {
+    this.logger.info('Offline login attempt', { identifier: request.identifier });
 
     try {
-      const networkManager = getNetworkStateManager();
-      const isOnline = networkManager.isOnline();
-
-      // Online path: try remote API first
-      if (isOnline && this.apiLogin) {
-        try {
-          const result = await this.apiLogin(request);
-
-          if (result.ok && result.accessToken && result.refreshToken) {
-            // Remote login succeeded
-            await this.tokenManager.saveTokens({
-              accessToken: result.accessToken,
-              refreshToken: result.refreshToken,
-              accessTokenExpiresIn: result.expiresIn ?? 3600,
-              identityId: result.identityId!,
-              sessionId: result.sessionId ?? generateUUID(),
-            });
-
-            // Cache offline credentials for future offline login
-            if (request.password) {
-              this.saveOfflineCredentials(
-                request.identifier,
-                request.password,
-                result.identityId!,
-              ).catch((err) =>
-                this.logger.warn('Failed to cache offline credentials', { error: err }),
-              );
-            }
-
-            // Create local session so getCurrentSession() works after online login
-            await this.createOnlineSession({
-              identityId: result.identityId!,
-              sessionId: result.sessionId ?? generateUUID(),
-              expiresIn: result.expiresIn ?? 3600,
-            });
-
-            this.startAutoRefresh();
-            this.startActivityTracking();
-
-            this.logger.info('Online login successful', { identityId: result.identityId });
-            return { ...result, authMode: AuthMode.ONLINE_USER };
-          }
-
-          // Auth error (wrong password, account disabled, etc.) — do NOT fall back
-          if (result.error) {
-            this.logger.info('Remote auth failed, no fallback', { error: result.error });
-            return result;
-          }
-        } catch (error) {
-          // Network/fetch error — fall through to offline verification
-          this.logger.info('Remote login network error, attempting offline fallback', { error });
-        }
-      }
-
-      // Offline path: verify against locally cached credentials
       return await this.localLogin(request);
     } catch (error) {
-      this.logger.error('Login failed', { error });
+      this.logger.error('Offline login failed', { error });
       return { ok: false, error: String(error) };
     }
   }
@@ -494,7 +438,7 @@ export class SessionManager {
    * Verifies the password against local AuthIdentity + Argon2,
    * creates a local session, and returns OFFLINE_USER mode.
    */
-  private async localLogin(request: LoginRequest): Promise<LoginResponse> {
+  private async localLogin(request: LoginRequest): Promise<OfflineLoginResponse> {
     this.logger.info('Attempting local login', { identifier: request.identifier });
 
     // Verify password against locally cached credentials
@@ -540,8 +484,7 @@ export class SessionManager {
       sessionId: session?.id,
     });
 
-    this.startAutoRefresh();
-    this.startActivityTracking();
+    this.startCurrentSessionLifecycle();
 
     this.logger.info('Local login successful', {
       identityId: session?.identityId,
@@ -594,7 +537,31 @@ export class SessionManager {
    *
    * Ensures getCurrentSession() / getCurrentIdentityId() return correct values.
    */
-  async createOnlineSession(params: {
+  async activateOnlineSession(params: {
+    identityId: string;
+    sessionId: string;
+    accessToken: string;
+    refreshToken: string;
+    expiresIn?: number;
+  }): Promise<void> {
+    await this.tokenManager.saveTokens({
+      accessToken: params.accessToken,
+      refreshToken: params.refreshToken,
+      accessTokenExpiresIn: params.expiresIn ?? 3600,
+      identityId: params.identityId,
+      sessionId: params.sessionId,
+    });
+
+    await this.createOnlineSession({
+      identityId: params.identityId,
+      sessionId: params.sessionId,
+      expiresIn: params.expiresIn,
+    });
+
+    this.startCurrentSessionLifecycle();
+  }
+
+  private async createOnlineSession(params: {
     identityId: string;
     sessionId: string;
     expiresIn?: number;
@@ -621,6 +588,30 @@ export class SessionManager {
       identityId: params.identityId,
       sessionId: params.sessionId,
     });
+  }
+
+  /** Ensure timers are active for the current session. */
+  private startCurrentSessionLifecycle(): void {
+    if (!this.currentSession) {
+      return;
+    }
+
+    this.startActivityTracking();
+
+    const tokenData = this.tokenManager.getCachedTokenData();
+    if (tokenData && !this.isLocalOnlyToken(tokenData) && !this.isGuestToken(tokenData)) {
+      this.startAutoRefresh();
+    }
+  }
+
+  /** Persist the current session with an extended expiry. */
+  async syncCurrentSessionExpiry(durationMs: number): Promise<void> {
+    if (!this.currentSession) {
+      return;
+    }
+
+    this.currentSession.extend(durationMs);
+    await this.sessionRepository.save(this.currentSession);
   }
 
   // ============ Session Status ============
@@ -707,10 +698,8 @@ export class SessionManager {
   /** Set API callbacks. */
   setApiCallbacks(callbacks: {
     refreshToken?: (request: RefreshSessionRequest) => Promise<RefreshSessionResponse>;
-    login?: (request: LoginRequest) => Promise<LoginResponse>;
   }): void {
     this.apiRefreshToken = callbacks.refreshToken ?? null;
-    this.apiLogin = callbacks.login ?? null;
     this.logger.debug('API callbacks set');
   }
 
@@ -973,6 +962,16 @@ export class SessionManager {
     );
   }
 
+  private isLocalOnlyToken(
+    tokenData: { accessToken?: string; refreshToken?: string } | null,
+  ): boolean {
+    if (!tokenData) return false;
+    return (
+      tokenData.accessToken === SessionManager.LOCAL_ACCESS_TOKEN &&
+      tokenData.refreshToken === SessionManager.LOCAL_ACCESS_TOKEN
+    );
+  }
+
   // ============ Private Methods ============
 
   /** Generate device info. */
@@ -1074,6 +1073,8 @@ export class SessionManager {
 
   /** Start activity tracking. */
   private startActivityTracking(): void {
+    this.stopActivityTracking();
+
     // Record activity every 5 minutes
     this.activityTimer = setInterval(
       async () => {

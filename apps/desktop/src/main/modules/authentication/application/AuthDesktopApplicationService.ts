@@ -69,7 +69,7 @@ import {
 import {
   disconnectPowerSync,
   openPowerSyncLocalOnly,
-  promotePowerSyncToSync,
+  ensurePowerSyncSyncMode,
 } from '../../../database/powersync';
 import { getNetworkStateManager } from '../infrastructure';
 import { registerDesktopAccount } from './registerDesktopAccount';
@@ -170,6 +170,10 @@ export class AuthDesktopApplicationService {
       credentialRepository,
       this.logger,
     );
+
+    this.sessionManager.setApiCallbacks({
+      refreshToken: (request) => this.remoteGateway.refreshToken(request),
+    });
 
     this.logger.info('Repositories injected');
   }
@@ -313,20 +317,10 @@ export class AuthDesktopApplicationService {
               return;
             }
 
-            // Use a single sessionId for both token storage and session creation
-            // to prevent mismatch when response.session.id is falsy
             const sessionId = response.session.id || crypto.randomUUID();
             const accessTokenExpiresIn = this.getAccessTokenExpiresInSeconds(
               response.session?.expiresAt,
             );
-
-            await this.tokenManager.saveTokens({
-              accessToken: response.accessToken,
-              refreshToken: response.refreshToken || '',
-              accessTokenExpiresIn,
-              identityId: response.identity.id,
-              sessionId,
-            });
 
             if (this.sessionManager) {
               if (request.rememberPassword) {
@@ -342,21 +336,20 @@ export class AuthDesktopApplicationService {
                     this.logger.warn('Failed to clear offline credentials', { error: err }),
                   );
               }
-            }
 
-            // Create local session so getCurrentIdentityId() works after online login
-            if (this.sessionManager) {
-              await this.sessionManager.createOnlineSession({
+              await this.sessionManager.activateOnlineSession({
                 identityId: response.identity.id,
                 sessionId,
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken || '',
                 expiresIn: accessTokenExpiresIn,
               });
-            }
 
-            await this.ensureAccountProjection(
-              String(response.identity.id),
-              this.extractIdentityEmail(response.identity) ?? request.email,
-            );
+              await this.ensureAccountProjection(
+                String(response.identity.id),
+                this.extractIdentityEmail(response.identity) ?? request.email,
+              );
+            }
 
             await this.rememberedAccounts.recordLogin({
               identityId: response.identity.id,
@@ -395,7 +388,7 @@ export class AuthDesktopApplicationService {
           },
         };
       } else {
-        const offlineResponse = await this.sessionManager.login({
+        const offlineResponse = await this.sessionManager.loginOffline({
           identifier: credentials.email,
           password: credentials.password,
           rememberPassword: credentials.rememberPassword,
@@ -432,7 +425,7 @@ export class AuthDesktopApplicationService {
         });
 
         // Initialize PowerSync in background (don't block login response)
-        // Session state is already established by createOnlineSession() earlier
+        // Session state is already established by activateOnlineSession() earlier
         this.initializePowerSyncAsync(this.authMode);
 
         return toIpcResult(ok(finalResult.response));
@@ -555,13 +548,6 @@ export class AuthDesktopApplicationService {
 
     const sessionId = data.session?.id || data.sessionId || crypto.randomUUID();
     const accessTokenExpiresIn = this.getAccessTokenExpiresInSeconds(data.session?.expiresAt);
-    await this.tokenManager.saveTokens({
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken || '',
-      accessTokenExpiresIn,
-      identityId,
-      sessionId,
-    });
     this.authMode = AuthMode.ONLINE_USER;
     this.runtimeState = AuthRuntimeState.AUTHENTICATED;
 
@@ -569,10 +555,11 @@ export class AuthDesktopApplicationService {
       return;
     }
 
-    // Create local session so getCurrentIdentityId() works after registration
-    await this.sessionManager.createOnlineSession({
+    await this.sessionManager.activateOnlineSession({
       identityId,
       sessionId,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken || '',
       expiresIn: accessTokenExpiresIn,
     });
 
@@ -585,7 +572,7 @@ export class AuthDesktopApplicationService {
       );
 
     // Connect PowerSync for online registration (background, non-blocking)
-    // Session state is already established by createOnlineSession() earlier
+    // Session state is already established by activateOnlineSession() earlier
     this.initializePowerSyncAsync(AuthMode.ONLINE_USER);
 
     await this.rememberedAccounts.recordLogin({
@@ -758,6 +745,12 @@ export class AuthDesktopApplicationService {
 
             if (response.refreshToken) {
               await this.tokenManager.updateRefreshToken(response.refreshToken);
+            }
+
+            if (this.sessionManager) {
+              await this.sessionManager.syncCurrentSessionExpiry(
+                this.getAccessTokenExpiresInSeconds(response.session?.expiresAt) * 1000,
+              );
             }
           },
         },
@@ -1172,7 +1165,7 @@ export class AuthDesktopApplicationService {
     this.powerSyncInitPromise = (async () => {
       try {
         if (authMode === AuthMode.ONLINE_USER) {
-          await promotePowerSyncToSync();
+          await ensurePowerSyncSyncMode();
           this.logger.info('PowerSync sync mode ensured in background');
         } else if (authMode === AuthMode.OFFLINE_USER || authMode === AuthMode.GUEST) {
           await openPowerSyncLocalOnly();

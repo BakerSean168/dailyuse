@@ -160,4 +160,103 @@ describe('SessionManager', () => {
     expect(clearTokens).not.toHaveBeenCalled();
     expect((manager as any).currentSession).toBe(restoredSession);
   });
+
+  it('uses local refresh for local-only tokens even when API callbacks exist', async () => {
+    const sessionRepository = {
+      findByIdentityId: vi.fn().mockResolvedValue([]),
+      save: vi.fn(),
+      findById: vi.fn(),
+      removeExpired: vi.fn(),
+      removeAllByIdentityId: vi.fn(),
+    };
+    const identityRepository = {};
+    const manager = createSessionManager(
+      sessionRepository as never,
+      identityRepository as never,
+      createLogger() as never,
+    );
+
+    const updateAccessToken = vi.fn().mockResolvedValue(undefined);
+    const loadTokens = vi.fn().mockResolvedValue({
+      accessToken: 'local-token',
+      refreshToken: 'local-token',
+      accessTokenExpiresAt: Date.now() - 1000,
+      refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
+      identityId: 'user-1',
+      sessionId: 'session-1',
+    });
+
+    (manager as any).currentSession = {
+      extend: vi.fn(),
+      isValid: vi.fn(() => true),
+    };
+    (manager as any).tokenManager = {
+      getCachedTokenData: vi.fn().mockReturnValue(null),
+      loadTokens,
+      updateAccessToken,
+      updateRefreshToken: vi.fn(),
+      clearTokens: vi.fn(),
+      saveTokens: vi.fn(),
+      stopAutoRefresh: vi.fn(),
+      startAutoRefresh: vi.fn(),
+    };
+    (manager as any).apiRefreshToken = vi.fn();
+
+    const result = await manager.refreshSession();
+
+    expect(result.ok).toBe(true);
+    expect(updateAccessToken).toHaveBeenCalledOnce();
+    expect((manager as any).apiRefreshToken).not.toHaveBeenCalled();
+  });
+
+  it('activates online sessions atomically', async () => {
+    const sessionRepository = {
+      findByIdentityId: vi.fn().mockResolvedValue([]),
+      save: vi.fn(),
+      findById: vi.fn(),
+      removeExpired: vi.fn(),
+      removeAllByIdentityId: vi.fn(),
+    };
+    const identityRepository = {};
+    const manager = createSessionManager(
+      sessionRepository as never,
+      identityRepository as never,
+      createLogger() as never,
+    );
+
+    const saveTokens = vi.fn().mockResolvedValue(undefined);
+    const startAutoRefresh = vi.fn();
+    (manager as any).tokenManager = {
+      getCachedTokenData: vi.fn().mockReturnValue({
+        accessToken: 'server-access-token',
+        refreshToken: 'server-refresh-token',
+      }),
+      loadTokens: vi.fn(),
+      saveTokens,
+      updateAccessToken: vi.fn(),
+      updateRefreshToken: vi.fn(),
+      clearTokens: vi.fn(),
+      stopAutoRefresh: vi.fn(),
+      startAutoRefresh,
+    };
+
+    await manager.activateOnlineSession({
+      identityId: 'user-1',
+      sessionId: 'session-1',
+      accessToken: 'server-access-token',
+      refreshToken: 'server-refresh-token',
+      expiresIn: 3600,
+    });
+
+    expect(saveTokens).toHaveBeenCalledWith({
+      accessToken: 'server-access-token',
+      refreshToken: 'server-refresh-token',
+      accessTokenExpiresIn: 3600,
+      identityId: 'user-1',
+      sessionId: 'session-1',
+    });
+    expect(sessionRepository.save).toHaveBeenCalledOnce();
+    expect(startAutoRefresh).toHaveBeenCalledOnce();
+    expect((manager as any).currentSession?.identityId).toBe('user-1');
+  });
 });
