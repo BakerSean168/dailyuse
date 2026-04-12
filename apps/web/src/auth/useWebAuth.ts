@@ -24,7 +24,6 @@ export function useWebAuth() {
       refreshToken: data.refreshToken ?? null,
       currentIdentity: data.identity,
       authMode: (data as AuthResponseDTO & { authMode?: string }).authMode ?? null,
-      tokenExpiresAt: typeof data.session?.expiresAt === 'number' ? data.session.expiresAt : null,
     };
 
     window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authState));
