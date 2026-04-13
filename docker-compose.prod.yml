@@ -190,7 +190,7 @@ services:
       start_period: 40s
 
   powersync:
-    image: journeyapps/powersync-service:latest
+    image: ${REGISTRY:?set REGISTRY}/${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE}/journeyapps-powersync-service:${POWERSYNC_IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       api:
