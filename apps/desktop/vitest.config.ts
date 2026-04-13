@@ -2,6 +2,8 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 import { createSharedConfig } from '../../vitest.shared';
 import { createWorkspaceSourceAliasEntries } from '../../vite.workspace-aliases';
 
+// Desktop renderer tests import many workspace packages through their source
+// entrypoints so Electron-specific adapters stay aligned with local edits.
 const desktopTestWorkspaceEntries = [
   ['@dailyuse/account/application-client', 'packages/account/src/application-client/index.ts'],
   ['@dailyuse/account/infrastructure-client', 'packages/account/src/infrastructure-client/index.ts'],
@@ -74,6 +76,8 @@ const desktopTestWorkspaceEntries = [
 export default mergeConfig(
   createSharedConfig({
     projectRoot: __dirname,
+    // The desktop app pulls in Electron-facing modules and workspace aliases
+    // that behave more predictably under the Node test environment.
     environment: 'node',
     aliasEntries: createWorkspaceSourceAliasEntries(
       __dirname + '/../..',

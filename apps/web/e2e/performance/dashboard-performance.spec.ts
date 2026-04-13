@@ -8,7 +8,7 @@
  * - Time to Interactive (TTI) ≤ 2.5s
  * - Widget rendering performance
  *
- * Run with: npx playwright test e2e/performance/dashboard-performance.spec.ts
+ * Prefer running via the Nx-owned E2E entrypoint, then narrow with Playwright args if needed.
  */
 
 import { test, expect } from '@playwright/test';

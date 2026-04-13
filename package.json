@@ -124,6 +124,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
+    "@electron/rebuild": "4.0.3",
     "@nx/eslint": "22.5.3",
     "@nx/eslint-plugin": "22.5.3",
     "@nx/js": "22.5.3",
@@ -155,7 +156,6 @@
     "@vue/test-utils": "^2.4.6",
     "eas-cli": "18.4.0",
     "electron": "39.2.6",
-    "@electron/rebuild": "4.0.3",
     "esbuild-plugin-vue": "0.2.4",
     "eslint": "^9.0.0",
     "eslint-plugin-storybook": "10.2.8",
@@ -169,6 +169,7 @@
     "lodash-es": "^4.17.21",
     "madge": "8.0.0",
     "nx": "22.5.3",
+    "nx-mcp": "0.24.0",
     "prettier": "^3.0.0",
     "prisma": "^7.4.2",
     "reflect-metadata": "^0.2.2",

@@ -19,7 +19,7 @@ updated: 2026-03-14T00:00:00
 | 快速理解模块结构           | [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)                                             |
 | 知道改一个功能要动哪些文件 | [`CHANGE_PLAYBOOK.md`](./CHANGE_PLAYBOOK.md)                                             |
 | 理解为什么这样设计         | [`DECISIONS.md`](./DECISIONS.md)                                                         |
-| 深入看完整实现             | [`../../packages/governance/ARCHITECTURE.md`](../../packages/governance/ARCHITECTURE.md) |
+| 进入代码入口               | [`../../packages/governance/README.md`](../../packages/governance/README.md)             |
 
 ## 模块定位
 
@@ -50,16 +50,13 @@ updated: 2026-03-14T00:00:00
 ## 代码入口
 
 - 包入口：`packages/governance/README.md`
-- 深度架构：`packages/governance/ARCHITECTURE.md`
-- 实现手册：`packages/governance/IMPLEMENTATION_GUIDE.md`
 - 路由聚合器：`packages/governance/src/api/routes/index.ts`
 
 ## 推荐学习顺序
 
 1. `QUICK_REFERENCE.md`
 2. `packages/governance/README.md`
-3. `packages/governance/ARCHITECTURE.md`
-4. `CHANGE_PLAYBOOK.md`
-5. 具体代码文件
+3. `CHANGE_PLAYBOOK.md`
+4. 具体代码文件
 
 

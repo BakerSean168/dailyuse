@@ -10,6 +10,11 @@ export const DESKTOP_USER_DATA_DIRS = Object.freeze({
 
 export type DesktopRuntimeChannel = keyof typeof DESKTOP_USER_DATA_DIRS;
 
+function getExplicitDesktopUserDataPath(): string | null {
+  const explicitPath = process.env.DAILYUSE_DESKTOP_USER_DATA_PATH?.trim();
+  return explicitPath && explicitPath.length > 0 ? explicitPath : null;
+}
+
 function getDesktopRuntimeChannel(): DesktopRuntimeChannel {
   if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
     return 'test';
@@ -27,6 +32,11 @@ export function getDesktopUserDataDirName(
 export function resolveDesktopUserDataPath(
   channel: DesktopRuntimeChannel = getDesktopRuntimeChannel(),
 ): string {
+  const explicitPath = getExplicitDesktopUserDataPath();
+  if (explicitPath) {
+    return explicitPath;
+  }
+
   return path.join(app.getPath('appData'), getDesktopUserDataDirName(channel));
 }
 

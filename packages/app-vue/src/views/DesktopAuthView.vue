@@ -157,10 +157,10 @@ onMounted(() => {
           <TabsList
             class="grid h-auto w-full grid-cols-3 rounded-2xl border border-border/70 bg-muted/80 p-1 backdrop-blur-sm"
           >
-            <TabsTrigger value="login" class="rounded-xl">{{
+            <TabsTrigger value="login" class="rounded-xl" data-testid="login-tab">{{
               t('auth.desktop.tabs.login')
             }}</TabsTrigger>
-            <TabsTrigger value="register" class="rounded-xl">{{
+            <TabsTrigger value="register" class="rounded-xl" data-testid="register-tab">{{
               t('auth.desktop.tabs.register')
             }}</TabsTrigger>
             <TabsTrigger value="quick-login" class="rounded-xl">{{
@@ -169,7 +169,7 @@ onMounted(() => {
           </TabsList>
 
           <TabsContent value="login" class="mt-0 space-y-4">
-            <div class="space-y-2">
+            <div class="space-y-2" data-testid="login-username-input">
               <Label for="login-email">{{ t('auth.field.email') }}</Label>
               <Input
                 id="login-email"
@@ -179,7 +179,7 @@ onMounted(() => {
                 :disabled="isLoading"
               />
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2" data-testid="login-password-input">
               <Label for="login-password">{{ t('auth.field.password') }}</Label>
               <Input
                 id="login-password"
@@ -206,9 +206,14 @@ onMounted(() => {
             </div>
 
             <div class="flex flex-wrap gap-3">
-              <Button class="min-w-32 flex-1" :disabled="isLoading" @click="handleLogin"
-                >{{ t('auth.login.submit') }}</Button
+              <Button
+                class="min-w-32 flex-1"
+                :disabled="isLoading"
+                data-testid="login-submit-button"
+                @click="handleLogin"
               >
+                {{ t('auth.login.submit') }}
+              </Button>
               <Button variant="outline" :disabled="isLoading" @click="enterGuestMode">
                 <UserRound class="mr-2 h-4 w-4" />
                 {{ t('auth.page.guestMode') }}
@@ -217,7 +222,7 @@ onMounted(() => {
           </TabsContent>
 
           <TabsContent value="register" class="mt-0 space-y-4">
-            <div class="space-y-2">
+            <div class="space-y-2" data-testid="register-email-input">
               <Label for="register-email">{{ t('auth.field.email') }}</Label>
               <Input
                 id="register-email"
@@ -227,7 +232,7 @@ onMounted(() => {
                 :disabled="isLoading"
               />
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2" data-testid="register-password-input">
               <Label for="register-password">{{ t('auth.field.password') }}</Label>
               <Input
                 id="register-password"
@@ -236,7 +241,7 @@ onMounted(() => {
                 :disabled="isLoading"
               />
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2" data-testid="register-confirm-password-input">
               <Label for="register-confirm-password">{{ t('auth.field.confirmPassword') }}</Label>
               <Input
                 id="register-confirm-password"
@@ -247,7 +252,12 @@ onMounted(() => {
               />
             </div>
 
-            <Button class="w-full" :disabled="isLoading" @click="handleRegister">{{
+            <Button
+              class="w-full"
+              :disabled="isLoading"
+              data-testid="register-submit-button"
+              @click="handleRegister"
+            >{{
               t('auth.desktop.createAccount')
             }}</Button>
           </TabsContent>

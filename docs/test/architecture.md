@@ -1,126 +1,33 @@
-# Test Architecture
+# 测试分层与职责边界
 
-## Three-Layer Testing Strategy
+这个仓库不再用“单一模块的三层模型”描述全部测试，而是按职责划分不同层次。原则很简单：先用最便宜的测试证明问题，只有跨数据库、跨协议、跨进程或真实用户流程时才升级测试层级。
 
-The Memoflow monorepo uses a three-layer testing strategy, with the **task** module as the reference implementation.
+## 当前测试层次
 
-```
-Layer 3: API Smoke Tests (Supertest)
-  HTTP request → Express router → Controller → Use Case → mock Repository
-  Verifies: routing, middleware, serialization, HTTP status codes
+| 类型 | 主要验证内容 | 典型位置 | 何时使用 |
+| --- | --- | --- | --- |
+| 单元测试 | 业务规则、状态流转、映射、纯函数、组件局部行为 | `packages/*/src/**`、`apps/*/src/**` | 默认首选 |
+| 集成测试 | 数据库访问、Prisma 映射、事务、持久化边界 | `packages/task/src/**/*.integration.test.ts` | 触及真实数据库或仓储实现时 |
+| API 冒烟测试 | 路由、middleware、序列化、HTTP 状态码、控制器装配 | `apps/api/src/__tests__/smoke/**` | 需要验证 HTTP 闭环但不想上完整 E2E 时 |
+| Web 契约测试 | adapter、mock handler、contracts schema 是否一致 | `apps/web/src/mocks/handlers/*.spec.ts` | 新增接口或修改请求/响应 shape 时 |
+| Web E2E | 浏览器中的真实用户流程 | `apps/web/e2e/**` | 页面交互、跨模块流程、关键回归 |
+| Web 同步回归 E2E | Web 与 API/desktop 相关同步链路 | `apps/web/e2e/sync/**` | 同步、回写、跨端回归 |
+| Desktop 专项测试 | Electron renderer、IPC、main 进程行为 | `apps/desktop/**`、`apps/desktop/src/main/**` | 触及 preload、IPC、main/database 相关逻辑时 |
+| 性能 / Bench | 明确的性能假设或退化风险 | `packages/task/**/**/*.bench.ts` | 排查性能回归或验证优化收益时 |
 
-Layer 2: Unit Tests (vi.fn mocks)
-  Controller/Service/UseCase → mocked dependencies
-  Verifies: business logic, validation, error handling, DTO mapping
+## 选择规则
 
-Layer 1: Integration Tests (real PostgreSQL)
-  Repository → Docker PostgreSQL (port 5433)
-  Verifies: SQL queries, Prisma mappings, data integrity, transactions
-```
+- 纯业务逻辑、数据变换、组件局部行为，优先补单元测试。
+- 触及 Prisma、SQL、事务、数据库清理策略时，补集成测试。
+- 触及路由、请求校验、HTTP 状态码或控制器装配时，补 API 冒烟测试。
+- 触及 Web adapter、mock handler 或 contracts schema 时，补契约测试。
+- 触及真实浏览器流程、跨页面状态或关键用户路径时，补 Web E2E。
+- 触及同步链路、跨端写入回读或 desktop-web 联动时，补 `e2e:sync`。
+- 触及 Electron main/IPC 边界时，优先看 `desktop:test:ipc` 和 `desktop:test:main`。
+- 只有在性能本身是需求或风险点时，才补 bench；它不是默认回归入口。
 
-### Layer 1 — Repository Integration Tests (`task-integration`)
+## 文档与代码的边界
 
-- **Location**: `packages/task/src/infrastructure-server/adapters/prisma/__tests__/*.integration.test.ts`
-- **Requires**: Docker PostgreSQL container on port `5433`
-- **Global setup**: `packages/task/src/__tests__/integration-global-setup.ts` (runs Prisma sync)
-- **Execution**: Sequential (`fileParallelism: false`, `singleFork: true`) to avoid DB conflicts
-- **Timeout**: 30s per test
-- **Test count**: 60 tests
-
-### Layer 2 — Unit Tests (`task`)
-
-- **Location**: `packages/task/src/**/*.{test,spec}.ts` (excluding `*.integration.*`)
-- **Strategy**: All external dependencies are mocked via `vi.fn()`. Tests validate:
-  - Controller input validation (Zod schemas)
-  - Use case orchestration logic
-  - Domain aggregate state machines
-  - Domain service behavior
-  - DTO conversion
-- **Test count**: 527 tests
-
-### Layer 3 — API Smoke Tests (`api-smoke`)
-
-- **Location**: `apps/api/src/__tests__/smoke/**/*.test.ts`
-- **Strategy**: Supertest drives Express, controllers use real use case logic with mocked repositories
-- **Validates**: Full HTTP round-trip without a database
-- **Test count**: 58 tests
-
-## Project Layout
-
-```
-vitest.config.ts          ← Single config for all 12 projects
-├── Library Projects
-│   ├── contracts         (0 tests, passWithNoTests)
-│   ├── domain-server     (0 tests, passWithNoTests)
-│   ├── domain-client     (0 tests, passWithNoTests)
-│   └── ui                (0 tests, passWithNoTests)
-├── Package Projects
-│   ├── utils             (23 tests)
-│   ├── task              (527 unit tests)
-│   └── task-integration  (60 integration tests)
-└── Application Projects
-    ├── api               (0 non-smoke tests, passWithNoTests)
-    ├── api-smoke         (58 smoke tests)
-    ├── desktop           (0 tests, passWithNoTests)
-    └── web               (0 tests, passWithNoTests)
-```
-
-## Module Resolution in Tests
-
-This is the most complex part of the test infrastructure due to the monorepo structure.
-
-### The Problem
-
-Test files import cross-package modules using three styles:
-
-1. **Relative paths**: `./services/foo`
-2. **`@/` alias**: `@/domain-server/aggregates/TaskInstance`
-3. **Package self-references**: `@dailyuse/contracts/task`, `@dailyuse/task/domain-shared`
-
-Vitest runs tests in **fork workers** (`pool: 'forks'`). Vite plugins (`resolveId` hooks) only run in the main Vite server process, **not** inside fork workers. This means:
-
-- `resolve.alias` works in fork workers (serialized to child processes)
-- Vite plugins **do not** work in fork workers
-
-### Resolution Strategy
-
-All cross-package resolution is handled by `taskResolveAliases` (a `resolve.alias` array):
-
-1. **Explicit string aliases** for top-level contracts subpaths (`result`, `shared`, `primitives`, `electron`, `mocks`)
-2. **Catch-all regex** `@dailyuse/contracts/(.+)` → `src/modules/$1/index.ts` for domain module subpaths
-3. **Bare alias** `@dailyuse/contracts` → `src/index.ts`
-4. Similar pattern for `@dailyuse/utils`, `@dailyuse/task`, `@dailyuse/test-utils`
-
-### The `@dailyuse/contracts` Dual Layout
-
-The contracts package has two source directories:
-
-```
-packages/contracts/src/
-├── modules/        ← Domain modules (task, goal, account, ...)
-│   ├── task/index.ts
-│   ├── goal/index.ts
-│   └── ...
-├── result/         ← Top-level utilities
-├── shared/
-├── primitives/
-├── electron/
-└── mocks/
-```
-
-A single regex can't route both layouts. Solution:
-
-- 5 explicit string aliases for top-level subpaths (checked first)
-- 1 catch-all regex for domain modules
-
-### Alias Ordering Rules
-
-```
-1. Exact-string aliases checked first (longest match wins)
-2. Regex aliases checked in array order (first match wins)
-3. Subpath regex MUST come BEFORE bare-package alias
-```
-
-Incorrect ordering will cause the bare alias to match `@dailyuse/contracts/task` and resolve to `src/index.ts/task` (ENOTDIR error).
-
-
+- 本页只描述“测什么”和“何时补”。
+- 配置为什么这样写，去看对应 `vitest.config.ts`、`playwright.config.ts`、global setup、fixture 和 helper 注释。
+- 如果某一类测试的职责变化，应先改配置和测试目录，再回头同步本页，不要在文档里单独维护一套架构描述。

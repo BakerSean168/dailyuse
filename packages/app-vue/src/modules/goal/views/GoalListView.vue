@@ -14,6 +14,7 @@
             size="icon"
             class="h-8 w-8"
             :title="t('goal.list.newGoal')"
+            data-testid="create-goal-button"
             @click="openCreateDialog()"
           >
             <Plus class="h-4 w-4" />
@@ -84,7 +85,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
+    <main class="flex min-w-0 flex-1 flex-col overflow-hidden" data-testid="goal-list-view">
       <!-- Header -->
       <header
         class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
@@ -131,6 +132,7 @@
           <div
             v-else-if="filteredGoals.length > 0"
             class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+            data-testid="goal-list"
           >
             <GoalCard
               v-for="goal in filteredGoals"
@@ -153,7 +155,7 @@
               {{ t('goal.list.noGoalsFound') }}
             </h3>
             <p class="mb-6 text-sm">{{ t('goal.list.createToStart') }}</p>
-            <Button @click="openCreateDialog()">
+            <Button data-testid="create-goal-button" @click="openCreateDialog()">
               <Plus class="mr-2 h-4 w-4" />
               {{ t('goal.list.createGoal') }}
             </Button>

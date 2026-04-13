@@ -1,91 +1,46 @@
-# Vitest Configuration Deep Dive
+# 测试配置入口
 
-> Source: `vitest.config.ts` (root)
+本页只列“去哪里看配置”，不复述实现细节。需要理解 alias、worker、global setup、fixture 或 webServer 为什么这样配时，直接打开对应文件。
 
-## Overview
+## 根入口
 
-All 12 test projects are defined in a single `vitest.config.ts` using the `test.projects` array. This replaced the deprecated workspace file format from Vitest 2.x.
+| 场景 | 入口文件 | 说明 |
+| --- | --- | --- |
+| Vitest 工作区项目定义 | [`vitest.config.ts`](../../vitest.config.ts) | 根级 Vitest projects、共享 alias、通用 coverage / reporter / bail |
+| 通用共享配置 | [`vitest.shared.ts`](../../vitest.shared.ts) | 多个项目复用的 Vitest 基础配置 |
+| Nx 测试 target | 各项目 `project.json` | 测试命令统一从 Nx target 进入 |
 
-## Shared Components
+## 按测试类型查看
 
-### Plugins
+| 测试类型 | 重点入口文件 |
+| --- | --- |
+| Web 单元测试 | [`apps/web/project.json`](../../apps/web/project.json)、[`apps/web/vitest.config.ts`](../../apps/web/vitest.config.ts)、[`apps/web/src/test/setup.ts`](../../apps/web/src/test/setup.ts) |
+| Web E2E | [`apps/web/project.json`](../../apps/web/project.json)、[`apps/web/playwright.config.ts`](../../apps/web/playwright.config.ts)、[`apps/web/e2e/`](../../apps/web/e2e/) |
+| Web 同步回归 E2E | [`apps/web/project.json`](../../apps/web/project.json)、[`apps/web/playwright.sync.config.ts`](../../apps/web/playwright.sync.config.ts)、[`apps/web/e2e/sync/`](../../apps/web/e2e/sync/) |
+| Web 契约测试 | [`apps/web/src/mocks/handlers/`](../../apps/web/src/mocks/handlers/)、[`apps/web/src/mocks/handlers/_shared/contract-test-helpers.ts`](../../apps/web/src/mocks/handlers/_shared/contract-test-helpers.ts) |
+| API 单元 / 应用测试 | [`apps/api/project.json`](../../apps/api/project.json)、[`vitest.config.ts`](../../vitest.config.ts)、[`apps/api/src/test/setup.ts`](../../apps/api/src/test/setup.ts) |
+| API 冒烟测试 | [`apps/api/project.json`](../../apps/api/project.json)、[`vitest.config.ts`](../../vitest.config.ts)、`apps/api/src/__tests__/smoke/**` |
+| Task 单元测试 | [`packages/task/project.json`](../../packages/task/project.json)、[`packages/task/vitest.config.ts`](../../packages/task/vitest.config.ts) |
+| Task 集成测试 | [`packages/task/project.json`](../../packages/task/project.json)、[`vitest.config.ts`](../../vitest.config.ts)、[`packages/task/src/__tests__/integration-global-setup.ts`](../../packages/task/src/__tests__/integration-global-setup.ts) |
+| Task 性能 / Bench | [`packages/task/project.json`](../../packages/task/project.json)、[`packages/task/vitest.performance.config.ts`](../../packages/task/vitest.performance.config.ts) |
+| Desktop renderer 测试 | [`apps/desktop/project.json`](../../apps/desktop/project.json)、[`apps/desktop/vitest.config.ts`](../../apps/desktop/vitest.config.ts) |
+| Desktop IPC 测试 | [`apps/desktop/project.json`](../../apps/desktop/project.json)、[`apps/desktop/vitest.ipc.config.ts`](../../apps/desktop/vitest.ipc.config.ts) |
+| Desktop main 测试 | [`apps/desktop/project.json`](../../apps/desktop/project.json)、[`vitest.config.ts`](../../vitest.config.ts) 中的 `desktop-main` project |
 
-Three custom Vite plugins are defined at the top of the file:
+## 优先补注释的位置
 
-| Plugin                        | Purpose                                                            | Used By                           |
-| ----------------------------- | ------------------------------------------------------------------ | --------------------------------- |
-| `taskResolveAtAlias`          | Resolves `@/` imports to the correct package's `src/` dir          | task, task-integration, api-smoke |
-| `taskDeepImportResolver`      | Resolves `@dailyuse/task/<deep-path>` for non-export paths         | api-smoke                         |
-| `contractsDeepImportResolver` | Resolves `@dailyuse/contracts/<subpath>` with dual-layout fallback | task, task-integration            |
+以下文件最适合承接“为什么这样配”的说明：
 
-**Important**: These plugins only run in the main Vite server process. They do **not** run inside fork workers. The `resolve.alias` array is what actually handles resolution in test workers.
+- [`vitest.config.ts`](../../vitest.config.ts)
+- [`apps/web/playwright.config.ts`](../../apps/web/playwright.config.ts)
+- [`apps/web/playwright.sync.config.ts`](../../apps/web/playwright.sync.config.ts)
+- [`packages/task/vitest.performance.config.ts`](../../packages/task/vitest.performance.config.ts)
+- [`packages/task/src/__tests__/integration-global-setup.ts`](../../packages/task/src/__tests__/integration-global-setup.ts)
+- [`apps/web/e2e/helpers/`](../../apps/web/e2e/helpers/) 与 [`apps/web/e2e/sync/helpers/`](../../apps/web/e2e/sync/helpers/)
+- [`apps/desktop/vitest.config.ts`](../../apps/desktop/vitest.config.ts) 与 [`apps/desktop/vitest.ipc.config.ts`](../../apps/desktop/vitest.ipc.config.ts)
 
-### `taskResolveAliases` Array
+## 维护约定
 
-This is the primary resolution mechanism. It's shared across `task`, `task-integration`, and `api-smoke` projects.
-
-```
-Alias resolution order:
-1. @dailyuse/database          → packages/database/src/index.ts
-2. @dailyuse/domain-shared     → packages/domain-shared/src/index.ts
-3. @dailyuse/utils/(.+)        → packages/utils/src/$1/index.ts       (regex)
-4. @dailyuse/utils              → packages/utils/src/index.ts
-5. @dailyuse/patterns           → packages/patterns/src/index.ts
-6. @dailyuse/test-utils/(.+)   → packages/test-utils/src/$1           (regex)
-7. @dailyuse/test-utils         → packages/test-utils/src/index.ts
-8. @dailyuse/contracts/result   → contracts/src/result/index.ts        (explicit)
-9. @dailyuse/contracts/shared   → contracts/src/shared/index.ts        (explicit)
-10. @dailyuse/contracts/primitives → contracts/src/primitives/index.ts (explicit)
-11. @dailyuse/contracts/electron  → contracts/src/electron/index.ts    (explicit)
-12. @dailyuse/contracts/mocks    → contracts/src/mocks/index.ts        (explicit)
-13. @dailyuse/contracts/(.+)     → contracts/src/modules/$1/index.ts   (regex catch-all)
-14. @dailyuse/contracts           → contracts/src/index.ts
-15. @dailyuse/task/(.+)          → packages/task/src/$1/index.ts       (regex)
-16. @dailyuse/task                → packages/task/src/index.ts
-```
-
-### Why 5 Explicit Contracts Aliases?
-
-The contracts package has two source layouts:
-
-- Domain modules live in `src/modules/<name>/`
-- Top-level utilities live in `src/<name>/`
-
-The catch-all regex (item 13) routes everything to `src/modules/`. Without explicit aliases for the 5 top-level subpaths, `@dailyuse/contracts/result` would incorrectly resolve to `src/modules/result/index.ts` (which doesn't exist).
-
-## Global Settings
-
-```typescript
-globals: true; // vi, describe, it, expect are global
-passWithNoTests: true; // Projects without test files still pass
-bail: process.env.CI ? 1 : 0; // Fail fast in CI
-```
-
-## Coverage
-
-- Provider: `v8`
-- Disabled by default, enable with `--coverage`
-- Reporters: text, json, html, lcov
-- Excludes: node_modules, dist, .d.ts, config files, prisma
-
-## `api-smoke` Project Special Config
-
-The api-smoke project extends `taskResolveAliases` with additional explicit aliases for deep task controller paths:
-
-```
-@dailyuse/task/api/controllers/task-template.controller → .ts file
-@dailyuse/task/api/controllers/task-instance.controller → .ts file
-@dailyuse/task/api/routes → routes/index.ts
-```
-
-These must come **before** the generic `@dailyuse/task/(.+)` regex in the alias array.
-
-## Deprecation Warnings
-
-Vitest 4 moved `poolOptions` to top-level project options. The current config still uses the nested format:
-
-```
-test.poolOptions.forks.singleFork  →  should become test.forks.singleFork
-```
-
-This produces deprecation warnings but works correctly at runtime.
+- 文档只保留入口索引和边界说明。
+- 配置实现一旦变化，先在对应文件注释里说明，再检查本页链接是否仍然成立。
+- 不再在文档里维护 alias 顺序、插件回退策略、具体 worker 参数等实现展开。

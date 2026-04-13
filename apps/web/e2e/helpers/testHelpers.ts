@@ -15,15 +15,18 @@ type SSEWindowState = Window &
   };
 
 /**
+ * Legacy umbrella helpers for the classic web E2E suite.
+ * New sync-specific flows should prefer the focused helpers under `e2e/sync/helpers`.
+ */
+
+/**
  * ========================================
  * 测试用户配置
  * ========================================
- * 
- * 这些用户需要在运行 E2E 测试前预先创建
- * 运行命令: pnpm test:seed
- * 
- * 详细说明: /tools/test/README.md
- * 
+ *
+ * 默认用户定义集中在 `apps/web/e2e/config.ts`。
+ * 如果账号准备方式变化，应优先更新配置和相关脚本，而不是在这里重复维护。
+ *
  * 配置来源: /apps/web/e2e/config.ts
  */
 
@@ -115,7 +118,7 @@ export async function login(
   // 等待一下，确保页面状态更新完成
   await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
 
-  // 3. 等待 "登录" 标签页加载 (确保在登录模式，而不是注册模式)
+  // 显式切回登录 tab，避免 auth 页面默认停在注册态时造成误判。
   const loginTab = page.locator('button.v-tab:has-text("登录")');
   await loginTab.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await loginTab.click();
@@ -199,7 +202,8 @@ export async function waitForSSEConnection(page: Page, timeout: number = 10000) 
  * 监听 SSE 事件
  */
 export async function captureSSEEvents(page: Page): Promise<void> {
-  // 注入监听器到页面上下文
+  // Patch EventSource in the page context so tests can assert transport-level
+  // delivery without coupling to a specific toast or notification widget.
   await page.evaluate(() => {
     const sseWindow = window as SSEWindowState;
 

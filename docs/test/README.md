@@ -1,47 +1,38 @@
-# Test System Documentation
+# 测试文档
 
-This directory documents the Memoflow monorepo test infrastructure.
+`docs/test` 只保留薄文档，回答下面几件事：
 
-## Contents
+- 仓库里有哪些测试类型
+- 每类测试从哪个 Nx target 进入
+- 什么时候应该跑哪一类测试
+- 相关配置、setup、helper 在哪里
+- 文档和代码注释各自负责什么
 
-| Document                                   | Description                                                     |
-| ------------------------------------------ | --------------------------------------------------------------- |
-| [architecture.md](./architecture.md)       | Three-layer testing strategy, project layout, module resolution |
-| [running-tests.md](./running-tests.md)     | How to run tests locally and in CI                              |
-| [configuration.md](./configuration.md)     | Deep dive into `vitest.config.ts` and alias resolution          |
-| [troubleshooting.md](./troubleshooting.md) | Common failures, Vite plugin vs alias gotchas, known issues     |
+详细实现、历史背景、alias 细节、fixture 设计理由，优先写回配置文件和测试辅助代码注释，不再在这里重复展开。
 
-## Quick Reference
+## 测试类型总览
 
-```bash
-# Run all 12 test projects
-pnpm vitest run
+| 类型 | 主要位置 | 常用入口 |
+| --- | --- | --- |
+| 单元测试 | `packages/*`、`apps/*` 下的 `*.test.ts` / `*.spec.ts` | `pnpm nx run <project>:test` |
+| 集成测试 | `packages/task/src/**/*.integration.test.ts` | `pnpm nx run task:test:integration` |
+| API 冒烟测试 | `apps/api/src/__tests__/smoke/**` | `pnpm nx run api:test:smoke` |
+| Web 契约测试 | `apps/web/src/mocks/handlers/*.spec.ts` | `pnpm nx run web:test` |
+| Web E2E | `apps/web/e2e/**` | `pnpm nx run web:e2e` |
+| Web 同步回归 E2E | `apps/web/e2e/sync/**` | `pnpm nx run web:e2e:sync` |
+| Desktop 专项测试 | `apps/desktop`、`apps/desktop/src/main/**` | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main` |
+| 性能 / Bench | `packages/task/**/**/*.bench.ts` | `pnpm nx run task:test:performance` |
 
-# Run a single project
-pnpm vitest run --project task
+## 文档索引
 
-# Run with watch mode
-pnpm vitest --project task
+- [architecture.md](./architecture.md)：测试分层、职责边界、何时补哪类测试
+- [running-tests.md](./running-tests.md)：日常开发、回归排查、CI 对应命令
+- [configuration.md](./configuration.md)：测试配置、setup、helper 的入口位置
+- [contract-tests.md](./contract-tests.md)：Web mock handler 契约测试约定
 
-# Start the test database (required for integration tests)
-docker compose -f docker-compose.test.yml up -d
-```
+## 使用原则
 
-## Test Suite Summary
-
-| Project          | Type                  | Tests                           | Environment       |
-| ---------------- | --------------------- | ------------------------------- | ----------------- |
-| contracts        | library               | 0 (no test files yet)           | node              |
-| domain-server    | library               | 0 (no test files yet)           | node              |
-| domain-client    | library               | 0 (no test files yet)           | happy-dom         |
-| ui               | library               | 0 (no test files yet)           | happy-dom         |
-| utils            | library               | 23                              | node              |
-| task             | package (unit)        | 527                             | node              |
-| task-integration | package (integration) | 60                              | node + PostgreSQL |
-| api              | application           | 0 (no non-smoke test files yet) | node              |
-| api-smoke        | application (smoke)   | 58                              | node              |
-| desktop          | application           | 0 (no test files yet)           | happy-dom         |
-| web              | application           | 0 (no test files yet)           | happy-dom         |
-
-**Total: 668 tests across 34 test files, 12 projects**
-
+- 运行测试时统一优先走 `pnpm nx ...`，不要把底层 `vitest` / `playwright` 命令写成主文档入口。
+- 文档不再硬编码测试数量、文件数量、历史统计。
+- 具体实现理由应写在对应配置文件、setup 文件、fixture、helper 注释中。
+- 如果文档与代码冲突，以当前 `project.json`、测试配置文件和测试目录为准。

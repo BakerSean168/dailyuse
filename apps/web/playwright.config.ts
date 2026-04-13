@@ -5,8 +5,10 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  // 测试文件目录
+  // 默认 E2E 只覆盖纯 Web 流程；desktop-web 同步回归单独放到 sync 配置里，
+  // 避免日常回归被跨进程准备成本拖慢。
   testDir: './e2e',
+  testIgnore: ['sync/**'],
 
   // 单个测试最大执行时间 (5分钟，因为需要等待 Reminder 触发)
   timeout: 5 * 60 * 1000,
@@ -16,12 +18,12 @@ export default defineConfig({
     timeout: 10 * 1000, // 断言超时 10 秒
   },
 
-  // 失败重试次数
+  // 主流程用例会共享账号与后端状态，保持串行比追求并发更稳定。
   fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
 
-  // 并行 worker 数量
-  workers: 1, // E2E 测试使用单个 worker 避免冲突
+  // 单 worker 可以避免数据污染，也让失败更容易复现。
+  workers: 1,
 
   // 报告配置
   reporter: process.env.CI
@@ -64,7 +66,7 @@ export default defineConfig({
     },
   ],
 
-  // 由 Playwright 自动管理 Web 服务器，避免手动启动/销毁差异
+  // 由 Playwright 托管本地 Web 服务，确保本地和 CI 使用同一启动方式。
   webServer: {
     command: 'pnpm --filter @dailyuse/web dev -- --host 127.0.0.1 --port 5173',
     url: 'http://127.0.0.1:5173',

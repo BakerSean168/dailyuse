@@ -363,7 +363,7 @@ const callback = useCallback(() => {
 - `apps/desktop/src/renderer/modules/goal/presentation/views/GoalListView.tsx` - Fixed ref updates using useEffect
 - `apps/desktop/src/renderer/modules/task/presentation/hooks/useTaskTemplate.ts` - Converted to getState() pattern
 
-See [React/Zustand Infinite Loop Troubleshooting Guide](../../troubleshooting/REACT_ZUSTAND_INFINITE_LOOP.md) for detailed explanation.
+核心约束是：不要把 Zustand action 订阅结果放进 `useCallback` / `useEffect` 依赖里；这类实现理由应直接写在相关 hook、store 和测试注释中。
 
 ---
 

@@ -137,14 +137,11 @@ src/
 > governance 中的每个文件都包含详细的 JSDoc 注释，解释 DDD 模式和设计决策。
 > 新模块开发时，可以直接参考本模块的实现模式。
 >
-> `COMPOSITION_ROOT.md` 提供了当前推荐的 server 端注入蓝图与治理模块实践。
-> `REFACTOR_PLAYBOOK.md` 提供了迁移其他模块时的最短阅读路径与代码定位图。
->
 > 📖 从 [docs/governance/README.md](../../docs/governance/README.md) 开始获取轻量导航、速查卡与变更手册。
 
 ## 推荐阅读顺序
 
 1. `../../docs/governance/README.md` — 模块入口与学习路径
 2. `../../docs/governance/QUICK_REFERENCE.md` — 一页速查
-3. `ARCHITECTURE.md` — 深度架构说明
-4. `IMPLEMENTATION_GUIDE.md` — 具体实现与扩展方式
+3. 当前 README — 模块边界与代码入口
+4. 具体代码文件与注释

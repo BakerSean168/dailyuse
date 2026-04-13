@@ -177,13 +177,17 @@ async function handleGuestLogin() {
 
         <Tabs default-value="login" class="w-full">
           <TabsList class="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="login">{{ t('auth.login.submit') }}</TabsTrigger>
-            <TabsTrigger value="register">{{ t('auth.register.submit') }}</TabsTrigger>
+            <TabsTrigger value="login" data-testid="login-tab">{{
+              t('auth.login.submit')
+            }}</TabsTrigger>
+            <TabsTrigger value="register" data-testid="register-tab">{{
+              t('auth.register.submit')
+            }}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
             <div class="grid gap-4">
-              <div class="grid gap-2">
+              <div class="grid gap-2" data-testid="login-username-input">
                 <Label for="email">{{ t('auth.field.email') }}</Label>
                 <Input
                   id="email"
@@ -192,7 +196,7 @@ async function handleGuestLogin() {
                   :placeholder="t('auth.page.emailPlaceholder')"
                 />
               </div>
-              <div class="grid gap-2">
+              <div class="grid gap-2" data-testid="login-password-input">
                 <div class="flex items-center justify-between">
                   <Label for="password">{{ t('auth.field.password') }}</Label>
                   <a href="#" class="text-xs text-muted-foreground hover:underline">
@@ -201,7 +205,13 @@ async function handleGuestLogin() {
                 </div>
                 <Input id="password" v-model="password" type="password" />
               </div>
-              <Button class="w-full" type="button" :disabled="isLoading" @click="handleLogin">
+              <Button
+                class="w-full"
+                type="button"
+                :disabled="isLoading"
+                data-testid="login-submit-button"
+                @click="handleLogin"
+              >
                 <template v-if="isLoading && authAction === 'login'">
                   {{ t('auth.login.submitting') }}
                 </template>
@@ -212,7 +222,7 @@ async function handleGuestLogin() {
 
           <TabsContent value="register">
             <div class="grid gap-4">
-              <div class="grid gap-2">
+              <div class="grid gap-2" data-testid="register-email-input">
                 <Label for="reg-email">{{ t('auth.field.email') }}</Label>
                 <Input
                   id="reg-email"
@@ -221,15 +231,21 @@ async function handleGuestLogin() {
                   :placeholder="t('auth.page.emailPlaceholder')"
                 />
               </div>
-              <div class="grid gap-2">
+              <div class="grid gap-2" data-testid="register-password-input">
                 <Label for="reg-password">{{ t('auth.field.password') }}</Label>
                 <Input id="reg-password" v-model="regPassword" type="password" />
               </div>
-              <div class="grid gap-2">
+              <div class="grid gap-2" data-testid="register-confirm-password-input">
                 <Label for="confirm-password">{{ t('auth.field.confirmPassword') }}</Label>
                 <Input id="confirm-password" v-model="confirmPassword" type="password" />
               </div>
-              <Button class="w-full" type="button" :disabled="isLoading" @click="handleRegister">
+              <Button
+                class="w-full"
+                type="button"
+                :disabled="isLoading"
+                data-testid="register-submit-button"
+                @click="handleRegister"
+              >
                 <template v-if="isLoading && authAction === 'register'">
                   {{ t('auth.register.submitting') }}
                 </template>

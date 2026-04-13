@@ -2,6 +2,9 @@
   <ActionableWrapper :actions="menuActions">
     <Card
       class="group relative overflow-hidden transition-all duration-200 hover:shadow-md border border-border/60 bg-card hover:border-border/80"
+      data-testid="goal-card"
+      :data-goal-id="goal.id"
+      :data-goal-name="goal.name"
     >
       <!-- Status Strip -->
       <div
@@ -37,6 +40,7 @@
         <!-- Title -->
         <h3
           class="font-medium text-sm leading-snug mb-1 min-h-[2.5rem] line-clamp-2 group-hover:text-primary transition-colors cursor-pointer"
+          data-testid="goal-card-title"
           @click="emit('view', goal)"
         >
           {{ goal.name }}

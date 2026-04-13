@@ -34,6 +34,8 @@ const projectConfig = defineConfig({
   },
   test: {
     name: 'task-performance',
+    // Keep the performance suite opt-in and deterministic. Bench files are
+    // intentionally allowlisted here so normal `task:test` runs stay fast.
     include: [
       'src/application-server/__tests__/benchmarks/sort-algorithm.bench.ts',
       'src/application-server/__tests__/benchmarks/service-sorting.bench.ts',
@@ -42,6 +44,7 @@ const projectConfig = defineConfig({
     ],
     exclude: ['node_modules', 'dist', '.git', '.cache'],
     testTimeout: 30000,
+    // Use a forked Node runtime to reduce interference from the current CLI process.
     pool: 'forks',
   },
 }) as UserConfig;

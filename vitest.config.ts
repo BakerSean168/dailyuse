@@ -359,7 +359,9 @@ export default defineConfig({
     // Keep local runs detailed, but make CI logs compact and high-signal.
     reporters: process.env.CI ? ['dot'] : ['verbose'],
 
-    // Define all test projects in the workspace
+    // Root vitest.config.ts acts as the workspace registry for cross-project runs.
+    // Some Nx targets still point at per-project configs when they need app-local
+    // setup or different include rules, but the shared alias model lives here.
     projects: [
       // ===================
       // Library Projects
@@ -588,6 +590,8 @@ export default defineConfig({
               process.env.DATABASE_URL ??
               'postgresql://test_user:test_pass@127.0.0.1:5433/Memoflow_test',
           },
+          // The integration target owns DB boot + schema sync so docs only need
+          // to point developers at this target, not duplicate the setup steps.
           globalSetup: [
             path.resolve(__dirname, './packages/task/src/__tests__/integration-global-setup.ts'),
           ],
@@ -743,5 +747,4 @@ export default defineConfig({
     bail: process.env.CI ? 1 : 0,
   },
 });
-
 

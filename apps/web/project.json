@@ -100,6 +100,25 @@
         "cwd": "apps/web"
       }
     },
+    "e2e:sync": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/apps/web/test-results",
+        "{workspaceRoot}/apps/web/playwright-sync-report"
+      ],
+      "options": {
+        "command": "playwright test --config playwright.sync.config.ts",
+        "cwd": "apps/web"
+      },
+      "configurations": {
+        "headed": {
+          "command": "playwright test --config playwright.sync.config.ts --headed"
+        },
+        "debug": {
+          "command": "playwright test --config playwright.sync.config.ts --debug"
+        }
+      }
+    },
     "e2e:report": {
       "executor": "nx:run-commands",
       "options": {

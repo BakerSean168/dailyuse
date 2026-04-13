@@ -1,13 +1,15 @@
 /**
  * IPC 测试辅助工具
  *
- * 提供测试常用的辅助函数和类型
+ * 提供测试常用的辅助函数和类型。
+ * 这些 helper 只服务于 handler 注册和参数断言，不负责模拟完整 Electron 生命周期。
  */
 
 import { vi, expect } from 'vitest';
 
 /**
- * 创建通用的 IPC handler 注册捕获器
+ * 创建通用的 IPC handler 注册捕获器。
+ * 用它可以验证通道是否注册、注册到了哪个 handler，而不用真正启动应用。
  */
 export function createHandlerCapture() {
   const handlers = new Map<string, (...args: unknown[]) => Promise<unknown>>();

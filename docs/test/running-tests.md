@@ -1,109 +1,72 @@
-# Running Tests
+# 运行测试
 
-## Prerequisites
+测试命令统一优先从 Nx target 进入。除非你正在调试某个配置文件本身，否则不要把底层 `vitest` 或 `playwright` CLI 当成主入口。
 
-- **Node.js** and **pnpm** installed
-- **Docker Desktop** running (for integration tests)
-- Dependencies installed: `pnpm install`
-
-## Starting the Test Database
-
-Integration tests require a PostgreSQL container:
+## 日常开发
 
 ```bash
-docker compose -f docker-compose.test.yml up -d
+pnpm nx run task:test
+pnpm nx run api:test
+pnpm nx run web:test
+pnpm nx run desktop:test
 ```
 
-This starts `dailyuse-test-db` on port **5433** with:
+适合在改动单个模块或单个应用后快速回归。
 
-- User: `test_user`
-- Password: `test_pass`
-- Database: `dailyuse_test`
-
-Verify it's running:
+## 专项测试入口
 
 ```bash
-docker ps | grep dailyuse-test-db
+pnpm nx run task:test:integration
+pnpm nx run task:test:performance
+pnpm nx run api:test:smoke
+pnpm nx run web:e2e
+pnpm nx run web:e2e:ui
+pnpm nx run web:e2e:sync
+pnpm nx run desktop:test:ipc
+pnpm nx run desktop:test:main
 ```
 
-## Running Tests
+适用场景：
 
-### All Projects
+- `task:test:integration`：数据库、Prisma、事务、仓储实现改动
+- `task:test:performance`：性能回归排查或性能优化验证
+- `api:test:smoke`：HTTP 路由、middleware、序列化、状态码改动
+- `web:e2e`：浏览器主流程回归
+- `web:e2e:sync`：同步链路、跨端回归
+- `desktop:test:ipc`：IPC handler、preload 暴露面改动
+- `desktop:test:main`：Electron main 进程逻辑改动
+
+## 提交前和回归排查
 
 ```bash
-pnpm vitest run
+pnpm nx affected -t test
 ```
 
-Runs all 12 projects. Projects with no test files pass automatically (`passWithNoTests: true`).
+如果改动涉及特定边界，再补跑对应专项测试：
 
-### Single Project
+- API 路由或控制器：`pnpm nx run api:test:smoke`
+- Web adapter / mock handler / contracts：`pnpm nx run web:test`
+- 数据库访问或 Prisma：`pnpm nx run task:test:integration`
+- 关键浏览器流程：`pnpm nx run web:e2e`
+- 同步回归：`pnpm nx run web:e2e:sync`
+- Electron IPC / main：`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`
+
+## 集成测试数据库
+
+`task:test:integration` 的 global setup 会通过 [`packages/task/src/__tests__/integration-global-setup.ts`](../../packages/task/src/__tests__/integration-global-setup.ts) 调用 `@dailyuse/test-utils/setup/database`，在本地尝试确保测试数据库可用。
+
+当前仓库默认使用根目录 [`docker-compose.yml`](../../docker-compose.yml) 的 `test` profile，而不是旧文档里提到的 `docker-compose.test.yml`。
+
+如果自动启动失败，再手动执行：
 
 ```bash
-pnpm vitest run --project task           # 527 unit tests
-pnpm vitest run --project task-integration  # 60 integration tests (needs DB)
-pnpm vitest run --project api-smoke       # 58 smoke tests
-pnpm vitest run --project utils           # 23 utility tests
+docker compose -f docker-compose.yml --profile test up -d postgres-test
 ```
 
-### Watch Mode
+默认测试库连接信息由 `TEST_DATABASE_URL` 或相关 `TEST_DB_*` 环境变量决定；未覆盖时默认走本地 `127.0.0.1:5433`。
 
-```bash
-pnpm vitest --project task
-```
+## CI 对应
 
-### Specific Test File
-
-```bash
-pnpm vitest run packages/task/src/api/controllers/__tests__/task-template.controller.test.ts
-```
-
-### With Coverage
-
-```bash
-pnpm vitest run --coverage
-```
-
-Coverage is configured with `v8` provider. Reports go to `./coverage/` in text, JSON, HTML, and lcov formats.
-
-## CI Mode
-
-In CI environments (`CI=true`):
-
-- Reporter switches to `['verbose', 'json', 'html']`
-- Bail is set to `1` (stop on first failure)
-
-```bash
-CI=true pnpm vitest run
-```
-
-## Project-Specific Notes
-
-### `task-integration`
-
-- Requires Docker PostgreSQL on port 5433
-- Runs files **sequentially** (`fileParallelism: false`)
-- All files in a **single fork** (`singleFork: true`) to share DB state
-- Global setup runs Prisma schema sync before tests
-- 30s timeout per test
-
-### `api-smoke`
-
-- No database required (repositories are mocked)
-- Uses Supertest to drive Express HTTP endpoints
-- 15s timeout per test
-
-### `api`
-
-- Excludes `src/__tests__/smoke/**` (those run under `api-smoke`)
-- Currently has no non-smoke test files
-
-### `web`
-
-- Uses `happy-dom` environment
-- Includes Vue plugin (`@vitejs/plugin-vue`)
-- CSS modules configured with `non-scoped` class names
-
-### `domain-server` / `domain-client`
-
-- Use `pool: 'forks'` with `singleFork: false`
-- Have setup files at `./src/test/setup.ts`
+- 本地与 CI 使用同一组 Nx target。
+- `CI=true` 只会改变 reporter、重试、bail 等运行时行为，不应引入另一套文档命令。
+- 需要查具体重试、超时、webServer、worker 设置时，直接看对应配置文件。

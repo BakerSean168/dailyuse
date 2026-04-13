@@ -1,6 +1,9 @@
 <template>
   <Dialog v-model:open="open">
-    <DialogContent class="sm:max-w-[680px] max-h-[90vh] flex flex-col gap-0 p-0">
+    <DialogContent
+      class="sm:max-w-[680px] max-h-[90vh] flex flex-col gap-0 p-0"
+      data-testid="goal-dialog"
+    >
       <DialogHeader class="px-6 pt-6 pb-4">
         <DialogTitle class="text-xl font-semibold tracking-tight">
           {{ isEditMode ? t('goal.dialog.titleEdit') : t('goal.dialog.titleCreate') }}
@@ -29,6 +32,7 @@
                 v-model="form.name"
                 :placeholder="t('goal.dialog.goalTitlePlaceholder')"
                 class="h-10"
+                data-testid="goal-name-input"
               />
             </div>
 
@@ -42,6 +46,7 @@
                 v-model="form.description"
                 :placeholder="t('goal.dialog.descriptionPlaceholder')"
                 class="min-h-[80px] resize-none"
+                data-testid="goal-description-input"
               />
             </div>
 
@@ -394,8 +399,10 @@
       </Tabs>
 
       <DialogFooter class="px-6 py-4 border-t gap-2 sm:gap-0">
-        <Button variant="outline" @click="open = false">{{ t('goal.dialog.cancel') }}</Button>
-        <Button @click="handleSave" :disabled="isSaving">
+        <Button variant="outline" data-testid="cancel-goal-button" @click="open = false">{{
+          t('goal.dialog.cancel')
+        }}</Button>
+        <Button data-testid="save-goal-button" @click="handleSave" :disabled="isSaving">
           {{ isEditMode ? t('goal.dialog.saveChanges') : t('goal.dialog.createGoal') }}
         </Button>
       </DialogFooter>

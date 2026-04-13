@@ -6,7 +6,8 @@
 
 import { vi, beforeEach, afterEach } from 'vitest';
 
-// Mock electron 模块
+// Mock Electron once here so handler tests can focus on registration and
+// argument flow instead of rebuilding the host process for every spec.
 vi.mock('electron', () => ({
   ipcMain: {
     handle: vi.fn(),
@@ -21,7 +22,7 @@ vi.mock('electron', () => ({
   BrowserWindow: vi.fn(),
 }));
 
-// 全局测试钩子
+// Clear call history between tests but keep the shared module mock shape stable.
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -30,7 +31,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 全局辅助函数
+// Lightweight globals keep older IPC specs readable without importing helpers
+// into every file. Prefer explicit imports for new non-trivial helpers.
 declare global {
 
   var testHelpers: {

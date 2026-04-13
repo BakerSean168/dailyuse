@@ -1,6 +1,8 @@
 import { ensureTestDatabase } from '@dailyuse/test-utils/setup/database';
 
 export async function setup() {
+  // Centralize DB startup + schema sync here so the integration target is the
+  // only entry developers need to remember.
   await ensureTestDatabase();
 }
 

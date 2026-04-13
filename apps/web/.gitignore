@@ -1,4 +1,5 @@
 # Playwright
 /test-results/
 /playwright-report/
+/playwright-sync-report/
 /playwright/.cache/

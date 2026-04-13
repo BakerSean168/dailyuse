@@ -120,4 +120,4 @@ bound to the exact body, endpoint path, and a short-lived timestamp window.
 For a Chinese walkthrough of how `apps/ai-service` and `packages/ai` now work
 together, see:
 
-- [`docs/architecture/ai-module-and-ai-service-explanation-2026-03.md`](/D:/home/projects/dailyuse/docs/architecture/ai-module-and-ai-service-explanation-2026-03.md)
+- [`docs/guides/development/coding-standards.md`](/D:/home/projects/dailyuse/docs/guides/development/coding-standards.md)
