@@ -10,7 +10,7 @@ import { APP_TITLE_NAME, logo48 } from '@dailyuse/assets';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { useRoute, useRouter } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
-import { Toaster } from '@dailyuse/ui-vue-shadcn';
+import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
 import { GlobalErrorBoundary, GlobalProgressBar, useThemeSync } from '@dailyuse/app-vue';
 import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
 

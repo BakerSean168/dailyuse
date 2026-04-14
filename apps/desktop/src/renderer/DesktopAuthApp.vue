@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, reactive } from 'vue';
 import { APP_TITLE_NAME, logo48 } from '@dailyuse/assets';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { Copy, Minus, Sparkles, Square, X } from 'lucide-vue-next';
-import { Toaster } from '@dailyuse/ui-vue-shadcn';
+import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
 import { GlobalErrorBoundary, DesktopAuthView } from '@dailyuse/app-vue';
 
 const isMacPlatform =

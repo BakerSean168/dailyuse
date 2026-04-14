@@ -65,7 +65,7 @@ export default defineConfig(({ mode, command }) => {
 
   const sharedWorkspaceAliases = [
     ...createAssetsAliasEntries(workspaceRoot),
-    ...createUiVueSourceAliasEntries(workspaceRoot),
+    ...(isDev ? createUiVueSourceAliasEntries(workspaceRoot) : []),
   ];
 
   const envSpecificAliases = isDev ? createContractsAliasEntries(workspaceRoot) : [];

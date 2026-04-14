@@ -12,7 +12,7 @@ import {
   hydrateDesktopBootstrapAuthState,
 } from '@dailyuse/app-vue';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
+import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
 import { installDesktopAppServices } from '../platform/di-app';

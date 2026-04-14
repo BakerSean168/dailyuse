@@ -11,6 +11,38 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./components/ui/button": {
+      "types": "./dist/components/ui/button/index.d.ts",
+      "import": "./dist/components/ui/button/index.js"
+    },
+    "./components/ui/card": {
+      "types": "./dist/components/ui/card/index.d.ts",
+      "import": "./dist/components/ui/card/index.js"
+    },
+    "./components/ui/input": {
+      "types": "./dist/components/ui/input/index.d.ts",
+      "import": "./dist/components/ui/input/index.js"
+    },
+    "./components/ui/label": {
+      "types": "./dist/components/ui/label/index.d.ts",
+      "import": "./dist/components/ui/label/index.js"
+    },
+    "./components/ui/sonner": {
+      "types": "./dist/components/ui/sonner/index.d.ts",
+      "import": "./dist/components/ui/sonner/index.js"
+    },
+    "./components/ui/tabs": {
+      "types": "./dist/components/ui/tabs/index.d.ts",
+      "import": "./dist/components/ui/tabs/index.js"
+    },
+    "./components/ui/tooltip": {
+      "types": "./dist/components/ui/tooltip/index.d.ts",
+      "import": "./dist/components/ui/tooltip/index.js"
+    },
+    "./composables/useProgressBar": {
+      "types": "./dist/composables/useProgressBar.d.ts",
+      "import": "./dist/composables/useProgressBar.js"
+    },
     "./globals.css": "./src/styles/globals.css"
   },
   "files": [
@@ -61,5 +93,3 @@
     "vue": "^3.4.0"
   }
 }
-
-

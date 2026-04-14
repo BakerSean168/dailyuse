@@ -38,7 +38,14 @@
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/audio": ["../../packages/assets/src/audio/index.ts"],
       "@dailyuse/assets/images": ["../../packages/assets/src/images/index.ts"],
-      "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
+      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/dist/index.d.ts"],
+      "@dailyuse/ui-vue-shadcn/components/ui/*": [
+        "../../packages/ui-vue-shadcn/dist/components/ui/*/index.d.ts"
+      ],
+      "@dailyuse/ui-vue-shadcn/composables/*": [
+        "../../packages/ui-vue-shadcn/dist/composables/*.d.ts"
+      ],
+      "@dailyuse/ui-vue-shadcn/*": ["../../packages/ui-vue-shadcn/dist/*"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
       "@dailyuse/ai/infrastructure-client": [
