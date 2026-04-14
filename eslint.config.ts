@@ -57,6 +57,7 @@ export default tseslint.config(
         '**/node_modules/**',
         '**/coverage/**',
         '**/.nx/**',
+        '**/dist-renderer/**',
         '**/dist-electron/**',
         '**/src/generated/prisma/**',
         '**/*.min.js',

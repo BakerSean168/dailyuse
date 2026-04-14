@@ -11,6 +11,7 @@ import {
   DesktopAuthView,
   hydrateDesktopBootstrapAuthState,
 } from '@dailyuse/app-vue';
+import { registerNotificationInitializationTasks } from '@dailyuse/app-vue/web-notification';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
@@ -71,8 +72,6 @@ export async function bootstrapMainApp() {
 
   const runStartupPhase = async () => {
     try {
-      const { registerNotificationInitializationTasks } =
-        await import('@dailyuse/app-vue/web-notification');
       registerNotificationInitializationTasks();
 
       await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);

@@ -5,7 +5,6 @@
     "baseUrl": ".",
     "outDir": "./dist",
     "noEmit": true,
-
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "moduleResolution": "Bundler",
@@ -18,8 +17,6 @@
       // 开发态源码白名单：仅保留当前桌面渲染进程需要深度联调的包入口。
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
       "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
-      "@dailyuse/app-vue/web-overlays": ["../../packages/app-vue/src/web-overlays.ts"],
-      "@dailyuse/app-vue/web-notification": ["../../packages/app-vue/src/web-notification.ts"],
       "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
