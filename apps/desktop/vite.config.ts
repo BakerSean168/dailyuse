@@ -18,9 +18,9 @@ import {
 } from '../../vite.workspace-aliases';
 
 const desktopRendererDevWorkspaceEntries = [
-  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
   ['@dailyuse/app-vue/web-notification', 'packages/app-vue/src/web-notification.ts'],
+  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
   ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
