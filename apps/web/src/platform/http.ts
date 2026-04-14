@@ -10,7 +10,7 @@
  * @module platform/http
  */
 
-import { useAuthenticationStore } from '@dailyuse/app-vue';
+import { useAuthenticationStore } from '@dailyuse/app-vue/web-core';
 import { ResultHttpClient, type TokenProvider } from '@dailyuse/http-client';
 
 // ────────────────────────────────────────

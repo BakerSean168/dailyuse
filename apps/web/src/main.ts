@@ -38,7 +38,11 @@ async function startApp() {
     appleTouchIconHref: logo128,
   });
 
-  await startMockWorkerIfEnabled();
+  void startMockWorkerIfEnabled().catch((error) => {
+    if (import.meta.env.DEV) {
+      console.error('[web] mock worker startup failed', error);
+    }
+  });
 
   if (isAuthRoute(window.location.pathname)) {
     const { bootstrapAuthApp } = await import('./bootstrap/auth');

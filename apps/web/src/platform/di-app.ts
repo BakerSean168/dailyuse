@@ -1,5 +1,8 @@
 /**
  * Web Platform — full app DI container.
+ *
+ * Heavy feature services are loaded on demand so the post-login app shell
+ * does not pay for every module up front.
  */
 
 import type { App } from 'vue';
@@ -16,81 +19,141 @@ import {
   AI_SERVICE_KEY,
   TASK_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
-  createDashboardHttpAdapter,
   MAIN_NAVIGATION_KEY,
   BOTTOM_NAVIGATION_KEY,
   LOGOUT_HANDLER_KEY,
   defaultMainNavigation,
   defaultBottomNavigation,
   useAuthenticationStore,
-} from '@dailyuse/app-vue';
-
-import { AccountClientService } from '@dailyuse/account/application-client';
-import { createAccountHttpAdapter } from '@dailyuse/account/infrastructure-client';
-import { AuthClientService } from '@dailyuse/authentication/application-client';
-import { createAuthHttpAdapter } from '@dailyuse/authentication/infrastructure-client';
-import { GovernanceClientService } from '@dailyuse/governance/application-client';
-import { createRuleHttpAdapter } from '@dailyuse/governance/infrastructure-client';
-import { GoalClientService } from '@dailyuse/goal/application-client';
-import { createGoalHttpAdapters } from '@dailyuse/goal/infrastructure-client';
-import { NotificationClientService } from '@dailyuse/notification/application-client';
-import { createNotificationHttpAdapters } from '@dailyuse/notification/infrastructure-client';
-import { ReminderClientService } from '@dailyuse/reminder/application-client';
-import { createReminderHttpAdapters } from '@dailyuse/reminder/infrastructure-client';
-import { RepositoryClientService } from '@dailyuse/repository/application-client';
-import { createRepositoryHttpAdapters } from '@dailyuse/repository/infrastructure-client';
-import { ScheduleClientService } from '@dailyuse/schedule/application-client';
-import { createScheduleHttpAdapters } from '@dailyuse/schedule/infrastructure-client';
-import { SettingClientService } from '@dailyuse/setting/application-client';
-import { createSettingHttpAdapters } from '@dailyuse/setting/infrastructure-client';
-import { TaskClientService } from '@dailyuse/task/application-client';
-import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
-import { AIClientService } from '@dailyuse/ai/application-client';
-import { createAIHttpAdapters } from '@dailyuse/ai/infrastructure-client';
-
+} from '@dailyuse/app-vue/web-core';
 import { resultHttpClient } from './http';
+import { createLazyService } from './lazy-service';
 
-const authService = new AuthClientService(createAuthHttpAdapter(resultHttpClient));
-const accountService = new AccountClientService(createAccountHttpAdapter(resultHttpClient));
-const ruleService = new GovernanceClientService(createRuleHttpAdapter(resultHttpClient));
+const authService = createLazyService(async () => {
+  const [{ AuthClientService }, { createAuthHttpAdapter }] = await Promise.all([
+    import('@dailyuse/authentication/application-client'),
+    import('@dailyuse/authentication/infrastructure-client'),
+  ]);
 
-const goalAdapters = createGoalHttpAdapters(resultHttpClient);
-const goalService = new GoalClientService(goalAdapters.goal, goalAdapters.folder);
+  return new AuthClientService(createAuthHttpAdapter(resultHttpClient));
+});
 
-const notificationAdapters = createNotificationHttpAdapters(resultHttpClient);
-const notificationService = new NotificationClientService(notificationAdapters.notification);
+const accountService = createLazyService(async () => {
+  const [{ AccountClientService }, { createAccountHttpAdapter }] = await Promise.all([
+    import('@dailyuse/account/application-client'),
+    import('@dailyuse/account/infrastructure-client'),
+  ]);
 
-const reminderAdapters = createReminderHttpAdapters(resultHttpClient);
-const reminderService = new ReminderClientService(reminderAdapters.reminder);
+  return new AccountClientService(createAccountHttpAdapter(resultHttpClient));
+});
 
-const repositoryAdapters = createRepositoryHttpAdapters(resultHttpClient);
-const repositoryService = new RepositoryClientService(repositoryAdapters.repository);
+const ruleService = createLazyService(async () => {
+  const [{ GovernanceClientService }, { createRuleHttpAdapter }] = await Promise.all([
+    import('@dailyuse/governance/application-client'),
+    import('@dailyuse/governance/infrastructure-client'),
+  ]);
 
-const scheduleAdapters = createScheduleHttpAdapters(resultHttpClient);
-const scheduleService = new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task);
+  return new GovernanceClientService(createRuleHttpAdapter(resultHttpClient));
+});
 
-const settingAdapters = createSettingHttpAdapters(resultHttpClient);
-const settingService = new SettingClientService(settingAdapters.setting);
+const goalService = createLazyService(async () => {
+  const [{ GoalClientService }, { createGoalHttpAdapters }] = await Promise.all([
+    import('@dailyuse/goal/application-client'),
+    import('@dailyuse/goal/infrastructure-client'),
+  ]);
 
-const aiAdapters = createAIHttpAdapters(resultHttpClient);
-const aiService = new AIClientService(
-  aiAdapters.capabilities,
-  aiAdapters.evaluationReport,
-  aiAdapters.providerConfig,
-  aiAdapters.conversation,
-  aiAdapters.message,
-  aiAdapters.goal,
-  aiAdapters.knowledge,
-  aiAdapters.knowledgeNote,
-  aiAdapters.analytics,
-);
+  const goalAdapters = createGoalHttpAdapters(resultHttpClient);
+  return new GoalClientService(goalAdapters.goal, goalAdapters.folder, goalAdapters.focus);
+});
 
-const taskAdapters = createTaskHttpAdapters(resultHttpClient);
-const taskService = new TaskClientService(
-  taskAdapters.template,
-  taskAdapters.instance,
-  taskAdapters.dependency,
-);
+const notificationService = createLazyService(async () => {
+  const [{ NotificationClientService }, { createNotificationHttpAdapters }] = await Promise.all([
+    import('@dailyuse/notification/application-client'),
+    import('@dailyuse/notification/infrastructure-client'),
+  ]);
+
+  const notificationAdapters = createNotificationHttpAdapters(resultHttpClient);
+  return new NotificationClientService(notificationAdapters.notification);
+});
+
+const reminderService = createLazyService(async () => {
+  const [{ ReminderClientService }, { createReminderHttpAdapters }] = await Promise.all([
+    import('@dailyuse/reminder/application-client'),
+    import('@dailyuse/reminder/infrastructure-client'),
+  ]);
+
+  const reminderAdapters = createReminderHttpAdapters(resultHttpClient);
+  return new ReminderClientService(reminderAdapters.reminder);
+});
+
+const repositoryService = createLazyService(async () => {
+  const [{ RepositoryClientService }, { createRepositoryHttpAdapters }] = await Promise.all([
+    import('@dailyuse/repository/application-client'),
+    import('@dailyuse/repository/infrastructure-client'),
+  ]);
+
+  const repositoryAdapters = createRepositoryHttpAdapters(resultHttpClient);
+  return new RepositoryClientService(repositoryAdapters.repository);
+});
+
+const scheduleService = createLazyService(async () => {
+  const [{ ScheduleClientService }, { createScheduleHttpAdapters }] = await Promise.all([
+    import('@dailyuse/schedule/application-client'),
+    import('@dailyuse/schedule/infrastructure-client'),
+  ]);
+
+  const scheduleAdapters = createScheduleHttpAdapters(resultHttpClient);
+  return new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task);
+});
+
+const settingService = createLazyService(async () => {
+  const [{ SettingClientService }, { createSettingHttpAdapters }] = await Promise.all([
+    import('@dailyuse/setting/application-client'),
+    import('@dailyuse/setting/infrastructure-client'),
+  ]);
+
+  const settingAdapters = createSettingHttpAdapters(resultHttpClient);
+  return new SettingClientService(settingAdapters.setting);
+});
+
+const aiService = createLazyService(async () => {
+  const [{ AIClientService }, { createAIHttpAdapters }] = await Promise.all([
+    import('@dailyuse/ai/application-client'),
+    import('@dailyuse/ai/infrastructure-client'),
+  ]);
+
+  const aiAdapters = createAIHttpAdapters(resultHttpClient);
+  return new AIClientService(
+    aiAdapters.capabilities,
+    aiAdapters.evaluationReport,
+    aiAdapters.providerConfig,
+    aiAdapters.conversation,
+    aiAdapters.message,
+    aiAdapters.goal,
+    aiAdapters.knowledge,
+    aiAdapters.knowledgeNote,
+    aiAdapters.analytics,
+  );
+});
+
+const taskService = createLazyService(async () => {
+  const [{ TaskClientService }, { createTaskHttpAdapters }] = await Promise.all([
+    import('@dailyuse/task/application-client'),
+    import('@dailyuse/task/infrastructure-client'),
+  ]);
+
+  const taskAdapters = createTaskHttpAdapters(resultHttpClient);
+  return new TaskClientService(
+    taskAdapters.template,
+    taskAdapters.instance,
+    taskAdapters.dependency,
+  );
+});
+
+const dashboardService = createLazyService(async () => {
+  const { createDashboardHttpAdapter } = await import('@dailyuse/app-vue/web-entry');
+  return createDashboardHttpAdapter(resultHttpClient);
+});
 
 export function installAppServices(app: App): void {
   app.provide(ACCOUNT_SERVICE_KEY, accountService);
@@ -105,7 +168,7 @@ export function installAppServices(app: App): void {
   app.provide(AI_SERVICE_KEY, aiService);
   app.provide(TASK_SERVICE_KEY, taskService);
 
-  app.provide(DASHBOARD_SERVICE_KEY, createDashboardHttpAdapter(resultHttpClient));
+  app.provide(DASHBOARD_SERVICE_KEY, dashboardService);
 
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);

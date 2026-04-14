@@ -4,6 +4,7 @@ import { APP_TITLE_NAME } from '@dailyuse/assets';
 import AuthApp from '../AuthApp.vue';
 import { installAuthServices } from '../platform/di-auth';
 import { createAuthI18n } from '../auth/i18n';
+import { prewarmMainAppBootstrap } from './prewarm';
 import {
   applyAuthLocale,
   applyAuthTheme,
@@ -21,4 +22,6 @@ export async function bootstrapAuthApp() {
   app.use(installAuthServices);
   app.mount('#app');
   document.title = APP_TITLE_NAME;
+
+  prewarmMainAppBootstrap();
 }

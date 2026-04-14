@@ -38,6 +38,7 @@
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/audio": ["../../packages/assets/src/audio/index.ts"],
       "@dailyuse/assets/images": ["../../packages/assets/src/images/index.ts"],
+      "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
       "@dailyuse/ai/infrastructure-client": [

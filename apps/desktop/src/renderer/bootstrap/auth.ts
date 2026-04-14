@@ -2,7 +2,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { createRouter, createWebHashHistory } from 'vue-router';
 import { APP_TITLE_NAME } from '@dailyuse/assets';
-import { createI18nPlugin } from '@dailyuse/app-vue';
+import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue';
 
 import DesktopAuthApp from '../DesktopAuthApp.vue';
 import { installDesktopAuthServices } from '../platform/di-auth';
@@ -28,7 +28,8 @@ export async function bootstrapAuthApp() {
   const app = createApp(DesktopAuthApp);
 
   app.use(createPinia());
-  app.use(createI18nPlugin('zh-CN'));
+  const localeMessages = await loadLocaleMessages('zh-CN');
+  app.use(createI18nPlugin('zh-CN', localeMessages));
   app.use(createDesktopAuthRouter());
   app.use(installDesktopAuthServices);
 

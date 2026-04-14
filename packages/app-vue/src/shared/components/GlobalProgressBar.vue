@@ -7,17 +7,14 @@
  *
  * 无需任何外部依赖，纯 Vue + CSS 实现。
  */
-import { _getProgressBarState } from '@dailyuse/ui-vue-shadcn';
+import { _getProgressBarState } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
 const state = _getProgressBarState();
 </script>
 
 <template>
   <Transition name="progress">
-    <div
-      v-if="state.active"
-      class="fixed inset-x-0 top-0 z-[9999] h-[2px] pointer-events-none"
-    >
+    <div v-if="state.active" class="fixed inset-x-0 top-0 z-[9999] h-[2px] pointer-events-none">
       <div
         class="h-full bg-primary transition-all duration-200 ease-out"
         :style="{ width: `${state.progress}%` }"
@@ -25,10 +22,7 @@ const state = _getProgressBarState();
         <!-- Glow effect at the tip -->
         <div
           class="absolute right-0 top-0 h-full w-24 -translate-y-px"
-          style="
-            background: linear-gradient(to right, transparent, currentColor);
-            opacity: 0.4;
-          "
+          style="background: linear-gradient(to right, transparent, currentColor); opacity: 0.4"
         />
       </div>
     </div>

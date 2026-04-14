@@ -11,6 +11,14 @@ import {
 } from '../../vite.workspace-aliases';
 
 const webDevWorkspaceEntries = [
+  ['@dailyuse/app-vue/web-core', 'packages/app-vue/src/web-core.ts'],
+  ['@dailyuse/app-vue/web-shell-core', 'packages/app-vue/src/web-shell-core.ts'],
+  ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
+  ['@dailyuse/app-vue/web-shell', 'packages/app-vue/src/web-shell.ts'],
+  ['@dailyuse/app-vue/web-i18n', 'packages/app-vue/src/web-i18n.ts'],
+  ['@dailyuse/app-vue/web-bootstrap', 'packages/app-vue/src/web-bootstrap.ts'],
+  ['@dailyuse/app-vue/web-notification', 'packages/app-vue/src/web-notification.ts'],
+  ['@dailyuse/app-vue/web-entry', 'packages/app-vue/src/web-entry.ts'],
   ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   [
     '@dailyuse/authentication/application-client',
@@ -80,19 +88,17 @@ export default defineConfig(({ mode, command }) => {
     changeOrigin: true,
     secure: false,
     ws: true, // 支持 WebSocket
-    // 禁用压缩，否则会破坏 SSE 流
-    compress: false,
     // SSE 特定配置
-    onProxyRes: (proxyRes, req) => {
-      // 确保 SSE 流不被缓冲和压缩
-      if (req.url?.includes('/sse/')) {
-        // 删除可能存在的压缩相关头
-        delete proxyRes.headers['content-encoding'];
-        // 防止下游再次压缩
-        proxyRes.headers['x-no-compression'] = 'true';
-      }
-    },
     configure: (proxy) => {
+      proxy.on('proxyRes', (proxyRes, req) => {
+        // 确保 SSE 流不被缓冲和压缩
+        if (req.url?.includes('/sse/')) {
+          // 删除可能存在的压缩相关头
+          delete proxyRes.headers['content-encoding'];
+          // 防止下游再次压缩
+          proxyRes.headers['x-no-compression'] = 'true';
+        }
+      });
       proxy.on('error', (err) => {
         console.error('[proxy]', err);
       });
@@ -128,7 +134,6 @@ export default defineConfig(({ mode, command }) => {
       open: false,
       middlewareMode: false,
       // 完全禁用 Vite 的压缩中间件，避免破坏 SSE 流
-      compress: false,
       fs: {
         allow: ['..', '../../'],
       },

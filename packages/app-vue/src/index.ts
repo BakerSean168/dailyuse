@@ -6,9 +6,6 @@ export * from './di/navigation';
 // ── Plugins ──
 export * from './plugins/i18n';
 
-// ── Locales ──
-export * from './locales';
-
 // ── Router & Layouts ──
 export * from './router';
 export { default as MainLayout } from './layouts/MainLayout.vue';

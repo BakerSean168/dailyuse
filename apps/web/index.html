@@ -5,6 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#181A1F" />
     <meta name="description" content="知行（Memoflow），将知识转化为行动的流式个人工作台。" />
+    <style>
+      #startup-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: Canvas;
+        color: CanvasText;
+        color-scheme: light dark;
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif;
+      }
+
+      .startup-splash__card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
+        padding: 24px;
+      }
+
+      .startup-splash__mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #8b5cf6, #38bdf8);
+        box-shadow: 0 12px 32px rgb(56 189 248 / 0.18);
+      }
+
+      .startup-splash__title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+
+      .startup-splash__subtitle {
+        font-size: 12px;
+        opacity: 0.72;
+      }
+
+      .startup-splash__bar {
+        width: 160px;
+        height: 2px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgb(127 127 127 / 0.18);
+      }
+
+      .startup-splash__bar::before {
+        content: '';
+        display: block;
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgb(56 189 248 / 0.9), transparent);
+        animation: startup-splash-slide 1.15s infinite;
+      }
+
+      @media (prefers-color-scheme: light) {
+        .startup-splash__mark {
+          background: linear-gradient(135deg, #7c3aed, #2563eb);
+          box-shadow: 0 12px 32px rgb(37 99 235 / 0.16);
+        }
+
+        .startup-splash__bar::before {
+          background: linear-gradient(90deg, transparent, rgb(37 99 235 / 0.9), transparent);
+        }
+      }
+
+      @keyframes startup-splash-slide {
+        from {
+          transform: translateX(-120%);
+        }
+
+        to {
+          transform: translateX(260%);
+        }
+      }
+    </style>
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -13,7 +100,16 @@
     <title>知行 Memoflow</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="startup-splash" aria-live="polite" aria-label="应用正在加载">
+        <div class="startup-splash__card">
+          <div class="startup-splash__mark" aria-hidden="true"></div>
+          <div class="startup-splash__title">知行 Memoflow</div>
+          <div class="startup-splash__subtitle">正在进入工作区...</div>
+          <div class="startup-splash__bar" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

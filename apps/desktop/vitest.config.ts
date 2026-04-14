@@ -6,7 +6,10 @@ import { createWorkspaceSourceAliasEntries } from '../../vite.workspace-aliases'
 // entrypoints so Electron-specific adapters stay aligned with local edits.
 const desktopTestWorkspaceEntries = [
   ['@dailyuse/account/application-client', 'packages/account/src/application-client/index.ts'],
-  ['@dailyuse/account/infrastructure-client', 'packages/account/src/infrastructure-client/index.ts'],
+  [
+    '@dailyuse/account/infrastructure-client',
+    'packages/account/src/infrastructure-client/index.ts',
+  ],
   ['@dailyuse/account/electron-entry', 'packages/account/src/electron-entry/index.ts'],
   [
     '@dailyuse/authentication/application-client',
@@ -62,34 +65,39 @@ const desktopTestWorkspaceEntries = [
   ],
   ['@dailyuse/notification/electron-entry', 'packages/notification/src/electron-entry/index.ts'],
   ['@dailyuse/setting/application-client', 'packages/setting/src/application-client/index.ts'],
-  ['@dailyuse/setting/infrastructure-client', 'packages/setting/src/infrastructure-client/index.ts'],
+  [
+    '@dailyuse/setting/infrastructure-client',
+    'packages/setting/src/infrastructure-client/index.ts',
+  ],
   ['@dailyuse/setting/electron-entry', 'packages/setting/src/electron-entry/index.ts'],
   ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
   ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
   ['@dailyuse/ai/electron-entry', 'packages/ai/src/electron-entry/index.ts'],
   ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
   ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
+  ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
+  ['@dailyuse/app-vue/web-notification', 'packages/app-vue/src/web-notification.ts'],
   ['@dailyuse/dashboard', 'packages/dashboard/src/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
 ] as const;
+const sharedConfig = createSharedConfig({
+  projectRoot: __dirname,
+  // The desktop app pulls in Electron-facing modules and workspace aliases
+  // that behave more predictably under the Node test environment.
+  environment: 'node',
+  aliasEntries: createWorkspaceSourceAliasEntries(
+    __dirname + '/../..',
+    desktopTestWorkspaceEntries,
+  ),
+}) as any;
 
-export default mergeConfig(
-  createSharedConfig({
-    projectRoot: __dirname,
-    // The desktop app pulls in Electron-facing modules and workspace aliases
-    // that behave more predictably under the Node test environment.
+export default defineConfig({
+  ...sharedConfig,
+  root: __dirname,
+  test: {
+    ...(sharedConfig.test ?? {}),
+    name: 'desktop',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     environment: 'node',
-    aliasEntries: createWorkspaceSourceAliasEntries(
-      __dirname + '/../..',
-      desktopTestWorkspaceEntries,
-    ),
-  }),
-  defineConfig({
-    root: __dirname,
-    test: {
-      name: 'desktop',
-      include: ['src/**/*.{test,spec}.{ts,tsx}'],
-      environment: 'node',
-    },
-  }),
-);
+  },
+});

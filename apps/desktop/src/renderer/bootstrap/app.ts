@@ -7,7 +7,7 @@ import {
   createAppRouter,
   useAuthenticationStore,
   createI18nPlugin,
-  registerNotificationInitializationTasks,
+  loadLocaleMessages,
   DesktopAuthView,
   hydrateDesktopBootstrapAuthState,
 } from '@dailyuse/app-vue';
@@ -35,7 +35,8 @@ export async function bootstrapMainApp() {
   pinia.use(piniaPluginPersistedstate);
   app.use(pinia);
 
-  app.use(createI18nPlugin('zh-CN'));
+  const localeMessages = await loadLocaleMessages('zh-CN');
+  app.use(createI18nPlugin('zh-CN', localeMessages));
 
   const hasDesktopAuthSnapshot = await hydrateRendererAuthState();
 
@@ -65,12 +66,26 @@ export async function bootstrapMainApp() {
 
   app.use(router);
   app.use(installDesktopAppServices);
-
-  registerNotificationInitializationTasks();
-  await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
-
   initElectronFeatures(app);
   app.mount('#app');
+
+  const runStartupPhase = async () => {
+    try {
+      const { registerNotificationInitializationTasks } =
+        await import('@dailyuse/app-vue/web-notification');
+      registerNotificationInitializationTasks();
+
+      await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
+    } catch (error) {
+      console.error('[desktop] APP_STARTUP phase failed', error);
+    }
+  };
+
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(runStartupPhase, { timeout: 3000 });
+  } else {
+    globalThis.setTimeout(runStartupPhase, 0);
+  }
 
   if (hasDesktopAuthSnapshot && useAuthenticationStore().isAuthenticated) {
     queueMicrotask(() => {

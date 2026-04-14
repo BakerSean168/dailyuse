@@ -6,13 +6,12 @@ import { APP_TITLE_NAME } from '@dailyuse/assets';
 import {
   createAppRouter,
   useAuthenticationStore,
-  createI18nPlugin,
-  registerNotificationInitializationTasks,
   applyThemeMode,
   usePresentationPreferenceStore,
-} from '@dailyuse/app-vue';
+} from '@dailyuse/app-vue/web-bootstrap';
+import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue/web-i18n';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
+import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
 import { installAppServices } from '../platform/di-app';
@@ -28,7 +27,8 @@ export async function bootstrapMainApp() {
   applyThemeMode(presentationStore.theme);
   document.documentElement.lang = presentationStore.locale;
 
-  app.use(createI18nPlugin(presentationStore.locale));
+  const localeMessages = await loadLocaleMessages(presentationStore.locale);
+  app.use(createI18nPlugin(presentationStore.locale, localeMessages));
 
   const router = createAppRouter({
     history: createWebHistory(),
@@ -45,6 +45,21 @@ export async function bootstrapMainApp() {
   app.use(installAppServices);
   app.mount('#app');
 
-  registerNotificationInitializationTasks();
-  void InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
+  const runStartupPhase = async () => {
+    const { registerNotificationInitializationTasks } =
+      await import('@dailyuse/app-vue/web-notification');
+    registerNotificationInitializationTasks();
+
+    await InitializationManager.getInstance()
+      .executePhase(InitializationPhase.APP_STARTUP)
+      .catch((error) => {
+        console.error('[web] APP_STARTUP phase failed', error);
+      });
+  };
+
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(runStartupPhase, { timeout: 3000 });
+  } else {
+    globalThis.setTimeout(runStartupPhase, 0);
+  }
 }

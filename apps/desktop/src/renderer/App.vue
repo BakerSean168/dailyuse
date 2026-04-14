@@ -11,14 +11,8 @@ import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/elect
 import { useRoute, useRouter } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
-import {
-  GlobalConfirmDialog,
-  GlobalErrorBoundary,
-  GlobalSheet,
-  GlobalCommandPalette,
-  GlobalProgressBar,
-  useThemeSync,
-} from '@dailyuse/app-vue';
+import { GlobalErrorBoundary, GlobalProgressBar, useThemeSync } from '@dailyuse/app-vue';
+import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
 
 const route = useRoute();
 const router = useRouter();
@@ -181,9 +175,7 @@ useThemeSync();
     :mobile-offset="{ top: 60, left: 16, right: 16 }"
     rich-colors
   />
-  <GlobalConfirmDialog />
-  <GlobalSheet />
-  <GlobalCommandPalette />
+  <GlobalOverlays />
 </template>
 
 <style>

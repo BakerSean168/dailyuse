@@ -14,6 +14,7 @@ import { useI18n } from 'vue-i18n';
 import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 import { setMenuLocale } from '../../../components/shared/menu-labels';
 import type { SupportedLocale } from '../../../components/shared/menu-labels';
+import { setI18nLocale } from '../../../plugins/i18n';
 
 const SUPPORTED: SupportedLocale[] = ['zh-CN', 'en-US'];
 
@@ -26,23 +27,29 @@ export function useLocaleSync() {
   const store = usePresentationPreferenceStore();
 
   // Immediate sync + reactive watch
-  const syncLocale = () => {
+  const syncLocale = async () => {
     const lang = store.locale;
-    if (isSupportedLocale(lang) && lang !== locale.value) {
-      locale.value = lang;
-    }
-
     if (isSupportedLocale(lang)) {
+      if (lang !== locale.value) {
+        await setI18nLocale(lang);
+      }
+
       setMenuLocale(lang);
       document.documentElement.lang = lang;
     }
   };
 
+  const runSyncLocale = () => {
+    void syncLocale().catch((error) => {
+      console.error('[i18n] Failed to sync locale', error);
+    });
+  };
+
   // Run once on mount
-  syncLocale();
+  runSyncLocale();
 
   // Watch for subsequent store changes
-  watch(() => store.locale, syncLocale);
+  watch(() => store.locale, runSyncLocale);
 
   return { locale };
 }

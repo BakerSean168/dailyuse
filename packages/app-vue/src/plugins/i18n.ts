@@ -3,9 +3,8 @@
  *
  * Integrates vue-i18n with the app-vue DI pattern.
  *
- * Host apps (web / desktop) are responsible for:
- *   1. Installing this plugin via `app.use(createI18nPlugin())`.
- *   2. Optionally passing an initial locale (defaults to 'zh-CN').
+ * Host apps are responsible for loading the initial locale messages first,
+ * then installing the plugin with those messages.
  *
  * Vue components in app-vue can then use the standard `useI18n()` composable
  * or `$t()` in templates to translate strings.
@@ -14,15 +13,18 @@
  */
 
 import { createI18n } from 'vue-i18n';
-import { zhCN, enUS } from '../locales';
 
 // Re-export useI18n for convenience
 export { useI18n } from 'vue-i18n';
 
 export type AppLocale = 'zh-CN' | 'en-US';
 
+type LocaleMessages = Record<string, any>;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyI18n = any;
+
+const localeMessagesCache = new Map<AppLocale, LocaleMessages>();
 
 /**
  * The singleton i18n instance, exported so non-component code
@@ -31,6 +33,24 @@ type AnyI18n = any;
  * Will be `null` until `createI18nPlugin()` is called.
  */
 let _i18n: AnyI18n | null = null;
+
+async function importLocaleMessages(locale: AppLocale): Promise<LocaleMessages> {
+  const cached = localeMessagesCache.get(locale);
+  if (cached) {
+    return cached;
+  }
+
+  const messages = (
+    await (locale === 'en-US' ? import('../locales/en-US') : import('../locales/zh-CN'))
+  ).default as LocaleMessages;
+
+  localeMessagesCache.set(locale, messages);
+  return messages;
+}
+
+export async function loadLocaleMessages(locale: AppLocale): Promise<LocaleMessages> {
+  return importLocaleMessages(locale);
+}
 
 /** Get the live i18n instance (throws if not yet initialised). */
 export function getI18n(): AnyI18n {
@@ -49,23 +69,26 @@ export function getI18nGlobal() {
  * Creates the Vue I18n plugin.
  *
  * @param locale - Initial locale, defaults to `'zh-CN'`.
+ * @param messages - Preloaded messages for the initial locale.
  *
  * @example
  * ```ts
  * // apps/web/src/main.ts
- * import { createI18nPlugin } from '@dailyuse/app-vue';
+ * import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue';
  *
- * app.use(createI18nPlugin('zh-CN'));
+ * const messages = await loadLocaleMessages('zh-CN');
+ * app.use(createI18nPlugin('zh-CN', messages));
  * ```
  */
-export function createI18nPlugin(locale: AppLocale = 'zh-CN') {
+export function createI18nPlugin(locale: AppLocale = 'zh-CN', messages: LocaleMessages) {
+  localeMessagesCache.set(locale, messages);
+
   const i18n = createI18n({
     legacy: false,
     locale,
     fallbackLocale: 'zh-CN',
     messages: {
-      'zh-CN': zhCN,
-      'en-US': enUS,
+      [locale]: messages,
     },
     // Suppress missing-translation warnings in dev for keys not yet migrated
     missingWarn: false,
@@ -75,4 +98,16 @@ export function createI18nPlugin(locale: AppLocale = 'zh-CN') {
   _i18n = i18n;
 
   return i18n;
+}
+
+export async function setI18nLocale(locale: AppLocale): Promise<void> {
+  const i18n = getI18n();
+
+  if (i18n.global.locale.value === locale) {
+    return;
+  }
+
+  const messages = await loadLocaleMessages(locale);
+  i18n.global.setLocaleMessage(locale, messages);
+  i18n.global.locale.value = locale;
 }

@@ -14,6 +14,44 @@ export function usePresentationBootstrap() {
   const settingService = useStrictInject(SETTING_SERVICE_KEY, 'SettingService');
 
   let loadingPromise: Promise<void> | null = null;
+  let scheduledLoad: ReturnType<typeof globalThis.setTimeout> | null = null;
+  let scheduledIdleHandle: number | null = null;
+  const browserWindow = globalThis as unknown as {
+    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
+
+  function cancelScheduledLoad() {
+    if (scheduledLoad !== null) {
+      clearTimeout(scheduledLoad);
+      scheduledLoad = null;
+    }
+
+    const cancelIdleCallback = browserWindow.cancelIdleCallback;
+    if (scheduledIdleHandle !== null && cancelIdleCallback) {
+      cancelIdleCallback(scheduledIdleHandle);
+      scheduledIdleHandle = null;
+    }
+  }
+
+  function scheduleLoadUserSettings() {
+    if (loadingPromise || scheduledLoad !== null) {
+      return;
+    }
+
+    const run = () => {
+      scheduledLoad = null;
+      scheduledIdleHandle = null;
+      void loadUserSettings();
+    };
+
+    if (browserWindow.requestIdleCallback) {
+      scheduledIdleHandle = browserWindow.requestIdleCallback(run, { timeout: 3000 });
+      return;
+    }
+
+    scheduledLoad = globalThis.setTimeout(run, 0);
+  }
 
   if (userSettingStore.userSetting) {
     presentationStore.syncFromUserSetting(userSettingStore.userSetting.preferences);
@@ -61,10 +99,11 @@ export function usePresentationBootstrap() {
     () => authStore.isAuthenticated,
     (isAuthenticated) => {
       if (isAuthenticated) {
-        void loadUserSettings();
+        scheduleLoadUserSettings();
         return;
       }
 
+      cancelScheduledLoad();
       userSettingStore.reset();
     },
     { immediate: true },
