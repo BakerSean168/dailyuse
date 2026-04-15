@@ -298,6 +298,7 @@ export default {
         model: 'Model',
         modelPlaceholder: 'Select model',
         sending: 'Sending...',
+        stopGenerating: 'Stop Generating',
         sendMessage: 'Send Message',
         newConversation: 'New Conversation',
         providerRequired: 'Configure an AI provider before sending chat messages.',
@@ -309,6 +310,7 @@ export default {
         deleted: 'Conversation deleted',
         renameFailed: 'Failed to rename conversation',
         sendFailed: 'Failed to send message',
+        aborted: 'Aborted',
         defaultConversationName: 'Quick Chat',
       },
       note: {

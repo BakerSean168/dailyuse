@@ -64,6 +64,25 @@ class StubChatExecutionPort implements IAIChatExecutionPort {
       totalTokens: 20,
     },
   }));
+
+  public readonly stream = vi.fn<
+    (
+      input: ChatExecutionCompleteInput,
+    ) => AsyncGenerator<{ content: string; finishReason?: string }, void, void>
+  >((input) =>
+    (async function* streamGenerator() {
+      if (input.signal?.aborted) {
+        const abortedError = new Error('stream aborted');
+        (abortedError as Error & { category?: string }).category = 'aborted';
+        throw abortedError;
+      }
+
+      yield {
+        content: 'streamed content',
+        finishReason: 'stop',
+      };
+    })(),
+  );
 }
 
 class StubExecutionLogPort implements IAIExecutionLogPort {
@@ -144,6 +163,78 @@ describe('AIChatApplicationService', () => {
           pricingModel: 'gpt-4o-mini',
           totalCostUsd: expect.any(Number),
         }),
+      }),
+    );
+  });
+
+  it('classifies aborted streaming requests and keeps failed stream metadata', async () => {
+    const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
+    const conversation = AIConversation.create({
+      identityId,
+      name: 'Test conversation',
+    });
+
+    const conversationRepository = new InMemoryConversationRepository(conversation);
+    const providerRepository = new StubProviderConfigRepository({
+      id: 'provider-1',
+      identityId,
+      providerType: AIProviderType.OpenAICompatible,
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: 'secret-key',
+      defaultModel: 'gpt-4o-mini',
+      isActive: true,
+      name: 'Main provider',
+    });
+    const executionPort = new StubChatExecutionPort();
+    executionPort.stream.mockImplementation((input) =>
+      (async function* abortingGenerator() {
+        const abortedError = new Error('stream aborted');
+        (abortedError as Error & { category?: string }).category = 'aborted';
+
+        if (input.signal?.aborted) {
+          throw abortedError;
+        }
+        yield {
+          content: 'unexpected',
+          finishReason: 'stop',
+        };
+      })(),
+    );
+    const executionLogPort = new StubExecutionLogPort();
+
+    const service = new AIChatApplicationService(
+      conversationRepository as unknown as IAIConversationRepository,
+      providerRepository as unknown as IAIProviderConfigRepository,
+      executionPort,
+      executionLogPort,
+    );
+
+    const streamAbortController = new AbortController();
+    streamAbortController.abort();
+
+    await expect(
+      service.sendMessageStream(
+        identityId,
+        String(conversation.id),
+        'Hello from user',
+        vi.fn(),
+        'provider-1',
+        undefined,
+        streamAbortController.signal,
+      ),
+    ).rejects.toThrow(/requestId:/i);
+
+    expect(executionPort.stream).toHaveBeenCalledWith(
+      expect.objectContaining({
+        signal: streamAbortController.signal,
+      }),
+    );
+
+    expect(executionLogPort.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskType: 'CHAT_STREAM',
+        status: 'FAILED',
+        errorCategory: 'aborted',
       }),
     );
   });

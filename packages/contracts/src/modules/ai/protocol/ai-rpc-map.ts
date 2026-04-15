@@ -22,6 +22,7 @@ import type {
   DeleteConversationRes,
   SendMessageReq,
   SendMessageRes,
+  StreamMessageDonePayload,
   ListMessagesQuery,
   MessageListRes,
   CreateKnowledgeNoteReq,
@@ -52,6 +53,8 @@ export type AIRpcMap = {
   'ai:chat:conversation:delete': [string, DeleteConversationRes];
   'ai:chat:message:send': [SendMessageReq, SendMessageRes];
   'ai:chat:message:list': [ListMessagesQuery, MessageListRes];
+  'ai:chat:message:stream:start': [SendMessageReq, StreamMessageDonePayload];
+  'ai:chat:message:stream:cancel': [string, void];
 
   'ai:knowledge-note:create': [CreateKnowledgeNoteReq, CreateKnowledgeNoteRes];
   'ai:knowledge:expand': [ExpandKnowledgeReq, ExpandKnowledgeRes];

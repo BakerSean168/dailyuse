@@ -70,6 +70,7 @@ export class AIServiceChatExecutionAdapter implements IAIChatExecutionPort {
       path: '/internal/chat/stream',
       identityId: input.identityId,
       requestId: input.requestId,
+      signal: input.signal,
       body: {
         messages: input.messages,
         provider_config: {

@@ -152,6 +152,7 @@ export class AIChatApplicationService {
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
     providerId?: string,
     model?: string,
+    signal?: AbortSignal,
   ): Promise<{
     userMessage: MessageClientDTO;
     assistantMessage: MessageClientDTO;
@@ -191,7 +192,12 @@ export class AIChatApplicationService {
           messages,
           providerConfig: executionProviderConfig,
           requestId,
+          signal,
         })) {
+          if (signal?.aborted) {
+            throw createStreamAbortError();
+          }
+
           // Accumulate all content chunks
           fullContent += chunk.content;
           
@@ -209,6 +215,14 @@ export class AIChatApplicationService {
           }
         }
       } catch (streamError) {
+        if (signal?.aborted || isAbortLikeError(streamError)) {
+          logger.info('[AIChatApplicationService] Stream aborted by client', {
+            contentReceived: fullContent.length,
+            requestId,
+          });
+          throw streamError;
+        }
+
         // Log stream interruption but don't fail if we got partial content
         logger.warn('[AIChatApplicationService] Stream processing error', {
           streamError: streamError instanceof Error ? streamError.message : String(streamError),
@@ -291,13 +305,22 @@ export class AIChatApplicationService {
         error: error instanceof Error ? error.message : 'Chat stream failed',
         processingMs: Date.now() - startedAt,
       });
-      logger.error('AI Stream Failed', {
-        error,
-        finishReason,
-        identityId,
-        conversationId,
-        requestId,
-      });
+      if (isAbortLikeError(error)) {
+        logger.info('AI Stream Aborted', {
+          finishReason,
+          identityId,
+          conversationId,
+          requestId,
+        });
+      } else {
+        logger.error('AI Stream Failed', {
+          error,
+          finishReason,
+          identityId,
+          conversationId,
+          requestId,
+        });
+      }
       throw attachRequestIdToError(error, requestId);
     }
   }
@@ -399,4 +422,27 @@ export class AIChatApplicationService {
         return 'user';
     }
   }
+}
+
+function isAbortLikeError(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'category' in error && error.category === 'aborted') {
+    return true;
+  }
+
+  if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+    return true;
+  }
+
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return message.includes('abort') || message.includes('cancel');
+  }
+
+  return false;
+}
+
+function createStreamAbortError(): Error {
+  const error = new Error('AI chat stream aborted by client');
+  (error as Error & { category?: string }).category = 'aborted';
+  return error;
 }

@@ -184,41 +184,76 @@ export function registerAIChatRoutes(
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
 
+    const streamAbortController = new AbortController();
+    let connectionClosed = false;
+    const handleConnectionClosed = () => {
+      connectionClosed = true;
+      streamAbortController.abort();
+    };
+
+    req.on('aborted', handleConnectionClosed);
+    req.on('close', handleConnectionClosed);
+    res.on('close', handleConnectionClosed);
+
+    const writeSseEvent = (
+      event: 'message' | 'error' | 'done',
+      data: unknown,
+    ): boolean => {
+      if (connectionClosed || res.writableEnded) {
+        return false;
+      }
+
+      try {
+        const serialized = typeof data === 'string' ? data : JSON.stringify(data);
+        res.write(`event: ${event}\ndata: ${serialized}\n\n`);
+        return true;
+      } catch {
+        handleConnectionClosed();
+        return false;
+      }
+    };
+
     try {
       const result = await controller.streamMessage(
         req.body,
         identityId,
         (chunk) => {
-          res.write(
-            `event: message\ndata: ${JSON.stringify({
-              role: chunk.role,
-              content: chunk.content,
-            })}\n\n`,
-          );
+          writeSseEvent('message', {
+            role: chunk.role,
+            content: chunk.content,
+          });
         },
+        streamAbortController.signal,
       );
 
-      if (!result.ok) {
-        res.write(
-          `event: error\ndata: ${JSON.stringify({
-            code: result.error.code,
-            message: result.error.message,
-            details: result.error.details,
-          })}\n\n`,
-        );
+      if (connectionClosed || res.writableEnded) {
         return;
       }
 
-      res.write(`event: done\ndata: ${JSON.stringify(result.data)}\n\n`);
+      if (!result.ok) {
+        writeSseEvent('error', {
+          code: result.error.code,
+          message: result.error.message,
+          details: result.error.details,
+        });
+        return;
+      }
+
+      writeSseEvent('done', result.data);
     } catch (error) {
-      res.write(
-        `event: error\ndata: ${JSON.stringify({
+      if (!connectionClosed && !streamAbortController.signal.aborted) {
+        writeSseEvent('error', {
           code: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'AI stream failed',
-        })}\n\n`,
-      );
+        });
+      }
     } finally {
-      res.end();
+      req.removeListener('aborted', handleConnectionClosed);
+      req.removeListener('close', handleConnectionClosed);
+      res.removeListener('close', handleConnectionClosed);
+      if (!res.writableEnded) {
+        res.end();
+      }
     }
   });
 

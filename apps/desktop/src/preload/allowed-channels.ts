@@ -1,6 +1,7 @@
 import {
   AccountChannels,
   AIChannels,
+  AIStreamChannels,
   AuthChannels,
   DashboardChannels,
   DesktopFeatureChannels,
@@ -36,6 +37,7 @@ export const ALLOWED_CHANNELS = [
   ...Object.values(EditorChannels),
   ...Object.values(GovernanceChannels),
   ...Object.values(AIChannels),
+  ...Object.values(AIStreamChannels),
 ] as const;
 
 export type AllowedIpcChannel = (typeof ALLOWED_CHANNELS)[number];

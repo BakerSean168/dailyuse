@@ -75,6 +75,7 @@ export interface IResultHttpClient {
       method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
       body?: unknown;
       headers?: Record<string, string>;
+      signal?: AbortSignal;
     },
   ): Promise<Response>;
 }

@@ -30,12 +30,24 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
         processingTimeMs: number;
       }) => void;
     },
+    signal?: AbortSignal,
   ): Promise<void> {
-    const response = await this.httpClient.stream(this.streamUrl, {
-      method: 'POST',
-      body: request,
-    });
+    let response: Response;
+    try {
+      response = await this.httpClient.stream(this.streamUrl, {
+        method: 'POST',
+        body: request,
+        signal,
+      });
+    } catch (error) {
+      if (isAbortLikeError(error) || signal?.aborted) {
+        throw createResultClientError('请求已取消', 'ABORTED');
+      }
+      throw error;
+    }
 
+    // Bootstrap failure: the SSE stream never started, so we still have a
+    // normal HTTP response envelope and can convert it into a structured error.
     if (!response.ok) {
       throw await createResultClientErrorFromResponse(
         response,
@@ -43,41 +55,53 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
       );
     }
 
-    for await (const event of parseSSE(response)) {
-      if (event.event === 'message' && event.data) {
-        const payload = JSON.parse(event.data) as { role: 'assistant'; content: string };
-        handlers.onChunk?.(payload);
-        continue;
-      }
+    // Once the stream is open, the server communicates only through SSE events.
+    // The front-end contract is intentionally small:
+    // - `message`: incremental assistant delta
+    // - `done`: final persisted message payload
+    // - `error`: structured application error after stream bootstrap
+    try {
+      for await (const event of parseSSE(response)) {
+        if (event.event === 'message' && event.data) {
+          const payload = JSON.parse(event.data) as { role: 'assistant'; content: string };
+          handlers.onChunk?.(payload);
+          continue;
+        }
 
-      if (event.event === 'done' && event.data) {
-        handlers.onDone?.(
-          JSON.parse(event.data) as {
-            userMessage: SendMessageRes['userMessage'];
-            assistantMessage: SendMessageRes['assistantMessage'];
-            tokenUsage: SendMessageRes['tokenUsage'];
-            providerId: SendMessageRes['providerId'];
-            processingTimeMs: number;
-          },
-        );
-        return;
-      }
+        if (event.event === 'done' && event.data) {
+          handlers.onDone?.(
+            JSON.parse(event.data) as {
+              userMessage: SendMessageRes['userMessage'];
+              assistantMessage: SendMessageRes['assistantMessage'];
+              tokenUsage: SendMessageRes['tokenUsage'];
+              providerId: SendMessageRes['providerId'];
+              processingTimeMs: number;
+            },
+          );
+          return;
+        }
 
-      if (event.event === 'error') {
-        const payload = event.data
-          ? (JSON.parse(event.data) as {
-              code?: string;
-              message?: string;
-              details?: ResultErrorDetail[];
-            })
-          : {};
-        throw createResultClientError(
-          payload.message ?? 'AI stream failed',
-          payload.code ?? 'INTERNAL_ERROR',
-          undefined,
-          payload.details,
-        );
+        if (event.event === 'error') {
+          const payload = event.data
+            ? (JSON.parse(event.data) as {
+                code?: string;
+                message?: string;
+                details?: ResultErrorDetail[];
+              })
+            : {};
+          throw createResultClientError(
+            payload.message ?? 'AI stream failed',
+            payload.code ?? 'INTERNAL_ERROR',
+            undefined,
+            payload.details,
+          );
+        }
       }
+    } catch (error) {
+      if (isAbortLikeError(error) || signal?.aborted) {
+        throw createResultClientError('请求已取消', 'ABORTED');
+      }
+      throw error;
     }
   }
 
@@ -99,6 +123,9 @@ async function* parseSSE(
     return;
   }
 
+  // Manual SSE parsing is used instead of EventSource because the request is a
+  // POST carrying JSON body data. That fits AI chat prompts better than the
+  // GET-only EventSource API.
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -111,6 +138,8 @@ async function* parseSSE(
 
     buffer += decoder.decode(value, { stream: true });
     while (true) {
+      // An SSE event may span multiple network chunks. Keep buffering until a
+      // blank-line boundary is found, then emit exactly one parsed event.
       const boundary = findSSEBoundary(buffer);
       if (!boundary) {
         break;
@@ -140,6 +169,8 @@ async function* parseSSE(
 }
 
 function findSSEBoundary(buffer: string): { index: number; length: number } | null {
+  // Support both CRLF and LF line endings because different servers / proxies
+  // may normalize SSE framing differently.
   const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
   if (crlfBoundaryIndex >= 0) {
     return { index: crlfBoundaryIndex, length: 4 };
@@ -151,4 +182,21 @@ function findSSEBoundary(buffer: string): { index: number; length: number } | nu
   }
 
   return null;
+}
+
+function isAbortLikeError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  if ('name' in error && error.name === 'AbortError') {
+    return true;
+  }
+
+  if ('message' in error && typeof error.message === 'string') {
+    const message = error.message.toLowerCase();
+    return message.includes('abort') || message.includes('cancel');
+  }
+
+  return false;
 }

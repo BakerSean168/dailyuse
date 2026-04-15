@@ -38,6 +38,7 @@ export interface ChatExecutionCompleteInput {
   providerConfig: ChatExecutionProviderConfig;
   identityId: string;
   requestId?: string;
+  signal?: AbortSignal;
 }
 
 export interface ChatExecutionCompleteResult {

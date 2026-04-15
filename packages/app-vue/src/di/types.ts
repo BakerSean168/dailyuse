@@ -61,6 +61,7 @@ export interface IAIService {
       onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
       onDone?: (result: unknown) => void;
     },
+    signal?: AbortSignal,
   ): Promise<void>;
   listMessages(
     conversationId: string,

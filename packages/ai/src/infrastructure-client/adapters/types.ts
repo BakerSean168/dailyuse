@@ -55,6 +55,12 @@ export interface IResultIpcClient {
     channel: string,
     ...args: unknown[]
   ): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  getBridge?: () =>
+    | {
+        on(channel: string, callback: (...args: unknown[]) => void): void;
+        off(channel: string, callback: (...args: unknown[]) => void): void;
+      }
+    | undefined;
 }
 
 // ============ Port Interfaces ============
@@ -81,11 +87,30 @@ export interface IAIMessageApiClient {
         processingTimeMs: number;
       }) => void;
     },
+    signal?: AbortSignal,
   ): Promise<void>;
   getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },
   ): Promise<MessageListRes>;
+}
+
+export interface IAIStreamMessageApiClient {
+  cancelStream(streamId: string): Promise<void>;
+  streamMessage(
+    request: SendMessageReq,
+    handlers: {
+      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
+      onDone?: (result: {
+        userMessage: SendMessageRes['userMessage'];
+        assistantMessage: SendMessageRes['assistantMessage'];
+        tokenUsage: SendMessageRes['tokenUsage'];
+        providerId: SendMessageRes['providerId'];
+        processingTimeMs: number;
+      }) => void;
+    },
+    signal?: AbortSignal,
+  ): Promise<void>;
 }
 
 export interface IAIGoalApiClient {
@@ -98,9 +123,7 @@ export interface IAICapabilitiesApiClient {
 }
 
 export interface AIEvaluationReportApiClient {
-  getEvaluationOverview(
-    request?: GetAIEvaluationOverviewReq,
-  ): Promise<GetAIEvaluationOverviewRes>;
+  getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
 }
 
 export interface AIKnowledgeNoteApiClient {

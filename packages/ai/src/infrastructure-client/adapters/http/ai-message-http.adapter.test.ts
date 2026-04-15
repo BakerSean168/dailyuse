@@ -156,4 +156,29 @@ describe('AIMessageHttpAdapter', () => {
       processingTimeMs: 123,
     });
   });
+
+  it('forwards AbortSignal to stream and normalizes abort failures', async () => {
+    const request = { conversationId: 'conv-1' as never, content: 'hi' };
+    const abortError = new Error('The operation was aborted');
+    abortError.name = 'AbortError';
+    const stream = vi.fn().mockRejectedValue(abortError);
+    const httpClient = createHttpClientStub({ stream });
+    const adapter = new AIMessageHttpAdapter(httpClient);
+    const controller = new AbortController();
+
+    await expect(adapter.streamMessage(request, {}, controller.signal)).rejects.toMatchObject({
+      name: 'ResultErrorException',
+      code: 'ABORTED',
+      message: '请求已取消',
+    } satisfies Partial<ResultClientError>);
+
+    expect(stream).toHaveBeenCalledWith(
+      '/ai/chat/messages/sse',
+      expect.objectContaining({
+        method: 'POST',
+        body: request,
+        signal: controller.signal,
+      }),
+    );
+  });
 });

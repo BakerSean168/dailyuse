@@ -20,6 +20,7 @@ export interface AIServiceInternalRequestOptions<TBody> {
   identityId: string;
   body: TBody;
   requestId?: string;
+  signal?: AbortSignal;
 }
 
 export class AIServiceInternalRequestError extends Error {
@@ -69,8 +70,9 @@ export class AIServiceInternalClient {
       secret: this.options.serviceSecret,
     });
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), this.timeoutMs);
+    const { signal, cleanup } = composeAbortSignal(request.signal, timeoutController.signal);
 
     try {
       const response = await fetch(new URL(request.path, this.options.baseUrl).toString(), {
@@ -85,7 +87,7 @@ export class AIServiceInternalClient {
           'X-Identity-Id': request.identityId,
         },
         body,
-        signal: controller.signal,
+        signal,
       });
 
       if (!response.ok) {
@@ -110,10 +112,15 @@ export class AIServiceInternalClient {
       return response;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
+        const category = request.signal?.aborted ? 'aborted' : 'timeout';
+        const message =
+          category === 'aborted'
+            ? `ai-service request aborted by caller [requestId: ${requestId}]`
+            : `ai-service request timed out [requestId: ${requestId}]`;
         throw new AIServiceInternalRequestError(
-          `ai-service request timed out [requestId: ${requestId}]`,
+          message,
           requestId,
-          'timeout',
+          category,
         );
       }
       if (error instanceof AIServiceInternalRequestError) {
@@ -129,6 +136,49 @@ export class AIServiceInternalClient {
       throw error;
     } finally {
       clearTimeout(timeoutId);
+      cleanup();
     }
   }
+}
+
+function composeAbortSignal(
+  externalSignal: AbortSignal | undefined,
+  timeoutSignal: AbortSignal,
+): {
+  signal: AbortSignal;
+  cleanup: () => void;
+} {
+  if (!externalSignal) {
+    return {
+      signal: timeoutSignal,
+      cleanup: () => undefined,
+    };
+  }
+
+  if (externalSignal.aborted || timeoutSignal.aborted) {
+    const abortedController = new AbortController();
+    abortedController.abort();
+    return {
+      signal: abortedController.signal,
+      cleanup: () => undefined,
+    };
+  }
+
+  const combinedController = new AbortController();
+  const abortCombinedSignal = () => {
+    if (!combinedController.signal.aborted) {
+      combinedController.abort();
+    }
+  };
+
+  externalSignal.addEventListener('abort', abortCombinedSignal);
+  timeoutSignal.addEventListener('abort', abortCombinedSignal);
+
+  return {
+    signal: combinedController.signal,
+    cleanup: () => {
+      externalSignal.removeEventListener('abort', abortCombinedSignal);
+      timeoutSignal.removeEventListener('abort', abortCombinedSignal);
+    },
+  };
 }

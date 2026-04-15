@@ -251,6 +251,7 @@ export interface AIApplicationPort {
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
     providerId?: string,
     model?: string,
+    signal?: AbortSignal,
   ): Promise<{
     userMessage: SendMessageRes['userMessage'];
     assistantMessage: SendMessageRes['assistantMessage'];
@@ -319,9 +320,9 @@ function resolveAICapabilities(dependencies: AIModuleDependencies): AICapabiliti
   );
   const supportsKnowledgeQuery = Boolean(
     dependencies.knowledgeSourcePort &&
-      dependencies.knowledgeIndexRepository &&
-      dependencies.knowledgeIngestionPort &&
-      dependencies.knowledgeQueryPort,
+    dependencies.knowledgeIndexRepository &&
+    dependencies.knowledgeIngestionPort &&
+    dependencies.knowledgeQueryPort,
   );
   const supportsAnalyticsQuery = Boolean(
     dependencies.analyticsReadPort && dependencies.analyticsQueryPort,
@@ -420,8 +421,7 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
   const { conversationRepository, providerConfigRepository } = dependencies;
   const chatExecutionPort =
     dependencies.chatExecutionPort ?? new DirectProviderChatExecutionAdapter();
-  const goalPlanningPort =
-    dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
+  const goalPlanningPort = dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
   const knowledgeNoteGenerationPort =
     dependencies.knowledgeNoteGenerationPort ?? new DirectProviderKnowledgeNoteGenerationAdapter();
 
@@ -500,16 +500,16 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
     : null;
 
   return {
-      conversationService,
-      providerConfigService,
-      chatService,
-      goalGenerationService,
-      knowledgeIndexService,
-      knowledgeNoteService,
-      knowledgeQueryService,
-      analyticsQueryService,
-      goalAutomationService,
-      evaluationReportService,
+    conversationService,
+    providerConfigService,
+    chatService,
+    goalGenerationService,
+    knowledgeIndexService,
+    knowledgeNoteService,
+    knowledgeQueryService,
+    analyticsQueryService,
+    goalAutomationService,
+    evaluationReportService,
   };
 }
 
@@ -582,7 +582,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     // -- Chat --
     sendMessage: (identityId, conversationId, content, providerId, model) =>
       services.chatService.sendMessage(identityId, conversationId, content, providerId, model),
-    streamMessage: (identityId, conversationId, content, onChunk, providerId, model) =>
+    streamMessage: (identityId, conversationId, content, onChunk, providerId, model, signal) =>
       services.chatService.sendMessageStream(
         identityId,
         conversationId,
@@ -590,15 +590,14 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
         onChunk,
         providerId,
         model,
+        signal,
       ),
 
     // -- Goal Generation --
     generateGoal: (params) => services.goalGenerationService.generateGoal(params),
     automateGoal: (params) => {
       if (!services.goalAutomationService) {
-        return Promise.reject(
-          buildCapabilityUnavailableError('Goal automation', baseCapabilities),
-        );
+        return Promise.reject(buildCapabilityUnavailableError('Goal automation', baseCapabilities));
       }
       return services.goalAutomationService.automateGoal(params.identityId, params);
     },
@@ -641,9 +640,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     },
     queryAnalytics: (identityId, req) => {
       if (!services.analyticsQueryService) {
-        return Promise.reject(
-          buildCapabilityUnavailableError('Analytics query', baseCapabilities),
-        );
+        return Promise.reject(buildCapabilityUnavailableError('Analytics query', baseCapabilities));
       }
       return services.analyticsQueryService.queryAnalytics(identityId, req);
     },

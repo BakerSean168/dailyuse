@@ -144,6 +144,7 @@ export class ResultHttpClient {
       method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
       body?: unknown;
       headers?: Record<string, string>;
+      signal?: AbortSignal;
     },
   ): Promise<Response> {
     const method = config?.method ?? 'GET';
@@ -163,6 +164,7 @@ export class ResultHttpClient {
       method,
       headers,
       body: config?.body === undefined ? undefined : JSON.stringify(config.body),
+      signal: config?.signal,
     };
 
     let response = await fetch(this.axios.getUri({ url }), requestInit);

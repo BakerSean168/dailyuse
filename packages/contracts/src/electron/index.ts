@@ -8,10 +8,7 @@
  */
 
 export type { IElectronAuthContext, ElectronAuthResolutionCode } from './auth-context';
-export {
-  ElectronAuthResolutionError,
-  isElectronAuthResolutionError,
-} from './auth-context';
+export { ElectronAuthResolutionError, isElectronAuthResolutionError } from './auth-context';
 export {
   createAuthenticatedIpcWrapper,
   createAuthenticatedIdentityIpcWrapper,
@@ -21,6 +18,7 @@ export {
   type AuthenticatedIdentityIpcWrapperOptions,
 } from './authenticated-ipc';
 export * from './ipc-channels';
+export { AIStreamChannels } from './ipc-channels';
 export type {
   IElectronDatabase,
   IElectronDatabaseQueryResult,

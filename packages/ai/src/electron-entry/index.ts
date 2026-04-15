@@ -18,6 +18,8 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
+import { fail, ok } from '@dailyuse/contracts/result';
 import {
   AIServiceAnalyticsQueryAdapter,
   AIEvaluationReportFileAdapter,
@@ -65,6 +67,11 @@ const Ch = {
   CONVERSATION_DELETE: 'ai:chat:conversation:delete',
   MESSAGE_SEND: 'ai:chat:message:send',
   MESSAGE_LIST: 'ai:chat:message:list',
+  MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
+  MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
+  MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
+  MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
+  MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
   KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
   KNOWLEDGE_QUERY: 'ai:knowledge:query',
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
@@ -74,6 +81,13 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+
+type StreamSession = {
+  abortController: AbortController;
+  webContentsId: number;
+};
+
+const activeStreamSessions = new Map<string, StreamSession>();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -271,6 +285,82 @@ export function createAIElectronModule(options: {
           ),
         ),
       );
+      ipcMain.handle(Ch.MESSAGE_STREAM_START, async (event, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const payload = dto as {
+            streamId?: unknown;
+            conversationId?: unknown;
+            content?: unknown;
+            providerId?: unknown;
+            model?: unknown;
+          };
+          const streamId = String(payload.streamId ?? '');
+          if (!streamId) {
+            return fail({ code: 'VALIDATION_ERROR', message: 'Missing streamId' });
+          }
+
+          const abortController = new AbortController();
+          activeStreamSessions.set(streamId, {
+            abortController,
+            webContentsId: event.sender.id,
+          });
+
+          void (async () => {
+            try {
+              const result = await aiModule.api.streamMessage(
+                requestContext.identityId,
+                String(payload.conversationId ?? ''),
+                String(payload.content ?? ''),
+                (chunk) => {
+                  if (!event.sender.isDestroyed()) {
+                    event.sender.send(AIStreamChannels.MESSAGE_STREAM_CHUNK, {
+                      streamId,
+                      chunk,
+                    });
+                  }
+                },
+                typeof payload.providerId === 'string' ? payload.providerId : undefined,
+                typeof payload.model === 'string' ? payload.model : undefined,
+                abortController.signal,
+              );
+
+              if (!event.sender.isDestroyed()) {
+                event.sender.send(AIStreamChannels.MESSAGE_STREAM_DONE, {
+                  streamId,
+                  result,
+                });
+              }
+            } catch (error) {
+              const code =
+                error instanceof Error &&
+                (error as Error & { category?: string }).category === 'aborted'
+                  ? 'ABORTED'
+                  : 'INTERNAL_ERROR';
+              if (!event.sender.isDestroyed()) {
+                event.sender.send(AIStreamChannels.MESSAGE_STREAM_ERROR, {
+                  streamId,
+                  code,
+                  message: error instanceof Error ? error.message : 'AI stream failed',
+                });
+              }
+            } finally {
+              activeStreamSessions.delete(streamId);
+            }
+          })();
+
+          return ok(null);
+        }),
+      );
+      ipcMain.handle(Ch.MESSAGE_STREAM_CANCEL, async (event, streamId) =>
+        withAuthenticatedValue(ctx, async () => {
+          const session = activeStreamSessions.get(String(streamId));
+          if (session && session.webContentsId === event.sender.id) {
+            session.abortController.abort();
+            activeStreamSessions.delete(String(streamId));
+          }
+          return ok(null);
+        }),
+      );
       ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) =>
         withAuthenticatedValue(ctx, async () => {
           const conversation = await aiModule.api.getConversation(String(dto.conversationId), true);
@@ -322,6 +412,10 @@ export function createAIElectronModule(options: {
       for (const channel of channels) {
         ipcMain.removeHandler(channel);
       }
+      for (const session of activeStreamSessions.values()) {
+        session.abortController.abort();
+      }
+      activeStreamSessions.clear();
       activeAIModule?.dispose();
       activeAIModule = null;
       logger.info('AI module destroyed');

@@ -187,12 +187,20 @@ export const AIChannels = {
   CONVERSATION_DELETE: 'ai:chat:conversation:delete',
   MESSAGE_SEND: 'ai:chat:message:send',
   MESSAGE_LIST: 'ai:chat:message:list',
+  MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
+  MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
   KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
   KNOWLEDGE_QUERY: 'ai:knowledge:query',
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
   KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
   ANALYTICS_QUERY: 'ai:analytics:query',
   EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
+} as const;
+
+export const AIStreamChannels = {
+  MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
+  MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
+  MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
 } as const;
 
 export const NotificationChannels = {

@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 
-import { MessageRole, type AICapabilities, type AIConversationClientDTO, type AIProviderConfigClientDTO, type MessageClientDTO, type SendMessageReq } from '@dailyuse/contracts/ai';
+import {
+  MessageRole,
+  type AICapabilities,
+  type AIConversationClientDTO,
+  type AIProviderConfigClientDTO,
+  type MessageClientDTO,
+  type SendMessageReq,
+} from '@dailyuse/contracts/ai';
 
 import { useAppSession } from './use-app-session';
 import { useAIService } from './use-ai-service';
@@ -20,7 +27,9 @@ export function useAIWorkspace() {
   const service = useAIService();
   const { isRemoteAuthenticated } = useAppSession();
   const [conversations, setConversations] = useState<AIConversationClientDTO[]>([]);
-  const [activeConversation, setActiveConversation] = useState<AIConversationClientDTO | null>(null);
+  const [activeConversation, setActiveConversation] = useState<AIConversationClientDTO | null>(
+    null,
+  );
   const [providers, setProviders] = useState<AIProviderConfigClientDTO[]>([]);
   const [capabilities, setCapabilities] = useState<AICapabilities | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
@@ -31,7 +40,10 @@ export function useAIWorkspace() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function resolveSelectedProvider(nextProviders: AIProviderConfigClientDTO[], preferredProviderId?: string | null) {
+  function resolveSelectedProvider(
+    nextProviders: AIProviderConfigClientDTO[],
+    preferredProviderId?: string | null,
+  ) {
     const preferred =
       nextProviders.find((provider) => String(provider.id) === String(preferredProviderId)) ??
       nextProviders.find((provider) => String(provider.id) === String(selectedProviderId)) ??
@@ -80,7 +92,8 @@ export function useAIWorkspace() {
       setCapabilities(nextCapabilities);
       resolveSelectedProvider(nextProviders);
 
-      const targetId = preferredConversationId ?? activeConversation?.id ?? list.data[0]?.id ?? null;
+      const targetId =
+        preferredConversationId ?? activeConversation?.id ?? list.data[0]?.id ?? null;
       if (targetId) {
         const conversation = await service.getConversation(String(targetId));
         setActiveConversation(conversation);
@@ -169,7 +182,9 @@ export function useAIWorkspace() {
       const request: SendMessageReq = {
         conversationId: conversation.id as SendMessageReq['conversationId'],
         content,
-        providerId: selectedProviderId ? (selectedProviderId as SendMessageReq['providerId']) : undefined,
+        providerId: selectedProviderId
+          ? (selectedProviderId as SendMessageReq['providerId'])
+          : undefined,
         model: selectedModel ?? undefined,
       };
 
@@ -216,31 +231,36 @@ export function useAIWorkspace() {
         setActiveConversation(optimisticConversation);
         setIsStreaming(true);
 
-        await service.streamMessage(request, {
-          onChunk: (chunk) => {
-            setActiveConversation((current) => {
-              if (!current?.messages || current.messages.length === 0) {
-                return current;
-              }
+        const controller = new AbortController();
+        await service.streamMessage(
+          request,
+          {
+            onChunk: (chunk) => {
+              setActiveConversation((current) => {
+                if (!current?.messages || current.messages.length === 0) {
+                  return current;
+                }
 
-              const nextMessages = [...current.messages];
-              const lastMessage = nextMessages[nextMessages.length - 1];
-              if (!lastMessage || !lastMessage.isAssistant) {
-                return current;
-              }
+                const nextMessages = [...current.messages];
+                const lastMessage = nextMessages[nextMessages.length - 1];
+                if (!lastMessage || !lastMessage.isAssistant) {
+                  return current;
+                }
 
-              nextMessages[nextMessages.length - 1] = {
-                ...lastMessage,
-                content: `${lastMessage.content}${chunk.content}`,
-              };
+                nextMessages[nextMessages.length - 1] = {
+                  ...lastMessage,
+                  content: `${lastMessage.content}${chunk.content}`,
+                };
 
-              return {
-                ...current,
-                messages: nextMessages,
-              };
-            });
+                return {
+                  ...current,
+                  messages: nextMessages,
+                };
+              });
+            },
           },
-        });
+          controller.signal,
+        );
 
         setIsStreaming(false);
         await loadWorkspace(String(conversation.id));
@@ -282,4 +302,3 @@ export function useAIWorkspace() {
     streamMode,
   };
 }
-

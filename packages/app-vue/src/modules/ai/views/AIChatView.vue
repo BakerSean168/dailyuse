@@ -1,6 +1,7 @@
 <template>
   <div class="flex h-full min-h-0 overflow-hidden bg-background">
     <aside class="hidden min-h-0 w-72 shrink-0 flex-col border-r bg-sidebar md:flex">
+      <!-- Conversation List -->
       <div class="flex h-14 items-center border-b px-4">
         <div class="flex items-center gap-2 font-semibold">
           <Bot class="h-5 w-5 text-primary" />
@@ -160,6 +161,13 @@
                 </p>
                 <p class="whitespace-pre-wrap break-words">
                   {{ item.content || typingPlaceholder(item) }}
+                </p>
+                <p
+                  v-if="item.role === 'assistant' && (item.status === 'aborted' || item.status === 'error')"
+                  class="mt-2 text-xs"
+                  :class="item.status === 'error' ? 'text-destructive' : 'text-muted-foreground'"
+                >
+                  {{ getMessageStatusLabel(item) }}
                 </p>
               </div>
             </article>
@@ -456,16 +464,22 @@
                 </div>
 
                 <Button
+                  v-if="chatLoading"
+                  variant="outline"
                   class="rounded-xl lg:shrink-0"
-                  :disabled="chatLoading || !chatMessage.trim() || !canSendMessage"
+                  @click="stopGenerating"
+                >
+                  <Square class="mr-2 h-4 w-4" />
+                  {{ t('aiAssistant.dialogs.chat.stopGenerating') }}
+                </Button>
+                <Button
+                  v-else
+                  class="rounded-xl lg:shrink-0"
+                  :disabled="!chatMessage.trim() || !canSendMessage"
                   @click="handleSendChat"
                 >
                   <ArrowUp class="mr-2 h-4 w-4" />
-                  {{
-                    chatLoading
-                      ? t('aiAssistant.dialogs.chat.sending')
-                      : t('aiAssistant.dialogs.chat.sendMessage')
-                  }}
+                  {{ t('aiAssistant.dialogs.chat.sendMessage') }}
                 </Button>
               </div>
             </div>
@@ -477,7 +491,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
@@ -491,6 +505,7 @@ import {
   RefreshCcw,
   Search,
   Settings2,
+  Square,
   Sparkles,
   Trash2,
   WandSparkles,
@@ -526,12 +541,29 @@ import { useUserSetting } from '../../setting/composables/useUserSetting';
 import { useEditorWorkspaceActions } from '../../editor/composables';
 import AIGoalDraftEditor from '../components/AIGoalDraftEditor.vue';
 
+// The page currently multiplexes three related workflows into a single chat shell:
+// 1. plain chat
+// 2. goal drafting from the accumulated conversation
+// 3. knowledge note creation from the accumulated conversation
+//
+// That keeps the UX consistent, but it also means this view owns both:
+// - generic chat state (messages / conversation / model selection)
+// - workflow-specific state (goal draft / knowledge note summary)
 type WorkflowMode = 'chat' | 'goal' | 'knowledge-note';
 
+type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
+
+// Important limitation for future evolution:
+// this message model only stores final text content and role.
+// It does not yet model explicit message lifecycle states such as
+// "generating", "error", or "aborted", so the current UI infers "assistant
+// is typing" from the page-level `chatLoading` flag.
 type ChatItem = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  status: MessageStatus;
+  errorMessage?: string;
 };
 
 type ConversationSummary = {
@@ -595,6 +627,8 @@ type NoteSummary = {
   resource?: { id?: string; name?: string; content?: string };
 };
 
+// localStorage is used as the light-weight client cache for restoring the
+// last conversation, model choice, and tool workflow state after reload.
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 const WORKFLOW_STORAGE_KEY = 'ai:conversation-workflow-map';
 const LAST_MODEL_STORAGE_KEY = 'ai:last-model-key';
@@ -639,6 +673,7 @@ const { getCategory } = useUserSetting();
 const { initRepository, fetchResources, resources } = useRepository();
 const { requestOpenResource } = useEditorWorkspaceActions();
 
+// Core chat session state.
 const conversationTitle = ref('');
 const chatMessage = ref('');
 const chatLoading = ref(false);
@@ -650,6 +685,9 @@ const lastActiveConversationId = ref('');
 const selectedModelKey = ref('');
 const messagesViewport = ref<HTMLElement | null>(null);
 const composerTextarea = ref<HTMLTextAreaElement | null>(null);
+const activeStreamAbortController = ref<AbortController | null>(null);
+
+// Workflow state that piggybacks on the same conversation transcript.
 const toolMode = ref<WorkflowMode>('chat');
 const goalDraftLoading = ref(false);
 const goalDraft = ref<GoalDraft | null>(null);
@@ -681,6 +719,10 @@ const editableKeyResults = ref<
 >([]);
 const noteCreating = ref(false);
 const noteSummary = ref<NoteSummary | null>(null);
+
+// Selecting a stored conversation rehydrates multiple reactive fields at once.
+// This flag temporarily disables the persistence watcher to avoid writing a
+// half-restored snapshot back into localStorage.
 const suspendWorkflowPersistence = ref(false);
 
 const aiSettings = computed(() => getCategory('ai'));
@@ -691,6 +733,9 @@ const providerList = computed(() =>
 const modelGroups = computed(() =>
   providerList.value
     .map((provider) => {
+      // Some providers only expose a default model instead of a full list.
+      // The UI normalizes both shapes into the same "provider -> models" structure
+      // so the selector can stay simple.
       const fallbackModels =
         provider.defaultModel && !provider.availableModels?.length
           ? [{ id: provider.defaultModel, name: provider.defaultModel }]
@@ -824,6 +869,12 @@ function getDefaultConversationName(mode: WorkflowMode) {
   return t('aiAssistant.dialogs.chat.defaultConversationName');
 }
 
+// Model persistence is intentionally split into:
+// - last selected model globally
+// - selected model per conversation
+//
+// This lets the UI restore a conversation-specific model when it exists,
+// while still providing a sane default for new conversations.
 function readLastSelectedModelKey(): string {
   return localStorage.getItem(LAST_MODEL_STORAGE_KEY) || '';
 }
@@ -963,6 +1014,8 @@ function writeWorkflowStorage(next: Record<string, PersistedWorkflowEntry>) {
   localStorage.setItem(WORKFLOW_STORAGE_KEY, JSON.stringify(next));
 }
 
+// Only store a compact preview of the created note. The full note content
+// belongs in the repository resource itself, not in localStorage.
 function createStoredNoteSummary(summary: NoteSummary | null): NoteSummary | null {
   if (!summary) {
     return null;
@@ -985,6 +1038,9 @@ function snapshotWorkflowEntry(): PersistedWorkflowEntry | null {
     return null;
   }
 
+  // Workflow state is persisted independently from chat messages because
+  // messages are already stored server-side. Here we only snapshot the local
+  // UI artifacts derived from those messages.
   return {
     mode: toolMode.value,
     goalDraft: goalDraft.value,
@@ -1058,11 +1114,15 @@ function normalizeChatRole(role: unknown): ChatItem['role'] {
   return 'assistant';
 }
 
+// Server message payloads are normalized into the small view model consumed
+// by the template. This shields the UI from casing or optional-field drift
+// in the transport layer.
 function normalizeChatItem(item: Partial<{ id: string; role: string; content: string }>, index: number): ChatItem {
   return {
     id: item.id || `message-${index}`,
     role: normalizeChatRole(item.role),
     content: item.content || '',
+    status: 'success',
   };
 }
 
@@ -1084,6 +1144,7 @@ function resetChatSession(mode: WorkflowMode = 'chat') {
 }
 
 function startNewConversation(mode: WorkflowMode = 'chat') {
+  abortActiveStream();
   resetChatSession(mode);
   clearLastActiveConversation();
 }
@@ -1105,6 +1166,8 @@ function selectModel(modelKey: string) {
   persistSelectedModel(modelKey, chatConversationId.value || undefined);
 }
 
+// The composer auto-grows between 2 and 5 lines so the input feels more like
+// a modern chat box without letting the footer consume the whole viewport.
 function adjustComposerHeight() {
   const textarea = composerTextarea.value;
   if (!textarea) {
@@ -1131,11 +1194,62 @@ function handleComposerInput() {
 }
 
 function typingPlaceholder(item: ChatItem) {
-  return item.role === 'assistant' && chatLoading.value ? '...' : '';
+  return item.role === 'assistant' && item.status === 'generating' ? '...' : '';
+}
+
+function getMessageStatusLabel(item: ChatItem): string {
+  if (item.status === 'aborted') {
+    return t('aiAssistant.dialogs.chat.aborted');
+  }
+
+  if (item.status === 'error') {
+    return item.errorMessage || t('aiAssistant.dialogs.chat.sendFailed');
+  }
+
+  return '';
 }
 
 function getAIErrorMessage(error: unknown, fallbackKey: string) {
   return translateResultError(error, t, { fallbackKey });
+}
+
+function isAbortLikeError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    return true;
+  }
+
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const candidate = error as { name?: unknown; code?: unknown; message?: unknown };
+  if (candidate.name === 'AbortError' || candidate.code === 'ABORTED') {
+    return true;
+  }
+
+  if (typeof candidate.message === 'string') {
+    const message = candidate.message.toLowerCase();
+    return message.includes('abort') || message.includes('cancel');
+  }
+
+  return false;
+}
+
+function abortActiveStream() {
+  if (!activeStreamAbortController.value) {
+    return;
+  }
+
+  activeStreamAbortController.value.abort();
+  activeStreamAbortController.value = null;
+}
+
+function stopGenerating() {
+  if (!chatLoading.value) {
+    return;
+  }
+
+  abortActiveStream();
 }
 
 async function loadConversationList(options?: { preserveSelection?: boolean }) {
@@ -1161,7 +1275,14 @@ async function loadConversationList(options?: { preserveSelection?: boolean }) {
   }
 }
 
+// Conversation switching has two sources of truth:
+// - messages come from the server
+// - workflow artifacts come from localStorage
+//
+// Both have to be restored together, otherwise the page would show a transcript
+// for one conversation but a draft/note panel from another.
 async function selectConversation(item: ConversationSummary) {
+  abortActiveStream();
   suspendWorkflowPersistence.value = true;
   chatConversationId.value = item.id;
   conversationTitle.value =
@@ -1205,6 +1326,8 @@ async function ensureConversationCreated() {
     return chatConversationId.value;
   }
 
+  // The server requires a real conversation id before messages can be streamed,
+  // so new chats are lazily materialized at first send instead of on page load.
   const conversation = (await service.createConversation({
     name: currentConversationLabel.value,
   })) as { id: string };
@@ -1242,6 +1365,9 @@ function buildConversationTranscript() {
     .join('\n\n');
 }
 
+// The note workflow derives a title/topic from the existing transcript rather
+// than re-asking the user for more inputs. This keeps the workflow entirely
+// conversation-driven.
 function buildKnowledgeNoteTitle() {
   const defaultName = getDefaultConversationName(toolMode.value);
   const trimmed = conversationTitle.value.trim();
@@ -1277,6 +1403,10 @@ function buildKnowledgeNoteTopic() {
 
 function applyGoalDraft(nextDraft: GoalDraft) {
   goalDraft.value = nextDraft;
+
+  // Goal generation returns an AI-friendly payload shape. The editor needs a
+  // mutable form-friendly shape, so we normalize once here and let the editor
+  // work only with the editable version afterwards.
   editableGoal.value = {
     name: nextDraft.goal.name ?? nextDraft.goal.title ?? '',
     description: nextDraft.goal.description,
@@ -1474,26 +1604,38 @@ function toggleGoalDraftEditor() {
 }
 
 async function handleSendChat() {
-  if (!selectedModel.value) {
+  if (!selectedModel.value || chatLoading.value) {
     return;
   }
 
-  chatLoading.value = true;
+  // Current streaming model:
+  // 1. create conversation if needed
+  // 2. optimistically insert user + empty assistant placeholder messages
+  // 3. append streamed chunks into the assistant placeholder
+  // 4. replace both placeholders with the persisted server messages on `done`
+  //
+  // This pattern keeps the UI responsive before the server has finished writing
+  // the canonical message records.
   let userDraftId = '';
   let assistantDraftId = '';
+  let streamController: AbortController | null = null;
 
   try {
     const pendingUserMessage = chatMessage.value.trim();
     if (!pendingUserMessage) {
       return;
     }
+
+    chatLoading.value = true;
     const conversationId = await ensureConversationCreated();
+    streamController = new AbortController();
+    activeStreamAbortController.value = streamController;
 
     userDraftId = `user-draft-${Date.now()}`;
     assistantDraftId = `assistant-draft-${Date.now()}`;
     chatTimeline.value.push(
-      { id: userDraftId, role: 'user', content: pendingUserMessage },
-      { id: assistantDraftId, role: 'assistant', content: '' },
+      { id: userDraftId, role: 'user', content: pendingUserMessage, status: 'success' },
+      { id: assistantDraftId, role: 'assistant', content: '', status: 'generating' },
     );
     chatMessage.value = '';
     await nextTick();
@@ -1508,19 +1650,29 @@ async function handleSendChat() {
       },
       {
         onChunk: (chunk: { role: 'assistant'; content: string }) => {
+          // Each SSE "message" event contains only the incremental delta.
+          // The view keeps a single assistant placeholder and appends deltas
+          // into it, which is the minimal manual streaming strategy.
           const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
           if (target) {
             target.content += chunk.content;
+            target.status = 'generating';
+            target.errorMessage = undefined;
           }
         },
         onDone: async (result: unknown) => {
           const resolved = (result ?? {}) as StreamDoneResult;
+
+          // The stream completion payload returns the persisted message ids and
+          // final content from the server. Swapping the draft rows for these
+          // canonical records keeps later reloads and history fetches aligned.
           const assistantIndex = chatTimeline.value.findIndex((item) => item.id === assistantDraftId);
           if (assistantIndex >= 0 && resolved.assistantMessage) {
             chatTimeline.value[assistantIndex] = {
               id: resolved.assistantMessage.id,
               role: 'assistant',
               content: resolved.assistantMessage.content,
+              status: 'success',
             };
           }
           const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
@@ -1529,18 +1681,41 @@ async function handleSendChat() {
               id: resolved.userMessage.id,
               role: 'user',
               content: resolved.userMessage.content,
+              status: 'success',
             };
           }
           await loadConversationList();
         },
       },
+      streamController.signal,
     );
   } catch (error) {
-    chatTimeline.value = chatTimeline.value.filter(
-      (item) => item.id !== userDraftId && item.id !== assistantDraftId,
-    );
-    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.chat.sendFailed'));
+    const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
+    const userDraft = chatTimeline.value.find((item) => item.id === userDraftId);
+
+    if (isAbortLikeError(error)) {
+      if (assistantDraft) {
+        assistantDraft.status = 'aborted';
+        assistantDraft.errorMessage = undefined;
+      }
+      if (userDraft) {
+        userDraft.status = 'success';
+      }
+    } else {
+      const errorMessage = getAIErrorMessage(error, 'aiAssistant.dialogs.chat.sendFailed');
+      if (assistantDraft) {
+        assistantDraft.status = 'error';
+        assistantDraft.errorMessage = errorMessage;
+      }
+      if (userDraft) {
+        userDraft.status = 'success';
+      }
+      toast.error(errorMessage);
+    }
   } finally {
+    if (activeStreamAbortController.value === streamController) {
+      activeStreamAbortController.value = null;
+    }
     chatLoading.value = false;
   }
 }
@@ -1572,6 +1747,8 @@ function scrollMessagesToBottom() {
   });
 }
 
+// Re-run textarea sizing whenever the bound text changes, including programmatic
+// resets after send.
 watch(
   () => chatMessage.value,
   () => {
@@ -1589,6 +1766,9 @@ watch(
   { immediate: true },
 );
 
+// Persist workflow-only state whenever the derived draft / note artifacts change.
+// Messages themselves are deliberately excluded because they are already persisted
+// by the backend conversation APIs.
 watch(
   () =>
     [
@@ -1609,6 +1789,8 @@ watch(
   },
 );
 
+// Auto-scroll is driven by content-length changes instead of every deep mutation,
+// which keeps the watcher cheap while still reacting to streamed text growth.
 watch(
   () => chatTimeline.value.map((item) => `${item.id}:${item.content.length}`).join('|'),
   () => {
@@ -1616,7 +1798,16 @@ watch(
   },
 );
 
+onBeforeUnmount(() => {
+  abortActiveStream();
+});
+
 onMounted(async () => {
+  // Initial hydration order matters:
+  // 1. reset local state
+  // 2. load providers so model selection can be restored safely
+  // 3. load conversation list
+  // 4. reopen the last active conversation and rehydrate workflow artifacts
   resetChatSession();
   lastActiveConversationId.value = localStorage.getItem(LAST_CONVERSATION_STORAGE_KEY) || '';
 

@@ -157,8 +157,9 @@ export class AIClientService {
   streamMessage(
     request: SendMessageReq,
     handlers: Parameters<IAIMessageApiClient['streamMessage']>[1],
+    signal?: AbortSignal,
   ) {
-    return this.messageApi.streamMessage(request, handlers);
+    return this.messageApi.streamMessage(request, handlers, signal);
   }
 
   listMessages(conversationId: string, params?: { page?: number; pageSize?: number }) {

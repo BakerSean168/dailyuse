@@ -39,11 +39,20 @@ import { RepositoryIpcAdapter } from '@dailyuse/repository/infrastructure-client
 import { SettingIpcAdapter } from '@dailyuse/setting/infrastructure-client';
 
 function channelSet(values: Record<string, string>) {
-  return new Set(Object.values(values));
+  return new Set<string>(Object.values(values) as string[]);
 }
 
 function allowedByPrefix(prefix: string) {
-  return new Set(ALLOWED_CHANNELS.filter((channel) => channel.startsWith(prefix)));
+  return new Set<string>(ALLOWED_CHANNELS.filter((channel) => String(channel).startsWith(prefix)));
+}
+
+function aiChannelSet() {
+  return new Set<string>([
+    ...Object.values(AIChannels),
+    'ai:chat:message:stream:chunk',
+    'ai:chat:message:stream:done',
+    'ai:chat:message:stream:error',
+  ]);
 }
 
 function expectChannelsRegistered(channels: string[], registered: Set<string>) {
@@ -116,7 +125,7 @@ describe('desktop IPC contract alignment', () => {
   });
 
   it('keeps shared ai channels aligned with preload allowlist', () => {
-    expect(allowedByPrefix('ai:')).toEqual(channelSet(AIChannels));
+    expect(allowedByPrefix('ai:')).toEqual(aiChannelSet());
   });
 
   it('keeps shared window channels aligned with preload allowlist', () => {
@@ -240,7 +249,7 @@ describe('desktop IPC contract alignment', () => {
     await eventAdapter.updateSchedule('schedule-1', {} as never);
     await eventAdapter.deleteSchedule('schedule-1');
     await eventAdapter.getScheduleConflicts('schedule-1');
-    await eventAdapter.detectConflicts({ userId: 'u', startTime: 1, endTime: 2 });
+    await eventAdapter.detectConflicts({ startTime: 1, endTime: 2 });
     await eventAdapter.createScheduleWithConflictDetection({} as never);
     await eventAdapter.resolveConflict('schedule-1', {} as never);
 

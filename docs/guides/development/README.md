@@ -5,7 +5,7 @@ tags:
   - index
 description: 开发指南目录索引
 created: 2025-01-22T00:00:00
-updated: 2026-04-13T00:00:00
+updated: 2026-04-14T00:00:00
 ---
 
 # 开发指南
@@ -16,6 +16,7 @@ updated: 2026-04-13T00:00:00
 
 | 文档 | 用途 |
 | --- | --- |
+| [ai-chat-streaming-current-implementation.md](./ai-chat-streaming-current-implementation.md) | 分析当前 AI 对话页和流式实现，梳理现状与后续手动扩展路线 |
 | [coding-standards.md](./coding-standards.md) | 代码风格、分层和通用实现约束 |
 | [git-workflow.md](./git-workflow.md) | 分支、提交和协作流程 |
 | [testing.md](./testing.md) | 测试快速入口，跳转到 `docs/test` |

@@ -41,6 +41,7 @@ interface AIChatMessageControllerService {
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
     providerId?: string,
     model?: string,
+    signal?: AbortSignal,
   ): Promise<{
     userMessage: SendMessageRes['userMessage'];
     assistantMessage: SendMessageRes['assistantMessage'];
@@ -155,6 +156,7 @@ export class AIChatController {
     input: unknown,
     identityId: string,
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
+    signal?: AbortSignal,
   ): Promise<Result<{
     userMessage: SendMessageRes['userMessage'];
     assistantMessage: SendMessageRes['assistantMessage'];
@@ -176,6 +178,7 @@ export class AIChatController {
           onChunk,
           parsed.data.providerId,
           parsed.data.model,
+          signal,
         ),
       );
     } catch (error) {

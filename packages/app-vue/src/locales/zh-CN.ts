@@ -288,6 +288,7 @@ export default {
         model: '模型',
         modelPlaceholder: '选择模型',
         sending: '发送中...',
+        stopGenerating: '停止生成',
         sendMessage: '发送消息',
         newConversation: '新建会话',
         providerRequired: '请先配置 AI 提供方，再发送聊天消息。',
@@ -299,6 +300,7 @@ export default {
         deleted: '会话已删除',
         renameFailed: '重命名会话失败',
         sendFailed: '发送消息失败',
+        aborted: '已中止',
         defaultConversationName: '快速对话',
       },
       note: {
