@@ -18,6 +18,7 @@ import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables
 import App from '../App.vue';
 import { installDesktopAppServices } from '../platform/di-app';
 import { initElectronFeatures } from '../platform/electron';
+import { shouldRedirectAuthenticatedDesktopEntry } from './route-entry';
 
 async function hydrateRendererAuthState(): Promise<boolean> {
   try {
@@ -86,9 +87,15 @@ export async function bootstrapMainApp() {
     globalThis.setTimeout(runStartupPhase, 0);
   }
 
-  if (hasDesktopAuthSnapshot && useAuthenticationStore().isAuthenticated) {
-    queueMicrotask(() => {
-      void router.replace('/');
-    });
-  }
+  void router.isReady().then(() => {
+    if (!hasDesktopAuthSnapshot || !useAuthenticationStore().isAuthenticated) {
+      return;
+    }
+
+    if (!shouldRedirectAuthenticatedDesktopEntry(router.currentRoute.value.name)) {
+      return;
+    }
+
+    void router.replace('/');
+  });
 }
