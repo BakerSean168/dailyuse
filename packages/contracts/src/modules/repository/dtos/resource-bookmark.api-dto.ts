@@ -2,7 +2,7 @@
  * Resource Bookmark API DTOs
  * 资源书签 API 数据传输对象
  */
-import type { ResourceBookmarkClientDTO } from '../entities';
+import type { ResourceBookmarkClientDTO } from '../entities/resource-bookmark-client';
 import type { ResourceId } from '../../../primitives';
 
 /**

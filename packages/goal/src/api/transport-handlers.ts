@@ -52,6 +52,14 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
     createRecord: { execute: api.createRecord } as GoalUseCases['createRecord'],
     listRecords: { execute: api.listRecords } as GoalUseCases['listRecords'],
     deleteRecord: { execute: api.deleteRecord } as GoalUseCases['deleteRecord'],
+    getCurrentFocusMode: {
+      execute: api.getCurrentFocusMode,
+    } as GoalUseCases['getCurrentFocusMode'],
+    activateFocusMode: { execute: api.activateFocusMode } as GoalUseCases['activateFocusMode'],
+    deactivateFocusMode: {
+      execute: api.deactivateFocusMode,
+    } as GoalUseCases['deactivateFocusMode'],
+    extendFocusMode: { execute: api.extendFocusMode } as GoalUseCases['extendFocusMode'],
   };
 }
 

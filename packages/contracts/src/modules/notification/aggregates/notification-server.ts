@@ -3,22 +3,25 @@
  * 通知聚合根 - 服务端接口
  */
 
+import type { NotificationType } from '../value-objects/notification-type';
+import type { NotificationCategory } from '../value-objects/notification-category';
+import type { NotificationStatus } from '../value-objects/notification-status';
 import type {
-  NotificationType,
-  NotificationCategory,
-  NotificationStatus,
-  NotificationMetadata,
   NotificationMetadataDTO,
   NotificationMetadataPersistenceDTO,
-  NotificationAction,
+} from '../value-objects/notification-metadata';
+import type {
   NotificationActionDTO,
   NotificationActionPersistenceDTO,
-} from '../value-objects';
-import type { ImportanceLevel } from '../../../shared/index';
+} from '../value-objects/notification-action';
+import type { ImportanceLevel } from '../../../shared/value-objects/importance';
+import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';
 import type {
-  NotificationChannelServerDTO,
-} from '../entities/notification-channel-server';
-import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferDate } from '../../../primitives';
+  IdentityId,
+  NotificationId,
+  PersistenceDate,
+  TransferDate,
+} from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -37,15 +40,15 @@ export interface NotificationServerDTO {
   importance: ImportanceLevel;
 
   isRead: boolean;
-  readAt?: TransferDate | null; 
+  readAt?: TransferDate | null;
   status: NotificationStatus;
 
   actions?: NotificationActionDTO[] | null;
   metadata?: NotificationMetadataDTO | null;
 
   version: number;
-  createdAt: TransferDate; 
-  updatedAt: TransferDate; 
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 
   // ===== 子实体 DTO =====
@@ -79,5 +82,4 @@ export interface NotificationPersistenceDTO {
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
-
 }

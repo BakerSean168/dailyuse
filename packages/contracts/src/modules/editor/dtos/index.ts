@@ -1,5 +1,5 @@
-import type { EditorWorkspaceClientDTO } from '../aggregates';
-import type { EditorSessionClientDTO } from '../entities';
+import type { EditorWorkspaceClientDTO } from '../aggregates/editor-workspace-client';
+import type { EditorSessionClientDTO } from '../entities/editor-session-client';
 
 export interface EditorWorkspaceWithSessionsDTO {
   workspace: EditorWorkspaceClientDTO;

@@ -8,8 +8,8 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { NotificationId } from '../../../primitives';
-import type { BatchOperationResultDTO } from '../dtos';
-import { NotificationCategory } from '../value-objects';
+import type { BatchOperationResultDTO } from '../dtos/batch-result.dto';
+import { NotificationCategory } from '../value-objects/notification-category';
 
 // ============================================================================
 // BATCH Operations

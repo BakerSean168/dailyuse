@@ -14,6 +14,7 @@ import {
 import { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.repository';
 import { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
 import { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
+import { FocusModePowerSyncRepository } from './adapters/powersync/focus-mode-powersync.repository';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 export function createGoalPowerSyncModule(
@@ -26,8 +27,14 @@ export function createGoalPowerSyncModule(
     goalRepository: new GoalPowerSyncRepository(db),
     goalFolderRepository: new GoalFolderPowerSyncRepository(db),
     goalRecordRepository: new GoalRecordPowerSyncRepository(db),
+    focusModeRepository: new FocusModePowerSyncRepository(db),
     runtimeContributions: options?.runtimeContributions,
   });
 }
 
-export { GoalPowerSyncRepository, GoalFolderPowerSyncRepository, GoalRecordPowerSyncRepository };
+export {
+  GoalPowerSyncRepository,
+  GoalFolderPowerSyncRepository,
+  GoalRecordPowerSyncRepository,
+  FocusModePowerSyncRepository,
+};

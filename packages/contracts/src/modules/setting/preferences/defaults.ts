@@ -6,7 +6,7 @@
  * No manual default constants needed.
  */
 
-import { UserPreferencesSchema } from './schemas';
+import { UserPreferencesSchema } from './schemas/index';
 import type { UserSettingPreferences } from './types';
 
 // ─── Category list (derived from schema shape keys) ───────

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import type { ResourceClientDTO } from '../../repository';
-import { KnowledgeNoteSubpathSchema } from '../../setting';
+import type { ResourceClientDTO } from '../../repository/aggregates/resource-client';
+import { KnowledgeNoteSubpathSchema } from '../../setting/preferences/schemas/ai.schema';
 
 export const CreateKnowledgeNoteSchema = z.object({
   topic: z.string().trim().min(3).max(200),

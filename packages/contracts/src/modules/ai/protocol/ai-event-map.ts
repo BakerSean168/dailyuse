@@ -1,14 +1,12 @@
-import type {
-  AIConversationCreatedEvent,
-  AIConversationDeletedEvent,
-  AIConversationStatusChangedEvent,
-  AIConversationUpdatedEvent,
-  AIMessageAddedEvent,
-  AIProviderConfigCreatedEvent,
-  AIProviderConfigModelsUpdatedEvent,
-  AIProviderConfigSetDefaultEvent,
-} from '../domain/events';
-import type { StreamMessageChunk, StreamMessageDonePayload } from '../api';
+import type { AIConversationCreatedEvent } from '../domain/events/ai-conversation-created.event';
+import type { AIConversationDeletedEvent } from '../domain/events/ai-conversation-deleted.event';
+import type { AIConversationStatusChangedEvent } from '../domain/events/ai-conversation-status-changed.event';
+import type { AIConversationUpdatedEvent } from '../domain/events/ai-conversation-updated.event';
+import type { AIMessageAddedEvent } from '../domain/events/ai-message-added.event';
+import type { AIProviderConfigCreatedEvent } from '../domain/events/ai-provider-config-created.event';
+import type { AIProviderConfigModelsUpdatedEvent } from '../domain/events/ai-provider-config-models-updated.event';
+import type { AIProviderConfigSetDefaultEvent } from '../domain/events/ai-provider-config-set-default.event';
+import type { StreamMessageChunk, StreamMessageDonePayload } from '../api/ai-chat.dto';
 
 export type AIEventMap = {
   'ai.conversation.created': AIConversationCreatedEvent;

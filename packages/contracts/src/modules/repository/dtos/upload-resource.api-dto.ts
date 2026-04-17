@@ -1,4 +1,4 @@
-import type { ResourceClientDTO } from '../aggregates';
+import type { ResourceClientDTO } from '../aggregates/resource-client';
 
 export type UploadOverwritePolicy = 'skip' | 'replace';
 

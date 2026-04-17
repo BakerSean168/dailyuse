@@ -5,115 +5,79 @@ import { PrismaFocusModeMapper } from './mappers/prisma-focus-mode-mapper';
 
 /**
  * FocusMode Prisma Repository
- *
- * Prisma implementation of IFocusModeRepository.
- * Uses FocusMode.fromDTO() to include focusedGoalIds (fromPersistenceDTO hardcodes them to []).
  */
 export class FocusModePrismaRepository implements IFocusModeRepository {
   constructor(private prisma: PrismaClient) {}
 
-  /**
-   * Map Prisma row to domain value object.
-   * Converts DateTime fields to timestamps for FocusModeDTO.
-   */
   private mapToValueObject(data: PrismaFocusMode): FocusMode {
     return PrismaFocusModeMapper.toDomain(data);
   }
 
-  /**
-   * Save focus mode (upsert).
-   * Uses toPersistenceDTO() for Date fields + toDTO() for focusedGoalIds.
-   */
   async save(focusMode: FocusMode): Promise<void> {
-    const persistenceDto = focusMode.toPersistenceDTO();
-    const fullDto = focusMode.toDTO();
+    const dto = focusMode.toPersistenceDTO();
 
     await this.prisma.focusMode.upsert({
-      where: { id: persistenceDto.id as string },
+      where: { id: dto.id as string },
       create: {
-        id: persistenceDto.id as string,
-        identityId: persistenceDto.identityId as string,
-        focusedGoalIds: fullDto.focusedGoalIds as string[],
-        startTime: persistenceDto.startTime,
-        endTime: persistenceDto.endTime,
-        hiddenGoalsMode: persistenceDto.hiddenGoalsMode,
-        isActive: persistenceDto.isActive,
-        actualEndTime: persistenceDto.actualEndTime,
-        createdAt: persistenceDto.createdAt,
-        updatedAt: persistenceDto.updatedAt,
+        id: dto.id as string,
+        identityId: dto.identityId as string,
+        focusedGoalIds: dto.focusedGoalIds as string[],
+        startTime: new Date(dto.startTime),
+        endTime: new Date(dto.endTime),
+        hiddenGoalsMode: dto.hiddenGoalsMode,
+        isActive: dto.isActive,
+        actualEndTime: dto.actualEndTime ? new Date(dto.actualEndTime) : null,
+        version: dto.version,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
       },
       update: {
-        focusedGoalIds: fullDto.focusedGoalIds as string[],
-        endTime: persistenceDto.endTime,
-        isActive: persistenceDto.isActive,
-        actualEndTime: persistenceDto.actualEndTime,
-        updatedAt: persistenceDto.updatedAt,
+        focusedGoalIds: dto.focusedGoalIds as string[],
+        endTime: new Date(dto.endTime),
+        hiddenGoalsMode: dto.hiddenGoalsMode,
+        isActive: dto.isActive,
+        actualEndTime: dto.actualEndTime ? new Date(dto.actualEndTime) : null,
+        version: dto.version,
+        updatedAt: new Date(dto.updatedAt),
       },
     });
   }
 
-  /**
-   * Find focus mode by ID
-   */
   async findById(id: string): Promise<FocusMode | null> {
-    const data = await this.prisma.focusMode.findUnique({
-      where: { id },
-    });
+    const data = await this.prisma.focusMode.findUnique({ where: { id } });
     return data ? this.mapToValueObject(data) : null;
   }
 
-  /**
-   * Find active focus mode for an identity
-   */
   async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
     const data = await this.prisma.focusMode.findFirst({
-      where: {
-        identityId,
-        isActive: true,
-      },
+      where: { identityId, isActive: true },
       orderBy: { createdAt: 'desc' },
     });
     return data ? this.mapToValueObject(data) : null;
   }
 
-  /**
-   * Find all focus modes for an identity (including history)
-   */
   async findByIdentityId(identityId: string): Promise<FocusMode[]> {
     const data = await this.prisma.focusMode.findMany({
       where: { identityId },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((item: PrismaFocusMode) => this.mapToValueObject(item));
+    return data.map((item) => this.mapToValueObject(item));
   }
 
-  /**
-   * Deactivate expired focus modes
-   */
   async deactivateExpired(): Promise<number> {
     const now = new Date();
-
     const result = await this.prisma.focusMode.updateMany({
-      where: {
-        isActive: true,
-        endTime: { lt: now },
-      },
+      where: { isActive: true, endTime: { lt: now } },
       data: {
         isActive: false,
         actualEndTime: now,
         updatedAt: now,
       },
     });
-
     return result.count;
   }
 
-  /**
-   * Delete focus mode by ID
-   */
   async delete(id: string): Promise<void> {
-    await this.prisma.focusMode.delete({
-      where: { id },
-    });
+    await this.prisma.focusMode.delete({ where: { id } });
   }
 }

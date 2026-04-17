@@ -3,22 +3,14 @@
  * 通知聚合根 - 客户端接口
  */
 
-import type {
-  NotificationType,
-  NotificationCategory,
-  NotificationStatus,
-  NotificationMetadata,
-  NotificationMetadataDTO,
-  NotificationMetadataPersistenceDTO,
-  NotificationAction,
-  NotificationActionDTO,
-  NotificationActionPersistenceDTO,
-} from '../value-objects';
-import type { ImportanceLevel } from '../../../shared/index';
-import type {
-  NotificationChannelClientDTO,
-} from '../entities/notification-channel-client';
-import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferDate } from '../../../primitives';
+import type { NotificationType } from '../value-objects/notification-type';
+import type { NotificationCategory } from '../value-objects/notification-category';
+import type { NotificationStatus } from '../value-objects/notification-status';
+import type { NotificationMetadataDTO } from '../value-objects/notification-metadata';
+import type { NotificationActionDTO } from '../value-objects/notification-action';
+import type { ImportanceLevel } from '../../../shared/value-objects/importance';
+import type { NotificationChannelClientDTO } from '../entities/notification-channel-client';
+import type { IdentityId, NotificationId, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

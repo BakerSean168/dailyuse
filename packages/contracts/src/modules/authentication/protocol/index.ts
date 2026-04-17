@@ -29,15 +29,12 @@ export type {
 } from './desktop-auth.types';
 
 // Export individual event types for external consumers
-export type {
-  UserLoggedInEvent,
-  UserLoggedOutEvent,
-  UserRegisteredEvent,
-  PasswordChangedEvent,
-  IdentityProviderConnectedEvent,
-  SessionInvalidatedEvent,
-  IdentityActivatedEvent,
-  IdentityDisabledEvent,
-  SessionCreatedEvent,
-  // SessionRevokedEvent,
-} from '../domain/events';
+export type { UserLoggedInEvent } from '../domain/events/user-logged-in.event';
+export type { UserLoggedOutEvent } from '../domain/events/user-logged-out.event';
+export type { UserRegisteredEvent } from '../domain/events/user-registered.event';
+export type { PasswordChangedEvent } from '../domain/events/password-changed.event';
+export type { IdentityProviderConnectedEvent } from '../domain/events/identity-provider-connected.event';
+export type { SessionInvalidatedEvent } from '../domain/events/session-invalidated.event';
+export type { IdentityActivatedEvent } from '../domain/events/identity-activated.event';
+export type { IdentityDisabledEvent } from '../domain/events/identity-disabled.event';
+export type { SessionCreatedEvent } from '../domain/events/session-created.event';

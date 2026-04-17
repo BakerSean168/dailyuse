@@ -4,7 +4,7 @@
  */
 
 import type { NotificationPreferenceId } from '../../../primitives';
-import type { NotificationChannelType } from '../value-objects';
+import type { NotificationChannelType } from '../value-objects/notification-channel-type';
 import type { IdentityId } from '../../../primitives';
 
 // ============ DTO 定义 ============

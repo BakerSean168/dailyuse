@@ -24,8 +24,8 @@ import { ReviewType } from '../value-objects/review-type';
 import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
-import type { GoalClientDTO } from '../aggregates';
-import type { GoalFolderClientDTO } from '../aggregates';
+import type { GoalClientDTO } from '../aggregates/goal-client';
+import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
 import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
 

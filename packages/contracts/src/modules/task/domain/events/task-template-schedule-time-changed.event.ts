@@ -1,5 +1,5 @@
-import type { TaskTemplateServerDTO } from '../../aggregates';
-import type { TaskTimeConfigDTO } from '../../value-objects';
+import type { TaskTemplateServerDTO } from '../../aggregates/task-template-server';
+import type { TaskTimeConfigDTO } from '../../value-objects/task-time-config';
 
 export interface TaskTemplateScheduleTimeChangedEvent {
   identityId: string;

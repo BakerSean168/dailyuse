@@ -1,13 +1,13 @@
 /**
  * Goal - Focus Session Operations
- * 
+ *
  * 专注会话管理：开始、停止专注，查询历史和统计
  */
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId } from '../../../primitives';
-import type { FocusSessionClientDTO } from '../aggregates';
+import type { FocusSessionClientDTO } from '../aggregates/focus-session-client';
 
 // ============================================================================
 // START Focus

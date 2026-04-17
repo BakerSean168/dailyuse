@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { AccountClientDTO } from '../aggregates';
+import type { AccountClientDTO } from '../aggregates/account-client';
 import { LanguageCode } from '../value-objects/language-code';
 
 export type GetAccountReq = void;

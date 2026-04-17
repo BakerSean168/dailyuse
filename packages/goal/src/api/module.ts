@@ -17,6 +17,7 @@ import {
   GoalPrismaRepository,
   GoalFolderPrismaRepository,
   GoalRecordPrismaRepository,
+  FocusModePrismaRepository,
   type GoalModuleInstance,
 } from '../infrastructure-server';
 import { registerGoalRoutes, registerGoalFolderRoutes_ } from './routes/index';
@@ -65,10 +66,12 @@ export const GoalApiModule: GoalApiModuleDef = {
     const goalRepository = new GoalPrismaRepository(prismaClient);
     const goalFolderRepository = new GoalFolderPrismaRepository(prismaClient);
     const goalRecordRepository = new GoalRecordPrismaRepository(prismaClient);
+    const focusModeRepository = new FocusModePrismaRepository(prismaClient);
     const goalModule = createGoalModule({
       goalRepository,
       goalFolderRepository,
       goalRecordRepository,
+      focusModeRepository,
       runtimeContributions: [
         createGoalRuntimeContribution(),
         createGoalScheduleRuntimeContribution({

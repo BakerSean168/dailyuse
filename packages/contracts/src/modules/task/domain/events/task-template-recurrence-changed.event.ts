@@ -1,5 +1,5 @@
-import type { TaskTemplateServerDTO } from '../../aggregates';
-import type { RecurrenceRuleDTO } from '../../value-objects';
+import type { TaskTemplateServerDTO } from '../../aggregates/task-template-server';
+import type { RecurrenceRuleDTO } from '../../value-objects/recurrence-rule';
 
 export interface TaskTemplateRecurrenceChangedEvent {
   identityId: string;

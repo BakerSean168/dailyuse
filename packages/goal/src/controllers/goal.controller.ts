@@ -24,6 +24,8 @@ import {
   CreateGoalRecordSchema,
   UpdateGoalReviewSchema,
   GetGoalRecordsSchema,
+  ActivateFocusModeSchema,
+  ExtendFocusModeSchema,
 } from '@dailyuse/contracts/goal';
 import type {
   CreateGoalReq,
@@ -64,6 +66,10 @@ import type {
   DeleteGoalRecord,
   CompleteGoal,
   ArchiveExpiredGoals,
+  ActivateFocusMode,
+  DeactivateFocusMode,
+  ExtendFocusMode,
+  GetCurrentFocusMode,
 } from '../application-server';
 
 // ============ Use Case Port ============
@@ -90,6 +96,10 @@ export interface GoalUseCases {
   createRecord: CreateGoalRecord;
   listRecords: ListGoalRecords;
   deleteRecord: DeleteGoalRecord;
+  activateFocusMode: ActivateFocusMode;
+  deactivateFocusMode: DeactivateFocusMode;
+  extendFocusMode: ExtendFocusMode;
+  getCurrentFocusMode: GetCurrentFocusMode;
 }
 
 /**
@@ -501,6 +511,40 @@ export class GoalController {
 
   async deleteRecord(recordId: string): Promise<Result<unknown>> {
     return this.useCases.deleteRecord.execute(recordId);
+  }
+
+  // ==================== Focus Mode ====================
+
+  async getCurrentFocusMode(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getCurrentFocusMode.execute(ctx.identityId);
+  }
+
+  async activateFocusMode(input: unknown, ctx: Context): Promise<Result<unknown>> {
+    const parsed = ActivateFocusModeSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.activateFocusMode.execute(ctx.identityId, parsed.data);
+  }
+
+  async deactivateFocusMode(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.deactivateFocusMode.execute(ctx.identityId);
+  }
+
+  async extendFocusMode(input: unknown, ctx: Context): Promise<Result<unknown>> {
+    const parsed = ExtendFocusModeSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.extendFocusMode.execute(ctx.identityId, parsed.data.newEndTime);
   }
 }
 

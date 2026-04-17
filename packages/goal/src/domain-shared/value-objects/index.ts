@@ -8,6 +8,7 @@ export * from './goal-folder-id';
 export * from './key-result-id';
 export * from './goal-record-id';
 export * from './focus-session-id';
+export * from './focus-mode-id';
 export * from './goal-review-id';
 export * from './key-result-weight-snapshot-id';
 

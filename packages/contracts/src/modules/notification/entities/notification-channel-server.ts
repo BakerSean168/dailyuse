@@ -3,10 +3,11 @@
  * 通知渠道实体 - 服务端接口
  */
 
-import type { NotificationId, NotificationChannelId,PersistenceDate } from '../../../primitives';
-import type { NotificationChannelType, ChannelStatus } from '../value-objects';
-import type { ChannelErrorDTO, ChannelResponseDTO } from '../value-objects';
-import type { DomainDate, TransferDate } from '../../../primitives';
+import type { NotificationId, PersistenceDate, TransferDate } from '../../../primitives';
+import type { NotificationChannelType } from '../value-objects/notification-channel-type';
+import type { ChannelStatus } from '../value-objects/channel-status';
+import type { ChannelErrorDTO } from '../value-objects/channel-error';
+import type { ChannelResponseDTO } from '../value-objects/channel-response';
 
 // ============ DTO 定义 ============
 

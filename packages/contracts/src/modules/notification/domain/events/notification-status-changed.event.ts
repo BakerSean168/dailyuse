@@ -1,5 +1,5 @@
-import type { NotificationServerDTO } from '../../aggregates';
-import type { NotificationStatus } from '../../value-objects';
+import type { NotificationServerDTO } from '../../aggregates/notification-server';
+import type { NotificationStatus } from '../../value-objects/notification-status';
 
 /**
  * Notification Status Changed Event

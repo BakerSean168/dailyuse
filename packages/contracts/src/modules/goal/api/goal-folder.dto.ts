@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalFolderId, IdentityId } from '../../../primitives';
-import type { GoalFolderClientDTO } from '../aggregates';
+import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
 
 // ============================================================================
 // CREATE Folder

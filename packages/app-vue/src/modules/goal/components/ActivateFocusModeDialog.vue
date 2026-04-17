@@ -195,7 +195,6 @@ const handleSubmit = async () => {
     isLoading.value = true;
     const request: ActivateFocusModeRequest = {
       focusedGoalIds: formData.value.focusedGoalIds,
-      endTime: new Date(formData.value.endTime).getTime(),
       hiddenGoalsMode: formData.value.hiddenGoalsMode,
     };
 

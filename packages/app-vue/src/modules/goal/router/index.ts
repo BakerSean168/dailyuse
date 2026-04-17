@@ -26,6 +26,15 @@ export const goalRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'focus-mode',
+        name: 'goal-focus-mode',
+        component: () => import('../views/FocusModeView.vue'),
+        meta: {
+          title: 'goal.route.focusMode',
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'compare',
         name: 'goal-comparison',
         component: () => import('../views/MultiGoalComparisonView.vue'),

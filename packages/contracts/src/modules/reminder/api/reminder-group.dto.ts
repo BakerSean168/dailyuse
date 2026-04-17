@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import type { ReminderGroupClientDTO } from '../aggregates';
-import { ControlMode } from '../value-objects';
+import type { ReminderGroupClientDTO } from '../aggregates/reminder-group-client';
+import { ControlMode } from '../value-objects/control-mode';
 
 // ============================================================================
 // REMINDER GROUP Operations

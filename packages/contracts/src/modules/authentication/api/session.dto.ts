@@ -6,9 +6,11 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { AuthSessionId, IdentityId } from '../value-objects';
-import type { AuthResponseDTO } from '../dtos';
-import type { AuthIdentityClientDTO, AuthSessionClientDTO } from '../aggregates';
+import type { AuthSessionId } from '../value-objects/auth-session-id';
+import type { IdentityId } from '../value-objects/identity-id';
+import type { AuthResponseDTO } from '../dtos/auth-response';
+import type { AuthIdentityClientDTO } from '../aggregates/auth-identity-client';
+import type { AuthSessionClientDTO } from '../aggregates/auth-session-client';
 
 // ============================================================================
 // Token Refresh

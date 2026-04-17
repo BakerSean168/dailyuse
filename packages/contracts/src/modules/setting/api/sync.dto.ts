@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UserSettingClientDTO } from '../aggregates';
+import type { UserSettingClientDTO } from '../aggregates/user-setting-client';
 
 export const SyncSettingsSchema = z.object({
   force: z.boolean().optional(),

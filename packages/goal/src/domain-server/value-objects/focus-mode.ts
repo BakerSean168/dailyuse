@@ -13,7 +13,8 @@ import type {
   FocusModePersistenceDTO,
   HiddenGoalsMode,
 } from '@dailyuse/contracts/goal';
-import type { FocusModeId, IdentityId, GoalId } from '@dailyuse/contracts/primitives';
+import { FocusModeId, GoalId } from '@/domain-shared';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 /**
  * FocusMode 值对象实现
@@ -74,21 +75,25 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     id: string,
     identityId: string,
     focusedGoalIds: string[],
+    startTime: number,
     endTime: number,
     hiddenGoalsMode: HiddenGoalsMode = 'Hide',
   ): FocusMode {
-    const now = Date.now();
+    if (endTime <= startTime) {
+      throw new Error('Focus mode end time must be later than start time');
+    }
+
     return new FocusMode({
-      id: id as FocusModeId,
+      id: FocusModeId.of(id),
       identityId: identityId as IdentityId,
       focusedGoalIds: focusedGoalIds as GoalId[],
-      startTime: now,
+      startTime,
       endTime,
       hiddenGoalsMode,
       isActive: true,
       actualEndTime: null,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: startTime,
+      updatedAt: startTime,
     });
   }
 
@@ -104,9 +109,9 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
    */
   public static fromPersistenceDTO(dto: FocusModePersistenceDTO): FocusMode {
     return new FocusMode({
-      id: dto.id,
+      id: FocusModeId.of(dto.id),
       identityId: dto.identityId,
-      focusedGoalIds: [], // 需要从关联表加载
+      focusedGoalIds: (dto.focusedGoalIds ?? []) as GoalId[],
       startTime: new Date(dto.startTime).getTime(),
       endTime: new Date(dto.endTime).getTime(),
       hiddenGoalsMode: dto.hiddenGoalsMode as HiddenGoalsMode,
@@ -136,6 +141,9 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
    * 延长时间
    */
   public extend(newEndTime: number): FocusMode {
+    if (!this.props.isActive) {
+      throw new Error('Cannot extend an inactive focus mode');
+    }
     if (newEndTime <= this.props.endTime) {
       throw new Error('New end time must be later than current end time');
     }
@@ -188,14 +196,16 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     return {
       id: this.props.id,
       identityId: this.props.identityId,
-      name: '', // 需要名称字段吗？
+      focusedGoalIds: [...this.props.focusedGoalIds],
       startTime: new Date(this.props.startTime),
       endTime: new Date(this.props.endTime),
       hiddenGoalsMode: this.props.hiddenGoalsMode,
       isActive: this.props.isActive,
       actualEndTime: this.props.actualEndTime ? new Date(this.props.actualEndTime) : null,
+      version: 1,
       createdAt: new Date(this.props.createdAt),
       updatedAt: new Date(this.props.updatedAt),
+      deletedAt: null,
     };
   }
 }

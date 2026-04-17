@@ -13,15 +13,13 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type {
-  GoalClientDTO,
-  GoalFolderClientDTO,
-  KeyResultClientDTO,
-  GoalRecordClientDTO,
-  GoalReviewClientDTO,
-  QueryGoalsRes,
-} from '../modules/goal';
-import { ReviewType } from '../modules/goal';
+import type { GoalClientDTO } from '../modules/goal/aggregates/goal-client';
+import type { GoalFolderClientDTO } from '../modules/goal/aggregates/goal-folder-client';
+import type { KeyResultClientDTO } from '../modules/goal/entities/key-result-client';
+import type { GoalRecordClientDTO } from '../modules/goal/aggregates/goal-record-client';
+import type { GoalReviewClientDTO } from '../modules/goal/entities/goal-review-client';
+import type { QueryGoalsRes } from '../modules/goal/api/response-schemas';
+import { ReviewType } from '../modules/goal/value-objects/review-type';
 
 // ============================================================================
 // GoalClientDTO

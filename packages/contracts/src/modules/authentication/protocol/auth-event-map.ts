@@ -1,20 +1,18 @@
-import type {
-  UserLoggedInEvent,
-  UserLoggedOutEvent,
-  UserRegisteredEvent,
-  PasswordChangedEvent,
-  IdentityProviderConnectedEvent,
-  SessionInvalidatedEvent,
-  IdentityActivatedEvent,
-  IdentityDisabledEvent,
-  SessionCreatedEvent,
-  IdentityCreatedEvent
-} from '../domain/events';
+import type { UserLoggedInEvent } from '../domain/events/user-logged-in.event';
+import type { UserLoggedOutEvent } from '../domain/events/user-logged-out.event';
+import type { UserRegisteredEvent } from '../domain/events/user-registered.event';
+import type { PasswordChangedEvent } from '../domain/events/password-changed.event';
+import type { IdentityProviderConnectedEvent } from '../domain/events/identity-provider-connected.event';
+import type { SessionInvalidatedEvent } from '../domain/events/session-invalidated.event';
+import type { IdentityActivatedEvent } from '../domain/events/identity-activated.event';
+import type { IdentityDisabledEvent } from '../domain/events/identity-disabled.event';
+import type { SessionCreatedEvent } from '../domain/events/session-created.event';
+import type { IdentityCreatedEvent } from '../domain/events/identity-created.event';
 import type { SessionRevokedEvent } from '../domain/events/session-revoked.event';
 
 /**
  * Authentication Module - Event Map
- * 
+ *
  * Event Naming Convention: auth:<action>
  * Maps event names to their payload types for type-safe event handling
  */

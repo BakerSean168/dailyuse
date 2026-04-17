@@ -1,15 +1,13 @@
-import type {
-  ReminderTemplateCreatedEvent,
-  ReminderTemplateUpdatedEvent,
-  ReminderTemplateEnabledEvent,
-  ReminderTemplatePausedEvent,
-  ReminderTemplateMovedEvent,
-  ReminderTemplateDeletedEvent,
-  ReminderGroupCreatedEvent,
-  ReminderGroupUpdatedEvent,
-  ReminderGroupDeletedEvent,
-  ReminderTriggeredEvent,
-} from '../domain/events';
+import type { ReminderTemplateCreatedEvent } from '../domain/events/reminder-template-created.event';
+import type { ReminderTemplateUpdatedEvent } from '../domain/events/reminder-template-updated.event';
+import type { ReminderTemplateEnabledEvent } from '../domain/events/reminder-template-enabled.event';
+import type { ReminderTemplatePausedEvent } from '../domain/events/reminder-template-paused.event';
+import type { ReminderTemplateMovedEvent } from '../domain/events/reminder-template-moved.event';
+import type { ReminderTemplateDeletedEvent } from '../domain/events/reminder-template-deleted.event';
+import type { ReminderGroupCreatedEvent } from '../domain/events/reminder-group-created.event';
+import type { ReminderGroupUpdatedEvent } from '../domain/events/reminder-group-updated.event';
+import type { ReminderGroupDeletedEvent } from '../domain/events/reminder-group-deleted.event';
+import type { ReminderTriggeredEvent } from '../domain/events/reminder-triggered.event';
 import type {
   ReminderFrequencyAdjustedEvent,
   ReminderFrequencyAdjustmentRejectedEvent,

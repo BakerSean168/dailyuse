@@ -1,5 +1,7 @@
-import type { NotificationCategory, NotificationType } from '../value-objects';
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared';
+import type { NotificationCategory } from '../value-objects/notification-category';
+import type { NotificationType } from '../value-objects/notification-type';
+import type { ImportanceLevel } from '../../../shared/value-objects/importance';
+import type { UrgencyLevel } from '../../../shared/value-objects/urgency';
 
 export type AssetImageKey = string;
 

@@ -10,8 +10,9 @@ import type {
   TestAIProviderRes,
   SetDefaultAIProviderReq,
   SetDefaultAIProviderRes,
-  GenerateGoalsReq,
-  GenerateGoalsRes,
+} from '../api/ai-provider-config.dto';
+import type { GenerateGoalsReq, GenerateGoalsRes } from '../api/ai-goal-generation.dto';
+import type {
   CreateConversationReq,
   CreateConversationRes,
   UpdateConversationReq,
@@ -25,15 +26,11 @@ import type {
   StreamMessageDonePayload,
   ListMessagesQuery,
   MessageListRes,
-  CreateKnowledgeNoteReq,
-  CreateKnowledgeNoteRes,
-  ExpandKnowledgeReq,
-  ExpandKnowledgeRes,
-  QueryAnalyticsReq,
-  QueryAnalyticsRes,
-  QueryKnowledgeReq,
-  QueryKnowledgeRes,
-} from '../api';
+} from '../api/ai-chat.dto';
+import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '../api/ai-knowledge-note.dto';
+import type { ExpandKnowledgeReq, ExpandKnowledgeRes } from '../api/ai-knowledge-expansion.dto';
+import type { QueryAnalyticsReq, QueryAnalyticsRes } from '../api/ai-analytics-query.dto';
+import type { QueryKnowledgeReq, QueryKnowledgeRes } from '../api/ai-knowledge-query.dto';
 
 export type AIRpcMap = {
   'ai:provider:create': [CreateAIProviderConfigReq, CreateAIProviderConfigRes];

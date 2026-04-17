@@ -1,6 +1,6 @@
 /**
  * Notification Preference Operations
- * 
+ *
  * This file contains DTOs for managing notification preferences and settings.
  * Includes channel preferences, do-not-disturb settings, and rate limiting.
  */
@@ -9,10 +9,12 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { NotificationId, NotificationChannelId } from '../../../primitives';
 import type { NotificationPreferenceServerDTO } from '../aggregates/notification-preference-server';
-import type { NotificationStatsDTO, SendNotificationResultDTO, ListNotificationChannelsResultDTO } from '../dtos';
+import type { NotificationStatsDTO } from '../dtos/notification-result.dto';
+import type { SendNotificationResultDTO } from '../dtos/channel-result.dto';
+import type { ListNotificationChannelsResultDTO } from '../dtos/channel-result.dto';
 import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';
 import type { NotificationServerDTO } from '../aggregates/notification-server';
-import { NotificationChannelType } from '../value-objects';
+import { NotificationChannelType } from '../value-objects/notification-channel-type';
 
 // ============================================================================
 // PREFERENCE Operations
@@ -23,31 +25,39 @@ import { NotificationChannelType } from '../value-objects';
  */
 export const UpdateNotificationPreferenceSchema = z.object({
   enabled: z.boolean().optional(),
-  channels: z.object({
-    inApp: z.boolean().optional(),
-    email: z.boolean().optional(),
-    push: z.boolean().optional(),
-    sms: z.boolean().optional(),
-  }).optional(),
-  categories: z.object({
-    task: z.any().optional(),
-    goal: z.any().optional(),
-    schedule: z.any().optional(),
-    reminder: z.any().optional(),
-    account: z.any().optional(),
-    system: z.any().optional(),
-  }).optional(),
-  doNotDisturb: z.object({
-    enabled: z.boolean(),
-    startTime: z.string(),
-    endTime: z.string(),
-    daysOfWeek: z.array(z.number().int().min(0).max(6)),
-  }).optional(),
-  rateLimit: z.object({
-    enabled: z.boolean(),
-    maxPerHour: z.number().int().min(1),
-    maxPerDay: z.number().int().min(1),
-  }).optional(),
+  channels: z
+    .object({
+      inApp: z.boolean().optional(),
+      email: z.boolean().optional(),
+      push: z.boolean().optional(),
+      sms: z.boolean().optional(),
+    })
+    .optional(),
+  categories: z
+    .object({
+      task: z.any().optional(),
+      goal: z.any().optional(),
+      schedule: z.any().optional(),
+      reminder: z.any().optional(),
+      account: z.any().optional(),
+      system: z.any().optional(),
+    })
+    .optional(),
+  doNotDisturb: z
+    .object({
+      enabled: z.boolean(),
+      startTime: z.string(),
+      endTime: z.string(),
+      daysOfWeek: z.array(z.number().int().min(0).max(6)),
+    })
+    .optional(),
+  rateLimit: z
+    .object({
+      enabled: z.boolean(),
+      maxPerHour: z.number().int().min(1),
+      maxPerDay: z.number().int().min(1),
+    })
+    .optional(),
 });
 
 export type UpdateNotificationPreferenceReq = z.infer<typeof UpdateNotificationPreferenceSchema>;

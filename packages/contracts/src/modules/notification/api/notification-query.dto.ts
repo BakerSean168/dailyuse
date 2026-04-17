@@ -7,13 +7,11 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { NotificationListResultDTO } from '../dtos';
-import {
-  NotificationType,
-  NotificationCategory,
-  NotificationStatus,
-  RelatedEntityType,
-} from '../value-objects';
+import type { NotificationListResultDTO } from '../dtos/notification-result.dto';
+import { NotificationType } from '../value-objects/notification-type';
+import { NotificationCategory } from '../value-objects/notification-category';
+import { NotificationStatus } from '../value-objects/notification-status';
+import { RelatedEntityType } from '../value-objects/related-entity-type';
 
 // ============================================================================
 // QUERY Notifications

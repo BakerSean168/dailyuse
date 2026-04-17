@@ -1,13 +1,13 @@
 /**
  * Goal - Review Operations
- * 
+ *
  * 目标复盘管理
  */
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId } from '../../../primitives';
-import type { GoalReviewServerDTO } from '../entities';
+import type { GoalReviewServerDTO } from '../entities/goal-review-server';
 import { ReviewType } from '../value-objects/review-type';
 
 // ============================================================================

@@ -13,7 +13,8 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { RepositoryClientDTO, ResourceClientDTO } from '../modules/repository';
+import type { RepositoryClientDTO } from '../modules/repository/aggregates/repository-client';
+import type { ResourceClientDTO } from '../modules/repository/aggregates/resource-client';
 import type { RepositoryId, IdentityId } from '../primitives/ids';
 
 export function createMockRepository(

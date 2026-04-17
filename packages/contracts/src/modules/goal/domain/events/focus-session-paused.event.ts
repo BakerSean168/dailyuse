@@ -1,4 +1,4 @@
-import type { FocusSessionServerDTO } from '../../aggregates';
+import type { FocusSessionServerDTO } from '../../aggregates/focus-session-server';
 
 export interface FocusSessionPausedEvent {
   identityId: string;

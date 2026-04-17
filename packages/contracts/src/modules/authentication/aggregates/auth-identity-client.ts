@@ -9,7 +9,7 @@
 import type { AuthCredentialClientDTO } from '../entities/auth-credential-client';
 import type { AuthIdentifierDTO } from '../value-objects';
 import type { TransferDate, IdentityId } from '../../../primitives';
-import type { AuthIdentityStatus } from '../value-objects';
+import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 
 // ============ DTO 定义 ============
 

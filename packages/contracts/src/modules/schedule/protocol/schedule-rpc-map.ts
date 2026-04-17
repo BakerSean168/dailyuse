@@ -1,13 +1,14 @@
 import type {
   CreateScheduleRequest,
   UpdateScheduleRequest,
-  ScheduleTaskQueryParamsDTO,
-  ScheduleExecutionQueryParamsDTO,
-  ScheduleOperationSuccessResponseDTO,
-} from '../api';
-import type { CalendarEntryClientDTO, ScheduleTaskClientDTO } from '../aggregates';
-import type { ScheduleExecutionClientDTO } from '../entities';
-import type { ConflictDetectionResult } from '../value-objects';
+} from '../api/requests/schedule-requests';
+import type { ScheduleTaskQueryParamsDTO } from '../api/requests/schedule-task-requests';
+import type { ScheduleExecutionQueryParamsDTO } from '../api/requests/schedule-execution-requests';
+import type { ScheduleOperationSuccessResponseDTO } from '../api/requests/common-responses';
+import type { CalendarEntryClientDTO } from '../aggregates/calendar-entry-client';
+import type { ScheduleTaskClientDTO } from '../aggregates/schedule-task-client';
+import type { ScheduleExecutionClientDTO } from '../entities/schedule-execution-client';
+import type { ConflictDetectionResult } from '../value-objects/conflict-detection-result';
 
 // === Schedule Module RPC Map ===
 export type ScheduleRpcMap = {

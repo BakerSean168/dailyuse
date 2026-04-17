@@ -1,8 +1,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import type { AIProviderConfigClientDTO, AIProviderConfigSummary } from '../aggregates';
-import type { TestAIProviderResultDTO } from '../dtos';
+import type {
+  AIProviderConfigClientDTO,
+  AIProviderConfigSummary,
+} from '../aggregates/ai-provider-config-client';
+import type { TestAIProviderResultDTO } from '../dtos/provider-test-result.dto';
 
 export const OpenAICompatibleProviderType = 'openai_compatible' as const;
 

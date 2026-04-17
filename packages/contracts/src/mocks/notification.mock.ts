@@ -12,7 +12,7 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { NotificationClientDTO } from '../modules/notification';
+import type { NotificationClientDTO } from '../modules/notification/aggregates/notification-client';
 
 export function createMockNotification(
   overrides: Partial<NotificationClientDTO> = {},

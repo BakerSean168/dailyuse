@@ -51,7 +51,15 @@ export type {
   FocusModeClientDTO,
   FocusModePersistenceDTO,
   ActivateFocusModeRequest,
+  ActivateFocusModeReq,
   ExtendFocusModeRequest,
+  ExtendFocusModeReq,
+  DeactivateFocusModeReq,
+} from './focus-mode';
+export {
+  ActivateFocusModeSchema,
+  DeactivateFocusModeSchema,
+  ExtendFocusModeSchema,
 } from './focus-mode';
 
 // ============ 枚举值对象 ============

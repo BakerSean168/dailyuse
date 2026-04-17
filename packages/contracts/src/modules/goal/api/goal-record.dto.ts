@@ -1,13 +1,13 @@
 /**
  * Goal - Record Operations
- * 
+ *
  * 目标记录管理（进度记录）
  */
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
-import type { GoalRecordClientDTO } from '../aggregates';
+import type { GoalRecordClientDTO } from '../aggregates/goal-record-client';
 
 // ============================================================================
 // CREATE Goal Record

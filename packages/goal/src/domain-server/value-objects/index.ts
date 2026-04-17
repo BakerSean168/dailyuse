@@ -1,6 +1,6 @@
 /**
  * Goal Module Value Objects - Domain Server
- * 
+ *
  * 从 @dailyuse/domain-shared 重新导出值对象
  * 并导出领域服务器特有的错误类
  */
@@ -14,6 +14,7 @@ export {
   KeyResultId,
   GoalRecordId,
   FocusSessionId,
+  FocusModeId,
   GoalReviewId,
   KeyResultWeightSnapshotId,
 } from '@/domain-shared';

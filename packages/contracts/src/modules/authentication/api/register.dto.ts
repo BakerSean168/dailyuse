@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import '../../../primitives/zod-extensions';
-import type { AuthResponseDTO } from '../dtos';
+import type { AuthResponseDTO } from '../dtos/auth-response';
 
 // ============================================================================
 // Email Registration

@@ -1,4 +1,4 @@
-import type { GoalServerDTO } from '../../aggregates';
+import type { GoalServerDTO } from '../../aggregates/goal-server';
 
 export interface GoalArchivedEvent {
   identityId: string;

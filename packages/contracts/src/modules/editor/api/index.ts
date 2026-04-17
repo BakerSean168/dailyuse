@@ -20,12 +20,10 @@ export {
 export { SearchEditorResourcesSchema, type SearchEditorResourcesReq } from './editor-search.dto';
 
 export * from './response-schemas';
-import type {
-  WorkspaceLayoutServerDTO,
-  WorkspaceSettingsServerDTO,
-  SessionLayoutServerDTO,
-  TabViewStateServerDTO,
-} from '../value-objects';
+import type { WorkspaceLayoutServerDTO } from '../value-objects/workspace-layout';
+import type { WorkspaceSettingsServerDTO } from '../value-objects/workspace-settings';
+import type { SessionLayoutServerDTO } from '../value-objects/session-layout';
+import type { TabViewStateServerDTO } from '../value-objects/tab-view-state';
 
 // ==================== EditorWorkspace API DTOs ====================
 

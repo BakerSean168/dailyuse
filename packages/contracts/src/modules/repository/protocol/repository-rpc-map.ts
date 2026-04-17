@@ -1,13 +1,20 @@
 import type { RepositoryClientDTO } from '../aggregates/repository-client';
 import type { ResourceClientDTO } from '../aggregates/resource-client';
 import type { ResourceBookmarkClientDTO } from '../entities/resource-bookmark-client';
+import type { UploadResourcesResponseDTO } from '../dtos/upload-resource.api-dto';
 import type {
-  UploadResourcesResponseDTO,
+  UploadResourceFileDTO,
+  UploadResourcesRequestDTO,
+} from '../dtos/upload-resource.api-dto';
+import type {
   CreateResourceBookmarkRequestDTO,
   UpdateResourceBookmarkRequestDTO,
   ReorderResourceBookmarksRequestDTO,
-} from '../dtos';
-import type { CreateResourceZodReq, UpdateResourceZodReq } from '../api';
+} from '../dtos/resource-bookmark.api-dto';
+import type {
+  CreateResourceReq as CreateResourceZodReq,
+  UpdateResourceReq as UpdateResourceZodReq,
+} from '../api/repository.dto';
 
 // === Repository Module RPC Map ===
 export type RepositoryRpcMap = {
@@ -28,8 +35,8 @@ export type RepositoryRpcMap = {
   'resource:upload': [
     {
       repositoryId: string;
-      files: import('../dtos').UploadResourceFileDTO[];
-      metadata?: import('../dtos').UploadResourcesRequestDTO;
+      files: UploadResourceFileDTO[];
+      metadata?: UploadResourcesRequestDTO;
     },
     UploadResourcesResponseDTO,
   ];

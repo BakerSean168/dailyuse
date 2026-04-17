@@ -1,11 +1,22 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, TaskFolderId, GoalId, KeyResultId, TaskTemplateId } from '../../../primitives';
+import type {
+  IdentityId,
+  TaskFolderId,
+  GoalId,
+  KeyResultId,
+  TaskTemplateId,
+} from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../aggregates';
-import { TaskGoalBindingTrigger, TaskType } from '../value-objects';
-import type { DependencyType, RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
-import type { TaskGoalBindingDTO, TaskTimeConfigDTO } from '../value-objects';
+import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
+import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
+import { TaskGoalBindingTrigger } from '../value-objects/task-goal-binding-trigger';
+import { TaskType } from '../value-objects/task-type';
+import type { DependencyType } from '../value-objects/dependency-type';
+import type { RecurrenceRuleDTO } from '../value-objects/recurrence-rule';
+import type { TaskReminderConfigDTO } from '../value-objects/task-reminder-config';
+import type { TaskGoalBindingDTO } from '../value-objects/task-goal-binding';
+import type { TaskTimeConfigDTO } from '../value-objects/task-time-config';
 
 export const TaskTimeConfigSchema = z
   .custom<TaskTimeConfigDTO>()

@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, IdentityId, GoalFolderId } from '../../../primitives';
-import type { GoalClientDTO } from '../aggregates';
+import type { GoalClientDTO } from '../aggregates/goal-client';
 import { GoalStatus } from '../value-objects/goal-status';
 import { GoalSystemView } from '../value-objects/goal-system-view';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';

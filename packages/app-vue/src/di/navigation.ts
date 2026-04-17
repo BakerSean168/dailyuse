@@ -19,6 +19,7 @@ export const defaultMainNavigation: NavigationItem[] = [
   { path: '/dashboard', title: 'nav.dashboard' },
   { path: '/ai/chat', title: 'nav.aiChat' },
   { path: '/goals', title: 'nav.goals' },
+  { path: '/goals/focus-mode', title: 'goal.route.focusMode' },
   { path: '/tasks', title: 'nav.tasks' },
   { path: '/schedule', title: 'nav.schedule' },
   { path: '/reminders', title: 'nav.reminders' },

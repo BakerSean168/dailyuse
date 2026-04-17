@@ -6,7 +6,8 @@
  * 此处仅保留 DTO 定义用于 API Response
  */
 
-import type { AuthCredentialId, CredentialType } from '../value-objects';
+import type { AuthCredentialId } from '../value-objects/auth-credential-id';
+import type { CredentialType } from '../value-objects/credential-type';
 import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============

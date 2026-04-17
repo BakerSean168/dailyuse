@@ -3,17 +3,15 @@
  * 编辑器模块 - API 请求/响应 DTO
  */
 
-import type {
-  ProjectType,
-  TabType,
-  ResourceLanguage,
-  LinkedSourceType,
-  LinkedTargetType,
-  WorkspaceLayoutServerDTO,
-  WorkspaceSettingsServerDTO,
-  SessionLayoutServerDTO,
-  TabViewStateServerDTO,
-} from '../value-objects';
+import type { ProjectType } from '../value-objects/project-type';
+import type { TabType } from '../value-objects/tab-type';
+import type { ResourceLanguage } from '../value-objects/resource-language';
+import type { LinkedSourceType } from '../value-objects/linked-source-type';
+import type { LinkedTargetType } from '../value-objects/linked-target-type';
+import type { WorkspaceLayoutServerDTO } from '../value-objects/workspace-layout';
+import type { WorkspaceSettingsServerDTO } from '../value-objects/workspace-settings';
+import type { SessionLayoutServerDTO } from '../value-objects/session-layout';
+import type { TabViewStateServerDTO } from '../value-objects/tab-view-state';
 
 import type {
   EditorWorkspaceId,

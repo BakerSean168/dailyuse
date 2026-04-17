@@ -1,16 +1,14 @@
 /**
  * NotificationPreference Aggregate Root - Server Interface
  * 通知偏好聚合根 - 服务端接口
- * 
+ *
  * 【同步支持】
  * - deletedAt: 软删除时间戳
  * - version: 乐观锁版本号
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import type {
-  NotificationChannelType,
-} from '../value-objects';
+import type { NotificationChannelType } from '../value-objects/notification-channel-type';
 
 import type { IdentityId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 

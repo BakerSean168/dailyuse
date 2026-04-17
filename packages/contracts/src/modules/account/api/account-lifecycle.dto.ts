@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import type { ExportAccountDataDTO, ImportAccountDataResultDTO } from '../dtos';
+import type {
+  ExportAccountDataDTO,
+  ImportAccountDataResultDTO,
+} from '../dtos/account-data-transfer.dto';
 
 export const CloseAccountSchema = z.object({
   reason: z.string().min(1, '请填写注销原因'),

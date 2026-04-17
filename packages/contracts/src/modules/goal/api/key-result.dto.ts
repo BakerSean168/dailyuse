@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
-import type { KeyResultClientDTO } from '../entities';
+import type { KeyResultClientDTO } from '../entities/key-result-client';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 

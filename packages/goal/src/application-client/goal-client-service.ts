@@ -38,11 +38,8 @@ import type {
   GetGoalReviewsRes,
   GetGoalAggregateRes,
   ProgressBreakdown,
-  FocusSessionClientDTO,
-  StartFocusReq,
-  GetFocusHistoryReq,
-  GetFocusStatusRes,
-  GetFocusHistoryRes,
+  FocusModeClientDTO,
+  ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
 import type {
   IGoalApiClient,
@@ -213,12 +210,10 @@ export class GoalClientService {
     this.getGoalFolder = this.getGoalFolder.bind(this);
     this.updateGoalFolder = this.updateGoalFolder.bind(this);
     this.deleteGoalFolder = this.deleteGoalFolder.bind(this);
-    this.startFocusSession = this.startFocusSession.bind(this);
-    this.pauseFocusSession = this.pauseFocusSession.bind(this);
-    this.resumeFocusSession = this.resumeFocusSession.bind(this);
-    this.stopFocusSession = this.stopFocusSession.bind(this);
-    this.getFocusStatus = this.getFocusStatus.bind(this);
-    this.getFocusHistory = this.getFocusHistory.bind(this);
+    this.getCurrentFocusMode = this.getCurrentFocusMode.bind(this);
+    this.activateFocusMode = this.activateFocusMode.bind(this);
+    this.deactivateFocusMode = this.deactivateFocusMode.bind(this);
+    this.extendFocusMode = this.extendFocusMode.bind(this);
   }
 
   // ===== Goal Management =====
@@ -473,54 +468,28 @@ export class GoalClientService {
     return this.folderApi.deleteGoalFolder(id);
   }
 
-  // ===== Focus Session Use Cases =====
+  // ===== Focus Mode Use Cases =====
 
   private requireFocusApi(): IGoalFocusApiClient {
     if (!this.focusApi) {
-      throw new Error('GoalClientService: focusApi is required for focus session operations');
+      throw new Error('GoalClientService: focusApi is required for focus mode operations');
     }
     return this.focusApi;
   }
 
-  async startFocusSession(request: StartFocusReq): Promise<Result<FocusSessionClientDTO>> {
-    return this.requireFocusApi().startSession(request);
+  async getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+    return this.requireFocusApi().getCurrentFocusMode();
   }
 
-  async pauseFocusSession(): Promise<Result<FocusSessionClientDTO>> {
-    return this.requireFocusApi().pauseSession();
+  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>> {
+    return this.requireFocusApi().activateFocusMode(request);
   }
 
-  async resumeFocusSession(): Promise<Result<FocusSessionClientDTO>> {
-    return this.requireFocusApi().resumeSession();
+  async deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+    return this.requireFocusApi().deactivateFocusMode();
   }
 
-  async stopFocusSession(notes?: string): Promise<Result<FocusSessionClientDTO | null>> {
-    return this.requireFocusApi().stopSession(notes);
-  }
-
-  async getFocusStatus(): Promise<Result<GetFocusStatusRes>> {
-    return this.requireFocusApi().getStatus();
-  }
-
-  async getFocusHistory(
-    request?: GetFocusHistoryReq & { range?: 'today' | 'week' },
-  ): Promise<Result<GetFocusHistoryRes>> {
-    const api = this.requireFocusApi();
-
-    if (!request) {
-      return api.getHistory({} as GetFocusHistoryReq);
-    }
-
-    const { range, ...params } = request;
-
-    if (range === 'today') {
-      return api.getTodayHistory(params.goalId);
-    }
-
-    if (range === 'week') {
-      return api.getWeekHistory(params.goalId);
-    }
-
-    return api.getHistory(params as GetFocusHistoryReq);
+  async extendFocusMode(newEndTime: number): Promise<Result<FocusModeClientDTO>> {
+    return this.requireFocusApi().extendFocusMode({ newEndTime });
   }
 }

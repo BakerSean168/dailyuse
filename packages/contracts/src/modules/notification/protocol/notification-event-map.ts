@@ -1,11 +1,9 @@
-import type {
-  NotificationCreatedEvent,
-  NotificationSentEvent,
-  NotificationReadEvent,
-  NotificationDeletedEvent,
-  NotificationStatusChangedEvent,
-  NotificationChannelFailedEvent,
-} from '../domain/events';
+import type { NotificationCreatedEvent } from '../domain/events/notification-created.event';
+import type { NotificationSentEvent } from '../domain/events/notification-sent.event';
+import type { NotificationReadEvent } from '../domain/events/notification-read.event';
+import type { NotificationDeletedEvent } from '../domain/events/notification-deleted.event';
+import type { NotificationStatusChangedEvent } from '../domain/events/notification-status-changed.event';
+import type { NotificationChannelFailedEvent } from '../domain/events/notification-channel-failed.event';
 import type {
   NotificationDispatchDesktopEvent,
   NotificationDispatchInAppEvent,

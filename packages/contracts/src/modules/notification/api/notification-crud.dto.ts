@@ -8,13 +8,11 @@
 import { z } from 'zod';
 import { brandedId, openApiJsonValue } from '../../../primitives';
 import type { NotificationServerDTO } from '../aggregates/notification-server';
-import {
-  NotificationType,
-  NotificationCategory,
-  NotificationStatus,
-  RelatedEntityType,
-  NotificationChannelType,
-} from '../value-objects';
+import { NotificationType } from '../value-objects/notification-type';
+import { NotificationCategory } from '../value-objects/notification-category';
+import { NotificationStatus } from '../value-objects/notification-status';
+import { RelatedEntityType } from '../value-objects/related-entity-type';
+import { NotificationChannelType } from '../value-objects/notification-channel-type';
 
 // ============================================================================
 // CREATE Notification

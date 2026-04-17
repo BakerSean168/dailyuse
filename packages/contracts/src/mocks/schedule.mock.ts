@@ -13,7 +13,8 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { ScheduleTaskClientDTO, ScheduleExecutionClientDTO } from '../modules/schedule';
+import type { ScheduleTaskClientDTO } from '../modules/schedule/aggregates/schedule-task-client';
+import type { ScheduleExecutionClientDTO } from '../modules/schedule/entities/schedule-execution-client';
 import type { ScheduleTaskId, IdentityId } from '../primitives/ids';
 
 export function createMockScheduleTask(

@@ -1,4 +1,4 @@
-import type { TaskTemplateServerDTO } from '../../aggregates';
+import type { TaskTemplateServerDTO } from '../../aggregates/task-template-server';
 
 export interface TaskDeletedEvent {
   identityId: string;

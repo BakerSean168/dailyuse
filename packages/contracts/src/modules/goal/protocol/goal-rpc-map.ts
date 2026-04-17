@@ -1,40 +1,36 @@
 /**
  * Goal Module - RPC Map Definition
- * 
+ *
  * 【规范说明：RPC 协议】
  * 所有 RPC 请求/响应类型必须从 ../api 导入，确保类型安全
  * RPC map 只定义 [Request, Response] 对，不包含内联类型定义
  */
 
 import type {
-  // Goal Operations
   CreateGoalReq,
   CreateGoalRes,
   GetGoalReq,
   GetGoalRes,
   ListGoalFilters,
-  QueryGoalsRes,
-
-  // Key Result Operations  
+} from '../api/goal-crud.dto';
+import type {
   AddKeyResultReq,
   AddKeyResultRes,
   GetKeyResultsReq,
   GetKeyResultsRes,
-
-  // Goal Folder Operations
+} from '../api/key-result.dto';
+import type {
   CreateGoalFolderReq,
   CreateGoalFolderRes,
   ListGoalFolderFilters,
-  QueryGoalFoldersRes,
-
-  // Focus Session Operations
-  GetFocusStatusReq,
-  GetFocusStatusRes,
-} from '../api';
+} from '../api/goal-folder.dto';
+import type { GetFocusStatusReq, GetFocusStatusRes } from '../api/focus-session.dto';
+import type { QueryGoalsRes } from '../api/response-schemas';
+import type { QueryGoalFoldersRes } from '../api/goal-folder.dto';
 
 /**
  * 定义 Goal 模块处理的 RPC 请求 [请求, 响应]
- * 
+ *
  * 【使用示例】
  * ```typescript
  * type Response = GoalRpcMap['goal:create'][1]; // CreateGoalRes
@@ -58,4 +54,3 @@ export type GoalRpcMap = {
   // Focus Session Operations
   'focus:get-status': [GetFocusStatusReq, GetFocusStatusRes];
 };
-

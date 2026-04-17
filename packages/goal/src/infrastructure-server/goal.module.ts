@@ -19,8 +19,9 @@ import type {
   IGoalRepository,
   IGoalFolderRepository,
   IGoalRecordRepository,
+  IFocusModeRepository,
 } from '../domain-server';
-import { GoalPolicy } from '../domain-server';
+import { GoalPolicy, FocusSessionPolicy } from '../domain-server';
 import {
   CreateGoal,
   GetGoal,
@@ -49,6 +50,10 @@ import {
   ListGoalRecords,
   DeleteGoalRecord,
   PermanentlyDeleteGoal,
+  GetCurrentFocusMode,
+  ActivateFocusMode,
+  DeactivateFocusMode,
+  ExtendFocusMode,
 } from '../application-server';
 import type { Result } from '@dailyuse/contracts/result';
 import type {
@@ -98,6 +103,7 @@ export interface GoalModuleDependencies {
   readonly goalRepository: IGoalRepository;
   readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
+  readonly focusModeRepository: IFocusModeRepository;
   readonly runtimeContributions?: GoalRuntimeContributionsInput;
 }
 
@@ -161,6 +167,12 @@ export interface GoalModuleUseCases {
   readonly createRecord: CreateGoalRecord;
   readonly listRecords: ListGoalRecords;
   readonly deleteRecord: DeleteGoalRecord;
+
+  // Focus Mode / 专注模式
+  readonly getCurrentFocusMode: GetCurrentFocusMode;
+  readonly activateFocusMode: ActivateFocusMode;
+  readonly deactivateFocusMode: DeactivateFocusMode;
+  readonly extendFocusMode: ExtendFocusMode;
 }
 
 // ---------------------------------------------------------------------------
@@ -280,6 +292,22 @@ export interface GoalApplicationPort {
   ): Promise<Result<GoalRecordClientDTO>>;
   listRecords(params: ListGoalRecordsParams): Promise<Result<ListGoalRecordsResult>>;
   deleteRecord(recordId: string): Promise<Result<void>>;
+
+  // Focus Mode / 专注模式
+  activateFocusMode(
+    identityId: string,
+    input: import('@dailyuse/contracts/goal').ActivateFocusModeRequest,
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO>>;
+  deactivateFocusMode(
+    identityId: string,
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO | null>>;
+  extendFocusMode(
+    identityId: string,
+    newEndTime: number,
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO>>;
+  getCurrentFocusMode(
+    identityId: string,
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO | null>>;
 }
 
 /**
@@ -309,9 +337,10 @@ export interface GoalModuleInstance {
 // ---------------------------------------------------------------------------
 
 export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseCases {
-  const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
+  const { goalRepository, goalFolderRepository, goalRecordRepository, focusModeRepository } = deps;
 
   const goalPolicy = new GoalPolicy();
+  const focusSessionPolicy = new FocusSessionPolicy();
 
   return {
     // Goal CRUD / 目标增删改查
@@ -350,6 +379,17 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     createRecord: new CreateGoalRecord(goalRepository, goalRecordRepository),
     listRecords: new ListGoalRecords(goalRecordRepository, goalRepository),
     deleteRecord: new DeleteGoalRecord(goalRecordRepository),
+
+    // Focus Mode / 专注模式
+    getCurrentFocusMode: new GetCurrentFocusMode(focusModeRepository),
+    activateFocusMode: new ActivateFocusMode(
+      focusModeRepository,
+      goalRepository,
+      goalPolicy,
+      focusSessionPolicy,
+    ),
+    deactivateFocusMode: new DeactivateFocusMode(focusModeRepository),
+    extendFocusMode: new ExtendFocusMode(focusModeRepository),
   };
 }
 
@@ -379,7 +419,7 @@ function normalizeRuntimeContributions(
 // ---------------------------------------------------------------------------
 
 export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstance {
-  const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
+  const { goalRepository, goalFolderRepository, goalRecordRepository, focusModeRepository } = deps;
   const runtimeContributions = normalizeRuntimeContributions(deps.runtimeContributions);
   const useCases = createGoalUseCases(deps);
   let started = false;
@@ -427,6 +467,13 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       useCases.createRecord.execute(goalId, keyResultId, params, identityId),
     listRecords: (params) => useCases.listRecords.execute(params),
     deleteRecord: (recordId) => useCases.deleteRecord.execute(recordId),
+
+    // Focus Mode / 专注模式
+    getCurrentFocusMode: (identityId) => useCases.getCurrentFocusMode.execute(identityId),
+    activateFocusMode: (identityId, input) => useCases.activateFocusMode.execute(identityId, input),
+    deactivateFocusMode: (identityId) => useCases.deactivateFocusMode.execute(identityId),
+    extendFocusMode: (identityId, newEndTime) =>
+      useCases.extendFocusMode.execute(identityId, newEndTime),
   };
 
   return {

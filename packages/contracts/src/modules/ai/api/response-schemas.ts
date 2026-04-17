@@ -1,12 +1,10 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import { GoalCategory } from '../dtos';
+import { GoalCategory } from '../dtos/goal-generation-result.dto';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import {
-  KeyResultCalculationMethod,
-  KeyResultValueType,
-} from '../../goal/value-objects';
+import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
+import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
 
 const TokenUsageSchema = z.object({
   promptTokens: z.number(),

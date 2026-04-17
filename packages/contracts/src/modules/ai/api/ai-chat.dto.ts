@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiConversationId, AiProviderConfigId } from '../../../primitives';
-import type { AIConversationClientDTO } from '../aggregates';
-import type { MessageClientDTO } from '../entities';
+import type { AIConversationClientDTO } from '../aggregates/ai-conversation-client';
+import type { MessageClientDTO } from '../entities/message-client';
 
 export const CreateConversationSchema = z.object({
   name: z.string().trim().min(1).max(200),

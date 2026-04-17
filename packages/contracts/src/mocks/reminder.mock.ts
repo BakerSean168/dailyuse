@@ -13,7 +13,8 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '../modules/reminder';
+import type { ReminderTemplateClientDTO } from '../modules/reminder/aggregates/reminder-template-client';
+import type { ReminderGroupClientDTO } from '../modules/reminder/aggregates/reminder-group-client';
 import type { IdentityId, ReminderGroupId, ReminderTemplateId } from '../primitives/ids';
 
 export function createMockReminderTemplate(

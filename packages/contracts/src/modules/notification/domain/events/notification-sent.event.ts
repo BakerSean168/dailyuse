@@ -1,4 +1,4 @@
-import type { NotificationServerDTO } from '../../aggregates';
+import type { NotificationServerDTO } from '../../aggregates/notification-server';
 
 /**
  * Notification Sent Event

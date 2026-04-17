@@ -1,4 +1,4 @@
-import type { ReminderTemplateClientDTO } from '../aggregates';
+import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
 
 export interface ReminderTemplateSummaryDTO {
   id: string;

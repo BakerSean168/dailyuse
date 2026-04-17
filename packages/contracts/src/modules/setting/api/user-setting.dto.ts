@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UserSettingClientDTO } from '../aggregates';
+import type { UserSettingClientDTO } from '../aggregates/user-setting-client';
 import { CATEGORY_SCHEMAS } from '../preferences/schemas';
 
 // ─── Public Transport Schemas (no identityId) ─────────────

@@ -8,13 +8,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { ReminderGroupId } from '../../../primitives';
-import type { ReminderTemplateClientDTO } from '../aggregates';
-import {
-  ReminderType,
-  TriggerType,
-  NotificationChannel,
-  NotificationAction,
-} from '../value-objects';
+import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
+import { ReminderType } from '../value-objects/reminder-type';
+import { TriggerType } from '../value-objects/trigger-type';
+import { NotificationChannel } from '../value-objects/notification-channel';
+import { NotificationAction } from '../value-objects/notification-action';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 // ============================================================================

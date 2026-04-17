@@ -1,5 +1,8 @@
-import type { CreateEditorWorkspaceRequest, UpdateEditorWorkspaceRequest } from '../api';
-import type { EditorWorkspaceClientDTO } from '../aggregates';
+import type {
+  CreateEditorWorkspaceRequest,
+  UpdateEditorWorkspaceRequest,
+} from '../api/api-requests';
+import type { EditorWorkspaceClientDTO } from '../aggregates/editor-workspace-client';
 
 export type EditorRpcMap = {
   'editor:create-workspace': [CreateEditorWorkspaceRequest, EditorWorkspaceClientDTO];

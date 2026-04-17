@@ -12,7 +12,7 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { AuthResponseDTO } from '../modules/authentication';
+import type { AuthResponseDTO } from '../modules/authentication/dtos/auth-response';
 import type { IdentityId } from '../primitives/ids';
 
 // ============================================================================

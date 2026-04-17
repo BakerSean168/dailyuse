@@ -6,7 +6,9 @@
  * 此处仅保留 DTO 定义用于 API Response
  */
 
-import type { AuthSessionId, DeviceInfo, IdentityId } from '../value-objects';
+import type { AuthSessionId } from '../value-objects/auth-session-id';
+import type { DeviceInfo } from '../value-objects/device-info';
+import type { IdentityId } from '../value-objects/identity-id';
 import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============

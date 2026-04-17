@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
 import type { ImportanceLevel } from '../../../shared/value-objects/importance';
-import type { GeneratedGoalDraft, KeyResultPreview } from '../dtos';
+import type { GeneratedGoalDraft, KeyResultPreview } from '../dtos/goal-generation-result.dto';
 
 export const GenerateGoalAutomationSchema = z.object({
   idea: z.string().trim().min(10, '描述至少需要 10 个字符'),

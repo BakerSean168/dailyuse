@@ -66,6 +66,10 @@ const Ch = {
   AGGREGATE: 'goal:aggregate',
   CLONE: 'goal:clone',
   PROGRESS_BREAKDOWN: 'goal:progressBreakdown',
+  FOCUS_MODE_GET: 'goal:focus-mode:get',
+  FOCUS_MODE_ACTIVATE: 'goal:focus-mode:activate',
+  FOCUS_MODE_DEACTIVATE: 'goal:focus-mode:deactivate',
+  FOCUS_MODE_EXTEND: 'goal:focus-mode:extend',
   KEY_RESULT_ADD: 'goal:keyResult:add',
   KEY_RESULT_LIST: 'goal:keyResult:list',
   KEY_RESULT_UPDATE: 'goal:keyResult:update',
@@ -174,6 +178,26 @@ export const GoalElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.AGGREGATE, (_, id) => goalController.getAggregate(id));
     ipcMain.handle(Ch.PROGRESS_BREAKDOWN, (_, id) => goalController.getProgressBreakdown(id));
+    ipcMain.handle(Ch.FOCUS_MODE_GET, async (_event) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.getCurrentFocusMode(requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.FOCUS_MODE_ACTIVATE, async (_event, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.activateFocusMode(dto, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.FOCUS_MODE_DEACTIVATE, async (_event) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.deactivateFocusMode(requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.FOCUS_MODE_EXTEND, async (_event, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.extendFocusMode(dto, requestContext),
+      ),
+    );
     ipcMain.handle(Ch.CLONE, async (_event, goalId, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
         goalController.cloneGoal(goalId, params ?? {}, requestContext),

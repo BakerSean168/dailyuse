@@ -1,4 +1,4 @@
-import type { UserSettingClientDTO } from '../aggregates';
+import type { UserSettingClientDTO } from '../aggregates/user-setting-client';
 
 export interface SettingOverviewDTO {
   readonly userSetting: UserSettingClientDTO;

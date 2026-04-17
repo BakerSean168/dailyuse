@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import type { GenerateGoalResultDTO } from '../dtos';
+import type { GenerateGoalResultDTO } from '../dtos/goal-generation-result.dto';
 
 export const GenerateGoalsSchema = z.object({
   idea: z.string().trim().min(10, '描述至少需要 10 个字符'),

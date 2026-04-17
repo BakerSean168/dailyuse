@@ -1,4 +1,4 @@
-import type { GoalFolderServerDTO } from '../../aggregates';
+import type { GoalFolderServerDTO } from '../../aggregates/goal-folder-server';
 
 export interface GoalFolderUpdatedEvent {
   identityId: string;

@@ -5,6 +5,8 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
  */
 
+import { z } from 'zod';
+import { brandedId } from '../../../primitives';
 import type {
   DomainDate,
   TransferDate,
@@ -91,14 +93,16 @@ export interface FocusModeClientDTO {
 export interface FocusModePersistenceDTO {
   id: FocusModeId;
   identityId: IdentityId;
-  name: string;
+  focusedGoalIds: GoalId[];
   startTime: PersistenceDate;
   endTime: PersistenceDate;
   hiddenGoalsMode: string;
   isActive: boolean;
   actualEndTime: PersistenceDate | null;
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 }
 
 // ============ API Request DTOs ============
@@ -108,7 +112,6 @@ export interface FocusModePersistenceDTO {
  */
 export interface ActivateFocusModeRequest {
   focusedGoalIds: GoalId[]; // 1-3个目标
-  endTime: TransferDate; // 结束时间 (timestamp)
   hiddenGoalsMode?: HiddenGoalsMode; // 隐藏模式，默认 'hide'
 }
 
@@ -118,3 +121,24 @@ export interface ActivateFocusModeRequest {
 export interface ExtendFocusModeRequest {
   newEndTime: TransferDate; // 新的结束时间 (timestamp)
 }
+
+// ============ Request Schemas ============
+
+export const ActivateFocusModeSchema = z
+  .object({
+    focusedGoalIds: z.array(brandedId<GoalId>()).min(1).max(3),
+    hiddenGoalsMode: z.nativeEnum(HiddenGoalsMode).optional(),
+  })
+  .strict();
+
+export const DeactivateFocusModeSchema = z.object({}).strict();
+
+export const ExtendFocusModeSchema = z
+  .object({
+    newEndTime: z.number().int(),
+  })
+  .strict();
+
+export type ActivateFocusModeReq = z.infer<typeof ActivateFocusModeSchema>;
+export type DeactivateFocusModeReq = z.infer<typeof DeactivateFocusModeSchema>;
+export type ExtendFocusModeReq = z.infer<typeof ExtendFocusModeSchema>;

@@ -1,4 +1,4 @@
-import type { ReminderResponseAction } from '../entities';
+import type { ReminderResponseAction } from '../entities/reminder-response-server';
 
 /**
  * Application/integration events emitted by reminder services.

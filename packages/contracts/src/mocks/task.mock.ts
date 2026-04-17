@@ -12,7 +12,8 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../modules/task';
+import type { TaskTemplateClientDTO } from '../modules/task/aggregates/task-template-client';
+import type { TaskInstanceClientDTO } from '../modules/task/aggregates/task-instance-client';
 
 // ============================================================================
 // TaskTemplateClientDTO

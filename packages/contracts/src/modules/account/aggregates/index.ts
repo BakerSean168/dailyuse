@@ -1,8 +1,3 @@
-export type {
-  AccountServerDTO,
-  AccountPersistenceDTO,
-} from './account-server';
+export type { AccountServerDTO, AccountPersistenceDTO } from './account-server';
 
-export type {
-  AccountClientDTO,
-} from './account-client';
+export type { AccountClientDTO } from './account-client';

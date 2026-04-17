@@ -47,6 +47,9 @@ export function useGoal() {
   const goalFolders = computed(() => store.goalFolders);
   const goalReviews = computed(() => store.goalReviews);
   const goalRecords = computed(() => store.goalRecords);
+  const systemView = computed(() => store.systemView);
+  const selectedFolderId = computed(() => store.selectedFolderId);
+  const currentFocusMode = computed(() => store.currentFocusMode);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const pagination = computed(() => store.pagination);
@@ -101,11 +104,7 @@ export function useGoal() {
           result.data.pagination?.total ?? 0,
         );
       } else {
-        handleError(
-          result.error,
-          'goal.error.loadListFailed',
-          'fetchGoals',
-        );
+        handleError(result.error, 'goal.error.loadListFailed', 'fetchGoals');
       }
     } catch (e: any) {
       handleError(e, 'goal.error.loadListException');
@@ -146,11 +145,7 @@ export function useGoal() {
         store.addGoal(dto);
         return dto;
       } else {
-        handleError(
-          result.error,
-          'goal.error.createFailed',
-          'createGoal',
-        );
+        handleError(result.error, 'goal.error.createFailed', 'createGoal');
         return null;
       }
     } finally {
@@ -168,11 +163,7 @@ export function useGoal() {
         store.updateGoal(dto);
         return dto;
       } else {
-        handleError(
-          result.error,
-          'goal.error.updateFailed',
-          'updateGoal',
-        );
+        handleError(result.error, 'goal.error.updateFailed', 'updateGoal');
         return null;
       }
     } finally {
@@ -189,11 +180,7 @@ export function useGoal() {
         store.removeGoal(id);
         return true;
       } else {
-        handleError(
-          result.error,
-          'goal.error.deleteFailed',
-          'deleteGoal',
-        );
+        handleError(result.error, 'goal.error.deleteFailed', 'deleteGoal');
         return false;
       }
     } finally {
@@ -206,11 +193,7 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalFolders((result.data ?? []).map((f: GoalFolder) => f.toDTO()));
     } else {
-      handleError(
-        result.error,
-        'goal.error.loadFoldersFailed',
-        'fetchFolders',
-      );
+      handleError(result.error, 'goal.error.loadFoldersFailed', 'fetchFolders');
     }
   }
 
@@ -221,11 +204,7 @@ export function useGoal() {
       store.addGoalFolder(dto);
       return dto;
     } else {
-      handleError(
-        result.error,
-        'goal.error.createFolderFailed',
-        'createFolder',
-      );
+      handleError(result.error, 'goal.error.createFolderFailed', 'createFolder');
       return null;
     }
   }
@@ -237,11 +216,7 @@ export function useGoal() {
       store.updateGoalFolder(dto);
       return dto;
     } else {
-      handleError(
-        result.error,
-        'goal.error.updateFolderFailed',
-        'updateFolder',
-      );
+      handleError(result.error, 'goal.error.updateFolderFailed', 'updateFolder');
       return null;
     }
   }
@@ -252,11 +227,7 @@ export function useGoal() {
       store.removeGoalFolder(id);
       return true;
     } else {
-      handleError(
-        result.error,
-        'goal.error.deleteFolderFailed',
-        'deleteFolder',
-      );
+      handleError(result.error, 'goal.error.deleteFolderFailed', 'deleteFolder');
       return false;
     }
   }
@@ -266,11 +237,7 @@ export function useGoal() {
     if (result.ok) {
       store.setKeyResults((result.data.keyResults ?? []).map((kr: KeyResult) => kr.toDTO()));
     } else {
-      handleError(
-        result.error,
-        'goal.error.loadKRFailed',
-        'fetchKeyResults',
-      );
+      handleError(result.error, 'goal.error.loadKRFailed', 'fetchKeyResults');
     }
   }
 
@@ -281,11 +248,7 @@ export function useGoal() {
       store.addKeyResult(dto);
       return dto;
     } else {
-      handleError(
-        result.error,
-        'goal.error.addKRFailed',
-        'addKeyResult',
-      );
+      handleError(result.error, 'goal.error.addKRFailed', 'addKeyResult');
       return null;
     }
   }
@@ -297,11 +260,7 @@ export function useGoal() {
       store.updateKeyResult(dto);
       return dto;
     } else {
-      handleError(
-        result.error,
-        'goal.error.updateKRFailed',
-        'updateKeyResult',
-      );
+      handleError(result.error, 'goal.error.updateKRFailed', 'updateKeyResult');
       return null;
     }
   }
@@ -312,11 +271,7 @@ export function useGoal() {
       store.removeKeyResult(krId);
       return true;
     } else {
-      handleError(
-        result.error,
-        'goal.error.deleteKRFailed',
-        'deleteKeyResult',
-      );
+      handleError(result.error, 'goal.error.deleteKRFailed', 'deleteKeyResult');
       return false;
     }
   }
@@ -326,11 +281,7 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalRecords((result.data.records ?? []).map((r: GoalRecord) => r.toDTO()));
     } else {
-      handleError(
-        result.error,
-        'goal.error.loadRecordsFailed',
-        'fetchRecords',
-      );
+      handleError(result.error, 'goal.error.loadRecordsFailed', 'fetchRecords');
     }
   }
 
@@ -342,11 +293,7 @@ export function useGoal() {
       await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId)]);
       return dto;
     } else {
-      handleError(
-        result.error,
-        'goal.error.createRecordFailed',
-        'createRecord',
-      );
+      handleError(result.error, 'goal.error.createRecordFailed', 'createRecord');
       return null;
     }
   }
@@ -379,11 +326,7 @@ export function useGoal() {
         store.setGoalReviews(result.data.reviews ?? result.data.goal.reviews ?? []);
         return result.data;
       } else {
-        handleError(
-          result.error,
-          'goal.error.loadAggregateViewFailed',
-          'getGoalAggregateView',
-        );
+        handleError(result.error, 'goal.error.loadAggregateViewFailed', 'getGoalAggregateView');
         return null;
       }
     } finally {
@@ -396,12 +339,44 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalReviews((result.data.reviews ?? []).map((r: GoalReview) => r.toDTO()));
     } else {
-      handleError(
-        result.error,
-        'goal.error.loadReviewsFailed',
-        'fetchReviews',
-      );
+      handleError(result.error, 'goal.error.loadReviewsFailed', 'fetchReviews');
     }
+  }
+
+  async function getCurrentFocusMode() {
+    const result = await service.getCurrentFocusMode();
+    if (result.ok) {
+      store.setCurrentFocusMode(result.data ?? null);
+    }
+    return result;
+  }
+
+  async function activateFocusMode(request: {
+    focusedGoalIds: string[];
+    hiddenGoalsMode?: string;
+  }) {
+    const sanitizedRequest = sanitizeForIpc(request);
+    const result = await service.activateFocusMode(sanitizedRequest as never);
+    if (result.ok) {
+      store.setCurrentFocusMode(result.data ?? null);
+    }
+    return result;
+  }
+
+  async function deactivateFocusMode() {
+    const result = await service.deactivateFocusMode();
+    if (result.ok) {
+      store.setCurrentFocusMode(result.data ?? null);
+    }
+    return result;
+  }
+
+  async function extendFocusMode(newEndTime: number) {
+    const result = await service.extendFocusMode(newEndTime);
+    if (result.ok) {
+      store.setCurrentFocusMode(result.data ?? null);
+    }
+    return result;
   }
 
   async function createReview(goalId: string, req: CreateGoalReviewReq) {
@@ -411,11 +386,7 @@ export function useGoal() {
       store.addGoalReview(dto);
       return dto;
     } else {
-      handleError(
-        result.error,
-        'goal.error.createReviewFailed',
-        'createReview',
-      );
+      handleError(result.error, 'goal.error.createReviewFailed', 'createReview');
       return null;
     }
   }
@@ -437,6 +408,10 @@ export function useGoal() {
     fetchGoals();
   }
 
+  function setSelectedFolderId(folderId: string | null) {
+    store.setSelectedFolderId(folderId);
+  }
+
   return {
     goals,
     currentGoal,
@@ -444,6 +419,9 @@ export function useGoal() {
     goalFolders,
     goalReviews,
     goalRecords,
+    systemView,
+    selectedFolderId,
+    currentFocusMode,
     isLoading,
     isSaving,
     error,
@@ -468,9 +446,14 @@ export function useGoal() {
     getGoalAggregateView,
     fetchReviews,
     createReview,
+    getCurrentFocusMode,
+    activateFocusMode,
+    deactivateFocusMode,
+    extendFocusMode,
     setSystemView,
     setPage,
     clearFilters,
     search,
+    setSelectedFolderId,
   };
 }

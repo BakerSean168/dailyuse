@@ -1,4 +1,4 @@
-import type { ReminderTemplateServerDTO } from '../../aggregates';
+import type { ReminderTemplateServerDTO } from '../../aggregates/reminder-template-server';
 
 export interface ReminderTemplateDeletedEvent {
   identityId: string;

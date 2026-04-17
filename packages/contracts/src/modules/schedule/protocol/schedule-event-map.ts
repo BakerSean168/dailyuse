@@ -1,13 +1,11 @@
-import type {
-  ScheduleTaskCreatedEvent,
-  ScheduleTaskPausedEvent,
-  ScheduleTaskResumedEvent,
-  ScheduleTaskCompletedEvent,
-  ScheduleTaskCancelledEvent,
-  ScheduleTaskFailedEvent,
-  ScheduleTaskExecutedEvent,
-  ScheduleTaskScheduleUpdatedEvent,
-} from '../aggregates';
+import type { ScheduleTaskCreatedEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskPausedEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskResumedEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskCompletedEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskCancelledEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskFailedEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskExecutedEvent } from '../aggregates/schedule-task-server';
+import type { ScheduleTaskScheduleUpdatedEvent } from '../aggregates/schedule-task-server';
 
 /**
  * Schedule Module - Event Map

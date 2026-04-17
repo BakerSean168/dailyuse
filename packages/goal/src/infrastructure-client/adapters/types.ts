@@ -17,7 +17,7 @@ import type {
   GoalReviewClientDTO,
   GoalRecordClientDTO,
   GoalFolderClientDTO,
-  FocusSessionClientDTO,
+  FocusModeClientDTO,
   ProgressBreakdown,
   CreateGoalReq,
   UpdateGoalReq,
@@ -34,10 +34,7 @@ import type {
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
   QueryGoalFoldersRes,
-  StartFocusReq,
-  GetFocusHistoryReq,
-  GetFocusStatusRes,
-  GetFocusHistoryRes,
+  ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
 
 // ============ Transport Client Interfaces ============
@@ -181,18 +178,8 @@ export interface IGoalFolderApiClient {
 // ============ Goal Focus API Client ============
 
 export interface IGoalFocusApiClient {
-  // Session Management
-  startSession(request: StartFocusReq): Promise<Result<FocusSessionClientDTO>>;
-  pauseSession(): Promise<Result<FocusSessionClientDTO>>;
-  resumeSession(): Promise<Result<FocusSessionClientDTO>>;
-  stopSession(notes?: string): Promise<Result<FocusSessionClientDTO | null>>;
-
-  // Status & History
-  getStatus(): Promise<Result<GetFocusStatusRes>>;
-  getHistory(request: GetFocusHistoryReq): Promise<Result<GetFocusHistoryRes>>;
-
-  // Convenience
-  isActive(): Promise<Result<boolean>>;
-  getTodayHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>>;
-  getWeekHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>>;
+  getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
+  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>>;
+  deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
+  extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeClientDTO>>;
 }

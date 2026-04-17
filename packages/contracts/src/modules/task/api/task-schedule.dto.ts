@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { TaskInstanceId } from '../../../primitives';
 import { TaskTimeConfigSchema } from './task-template.dto';
-import type { TaskInstanceClientDTO } from '../aggregates';
+import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 
 export const RescheduleTaskSchema = z.object({
   instanceId: brandedId<TaskInstanceId>(),

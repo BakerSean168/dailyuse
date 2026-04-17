@@ -23,6 +23,9 @@ export {
   CompleteGoal,
   PermanentlyDeleteGoal,
   SearchGoals,
+  ActivateFocusMode,
+  DeactivateFocusMode,
+  ExtendFocusMode,
   // GoalFolder Services
   ListGoalFolders,
   CreateGoalFolder,
@@ -43,6 +46,8 @@ export {
   CreateGoalRecord,
   ListGoalRecords,
   DeleteGoalRecord,
+  // Focus Mode Services
+  GetCurrentFocusMode,
 } from './use-cases';
 
 // ============================================================

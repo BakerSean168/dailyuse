@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import type { AuthResponseDTO } from '../dtos';
+import type { AuthResponseDTO } from '../dtos/auth-response';
 
 // ============================================================================
 // SMS Verification Code
