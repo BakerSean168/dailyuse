@@ -1,14 +1,25 @@
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
+import { createLogger } from '@dailyuse/utils';
 import type { GoalPowerSyncDatabase } from './shared';
 import { toDbDateTime, parseJsonArray } from './shared';
 import { PowerSyncFocusModeMapper } from './mappers/powersync-focus-mode.mapper';
 
 export class FocusModePowerSyncRepository implements IFocusModeRepository {
+  private readonly logger = createLogger('goal:focus-mode-powersync-repo');
+
   constructor(private readonly db: GoalPowerSyncDatabase) {}
 
   async save(focusMode: FocusMode): Promise<void> {
     const dto = focusMode.toPersistenceDTO();
+    this.logger.info('保存专注模式', {
+      id: dto.id,
+      identityId: dto.identityId,
+      isActive: dto.isActive,
+      focusedGoalIds: dto.focusedGoalIds,
+      startTime: dto.startTime,
+      endTime: dto.endTime,
+    });
 
     await this.db.writeTransaction(async (tx) => {
       const existing = await tx.getOptional<{ id: string }>(
@@ -81,12 +92,21 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
   }
 
   async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
+    this.logger.info('按身份查询启用中的专注模式开始', {
+      identityId,
+    });
     const row = await this.db.getOptional<Record<string, unknown>>(
       `SELECT * FROM focus_modes
        WHERE identity_id = ? AND is_active = 1
        ORDER BY created_at DESC LIMIT 1`,
       [identityId],
     );
+    this.logger.info('按身份查询启用中的专注模式结果', {
+      identityId,
+      found: !!row,
+      id: row?.id ?? null,
+      isActive: row?.is_active ?? null,
+    });
     return row ? PowerSyncFocusModeMapper.toDomain(row) : null;
   }
 

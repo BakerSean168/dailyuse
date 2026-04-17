@@ -67,20 +67,34 @@ export function toIpcResult<T>(result: Result<T>): IpcResult<T> {
     return {
       ok: true,
       data: result.data,
-      meta: result.meta ? {
-        traceId: result.meta.traceId,
-        duration: result.meta.duration,
-        timestamp: result.meta.timestamp,
-      } : undefined,
+      meta: result.meta
+        ? {
+            traceId: result.meta.traceId,
+            duration: result.meta.duration,
+            timestamp: result.meta.timestamp,
+          }
+        : undefined,
     };
   }
+
+  console.info('[contracts:result-ipc] 转换失败结果为 IPC 响应', {
+    code: result.error.code,
+    message: result.error.message,
+    hasDetails: !!result.error.details?.length,
+    hasContext: !!result.error.context,
+    hasCause: result.error.cause !== undefined,
+    causeType:
+      result.error.cause instanceof Error
+        ? `Error:${result.error.cause.name}`
+        : typeof result.error.cause,
+  });
 
   return {
     ok: false,
     error: {
       code: result.error.code,
       message: result.error.message,
-      details: result.error.details?.map(d => ({
+      details: result.error.details?.map((d) => ({
         field: d.field,
         code: d.code,
         message: d.message,
@@ -88,11 +102,13 @@ export function toIpcResult<T>(result: Result<T>): IpcResult<T> {
       })),
       context: result.error.context,
     },
-    meta: result.meta ? {
-      traceId: result.meta.traceId,
-      duration: result.meta.duration,
-      timestamp: result.meta.timestamp,
-    } : undefined,
+    meta: result.meta
+      ? {
+          traceId: result.meta.traceId,
+          duration: result.meta.duration,
+          timestamp: result.meta.timestamp,
+        }
+      : undefined,
   };
 }
 
@@ -112,11 +128,13 @@ export function toIpcResult<T>(result: Result<T>): IpcResult<T> {
  * ```
  */
 export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError> {
-  const meta: ResultMeta | undefined = ipcResult.meta ? {
-    traceId: ipcResult.meta.traceId,
-    duration: ipcResult.meta.duration,
-    timestamp: ipcResult.meta.timestamp,
-  } : undefined;
+  const meta: ResultMeta | undefined = ipcResult.meta
+    ? {
+        traceId: ipcResult.meta.traceId,
+        duration: ipcResult.meta.duration,
+        timestamp: ipcResult.meta.timestamp,
+      }
+    : undefined;
 
   if (ipcResult.ok) {
     return ok(ipcResult.data as T, meta);
@@ -125,7 +143,7 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
   const error: ResultError = {
     code: ipcResult.error?.code ?? ResultCode.UNKNOWN,
     message: ipcResult.error?.message ?? 'Unknown error',
-    details: ipcResult.error?.details?.map(d => ({
+    details: ipcResult.error?.details?.map((d) => ({
       field: d.field,
       code: d.code,
       message: d.message,
@@ -156,15 +174,15 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
  * }
  * ```
  */
-export function createIpcClientWrapper(
-  invoker: { invoke: (channel: string, ...args: unknown[]) => Promise<unknown> },
-) {
+export function createIpcClientWrapper(invoker: {
+  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
+}) {
   return {
     /**
      * 调用 IPC 并返回 Result
      */
     async invoke<T>(channel: string, ...args: unknown[]): Promise<Result<T, ResultError>> {
-      const ipcResult = await invoker.invoke(channel, ...args) as IpcResult<T>;
+      const ipcResult = (await invoker.invoke(channel, ...args)) as IpcResult<T>;
       return fromIpcResult<T>(ipcResult);
     },
 

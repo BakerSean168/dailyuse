@@ -44,6 +44,7 @@ import type {
 import type { Context } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';
+import { createLogger } from '@dailyuse/utils';
 import type {
   CreateGoal,
   GetGoal,
@@ -109,6 +110,8 @@ export interface GoalUseCases {
  * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class GoalController {
+  private readonly logger = createLogger('GoalController');
+
   constructor(private readonly useCases: GoalUseCases) {}
 
   private toGoalClientDTO(data: unknown): GoalClientDTO {
@@ -516,34 +519,65 @@ export class GoalController {
   // ==================== Focus Mode ====================
 
   async getCurrentFocusMode(ctx: Context): Promise<Result<unknown>> {
+    this.logger.info('获取当前专注模式开始', {
+      identityId: ctx.identityId,
+    });
     return this.useCases.getCurrentFocusMode.execute(ctx.identityId);
   }
 
   async activateFocusMode(input: unknown, ctx: Context): Promise<Result<unknown>> {
+    this.logger.info('启用专注模式开始', {
+      identityId: ctx.identityId,
+      input,
+    });
     const parsed = ActivateFocusModeSchema.safeParse(input);
     if (!parsed.success) {
+      this.logger.info('启用专注模式参数校验失败', {
+        identityId: ctx.identityId,
+        issues: parsed.error.issues,
+      });
       return fail({
         code: 'VALIDATION_ERROR',
         message: '参数验证失败',
         details: formatZodErrors(parsed.error.issues),
       });
     }
+    this.logger.info('启用专注模式参数校验通过', {
+      identityId: ctx.identityId,
+      focusedGoalIds: parsed.data.focusedGoalIds,
+      hiddenGoalsMode: parsed.data.hiddenGoalsMode,
+    });
     return this.useCases.activateFocusMode.execute(ctx.identityId, parsed.data);
   }
 
   async deactivateFocusMode(ctx: Context): Promise<Result<unknown>> {
+    this.logger.info('停用专注模式开始', {
+      identityId: ctx.identityId,
+    });
     return this.useCases.deactivateFocusMode.execute(ctx.identityId);
   }
 
   async extendFocusMode(input: unknown, ctx: Context): Promise<Result<unknown>> {
+    this.logger.info('延长专注模式开始', {
+      identityId: ctx.identityId,
+      input,
+    });
     const parsed = ExtendFocusModeSchema.safeParse(input);
     if (!parsed.success) {
+      this.logger.info('延长专注模式参数校验失败', {
+        identityId: ctx.identityId,
+        issues: parsed.error.issues,
+      });
       return fail({
         code: 'VALIDATION_ERROR',
         message: '参数验证失败',
         details: formatZodErrors(parsed.error.issues),
       });
     }
+    this.logger.info('延长专注模式参数校验通过', {
+      identityId: ctx.identityId,
+      newEndTime: parsed.data.newEndTime,
+    });
     return this.useCases.extendFocusMode.execute(ctx.identityId, parsed.data.newEndTime);
   }
 }

@@ -35,7 +35,8 @@
               {{ t('goal.focusMode.page.endTime') }}: {{ formatTime(currentFocusMode.endTime) }}
             </div>
             <div>
-              {{ t('goal.focusMode.page.hiddenMode') }}: {{ currentFocusMode.hiddenGoalsMode }}
+              {{ t('goal.focusMode.page.hiddenMode') }}:
+              {{ formatHiddenMode(currentFocusMode.hiddenGoalsMode) }}
             </div>
           </CardContent>
         </Card>
@@ -93,7 +94,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { createLogger } from '@dailyuse/utils';
 import { useGoal } from '../composables/useGoal';
+import type { FocusModeClientDTO } from '@dailyuse/contracts/goal';
 import {
   Button,
   Card,
@@ -110,8 +113,16 @@ import {
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const goal = useGoal();
+const logger = createLogger('goal:focus-mode-legacy');
+const stringify = (value: unknown): string => {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+};
 
 const openActivate = ref(false);
 const busy = ref(false);
@@ -120,29 +131,63 @@ const selectedGoalIds = ref<string[]>([]);
 const activeGoals = computed(() =>
   goal.goals.value.filter((item) => !item.archivedAt && !item.deletedAt && !!item.targetDate),
 );
-const currentFocusMode = ref<{
-  focusedGoalIds: string[];
-  startTime: number;
-  endTime: number;
-  hiddenGoalsMode: string;
-} | null>(null);
+const currentFocusMode = ref<FocusModeClientDTO | null>(null);
 
 const refresh = async () => {
+  logger.info(
+    `刷新开始 ${stringify({
+      currentFocusMode: currentFocusMode.value,
+    })}`,
+  );
   await Promise.all([goal.fetchGoals(), goal.fetchFolders()]);
   const result = await goal.getCurrentFocusMode();
+  logger.info(
+    `刷新结果 ${stringify({
+      ok: result.ok,
+      data: result.ok ? result.data : result.error,
+    })}`,
+  );
   if (result.ok) {
-    currentFocusMode.value = result.data ? (result.data as any) : null;
+    currentFocusMode.value = result.data ?? null;
   }
 };
 
-const formatTime = (value: number) => new Date(value).toLocaleString();
+const formatTime = (value: number) =>
+  new Date(value).toLocaleString(locale.value, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+const formatHiddenMode = (mode: FocusModeClientDTO['hiddenGoalsMode']) => {
+  const labels: Record<FocusModeClientDTO['hiddenGoalsMode'], string> = {
+    Hide: t('goal.focusMode.activateDialog.modeHide'),
+    Dim: t('goal.focusMode.activateDialog.modeDim'),
+    Collapse: t('goal.focusMode.activateDialog.modeFold'),
+  };
+
+  return labels[mode] ?? mode;
+};
 
 const activate = async () => {
+  logger.info(
+    `启用专注模式开始 ${stringify({
+      selectedGoalIds: selectedGoalIds.value,
+    })}`,
+  );
   busy.value = true;
   try {
     const result = await goal.activateFocusMode({ focusedGoalIds: selectedGoalIds.value });
+    logger.info(
+      `启用专注模式结果 ${stringify({
+        ok: result.ok,
+        data: result.ok ? result.data : result.error,
+      })}`,
+    );
     if (result.ok) {
-      currentFocusMode.value = result.data as any;
+      currentFocusMode.value = result.data ?? null;
     }
     openActivate.value = false;
     selectedGoalIds.value = [];
@@ -151,5 +196,12 @@ const activate = async () => {
   }
 };
 
-onMounted(refresh);
+onMounted(() => {
+  logger.info(
+    `页面挂载 ${stringify({
+      currentFocusMode: currentFocusMode.value,
+    })}`,
+  );
+  void refresh();
+});
 </script>

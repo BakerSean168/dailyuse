@@ -1,12 +1,15 @@
 import type { PrismaClient, FocusMode as PrismaFocusMode } from '@dailyuse/database';
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
+import { createLogger } from '@dailyuse/utils';
 import { PrismaFocusModeMapper } from './mappers/prisma-focus-mode-mapper';
 
 /**
  * FocusMode Prisma Repository
  */
 export class FocusModePrismaRepository implements IFocusModeRepository {
+  private readonly logger = createLogger('goal:focus-mode-prisma-repo');
+
   constructor(private prisma: PrismaClient) {}
 
   private mapToValueObject(data: PrismaFocusMode): FocusMode {
@@ -15,6 +18,14 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
 
   async save(focusMode: FocusMode): Promise<void> {
     const dto = focusMode.toPersistenceDTO();
+    this.logger.info('保存专注模式', {
+      id: dto.id,
+      identityId: dto.identityId,
+      isActive: dto.isActive,
+      focusedGoalIds: dto.focusedGoalIds,
+      startTime: dto.startTime,
+      endTime: dto.endTime,
+    });
 
     await this.prisma.focusMode.upsert({
       where: { id: dto.id as string },
@@ -49,9 +60,16 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
+    this.logger.info('按身份查询启用中的专注模式开始', { identityId });
     const data = await this.prisma.focusMode.findFirst({
       where: { identityId, isActive: true },
       orderBy: { createdAt: 'desc' },
+    });
+    this.logger.info('按身份查询启用中的专注模式结果', {
+      identityId,
+      found: !!data,
+      id: data?.id ?? null,
+      isActive: data?.isActive ?? null,
     });
     return data ? this.mapToValueObject(data) : null;
   }

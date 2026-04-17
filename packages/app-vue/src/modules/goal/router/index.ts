@@ -15,6 +15,7 @@ export const goalRoutes: RouteRecordRaw[] = [
       order: 3,
       requiresAuth: true,
     },
+    component: () => import('../views/GoalModuleLayout.vue'),
     children: [
       {
         path: '',
@@ -26,9 +27,9 @@ export const goalRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'focus-mode',
-        name: 'goal-focus-mode',
-        component: () => import('../views/FocusModeView.vue'),
+        path: 'focus',
+        name: 'goal-focus',
+        component: () => import('../views/GoalFocusView.vue'),
         meta: {
           title: 'goal.route.focusMode',
           requiresAuth: true,

@@ -35,10 +35,27 @@ export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOp
     handler: (requestContext: Context) => Promise<IpcResult<T> | T>,
   ): Promise<IpcResult<T>> {
     try {
+      console.info('[contracts:authenticated-ipc] 开始执行鉴权 IPC 包装', {
+        hasAuthResolver: true,
+      });
       const requestContext = await ctx.auth.requireRequestContext();
+      console.info('[contracts:authenticated-ipc] 已获取请求上下文', {
+        identityId: requestContext.identityId,
+      });
       const result = await handler(requestContext);
+      console.info('[contracts:authenticated-ipc] 处理器执行完成', {
+        isIpcResult: isIpcResult(result),
+        hasOk: typeof result === 'object' && result !== null && 'ok' in result,
+      });
       return isIpcResult<T>(result) ? result : ok(result);
     } catch (error) {
+      console.info('[contracts:authenticated-ipc] 捕获到 IPC 错误', {
+        errorName: error instanceof Error ? error.name : typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        hasCause: typeof error === 'object' && error !== null && 'cause' in error,
+        hasContext: typeof error === 'object' && error !== null && 'context' in error,
+        hasDetails: typeof error === 'object' && error !== null && 'details' in error,
+      });
       if (isElectronAuthResolutionError(error)) {
         return fail({
           code: error.code,
@@ -48,12 +65,22 @@ export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOp
 
       const structuredError = extractStructuredResultError(error);
       if (structuredError) {
+        console.info('[contracts:authenticated-ipc] 已提取结构化错误', {
+          code: structuredError.code,
+          message: structuredError.message,
+          hasCause: structuredError.cause !== undefined,
+          causeType:
+            structuredError.cause instanceof Error
+              ? `Error:${structuredError.cause.name}`
+              : typeof structuredError.cause,
+          hasContext: structuredError.context !== undefined,
+          hasDetails: structuredError.details !== undefined,
+        });
         return fail({
           code: structuredError.code,
           message: structuredError.message,
           details: structuredError.details,
           context: structuredError.context,
-          cause: structuredError.cause,
         });
       }
 

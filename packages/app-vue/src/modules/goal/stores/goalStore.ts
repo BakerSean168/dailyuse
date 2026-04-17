@@ -15,6 +15,7 @@ import type {
   GoalFolderClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
+  FocusModeClientDTO,
 } from '@dailyuse/contracts/goal';
 
 export interface GoalState {
@@ -24,6 +25,8 @@ export interface GoalState {
   goalFolders: GoalFolderClientDTO[];
   goalReviews: GoalReviewClientDTO[];
   goalRecords: GoalRecordClientDTO[];
+  selectedFolderId: string | null;
+  currentFocusMode: FocusModeClientDTO | null;
   isLoading: boolean;
   error: string | null;
   searchQuery: string;
@@ -40,6 +43,8 @@ export const useGoalStore = defineStore('goal', {
     goalFolders: [],
     goalReviews: [],
     goalRecords: [],
+    selectedFolderId: null,
+    currentFocusMode: null,
     isLoading: false,
     error: null,
     searchQuery: '',
@@ -155,6 +160,14 @@ export const useGoalStore = defineStore('goal', {
     },
     addGoalRecord(r: GoalRecordClientDTO) {
       this.goalRecords.push(r);
+    },
+
+    setSelectedFolderId(id: string | null) {
+      this.selectedFolderId = id;
+    },
+
+    setCurrentFocusMode(mode: FocusModeClientDTO | null) {
+      this.currentFocusMode = mode;
     },
 
     setSearchQuery(q: string) {

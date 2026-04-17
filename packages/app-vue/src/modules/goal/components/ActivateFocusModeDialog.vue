@@ -1,57 +1,45 @@
 <template>
   <Dialog v-model:open="isOpen">
-    <DialogTrigger as-child>
-      <slot name="activator" :open="() => (isOpen = true)">
-        <Button>
-          <Target class="w-4 h-4 mr-2" />
-          {{ t('goal.focusMode.activateDialog.title') }}
-        </Button>
-      </slot>
-    </DialogTrigger>
-
     <DialogContent class="max-w-[600px]">
       <DialogHeader>
         <DialogTitle class="flex items-center justify-between">
           {{ t('goal.focusMode.activateDialog.title') }}
         </DialogTitle>
+        <DialogDescription>
+          {{ t('goal.focusMode.activateDialog.dialogDescription') }}
+        </DialogDescription>
       </DialogHeader>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <!-- Goal Selection -->
         <div class="space-y-2">
           <Label for="goals">{{ t('goal.focusMode.activateDialog.selectGoal') }}</Label>
-          <Select v-model="formData.focusedGoalIds as any">
-            <SelectTrigger id="goals">
-              <SelectValue
-                :placeholder="t('goal.focusMode.activateDialog.selectGoalPlaceholder')"
+          <div
+            v-if="availableGoals.length === 0"
+            class="rounded-lg border border-dashed p-4 text-sm text-muted-foreground"
+          >
+            {{ t('goal.focusMode.activateDialog.emptyGoals') }}
+          </div>
+          <div v-else class="grid max-h-60 gap-2 overflow-auto rounded-lg border p-3">
+            <label v-for="goal in availableGoals" :key="goal.id" class="flex items-start gap-2">
+              <input
+                :checked="formData.focusedGoalIds.includes(goal.id)"
+                type="checkbox"
+                :disabled="
+                  !formData.focusedGoalIds.includes(goal.id) && formData.focusedGoalIds.length >= 3
+                "
+                @change="toggleGoal(goal.id)"
               />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="goal in availableGoals" :key="goal.id" :value="goal.id">
-                {{ goal.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+              <span class="min-w-0">
+                <span class="block truncate">{{ goal.name }}</span>
+              </span>
+            </label>
+          </div>
           <p class="text-sm text-muted-foreground">
             {{ t('goal.focusMode.activateDialog.selectGoalHint') }}
           </p>
-        </div>
-
-        <!-- Start Time -->
-        <div class="space-y-2">
-          <Label for="startTime">{{ t('goal.focusMode.activateDialog.startTime') }}</Label>
-          <Input id="startTime" v-model="formData.startTime" type="datetime-local" />
-          <p class="text-sm text-muted-foreground">
-            {{ t('goal.focusMode.activateDialog.startTimeHint') }}
-          </p>
-        </div>
-
-        <!-- End Time -->
-        <div class="space-y-2">
-          <Label for="endTime">{{ t('goal.focusMode.activateDialog.endTime') }}</Label>
-          <Input id="endTime" v-model="formData.endTime" type="datetime-local" />
-          <p class="text-sm text-muted-foreground">
-            {{ t('goal.focusMode.activateDialog.endTimeHint') }}
+          <p class="text-xs text-muted-foreground">
+            {{ t('goal.focusMode.activateDialog.autoEndHint') }}
           </p>
         </div>
 
@@ -100,7 +88,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Target, EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
+import { EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
 import type { FocusModeClientDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
 import { GoalId, HiddenGoalsMode } from '@dailyuse/goal/domain-shared';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -109,10 +97,9 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
-  DialogTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import {
   Select,
@@ -125,7 +112,7 @@ import {
 const props = withDefaults(
   defineProps<{
     modelValue?: boolean;
-    goals?: Array<{ id: string; name: string }>;
+    goals?: Array<{ id: GoalId; name: string }>;
     onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeClientDTO>;
   }>(),
   {
@@ -144,8 +131,6 @@ const { t } = useI18n();
 const isLoading = ref(false);
 const formData = ref({
   focusedGoalIds: [] as GoalId[],
-  startTime: new Date().toISOString().slice(0, 16),
-  endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
   hiddenGoalsMode: HiddenGoalsMode.Hide,
 });
 
@@ -157,14 +142,8 @@ const isOpen = computed({
 const availableGoals = computed(() => props.goals);
 
 const isFormValid = computed(() => {
-  const { focusedGoalIds, startTime, endTime } = formData.value;
-  return (
-    focusedGoalIds.length > 0 &&
-    focusedGoalIds.length <= 3 &&
-    !!startTime &&
-    !!endTime &&
-    new Date(endTime).getTime() > new Date(startTime).getTime()
-  );
+  const { focusedGoalIds } = formData.value;
+  return focusedGoalIds.length > 0 && focusedGoalIds.length <= 3;
 });
 
 const hiddenModeOptions = computed(() => [
@@ -188,6 +167,17 @@ const hiddenModeOptions = computed(() => [
   },
 ]);
 
+const toggleGoal = (goalId: GoalId) => {
+  const ids = formData.value.focusedGoalIds;
+  if (ids.includes(goalId)) {
+    formData.value.focusedGoalIds = ids.filter((id) => id !== goalId);
+    return;
+  }
+
+  if (ids.length >= 3) return;
+  formData.value.focusedGoalIds = [...ids, goalId as GoalId];
+};
+
 const handleSubmit = async () => {
   if (!isFormValid.value) return;
 
@@ -200,14 +190,16 @@ const handleSubmit = async () => {
 
     if (props.onActivate) {
       const focusMode = await props.onActivate(request);
-      emit('activated', focusMode);
-      handleClose();
+      if (focusMode && typeof focusMode === 'object' && 'id' in focusMode) {
+        emit('activated', focusMode);
+        handleClose();
+      }
     } else {
       emit('activated', request as any);
       handleClose();
     }
   } catch (err) {
-    console.error('Failed to activate focus mode', err);
+    console.error('启用专注模式失败', err);
   } finally {
     isLoading.value = false;
   }
@@ -221,8 +213,6 @@ const handleClose = () => {
 const resetForm = () => {
   formData.value = {
     focusedGoalIds: [],
-    startTime: new Date().toISOString().slice(0, 16),
-    endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
     hiddenGoalsMode: HiddenGoalsMode.Hide,
   };
 };

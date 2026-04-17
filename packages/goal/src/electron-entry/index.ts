@@ -179,24 +179,38 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.AGGREGATE, (_, id) => goalController.getAggregate(id));
     ipcMain.handle(Ch.PROGRESS_BREAKDOWN, (_, id) => goalController.getProgressBreakdown(id));
     ipcMain.handle(Ch.FOCUS_MODE_GET, async (_event) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.getCurrentFocusMode(requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+        logger.info('IPC 获取专注模式处理器', {
+          identityId: requestContext.identityId,
+        });
+        return goalController.getCurrentFocusMode(requestContext);
+      }),
     );
     ipcMain.handle(Ch.FOCUS_MODE_ACTIVATE, async (_event, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.activateFocusMode(dto, requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+        logger.info('IPC 启用专注模式处理器', {
+          identityId: requestContext.identityId,
+          dto,
+        });
+        return goalController.activateFocusMode(dto, requestContext);
+      }),
     );
     ipcMain.handle(Ch.FOCUS_MODE_DEACTIVATE, async (_event) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.deactivateFocusMode(requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+        logger.info('IPC 停用专注模式处理器', {
+          identityId: requestContext.identityId,
+        });
+        return goalController.deactivateFocusMode(requestContext);
+      }),
     );
     ipcMain.handle(Ch.FOCUS_MODE_EXTEND, async (_event, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.extendFocusMode(dto, requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+        logger.info('IPC 延长专注模式处理器', {
+          identityId: requestContext.identityId,
+          dto,
+        });
+        return goalController.extendFocusMode(dto, requestContext);
+      }),
     );
     ipcMain.handle(Ch.CLONE, async (_event, goalId, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
