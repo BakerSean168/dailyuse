@@ -84,6 +84,13 @@ describe('desktop IPC contract alignment', () => {
     expect(allowedByPrefix('goal:')).toEqual(channelSet(GoalChannels));
   });
 
+  it('allows goal focus mode channels through preload allowlist', () => {
+    expect(ALLOWED_CHANNELS).toContain('goal:focus-mode:get');
+    expect(ALLOWED_CHANNELS).toContain('goal:focus-mode:activate');
+    expect(ALLOWED_CHANNELS).toContain('goal:focus-mode:deactivate');
+    expect(ALLOWED_CHANNELS).toContain('goal:focus-mode:extend');
+  });
+
   it('keeps shared system channels aligned with preload allowlist', () => {
     expect(allowedByPrefix('system:')).toEqual(channelSet(SystemChannels));
   });

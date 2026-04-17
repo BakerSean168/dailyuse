@@ -236,16 +236,23 @@ export class SessionManager {
       );
       if (!session) {
         this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
-        // Try to find the most recent active session by identity
         const activeSessions = await this.sessionRepository.findByIdentityId(
           tokenData.identityId as unknown as IdentityId,
         );
-        if (activeSessions.length === 0) {
-          this.logger.info('No persisted session found, reconstructing runtime session from token');
+        const validActiveSession = activeSessions.find((candidate) => candidate.isValid());
+
+        if (validActiveSession) {
+          this.currentSession = validActiveSession;
+        } else if (this.isGuestToken(tokenData)) {
+          this.logger.info(
+            'No persisted guest session found, reconstructing runtime session from token',
+          );
           this.currentSession = await this.restoreRuntimeSessionFromToken(tokenData);
         } else {
-          // Use the most recent active session
-          this.currentSession = activeSessions[0];
+          this.logger.info('No valid persisted session found for identity, clearing tokens');
+          await this.tokenManager.clearTokens();
+          this.currentSession = null;
+          return { ok: false, needsReLogin: true };
         }
       } else {
         // 4. Validate the session
@@ -889,8 +896,13 @@ export class SessionManager {
           return guestSession.identityId;
         }
 
-        this.logger.info('Reusing cached guest identity without stored session', {
+        this.currentSession = await this.restoreRuntimeSessionFromToken({
+          ...(tokenData as any),
+          identityId: cachedGuestId,
+        });
+        this.logger.info('Reused cached guest identity with reconstructed session', {
           guestId: cachedGuestId,
+          sessionId: this.currentSession.id,
         });
         return cachedGuestId;
       }
@@ -916,24 +928,47 @@ export class SessionManager {
       sessionId: session.id,
     });
     await this.sessionRepository.save(session);
-    this.currentSession = session;
 
-    // Save guest tokens locally
-    this.logger.info('Persisting guest tokens locally', {
-      guestId,
-      sessionId: session.id,
-    });
-    await this.tokenManager.saveTokens({
-      accessToken: SessionManager.GUEST_ACCESS_TOKEN,
-      refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
-      accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
-      refreshTokenExpiresIn: 365 * 24 * 3600,
-      identityId: guestId as unknown as IdentityId,
-      sessionId: session?.id,
-    });
+    try {
+      // Save guest tokens locally
+      this.logger.info('Persisting guest tokens locally', {
+        guestId,
+        sessionId: session.id,
+      });
+      await this.tokenManager.saveTokens({
+        accessToken: SessionManager.GUEST_ACCESS_TOKEN,
+        refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
+        accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
+        refreshTokenExpiresIn: 365 * 24 * 3600,
+        identityId: guestId as unknown as IdentityId,
+        sessionId: session?.id,
+      });
+    } catch (error) {
+      session.revoke();
+      await this.sessionRepository.save(session).catch((cleanupError) => {
+        this.logger.warn('Failed to roll back guest session after token persistence failure', {
+          cleanupError,
+          guestId,
+          sessionId: session.id,
+        });
+      });
+      throw error;
+    }
+
+    this.currentSession = session;
+    this.startCurrentSessionLifecycle();
 
     this.logger.info('Created new guest identity', { guestId, sessionId: session?.id });
     return guestId;
+  }
+
+  async ensureCurrentSession(): Promise<AuthSession | null> {
+    if (this.currentSession?.isValid()) {
+      return this.currentSession;
+    }
+
+    const restoreResult = await this.restoreSession();
+    return restoreResult.ok ? this.currentSession : null;
   }
 
   /** Clear guest identity (called when user upgrades to a cloud account). */

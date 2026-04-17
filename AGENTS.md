@@ -21,3 +21,5 @@
 - Prefer direct root-cause fixes over patches, fallbacks, shims, or transitional code.
 - When a cleaner structural refactor is feasible, prefer it over a narrow local fix.
 - Keep implementations simple, explicit, and easy to understand.
+
+desktop 端开发模式下的日志路径： "C:\Users\xx\AppData\Roaming\Memoflow-Dev\logs"

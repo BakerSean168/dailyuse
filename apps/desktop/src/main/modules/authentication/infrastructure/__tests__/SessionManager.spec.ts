@@ -161,6 +161,47 @@ describe('SessionManager', () => {
     expect((manager as any).currentSession).toBe(restoredSession);
   });
 
+  it('reconstructs a guest session when the token is valid but the session row is missing', async () => {
+    const guestId = 'IdentityId_guest-1';
+    const sessionRepository = {
+      findByIdentityId: vi.fn().mockResolvedValue([]),
+      save: vi.fn(),
+      findById: vi.fn().mockResolvedValue(null),
+      removeExpired: vi.fn(),
+      removeAllByIdentityId: vi.fn(),
+    };
+    const identityRepository = {};
+    const manager = createSessionManager(
+      sessionRepository as never,
+      identityRepository as never,
+      createLogger() as never,
+    );
+    const clearTokens = vi.fn();
+
+    (manager as any).tokenManager = {
+      getCachedTokenData: vi.fn().mockReturnValue(null),
+      loadTokens: vi.fn().mockResolvedValue({
+        accessToken: 'guest-local-token',
+        refreshToken: 'guest-local-token',
+        accessTokenExpiresAt: Date.now() + 3600_000,
+        refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
+        identityId: guestId,
+        sessionId: 'session-1',
+      }),
+      clearTokens,
+      saveTokens: vi.fn(),
+      stopAutoRefresh: vi.fn(),
+    };
+
+    const result = await manager.restoreSession();
+
+    expect(result.ok).toBe(true);
+    expect(result.identityId).toBe(guestId);
+    expect(sessionRepository.save).toHaveBeenCalledOnce();
+    expect(clearTokens).not.toHaveBeenCalled();
+    expect((manager as any).currentSession?.identityId).toBe(guestId);
+  });
+
   it('uses local refresh for local-only tokens even when API callbacks exist', async () => {
     const sessionRepository = {
       findByIdentityId: vi.fn().mockResolvedValue([]),

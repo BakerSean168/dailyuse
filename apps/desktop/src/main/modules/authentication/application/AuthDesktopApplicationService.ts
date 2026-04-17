@@ -822,6 +822,7 @@ export class AuthDesktopApplicationService {
   async getStatus(): Promise<AuthStatus> {
     this.logger.debug('Get auth status');
 
+    await this.sessionManager?.ensureCurrentSession();
     const tokenStatus = await this.tokenManager.getStatus();
     const session = this.sessionManager?.getCurrentSession();
     const networkManager = getNetworkStateManager();
@@ -864,6 +865,7 @@ export class AuthDesktopApplicationService {
   }
 
   async buildBootstrapSnapshot(): Promise<AuthBootstrapSnapshot> {
+    await this.sessionManager?.ensureCurrentSession();
     const status = await this.getStatus();
     const currentUser = status.authenticated ? await this.getCurrentUser().catch(() => null) : null;
 
