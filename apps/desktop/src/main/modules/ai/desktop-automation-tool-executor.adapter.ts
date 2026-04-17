@@ -6,12 +6,7 @@ import type { IdentityId } from '@dailyuse/contracts';
 import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
-import {
-  createGoalModule,
-  GoalFolderPowerSyncRepository,
-  GoalPowerSyncRepository,
-  GoalRecordPowerSyncRepository,
-} from '@dailyuse/goal';
+import { createGoalPowerSyncModule } from '@dailyuse/goal';
 import {
   createTaskModule,
   PowerSyncTaskDependencyRepository,
@@ -52,11 +47,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly analyticsRead;
 
   constructor(db: IElectronDatabase) {
-    this.goalModule = createGoalModule({
-      goalRepository: new GoalPowerSyncRepository(db),
-      goalFolderRepository: new GoalFolderPowerSyncRepository(db),
-      goalRecordRepository: new GoalRecordPowerSyncRepository(db),
-    });
+    this.goalModule = createGoalPowerSyncModule(db);
     this.taskModule = createTaskModule({
       taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
       taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
