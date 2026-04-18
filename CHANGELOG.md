@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.6.0](https://github.com/BakerSean168/dailyuse/compare/v0.5.2...v0.6.0) (2026-04-18)
+
+
+### Features
+
+* add support for streaming messages with abort functionality ([69a88ff](https://github.com/BakerSean168/dailyuse/commit/69a88ffe7af98e4909d57af986a229b0c75715f3))
+* update vitest performance config for deterministic benchmarks and forked Node runtime ([8b9a9af](https://github.com/BakerSean168/dailyuse/commit/8b9a9af61ae397f0c7c37442bb5b9624eb44ad03))
+
+
+### Bug Fixes
+
+* add missing entry for @dailyuse/app-vue in desktop renderer and test configurations ([5bdb110](https://github.com/BakerSean168/dailyuse/commit/5bdb1107fdd78d2e3a349bb9545dcecfae38b709))
+* ensure current session before fetching auth status and bootstrap snapshot ([66e2141](https://github.com/BakerSean168/dailyuse/commit/66e214149e8cc0524254c6f626dcebd049418ba7))
+* **goal:** replace goal module initialization with Prisma-backed factory ([81c5ec7](https://github.com/BakerSean168/dailyuse/commit/81c5ec7f3121dd4a5433cfa5041b4ffd622b2efe))
+* **goal:** 修复专注模式目标显示与文案 ([4375103](https://github.com/BakerSean168/dailyuse/commit/437510358a5bcb28abc2e42b69b041856b5f0f6a))
+* improve vitest config comments for clarity on project setup and integration target ([8b9a9af](https://github.com/BakerSean168/dailyuse/commit/8b9a9af61ae397f0c7c37442bb5b9624eb44ad03))
+* update powersync image to use dynamic registry and tag variables ([b2b0e3d](https://github.com/BakerSean168/dailyuse/commit/b2b0e3d516d7aa723e5a0af3086c8786f5b9c525))
+* 修复 app-vue 没有子包导出的问题 ([2b94dfe](https://github.com/BakerSean168/dailyuse/commit/2b94dfe2c07c5198268e776a8e79ac99352b0b53))
+* 修复app-vue/web-notification 源码没有导出子路径问题 ([2d5ea79](https://github.com/BakerSean168/dailyuse/commit/2d5ea797e77669f231e2304c5137102f42ae2cfd))
+* 修复desktop端原生弹窗失效问题 ([cc9aa6f](https://github.com/BakerSean168/dailyuse/commit/cc9aa6f3dd741f610830a5c76551e2de92b97e4f))
+
+
+### Performance Improvements
+
+* **app:** split startup entrypoints and lazy-load heavy shared features ([d04bb74](https://github.com/BakerSean168/dailyuse/commit/d04bb74820075d5d9ba8ca999cea7316e0e20be1))
+* ui-vue-shadcn实现深度子包导出 ([f9013eb](https://github.com/BakerSean168/dailyuse/commit/f9013eb9c87ea139cc4fe4869a27917439384937))
+
 ## [0.5.2](https://github.com/BakerSean168/dailyuse/compare/v0.5.1...v0.5.2) (2026-04-12)
 
 
