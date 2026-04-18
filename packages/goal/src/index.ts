@@ -74,6 +74,7 @@ export {
   // Composition root
   createGoalModule,
   createGoalUseCases,
+  createGoalPrismaModule,
   createGoalPowerSyncModule,
   type GoalModuleDependencies,
   type GoalModuleInstance,

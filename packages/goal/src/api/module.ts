@@ -13,11 +13,8 @@
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import {
-  createGoalModule,
+  createGoalPrismaModule,
   GoalPrismaRepository,
-  GoalFolderPrismaRepository,
-  GoalRecordPrismaRepository,
-  FocusModePrismaRepository,
   type GoalModuleInstance,
 } from '../infrastructure-server';
 import { registerGoalRoutes, registerGoalFolderRoutes_ } from './routes/index';
@@ -64,14 +61,7 @@ export const GoalApiModule: GoalApiModuleDef = {
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
     const prismaClient = db as PrismaClient;
     const goalRepository = new GoalPrismaRepository(prismaClient);
-    const goalFolderRepository = new GoalFolderPrismaRepository(prismaClient);
-    const goalRecordRepository = new GoalRecordPrismaRepository(prismaClient);
-    const focusModeRepository = new FocusModePrismaRepository(prismaClient);
-    const goalModule = createGoalModule({
-      goalRepository,
-      goalFolderRepository,
-      goalRecordRepository,
-      focusModeRepository,
+    const goalModule = createGoalPrismaModule(prismaClient, {
       runtimeContributions: [
         createGoalRuntimeContribution(),
         createGoalScheduleRuntimeContribution({

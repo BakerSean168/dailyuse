@@ -34,4 +34,5 @@ export {
   type GoalModuleUseCases,
   type GoalRuntimeContributionsInput,
 } from './goal.module';
+export { createGoalPrismaModule } from './prisma';
 export { createGoalPowerSyncModule } from './powersync';

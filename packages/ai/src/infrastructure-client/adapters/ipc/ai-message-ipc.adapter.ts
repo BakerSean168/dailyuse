@@ -170,7 +170,7 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
 }
 
 function lastArg<T>(args: unknown[]): T | undefined {
-  return args.at(-1) as T | undefined;
+  return args.length > 0 ? (args[args.length - 1] as T | undefined) : undefined;
 }
 
 function createStreamId(): string {

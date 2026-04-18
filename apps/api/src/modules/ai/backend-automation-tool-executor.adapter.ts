@@ -6,12 +6,7 @@ import type { IdentityId } from '@dailyuse/contracts';
 import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import type { PrismaClient } from '@dailyuse/database';
-import {
-  createGoalModule,
-  GoalFolderPrismaRepository,
-  GoalPrismaRepository,
-  GoalRecordPrismaRepository,
-} from '@dailyuse/goal';
+import { createGoalPrismaModule } from '@dailyuse/goal';
 import {
   createTaskModule,
   TaskDependencyPrismaRepository,
@@ -55,11 +50,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
     db: PrismaClient,
     storageBaseDir: string,
   ) {
-    this.goalModule = createGoalModule({
-      goalRepository: new GoalPrismaRepository(db),
-      goalFolderRepository: new GoalFolderPrismaRepository(db),
-      goalRecordRepository: new GoalRecordPrismaRepository(db),
-    });
+    this.goalModule = createGoalPrismaModule(db);
     this.taskModule = createTaskModule({
       taskTemplateRepository: new TaskTemplatePrismaRepository(db),
       taskInstanceRepository: new TaskInstancePrismaRepository(db),
