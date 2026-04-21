@@ -219,6 +219,29 @@ describe('ReminderDomainService', () => {
     });
   });
 
+  describe('updateGroupStats()', () => {
+    it('should recalculate and persist group stats', async () => {
+      const group = ReminderGroup.load(makeGroupState());
+      const template = ReminderTemplate.load(
+        makeTemplateState({
+          groupId: group.id,
+          status: ReminderStatus.Active,
+          selfEnabled: true,
+        }),
+      );
+      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([template]);
+
+      await service.updateGroupStats(group.id);
+
+      expect(groupRepo.save).toHaveBeenCalledTimes(1);
+      const savedGroup = (groupRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0] as ReminderGroup;
+      expect(savedGroup.stats.totalTemplates).toBe(1);
+      expect(savedGroup.stats.activeTemplates).toBe(1);
+      expect(savedGroup.stats.pausedTemplates).toBe(0);
+    });
+  });
+
   // -----------------------------------------------------------------------
   // deleteTemplate()
   // -----------------------------------------------------------------------
