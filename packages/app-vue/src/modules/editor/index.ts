@@ -12,6 +12,7 @@ export { useMarkdownEditor } from './composables/useMarkdownEditor';
 export { useEditorLinkIndex } from './composables/useEditorLinkIndex';
 export { useResourceInsertion } from './composables/useResourceInsertion';
 export { useResourceReferenceIndex } from './composables/useResourceReferenceIndex';
+export { setEditorRuntimeService, getEditorRuntimeService } from './services/editorServiceRuntime';
 export type { EditorController, EditorOpenFileInput, EditorTab } from './types';
 
 // Components

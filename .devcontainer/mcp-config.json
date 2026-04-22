@@ -1,14 +1,12 @@
 {
   "mcpServers": {
-    "nx-mcp-server": {
+    "nx-mcp": {
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
-        "@automatalabs/nx-mcp-server"
-      ],
-      "env": {
-        "NX_WORKSPACE_ROOT": "${workspaceFolder}"
-      }
+        "nx-mcp@latest"
+      ]
     },
     "playwright-mcp": {
       "command": "npx",

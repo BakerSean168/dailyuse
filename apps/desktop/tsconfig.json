@@ -21,6 +21,10 @@
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/editor/application-client": ["../../packages/editor/src/application-client/index.ts"],
+      "@dailyuse/editor/infrastructure-client": [
+        "../../packages/editor/src/infrastructure-client/index.ts"
+      ],
       "@dailyuse/ipc-client": ["../../packages/ipc-client/src/index.ts"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/dashboard": ["../../packages/dashboard/src/index.ts"],

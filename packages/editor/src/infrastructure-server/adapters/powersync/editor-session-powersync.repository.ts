@@ -1,7 +1,7 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
-import { SessionLayout } from '../../../domain-shared/value-objects/session-layout';
+import { parseSessionLayoutFromPersistence } from '../shared/session-layout.persistence';
 
 type SessionRow = {
   id: string;
@@ -15,22 +15,8 @@ type SessionRow = {
   deleted_at: string | null;
 };
 
-function parseLayout(layout: string): SessionLayout {
-  try {
-    return SessionLayout.fromDTO(
-      JSON.parse(layout) as {
-        splitType: 'Horizontal' | 'Vertical' | 'Grid';
-        groupCount: number;
-        activeGroupIndex: number;
-      },
-    );
-  } catch {
-    return SessionLayout.createDefault();
-  }
-}
-
 function toDomain(row: SessionRow): EditorSession {
-  const layout = parseLayout(row.layout);
+  const layout = parseSessionLayoutFromPersistence(row.layout);
 
   return EditorSession.load({
     id: row.id as any,

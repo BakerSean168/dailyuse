@@ -82,6 +82,10 @@
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/editor/application-client": ["../../packages/editor/src/application-client/index.ts"],
+      "@dailyuse/editor/infrastructure-client": [
+        "../../packages/editor/src/infrastructure-client/index.ts"
+      ],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [

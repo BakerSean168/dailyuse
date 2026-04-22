@@ -18,6 +18,26 @@ export {
 } from './editor-workspace.dto';
 
 export { SearchEditorResourcesSchema, type SearchEditorResourcesReq } from './editor-search.dto';
+export {
+  CreateEditorSessionSchema,
+  type CreateEditorSessionReq,
+  UpdateEditorSessionSchema,
+  type UpdateEditorSessionReq,
+  CreateEditorGroupSchema,
+  type CreateEditorGroupReq,
+  UpdateEditorGroupSchema,
+  type UpdateEditorGroupReq,
+  CreateEditorTabSchema,
+  type CreateEditorTabReq,
+  UpdateEditorTabSchema,
+  type UpdateEditorTabReq,
+  SaveEditorContentSchema,
+  type SaveEditorContentReq,
+  ActivateEditorSessionParamsSchema,
+  DeleteEditorGroupParamsSchema,
+  ActivateEditorTabParamsSchema,
+  DeleteEditorTabParamsSchema,
+} from './editor-runtime.dto';
 
 export * from './response-schemas';
 import type { WorkspaceLayoutServerDTO } from '../value-objects/workspace-layout';

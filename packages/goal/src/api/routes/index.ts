@@ -46,16 +46,17 @@ export function registerGoalRoutes(
   const controller = new GoalController(handlers);
 
   // Each sub-route file returns its own Router
-  const crudRouter = registerGoalCrudRoutes(controller, middleware, openApiRegistry);
+  // Register static sub-routes before CRUD routes so they are not shadowed by '/:id'.
   const focusModeRouter = registerFocusModeRoutes(controller, middleware, openApiRegistry);
+  const crudRouter = registerGoalCrudRoutes(controller, middleware, openApiRegistry);
   const keyResultRouter = registerKeyResultRoutes(controller, middleware, openApiRegistry);
   const reviewRouter = registerReviewRoutes(controller, middleware, openApiRegistry);
   const recordRouter = registerRecordRoutes(controller, middleware, openApiRegistry);
 
   // Merge all into a single parent router
   const router = Router();
-  router.use(crudRouter);
   router.use(focusModeRouter);
+  router.use(crudRouter);
   router.use(keyResultRouter);
   router.use(reviewRouter);
   router.use(recordRouter);

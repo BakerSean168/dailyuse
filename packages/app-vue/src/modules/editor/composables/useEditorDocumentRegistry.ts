@@ -6,7 +6,7 @@ import {
   autoSaveEditorContent,
   getEditorContent,
   saveEditorContent,
-} from '../services/editorDesktop.service';
+} from '../services/editorClientGateway';
 
 export interface EditorDocumentSession {
   resourceId: string;
@@ -105,9 +105,9 @@ export function useEditorDocumentRegistry() {
           lastSavedContent.value = content.value;
         }
 
-        const [hydrated, bridgedContent] = await Promise.all([
-          repository.getResource(resourceId),
+        const [bridgedContent, hydrated] = await Promise.all([
           getEditorContent(resourceId),
+          repository.getResource(resourceId),
         ]);
         if (currentRunId !== loadRunId) {
           return;

@@ -34,6 +34,7 @@ export type ITaskService = PublicInterface<any>;
 export type IScheduleService = PublicInterface<any>;
 export type IReminderService = PublicInterface<any>;
 export type IRepositoryService = PublicInterface<any>;
+export type IEditorService = PublicInterface<any>;
 export type INotificationService = PublicInterface<any>;
 export type ISettingService = PublicInterface<any>;
 export interface IAIService {

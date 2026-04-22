@@ -22,7 +22,7 @@ export function registerFocusModeRoutes(
   const router = Router();
   const { auth } = middleware;
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
-    basePath: '/api/v1/goals/focus-mode',
+    basePath: '/api/v1/goals',
     defaultTags: ['Goal', 'FocusMode'],
     defaultSecurity: [{ bearerAuth: [] }],
   });

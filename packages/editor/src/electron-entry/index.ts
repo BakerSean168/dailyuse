@@ -55,6 +55,7 @@ const Ch = {
   WORKSPACE_GET: 'editor:get-workspace',
   WORKSPACE_CREATE: 'editor:create-workspace',
   WORKSPACE_UPDATE: 'editor:update-workspace',
+  WORKSPACE_DELETE: 'editor:delete-workspace',
   SESSION_LIST: 'editor:list-sessions',
   SESSION_GET: 'editor:get-session',
   SESSION_CREATE: 'editor:create-session',
@@ -168,6 +169,9 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
           withAuthenticatedValue(ctx, async () =>
             api.updateWorkspace(payload.workspaceId, (payload.data ?? {}) as any),
           ),
+      );
+      ipcMain.handle(Ch.WORKSPACE_DELETE, async (_event, workspaceId: string) =>
+        withAuthenticatedValue(ctx, async () => api.deleteWorkspace(workspaceId)),
       );
 
       ipcMain.handle(Ch.SESSION_LIST, async (_event, workspaceId: string) => {
@@ -370,7 +374,7 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       );
       ipcMain.handle(Ch.AUTO_SAVE, async (_event, dto: { resourceId: string; content: string }) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          api.saveContent(dto.resourceId, dto.content, requestContext),
+          api.autoSaveContent(dto.resourceId, dto.content, requestContext),
         ),
       );
 

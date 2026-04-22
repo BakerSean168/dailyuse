@@ -45,6 +45,8 @@ const desktopTestWorkspaceEntries = [
     '@dailyuse/reminder/infrastructure-client',
     'packages/reminder/src/infrastructure-client/index.ts',
   ],
+  ['@dailyuse/editor/application-client', 'packages/editor/src/application-client/index.ts'],
+  ['@dailyuse/editor/infrastructure-client', 'packages/editor/src/infrastructure-client/index.ts'],
   ['@dailyuse/reminder/electron-entry', 'packages/reminder/src/electron-entry/index.ts'],
   [
     '@dailyuse/repository/application-client',

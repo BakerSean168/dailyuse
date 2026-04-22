@@ -4,29 +4,20 @@ import type {
 } from '@dailyuse/database';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
-
-function parseLayout(layout: unknown) {
-  if (layout && typeof layout === 'object') {
-    return layout as { splitType: string; groupCount: number; activeGroupIndex: number };
-  }
-
-  return {
-    splitType: 'Horizontal',
-    groupCount: 1,
-    activeGroupIndex: 0,
-  };
-}
+import { parseSessionLayoutFromPersistence } from '../shared/session-layout.persistence';
 
 function toDomain(row: PrismaEditorWorkspaceSession): EditorSession {
+  const layout = parseSessionLayoutFromPersistence(row.layout);
+
   return EditorSession.load({
     id: row.id as any,
     workspaceId: row.workspaceId as any,
     identityId: row.identityId as any,
     name: row.name,
     description: null,
-    layout: parseLayout(row.layout) as any,
+    layout,
     isActive: row.isActive,
-    activeGroupIndex: 0,
+    activeGroupIndex: layout.activeGroupIndex,
     groups: [],
     lastAccessedAt: null,
     createdAt: row.createdAt,

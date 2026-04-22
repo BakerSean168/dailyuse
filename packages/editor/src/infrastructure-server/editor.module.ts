@@ -96,6 +96,7 @@ export interface EditorApplicationPort {
   ): Promise<Result<unknown>>;
   getContent(resourceId: string, ctx: Context): Promise<Result<unknown>>;
   saveContent(resourceId: string, content: string, ctx: Context): Promise<Result<unknown>>;
+  autoSaveContent(resourceId: string, content: string, ctx: Context): Promise<Result<unknown>>;
   searchResources(request: SearchRequest, ctx: Context): Promise<Result<unknown>>;
 }
 
@@ -283,6 +284,11 @@ export function createEditorModule(dependencies: EditorModuleDependencies): Edit
     getContent: async (resourceId) => ok(await repositoryContentPort.getContent(resourceId)),
 
     saveContent: async (resourceId, content) => {
+      await sessionService.saveContent(resourceId, content);
+      return ok(null);
+    },
+
+    autoSaveContent: async (resourceId, content) => {
       await sessionService.saveContent(resourceId, content);
       return ok(null);
     },

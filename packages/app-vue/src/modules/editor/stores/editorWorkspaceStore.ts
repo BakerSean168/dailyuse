@@ -9,7 +9,7 @@ import {
   updateEditorTab,
   firstGroup,
   ensureEditorWorkspace,
-} from '../services/editorDesktop.service';
+} from '../services/editorClientGateway';
 
 export interface EditorWorkspaceState {
   workspaceId: string | null;

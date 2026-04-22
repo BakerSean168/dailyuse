@@ -10,6 +10,7 @@ import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
+  EDITOR_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
   REPOSITORY_SERVICE_KEY,
@@ -26,6 +27,7 @@ import {
   defaultBottomNavigation,
   useAuthenticationStore,
 } from '@dailyuse/app-vue/web-core';
+import { setEditorRuntimeService } from '@dailyuse/app-vue';
 import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
 
@@ -96,6 +98,16 @@ const repositoryService = createLazyService(async () => {
   return new RepositoryClientService(repositoryAdapters.repository);
 });
 
+const editorService = createLazyService(async () => {
+  const [{ EditorClientService }, { createEditorHttpAdapters }] = await Promise.all([
+    import('@dailyuse/editor/application-client'),
+    import('@dailyuse/editor/infrastructure-client'),
+  ]);
+
+  const editorAdapters = createEditorHttpAdapters(resultHttpClient);
+  return new EditorClientService(editorAdapters.editor);
+});
+
 const scheduleService = createLazyService(async () => {
   const [{ ScheduleClientService }, { createScheduleHttpAdapters }] = await Promise.all([
     import('@dailyuse/schedule/application-client'),
@@ -163,12 +175,14 @@ export function installAppServices(app: App): void {
   app.provide(NOTIFICATION_SERVICE_KEY, notificationService);
   app.provide(REMINDER_SERVICE_KEY, reminderService);
   app.provide(REPOSITORY_SERVICE_KEY, repositoryService);
+  app.provide(EDITOR_SERVICE_KEY, editorService);
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
   app.provide(AI_SERVICE_KEY, aiService);
   app.provide(TASK_SERVICE_KEY, taskService);
 
   app.provide(DASHBOARD_SERVICE_KEY, dashboardService);
+  setEditorRuntimeService(editorService);
 
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);

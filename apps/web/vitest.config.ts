@@ -22,6 +22,9 @@ const sharedConfig = createSharedConfig({
       '../../packages/authentication/src/application-client/index.ts',
     '@dailyuse/authentication/infrastructure-client':
       '../../packages/authentication/src/infrastructure-client/index.ts',
+    '@dailyuse/editor/application-client': '../../packages/editor/src/application-client/index.ts',
+    '@dailyuse/editor/infrastructure-client':
+      '../../packages/editor/src/infrastructure-client/index.ts',
     '@dailyuse/ai/application-client': '../../packages/ai/src/application-client/index.ts',
     '@dailyuse/ai/infrastructure-client': '../../packages/ai/src/infrastructure-client/index.ts',
     '@dailyuse/goal/infrastructure-client':

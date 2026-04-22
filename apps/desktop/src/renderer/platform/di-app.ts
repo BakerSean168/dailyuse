@@ -12,6 +12,7 @@ import { TaskClientService } from '@dailyuse/task/application-client';
 import { ScheduleClientService } from '@dailyuse/schedule/application-client';
 import { ReminderClientService } from '@dailyuse/reminder/application-client';
 import { RepositoryClientService } from '@dailyuse/repository/application-client';
+import { EditorClientService } from '@dailyuse/editor/application-client';
 import { NotificationClientService } from '@dailyuse/notification/application-client';
 import { SettingClientService } from '@dailyuse/setting/application-client';
 import { AIClientService } from '@dailyuse/ai/application-client';
@@ -23,6 +24,7 @@ import {
   SCHEDULE_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
   REPOSITORY_SERVICE_KEY,
+  EDITOR_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   AI_SERVICE_KEY,
@@ -35,6 +37,7 @@ import {
   defaultMainNavigation,
   defaultBottomNavigation,
   useAuthenticationStore,
+  setEditorRuntimeService,
 } from '@dailyuse/app-vue';
 import { createAccountIpcAdapters } from '@dailyuse/account/infrastructure-client';
 import { createAuthIpcAdapters } from '@dailyuse/authentication/infrastructure-client';
@@ -43,6 +46,7 @@ import { createTaskIpcAdapters } from '@dailyuse/task/infrastructure-client';
 import { createScheduleIpcAdapters } from '@dailyuse/schedule/infrastructure-client';
 import { createReminderIpcAdapters } from '@dailyuse/reminder/infrastructure-client';
 import { createRepositoryIpcAdapters } from '@dailyuse/repository/infrastructure-client';
+import { createEditorIpcAdapters } from '@dailyuse/editor/infrastructure-client';
 import { createNotificationIpcAdapters } from '@dailyuse/notification/infrastructure-client';
 import { createSettingIpcAdapters } from '@dailyuse/setting/infrastructure-client';
 import { createAIIpcAdapters } from '@dailyuse/ai/infrastructure-client';
@@ -80,6 +84,11 @@ export function installDesktopAppServices(app: App): void {
 
   const repositoryAdapters = createRepositoryIpcAdapters(resultIpcClient);
   app.provide(REPOSITORY_SERVICE_KEY, new RepositoryClientService(repositoryAdapters.repository));
+
+  const editorAdapters = createEditorIpcAdapters(resultIpcClient);
+  const editorService = new EditorClientService(editorAdapters.editor);
+  app.provide(EDITOR_SERVICE_KEY, editorService);
+  setEditorRuntimeService(editorService);
 
   const notificationAdapters = createNotificationIpcAdapters(resultIpcClient);
   app.provide(

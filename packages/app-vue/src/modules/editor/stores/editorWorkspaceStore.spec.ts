@@ -22,7 +22,7 @@ const {
   firstGroup: vi.fn(),
 }));
 
-vi.mock('../services/editorDesktop.service', () => ({
+vi.mock('../services/editorClientGateway', () => ({
   ensureEditorWorkspace,
   listEditorSessions,
   createEditorSession,

@@ -258,6 +258,7 @@ export const EditorChannels = {
   WORKSPACE_GET: 'editor:get-workspace',
   WORKSPACE_CREATE: 'editor:create-workspace',
   WORKSPACE_UPDATE: 'editor:update-workspace',
+  WORKSPACE_DELETE: 'editor:delete-workspace',
   SESSION_LIST: 'editor:list-sessions',
   SESSION_GET: 'editor:get-session',
   SESSION_CREATE: 'editor:create-session',

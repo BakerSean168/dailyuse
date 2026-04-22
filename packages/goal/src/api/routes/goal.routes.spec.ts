@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import type { GoalController } from '../../controllers/goal.controller';
+import { registerGoalRoutes } from './index';
 import { registerGoalCrudRoutes } from './goal.routes';
 
 type RegisteredRoute = {
@@ -69,6 +70,36 @@ function getQuerySchema(route: RegisteredRoute): {
   };
 }
 
+function createGoalUseCasesStub(): Parameters<typeof registerGoalRoutes>[0] {
+  return {
+    createGoal: vi.fn(),
+    getGoal: vi.fn(),
+    listGoals: vi.fn(),
+    updateGoal: vi.fn(),
+    deleteGoal: vi.fn(),
+    archiveExpiredGoals: vi.fn(),
+    archiveGoal: vi.fn(),
+    activateGoal: vi.fn(),
+    completeGoal: vi.fn(),
+    searchGoals: vi.fn(),
+    addKeyResult: vi.fn(),
+    updateKeyResult: vi.fn(),
+    updateKeyResultProgress: vi.fn(),
+    deleteKeyResult: vi.fn(),
+    addReview: vi.fn(),
+    listReviews: vi.fn(),
+    updateReview: vi.fn(),
+    deleteReview: vi.fn(),
+    createRecord: vi.fn(),
+    listRecords: vi.fn(),
+    deleteRecord: vi.fn(),
+    activateFocusMode: vi.fn(),
+    deactivateFocusMode: vi.fn(),
+    extendFocusMode: vi.fn(),
+    getCurrentFocusMode: vi.fn(),
+  };
+}
+
 describe('goal route contracts', () => {
   it('registers name-only create, update, and clone body schemas', () => {
     const registry = new TestOpenApiRegistry();
@@ -115,5 +146,23 @@ describe('goal route contracts', () => {
 
     expect(searchSchema.safeParse({ query: 'contracts' }).success).toBe(true);
     expect(searchSchema.safeParse({ q: 'contracts' }).success).toBe(false);
+  });
+
+  it('registers focus mode routes before the dynamic goal id route', () => {
+    const router = registerGoalRoutes(
+      createGoalUseCasesStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      null,
+    );
+
+    const layers = (router as unknown as {
+      stack: Array<{ handle?: { stack?: Array<{ route?: { path: string } }> } }>;
+    }).stack;
+
+    const firstRouterPaths = layers[0]?.handle?.stack?.map((layer) => layer.route?.path) ?? [];
+    const secondRouterPaths = layers[1]?.handle?.stack?.map((layer) => layer.route?.path) ?? [];
+
+    expect(firstRouterPaths).toContain('/focus-mode');
+    expect(secondRouterPaths).toContain('/:id');
   });
 });

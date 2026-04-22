@@ -27,9 +27,17 @@
       "types": "./dist/application-server/index.d.ts",
       "import": "./dist/application-server/index.js"
     },
+    "./application-client": {
+      "types": "./dist/application-client/index.d.ts",
+      "import": "./dist/application-client/index.js"
+    },
     "./infrastructure-server": {
       "types": "./dist/infrastructure-server/index.d.ts",
       "import": "./dist/infrastructure-server/index.js"
+    },
+    "./infrastructure-client": {
+      "types": "./dist/infrastructure-client/index.d.ts",
+      "import": "./dist/infrastructure-client/index.js"
     },
     "./api": {
       "types": "./dist/api/index.d.ts",
@@ -45,6 +53,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",
