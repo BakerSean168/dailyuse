@@ -43,6 +43,7 @@ const {
 } = useUserSetting();
 
 const activeTab = ref('appearance');
+const isHydratingAppearance = ref(true);
 
 // ── Section models — local reactive copies for v-model ──
 const appearance = ref({
@@ -89,17 +90,23 @@ async function handleImport() {
 
 // ── Hydrate from store when settings load ──
 function hydrateFromStore() {
-  const a = getCategory('appearance');
-  if (a) Object.assign(appearance.value, a);
+  isHydratingAppearance.value = true;
 
-  const l = getCategory('locale');
-  if (l) Object.assign(locale.value, l);
+  try {
+    const a = getCategory('appearance');
+    if (a) Object.assign(appearance.value, a);
 
-  const p = getCategory('privacy');
-  if (p) Object.assign(privacy.value, p);
+    const l = getCategory('locale');
+    if (l) Object.assign(locale.value, l);
 
-  const exp = getCategory('experimental');
-  if (exp) Object.assign(experimental.value, exp);
+    const p = getCategory('privacy');
+    if (p) Object.assign(privacy.value, p);
+
+    const exp = getCategory('experimental');
+    if (exp) Object.assign(experimental.value, exp);
+  } finally {
+    isHydratingAppearance.value = false;
+  }
 }
 
 watch(userSetting, () => hydrateFromStore());
@@ -107,6 +114,10 @@ watch(userSetting, () => hydrateFromStore());
 watch(
   () => appearance.value.theme,
   async (theme, previousTheme) => {
+    if (isHydratingAppearance.value) {
+      return;
+    }
+
     applyThemeMode(theme);
 
     if (theme === previousTheme || previousTheme === undefined) {
