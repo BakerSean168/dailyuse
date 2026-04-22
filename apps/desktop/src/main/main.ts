@@ -67,6 +67,7 @@ import { NotificationChannel as ReminderNotificationChannel } from '@dailyuse/co
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
+import { getDesktopAuthService } from './auth/desktop-auth-context';
 import { getConfiguredDesktopUserDataPath } from './runtime-init';
 
 const configuredUserDataPath = getConfiguredDesktopUserDataPath();
@@ -132,6 +133,10 @@ async function initializeApp(): Promise<void> {
     storagePort: new FsStorageAdapter(repositoryStorageDir),
   });
   const scheduleElectronModule = createScheduleElectronModule({
+    shouldScheduleTask: (task) => {
+      const identityId = getDesktopAuthService().getCurrentIdentityId();
+      return identityId !== null && String(task.identityId) === identityId;
+    },
     sourceExecutor: {
       async execute(task) {
         const createNotification = new CreateNotification(

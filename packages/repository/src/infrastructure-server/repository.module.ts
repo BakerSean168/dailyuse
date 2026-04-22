@@ -87,6 +87,7 @@ export interface RepositoryModuleDependencies {
   readonly resourceBookmarkRepository: IResourceBookmarkRepository;
   readonly storagePort: IStoragePort;
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
+  readonly autoCreateCanonicalRepository?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -537,6 +538,10 @@ function buildApplicationPort(
     }
 
     if (existing.error.code !== 'NOT_FOUND') {
+      return existing;
+    }
+
+    if (deps.autoCreateCanonicalRepository === false) {
       return existing;
     }
 

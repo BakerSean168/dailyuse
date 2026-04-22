@@ -66,6 +66,25 @@ type OfflineLoginResponse = {
   authMode?: AuthMode;
 };
 
+function toErrorLog(error: unknown): unknown {
+  if (error instanceof Error) {
+    const details: Record<string, unknown> = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+
+    const withCause = error as Error & { cause?: unknown };
+    if (withCause.cause !== undefined) {
+      details.cause = toErrorLog(withCause.cause);
+    }
+
+    return details;
+  }
+
+  return error;
+}
+
 // ============ SessionManager ============
 
 /**
@@ -551,19 +570,37 @@ export class SessionManager {
     refreshToken: string;
     expiresIn?: number;
   }): Promise<void> {
-    await this.tokenManager.saveTokens({
-      accessToken: params.accessToken,
-      refreshToken: params.refreshToken,
-      accessTokenExpiresIn: params.expiresIn ?? 3600,
-      identityId: params.identityId,
-      sessionId: params.sessionId,
-    });
+    try {
+      await this.tokenManager.saveTokens({
+        accessToken: params.accessToken,
+        refreshToken: params.refreshToken,
+        accessTokenExpiresIn: params.expiresIn ?? 3600,
+        identityId: params.identityId,
+        sessionId: params.sessionId,
+      });
+    } catch (error) {
+      this.logger.error('Failed to persist online auth tokens locally', {
+        identityId: params.identityId,
+        sessionId: params.sessionId,
+        error: toErrorLog(error),
+      });
+      throw error;
+    }
 
-    await this.createOnlineSession({
-      identityId: params.identityId,
-      sessionId: params.sessionId,
-      expiresIn: params.expiresIn,
-    });
+    try {
+      await this.createOnlineSession({
+        identityId: params.identityId,
+        sessionId: params.sessionId,
+        expiresIn: params.expiresIn,
+      });
+    } catch (error) {
+      this.logger.error('Failed to persist online auth session locally', {
+        identityId: params.identityId,
+        sessionId: params.sessionId,
+        error: toErrorLog(error),
+      });
+      throw error;
+    }
 
     this.startCurrentSessionLifecycle();
   }

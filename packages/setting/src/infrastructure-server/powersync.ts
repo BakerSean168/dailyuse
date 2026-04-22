@@ -12,6 +12,7 @@ export function createSettingPowerSyncModule(dbConnection: Queryable): SettingMo
     userSettingRepository: new UserSettingPowerSyncRepository(
       dbConnection,
     ) as IUserSettingRepository,
+    persistMissingSettingOnRead: false,
   });
 }
 

@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const apiOrigin = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
+process.env.E2E_API_BASE_URL ??= apiOrigin;
+process.env.E2E_API_FULL_URL ??= `${apiOrigin.replace(/\/+$/, '')}/api/v1`;
 
 export default defineConfig({
   testDir: './e2e/sync',

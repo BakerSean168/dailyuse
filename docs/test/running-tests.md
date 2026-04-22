@@ -22,6 +22,7 @@ pnpm nx run api:test:smoke
 pnpm nx run web:e2e
 pnpm nx run web:e2e:ui
 pnpm nx run web:e2e:sync
+pnpm nx run web:e2e:desktop-screenshots
 pnpm nx run desktop:test:ipc
 pnpm nx run desktop:test:main
 ```
@@ -33,6 +34,7 @@ pnpm nx run desktop:test:main
 - `api:test:smoke`：HTTP 路由、middleware、序列化、状态码改动
 - `web:e2e`：浏览器主流程回归
 - `web:e2e:sync`：同步链路、跨端回归
+- `web:e2e:desktop-screenshots`：拉起 Electron desktop，批量生成论文截图
 - `desktop:test:ipc`：IPC handler、preload 暴露面改动
 - `desktop:test:main`：Electron main 进程逻辑改动
 
@@ -49,6 +51,7 @@ pnpm nx affected -t test
 - 数据库访问或 Prisma：`pnpm nx run task:test:integration`
 - 关键浏览器流程：`pnpm nx run web:e2e`
 - 同步回归：`pnpm nx run web:e2e:sync`
+- 论文截图采集：`pnpm nx run web:e2e:desktop-screenshots`
 - Electron IPC / main：`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`
 
 ## 集成测试数据库

@@ -36,6 +36,23 @@ import { getApiBaseUrl } from '../utils/api-config';
 import { getUnifiedDatabasePath } from './paths';
 import { serializeCrudTransaction } from './powersync-crud';
 
+const NON_SYNCABLE_LOCAL_TABLES = [
+  'accounts',
+  'auth_credentials',
+  'auth_identifiers',
+  'auth_identities',
+  'auth_sessions',
+] as const;
+
+const PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES = [
+  'user_settings',
+  'repositories',
+  'editor_workspaces',
+  'editor_workspace_sessions',
+  'editor_workspace_session_groups',
+  'editor_workspace_session_group_tabs',
+] as const;
+
 // ──────────────────────────────────────────────
 // Module state
 // ──────────────────────────────────────────────
@@ -88,6 +105,115 @@ function createPowerSyncDatabase(dbPath: string): PowerSyncDatabase {
         return new Worker(resolvedFilename, options);
       },
     },
+  });
+}
+
+async function purgeNonSyncableLocalCrud(
+  db: Pick<PowerSyncDatabase, 'writeTransaction'>,
+): Promise<void> {
+  const placeholders = NON_SYNCABLE_LOCAL_TABLES.map(() => '?').join(', ');
+
+  await db.writeTransaction(async (tx) => {
+    const queuedCrud = await tx.get<{ count: number }>(
+      `SELECT COUNT(*) as count
+       FROM ps_crud
+       WHERE json_extract(data, '$.type') IN (${placeholders})`,
+      [...NON_SYNCABLE_LOCAL_TABLES],
+    );
+
+    const queuedRows = await tx.get<{ count: number }>(
+      `SELECT COUNT(*) as count
+       FROM ps_updated_rows
+       WHERE row_type IN (${placeholders})`,
+      [...NON_SYNCABLE_LOCAL_TABLES],
+    );
+
+    if (queuedCrud.count === 0 && queuedRows.count === 0) {
+      return;
+    }
+
+    console.log('[PowerSync] Purging non-syncable local CRUD rows', {
+      queuedCrud: queuedCrud.count,
+      queuedRows: queuedRows.count,
+      tables: NON_SYNCABLE_LOCAL_TABLES,
+    });
+
+    await tx.execute(
+      `DELETE FROM ps_crud
+       WHERE json_extract(data, '$.type') IN (${placeholders})`,
+      [...NON_SYNCABLE_LOCAL_TABLES],
+    );
+
+    await tx.execute(
+      `DELETE FROM ps_updated_rows
+       WHERE row_type IN (${placeholders})`,
+      [...NON_SYNCABLE_LOCAL_TABLES],
+    );
+  });
+}
+
+async function purgePreHydrationBootstrapCrud(
+  db: Pick<PowerSyncDatabase, 'writeTransaction'>,
+): Promise<void> {
+  const placeholders = PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES.map(() => '?').join(', ');
+
+  await db.writeTransaction(async (tx) => {
+    const pendingUserBucket = await tx.getOptional<{
+      name: string;
+      last_op: number;
+      last_applied_op: number;
+    }>(
+      `SELECT name, last_op, last_applied_op
+       FROM ps_buckets
+       WHERE name LIKE '1#user_data[%]'
+         AND last_op > 0
+         AND last_applied_op = 0
+       ORDER BY id DESC
+       LIMIT 1`,
+    );
+
+    if (!pendingUserBucket) {
+      return;
+    }
+
+    const queuedCrud = await tx.get<{ count: number }>(
+      `SELECT COUNT(*) as count
+       FROM ps_crud
+       WHERE json_extract(data, '$.type') IN (${placeholders})`,
+      [...PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES],
+    );
+
+    const queuedRows = await tx.get<{ count: number }>(
+      `SELECT COUNT(*) as count
+       FROM ps_updated_rows
+       WHERE row_type IN (${placeholders})`,
+      [...PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES],
+    );
+
+    if (queuedCrud.count === 0 && queuedRows.count === 0) {
+      return;
+    }
+
+    console.log('[PowerSync] Purging pre-hydration bootstrap CRUD rows', {
+      bucket: pendingUserBucket.name,
+      lastOp: pendingUserBucket.last_op,
+      lastAppliedOp: pendingUserBucket.last_applied_op,
+      queuedCrud: queuedCrud.count,
+      queuedRows: queuedRows.count,
+      tables: PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES,
+    });
+
+    await tx.execute(
+      `DELETE FROM ps_crud
+       WHERE json_extract(data, '$.type') IN (${placeholders})`,
+      [...PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES],
+    );
+
+    await tx.execute(
+      `DELETE FROM ps_updated_rows
+       WHERE row_type IN (${placeholders})`,
+      [...PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES],
+    );
   });
 }
 
@@ -250,6 +376,8 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
   if (powerSyncDb && !syncConnected) {
     connectingPromise = (async () => {
       console.log('[PowerSync] Promoting existing local-only instance to sync mode');
+      await purgeNonSyncableLocalCrud(powerSyncDb!);
+      await purgePreHydrationBootstrapCrud(powerSyncDb!);
       const connector = new DesktopPowerSyncConnector();
       await powerSyncDb!.connect(connector);
       syncConnected = true;
@@ -269,6 +397,9 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
     console.log(`[PowerSync] Initializing sync database: ${dbPath}`);
 
     const db = createPowerSyncDatabase(dbPath);
+    await db.waitForReady();
+    await purgeNonSyncableLocalCrud(db);
+    await purgePreHydrationBootstrapCrud(db);
 
     const connector = new DesktopPowerSyncConnector();
     await db.connect(connector);
@@ -354,6 +485,8 @@ export async function ensurePowerSyncSyncMode(): Promise<PowerSyncDatabase> {
     return powerSyncDb;
   }
 
+  await purgeNonSyncableLocalCrud(powerSyncDb);
+  await purgePreHydrationBootstrapCrud(powerSyncDb);
   const connector = new DesktopPowerSyncConnector();
   await powerSyncDb.connect(connector);
   syncConnected = true;

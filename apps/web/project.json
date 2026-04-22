@@ -119,6 +119,25 @@
         }
       }
     },
+    "e2e:desktop-screenshots": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/apps/web/playwright-desktop-screenshot-report",
+        "{workspaceRoot}/docs/thesis/assets/desktop-e2e"
+      ],
+      "options": {
+        "command": "playwright test --config playwright.desktop-screenshot.config.ts",
+        "cwd": "apps/web"
+      },
+      "configurations": {
+        "headed": {
+          "command": "playwright test --config playwright.desktop-screenshot.config.ts --headed"
+        },
+        "debug": {
+          "command": "playwright test --config playwright.desktop-screenshot.config.ts --debug"
+        }
+      }
+    },
     "e2e:report": {
       "executor": "nx:run-commands",
       "options": {

@@ -20,6 +20,7 @@
 | Web 契约测试 | `apps/web/src/mocks/handlers/*.spec.ts` | `pnpm nx run web:test` |
 | Web E2E | `apps/web/e2e/**` | `pnpm nx run web:e2e` |
 | Web 同步回归 E2E | `apps/web/e2e/sync/**` | `pnpm nx run web:e2e:sync` |
+| Desktop 论文截图 E2E | `apps/web/e2e/desktop-screenshots/**` | `pnpm nx run web:e2e:desktop-screenshots` |
 | Desktop 专项测试 | `apps/desktop`、`apps/desktop/src/main/**` | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main` |
 | 性能 / Bench | `packages/task/**/**/*.bench.ts` | `pnpm nx run task:test:performance` |
 

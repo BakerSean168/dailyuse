@@ -22,6 +22,7 @@ export interface ScheduleTaskSourceExecutor {
 export interface ScheduleRuntimeDependencies {
   readonly scheduleTaskRepository: IScheduleTaskRepository;
   readonly sourceExecutor: ScheduleTaskSourceExecutor;
+  readonly shouldScheduleTask?: (task: ScheduleTask) => boolean | Promise<boolean>;
 }
 
 function toScheduledItem(task: ScheduleTask): ScheduledItem | null {
@@ -40,13 +41,35 @@ function toScheduledItem(task: ScheduleTask): ScheduledItem | null {
   };
 }
 
+async function isTaskAllowed(
+  task: ScheduleTask,
+  predicate?: (task: ScheduleTask) => boolean | Promise<boolean>,
+): Promise<boolean> {
+  if (!predicate) {
+    return true;
+  }
+
+  return await predicate(task);
+}
+
 async function syncTask(
   repository: IScheduleTaskRepository,
   queue: ScheduleTaskQueue,
   taskId: string,
+  shouldScheduleTask?: (task: ScheduleTask) => boolean | Promise<boolean>,
 ): Promise<void> {
   const task = await repository.findById(taskId);
   if (!task) {
+    queue.removeTask(taskId);
+    return;
+  }
+
+  if (!(await isTaskAllowed(task, shouldScheduleTask))) {
+    logger.info('[Schedule] Removing task from queue because it does not match runtime auth scope', {
+      taskId,
+      taskName: task.name,
+      identityId: String(task.identityId),
+    });
     queue.removeTask(taskId);
     return;
   }
@@ -78,10 +101,20 @@ async function executeScheduledTask(
   repository: IScheduleTaskRepository,
   sourceExecutor: ScheduleTaskSourceExecutor,
   taskId: string,
+  shouldScheduleTask?: (task: ScheduleTask) => boolean | Promise<boolean>,
 ): Promise<void> {
   const task = await repository.findById(taskId);
   if (!task) {
     logger.warn('[Schedule] Scheduled execution skipped because task no longer exists', { taskId });
+    return;
+  }
+
+  if (!(await isTaskAllowed(task, shouldScheduleTask))) {
+    logger.info('[Schedule] Scheduled execution skipped because task does not match runtime auth scope', {
+      taskId,
+      taskName: task.name,
+      identityId: String(task.identityId),
+    });
     return;
   }
 
@@ -154,13 +187,28 @@ export function createScheduleRuntimeContribution(
     taskLoader: {
       async loadActiveTasks() {
         const tasks = await deps.scheduleTaskRepository.findEnabled();
-        return tasks
+        const eligibleTasks = deps.shouldScheduleTask
+          ? (
+              await Promise.all(
+                tasks.map(async (task) =>
+                  (await isTaskAllowed(task, deps.shouldScheduleTask)) ? task : null,
+                ),
+              )
+            ).filter((task): task is ScheduleTask => task !== null)
+          : tasks;
+
+        return eligibleTasks
           .map((task) => toScheduledItem(task))
           .filter((item): item is ScheduledItem => item !== null);
       },
     },
     onExecuteTask: async (taskId) => {
-      await executeScheduledTask(deps.scheduleTaskRepository, deps.sourceExecutor, taskId);
+      await executeScheduledTask(
+        deps.scheduleTaskRepository,
+        deps.sourceExecutor,
+        taskId,
+        deps.shouldScheduleTask,
+      );
     },
     onExecuteError: (taskId, error) => {
       logger.error('[Schedule] Queue execution failed', { taskId, error: error.message });
@@ -174,7 +222,7 @@ export function createScheduleRuntimeContribution(
     }
 
     logger.info('[Schedule] Received task sync event', { taskId });
-    await syncTask(deps.scheduleTaskRepository, queue, taskId);
+    await syncTask(deps.scheduleTaskRepository, queue, taskId, deps.shouldScheduleTask);
   };
 
   const removeTaskHandler = (event: { taskId?: string }) => {

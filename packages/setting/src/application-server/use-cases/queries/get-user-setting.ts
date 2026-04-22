@@ -9,14 +9,21 @@ import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 export class GetUserSetting {
-  constructor(private readonly userSettingRepository: IUserSettingRepository) {}
+  constructor(
+    private readonly userSettingRepository: IUserSettingRepository,
+    private readonly options: {
+      persistOnMissing?: boolean;
+    } = {},
+  ) {}
 
   async execute(identityId: string): Promise<UserSettingClientDTO> {
     let setting = await this.userSettingRepository.findByIdentityId(identityId);
 
     if (!setting) {
       setting = UserSetting.create({ identityId });
-      await this.userSettingRepository.save(setting);
+      if (this.options.persistOnMissing ?? true) {
+        await this.userSettingRepository.save(setting);
+      }
     }
 
     return setting.toClientDTO();

@@ -1,9 +1,10 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IAuthSessionRepository } from '../../../domain-server';
 import { AuthSession } from '../../../domain-server';
 import {
   PowerSyncAuthSessionMapper,
   type PowerSyncAuthSessionRow,
+  type PowerSyncAuthSessionWriteData,
 } from './mappers/powersync-auth-session.mapper';
 
 export class PowerSyncAuthSessionRepository implements IAuthSessionRepository {
@@ -12,59 +13,29 @@ export class PowerSyncAuthSessionRepository implements IAuthSessionRepository {
   async save(session: AuthSession): Promise<void> {
     const d = PowerSyncAuthSessionMapper.toPersistence(session);
 
-    const updateResult = await this.db.execute(
-      `UPDATE auth_sessions
-       SET refresh_token_hash = ?,
-           device_name = ?,
-           os = ?,
-           browser = ?,
-           ip_address = ?,
-           location = ?,
-           expires_at = ?,
-           last_active_at = ?,
-           deleted_at = ?
-       WHERE id = ?`,
-      [
-        d.refresh_token_hash,
-        d.device_name,
-        d.os,
-        d.browser,
-        d.ip_address,
-        d.location,
-        d.expires_at,
-        d.last_active_at,
-        d.deleted_at,
-        d.id,
-      ],
-    );
-
-    if (updateResult.rowsAffected === 0) {
-      await this.db.execute(
-        `INSERT INTO auth_sessions (
-           id, identity_id, refresh_token_hash, device_id, device_fingerprint, device_type,
-           device_name, os, browser, ip_address, location, version,
-           created_at, expires_at, last_active_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          d.id,
-          d.identity_id,
-          d.refresh_token_hash,
-          d.device_id,
-          d.device_fingerprint,
-          d.device_type,
-          d.device_name,
-          d.os,
-          d.browser,
-          d.ip_address,
-          d.location,
-          d.version,
-          d.created_at,
-          d.expires_at,
-          d.last_active_at,
-          d.deleted_at,
-        ],
+    await this.db.writeTransaction(async (tx) => {
+      const existing = await tx.getOptional<{ id: string }>(
+        `SELECT id FROM auth_sessions WHERE id = ? LIMIT 1`,
+        [d.id],
       );
-    }
+
+      if (existing) {
+        await this.updateRow(tx, d);
+        return;
+      }
+
+      try {
+        await this.insertRow(tx, d);
+      } catch (error) {
+        if (!isUniqueConstraintError(error)) {
+          throw error;
+        }
+
+        // PowerSync-backed views do not support UPSERT. When the view already
+        // exposes the row, fall back to a plain UPDATE instead of failing login.
+        await this.updateRow(tx, d);
+      }
+    });
   }
 
   async findById(id: string): Promise<AuthSession | null> {
@@ -104,4 +75,82 @@ export class PowerSyncAuthSessionRepository implements IAuthSessionRepository {
       [new Date().toISOString(), new Date().toISOString()],
     );
   }
+
+  private async updateRow(
+    tx: IElectronDatabaseTransaction,
+    d: PowerSyncAuthSessionWriteData,
+  ): Promise<void> {
+    await tx.execute(
+      `UPDATE auth_sessions
+       SET identity_id = ?,
+           refresh_token_hash = ?,
+           device_id = ?,
+           device_fingerprint = ?,
+           device_type = ?,
+           device_name = ?,
+           os = ?,
+           browser = ?,
+           ip_address = ?,
+           location = ?,
+           version = ?,
+           created_at = ?,
+           expires_at = ?,
+           last_active_at = ?,
+           deleted_at = ?
+       WHERE id = ?`,
+      [
+        d.identity_id,
+        d.refresh_token_hash,
+        d.device_id,
+        d.device_fingerprint,
+        d.device_type,
+        d.device_name,
+        d.os,
+        d.browser,
+        d.ip_address,
+        d.location,
+        d.version,
+        d.created_at,
+        d.expires_at,
+        d.last_active_at,
+        d.deleted_at,
+        d.id,
+      ],
+    );
+  }
+
+  private async insertRow(
+    tx: IElectronDatabaseTransaction,
+    d: PowerSyncAuthSessionWriteData,
+  ): Promise<void> {
+    await tx.execute(
+      `INSERT INTO auth_sessions (
+         id, identity_id, refresh_token_hash, device_id, device_fingerprint, device_type,
+         device_name, os, browser, ip_address, location, version,
+         created_at, expires_at, last_active_at, deleted_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        d.id,
+        d.identity_id,
+        d.refresh_token_hash,
+        d.device_id,
+        d.device_fingerprint,
+        d.device_type,
+        d.device_name,
+        d.os,
+        d.browser,
+        d.ip_address,
+        d.location,
+        d.version,
+        d.created_at,
+        d.expires_at,
+        d.last_active_at,
+        d.deleted_at,
+      ],
+    );
+  }
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return error instanceof Error && /unique constraint failed/i.test(error.message);
 }

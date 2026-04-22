@@ -6,7 +6,5 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');
 
 export default async function globalSetup(): Promise<void> {
-  // Sync tests launch the packaged desktop main entrypoint directly.
-  // Build it once up front so each spec can focus on auth/sync behavior.
   buildDesktopApp(workspaceRoot);
 }

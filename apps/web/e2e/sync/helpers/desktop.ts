@@ -25,11 +25,9 @@ async function clickIfVisible(page: Page, selector: string): Promise<void> {
 async function fillLoginForm(page: Page, credentials: SyncCredentials): Promise<void> {
   await clickIfVisible(page, '[data-testid="login-tab"]');
 
-  const emailField = page.locator(
-    '[data-testid="login-username-input"] input, [data-testid="login-username-input"]',
-  );
+  const emailField = page.locator('#login-email, [data-testid="login-username-input"] input');
   const passwordField = page.locator(
-    '[data-testid="login-password-input"] input, [data-testid="login-password-input"]',
+    '#login-password, [data-testid="login-password-input"] input',
   );
 
   await emailField.first().fill(credentials.email);

@@ -207,6 +207,33 @@ describe('Repository resource mutations', () => {
     }
   });
 
+  it('does not auto-create a canonical repository when disabled', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-no-bootstrap-'));
+
+    try {
+      const module = createRepositoryModule({
+        repositoryRepository: new RepositoryMemoryRepository(),
+        resourceRepository: new ResourceMemoryRepository(),
+        folderRepository: new FolderMemoryRepository(),
+        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
+        storagePort: new FsStorageAdapter(tempDir),
+        autoCreateCanonicalRepository: false,
+      });
+
+      const identityId = String(IdentityId.generate());
+      const result = await module.api.getCurrentRepository({ identityId } as any);
+
+      expect(result.ok).toBe(false);
+      if (result.ok) {
+        throw new Error('Expected repository lookup to remain empty');
+      }
+
+      expect(result.error.code).toBe('NOT_FOUND');
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   it('hydrates binary content as base64 when loading a resource by id', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-read-binary-'));
 

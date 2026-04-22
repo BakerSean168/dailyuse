@@ -1256,6 +1256,12 @@ export class AuthDesktopApplicationService {
       return;
     }
 
+    const tokenData = this.tokenManager.getCachedTokenData() ?? (await this.tokenManager.loadTokens());
+    if (tokenData && !this.isGuestTokenData(tokenData) && !this.isLocalOnlyTokenData(tokenData)) {
+      this.logger.info('Skip account projection bootstrap for online session', { identityId });
+      return;
+    }
+
     const existing = await this.accountRepository.findById(identityId);
     if (existing) {
       return;

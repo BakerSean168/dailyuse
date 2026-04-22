@@ -48,6 +48,16 @@ describe('GetUserSetting', () => {
     expect(result.preferences.locale).toEqual(defaults.locale);
   });
 
+  it('should return defaults without saving when persistence is disabled', async () => {
+    vi.mocked(repo.findByIdentityId).mockResolvedValue(null);
+    useCase = new GetUserSetting(repo, { persistOnMissing: false });
+
+    const result = await useCase.execute(identityId);
+
+    expect(repo.save).not.toHaveBeenCalled();
+    expect(result.identityId).toBe(identityId);
+  });
+
   it('should not save when setting already exists', async () => {
     const setting = UserSetting.create({ identityId });
     vi.mocked(repo.findByIdentityId).mockResolvedValue(setting);

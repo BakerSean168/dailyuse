@@ -76,6 +76,7 @@ let runtimeStarted = false;
 
 export interface CreateScheduleElectronModuleOptions {
   readonly sourceExecutor?: ScheduleTaskSourceExecutor;
+  readonly shouldScheduleTask?: (task: import('../domain-server/aggregates/schedule-task').ScheduleTask) => boolean | Promise<boolean>;
 }
 
 export function getScheduleRepository(): IScheduleRepository {
@@ -133,6 +134,7 @@ export function createScheduleElectronModule(
 
       const runtimeContribution = createScheduleRuntimeContribution({
         scheduleTaskRepository: repos.scheduleTaskRepository,
+        shouldScheduleTask: options.shouldScheduleTask,
         sourceExecutor:
           options.sourceExecutor ??
           {

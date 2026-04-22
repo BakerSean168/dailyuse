@@ -22,6 +22,7 @@ export type SettingRuntimeContributionsInput =
 export interface SettingModuleDependencies {
   readonly userSettingRepository: IUserSettingRepository;
   readonly runtimeContributions?: SettingRuntimeContributionsInput;
+  readonly persistMissingSettingOnRead?: boolean;
 }
 
 /** Lower-level use case graph kept for tests and diagnostics. */
@@ -69,7 +70,9 @@ export function createSettingUseCases(
   const { userSettingRepository } = dependencies;
 
   return {
-    getUserSetting: new GetUserSetting(userSettingRepository),
+    getUserSetting: new GetUserSetting(userSettingRepository, {
+      persistOnMissing: dependencies.persistMissingSettingOnRead,
+    }),
     patchUserSetting: new PatchUserSetting(userSettingRepository),
     resetUserSetting: new ResetUserSetting(userSettingRepository),
     exportSettings: new ExportSettings(userSettingRepository),

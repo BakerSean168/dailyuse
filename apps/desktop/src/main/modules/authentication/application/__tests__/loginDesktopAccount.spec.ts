@@ -182,4 +182,95 @@ describe('loginDesktopAccount', () => {
     });
     expect(onSuccess).toHaveBeenCalledOnce();
   });
+
+  it('returns LOCAL_PERSISTENCE_FAILED and logs concrete error details when local persistence throws', async () => {
+    const logger = createLogger();
+    const authPayload = {
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      identity: {
+        id: 'user-1',
+        status: 'Active',
+        failedLoginAttempts: 0,
+        lastFailedAttempt: null,
+        lockedUntil: null,
+        identifiers: [],
+        credentials: [],
+        hasPassword: true,
+        hasEmail: true,
+        hasPhone: false,
+        hasOAuth: false,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        deletedAt: null,
+      },
+      session: {
+        id: 'session-1',
+        identityId: 'user-1',
+        deviceInfo: {
+          deviceId: 'device-1',
+          deviceFingerprint: 'fingerprint-1',
+          deviceType: 'Desktop',
+          deviceName: 'Test Desktop',
+          os: 'Windows',
+          osVersion: '11',
+          browser: 'Memoflow',
+          appVersion: '1.0.0',
+          ipAddress: '127.0.0.1',
+          userAgent: 'Vitest',
+          location: null,
+          firstSeenAt: 1,
+          lastSeenAt: 1,
+        },
+        isCurrentSession: true,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        expiresAt: 2,
+        lastActiveAt: 1,
+        deletedAt: null,
+      },
+    };
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ data: authPayload }),
+    });
+    const sqliteError = new Error('UNIQUE constraint failed: auth_sessions.id');
+    sqliteError.name = 'SqliteError';
+
+    const result = await loginDesktopAccount(
+      {
+        email: 'user@example.com',
+        password: 'secret123',
+      },
+      {
+        isOnline: () => true,
+        remoteGateway: createRemoteGatewayMock(fetchImpl),
+        logger,
+        onSuccess: vi.fn().mockRejectedValue(sqliteError),
+      },
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'LOCAL_PERSISTENCE_FAILED',
+        shouldFallbackToOffline: false,
+      },
+    });
+    expect(logger.error).toHaveBeenCalledWith(
+      'Remote login succeeded but local persistence failed',
+      expect.objectContaining({
+        email: 'user@example.com',
+        identityId: 'user-1',
+        error: expect.objectContaining({
+          name: 'SqliteError',
+          message: 'UNIQUE constraint failed: auth_sessions.id',
+        }),
+      }),
+    );
+  });
 });

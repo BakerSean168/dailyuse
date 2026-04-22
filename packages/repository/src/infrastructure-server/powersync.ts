@@ -29,6 +29,7 @@ import {
 export interface CreateRepositoryPowerSyncModuleOptions {
   readonly storagePort: IStoragePort;
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
+  readonly autoCreateCanonicalRepository?: boolean;
 }
 
 /**
@@ -54,6 +55,7 @@ export function createRepositoryPowerSyncModule(
     resourceBookmarkRepository,
     storagePort: options.storagePort,
     runtimeContributions: options.runtimeContributions,
+    autoCreateCanonicalRepository: options.autoCreateCanonicalRepository ?? false,
   });
 }
 

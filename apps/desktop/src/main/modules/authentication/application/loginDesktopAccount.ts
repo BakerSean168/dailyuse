@@ -20,6 +20,25 @@ export interface DesktopLoginRequest {
 
 export type DesktopLoginResult = AuthFlowResult<AuthResponseDTO>;
 
+function toErrorLog(error: unknown): unknown {
+  if (error instanceof Error) {
+    const details: Record<string, unknown> = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+
+    const withCause = error as Error & { cause?: unknown };
+    if (withCause.cause !== undefined) {
+      details.cause = toErrorLog(withCause.cause);
+    }
+
+    return details;
+  }
+
+  return error;
+}
+
 interface LoginDesktopAccountDependencies {
   isOnline: () => boolean;
   remoteGateway: Pick<AuthRemoteGateway, 'createLoginUrl' | 'login'>;
@@ -107,7 +126,7 @@ export async function loginDesktopAccount(
         await onSuccess(response.data, request);
       } catch (error) {
         logger.error('Remote login succeeded but local persistence failed', {
-          error,
+          error: toErrorLog(error),
           email: request.email,
           identityId: response.data.identity.id,
         });
