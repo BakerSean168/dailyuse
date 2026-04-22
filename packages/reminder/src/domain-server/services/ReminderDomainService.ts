@@ -9,6 +9,8 @@ import type { IReminderGroupRepository, IReminderTemplateRepository } from '../r
 import { ReminderTemplate } from '../aggregates/reminder-template';
 import { ReminderGroup } from '../aggregates/reminder-group';
 import { ReminderTemplateControlService } from './ReminderTemplateControlService';
+import { ReminderGroupBusinessService } from './ReminderGroupBusinessService';
+import { GroupStats } from '../value-objects';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { IUserReminderPreferenceRepository } from '../repositories/IUserReminderPreferenceRepository';
 
@@ -30,6 +32,7 @@ type IdentityId = string & { readonly __brand: 'IdentityId' };
  */
 export class ReminderDomainService {
   private readonly controlService: ReminderTemplateControlService;
+  private readonly groupBusinessService: ReminderGroupBusinessService;
 
   constructor(
     private readonly reminderTemplateRepository: IReminderTemplateRepository,
@@ -41,6 +44,7 @@ export class ReminderDomainService {
       reminderGroupRepository,
       userReminderPreferenceRepository,
     );
+    this.groupBusinessService = new ReminderGroupBusinessService();
   }
 
   private async getGlobalReminderEnabled(identityId: string): Promise<boolean> {
@@ -248,21 +252,20 @@ export class ReminderDomainService {
   public async updateGroupStats(groupId: string): Promise<void> {
     const group = await this.getGroup(groupId);
     if (!group) return;
-
-    // This is a simplified stats update. A real implementation might use a
-    // more efficient query.
     const templates = await this.reminderTemplateRepository.findByGroupId(groupId, {
       includeDeleted: false,
     });
 
-    // This logic should be on the aggregate
-    // group.updateStats({
-    //   totalTemplates: templates.length,
-    //   activeTemplates: templates.filter(t => t.status === 'ACTIVE').length,
-    //   // ... other stats
-    // });
-
-    await group.updateStats(); // Assuming this method exists and does the calculation
+    const stats = this.groupBusinessService.calculateGroupStatistics(templates);
+    group.updateStats(
+      GroupStats.create({
+        totalTemplates: stats.totalTemplates,
+        activeTemplates: stats.activeTemplates,
+        pausedTemplates: stats.pausedTemplates,
+        selfEnabledTemplates: templates.filter((template) => template.selfEnabled).length,
+        selfPausedTemplates: templates.filter((template) => !template.selfEnabled).length,
+      }),
+    );
     await this.reminderGroupRepository.save(group);
   }
 }

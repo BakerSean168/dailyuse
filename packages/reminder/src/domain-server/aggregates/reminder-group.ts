@@ -240,7 +240,8 @@ export class ReminderGroup extends AggregateRoot<string> {
     await this.pauseAllTemplates();
   }
 
-  public async updateStats(): Promise<void> {
+  public updateStats(stats: GroupStats): void {
+    this._stats = stats;
     this._updatedAt = new Date(Date.now());
   }
 

@@ -319,6 +319,9 @@ export function createReminderModule(
         ...normalizedInput,
         identityId: IdentityId.of(ctx.identityId) as unknown as string,
       } as Parameters<typeof reminderDomainService.createReminderTemplate>[0]);
+      if (template.groupId) {
+        await reminderDomainService.updateGroupStats(template.groupId);
+      }
       return ok(
         await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
       );
@@ -421,6 +424,9 @@ export function createReminderModule(
       existing.update(normalizedUpdates as any);
       await reminderDomainService.syncTemplateEffectiveEnabled(existing);
       await reminderTemplateRepository.save(existing);
+      if (existing.groupId) {
+        await reminderDomainService.updateGroupStats(existing.groupId);
+      }
       return ok(
         await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, existing),
       );
@@ -431,7 +437,11 @@ export function createReminderModule(
       if (!existing) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
+      const groupId = existing.groupId;
       await reminderDomainService.deleteTemplate(id, true);
+      if (groupId) {
+        await reminderDomainService.updateGroupStats(groupId);
+      }
       return ok(undefined);
     },
 
@@ -537,6 +547,7 @@ export function createReminderModule(
         await reminderTemplateRepository.save(t);
         successCount++;
       }
+      await reminderDomainService.updateGroupStats(group.id);
       return ok({ successCount, failedCount: 0 });
     },
 
@@ -548,6 +559,9 @@ export function createReminderModule(
       template.enable();
       await reminderDomainService.syncTemplateEffectiveEnabled(template);
       await reminderTemplateRepository.save(template);
+      if (template.groupId) {
+        await reminderDomainService.updateGroupStats(template.groupId);
+      }
       return ok(
         await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
       );
@@ -559,6 +573,9 @@ export function createReminderModule(
       template.pause();
       await reminderDomainService.syncTemplateEffectiveEnabled(template);
       await reminderTemplateRepository.save(template);
+      if (template.groupId) {
+        await reminderDomainService.updateGroupStats(template.groupId);
+      }
       return ok(
         await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
       );
@@ -572,6 +589,9 @@ export function createReminderModule(
       template.toggle();
       await reminderDomainService.syncTemplateEffectiveEnabled(template);
       await reminderTemplateRepository.save(template);
+      if (template.groupId) {
+        await reminderDomainService.updateGroupStats(template.groupId);
+      }
       return ok(
         await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
       );
@@ -589,6 +609,13 @@ export function createReminderModule(
         }
       }
       const result = await reminderDomainService.assignTemplateToGroup(id, groupId);
+      const previousGroupId = template.groupId;
+      if (previousGroupId) {
+        await reminderDomainService.updateGroupStats(previousGroupId);
+      }
+      if (groupId) {
+        await reminderDomainService.updateGroupStats(groupId);
+      }
       return ok(await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, result));
     },
 
