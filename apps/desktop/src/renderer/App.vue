@@ -11,7 +11,13 @@ import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/elect
 import { useRoute, useRouter } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
 import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
-import { GlobalErrorBoundary, GlobalProgressBar, useThemeSync } from '@dailyuse/app-vue';
+import {
+  GlobalErrorBoundary,
+  GlobalProgressBar,
+  useLocaleSync,
+  usePresentationBootstrap,
+  useThemeSync,
+} from '@dailyuse/app-vue';
 import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
 
 const route = useRoute();
@@ -87,6 +93,8 @@ onBeforeUnmount(() => {
 });
 
 useThemeSync();
+useLocaleSync();
+usePresentationBootstrap();
 </script>
 
 <template>

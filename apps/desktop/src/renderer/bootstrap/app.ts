@@ -10,6 +10,7 @@ import {
   loadLocaleMessages,
   DesktopAuthView,
   hydrateDesktopBootstrapAuthState,
+  usePresentationPreferenceStore,
 } from '@dailyuse/app-vue';
 import { registerNotificationInitializationTasks } from '@dailyuse/app-vue/web-notification';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
@@ -37,8 +38,11 @@ export async function bootstrapMainApp() {
   pinia.use(piniaPluginPersistedstate);
   app.use(pinia);
 
-  const localeMessages = await loadLocaleMessages('zh-CN');
-  app.use(createI18nPlugin('zh-CN', localeMessages));
+  const presentationStore = usePresentationPreferenceStore();
+  document.documentElement.lang = presentationStore.locale;
+
+  const localeMessages = await loadLocaleMessages(presentationStore.locale);
+  app.use(createI18nPlugin(presentationStore.locale, localeMessages));
 
   const hasDesktopAuthSnapshot = await hydrateRendererAuthState();
 

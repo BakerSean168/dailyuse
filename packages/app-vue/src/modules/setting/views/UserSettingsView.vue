@@ -21,15 +21,13 @@ import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
 
 import { useUserSetting } from '../composables/useUserSetting';
-import { applyThemeMode, useLocaleSync } from '../composables';
-import { getI18nGlobal } from '../../../plugins/i18n';
+import { applyThemeMode } from '../composables';
+import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 const { t } = useI18n();
-
-// Activate locale sync (bridge store → vue-i18n)
-useLocaleSync();
+const presentationStore = usePresentationPreferenceStore();
 
 const {
   userSetting,
@@ -44,13 +42,22 @@ const {
 
 const activeTab = ref('appearance');
 const isHydratingAppearance = ref(true);
+type LocaleFormState = Required<UserSettingPreferences['locale']>;
+type LocaleSettingsInput = {
+  language?: string;
+  timezone?: string;
+  dateFormat?: string;
+  timeFormat?: string;
+  weekStartsOn?: number;
+  currency?: string;
+};
 
 // ── Section models — local reactive copies for v-model ──
 const appearance = ref({
   theme: 'auto' as UserSettingPreferences['appearance']['theme'],
 });
 
-const locale = ref({
+const locale = ref<LocaleFormState>({
   language: 'zh-CN',
   timezone: 'Asia/Shanghai',
   dateFormat: 'YYYY-MM-DD',
@@ -82,10 +89,45 @@ const backups = ref<any[]>([]);
 const syncStatus = ref(null);
 const syncing = ref(false);
 
+function isSupportedLocale(value: unknown): value is AppLocale {
+  return value === 'zh-CN' || value === 'en-US';
+}
+
+function normalizeTimeFormat(
+  value: string | undefined,
+  fallback: LocaleFormState['timeFormat'],
+): LocaleFormState['timeFormat'] {
+  return value === '12H' || value === '24H' ? value : fallback;
+}
+
 /** Wrap importSettings for the @import event (which has no payload). */
 async function handleImport() {
   // TODO: Open a file picker and read JSON, then pass to importSettings
   await importSettings({});
+}
+
+async function handleLocaleUpdate(value: LocaleSettingsInput) {
+  const previous = { ...locale.value };
+  const next: LocaleFormState = {
+    ...locale.value,
+    ...value,
+    timeFormat: normalizeTimeFormat(value.timeFormat, locale.value.timeFormat),
+  };
+  locale.value = next;
+
+  if (isSupportedLocale(next.language)) {
+    presentationStore.setLocale(next.language);
+  }
+
+  const result = await updateCategory('locale', next);
+  if (result) {
+    return;
+  }
+
+  locale.value = previous;
+  if (isSupportedLocale(previous.language)) {
+    presentationStore.setLocale(previous.language);
+  }
 }
 
 // ── Hydrate from store when settings load ──
@@ -127,20 +169,6 @@ watch(
     await updateCategory('appearance', { theme });
   },
   { immediate: true },
-);
-
-// ── Sync locale changes to vue-i18n immediately ──
-watch(
-  () => locale.value.language,
-  (lang) => {
-    const supported = ['zh-CN', 'en-US'];
-    if (supported.includes(lang)) {
-      const global = getI18nGlobal();
-      if (global.locale && typeof global.locale === 'object' && 'value' in global.locale) {
-        (global.locale as { value: string }).value = lang as AppLocale;
-      }
-    }
-  },
 );
 
 onMounted(async () => {
@@ -188,7 +216,7 @@ const tabs = computed(() => [
           </TabsContent>
 
           <TabsContent value="locale">
-            <LocaleSettings v-model="locale" />
+            <LocaleSettings :model-value="locale" @update:model-value="handleLocaleUpdate" />
           </TabsContent>
 
           <TabsContent value="ai">
