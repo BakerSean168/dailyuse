@@ -36,9 +36,22 @@ export default defineConfig({
         '../../packages/infrastructure-server/src',
       ),
       '@dailyuse/domain-server': resolve(__dirname, '../../packages/domain-server/src'),
+      '@dailyuse/domain-shared/shared': resolve(
+        __dirname,
+        '../../packages/domain-shared/src/shared/index.ts',
+      ),
+      '@dailyuse/domain-shared': resolve(__dirname, '../../packages/domain-shared/src'),
       '@dailyuse/application-server': resolve(__dirname, '../../packages/application-server/src'),
       '@dailyuse/contracts': resolve(__dirname, '../../packages/contracts/src'),
       '@dailyuse/utils': resolve(__dirname, '../../packages/utils/src'),
+      '@dailyuse/account/domain-server': resolve(
+        __dirname,
+        '../../packages/account/src/domain-server/index.ts',
+      ),
+      '@dailyuse/account/domain-shared': resolve(
+        __dirname,
+        '../../packages/account/src/domain-shared/index.ts',
+      ),
       '@dailyuse/authentication/domain-server': resolve(
         __dirname,
         '../../packages/authentication/src/domain-server/index.ts',
