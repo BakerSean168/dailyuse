@@ -38,18 +38,27 @@
         "cwd": "packages/task"
       }
     },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --config vitest.config.ts",
+        "cwd": "packages/task"
+      }
+    },
     "test:integration": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "inputs": ["default", "^production"],
       "cache": false,
       "options": {
-        "command": "vitest run --project task-integration"
+        "command": "vitest run --config vitest.integration.config.ts",
+        "cwd": "packages/task"
       }
     },
-    "test:performance": {
+    "test:bench": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-performance"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-bench"],
       "inputs": ["default", "^production"],
       "cache": false,
       "options": {

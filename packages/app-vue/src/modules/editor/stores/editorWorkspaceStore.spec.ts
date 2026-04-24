@@ -1,6 +1,6 @@
-import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EditorSessionClientDTO, EditorTabClientDTO } from '@dailyuse/contracts/editor';
+import { createTestPinia } from '@dailyuse/test-utils';
 
 const {
   ensureEditorWorkspace,
@@ -88,7 +88,7 @@ function createTab(overrides: Record<string, unknown> = {}): EditorTabClientDTO 
 
 describe('useEditorWorkspaceStore', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
+    createTestPinia();
     ensureEditorWorkspace.mockReset();
     listEditorSessions.mockReset();
     createEditorSession.mockReset();

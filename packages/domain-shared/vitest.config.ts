@@ -6,8 +6,8 @@ import { createSharedConfig } from '../../vitest.shared';
  * Vitest Configuration for domain-shared package
  *
  * This configuration merges with the shared config and adds project-specific settings.
- * The workspace configuration (vitest.workspace.ts) takes precedence when running tests
- * from the workspace root.
+ * Project-local config stays authoritative for this package while shared defaults come
+ * from the workspace-level Vitest helpers.
  */
 export default mergeConfig(
   createSharedConfig({

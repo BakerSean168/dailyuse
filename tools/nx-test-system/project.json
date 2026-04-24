@@ -1,0 +1,8 @@
+{
+  "name": "nx-test-system",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "root": "tools/nx-test-system",
+  "sourceRoot": "tools/nx-test-system/src",
+  "tags": ["scope:tools", "type:plugin"]
+}

@@ -5,14 +5,6 @@ import { createI18n } from 'vue-i18n';
 import { describe, expect, it } from 'vitest';
 import EditorToolbar from './EditorToolbar.vue';
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
-
 const i18n = createI18n({
   legacy: false,
   locale: 'en-US',

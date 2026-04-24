@@ -1,0 +1,7 @@
+{
+  "name": "@dailyuse/nx-test-system",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "generators": "./generators.json"
+}

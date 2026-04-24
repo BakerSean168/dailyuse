@@ -7,7 +7,7 @@
  * - helpers:  Random data generators, Result matchers, async waitFor
  * - mocks:    Proxy-based repository/event-bus mock factories
  * - fixtures: Domain-specific test data factories (task, account)
- * - setup:    Database lifecycle management (Docker, Prisma, cleanup)
+ * - setup:    Fast-test hooks, browser mocks, and database lifecycle management
  *
  * @example
  * ```typescript
@@ -74,6 +74,9 @@ export {
 } from './fixtures/index.js';
 
 // Setup (re-export selectively to avoid pulling in node:child_process for unit tests)
+export { applyFastTestEnv, registerFastTestHooks } from './setup/fast.js';
+export { installCommonBrowserMocks, createMatchMediaMock } from './setup/browser.js';
+export { createTestPinia, installVuePiniaTestHarness, mountWithPinia } from './setup/vue.js';
 export type {} from './setup/database.js';
 
 

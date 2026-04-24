@@ -112,8 +112,9 @@ Unit tests and integration tests MUST be written for all business logic. Coverag
 - Application service tests MUST verify business logic in isolation
 - Cross-module contracts (API endpoints, repository interfaces, protocol contracts) MUST have integration tests
 - E2E tests MUST cover critical user journeys (goal creation, task management, note saving)
-- All tests MUST use Vitest framework (configured in `vitest.workspace.ts`)
-- Tests MUST be executable via `nx test {project}` and `nx affected:test` for CI/CD
+- Unit, integration, smoke, contract, IPC, main-process, and benchmark suites MUST use Vitest
+- Browser E2E and sync regression suites MUST use Playwright
+- Fast suites MUST be executable via `pnpm nx run <project>:test` and `pnpm nx affected -t test` for CI/CD
 
 **Rationale:** Tests are executable specifications that prevent regressions and provide confidence during refactoring.
 
@@ -299,7 +300,7 @@ The following technology versions and tools are standardized across the project:
 | **Frontend (Desktop Renderer)** | React + shadcn/ui | Latest stable | Desktop renderer process |
 | **Desktop Framework** | Electron | 39.x+ | Cross-platform desktop shell |
 | **Database** | Prisma + PostgreSQL | Latest stable | ORM and persistence |
-| **Testing** | Vitest | Latest stable | Unit/integration testing |
+| **Testing** | Vitest + Playwright | Latest stable | Vitest for fast/boundary suites, Playwright for browser E2E |
 | **Linting** | ESLint | Latest (flat config) | Code quality enforcement |
 | **Formatting** | Prettier | Latest stable | Code style consistency |
 
@@ -315,7 +316,7 @@ All code changes MUST follow these review and quality gates:
 **Before Merge:**
 - `pnpm lint` MUST pass with zero errors
 - `pnpm format --check` MUST pass
-- `pnpm nx affected:test` MUST pass for changed projects
+- `pnpm nx affected -t test` MUST pass for changed projects
 - Type checking (`pnpm tsc`) MUST pass with zero errors
 - No `console.log()` in production code except explicit logging services
 
@@ -357,7 +358,7 @@ Constitution versions follow **Semantic Versioning**:
 - Circular dependency violations MUST be resolved before CI passes
 - Failing lint/test/governance checks MUST block merge
 - Application layers MUST be periodically audited for direct event dispatch violations
-- Regular compliance audits SHOULD run via `nx affected:lint` and `nx affected:test`
+- Regular compliance audits SHOULD run via `pnpm nx affected -t lint,test`
 
 ### Guidelines for Developers
 

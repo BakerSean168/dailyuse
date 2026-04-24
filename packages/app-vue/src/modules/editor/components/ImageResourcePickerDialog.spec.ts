@@ -7,14 +7,6 @@ import { nextTick } from 'vue';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import ImageResourcePickerDialog from './ImageResourcePickerDialog.vue';
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
-
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {
     id: 'resource-1' as ResourceClientDTO['id'],

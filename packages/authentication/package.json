@@ -45,10 +45,6 @@
       "import": "./dist/schema.js"
     }
   },
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch"
-  },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",

@@ -41,7 +41,7 @@ jobs:
         id: benchmarks
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run task:test:performance --outputStyle=static
+        run: pnpm nx run task:test:bench --outputStyle=static
 
       - name: Check benchmark results
         if: always()
@@ -53,7 +53,7 @@ jobs:
           echo "   - Stability variance: should be <10%"
           echo ""
           echo "ℹ️  If benchmarks failed, check logs above for details"
-          echo "💡 Tip: Run locally with: pnpm exec nx run task:test:performance"
+          echo "💡 Tip: Run locally with: pnpm nx run task:test:bench"
 
       - name: Verify no regressions
         if: always()
@@ -76,4 +76,4 @@ jobs:
           echo "If any metric exceeds targets, check:"
           echo "1. Review the benchmark test output above"
           echo "2. Check for other PRs affecting task sorting"
-          echo "3. Run benchmarks locally to verify: pnpm exec nx run task:test:performance"
+          echo "3. Run benchmarks locally to verify: pnpm nx run task:test:bench"

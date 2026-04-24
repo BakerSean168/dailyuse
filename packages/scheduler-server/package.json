@@ -8,13 +8,6 @@
     "dist",
     "src"
   ],
-  "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
-    "test": "vitest",
-    "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
-  },
   "dependencies": {
     "@dailyuse/utils": "workspace:*",
     "bree": "^9.2.2",

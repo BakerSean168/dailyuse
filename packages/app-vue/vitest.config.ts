@@ -9,7 +9,7 @@ const workspaceRoot = path.resolve(__dirname, '../..');
 export default mergeConfig(
   createSharedConfig({
     projectRoot: __dirname,
-    environment: 'node',
+    environment: 'happy-dom',
     aliasEntries: createUiVueSourceAliasEntries(workspaceRoot),
     aliases: {
       '@dailyuse/http-client': '../../packages/http-client/src/index.ts',
@@ -25,7 +25,8 @@ export default mergeConfig(
     test: {
       name: 'app-vue',
       include: ['src/**/*.{test,spec}.{ts,tsx}'],
-      environment: 'node',
+      environment: 'happy-dom',
+      setupFiles: ['./src/test/setup.ts'],
     },
   }),
 );

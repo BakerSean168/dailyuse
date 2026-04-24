@@ -1,36 +1,5 @@
-import { createPinia, setActivePinia } from 'pinia';
-import { mount } from '@vue/test-utils';
 import { vi } from 'vitest';
-import type { Component } from 'vue';
-import type { ComponentMountingOptions } from '@vue/test-utils';
-
-/**
- * 创建测试用的 Pinia 实例
- */
-export function createTestPinia() {
-  const pinia = createPinia();
-  setActivePinia(pinia);
-  return pinia;
-}
-
-/**
- * 挂载 Vue 组件的测试工具
- */
-export function mountWithPinia<T extends Component>(
-  component: T,
-  options?: ComponentMountingOptions<T>,
-) {
-  const pinia = createTestPinia();
-  const mergedOptions: ComponentMountingOptions<T> = {
-    ...(options ?? {}),
-    global: {
-      plugins: [pinia],
-      ...(options?.global ?? {}),
-    },
-  };
-
-  return mount(component, mergedOptions);
-}
+export { createTestPinia, mountWithPinia } from '@dailyuse/test-utils';
 
 /**
  * 创建 mock 应用服务

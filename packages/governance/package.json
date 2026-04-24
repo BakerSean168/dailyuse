@@ -52,9 +52,6 @@
       "import": "./dist/electron-entry/index.js"
     }
   },
-  "scripts": {
-    "seed": "tsx src/infrastructure-server/seed/seed-data.ts"
-  },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",

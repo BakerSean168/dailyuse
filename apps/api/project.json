@@ -24,7 +24,7 @@
     "start": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm start",
+        "command": "node ./dist/main.js",
         "cwd": "apps/api"
       },
       "dependsOn": ["build"]
@@ -35,7 +35,14 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project api"
+        "command": "vitest run --config apps/api/vitest.config.ts"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --config apps/api/vitest.config.ts"
       }
     },
     "test:smoke": {
@@ -44,7 +51,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project api-smoke"
+        "command": "vitest run --config apps/api/vitest.smoke.config.ts"
       }
     },
     "lint": {
@@ -65,35 +72,67 @@
     "prisma:generate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm prisma:generate",
-        "cwd": "apps/api"
+        "command": "pnpm nx run database:prisma-generate"
       }
     },
     "prisma:migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm prisma:migrate",
-        "cwd": "apps/api"
+        "command": "pnpm nx run database:prisma-migrate"
       }
     },
     "prisma:studio": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm prisma:studio",
-        "cwd": "apps/api"
+        "command": "pnpm nx run database:prisma-studio"
       }
     },
     "prisma:seed": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm prisma:seed",
-        "cwd": "apps/api"
+        "command": "pnpm nx run governance:seed"
       }
     },
     "db:push": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm prisma db push",
+        "command": "pnpm nx run database:prisma-push"
+      }
+    },
+    "docs:export": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node src/scripts/export-api-docs.js",
+        "cwd": "apps/api"
+      }
+    },
+    "docs:serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo API 文档访问地址: http://localhost:3888/api-docs",
+        "cwd": "apps/api"
+      }
+    },
+    "test:coverage": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --coverage --config apps/api/vitest.config.ts"
+      }
+    },
+    "test:ui": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --ui --config apps/api/vitest.config.ts"
+      }
+    },
+    "lint:fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec eslint . --ext .ts,.tsx --fix",
         "cwd": "apps/api"
       }
     }

@@ -4,14 +4,6 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MarkdownEditor from './MarkdownEditor.vue';
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
-
 document.createRange = (() =>
   ({
     setStart: () => {},

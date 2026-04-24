@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "sync-test-targets": {
+      "factory": "./src/generators/sync-test-targets/generator",
+      "schema": "./src/generators/sync-test-targets/schema.json",
+      "description": "Syncs Nx project test target conventions for the workspace."
+    }
+  }
+}

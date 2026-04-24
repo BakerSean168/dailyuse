@@ -103,6 +103,13 @@
         "command": "vitest run --config apps/desktop/vitest.config.ts"
       }
     },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --config apps/desktop/vitest.config.ts"
+      }
+    },
     "test:ipc": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/apps/desktop-ipc"],
@@ -111,12 +118,100 @@
         "cwd": "apps/desktop"
       }
     },
+    "test:ipc:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --config vitest.ipc.config.ts",
+        "cwd": "apps/desktop"
+      }
+    },
     "test:main": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/apps/desktop-main"],
       "options": {
-        "command": "vitest run --project desktop-main",
-        "cwd": "."
+        "command": "vitest run --config vitest.main.config.ts",
+        "cwd": "apps/desktop"
+      }
+    },
+    "db:reset": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-db.mjs",
+        "cwd": "apps/desktop"
+      }
+    },
+    "db:reset:dry": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-db.mjs --dry-run",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:dry": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs --dry-run",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:auth": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs auth",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:auth:dry": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs auth --dry-run",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:db": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs db",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:db:dry": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs db --dry-run",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:all": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs all",
+        "cwd": "apps/desktop"
+      }
+    },
+    "local-data:reset:all:dry": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-local-data.mjs all --dry-run",
+        "cwd": "apps/desktop"
       }
     },
     "typecheck": {

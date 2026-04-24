@@ -3,7 +3,11 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/contracts/src",
-  "tags": ["scope:shared", "type:lib", "layer:shared"],
+  "tags": [
+    "scope:shared",
+    "type:lib",
+    "layer:shared"
+  ],
   "targets": {
     "typecheck": {
       "executor": "nx:run-commands",
@@ -13,7 +17,9 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/packages/contracts/dist"],
+      "outputs": [
+        "{workspaceRoot}/packages/contracts/dist"
+      ],
       "options": {
         "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
         "cwd": "packages/contracts"
@@ -29,18 +35,34 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["packages/contracts/**/*.{ts,js}"]
+        "lintFilePatterns": [
+          "packages/contracts/**/*.{ts,js}"
+        ]
       }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "inputs": ["default", "^production"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "inputs": [
+        "default",
+        "^production"
+      ],
       "cache": true,
       "options": {
         "command": "vitest run --project contracts"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --project contracts"
       }
     }
   }

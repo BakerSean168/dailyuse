@@ -3,7 +3,11 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/authentication/src",
   "projectType": "library",
-  "tags": ["scope:authentication", "type:lib", "layer:domain"],
+  "tags": [
+    "scope:authentication",
+    "type:lib",
+    "layer:domain"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
@@ -11,15 +15,38 @@
         "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm tsup --clean=false",
         "cwd": "packages/authentication"
       },
-      "dependsOn": ["^build", "database:build"]
+      "dependsOn": [
+        "^build",
+        "database:build"
+      ]
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "pnpm tsup --watch --clean=false",
+        "cwd": "packages/authentication"
+      }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "inputs": ["default", "^production"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "inputs": [
+        "default",
+        "^production"
+      ],
       "cache": true,
       "options": {
         "command": "vitest run --project authentication"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --project authentication"
       }
     }
   }

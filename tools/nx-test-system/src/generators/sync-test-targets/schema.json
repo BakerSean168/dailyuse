@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "cli": "nx",
+  "id": "sync-test-targets",
+  "title": "Sync test targets",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Optional project name or relative project.json path to sync."
+    }
+  }
+}

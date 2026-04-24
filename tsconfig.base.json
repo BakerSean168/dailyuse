@@ -90,6 +90,9 @@
       // ✅ 测试工具
       "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
 
+      // ✅ 本地 Nx plugin
+      "@dailyuse/nx-test-system": ["tools/nx-test-system/index.js"],
+
       // ✅ API 内部路径
       "@api/shared": ["apps/api/src/shared/index.ts"]
     }

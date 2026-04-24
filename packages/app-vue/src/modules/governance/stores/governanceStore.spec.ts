@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createPinia, setActivePinia } from 'pinia';
 import type { RuleClientDTO } from '../types';
+import { createTestPinia } from '@dailyuse/test-utils';
 import { useGovernanceStore } from './governanceStore';
 
 function createRule(overrides: Partial<RuleClientDTO> = {}): RuleClientDTO {
@@ -26,7 +26,7 @@ function createRule(overrides: Partial<RuleClientDTO> = {}): RuleClientDTO {
 
 describe('useGovernanceStore', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
+    createTestPinia();
   });
 
   it('stores normalized POJO cache while preserving ordered list ids', () => {

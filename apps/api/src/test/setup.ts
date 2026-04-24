@@ -1,29 +1,22 @@
 /**
- * API 测试环境配置（真实数据库版本）
- * @description 使用真实 PostgreSQL 数据库进行测试
+ * API fast-test setup
+ * @description 默认 `api:test` 只负责快反馈测试，不在这里绑定真实数据库生命周期。
  */
 
-import { beforeEach, afterEach, vi } from 'vitest';
+import { registerFastTestHooks } from '@dailyuse/test-utils';
 
-beforeEach(async () => {
-  // 设置环境变量
-  process.env.NODE_ENV = 'test';
-  process.env.JWT_SECRET = 'test-jwt-secret-key';
-  process.env.DATABASE_URL = 'postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test';
-
-  // 设置时区为 UTC
-  process.env.TZ = 'UTC';
+registerFastTestHooks({
+  env: {
+    JWT_SECRET: 'test-jwt-secret-key',
+  },
 });
 
-afterEach(async () => {
-  // 清理模拟
-  vi.restoreAllMocks();
-});
-
-// API 测试工具函数
+// API test helper utilities. Fast tests should inject a fake db when constructing
+// a full app instance; smoke/integration suites own real boundary setup separately.
 export const ApiTestHelpers = {
   /**
-   * 创建测试用的 Express 应用
+   * Create a test Express app.
+   * Pass a fake db into app-factory callers when a fast test must avoid real Prisma.
    */
   createTestApp: async () => {
     const { createApp } = await import('./app-factory');
@@ -40,7 +33,7 @@ export const ApiTestHelpers = {
   },
 
   /**
-   * 模拟认证中间件
+   * Mock auth middleware for isolated HTTP tests.
    */
   mockAuth: (identityId = 'test-user-123') => {
     return (req: any, res: any, next: any) => {
@@ -49,5 +42,3 @@ export const ApiTestHelpers = {
     };
   },
 };
-
-console.log('🧪 API 测试环境初始化完成（真实数据库模式）');

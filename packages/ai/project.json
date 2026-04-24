@@ -3,22 +3,35 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/ai/src",
   "projectType": "library",
-  "tags": ["scope:ai", "type:lib", "layer:domain"],
+  "tags": [
+    "scope:ai",
+    "type:lib",
+    "layer:domain"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
       "options": {
         "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
         "cwd": "packages/ai"
       },
-      "dependsOn": ["^build", "database:build"]
+      "dependsOn": [
+        "^build",
+        "database:build"
+      ]
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["packages/ai/**/*.{ts,js}"]
+        "lintFilePatterns": [
+          "packages/ai/**/*.{ts,js}"
+        ]
       }
     },
     "typecheck": {
@@ -30,11 +43,23 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "inputs": ["default", "^production"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
+      "inputs": [
+        "default",
+        "^production"
+      ],
       "cache": true,
       "options": {
         "command": "vitest run --project ai"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --project ai"
       }
     }
   }

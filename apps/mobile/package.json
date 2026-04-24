@@ -2,15 +2,6 @@
   "name": "mobile",
   "main": "expo-router/entry",
   "version": "1.0.0",
-  "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "sync:brand": "pnpm nx run assets:generate-icons",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "lint": "expo lint"
-  },
   "dependencies": {
     "@dailyuse/app-react": "workspace:*",
     "@dailyuse/ui-react-native": "workspace:*",

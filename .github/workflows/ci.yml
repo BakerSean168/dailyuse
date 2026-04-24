@@ -40,6 +40,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🧭 Validate test target governance
+        run: pnpm test:targets:check
+
       - name: 🧹 Lint affected projects
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs

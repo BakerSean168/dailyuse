@@ -6,18 +6,22 @@
 
 ```bash
 pnpm nx run task:test
+pnpm nx run task:test:watch
 pnpm nx run api:test
+pnpm nx run api:test:watch
 pnpm nx run web:test
+pnpm nx run web:test:watch
 pnpm nx run desktop:test
+pnpm nx run desktop:test:watch
 ```
 
-适合在改动单个模块或单个应用后快速回归。
+适合在改动单个模块或单个应用后快速回归。`test` / `test:watch` 是默认 TDD 入口，不应依赖真实数据库、浏览器或跨进程环境。
 
 ## 专项测试入口
 
 ```bash
 pnpm nx run task:test:integration
-pnpm nx run task:test:performance
+pnpm nx run task:test:bench
 pnpm nx run api:test:smoke
 pnpm nx run web:e2e
 pnpm nx run web:e2e:ui
@@ -30,7 +34,7 @@ pnpm nx run desktop:test:main
 适用场景：
 
 - `task:test:integration`：数据库、Prisma、事务、仓储实现改动
-- `task:test:performance`：性能回归排查或性能优化验证
+- `task:test:bench`：性能回归排查或性能优化验证
 - `api:test:smoke`：HTTP 路由、middleware、序列化、状态码改动
 - `web:e2e`：浏览器主流程回归
 - `web:e2e:sync`：同步链路、跨端回归
@@ -44,7 +48,7 @@ pnpm nx run desktop:test:main
 pnpm nx affected -t test
 ```
 
-如果改动涉及特定边界，再补跑对应专项测试：
+这个命令应只承担快测试。如果改动涉及特定边界，再补跑对应专项测试：
 
 - API 路由或控制器：`pnpm nx run api:test:smoke`
 - Web adapter / mock handler / contracts：`pnpm nx run web:test`

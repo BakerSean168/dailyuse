@@ -19,6 +19,13 @@
         "cwd": "apps/mobile"
       }
     },
+    "ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec expo start --ios",
+        "cwd": "apps/mobile"
+      }
+    },
     "web": {
       "executor": "nx:run-commands",
       "options": {
@@ -29,7 +36,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm exec eslint src scripts --ext .ts,.tsx,.js",
+        "command": "pnpm exec expo lint",
         "cwd": "apps/mobile"
       }
     },
@@ -45,6 +52,14 @@
       "options": {
         "command": "pnpm nx run assets:generate-icons",
         "cwd": "."
+      }
+    },
+    "reset-project": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ./scripts/reset-project.js",
+        "cwd": "apps/mobile"
       }
     }
   }
