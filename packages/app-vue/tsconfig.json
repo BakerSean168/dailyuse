@@ -8,6 +8,7 @@
     "composite": false,
     "incremental": false,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
     "paths": {
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/account": ["../../packages/contracts/src/modules/account/index.ts"],
@@ -57,10 +58,16 @@
       "@dailyuse/governance/application-client": [
         "../../packages/governance/dist/application-client/index.d.ts"
       ],
+      "@dailyuse/governance/contracts": ["../../packages/governance/dist/contracts/index.d.ts"],
       "@dailyuse/schedule/domain-client": ["../../packages/schedule/src/domain-client/index.ts"],
       "@dailyuse/task/domain-client": ["../../packages/task/src/domain-client/index.ts"],
       "@dailyuse/repository/domain-client": ["../../packages/repository/src/domain-client/index.ts"],
-      "@dailyuse/app-vue/web-notification": ["../../packages/app-vue/src/web-notification.ts"]
+      "@dailyuse/app-vue/web-notification": ["../../packages/app-vue/src/web-notification.ts"],
+      "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"],
+      "@dailyuse/test-utils/*": [
+        "../../packages/test-utils/src/*",
+        "../../packages/test-utils/src/*.ts"
+      ]
     }
   },
   "include": ["src/**/*"],

@@ -103,7 +103,8 @@
       ],
       "@dailyuse/repository/infrastructure-server": [
         "../../packages/repository/src/infrastructure-server/index.ts"
-      ]
+      ],
+      "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"]
 
       // 运行时包（已删除）：
       // - @dailyuse/authentication / @dailyuse/authentication/api

@@ -1,6 +1,50 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "../.."
+    "rootDir": "../..",
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": ["apps/api/src/*"],
+      "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/*": [
+        "packages/contracts/src/modules/*/index.ts",
+        "packages/contracts/src/*/index.ts"
+      ],
+      "@dailyuse/http-client": ["packages/http-client/src/index.ts"],
+      "@dailyuse/utils": ["packages/utils/src/index.ts"],
+      "@dailyuse/utils/*": ["packages/utils/src/*/index.ts", "packages/utils/src/*.ts"],
+      "@dailyuse/editor": ["packages/editor/src/index.ts"],
+      "@dailyuse/editor/*": [
+        "packages/editor/src/*/index.ts",
+        "packages/editor/src/*.ts"
+      ],
+      "@dailyuse/dashboard": ["packages/dashboard/src/index.ts"],
+      "@dailyuse/dashboard/*": [
+        "packages/dashboard/src/*/index.ts",
+        "packages/dashboard/src/*.ts"
+      ],
+      "@dailyuse/notification": ["packages/notification/src/index.ts"],
+      "@dailyuse/notification/*": [
+        "packages/notification/src/*/index.ts",
+        "packages/notification/src/*.ts"
+      ],
+      "@dailyuse/repository": ["packages/repository/src/index.ts"],
+      "@dailyuse/repository/*": [
+        "packages/repository/src/*/index.ts",
+        "packages/repository/src/*.ts"
+      ],
+      "@dailyuse/repository/infrastructure-server": [
+        "packages/repository/src/infrastructure-server/index.ts"
+      ],
+      "@dailyuse/schedule": ["packages/schedule/src/index.ts"],
+      "@dailyuse/schedule/*": [
+        "packages/schedule/src/*/index.ts",
+        "packages/schedule/src/*.ts"
+      ],
+      "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
+      "@dailyuse/ai": ["packages/ai/dist/index.d.ts"],
+      "@dailyuse/ai/*": ["packages/ai/dist/*/index.d.ts", "packages/ai/dist/*.d.ts"],
+      "@api/shared": ["apps/api/src/shared/index.ts"]
+    }
   }
 }

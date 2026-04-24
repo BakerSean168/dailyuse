@@ -164,7 +164,7 @@ export function aTaskTemplateState(overrides: Partial<TaskTemplateState> = {}): 
     estimatedMinutes: overrides.estimatedMinutes ?? null,
     actualMinutes: overrides.actualMinutes ?? null,
     note: overrides.note ?? null,
-    dependencyStatus: overrides.dependencyStatus ?? 'none',
+    dependencyStatus: overrides.dependencyStatus ?? 'None',
     isBlocked: overrides.isBlocked ?? false,
     blockingReason: overrides.blockingReason ?? null,
     createdAt: overrides.createdAt ?? now,

@@ -381,7 +381,7 @@ export const PowerSyncApiModule: IApiModule = {
               switch (opType) {
                 case 'PUT': {
                   // Upsert — create or replace
-                  const record = { ...normalizeCrudData(tableName, data), id };
+                  const record: Record<string, unknown> = { ...normalizeCrudData(tableName, data), id };
                   // Inject identity_id for user-owned tables
                   if (IDENTITY_ID_TABLES.has(tableName)) {
                     record.identityId = identityId;

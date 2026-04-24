@@ -55,6 +55,7 @@ tsconfig.tsbuildinfo
 
 # Test and debug files
 test-*.mjs
+!tools/test/test-target-governance.mjs
 test-*.html
 test-*.json
 test-*.txt

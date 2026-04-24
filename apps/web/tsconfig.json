@@ -38,7 +38,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
 
     // 类型定义：包含 Vite 客户端类型（如 import.meta.env）
-    "types": ["vite/client"],
+    "types": ["node", "vite/client"],
 
     // 模块解析：使用 Bundler 策略（适配 Vite）
     // Bundler 策略会处理：
@@ -94,6 +94,23 @@
       "@dailyuse/contracts/*": [
         "../../packages/contracts/src/modules/*/index.ts",
         "../../packages/contracts/src/*/index.ts"
+      ],
+      "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"],
+      "@dailyuse/test-utils/*": [
+        "../../packages/test-utils/src/*",
+        "../../packages/test-utils/src/*.ts"
+      ],
+      "@dailyuse/repository/application-client": [
+        "../../packages/repository/dist/application-client/index.d.ts"
+      ],
+      "@dailyuse/repository/infrastructure-client": [
+        "../../packages/repository/dist/infrastructure-client/index.d.ts"
+      ],
+      "@dailyuse/schedule/application-client": [
+        "../../packages/schedule/dist/application-client/index.d.ts"
+      ],
+      "@dailyuse/schedule/infrastructure-client": [
+        "../../packages/schedule/dist/infrastructure-client/index.d.ts"
       ]
 
       // 其他 @dailyuse/* 包通过 package.json dependencies + exports → dist 解析。
