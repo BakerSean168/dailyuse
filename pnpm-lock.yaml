@@ -490,6 +490,9 @@ importers:
       '@dailyuse/notification':
         specifier: workspace:*
         version: link:../../packages/notification
+      '@dailyuse/notification-runtime':
+        specifier: workspace:*
+        version: link:../../packages/notification-runtime
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
@@ -867,6 +870,9 @@ importers:
       '@dailyuse/notification':
         specifier: workspace:*
         version: link:../../packages/notification
+      '@dailyuse/notification-runtime':
+        specifier: workspace:*
+        version: link:../../packages/notification-runtime
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
@@ -1531,6 +1537,22 @@ importers:
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
+
+  packages/notification-runtime:
+    dependencies:
+      '@dailyuse/app-vue':
+        specifier: workspace:*
+        version: link:../app-vue
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/patterns:
     dependencies:
