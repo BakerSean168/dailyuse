@@ -59,6 +59,7 @@
       "@dailyuse/reminder/*": ["packages/reminder/src/*/index.ts"],
       "@dailyuse/notification": ["packages/notification/src/index.ts"],
       "@dailyuse/notification/*": ["packages/notification/src/*/index.ts"],
+      "@dailyuse/notification-runtime": ["packages/notification-runtime/src/index.ts"],
       "@dailyuse/schedule": ["packages/schedule/src/index.ts"],
       "@dailyuse/schedule/*": ["packages/schedule/src/*/index.ts"],
       "@dailyuse/setting": ["packages/setting/src/index.ts"],

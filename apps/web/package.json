@@ -16,6 +16,7 @@
     "@dailyuse/governance": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
+    "@dailyuse/notification-runtime": "workspace:*",
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/schedule": "workspace:*",

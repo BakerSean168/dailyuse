@@ -1,0 +1,7 @@
+{
+  "name": "notification-runtime",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "packages/notification-runtime/src",
+  "tags": ["scope:notification", "type:lib", "layer:ui"]
+}

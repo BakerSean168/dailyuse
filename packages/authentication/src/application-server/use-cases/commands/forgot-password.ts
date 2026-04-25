@@ -1,6 +1,8 @@
-import type { IAuthIdentityRepository } from '@/domain-server';
-import type { IPasswordResetCodeStore } from '@/domain-server/services/i-password-reset-code-store';
-import type { IEmailSender } from '@/domain-server/services/i-email-sender';
+import type {
+  IAuthIdentityRepository,
+  IEmailSender,
+  IPasswordResetCodeStore,
+} from '../../../domain-server';
 import type { ForgotPasswordReq } from '@dailyuse/contracts/authentication';
 
 export class ForgotPassword {

@@ -267,7 +267,8 @@ export function createAuthenticationModule(
             message: err.message,
             context: {
               ...(err.context ?? {}),
-              domainCode: err.code,
+              domainCode:
+                typeof err.context?.domainCode === 'string' ? err.context.domainCode : err.code,
             },
           });
         }

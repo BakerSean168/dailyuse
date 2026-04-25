@@ -1,4 +1,4 @@
-import type { IAuthSessionRepository } from '@/domain-server';
+import type { IAuthSessionRepository } from '../../../domain-server';
 import type { RevokeSessionReq, RevokeSessionRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
 

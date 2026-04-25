@@ -1,7 +1,10 @@
 import type { GetCurrentUserRes } from '@dailyuse/contracts/authentication';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
-import { AuthSessionId } from '@/domain-shared';
+import {
+  type IAuthIdentityRepository,
+  type IAuthSessionRepository,
+} from '../../../domain-server';
+import { AuthSessionId } from '../../../domain-shared';
 
 export class GetCurrentUser {
   constructor(

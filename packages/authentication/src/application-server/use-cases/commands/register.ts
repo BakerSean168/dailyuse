@@ -4,12 +4,16 @@
  * Application service for user registration.
  */
 
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
-import { RegistrationService as DomainRegistrationService, AuthSession } from '@/domain-server';
-import type { IPasswordHasher } from '@/domain-shared';
+import {
+  AuthSession,
+  RegistrationService as DomainRegistrationService,
+  type IAuthIdentityRepository,
+  type IAuthSessionRepository,
+  type ITokenProvider,
+} from '../../../domain-server';
+import type { IPasswordHasher } from '../../../domain-shared';
 import type { RegisterByEmailReq, RegisterByEmailRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
-import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
 import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
 
 /**

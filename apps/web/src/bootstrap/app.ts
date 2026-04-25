@@ -47,7 +47,7 @@ export async function bootstrapMainApp() {
 
   const runStartupPhase = async () => {
     const { registerNotificationInitializationTasks } =
-      await import('@dailyuse/app-vue/web-notification');
+      await import('@dailyuse/notification-runtime');
     registerNotificationInitializationTasks();
 
     await InitializationManager.getInstance()

@@ -1,6 +1,6 @@
 import type { ListSessionsRes } from '@dailyuse/contracts/authentication';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import type { IAuthSessionRepository } from '@/domain-server';
+import type { IAuthSessionRepository } from '../../../domain-server';
 
 export class ListSessions {
   constructor(private readonly sessionRepository: IAuthSessionRepository) {}

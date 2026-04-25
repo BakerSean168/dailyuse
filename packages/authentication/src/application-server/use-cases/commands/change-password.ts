@@ -1,6 +1,10 @@
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
-import { CredentialType, HashedPassword, PlainPassword } from '@/domain-shared';
-import type { IPasswordHasher } from '@/domain-shared';
+import type { IAuthIdentityRepository, IAuthSessionRepository } from '../../../domain-server';
+import {
+  CredentialType,
+  HashedPassword,
+  PlainPassword,
+  type IPasswordHasher,
+} from '../../../domain-shared';
 import type { ChangePasswordReq, ChangePasswordRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';

@@ -4,12 +4,16 @@
  * Application service for user login.
  */
 
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
-import { LoginService as DomainLoginService, AuthSession } from '@/domain-server';
+import {
+  AuthSession,
+  LoginService as DomainLoginService,
+  type IAuthIdentityRepository,
+  type IAuthSessionRepository,
+  type ITokenProvider,
+} from '../../../domain-server';
 import type { LoginByEmailReq, LoginByEmailRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
-import type { IPasswordHasher } from '@/domain-shared';
-import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
+import type { IPasswordHasher } from '../../../domain-shared';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('Login');

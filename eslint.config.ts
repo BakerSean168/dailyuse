@@ -127,6 +127,13 @@ export default tseslint.config(
       },
     },
     {
+      files: ['**/src/test/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}'],
+      plugins: { '@nx': nxPlugin },
+      rules: {
+        '@nx/enforce-module-boundaries': 'off',
+      },
+    },
+    {
       files: ['packages/test-utils/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       plugins: { '@nx': nxPlugin },
       rules: {

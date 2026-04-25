@@ -1,4 +1,4 @@
-import type { IEmailSender } from '@/domain-server/services/i-email-sender';
+import type { IEmailSender } from '../../domain-server';
 
 /**
  * Console-based implementation of IEmailSender.

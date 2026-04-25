@@ -17,7 +17,6 @@ const webDevWorkspaceEntries = [
   ['@dailyuse/app-vue/web-shell', 'packages/app-vue/src/web-shell.ts'],
   ['@dailyuse/app-vue/web-i18n', 'packages/app-vue/src/web-i18n.ts'],
   ['@dailyuse/app-vue/web-bootstrap', 'packages/app-vue/src/web-bootstrap.ts'],
-  ['@dailyuse/app-vue/web-notification', 'packages/app-vue/src/web-notification.ts'],
   ['@dailyuse/app-vue/web-entry', 'packages/app-vue/src/web-entry.ts'],
   ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   [
@@ -67,6 +66,9 @@ export default defineConfig(({ mode, command }) => {
 
   const sharedWorkspaceAliases = [
     ...createAssetsAliasEntries(workspaceRoot),
+    ...createWorkspaceSourceAliasEntries(workspaceRoot, [
+      ['@dailyuse/notification-runtime', 'packages/notification-runtime/src/index.ts'],
+    ]),
     ...(isDev ? createUiVueSourceAliasEntries(workspaceRoot) : []),
   ];
 

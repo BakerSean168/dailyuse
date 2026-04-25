@@ -13,10 +13,6 @@
     "./web-overlays": {
       "types": "./src/web-overlays.ts",
       "import": "./src/web-overlays.ts"
-    },
-    "./web-notification": {
-      "types": "./src/web-notification.ts",
-      "import": "./src/web-notification.ts"
     }
   },
   "dependencies": {

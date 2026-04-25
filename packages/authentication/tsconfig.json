@@ -2,21 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./dist",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@dailyuse/http-client": ["../http-client/src/index.ts"],
-      "@dailyuse/contracts": ["../contracts/src/index.ts"],
-      "@dailyuse/contracts/*": [
-        "../contracts/src/modules/*/index.ts",
-        "../contracts/src/*/index.ts"
-      ],
-      "@dailyuse/database": ["../database/src/index.ts"],
-      "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
-      "@dailyuse/domain-shared/*": ["../domain-shared/src/*/index.ts"],
-      "@dailyuse/utils": ["../utils/src/index.ts"],
-      "@dailyuse/patterns": ["../patterns/src/index.ts"]
-    }
+    "outDir": "./dist"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]

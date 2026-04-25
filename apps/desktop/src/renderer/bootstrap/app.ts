@@ -12,7 +12,7 @@ import {
   hydrateDesktopBootstrapAuthState,
   usePresentationPreferenceStore,
 } from '@dailyuse/app-vue';
-import { registerNotificationInitializationTasks } from '@dailyuse/app-vue/web-notification';
+import { registerNotificationInitializationTasks } from '@dailyuse/notification-runtime';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 

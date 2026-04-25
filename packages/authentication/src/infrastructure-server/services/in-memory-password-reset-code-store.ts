@@ -1,4 +1,4 @@
-import type { IPasswordResetCodeStore } from '@/domain-server/services/i-password-reset-code-store';
+import type { IPasswordResetCodeStore } from '../../domain-server';
 
 /** Code TTL: 10 minutes in milliseconds */
 const CODE_TTL_MS = 10 * 60 * 1000;

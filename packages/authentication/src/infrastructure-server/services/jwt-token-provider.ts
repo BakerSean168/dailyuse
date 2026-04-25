@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
 import * as crypto from 'crypto';
 import type {
-  ITokenProvider,
   AccessTokenPayload,
   RefreshTokenPayload,
   AuthTokens,
-} from '@/domain-server/services/token-provider.interface';
+  ITokenProvider,
+} from '../../domain-server';
 import { type Result, ok, fail, ResultCode } from '@dailyuse/contracts/result';
 
 export class JwtTokenProvider implements ITokenProvider {

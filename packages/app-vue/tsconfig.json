@@ -62,7 +62,6 @@
       "@dailyuse/schedule/domain-client": ["../../packages/schedule/src/domain-client/index.ts"],
       "@dailyuse/task/domain-client": ["../../packages/task/src/domain-client/index.ts"],
       "@dailyuse/repository/domain-client": ["../../packages/repository/src/domain-client/index.ts"],
-      "@dailyuse/app-vue/web-notification": ["../../packages/app-vue/src/web-notification.ts"],
       "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"],
       "@dailyuse/test-utils/*": [
         "../../packages/test-utils/src/*",

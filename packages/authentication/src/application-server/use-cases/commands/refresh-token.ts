@@ -4,13 +4,15 @@
  * 刷新访问令牌应用服务
  */
 
-import type { IAuthSessionRepository } from '@/domain-server';
-import type { IAuthIdentityRepository } from '@/domain-server';
+import {
+  type IAuthIdentityRepository,
+  type IAuthSessionRepository,
+  type ITokenProvider,
+} from '../../../domain-server';
 import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
-import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
-import { AuthSessionId } from '@/domain-shared';
+import { AuthSessionId } from '../../../domain-shared';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RefreshToken');

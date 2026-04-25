@@ -1,7 +1,14 @@
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
-import type { IPasswordResetCodeStore } from '@/domain-server/services/i-password-reset-code-store';
-import { CredentialType, HashedPassword, PlainPassword } from '@/domain-shared';
-import type { IPasswordHasher } from '@/domain-shared';
+import type {
+  IAuthIdentityRepository,
+  IAuthSessionRepository,
+  IPasswordResetCodeStore,
+} from '../../../domain-server';
+import {
+  CredentialType,
+  HashedPassword,
+  PlainPassword,
+  type IPasswordHasher,
+} from '../../../domain-shared';
 import type { ResetPasswordReq } from '@dailyuse/contracts/authentication';
 
 // Business exceptions
