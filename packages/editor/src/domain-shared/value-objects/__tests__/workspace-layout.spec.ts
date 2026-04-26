@@ -30,4 +30,42 @@ describe('WorkspaceLayout', () => {
     expect(updated.isSidebarVisible).toBe(false);
     expect(updated.isPanelVisible).toBe(true);
   });
+
+  it('moves sidebar', () => {
+    let layout = WorkspaceLayout.createDefault();
+    expect(layout.isSidebarOnLeft).toBe(true);
+
+    layout = layout.moveSidebarToRight();
+    expect(layout.sidebarPosition).toBe('Right');
+    expect(layout.isSidebarOnLeft).toBe(false);
+
+    layout = layout.moveSidebarToLeft();
+    expect(layout.sidebarPosition).toBe('Left');
+  });
+
+  it('checks panel position', () => {
+    const layout = WorkspaceLayout.createDefault();
+    expect(layout.isPanelOnBottom).toBe(true);
+  });
+
+  it('converts to Server DTO', () => {
+    const layout = WorkspaceLayout.createDefault();
+    const dto = layout.toServerDTO();
+    expect(dto.sidebarPosition).toBe('Left');
+
+    const layout2 = WorkspaceLayout.create(dto);
+    expect(layout2.sidebarPosition).toBe('Left');
+
+    const layout3 = WorkspaceLayout.fromDTO(dto);
+    expect(layout3.sidebarPosition).toBe('Left');
+  });
+
+  it('converts to/from Persistence DTO', () => {
+    const layout = WorkspaceLayout.createDefault();
+    const dto = layout.toPersistenceDTO();
+    expect(dto.sidebar_position).toBe('Left');
+
+    const layout2 = WorkspaceLayout.fromPersistenceDTO(dto);
+    expect(layout2.sidebarPosition).toBe('Left');
+  });
 });
