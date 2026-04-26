@@ -2,12 +2,29 @@
 
 const { formatFiles, getProjects, joinPathFragments, updateProjectConfiguration } = require("@nx/devkit");
 
+const governedDomainProjects = new Set([
+  "account",
+  "ai",
+  "authentication",
+  "domain-shared",
+  "editor",
+  "goal",
+  "governance",
+  "notification",
+  "reminder",
+  "schedule",
+  "setting",
+  "task",
+]);
+
 const boundaryRequiredTargets = new Map([
   ["api", ["test", "test:watch", "test:smoke"]],
   ["task", ["test", "test:watch", "test:integration", "test:bench"]],
   ["desktop", ["test", "test:watch", "test:ipc", "test:main"]],
   ["web", ["test", "test:watch", "e2e", "e2e:sync"]],
 ]);
+
+const governedRequiredTargets = ["test", "test:watch", "test:coverage"];
 
 function createBoundaryTargetTemplates(projectName) {
   const templates = {
@@ -176,6 +193,44 @@ function createBoundaryTargetTemplates(projectName) {
   return templates[projectName] ?? null;
 }
 
+function createLocalVitestTargetTemplates(projectRoot, includeCoverage = false) {
+  const templates = {
+    test: {
+      executor: "nx:run-commands",
+      outputs: ["{workspaceRoot}/coverage/{projectRoot}"],
+      inputs: ["default", "^production"],
+      cache: true,
+      options: {
+        command: "vitest run --config vitest.config.ts",
+        cwd: projectRoot,
+      },
+    },
+    "test:watch": {
+      executor: "nx:run-commands",
+      cache: false,
+      options: {
+        command: "vitest --config vitest.config.ts",
+        cwd: projectRoot,
+      },
+    },
+  };
+
+  if (includeCoverage) {
+    templates["test:coverage"] = {
+      executor: "nx:run-commands",
+      outputs: ["{workspaceRoot}/coverage/{projectRoot}"],
+      inputs: ["default", "^production"],
+      cache: true,
+      options: {
+        command: "vitest run --config vitest.config.ts --coverage",
+        cwd: projectRoot,
+      },
+    };
+  }
+
+  return templates;
+}
+
 async function syncTestTargetsGenerator(tree, schema = {}) {
   const changedProjects = [];
   const changedFiles = [];
@@ -190,6 +245,10 @@ async function syncTestTargetsGenerator(tree, schema = {}) {
 
     matchedProjects.push(projectName);
     const targets = { ...(projectConfig.targets ?? {}) };
+    const projectRoot = projectConfig.root;
+    const hasLocalVitestConfig = tree.exists(joinPathFragments(projectRoot, "vitest.config.ts"));
+    const isBoundaryProject = boundaryRequiredTargets.has(projectName);
+    const isGovernedDomainProject = governedDomainProjects.has(projectName);
     let changed = false;
 
     if (targets["test:performance"]) {
@@ -211,10 +270,36 @@ async function syncTestTargetsGenerator(tree, schema = {}) {
     const targetTemplates = createBoundaryTargetTemplates(projectName);
     if (targetTemplates) {
       for (const [targetName, targetTemplate] of Object.entries(targetTemplates)) {
-        if (!targets[targetName]) {
+        if (!areTargetsEqual(targets[targetName], targetTemplate)) {
           targets[targetName] = cloneTarget(targetTemplate);
           changed = true;
         }
+      }
+    }
+
+    const shouldNormalizeLocalVitestTargets =
+      hasLocalVitestConfig &&
+      !isBoundaryProject &&
+      (
+        isGovernedDomainProject
+        || usesVitest(targets.test)
+        || usesVitest(targets["test:watch"])
+        || usesVitest(targets["test:coverage"])
+      );
+
+    if (shouldNormalizeLocalVitestTargets) {
+      const localVitestTargets = createLocalVitestTargetTemplates(projectRoot, isGovernedDomainProject);
+      for (const [targetName, targetTemplate] of Object.entries(localVitestTargets)) {
+        if (!areTargetsEqual(targets[targetName], targetTemplate)) {
+          targets[targetName] = cloneTarget(targetTemplate);
+          changed = true;
+        }
+      }
+    } else if (isGovernedDomainProject && hasLocalVitestConfig) {
+      const coverageTarget = createLocalVitestTargetTemplates(projectRoot, true)["test:coverage"];
+      if (!areTargetsEqual(targets["test:coverage"], coverageTarget)) {
+        targets["test:coverage"] = cloneTarget(coverageTarget);
+        changed = true;
       }
     }
 
@@ -227,9 +312,19 @@ async function syncTestTargetsGenerator(tree, schema = {}) {
       }
     }
 
+    if (isGovernedDomainProject) {
+      for (const targetName of governedRequiredTargets) {
+        if (!targets[targetName]) {
+          missingTargets.push(
+            `${projectName}: missing required target "${targetName}" in ${joinPathFragments(projectRoot, "project.json")}`,
+          );
+        }
+      }
+    }
+
     if (targets.test && usesVitest(targets.test) && !targets["test:watch"]) {
       missingTargets.push(
-        `${projectName}: vitest test target requires "test:watch" in ${joinPathFragments(projectConfig.root, "project.json")}`,
+        `${projectName}: vitest test target requires "test:watch" in ${joinPathFragments(projectRoot, "project.json")}`,
       );
     }
 
@@ -255,11 +350,6 @@ async function syncTestTargetsGenerator(tree, schema = {}) {
 
   if (changedProjects.length > 0) {
     await formatFiles(tree);
-    return {
-      outOfSyncMessage:
-        "Some Nx projects were missing normalized test targets or still used legacy test target names.",
-      outOfSyncDetails: changedFiles.map((filePath) => `${filePath}: normalized test target configuration`),
-    };
   }
 }
 
@@ -332,6 +422,10 @@ function matchesProjectFilter(projectName, projectRoot, filter) {
 
 function cloneTarget(target) {
   return JSON.parse(JSON.stringify(target));
+}
+
+function areTargetsEqual(a, b) {
+  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
 module.exports = syncTestTargetsGenerator;

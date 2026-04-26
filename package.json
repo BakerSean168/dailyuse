@@ -40,6 +40,8 @@
     "test:smoke": "pnpm nx run api:test:smoke",
     "test:integration": "pnpm nx run task:test:integration",
     "test:all": "pnpm nx run-many -t test --projects=task,api",
+    "test:coverage:domain": "pnpm nx run-many -t test:coverage --projects=account,ai,authentication,domain-shared,editor,goal,governance,notification,reminder,schedule,setting,task",
+    "test:coverage:affected": "pnpm nx affected -t test:coverage",
     "test:api": "pnpm nx run api:test",
     "test:web": "pnpm nx run web:test",
     "test:targets:sync": "pnpm nx g @dailyuse/nx-test-system:sync-test-targets",

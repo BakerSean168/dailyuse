@@ -65,6 +65,16 @@
         "command": "vitest run --config vitest.performance.config.ts -t \"acceptable time\"",
         "cwd": "packages/task"
       }
+    },
+    "test:coverage": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.config.ts --coverage",
+        "cwd": "packages/task"
+      }
     }
   }
 }

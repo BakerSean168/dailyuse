@@ -7,12 +7,29 @@ const shouldWrite = rawArgs.includes('--write');
 const projectFilter = getArgValue('--project');
 const mode = shouldWrite ? 'write' : 'check';
 
+const governedDomainProjects = new Set([
+  'account',
+  'ai',
+  'authentication',
+  'domain-shared',
+  'editor',
+  'goal',
+  'governance',
+  'notification',
+  'reminder',
+  'schedule',
+  'setting',
+  'task',
+]);
+
 const boundaryRequiredTargets = new Map([
   ['api', ['test', 'test:watch', 'test:smoke']],
   ['task', ['test', 'test:watch', 'test:integration', 'test:bench']],
   ['desktop', ['test', 'test:watch', 'test:ipc', 'test:main']],
   ['web', ['test', 'test:watch', 'e2e', 'e2e:sync']],
 ]);
+
+const governedRequiredTargets = ['test', 'test:watch', 'test:coverage'];
 
 const projectFiles = await findProjectJsonFiles(ROOT);
 const errors = [];
@@ -28,6 +45,10 @@ for (const projectFile of projectFiles) {
 
   matchedProjectCount += 1;
   const targets = json.targets ?? {};
+  const projectRoot = toRelative(path.dirname(projectFile));
+  const hasLocalVitestConfig = await fileExists(path.join(path.dirname(projectFile), 'vitest.config.ts'));
+  const isBoundaryProject = boundaryRequiredTargets.has(json.name);
+  const isGovernedDomainProject = governedDomainProjects.has(json.name);
   let changed = false;
 
   if (targets['test:performance']) {
@@ -39,21 +60,39 @@ for (const projectFile of projectFiles) {
     changed = true;
   }
 
-  if (!targets['test:watch']) {
-    const watchTarget = deriveWatchTarget(targets.test);
-    if (watchTarget) {
-      targets['test:watch'] = watchTarget;
-      changed = true;
-    }
-  }
-
   const targetTemplates = getBoundaryTargetTemplates(json.name);
   if (shouldWrite && targetTemplates) {
     for (const [targetName, targetTemplate] of Object.entries(targetTemplates)) {
-      if (!targets[targetName]) {
+      if (!areTargetsEqual(targets[targetName], targetTemplate)) {
         targets[targetName] = structuredClone(targetTemplate);
         changed = true;
       }
+    }
+  }
+
+  const shouldNormalizeLocalVitestTargets =
+    hasLocalVitestConfig &&
+    !isBoundaryProject &&
+    (
+      isGovernedDomainProject
+      || usesVitest(targets.test)
+      || usesVitest(targets['test:watch'])
+      || usesVitest(targets['test:coverage'])
+    );
+
+  if (shouldWrite && shouldNormalizeLocalVitestTargets) {
+    const localVitestTargets = getLocalVitestTargetTemplates(projectRoot, isGovernedDomainProject);
+    for (const [targetName, targetTemplate] of Object.entries(localVitestTargets)) {
+      if (!areTargetsEqual(targets[targetName], targetTemplate)) {
+        targets[targetName] = structuredClone(targetTemplate);
+        changed = true;
+      }
+    }
+  } else if (shouldWrite && isGovernedDomainProject && hasLocalVitestConfig) {
+    const coverageTarget = getLocalVitestTargetTemplates(projectRoot, true)['test:coverage'];
+    if (!areTargetsEqual(targets['test:coverage'], coverageTarget)) {
+      targets['test:coverage'] = structuredClone(coverageTarget);
+      changed = true;
     }
   }
 
@@ -66,8 +105,20 @@ for (const projectFile of projectFiles) {
     }
   }
 
+  if (isGovernedDomainProject) {
+    for (const targetName of governedRequiredTargets) {
+      if (!targets[targetName]) {
+        errors.push(`${json.name}: missing required target "${targetName}" in ${toRelative(projectFile)}`);
+      }
+    }
+  }
+
   if (targets.test && usesVitest(targets.test) && !targets['test:watch']) {
     errors.push(`${json.name}: vitest test target requires "test:watch" in ${toRelative(projectFile)}`);
+  }
+
+  if (isGovernedDomainProject) {
+    await checkDomainStructure(json.name, path.dirname(projectFile), errors);
   }
 
   if (changed) {
@@ -133,6 +184,44 @@ function deriveWatchTarget(testTarget) {
     cache: false,
     options: watchOptions,
   };
+}
+
+function getLocalVitestTargetTemplates(projectRoot, includeCoverage = false) {
+  const templates = {
+    test: {
+      executor: 'nx:run-commands',
+      outputs: ['{workspaceRoot}/coverage/{projectRoot}'],
+      inputs: ['default', '^production'],
+      cache: true,
+      options: {
+        command: 'vitest run --config vitest.config.ts',
+        cwd: projectRoot,
+      },
+    },
+    'test:watch': {
+      executor: 'nx:run-commands',
+      cache: false,
+      options: {
+        command: 'vitest --config vitest.config.ts',
+        cwd: projectRoot,
+      },
+    },
+  };
+
+  if (includeCoverage) {
+    templates['test:coverage'] = {
+      executor: 'nx:run-commands',
+      outputs: ['{workspaceRoot}/coverage/{projectRoot}'],
+      inputs: ['default', '^production'],
+      cache: true,
+      options: {
+        command: 'vitest run --config vitest.config.ts --coverage',
+        cwd: projectRoot,
+      },
+    };
+  }
+
+  return templates;
 }
 
 function getBoundaryTargetTemplates(projectName) {
@@ -347,6 +436,135 @@ function matchesProjectFilter(projectFile, projectName, filter) {
   const normalizedFilter = filter.replaceAll('\\', '/');
   const relativePath = toRelative(projectFile);
   return projectName === normalizedFilter || relativePath === normalizedFilter;
+}
+
+async function checkDomainStructure(projectName, projectDir, errors) {
+  const structuralRules = [
+    {
+      implementationDirectories: ['src/domain-server/aggregates'],
+      testDirectories: ['src/domain-server/aggregates'],
+      label: 'aggregate',
+    },
+    {
+      implementationDirectories: ['src/domain-server/services'],
+      testDirectories: ['src/domain-server/services'],
+      label: 'domain service',
+    },
+    {
+      implementationDirectories: ['src/domain-server/value-objects', 'src/domain-shared/value-objects'],
+      testDirectories: ['src/domain-server/value-objects', 'src/domain-shared/value-objects'],
+      label: 'value object',
+    },
+  ];
+
+  for (const rule of structuralRules) {
+    const hasImplementations = await Promise.all(
+      rule.implementationDirectories.map((directory) =>
+        hasImplementationFiles(path.join(projectDir, directory)),
+      ),
+    );
+
+    if (!hasImplementations.some(Boolean)) {
+      continue;
+    }
+
+    const hasTests = await Promise.all(
+      rule.testDirectories.map((directory) => hasTestFiles(path.join(projectDir, directory))),
+    );
+
+    if (hasTests.some(Boolean)) {
+      continue;
+    }
+
+    errors.push(
+      `${projectName}: ${rule.implementationDirectories.join(' or ')} contains implementation files but no ${rule.label} tests under the governed subtree`,
+    );
+  }
+}
+
+async function hasImplementationFiles(dir) {
+  if (!(await fileExists(dir))) {
+    return false;
+  }
+
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '__tests__') continue;
+      if (await hasImplementationFiles(fullPath)) {
+        return true;
+      }
+      continue;
+    }
+
+    if (await isImplementationFile(fullPath, entry.name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function hasTestFiles(dir) {
+  if (!(await fileExists(dir))) {
+    return false;
+  }
+
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (await hasTestFiles(fullPath)) {
+        return true;
+      }
+      continue;
+    }
+
+    if (isTestFile(entry.name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function isImplementationFile(fullPath, fileName) {
+  if (isTestFile(fileName)) {
+    return false;
+  }
+
+  if (!/\.[cm]?[jt]sx?$/.test(fileName)) {
+    return false;
+  }
+
+  if (fileName === 'index.ts' || fileName.endsWith('.d.ts')) {
+    return false;
+  }
+
+  const source = await readFile(fullPath, 'utf8');
+  const normalized = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+
+  return /\b(class|function|enum|createIdType|new ValueObject|extends ValueObject|extends AggregateRoot|extends Entity)\b/.test(
+    normalized,
+  );
+}
+
+function isTestFile(fileName) {
+  return /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName);
+}
+
+async function fileExists(targetPath) {
+  try {
+    const stats = await readdir(path.dirname(targetPath));
+    return stats.includes(path.basename(targetPath));
+  } catch {
+    return false;
+  }
+}
+
+function areTargetsEqual(a, b) {
+  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
 async function findProjectJsonFiles(root) {

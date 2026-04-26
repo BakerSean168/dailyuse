@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
 import path from 'node:path';
 import type { Alias } from 'vite';
 import { createContractsAliasEntries } from './vite.workspace-aliases';
@@ -40,6 +40,57 @@ interface SharedConfigOptions {
   aliasEntries?: Alias[];
 }
 
+interface PackageVitestConfigOptions extends SharedConfigOptions {
+  name: string;
+  testTimeout?: number;
+  pool?: 'forks' | 'threads' | 'vmForks' | 'vmThreads';
+  setupFiles?: string[];
+  governedCoverage?: boolean;
+}
+
+export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
+  statements: 80,
+  lines: 80,
+  functions: 80,
+  branches: 70,
+} as const;
+
+function createGovernedCoverageInclude(projectRoot: string) {
+  const projectName = path.basename(projectRoot);
+  const baseInclude = [
+    'src/domain-server/aggregates/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    'src/domain-server/services/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    'src/domain-server/value-objects/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    'src/domain-shared/value-objects/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+  ];
+
+  if (projectName === 'domain-shared') {
+    baseInclude.push('src/shared/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}');
+  }
+
+  return baseInclude;
+}
+
+export function createGovernedCoverage(projectRoot: string) {
+  const workspaceRoot = path.resolve(projectRoot, '../..');
+  const relativeProjectRoot = path
+    .relative(workspaceRoot, projectRoot)
+    .replaceAll(path.sep, '/');
+
+  return {
+    all: true,
+    include: createGovernedCoverageInclude(projectRoot),
+    exclude: [
+      '**/index.ts',
+      '**/*.d.ts',
+      '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    ],
+    reportsDirectory: path.resolve(workspaceRoot, 'coverage', relativeProjectRoot),
+    reporter: ['text', 'json', 'html', 'lcov'],
+    thresholds: GOVERNED_DOMAIN_COVERAGE_THRESHOLDS,
+  };
+}
+
 /**
  * Create a shared configuration for a project
  */
@@ -51,12 +102,15 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'account',
     'ai',
     'app-vue',
+    'assets',
     'authentication',
     'dashboard',
     'editor',
     'goal',
     'governance',
+    'http-client',
     'notification',
+    'patterns',
     'reminder',
     'repository',
     'schedule',
@@ -165,11 +219,44 @@ export function createSharedConfig(options: SharedConfigOptions) {
       coverage: {
         enabled: false, // Controlled by workspace config
         provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        reporter: ['text', 'json', 'html', 'lcov'],
         exclude: ['node_modules/', 'src/test/', 'prisma/', '**/*.d.ts', '**/*.config.*', 'dist/'],
       },
     },
   });
+}
+
+export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
+  const {
+    name,
+    projectRoot,
+    testTimeout = 10000,
+    pool = 'forks',
+    setupFiles,
+    governedCoverage = false,
+    ...sharedOptions
+  } = options;
+
+  return mergeConfig(
+    createSharedConfig({
+      projectRoot,
+      ...sharedOptions,
+    }),
+    defineConfig({
+      test: {
+        name,
+        root: projectRoot,
+        testTimeout,
+        pool,
+        ...(setupFiles?.length ? { setupFiles } : {}),
+        ...(governedCoverage
+          ? {
+              coverage: createGovernedCoverage(projectRoot),
+            }
+          : {}),
+      },
+    }),
+  );
 }
 
 /**

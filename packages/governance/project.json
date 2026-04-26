@@ -3,49 +3,32 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/governance/src",
   "projectType": "library",
-  "tags": [
-    "scope:governance",
-    "type:lib",
-    "layer:domain"
-  ],
+  "tags": ["scope:governance", "type:lib", "layer:domain"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
+      "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
         "cwd": "packages/governance"
       },
-      "dependsOn": [
-        "^build",
-        "database:build"
-      ]
+      "dependsOn": ["^build", "database:build"]
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/governance/**/*.{ts,js}"
-        ]
+        "lintFilePatterns": ["packages/governance/**/*.{ts,js}"]
       }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project governance"
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/governance"
       }
     },
     "typecheck": {
@@ -67,7 +50,18 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --project governance"
+        "command": "vitest --config vitest.config.ts",
+        "cwd": "packages/governance"
+      }
+    },
+    "test:coverage": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.config.ts --coverage",
+        "cwd": "packages/governance"
       }
     }
   }

@@ -3,12 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/assets/src",
   "projectType": "library",
-  "tags": [
-    "scope:shared",
-    "type:lib",
-    "type:assets",
-    "layer:shared"
-  ],
+  "tags": ["scope:shared", "type:lib", "type:assets", "layer:shared"],
   "targets": {
     "generate-icons": {
       "executor": "nx:run-commands",
@@ -20,13 +15,8 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "outputs": ["{projectRoot}/dist"],
+      "inputs": ["default", "^production"],
       "cache": true,
       "options": {
         "command": "vite build",
@@ -35,23 +25,20 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project assets"
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/assets"
       }
     },
     "test:watch": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --project assets"
+        "command": "vitest --config vitest.config.ts",
+        "cwd": "packages/assets"
       }
     }
   }

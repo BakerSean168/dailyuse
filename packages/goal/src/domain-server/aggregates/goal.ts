@@ -532,25 +532,39 @@ export class Goal extends AggregateRoot<GoalId> {
   public updateTimeRange(params: { startDate?: Date | null; targetDate?: Date | null }): void {
     let hasChanges = false;
     let targetDateChanged = false;
+    let startDateChanged = false;
+    let nextStartDate = this._props.startDate;
+    let nextTargetDate = this._props.targetDate;
 
     if (
       params.startDate !== undefined &&
       params.startDate?.getTime() !== this._props.startDate?.getTime()
     ) {
+      nextStartDate = params.startDate;
       hasChanges = true;
+      startDateChanged = true;
     }
 
     if (
       params.targetDate !== undefined &&
       params.targetDate?.getTime() !== this._props.targetDate?.getTime()
     ) {
-      this._props.targetDate = params.targetDate;
+      nextTargetDate = params.targetDate;
       hasChanges = true;
       targetDateChanged = true;
     }
 
     if (!hasChanges) {
       return;
+    }
+
+    Goal.validateDateRange(nextStartDate, nextTargetDate);
+
+    if (startDateChanged) {
+      this._props.startDate = nextStartDate;
+    }
+    if (targetDateChanged) {
+      this._props.targetDate = nextTargetDate;
     }
 
     this._props.updatedAt = new Date();
@@ -1464,6 +1478,7 @@ export class Goal extends AggregateRoot<GoalId> {
    * @throws {GoalArchivedError} 当目标已被归档时
    */
   private ensureModifiable(): void {
+    this.ensureNotDeleted();
     this.ensureNotArchived();
   }
 
@@ -1520,6 +1535,10 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public static validateParentGoal(parentGoal?: Goal): void {
     if (!parentGoal) return;
+
+    if (parentGoal.deletedAt !== null) {
+      throw new GoalDeletedError(parentGoal.id);
+    }
 
     if (parentGoal.status === GoalStatus.Archived || parentGoal.archivedAt !== null) {
       throw new GoalArchivedError(parentGoal.id);

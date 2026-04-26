@@ -6,13 +6,15 @@
 
 1. 写失败的 `test`
 2. 最小实现让 `test` 通过
-3. 只有边界发生变化时，再补 `test:smoke`、`test:integration`、`test:ipc`、`test:main` 或 `e2e`
+3. 在领域包需要质量门禁时，跑 `test:coverage`
+4. 只有边界发生变化时，再补 `test:smoke`、`test:integration`、`test:ipc`、`test:main` 或 `e2e`
 
 ## 当前测试层次
 
 | 类型 | 主要验证内容 | 典型位置 | 何时使用 |
 | --- | --- | --- | --- |
 | 快测试 | 业务规则、状态流转、映射、纯函数、组件局部行为、契约测试 | `packages/*/src/**`、`apps/*/src/**` | 默认首选，也是 TDD 主路径 |
+| 领域覆盖率门禁 | 领域包与 `domain-shared` 的快测试覆盖率与结构完整性 | 受治理的 `layer:domain` 包与 `packages/domain-shared` 的 aggregate / service / value object 子树 | 提交前质量门禁、CI 覆盖率校验 |
 | 集成测试 | 数据库访问、Prisma 映射、事务、持久化边界 | `packages/task/src/**/*.integration.test.ts` | 触及真实数据库或仓储实现时 |
 | API 冒烟测试 | 路由、middleware、序列化、HTTP 状态码、控制器装配 | `apps/api/src/__tests__/smoke/**` | 需要验证 HTTP 闭环但不想上完整 E2E 时 |
 | Web 契约测试 | adapter、mock handler、contracts schema 是否一致 | `apps/web/src/mocks/handlers/*.spec.ts` | 新增接口或修改请求/响应 shape 时 |
@@ -24,6 +26,8 @@
 ## 选择规则
 
 - 纯业务逻辑、数据变换、组件局部行为，优先补快测试。
+- 领域包在补完快测试后，还要满足 `test:coverage` 的 coverage threshold 与 aggregate / service / value object 结构门禁。
+- `test:coverage` 的 coverage 作用域只包含受治理子树：默认检查 `src/domain-server/aggregates/**`、`src/domain-server/services/**`、`src/domain-server/value-objects/**`、`src/domain-shared/value-objects/**`；`packages/domain-shared` 额外检查 `src/shared/**`。
 - 触及 Prisma、SQL、事务、数据库清理策略时，补集成测试。
 - 触及路由、请求校验、HTTP 状态码或控制器装配时，补 API 冒烟测试。
 - 触及 Web adapter、mock handler 或 contracts schema 时，补契约测试。
@@ -32,6 +36,7 @@
 - 触及 Electron main/IPC 边界时，优先看 `desktop:test:ipc` 和 `desktop:test:main`。
 - 只有在性能本身是需求或风险点时，才补 bench；它不是默认回归入口。
 - `pnpm nx affected -t test` 只应承担快测试；慢测试通过专门 target 按边界补跑。
+- `pnpm nx affected -t test:coverage` 只承担领域覆盖率门禁，不替代默认 TDD 回路。
 
 ## 文档与代码的边界
 

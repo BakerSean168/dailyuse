@@ -57,6 +57,16 @@
         "@dailyuse/nx-test-system:sync-test-targets"
       ]
     },
+    "test:coverage": {
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "cache": true,
+      "syncGenerators": [
+        "@dailyuse/nx-test-system:sync-test-targets"
+      ]
+    },
     "test:integration": {
       "inputs": [
         "default",

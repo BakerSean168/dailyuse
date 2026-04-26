@@ -17,6 +17,7 @@
 | 类型 | 主要位置 | 常用入口 |
 | --- | --- | --- |
 | 快测试（TDD 默认） | `packages/*`、`apps/*` 下的 `*.test.ts` / `*.spec.ts` | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch` |
+| 覆盖率门禁 | 领域包与 `domain-shared` 的快测试集合 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected` |
 | 集成测试 | `packages/task/src/**/*.integration.test.ts` | `pnpm nx run task:test:integration` |
 | API 冒烟测试 | `apps/api/src/__tests__/smoke/**` | `pnpm nx run api:test:smoke` |
 | Web 契约测试 | `apps/web/src/mocks/handlers/*.spec.ts` | `pnpm nx run web:test` |
@@ -37,6 +38,7 @@
 
 - 运行测试时统一优先走 `pnpm nx ...`，不要把底层 `vitest` / `playwright` 命令写成主文档入口。
 - `test` 只承担快反馈测试；真实数据库、HTTP 装配、IPC、浏览器流程都应进入专门 target。
+- `test:coverage` 只承担领域质量门禁，不作为默认本地循环命令。
 - 文档不再硬编码测试数量、文件数量、历史统计。
 - 具体实现理由应写在对应配置文件、setup 文件、fixture、helper 注释中。
 - 如果文档与代码冲突，以当前 `project.json`、测试配置文件和测试目录为准。

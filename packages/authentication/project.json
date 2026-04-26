@@ -3,11 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/authentication/src",
   "projectType": "library",
-  "tags": [
-    "scope:authentication",
-    "type:lib",
-    "layer:domain"
-  ],
+  "tags": ["scope:authentication", "type:lib", "layer:domain"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
@@ -15,10 +11,7 @@
         "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm tsup --clean=false",
         "cwd": "packages/authentication"
       },
-      "dependsOn": [
-        "^build",
-        "database:build"
-      ]
+      "dependsOn": ["^build", "database:build"]
     },
     "dev": {
       "executor": "nx:run-commands",
@@ -30,23 +23,30 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project authentication"
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/authentication"
       }
     },
     "test:watch": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --project authentication"
+        "command": "vitest --config vitest.config.ts",
+        "cwd": "packages/authentication"
+      }
+    },
+    "test:coverage": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.config.ts --coverage",
+        "cwd": "packages/authentication"
       }
     }
   }
