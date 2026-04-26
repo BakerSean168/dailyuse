@@ -1,163 +1,20 @@
 ---
 agent: agent
 ---
-description: "问题上下文"
-该文件中的内容是从其他地方复制过来的，目的是为了给你提供上下文信息，以便你更好地理解用户的问题。请仔细阅读以下内容。
+# Program Prompt
 
-我在DDD架构中的领域层设计中，我应该怎么设计Authentication模块。 
+程序设计、架构分析和实现规划优先参考：
 
-在 DDD（领域驱动设计）中设计 Authentication（认证）模块，最大的挑战在于区分“业务逻辑”与“技术实现”。
+- [`../../AGENT.md`](../../AGENT.md)
+- [`../../docs/architecture/README.md`](../../docs/architecture/README.md)
+- [`../../docs/standards/README.md`](../../docs/standards/README.md)
+- [`../../docs/plan/README.md`](../../docs/plan/README.md)
 
-很多开发者习惯把“生成 JWT”、“调用 OAuth 接口”当作业务逻辑，但在 DDD 中，这些属于基础设施层（Infrastructure Layer）。
+要求：
 
-在领域层（Domain Layer），你应该关注的是认证的核心规则，例如：“密码连续输错5次锁定”、“凭证过期策略”、“多重认证状态校验”。
-
-以下是基于 DDD 战术设计的 Authentication 模块架构方案：
-
-1. 限界上下文 (Bounded Context)
-首先确认边界。我们采用前文讨论的 IdP（Identity Provider）模式。 这个上下文我们称之为 Identity Context。它的职责非常单一：维护凭证安全和校验身份。
-
-2. 领域模型设计 (Domain Model)
-A. 聚合根 (Aggregate Root): AuthenticationIdentity
-这是核心对象。它代表一个“可被认证的主体”。请注意，它不是“用户详细资料”，它只是用来挂载凭证的载体。
-
-包含的属性与行为：
-
-属性： IdentityId (全局唯一标识), Status (Active/Locked), FailedLoginAttempts (失败次数).
-
-行为：
-
-authenticate(credential): 核心业务方法。
-
-changePassword(newPassword): 修改密码。
-
-lock() / unlock(): 锁定管理。
-
-B. 实体 (Entity): Credential
-AuthenticationIdentity 内部持有一个凭证列表。
-
-CredentialId
-
-Type: (PASSWORD, GOOGLE_OAUTH, API_KEY)
-
-Identifier: (邮箱地址, 手机号, OpenID)
-
-Secret: (密码的 Hash 值, 或者 OAuth 的 Token)
-
-C. 值对象 (Value Object)
-DDD 强调使用值对象来封装校验逻辑，而不是传裸字符串。
-
-RawPassword: 封装原始密码。构造时校验复杂度规则（长度、大小写、特殊字符）。如果不符合规则，构造函数直接抛出领域异常。
-
-HashedPassword: 封装加密后的密码。包含 Hash 算法本身的信息（如 $2a$10$...）。
-
-TenantId: 如果是 SaaS 系统，认证必须包含租户概念。
-
-D. 领域服务 (Domain Service): IdentityVerifier
-如果认证逻辑涉及多个聚合，或者逻辑太复杂不适合放在聚合内部（例如涉及加密服务的调用），可以使用领域服务。
-
-3. 代码结构示意 (Java/TypeScript 风格)
-这是在 Domain Layer 应该看到的代码样子，完全不含 HTTP、SQL 或 JWT 库。
-
-核心聚合根
-TypeScript
-// Domain/Model/AuthenticationIdentity.ts
-
-export class AuthenticationIdentity {
-    private id: IdentityId;
-    private credentials: List<Credential>;
-    private status: IdentityStatus;
-    private failedCount: number;
-
-    // 业务行为：尝试登录
-    public login(inputType: AuthType, inputIdentifier: string, inputSecret: string, encryptionService: EncryptionService): void {
-        
-        // 1. 检查锁定状态 (业务规则)
-        if (this.isLocked()) {
-            throw new AccountLockedException("Too many failed attempts.");
-        }
-
-        // 2. 查找匹配的凭证
-        const credential = this.credentials.find(c => c.matchIdentifier(inputIdentifier));
-        if (!credential) {
-            this.recordFailure(); // 领域内部逻辑：增加失败次数
-            throw new InvalidCredentialsException();
-        }
-
-        // 3. 校验密码 (调用领域服务/接口进行比对)
-        if (!credential.verifySecret(inputSecret, encryptionService)) {
-            this.recordFailure();
-            // 触发锁定规则
-            if (this.failedCount >= 5) {
-                this.lock();
-            }
-            throw new InvalidCredentialsException();
-        }
-
-        // 4. 成功：重置计数
-        this.resetFailureCount();
-        
-        // 5. 发布领域事件
-        DomainEventPublisher.publish(new UserAuthenticatedEvent(this.id));
-    }
-
-    private recordFailure() {
-        this.failedCount++;
-    }
-}
-抽象接口 (Ports)
-领域层定义接口，基础设施层去实现。
-
-TypeScript
-// Domain/Service/EncryptionService.ts
-// 这是一个防腐层接口，Domain层不知道你是用 BCrypt 还是 Argon2
-export interface EncryptionService {
-    hash(raw: string): string;
-    matches(raw: string, hash: string): boolean;
-}
-
-// Domain/Repository/IdentityRepository.ts
-export interface IdentityRepository {
-    findByIdentifier(identifier: string): Promise<AuthenticationIdentity>;
-    save(identity: AuthenticationIdentity): Promise<void>;
-}
-4. 领域事件 (Domain Events)
-在认证模块中，领域事件至关重要，因为它是连接 Auth 模块与其他模块（如通知、风控）的桥梁。
-
-IdentityAuthenticated: 认证成功。订阅者：日志审计、Token 生成器。
-
-IdentityLocked: 账号被锁。订阅者：通知服务（发邮件告诉用户账号被锁）。
-
-PasswordChanged: 密码变更。订阅者：通知服务、会话管理器（踢出旧设备）。
-
-5. 常见误区纠正
-在设计 Domain 层时，一定要避免以下“泄露”：
-
-错误做法 (Anti-Pattern)	正确做法 (DDD Pattern)
-在领域层生成 Token
-
-
-user.generateJwt()
-
-应用层负责生成
-
-
-领域层只负责返回“认证成功”的结论或事件。应用层监听到事件后，调用工具类生成 JWT。
-
-在领域层依赖 HTTP
-
-
-login(request: HttpServletRequest)
-
-应用层负责解析
-
-
-应用层从 Request 提取参数，组装成 Command 对象传给领域层。
-
-直接使用 String 传密码
-
-
-setPassword(String pwd)
+- 基于当前仓库代码和正式文档分析问题
+- 不使用从外部复制进来的孤立上下文作为仓库真值
+- 需要计划时，统一写入 `docs/plan/active`
 
 使用值对象
 
@@ -851,4 +708,3 @@ Identity (Root)：负责管状态（锁不锁）、管安全（失败几次）�
 Credential (Entity)：负责存数据（Hash、Token），它是多态的，挂在 Identity 下面。
 
 One-to-Many：一个 Identity 对应 N 个 Credential。
-

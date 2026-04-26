@@ -5,7 +5,7 @@
     "name": "bakersean",
     "email": "lulouhao@stu.sicau.edu.cn"
   },
-  "description": "Memoflow Monorepo - Full-stack productivity suite built with Vue 3, Express, and Nx",
+  "description": "Memoflow Nx monorepo for desktop, web, api, and shared domain packages",
   "version": "0.6.0",
   "type": "module",
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
@@ -44,6 +44,9 @@
     "test:web": "pnpm nx run web:test",
     "test:targets:sync": "pnpm nx g @dailyuse/nx-test-system:sync-test-targets",
     "test:targets:check": "node ./tools/test/test-target-governance.mjs --check",
+    "// ========== Documentation & Governance ==========": "",
+    "docs:check": "pnpm nx run daily-use:docs-check",
+    "governance:check": "pnpm nx run daily-use:governance-check",
     "// ========== E2E Testing ==========": "",
     "e2e": "pnpm nx run web:e2e",
     "e2e:headed": "pnpm nx run web:e2e --configuration=headed",

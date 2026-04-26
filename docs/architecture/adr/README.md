@@ -2,176 +2,52 @@
 tags:
   - adr
   - index
-description: 架构决策记录(ADR)索引
+description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2025-12-16T10:00:00
+updated: 2026-04-26T00:00:00
 ---
 
-# Architecture Decision Records (ADR)
+# ADR 索引
 
-> 记录项目中重要的架构决策及其背景和理由
+本目录只收录正式的 Architecture Decision Record。ADR 文件名必须使用 `ADR-XXX-kebab-case.md`，编号必须唯一；新增或调整 ADR 时，必须在同一变更中更新本索引。
 
-## 📖 什么是 ADR？
+## 当前 ADR
 
-ADR (Architecture Decision Record) 是一种记录软件架构决策的轻量级文档格式。每个 ADR 描述：
+| 编号 | 标题 | 状态 | 日期 |
+| --- | --- | --- | --- |
+| [ADR-001](./ADR-001-use-nx-monorepo.md) | 使用 Nx Monorepo | 已采纳 | 2024-08-15 |
+| [ADR-002](./ADR-002-ddd-pattern.md) | 采用 DDD 架构模式 | 已采纳 | 2024-08-20 |
+| [ADR-003](./ADR-003-event-driven-architecture.md) | 事件驱动架构 | 已采纳 | 2024-09-01 |
+| [ADR-004](./ADR-004-electron-desktop-architecture.md) | Electron 桌面应用架构与包提取策略 | 已采纳 | 2025-12-03 |
+| [ADR-005](./ADR-005-ui-package-multi-framework.md) | UI 包多框架支持架构 | 已采纳 | 2025-12-03 |
+| [ADR-006](./ADR-006-desktop-ipc-communication.md) | Desktop IPC 通信架构与依赖注入集成 | 已采纳 | 2025-12-06 |
+| [ADR-007](./ADR-007-api-consistency.md) | API 接口一致性规范 | 提议中 | 未注明 |
+| [ADR-008](./ADR-008-standard-api-response-format.md) | API Response Format | 已采纳 | 2026-01-15 |
+| [ADR-009](./ADR-009-standard-clean-architecture-layers.md) | Clean Architecture Layers | 已采纳 | 2026-01-15 |
+| [ADR-010](./ADR-010-standard-centralized-contracts.md) | Centralized Contracts | 已采纳 | 2026-01-15 |
+| [ADR-011](./ADR-011-standard-naming-conventions.md) | Naming Conventions | 已采纳 | 2026-01-15 |
+| [ADR-012](./ADR-012-standard-error-handling.md) | Error Handling | 已采纳 | 2026-01-15 |
+| [ADR-013](./ADR-013-standard-testing-strategy.md) | Testing Strategy | 已采纳 | 2026-01-15 |
+| [ADR-014](./ADR-014-standard-typescript-guidelines.md) | TypeScript Guidelines | 已采纳 | 2026-01-15 |
+| [ADR-015](./ADR-015-dev-phase-simplicity-preference.md) | Dev Phase Simplicity Preference | 已采纳 | 2026-01-16 |
+| [ADR-016](./ADR-016-apps-as-containers.md) | Apps as Containers | 已采纳 | 未注明 |
+| [ADR-017](./ADR-017-centralized-types.md) | Absolute Type Centralization in Contracts | 已采纳 | 未注明 |
+| [ADR-018](./ADR-018-smart-container-application-service-pattern.md) | Smart Container + Application Service Pattern | 已采纳 | 2026-01-18 |
+| [ADR-019](./ADR-019-module-extension-strategy.md) | 模块扩展策略 | 已采纳 | 2025-12-08 |
+| [ADR-020](./ADR-020-api-server-unified-extraction-strategy.md) | API Server 统一提取策略 | 已采纳 | 2026-01-19 |
+| [ADR-021](./ADR-021-api-routes-file-organization-strategy.md) | API 路由文件组织策略 | 已采纳 | 2026-01-19 |
+| [ADR-022](./ADR-022-api-module-routing-refactor.md) | API 模块路由重构 | 已采纳 | 2025-01-19 |
+| [ADR-023](./ADR-023-server-side-clean-architecture-refactor.md) | Server-Side Layer Decoupling & Pure Dependency Injection | 已采纳 | 2026-01-21 |
+| [ADR-024](./ADR-024-application-service-framework-decoupling.md) | ApplicationService 框架解耦方案 | 已采纳 | 2025-01-18 |
+| [ADR-025](./ADR-025-module-composition-pattern.md) | Module Composition Pattern | 已采纳 | 2026-01-21 |
+| [ADR-026](./ADR-026-server-side-adapter-pattern.md) | Server-Side Adapter Pattern | 已采纳 | 2026-02-19 |
+| [ADR-027](./ADR-027-zod-to-openapi-documentation.md) | API Documentation with Zod-to-OpenAPI | 已采纳 | 2026-02-19 |
+| [ADR-028](./ADR-028-workspace-package-resolution-strategy.md) | Workspace Package Resolution Strategy | 已采纳 | 2026-03-09 |
+| [ADR-029](./ADR-029-main-process-sqlite-access.md) | 主进程 SQLite 直接访问策略 | 已过时 | 2025-12-06 |
+| [ADR-030](./ADR-030-standard-result-pattern.md) | Unifying API Responses with Result Pattern | 已采纳 | 2026-01-16 |
 
-- **决策背景** - 为什么需要做这个决定？
-- **可选方案** - 考虑了哪些选项？
-- **最终决策** - 选择了什么方案？
-- **决策理由** - 为什么这么选？
-- **影响分析** - 这个决策的影响是什么？
+## 维护规则
 
-## 📋 ADR 列表
-
-### 已采纳 (Accepted)
-
-| ID                                                         | 标题                                      | 日期       | 状态                        |
-| ---------------------------------------------------------- | ----------------------------------------- | ---------- | --------------------------- |
-| [ADR-001](./001-use-nx-monorepo.md)                        | 使用 Nx Monorepo                          | 2024-08-15 | ✅ 已采纳                   |
-| [ADR-002](./002-ddd-pattern.md)                            | 采用 DDD 架构模式                         | 2024-08-20 | ✅ 已采纳                   |
-| [ADR-003](./003-event-driven-architecture.md)              | 事件驱动架构                              | 2024-09-01 | ✅ 已采纳                   |
-| [ADR-003b](./003-module-extension-strategy.md)             | 模块扩展策略                              | 2024-09-05 | ✅ 已采纳                   |
-| [ADR-004](./004-electron-desktop-architecture.md)          | Electron 桌面应用架构与包提取策略         | 2025-12-03 | ✅ 已采纳                   |
-| [ADR-005](./ADR-005-ui-package-multi-framework.md)         | UI 包多框架支持架构                       | 2025-12-03 | ✅ 已实施                   |
-| [ADR-006](./ADR-006-desktop-ipc-communication.md)          | Desktop IPC 通信架构与依赖注入集成        | 2025-12-06 | ✅ 已采纳                   |
-| [ADR-007](./ADR-007-API-CONSISTENCY.md)                    | API 一致性规范                            | 2025-12-10 | ✅ 已采纳                   |
-| [ADR-007b](./ADR-007-main-process-sqlite-access.md)        | 主进程 SQLite 访问模式                    | 2025-12-10 | ⚠️ 已过时（PowerSync-only） |
-| [ADR-008](./ADR-008-standard-api-response-format.md)       | **API Response Format (Standard)**        | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-009](./ADR-009-standard-clean-architecture-layers.md) | **Clean Architecture Layers (Standard)**  | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-010](./ADR-010-standard-centralized-contracts.md)     | **Centralized Contracts (Standard)**      | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-011](./ADR-011-standard-naming-conventions.md)        | **Naming Conventions (Standard)**         | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-012](./ADR-012-standard-error-handling.md)            | **Error Handling (Standard)**             | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-013](./ADR-013-standard-testing-strategy.md)          | **Testing Strategy (Standard)**           | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-014](./ADR-014-standard-typescript-guidelines.md)     | **TypeScript Guidelines (Standard)**      | 2026-01-15 | ✅ 已采纳                   |
-| [ADR-015](./ADR-015-dev-phase-simplicity-preference.md)    | **Dev Phase Simplicity Preference**       | 2026-01-16 | ✅ 已采纳                   |
-| [ADR-026](./ADR-026-server-side-adapter-pattern.md)        | **Server-Side Adapter Pattern**           | 2026-02-19 | ✅ 已采纳                   |
-| [ADR-027](./ADR-027-zod-to-openapi-documentation.md)       | **API Documentation with Zod-to-OpenAPI** | 2026-02-19 | ✅ 已采纳                   |
-
-### 提议中 (Proposed)
-
-| ID  | 标题 | 日期 | 状态 |
-| --- | ---- | ---- | ---- |
-| -   | -    | -    | -    |
-
-### 已废弃 (Deprecated)
-
-| ID  | 标题 | 日期 | 原因 |
-| --- | ---- | ---- | ---- |
-| -   | -    | -    | -    |
-
-## 🎯 ADR 原则
-
-### 何时创建 ADR？
-
-✅ **应该创建 ADR 的情况**:
-
-- 选择核心技术栈（框架、数据库、语言）
-- 架构模式决策（微服务 vs 单体、事件驱动等）
-- 重要的设计模式选择
-- 影响多个模块的决策
-- 有争议或需要权衡的决策
-
-❌ **不需要 ADR 的情况**:
-
-- 日常代码实现细节
-- 临时解决方案
-- 明显的最佳实践
-- 局部重构
-
-### ADR 模板
-
-创建新 ADR 时，使用以下模板：
-
-```markdown
----
-tags:
-  - adr
-  - architecture
-  - decision
-description: ADR-XXX - [决策简短描述]
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
----
-
-# ADR-XXX: [决策标题]
-
-**状态**: 🔄 提议中 / ✅ 已采纳 / ❌ 已废弃  
-**日期**: YYYY-MM-DD  
-**决策者**: @username
-
-## 背景
-
-[描述决策背景和问题]
-
-### 可选方案
-
-1. **方案 A**: [描述]
-2. **方案 B**: [描述]
-3. **方案 C**: [描述]
-
-## 决策
-
-选择 **[方案名称]**
-
-## 理由
-
-### 为什么选择这个方案？
-
-[列出选择理由]
-
-### 为什么不选其他方案？
-
-[说明放弃其他方案的原因]
-
-## 实施
-
-[如何实施这个决策]
-
-## 影响
-
-### 正面影响
-
-[列出好处]
-
-### 负面影响
-
-[列出代价或风险]
-
-## 相关决策
-
-- [[xxx|ADR-XXX: 相关决策]]
-
-## 参考资料
-
-- [相关文档或资源]
-
----
-
-**教训**: [从这个决策中学到了什么]
-```
-
-## 📝 如何贡献 ADR
-
-1. **识别需要决策的架构问题**
-2. **收集信息和可选方案**
-3. **创建新的 ADR 文档** (使用模板)
-4. **与团队讨论** (通过 PR 或会议)
-5. **达成共识后标记为"已采纳"**
-6. **更新本索引文件**
-
-## 🔍 相关文档
-
-- [[../system-overview|系统架构概览]]
-- [[ddd-patterns|DDD 模式指南]]
-- [[../../concepts/event-driven|事件驱动架构]]
-- [[../../contributing/documentation-guide|文档贡献指南]]
-
-## 📚 延伸阅读
-
-- [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
-- [ADR Tools](https://github.com/npryce/adr-tools)
-- [Architecture Decision Records in Action](https://www.thoughtworks.com/insights/blog/architecture/architecture-decision-records-in-action)
-
----
-
-**注意**: ADR 一旦采纳，应该保持不变。如果决策需要修改，应创建新的 ADR 并标记旧的为"已废弃"。
+- 规则类 ADR 与实施类 ADR 统一收录在这里，不再使用 `003b`、`007b` 这类旁支编号。
+- 历史文档允许保留原始正文结构，但文件名、标题编号和索引状态必须保持一致。
+- 文档与代码冲突时，以当前代码、配置和测试为准；ADR 负责保留决策背景，不替代实现事实。

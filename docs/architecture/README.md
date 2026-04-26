@@ -4,28 +4,27 @@ tags:
   - index
 description: 架构文档入口
 created: 2026-04-13T00:00:00
-updated: 2026-04-13T00:00:00
+updated: 2026-04-26T00:00:00
 ---
 
 # 架构入口
 
-`docs/architecture` 只保留长期有效的架构入口、ADR 和少量专题说明，不再保留按阶段生成的大型实现讲解、迁移方案、优化进度和模块级厚说明。
+`docs/architecture` 只保留长期有效的架构入口、ADR 和少量总览说明，不承担实现百科、迁移进度或阶段性计划。
 
-## 当前应优先看什么
+## 当前入口
 
-- [`../standards/architecture.md`](../standards/architecture.md)：通用架构规则
-- [`adr/README.md`](./adr/README.md)：关键架构决策记录
-- [`../governance/README.md`](../governance/README.md)：governance 活文档入口
-- 对应模块的代码、配置和测试注释：实现边界与落地理由
+- [`../standards/architecture.md`](../standards/architecture.md)：长期有效的架构规则
+- [`adr/README.md`](./adr/README.md)：正式 ADR 索引与编号规则
+- [`../governance/README.md`](../governance/README.md)：仓库治理来源、检查方式与文档约定
 
-## 这里不再承担的职责
+## 使用方式
 
-- 不再维护 Web / API / Desktop / Result pattern 的长篇“实现百科”
-- 不再维护迁移计划、inventory、progress、matrix、blueprint
-- 不再重复代码中已经可直接读出的依赖关系和配置细节
+- 需要看规则是什么：先看 `docs/standards`
+- 需要看为什么这样定：看 ADR
+- 需要确认当前真实边界：看 `project.json`、配置文件、实现代码和测试
 
-## 使用约定
+## 不在这里维护的内容
 
-- 需要架构原则时，看 `docs/standards/architecture.md`
-- 需要某次关键架构选择的理由时，看 ADR
-- 需要某模块当前实现边界时，优先看模块代码、`project.json`、配置文件和注释
+- 分阶段迁移计划
+- 与代码重复的一次性实现说明
+- 模块级的长篇操作手册

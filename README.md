@@ -1,52 +1,82 @@
-# Memoflow - 智能个人效率管理平台
+# Memoflow
 
-[![pnpm](https://img.shields.io/badge/pnpm-v10.13.0-orange)](https://pnpm.io/)
-[![Nx](https://img.shields.io/badge/Nx-v21.4.1-blue)](https://nx.dev/)
-[![Vue](https://img.shields.io/badge/Vue-v3.4.21-green)](https://vuejs.org/)
-[![Electron](https://img.shields.io/badge/Electron-v30.5.1-lightgrey)](https://electronjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-v5.8.3-blue)](https://typescriptlang.org/)
+Memoflow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，当前同时承载桌面端、Web、API 与共享领域包。仓库中的文档、配置和测试以当前代码现实为准；如果文档与代码冲突，以代码、`project.json`、`nx.json`、测试配置和测试结果为准。
 
-一个基于 Electron + Vue 3 + TypeScript 的现代化个人效率管理应用，采用 Nx Monorepo 架构和 pnpm 包管理。
+## 工作区概览
 
-## 文档
+- `apps/desktop`：Electron 桌面应用，当前前端栈是 Vue 3 + Vite。
+- `apps/web`：Web 应用，使用 Vue 3。
+- `apps/api`：Express 5 API，配合 Zod、OpenAPI、Prisma。
+- `apps/mobile`：移动端应用容器。
+- `apps/ai-service`：AI 相关服务与实验入口。
+- `packages/*`：按领域拆分的共享业务包，以及 `contracts`、`domain-shared`、`ui-*`、`utils` 等基础包。
+- `tools/*`：工作区脚本、测试治理和 Docker 辅助工具。
+- `docs/`：唯一维护中的正式文档入口。
 
-- Docker 生产部署文档：`docs/deployment/README.md`
+## 技术基线
 
-## 🚀 技术栈
+- 包管理：`pnpm@10`
+- 工作区编排：`nx@22`
+- 语言：TypeScript 5
+- 桌面端：Electron 39 + Vue 3
+- Web：Vue 3 + Vite
+- API：Express 5 + Zod + Prisma
+- 测试与质量：Vitest、Playwright、ESLint flat config、Prettier
 
-### 核心框架
+## 目录结构
 
-- **前端**: Vue 3 + Vuetify + TypeScript (Web), React + shadcn/ui + TypeScript (Desktop Renderer)
-- **桌面**: Electron 30.x
-- **后端**: Express + Prisma + PostgreSQL
-- **构建**: Nx + Vite + pnpm
-
-### 开发工具
-
-- **包管理**: pnpm (比 npm 快 3x，节省 70% 磁盘空间)
-- **构建系统**: Nx Monorepo
-- **代码质量**: ESLint + Prettier + TypeScript
-- **AI 辅助**: GitHub Copilot + MCP 集成
-
-## 📁 项目结构
-
+```text
+.
+├── apps/
+│   ├── api/
+│   ├── desktop/
+│   ├── mobile/
+│   ├── web/
+│   └── ai-service/
+├── packages/
+│   ├── account/ ai/ authentication/ dashboard/ goal/ governance/
+│   ├── notification/ reminder/ schedule/ setting/ task/ ...
+│   ├── contracts/ domain-shared/
+│   ├── app-vue/ app-react/
+│   ├── ui-core/ ui-vue-shadcn/ ui-react-native/
+│   └── utils/ assets/ test-utils/
+├── tools/
+├── docs/
+├── nx.json
+├── eslint.config.ts
+├── project.json
+└── package.json
 ```
-dailyuse/                    # 根目录
-├── apps/                    # 应用程序
-│   ├── desktop/            # Electron 桌面应用 (React)
-│   ├── web/                # Vue 3 Web 应用
-│   └── api/                # Node.js API 服务
-├── packages/               # 共享包
-│   ├── contracts/          # 类型定义和接口
-│   ├── domain-shared/      # 跨端值对象与共享领域类型
-│   ├── governance/         # 规约检查与可执行治理规则
-│   ├── {domain}/           # 垂直业务模块包（包内再分层）
-│   ├── ui/                 # 共享 UI 组件
-│   └── utils/              # 工具函数
-├── common/                 # 共享业务模块
-└── docs/                   # 文档
-    ├── MCP-Configuration-Guide.md
-    └── pnpm-MCP-Best-Practices.md
+
+## 常用命令
+
+所有工作区任务统一使用 `pnpm nx ...`。
+
+```bash
+pnpm install
+pnpm nx run-many -t serve --projects=api,web
+pnpm nx run desktop:serve
+pnpm nx run-many -t lint,typecheck --all
+pnpm nx run daily-use:docs-check
 ```
 
+## 文档导航
 
+- 入门：[`docs/getting-started/README.md`](docs/getting-started/README.md)
+- 架构：[`docs/architecture/README.md`](docs/architecture/README.md)
+- ADR 索引：[`docs/architecture/adr/README.md`](docs/architecture/adr/README.md)
+- 规范：[`docs/standards/README.md`](docs/standards/README.md)
+- 开发指南：[`docs/guides/development/README.md`](docs/guides/development/README.md)
+- 测试：[`docs/test/README.md`](docs/test/README.md)
+- 治理：[`docs/governance/README.md`](docs/governance/README.md)
+- 计划：[`docs/plan/README.md`](docs/plan/README.md)
+- 部署：[`docs/deployment/README.md`](docs/deployment/README.md)
+
+## Onboarding
+
+1. 先看根 README，确认 app、package 与文档入口。
+2. 再看 [`docs/getting-started/README.md`](docs/getting-started/README.md) 和 [`docs/guides/development/README.md`](docs/guides/development/README.md)。
+3. 需要规则时看 `docs/standards`；需要决策背景时看 ADR；需要真实行为时读代码、配置和测试。
+
+桌面端在 Windows 开发模式下的日志目录：
+`C:\Users\xx\AppData\Roaming\Memoflow-Dev\logs`

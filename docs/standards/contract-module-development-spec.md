@@ -1,214 +1,83 @@
 ---
-tags: [standard, contract]
+tags:
+  - standard
+  - contract
+  - packages-contracts
+description: contracts 模块开发规范
+created: 2026-02-03T00:00:00
+updated: 2026-04-26T00:00:00
 ---
 
-# Contracts 包开发规范：实体、聚合根与 DTO 定义
+# Contracts 模块开发规范
 
-**版本**: 1.0
-**适用范围**: `libs/contracts`
-**读者**: 开发人员, AI 助手
+适用范围：`packages/contracts`
 
-## 1. 核心设计理念
+`packages/contracts` 是当前工作区的共享契约中心。这里定义跨 app、跨包需要复用的类型、Schema 与协议，不承载业务逻辑、容器装配或运行时行为。
 
-`contracts` 包是整个 Monorepo 的 **类型契约中心 (Type Registry)**。它充当了 "Interface Definition Language" (IDL) 的角色。
+## 核心原则
 
-**核心原则**:
+- 纯类型优先：以 `type`、`interface`、Schema、常量对象为主，不写业务逻辑实现。
+- 分层清晰：`protocol` 依赖 `api`，`api` 依赖 `aggregates` / `dtos` / `entities` / `value-objects`，不要反向导入。
+- 单一真值：跨边界共享的数据结构必须从 `packages/contracts` 导出，调用方不要重新发明同名类型。
+- 代码现实优先：如果当前模块结构与旧文档不一致，以现有代码、导出入口和测试为准，再回补文档。
 
-1. **Pure Types (纯类型)**: 仅包含 `interface`, `type`, `const` (用于枚举)。**严禁包含业务逻辑、类方法或运行时代码**。
-2. **Layer Separation (分层)**: 明确区分 Client (前端/API消费者) 和 Server (后端/持久层) 的数据形态。
-3. **Single Source of Truth (唯一真值)**: 所有的 DTO、API 接口定义、实体形状定义都必须在此处，供 `apps/{web,desktop}/src/modules/*`、`packages/{domain}`、`domain-shared` 引用。
+## 推荐目录
 
----
-
-## 2. 基础类型规范 (Primitives)
-
-为了解决时间序列化问题，我们定义三种标准的基础类型（应在 `@dailyuse/contracts/primitives` 中定义）：
-
-| 类型名称 | TS 类型 | 用途 | 场景 |
-| --- | --- | --- | --- |
-| `DomainDate` | `Date` | 领域内部使用的日期对象 | 聚合根/值对象内部属性 |
-| `TransferDate` | `number` | 传输层使用的日期 (时间戳) | API JSON, ClientDTO |
-| `PersistenceDate` | `Date` | `number` | 持久层使用的日期 |
-
----
-
-## 3. 值对象定义规范 (Value Object Contracts)
-
-在 Contracts 包中，值对象不是 Class，而是 **数据的形状 (Shape)**。我们需要定义三种形态：
-
-### 3.1 命名与结构
-
-对于一个名为 `AccountProfile` 的值对象：
-
-1. **Domain Shape (`AccountProfile`)**: 领域层看到的形状（使用 `DomainDate`）。
-2. **Transfer DTO (`AccountProfileDTO`)**: API 传输的形状（使用 `TransferDate`）。
-3. **Persistence DTO (`AccountProfilePersistenceDTO`)**: 落库的形状（使用 `PersistenceDate`）。
-
-### 3.2 模板 (AI 参照)
-
-```typescript
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
-import type { GenderType } from './gender-type';
-
-// 1. Domain Shape (给 domain-shared 中的 Class 实现用)
-export interface AccountProfile {
-  nickname: string;
-  gender: GenderType;
-  birthday?: DomainDate; // ✅ 使用 Date 对象
-}
-
-// 2. Transfer DTO (给前端 API / 客户端模块用)
-export interface AccountProfileDTO {
-  nickname: string;
-  gender: GenderType;
-  birthday?: TransferDate; // ✅ 使用 number 时间戳
-}
-
-// 3. Persistence DTO (给服务端模块 / Repository 用)
-export interface AccountProfilePersistenceDTO {
-  nickname: string;
-  gender: GenderType;
-  birthday?: PersistenceDate; // ✅ 匹配数据库类型
-}
-
-```
-
----
-
-## 4. 聚合根与实体定义规范 (Aggregate/Entity Contracts)
-
-由于前后端对实体的需求不同，必须**拆分定义**。
-
-### 4.1 通用规则
-
-* **Id**: 必须使用强类型 ID (如 `IdentityId`)，不要使用 `string`。
-* **Status**: 必须引用枚举类型。
-* **Components**: 引用上面定义的值对象 Domain Shape。
-
-### 4.2 Client 端定义 (`EntityClient`)
-
-* **用途**: 定义客户端模块中聚合根 Class 必须实现的接口。
-* **DTO**: `EntityClientDTO` (对应 API 返回的 JSON)。
-
-```typescript
-// === 引用 ===
-import type { IdentityId } from "../value-objects/identity-id";
-import type { AccountProfile, AccountProfileDTO } from "../value-objects/account-profile";
-import type { DomainDate, TransferDate } from "@/primitives";
-
-// === 1. Client 实体接口 ===
-export interface AccountClient {
-  id: IdentityId;          // 强类型 ID
-  profile: AccountProfile; // 引用 Domain Shape
-  createdAt: DomainDate;   // 领域内使用 Date
-}
-
-// === 2. Client DTO (API Response) ===
-export interface AccountClientDTO {
-  id: string;                 // 传输层 ID 降级为 string
-  profile: AccountProfileDTO; // 引用 Transfer DTO
-  createdAt: TransferDate;    // 传输层使用 number
-}
-
-// === 3. Client 静态工厂接口 ===
-export interface AccountClientStatic {
-  fromClientDTO(dto: AccountClientDTO): AccountClient;
-}
-
-```
-
-### 4.3 Server 端定义 (`EntityServer`)
-
-* **用途**: 定义服务端模块中聚合根 Class 必须实现的接口。
-* **DTO**:
-* `EntityServerDTO`: 用于构造函数的内部 DTO。
-* `EntityPersistenceDTO`: 用于 Repository 的数据库行数据。
-
-
-
-```typescript
-// === 引用 ===
-// 注意：Server 端 ID 可能定义在不同的路径
-import type { IdentityId } from "@/modules/authentication/value-objects/identity-id";
-import type { AccountProfile, AccountProfileDTO, AccountProfilePersistenceDTO } from "../value-objects/account-profile";
-import type { DomainDate, TransferDate, PersistenceDate } from "@/primitives";
-
-// === 1. Server 实体接口 ===
-export interface AccountServer {
-  id: IdentityId;
-  profile: AccountProfile;
-  createdAt: DomainDate;
-}
-
-// === 2. Server DTO (内部构造用) ===
-// 通常与 ClientDTO 结构相似，但用途不同
-export interface AccountServerDTO {
-  id: string;
-  profile: AccountProfileDTO;
-  createdAt: TransferDate;
-}
-
-// === 3. Persistence DTO (数据库用) ===
-export interface AccountPersistenceDTO {
-  id: string;
-  profile: AccountProfilePersistenceDTO; // 引用 Persistence DTO
-  createdAt: PersistenceDate;
-}
-
-// === 4. Server 静态工厂接口 ===
-export interface AccountServerStatic {
-  fromPersistenceDTO(dto: AccountPersistenceDTO): AccountServer;
-}
-
-```
-
----
-
-## 5. 枚举与常量类型规范 (Enums)
-
-为了更好的 TypeScript 支持和 JSON 序列化，推荐使用 `const object` + `keyof typeof` 模式，而不是 TS `enum`。
-
-### 5.1 模板
-
-```typescript
-// 定义常量对象
-export const GenderType = {
-    MALE: 'MALE',
-    FEMALE: 'FEMALE',
-    OTHER: 'OTHER',
-    PREFER_NOT_TO_SAY: 'PREFER_NOT_TO_SAY',
-} as const; // ✅ 必须加 as const
-
-// 导出类型
-export type GenderType = keyof typeof GenderType;
-
-```
-
----
-
-## 6. 常见误区检查清单 (Checklist)
-
-在编写 Contracts 时，请检查：
-
-* [ ] **是否包含了逻辑？** (Contracts 必须是纯类型，不包含函数实现)。
-* [ ] **DTO 中是否使用了 `DomainDate`？** (错误：DTO 必须使用 `TransferDate` 或 `PersistenceDate`)。
-* [ ] **实体接口中是否使用了 `string` 作为 ID？** (错误：实体接口应使用强类型 ID，DTO 才用 string)。
-* [ ] **是否混淆了 Client 和 Server？** (ClientDTO 和 PersistenceDTO 的结构往往不同，严禁混用)。
-* [ ] **引用路径是否正确？** (尽量使用 `@/primitives` 等别名，保持路径整洁)。
-
----
-
-## 7. contracts包的目录结构大致样子
+新模块优先对齐 `packages/contracts/src/modules/authentication/` 的结构：
 
 ```text
-packages/contracts/src/
-├── shared/
-│   └── index.ts          <-- 导出 shared 相关类型，importanceLevel 等
-├── primitives/
-│   └── index.ts          <-- 导出 DomainDate 等
-├── modules/
-│   ├── account/
-│   └── ...
+modules/{domain}/
+├── aggregates/
+├── api/
+├── domain/
+│   └── events/
+├── dtos/
+├── entities/
+├── protocol/
+│   ├── {domain}-event-map.ts
+│   └── {domain}-rpc-map.ts
+├── value-objects/
 └── index.ts
-
 ```
+
+## 分层规则
+
+### Protocol
+
+- 只定义对外协议映射，例如 RPC map、event map。
+- RPC key 使用 `'domain:kebab-case-operation'`。
+- Event key 使用 `'domain:PascalCaseEvent'`。
+- 不允许在协议映射里内联复杂对象类型，统一从 `../api` 或其他下层目录导入。
+
+### API
+
+- 请求、响应、查询类型集中定义，并通过 `api/index.ts` 暴露。
+- 需要运行时校验的请求/查询优先配套 Zod Schema。
+- 不从 `protocol` 回引类型，避免形成循环依赖。
+
+### DTO / Aggregate / Entity / Value Object
+
+- 复杂组合 DTO 放在 `dtos/`。
+- 领域聚合与实体形状分别放在 `aggregates/`、`entities/`。
+- 值对象契约放在 `value-objects/`，并根据需要明确 domain / transfer / persistence 形态。
+
+## 命名与类型约束
+
+- 实体标识符优先使用强类型 ID，而不是裸 `string`。
+- 标识字段统一使用 `*Id` 后缀，避免 `*Uuid` 与 `*Id` 并存。
+- 协议、DTO、实体、仓储映射中的标识符命名必须一致。
+- 文件名保持 `kebab-case`，导出符号可以使用 `PascalCase`。
+
+## 禁止项
+
+- 在 `protocol` 中内联请求/响应对象。
+- 在 `contracts` 中放业务逻辑、类方法实现或框架相关代码。
+- API 层类型未从 `api/index.ts` 导出，却被其他层直接深路径引用。
+- DTO 反向依赖 `protocol`。
+- 新模块继续依赖历史理想结构而不是当前 `packages/contracts` 实际代码。
+
+## 检查口径
+
+- 新模块优先参考 `authentication` 的现有结构，而不是已退役脚手架中的历史示例。
+- 文档用于说明规则，不替代 `tsconfig`、导出入口和测试。
+- 如果某条约束已经由代码生成、类型检查或测试覆盖，文档保持短而明确即可。

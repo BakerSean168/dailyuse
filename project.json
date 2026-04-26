@@ -2,6 +2,54 @@
   "name": "daily-use",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
+    "docs-check": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/AGENT.md",
+        "{workspaceRoot}/AGENTS.md",
+        "{workspaceRoot}/CLAUDE.md",
+        "{workspaceRoot}/README.md",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/.github/copilot-instructions.md",
+        "{workspaceRoot}/.github/GITFLOW*.md",
+        "{workspaceRoot}/.github/prompts/*.md",
+        "{workspaceRoot}/nx.json",
+        "{workspaceRoot}/eslint.config.ts",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/project.json",
+        "{workspaceRoot}/tools/docs/check-docs-config.mjs"
+      ],
+      "options": {
+        "command": "node ./tools/docs/check-docs-config.mjs"
+      }
+    },
+    "governance-check": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/AGENT.md",
+        "{workspaceRoot}/AGENTS.md",
+        "{workspaceRoot}/CLAUDE.md",
+        "{workspaceRoot}/README.md",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/.github/copilot-instructions.md",
+        "{workspaceRoot}/.github/GITFLOW*.md",
+        "{workspaceRoot}/.github/prompts/*.md",
+        "{workspaceRoot}/apps/**/project.json",
+        "{workspaceRoot}/packages/**/project.json",
+        "{workspaceRoot}/tools/**/project.json",
+        "{workspaceRoot}/**/eslint.config.*",
+        "{workspaceRoot}/nx.json",
+        "{workspaceRoot}/eslint.config.ts",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/project.json",
+        "{workspaceRoot}/tools/docs/check-docs-config.mjs"
+      ],
+      "options": {
+        "command": "node ./tools/docs/check-docs-config.mjs"
+      }
+    },
     "local-registry": {
       "executor": "@nx/js:verdaccio",
       "options": {

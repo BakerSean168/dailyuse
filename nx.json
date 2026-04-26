@@ -13,8 +13,7 @@
       "!{projectRoot}/vitest.config.[jt]s",
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js"
+      "!{projectRoot}/eslint.config.{js,mjs,cjs,ts,mts,cts}"
     ],
     "sharedGlobals": [
       "{workspaceRoot}/tsconfig.base.json",
@@ -89,8 +88,7 @@
     "lint": {
       "inputs": [
         "default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/eslint.config.js"
+        "{workspaceRoot}/eslint.config.ts"
       ],
       "cache": true,
       "syncGenerators": [

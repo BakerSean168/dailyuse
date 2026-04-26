@@ -14,7 +14,7 @@ updated: 2026-04-13T00:00:00
 - 根项目入口：[`../../README.md`](../../README.md)
 - 开发流程入口：[`../guides/development/README.md`](../guides/development/README.md)
 - 测试入口：[`../test/README.md`](../test/README.md)
-- 规则入口：[`../standards/index.md`](../standards/index.md)
+- 规则入口：[`../standards/README.md`](../standards/README.md)
 
 ## 使用约定
 

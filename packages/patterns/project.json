@@ -5,6 +5,7 @@
   "projectType": "library",
   "tags": [
     "scope:patterns",
+    "type:lib",
     "layer:shared"
   ],
   "targets": {

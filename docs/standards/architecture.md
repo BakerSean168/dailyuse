@@ -1,32 +1,30 @@
-# Architecture & Layering Rules
+# 架构与分层规则
 
-## 1. 🏗️ High-Level Architecture
-We follow **Clean Architecture**. Respect strict dependency rules:
+## 核心边界
 
-```mermaid
-flowchart BT
-    Infra(Infrastructure) --> App(Application)
-    Infra --> Domain
-    App --> Domain
-    UI(Presentation) --> App
-    UI --> Domain
+- `apps/*` 是运行时容器，负责入口、装配、环境配置和平台适配。
+- `packages/*` 承载可复用的业务模块、共享类型和基础能力。
+- 共享契约集中在 `packages/contracts`，跨模块共享的值对象与通用领域类型集中在 `packages/domain-shared`。
+- 文档、代码和治理脚本都以当前 Nx 工作区结构为准，不再维护脱离仓库现实的“理想结构图”。
+
+## 依赖方向
+
+```text
+infrastructure -> application -> domain
+ui/presentation -> application/domain
+contracts/domain-shared -> 最底层共享依赖
 ```
 
-- **Domain:** (Core) Entities, Logic. **NO dependencies** on outer layers.
-- **Application:** Use Cases. Depends ONLY on Domain.
-- **Infrastructure:** DB, API Clients, File System. Depends on Domain/Application.
-- **Contracts:** (Shared Types) The LOWEST level. **NO dependencies**. Everyone depends on this.
+## 规则
 
-## 2. Layer Isolation Rules
+- Domain 层不能依赖基础设施实现、UI 框架或运行时容器。
+- Application 层负责编排 use case，不直接触碰 Express、Electron、Pinia、Vue 组件等框架对象。
+- Infrastructure 层实现仓储、传输、数据库、文件系统等技术细节。
+- UI / Presentation 层只负责展示、交互和状态编排，不承载核心业务规则。
+- 新功能优先以领域包为单位落地，不再把业务逻辑长期堆积在 `apps/*`。
 
-| Layer | Can Import From | MUST NOT Import From |
-| --- | --- | --- |
-| **Contracts** | *None* | Domain, Application, Infrastructure, UI |
-| **Domain** | Contracts | Infrastructure, Application, UI |
-| **Application** | Domain, Contracts | Infrastructure, UI |
-| **Infrastructure** | Domain, Application, Contracts | UI |
-| **UI** | Domain, Application, Contracts | Infrastructure (Direct DB access) |
+## 仓库约定
 
-### 🚨 Critical Rules
-- **Domain** code must NOT import from `infrastructure` (e.g., no `import { prisma } ...` in Domain).
-- Define interfaces in Domain/Contracts, implement them in Infrastructure.
+- 不要求向后兼容；优先做直接、结构化的根因修复。
+- 如果规则已经能够由 `nx.json`、`eslint.config.ts`、`project.json`、测试或治理脚本直接表达，文档只保留原则与边界，不重复抄配置。
+- 当架构决策影响多个模块或改变长期规则时，补 ADR，而不是在 README 或实现说明里长期堆积背景。

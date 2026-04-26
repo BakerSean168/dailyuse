@@ -2,61 +2,53 @@
 tags:
   - governance
   - reference
-  - living-doc
-description: Governance 活文档入口 - 用最小文档集导航 governance 模块的最佳实践
+description: 仓库治理入口
 created: 2026-03-14T00:00:00
-updated: 2026-03-14T00:00:00
+updated: 2026-04-26T00:00:00
 ---
 
-# Governance 活文档
+# 仓库治理
 
-`@dailyuse/governance` 是 Memoflow 当前用于展示 DDD / Clean Architecture / Result / Zod / split-route 最佳实践的参考模块。
+`docs/governance` 负责说明仓库为什么这样维护、哪些内容以文档表达、哪些内容以配置和脚本强制表达，以及冲突时谁是最终真值。
 
-## 你应该先看什么
+## 真值顺序
 
-| 如果你想...                | 看这里                                                                                   |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| 快速理解模块结构           | [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)                                             |
-| 知道改一个功能要动哪些文件 | [`CHANGE_PLAYBOOK.md`](./CHANGE_PLAYBOOK.md)                                             |
-| 理解为什么这样设计         | [`DECISIONS.md`](./DECISIONS.md)                                                         |
-| 进入代码入口               | [`../../packages/governance/README.md`](../../packages/governance/README.md)             |
+1. 当前代码、配置和测试
+2. `nx.json`、`project.json`、`eslint.config.ts`、`package.json`
+3. `docs/` 下的正式文档
+4. 历史材料和实现背景说明
 
-## 模块定位
+旧的脚手架目录已从维护体系中退役，不再作为正式规范来源。
 
-- 它首先是“参考模块 / 活文档”
-- 它同时也是可运行的规则治理模块
-- 它展示的不是最少代码，而是当前项目认可的优雅实践
+## 当前治理口径
 
-## 当前示范重点
+- `docs/` 是唯一维护中的正式文档入口。
+- `AGENT.md` 是唯一维护中的 AI 协作入口。
+- `README.md` 只保留项目概览、真实目录结构、真实技术栈和文档导航。
+- `docs/standards` 负责定义规则是什么。
+- `docs/guides` 负责定义日常开发怎么做。
+- `docs/test` 负责定义测试类型与入口。
+- `docs/plan` 负责存放 agent 和工程实施计划。
+- 退役的历史计划目录和旧脚手架目录不再作为正式规范来源。
+- ADR 统一收敛到 `docs/architecture/adr`，编号唯一，索引必需更新。
 
-- Result pattern 全链路传播
-- Branded ID + Zod 契约校验
-- DDD 富领域模型 + 修订历史
-- Prisma / PowerSync 双适配器
-- API 路由按 feature 拆分，而非单文件堆叠
+## 配置继承原则
 
-## 分层拆分原则
+- 默认继承根配置，不在文档里重复抄每个项目的配置细节。
+- 允许包级 / app 级存在显式例外，但例外应体现在对应 `project.json`、`tsconfig*.json` 或局部配置里。
+- 当需要解释某个例外时，优先在该配置附近写清楚原因，而不是在总览文档里维护一份平行清单。
 
-- 领域层：按聚合根 / 实体组织
-- 应用层：按 commands / queries 组织
-- 路由层：按资源 / feature 组织
+## 可执行检查
 
-这三者故意不使用同一套命名，因为它们服务的是不同视角：
+- `pnpm nx run daily-use:docs-check`：检查退役脚手架残留、ADR 编号与索引、关键文档链接、旧配置引用。
+- `pnpm nx run daily-use:governance-check`：检查 agent 入口、计划目录、治理文档、project tags 和局部配置约定。
+- `pnpm nx run-many -t lint,typecheck --all`：验证工作区配置收敛没有引入明显回归。
 
-- 领域层表达业务模型
-- 应用层表达用例编排
-- 路由层表达外部 API 边界
+## 相关资料
 
-## 代码入口
-
-- 包入口：`packages/governance/README.md`
-- 路由聚合器：`packages/governance/src/api/routes/index.ts`
-
-## 推荐学习顺序
-
-1. `QUICK_REFERENCE.md`
-2. `packages/governance/README.md`
-3. `CHANGE_PLAYBOOK.md`
-4. 具体代码文件
-
-
+- 仓库级决策：[`../architecture/adr/README.md`](../architecture/adr/README.md)
+- 规则入口：[`../standards/README.md`](../standards/README.md)
+- 开发入口：[`../guides/development/README.md`](../guides/development/README.md)
+- 配置治理：[`./configuration-governance.md`](./configuration-governance.md)
+- 计划目录：[`../plan/README.md`](../plan/README.md)
+- governance 示例模块资料：[`../../packages/governance/README.md`](../../packages/governance/README.md)、[`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)、[`CHANGE_PLAYBOOK.md`](./CHANGE_PLAYBOOK.md)、[`DECISIONS.md`](./DECISIONS.md)

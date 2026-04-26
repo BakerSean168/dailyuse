@@ -1,1 +1,1 @@
-AGENTS.md
+See [`./AGENT.md`](./AGENT.md).
