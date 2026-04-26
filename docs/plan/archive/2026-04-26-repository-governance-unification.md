@@ -6,10 +6,14 @@ tags:
 description: 仓库一致性治理收敛方案
 created: 2026-04-26T00:00:00
 updated: 2026-04-26T00:00:00
-status: active
+status: archived
 ---
 
 # 仓库一致性治理收敛方案
+
+## Archive Note
+
+这份计划对应上一阶段的仓库治理收敛工作，现已转入归档目录。当前活跃计划见 `docs/plan/active/` 下的新阶段方案。
 
 ## Summary
 

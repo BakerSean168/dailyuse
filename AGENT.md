@@ -17,6 +17,7 @@
 - 所有 Nx 命令统一使用 `pnpm nx ...`。
 - 需要 build、lint、test、e2e 时，优先运行离改动最近的 Nx target。
 - 复杂任务先写计划，再实施。计划统一放在 [`docs/plan/active/README.md`](docs/plan/active/README.md) 说明的目录下。
+- 如果在 plan 模式下已经生成了可执行方案，那么在开始实施前，必须先把该方案写入 `docs/plan/active`，再进入执行阶段。
 - 已完成或只保留历史参考价值的计划移到 [`docs/plan/archive/README.md`](docs/plan/archive/README.md)。
 
 ## 变更策略
