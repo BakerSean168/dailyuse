@@ -5,11 +5,13 @@ import type {
 } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '../../../../domain-server/aggregates/schedule-task';
 import type { ScheduleTaskState } from '../../../../domain-server/aggregates/schedule-task';
+import {
+  ExecutionInfo,
+  RetryPolicy,
+  ScheduleConfig,
+  ScheduleTaskMetadata,
+} from '../../../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../../../domain-shared/value-objects/schedule-task-id';
-import { ScheduleConfig } from '../../../../domain-server/value-objects/ScheduleConfig';
-import { ExecutionInfo } from '../../../../domain-server/value-objects/ExecutionInfo';
-import { RetryPolicy } from '../../../../domain-server/value-objects/RetryPolicy';
-import { TaskMetadata } from '../../../../domain-server/value-objects/TaskMetadata';
 import {
   PowerSyncScheduleExecutionMapper,
   type PowerSyncScheduleExecutionRow,
@@ -86,7 +88,7 @@ export class PowerSyncScheduleTaskMapper {
         backoff_multiplier: data.backoff_multiplier ?? 1,
         max_retry_delay: data.max_delay_ms ?? 0,
       }),
-      metadata: TaskMetadata.fromPersistenceDTO({
+      metadata: ScheduleTaskMetadata.fromPersistenceDTO({
         payload: data.payload ?? '{}',
         tags: data.tags ?? '[]',
         priority: data.priority ?? 'Normal',

@@ -1,6 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "PowerShell(pnpm nx *)",
+      "PowerShell(pnpm vitest *)",
+      "PowerShell(pnpm test:coverage:domain *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "nx-mcp"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

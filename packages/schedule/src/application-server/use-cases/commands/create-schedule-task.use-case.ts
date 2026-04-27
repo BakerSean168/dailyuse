@@ -15,9 +15,6 @@
 import {
   type IScheduleTaskRepository,
   ScheduleTask,
-  ScheduleConfig,
-  RetryPolicy,
-  TaskMetadata,
 } from '../../../domain-server';
 import type {
   ScheduleTaskClientDTO,
@@ -25,6 +22,7 @@ import type {
   RetryPolicyServerDTO,
   SourceModule,
 } from '@dailyuse/contracts/schedule';
+import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../../domain-shared/value-objects';
 
 /**
  * 创建调度任务的请求参数
@@ -69,7 +67,7 @@ export class CreateScheduleTaskUseCase {
 
     const retryPolicy = req.retryPolicy ? RetryPolicy.fromDTO(req.retryPolicy) : undefined;
     const metadata = req.handlerPayload
-      ? TaskMetadata.create({
+      ? ScheduleTaskMetadata.create({
           payload: req.handlerPayload,
           tags: [],
           priority: 'Normal',

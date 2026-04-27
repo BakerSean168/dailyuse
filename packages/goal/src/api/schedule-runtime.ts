@@ -8,10 +8,9 @@ import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
 import { SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
 import {
   ScheduleTask,
-  TaskMetadata,
   type IScheduleTaskRepository,
 } from '@dailyuse/schedule/domain-server';
-import { ScheduleConfig } from '@dailyuse/schedule/domain-shared';
+import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type { IGoalRepository } from '../domain-server';
 import type { GoalModuleRuntimeContribution } from '../infrastructure-server';
 
@@ -126,7 +125,7 @@ export function createGoalScheduleRuntimeContribution(deps: {
           endDate: null,
           maxExecutions: 1,
         }),
-        metadata: TaskMetadata.create({
+        metadata: ScheduleTaskMetadata.create({
           payload: {
             goalId: goalDTO.id,
             goalTitle: goalDTO.name,

@@ -9,10 +9,9 @@ import { TaskInstanceStatus, TaskTimeType } from '@dailyuse/contracts/task';
 import { SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
 import {
   ScheduleTask,
-  ScheduleConfig,
-  ScheduleTaskMetadata,
   type IScheduleTaskRepository,
 } from '@dailyuse/schedule/domain-server';
+import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type { TaskModuleRuntimeContribution } from '../infrastructure-server';
 import type { ITaskInstanceRepository, ITaskTemplateRepository } from '../domain-server';
 

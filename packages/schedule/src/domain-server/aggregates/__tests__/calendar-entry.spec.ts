@@ -1,14 +1,14 @@
 /**
- * Schedule Aggregate - Unit Tests
+ * CalendarEntry Aggregate - Unit Tests
  *
  * Tests for conflict detection domain logic
  * Story 9.1 (EPIC-SCHEDULE-001)
  */
 
-import { Schedule } from '../aggregates/schedule';
-import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
+import { CalendarEntry } from '../calendar-entry';
+import { ScheduleId } from '../../../domain-shared/value-objects/schedule-id';
 
-describe('Schedule Aggregate', () => {
+describe('CalendarEntry Aggregate', () => {
   // ===== Test Data Fixtures =====
 
   const createTestSchedule = (params: {
@@ -17,8 +17,8 @@ describe('Schedule Aggregate', () => {
     title?: string;
     startTime: number;
     endTime: number;
-  }): Schedule => {
-    return Schedule.create({
+  }): CalendarEntry => {
+    return CalendarEntry.create({
       identityId: params.identityId || 'acc-123',
       title: params.title || 'Test Meeting',
       startTime: params.startTime,
@@ -35,7 +35,7 @@ describe('Schedule Aggregate', () => {
 
   describe('create()', () => {
     it('should create a schedule with valid parameters', () => {
-      const schedule = Schedule.create({
+      const schedule = CalendarEntry.create({
         identityId: 'acc-123',
         title: 'Team Meeting',
         description: 'Weekly sync',
@@ -58,7 +58,7 @@ describe('Schedule Aggregate', () => {
 
     it('should throw error if startTime >= endTime', () => {
       expect(() => {
-        Schedule.create({
+        CalendarEntry.create({
           identityId: 'acc-123',
           title: 'Invalid Schedule',
           startTime: hour(15),
@@ -69,7 +69,7 @@ describe('Schedule Aggregate', () => {
 
     it('should throw error if startTime === endTime', () => {
       expect(() => {
-        Schedule.create({
+        CalendarEntry.create({
           identityId: 'acc-123',
           title: 'Zero Duration',
           startTime: hour(14),
@@ -79,7 +79,7 @@ describe('Schedule Aggregate', () => {
     });
 
     it('should calculate duration correctly', () => {
-      const schedule = Schedule.create({
+      const schedule = CalendarEntry.create({
         identityId: 'acc-123',
         title: 'Long Meeting',
         startTime: hour(9), // 9:00 AM
@@ -92,8 +92,9 @@ describe('Schedule Aggregate', () => {
 
   describe('load()', () => {
     it('should load schedule from state', () => {
+      const scheduleId = ScheduleId.generate();
       const dto = {
-        id: ScheduleId.of('IScheduleId_sched-456'),
+        id: scheduleId,
         identityId: 'acc-789',
         title: 'Client Meeting',
         description: 'Discuss project',
@@ -109,9 +110,9 @@ describe('Schedule Aggregate', () => {
         updatedAt: new Date(),
       };
 
-      const schedule = Schedule.load(dto);
+      const schedule = CalendarEntry.load(dto);
 
-      expect(schedule.id).toBe('IScheduleId_sched-456');
+      expect(schedule.id).toBe(scheduleId);
       expect(schedule.identityId).toBe('acc-789');
       expect(schedule.title).toBe('Client Meeting');
       expect(schedule.hasConflict).toBe(true);
@@ -558,7 +559,7 @@ describe('Schedule Aggregate', () => {
 
   describe('toServerDTO()', () => {
     it('should convert to ServerDTO correctly', () => {
-      const schedule = Schedule.create({
+      const schedule = CalendarEntry.create({
         identityId: 'acc-123',
         title: 'Team Standup',
         description: 'Daily sync',
@@ -584,7 +585,7 @@ describe('Schedule Aggregate', () => {
     });
 
     it('should handle nullable fields correctly', () => {
-      const schedule = Schedule.create({
+      const schedule = CalendarEntry.create({
         identityId: 'acc-123',
         title: 'Simple Meeting',
         startTime: hour(10),
@@ -598,6 +599,80 @@ describe('Schedule Aggregate', () => {
       expect(dto.location).toBeUndefined();
       expect(dto.attendees).toBeUndefined();
       expect(dto.conflictingEntries).toBeUndefined();
+    });
+  });
+
+  describe('state updates', () => {
+    it('marks and clears conflicts while refreshing updatedAt', () => {
+      const schedule = createTestSchedule({
+        startTime: hour(9),
+        endTime: hour(10),
+      });
+
+      const before = schedule.updatedAt.getTime();
+      schedule.markAsConflicting(['sched-1', 'sched-2']);
+
+      expect(schedule.hasConflict).toBe(true);
+      expect(schedule.conflictingEntries).toEqual(['sched-1', 'sched-2']);
+      expect(schedule.updatedAt.getTime()).toBeGreaterThanOrEqual(before);
+
+      schedule.clearConflicts();
+      expect(schedule.hasConflict).toBe(false);
+      expect(schedule.conflictingEntries).toBeNull();
+    });
+
+    it('reschedules with a valid time range and recalculates duration', () => {
+      const schedule = createTestSchedule({
+        startTime: hour(9),
+        endTime: hour(10),
+      });
+
+      schedule.reschedule(hour(11), hour(12.5));
+
+      expect(schedule.startTime).toBe(hour(11));
+      expect(schedule.endTime).toBe(hour(12.5));
+      expect(schedule.duration).toBe(90);
+    });
+
+    it('rejects invalid reschedule ranges', () => {
+      const schedule = createTestSchedule({
+        startTime: hour(9),
+        endTime: hour(10),
+      });
+
+      expect(() => schedule.reschedule(hour(12), hour(12))).toThrow(
+        'Invalid time range: startTime must be before endTime',
+      );
+    });
+
+    it('updates title, description, priority, location, and attendees', () => {
+      const schedule = createTestSchedule({
+        startTime: hour(9),
+        endTime: hour(10),
+      });
+
+      schedule.updateTitle('Updated');
+      schedule.updateDescription('Notes');
+      schedule.updatePriority(4);
+      schedule.updateLocation('Room B');
+      schedule.updateAttendees(['a@example.com', 'b@example.com']);
+
+      expect(schedule.title).toBe('Updated');
+      expect(schedule.description).toBe('Notes');
+      expect(schedule.priority).toBe(4);
+      expect(schedule.location).toBe('Room B');
+      expect(schedule.attendees).toEqual(['a@example.com', 'b@example.com']);
+    });
+
+    it('rejects empty titles and invalid priorities', () => {
+      const schedule = createTestSchedule({
+        startTime: hour(9),
+        endTime: hour(10),
+      });
+
+      expect(() => schedule.updateTitle('   ')).toThrow('Title cannot be empty');
+      expect(() => schedule.updatePriority(0)).toThrow('Priority must be between 1 and 5');
+      expect(() => schedule.updatePriority(6)).toThrow('Priority must be between 1 and 5');
     });
   });
 });

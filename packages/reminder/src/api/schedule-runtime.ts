@@ -1,8 +1,8 @@
 import { eventBus, createLogger } from '@dailyuse/utils';
 import { ReminderType, type ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTask, TaskMetadata, type IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
-import { ScheduleConfig, Timezone } from '@dailyuse/schedule/domain-shared';
+import { ScheduleTask, type IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
+import { ScheduleConfig, ScheduleTaskMetadata, Timezone } from '@dailyuse/schedule/domain-shared';
 import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderModuleRuntimeContribution } from '../infrastructure-server';
 
@@ -64,7 +64,7 @@ export function createReminderScheduleRuntimeContribution(deps: {
         endDate: null,
         maxExecutions: template.type === ReminderType.OneTime ? 1 : null,
       }),
-      metadata: TaskMetadata.create({
+      metadata: ScheduleTaskMetadata.create({
         payload: {
           reminderId: template.id,
           reminderTitle: template.title,

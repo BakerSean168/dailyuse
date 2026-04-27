@@ -22,4 +22,3 @@
 
 export * from './schedule-task';
 export * from './calendar-entry';
-export * from './schedule'; // deprecated alias

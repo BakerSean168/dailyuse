@@ -11,11 +11,13 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type { ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import {
+  ExecutionInfo,
+  RetryPolicy,
+  ScheduleConfig,
+  ScheduleTaskMetadata,
+} from '../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
-import { ScheduleConfig } from '../value-objects/ScheduleConfig';
-import { ExecutionInfo } from '../value-objects/ExecutionInfo';
-import { RetryPolicy } from '../value-objects/RetryPolicy';
-import { TaskMetadata } from '../value-objects/TaskMetadata';
 import { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
@@ -33,7 +35,7 @@ export interface ScheduleTaskState {
   schedule: ScheduleConfig;
   execution: ExecutionInfo;
   retryPolicy: RetryPolicy;
-  metadata: TaskMetadata;
+  metadata: ScheduleTaskMetadata;
   createdAt: Date;
   updatedAt: Date;
   version: number;
@@ -87,7 +89,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   public get retryPolicy(): RetryPolicy {
     return this._props.retryPolicy;
   }
-  public get metadata(): TaskMetadata {
+  public get metadata(): ScheduleTaskMetadata {
     return this._props.metadata;
   }
   public get createdAt(): Date {
@@ -147,7 +149,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   }
 
   /** Returns the task metadata value object. */
-  public getTaskMetadata(): TaskMetadata {
+  public getTaskMetadata(): ScheduleTaskMetadata {
     return this._props.metadata;
   }
 
@@ -710,7 +712,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     sourceEntityId: string;
     schedule: ScheduleConfig;
     description?: string;
-    metadata?: TaskMetadata;
+    metadata?: ScheduleTaskMetadata;
     retryPolicy?: RetryPolicy;
   }): ScheduleTask {
     const now = new Date();
@@ -735,7 +737,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
         consecutiveFailures: 0,
       }),
       retryPolicy: params.retryPolicy || RetryPolicy.createDefault(),
-      metadata: params.metadata || TaskMetadata.createDefault(),
+      metadata: params.metadata || ScheduleTaskMetadata.createDefault(),
       createdAt: now,
       updatedAt: now,
       version: 1,
@@ -776,7 +778,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       schedule: ScheduleConfig.fromDTO(dto.schedule),
       execution: ExecutionInfo.fromDTO(dto.execution),
       retryPolicy: RetryPolicy.fromDTO(dto.retryPolicy),
-      metadata: TaskMetadata.fromDTO(dto.metadata),
+      metadata: ScheduleTaskMetadata.fromDTO(dto.metadata),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       version: dto.version ?? 1,

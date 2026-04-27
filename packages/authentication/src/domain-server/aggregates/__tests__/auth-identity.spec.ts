@@ -77,7 +77,7 @@ describe('AuthIdentity', () => {
   describe('createWithOAuth', () => {
     it('should create identity with OAuth binding', () => {
       const identity = AuthIdentity.createWithOAuth({
-        provider: 'Google' as any,
+        provider: OAuthProvider.Google,
         sub: 'google-user-123',
       });
 
@@ -273,7 +273,7 @@ describe('AuthIdentity', () => {
     });
   });
 
-  describe('login failure tracking', () => {
+   describe('login failure tracking', () => {
     it('should track failed login attempts', async () => {
       const identity = await AuthIdentity.createWithEmailAndPassword({
         email: 'test@example.com',
@@ -312,4 +312,142 @@ describe('AuthIdentity', () => {
       expect(identity.failedLoginAttempts).toBe(0);
     });
   });
+
+  describe('identity lifecycle', () => {
+    it('should disable identity', async () => {
+      const identity = await AuthIdentity.createWithEmailAndPassword({
+        email: 'test@example.com',
+        plainPassword: 'StrongP@ss1',
+        hasher: mockHasher,
+      });
+
+      expect(identity.status).toBe('Unverified');
+      identity.disable();
+      expect(identity.status).toBe('Disabled');
+    });
+
+    it('should emit auth:identity-disabled event when disabling', async () => {
+      const identity = await AuthIdentity.createWithEmailAndPassword({
+        email: 'test@example.com',
+        plainPassword: 'StrongP@ss1',
+        hasher: mockHasher,
+      });
+
+      identity.clearDomainEvents();
+      identity.disable();
+
+      const events = identity.domainEvents;
+      expect(events.some((e) => e.eventType === 'auth:identity-disabled')).toBe(true);
+
+      const disabledEvent = events.find((e) => e.eventType === 'auth:identity-disabled');
+      expect((disabledEvent?.payload as any).identityId).toBe(identity.id);
+    });
+
+    it('should remove email when password credential provides alternative login path', async () => {
+      const identity = await AuthIdentity.createWithEmailAndPassword({
+        email: 'test@example.com',
+        plainPassword: 'StrongP@ss1',
+        hasher: mockHasher,
+      });
+
+      // Email identifier and password credential both exist
+      expect(identity.identifiers).toHaveLength(1);
+      expect(identity.credentials).toHaveLength(1);
+
+      // Should succeed because password credential provides alternative login path
+      identity.removeEmailIdentifier('test@example.com');
+      expect(identity.identifiers).toHaveLength(0);
+      expect(identity.credentials).toHaveLength(1);
+    });
+
+    it('should throw when removing only email without alternative paths', async () => {
+      const identity = AuthIdentity.createWithOAuth({
+        provider: OAuthProvider.Google,
+        sub: 'google-user-123',
+      });
+
+      identity.addEmailIdentifier('test@example.com');
+      // Now has OAuth binding (alternative path)
+
+      // Remove OAuth binding to leave only email
+      const bindingId = identity.oauthBindings[0].id;
+      identity.removeOAuthBinding(bindingId);
+
+      // Now only email exists, should throw when trying to remove it
+      expect(() => identity.removeEmailIdentifier('test@example.com')).toThrow(
+        'Cannot remove the last login path',
+      );
+    });
+
+    it('should allow removing email when OAuth binding exists', () => {
+      const identity = AuthIdentity.createWithOAuth({
+        provider: OAuthProvider.Google,
+        sub: 'google-user-123',
+      });
+
+      identity.addEmailIdentifier('test@example.com');
+      expect(identity.identifiers).toHaveLength(1);
+
+      // Should succeed because OAuth binding provides alternative login path
+      identity.removeEmailIdentifier('test@example.com');
+      expect(identity.identifiers).toHaveLength(0);
+      expect(identity.oauthBindings).toHaveLength(1);
+    });
+
+    it('should allow removing OAuth when email identifier exists', () => {
+      const identity = AuthIdentity.createWithOAuth({
+        provider: OAuthProvider.Google,
+        sub: 'google-user-123',
+      });
+
+      identity.addEmailIdentifier('test@example.com');
+      expect(identity.oauthBindings).toHaveLength(1);
+
+      // Should succeed because email provides alternative login path
+      const bindingToRemove = identity.oauthBindings[0];
+      identity.removeOAuthBinding(bindingToRemove.id);
+      expect(identity.oauthBindings).toHaveLength(0);
+      expect(identity.identifiers).toHaveLength(1);
+    });
+
+    it('should preserve all data in toServerDTO', async () => {
+      const identity = await AuthIdentity.createWithEmailAndPassword({
+        email: 'test@example.com',
+        plainPassword: 'StrongP@ss1',
+        hasher: mockHasher,
+      });
+
+      identity.addEmailIdentifier('second@example.com');
+      identity.verifyEmailIdentifier('test@example.com');
+
+      const dto = identity.toServerDTO();
+
+      expect(dto.identifiers).toHaveLength(2);
+      expect(dto.identifiers[0].value).toBe('test@example.com');
+      expect(dto.identifiers[0].isVerified).toBe(true);
+      expect(dto.identifiers[1].value).toBe('second@example.com');
+      expect(dto.identifiers[1].isVerified).toBe(false);
+    });
+
+    it('should support oauth binding management', () => {
+      const identity = AuthIdentity.createWithOAuth({
+        provider: OAuthProvider.Google,
+        sub: 'google-user-123',
+      });
+
+      expect(identity.oauthBindings).toHaveLength(1);
+
+      const newBinding = OAuthBinding.create({
+        id: 'oauth-binding-github-456',
+        provider: OAuthProvider.Github,
+        providerSubjectId: 'github-user-456',
+      });
+
+      identity.addOAuthBinding(newBinding);
+
+      expect(identity.oauthBindings).toHaveLength(2);
+      expect(identity.hasOAuth()).toBe(true);
+    });
+  });
 });
+

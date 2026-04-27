@@ -5,5 +5,7 @@ export default createPackageVitestConfig({
   projectRoot: __dirname,
   environment: 'node',
   name: 'domain-shared',
-  governedCoverage: true,
+  governedCoverage: {
+    extraRoots: ['src/shared'],
+  },
 });

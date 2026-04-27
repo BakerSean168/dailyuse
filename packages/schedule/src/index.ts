@@ -30,7 +30,8 @@
  * import type { ScheduleServerDTO } from '@dailyuse/contracts/schedule';
  *
  * // 2. 导入服务端聚合根 / Import server aggregates
- * import { Schedule, ScheduleTask } from '@dailyuse/schedule/domain-server';
+ * import { CalendarEntry, ScheduleTask } from '@dailyuse/schedule/domain-server';
+ * import { ScheduleConfig } from '@dailyuse/schedule/domain-shared';
  *
  * // 3. 使用组合根 / Use composition root
  * import { createScheduleModule } from '@dailyuse/schedule/infrastructure-server';

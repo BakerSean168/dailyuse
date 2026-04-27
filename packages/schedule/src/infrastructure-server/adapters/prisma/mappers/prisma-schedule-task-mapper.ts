@@ -14,11 +14,13 @@ import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '../../../../domain-server/aggregates/schedule-task';
 import type { ScheduleTaskState } from '../../../../domain-server/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../../domain-server/entities/schedule-execution';
+import {
+  ExecutionInfo,
+  RetryPolicy,
+  ScheduleConfig,
+  ScheduleTaskMetadata,
+} from '../../../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../../../domain-shared/value-objects/schedule-task-id';
-import { ScheduleConfig } from '../../../../domain-server/value-objects/ScheduleConfig';
-import { ExecutionInfo } from '../../../../domain-server/value-objects/ExecutionInfo';
-import { RetryPolicy } from '../../../../domain-server/value-objects/RetryPolicy';
-import { TaskMetadata } from '../../../../domain-server/value-objects/TaskMetadata';
 
 /**
  * Prisma ScheduleTask with optional executions relation
@@ -61,7 +63,7 @@ export class PrismaScheduleTaskMapper {
         backoff_multiplier: data.backoffMultiplier ?? 1,
         max_retry_delay: data.maxDelayMs ?? 0,
       }),
-      metadata: TaskMetadata.fromPersistenceDTO({
+      metadata: ScheduleTaskMetadata.fromPersistenceDTO({
         payload:
           typeof data.payload === 'string' ? data.payload : JSON.stringify(data.payload ?? {}),
         tags: data.tags

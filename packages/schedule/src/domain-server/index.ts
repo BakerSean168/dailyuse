@@ -8,11 +8,11 @@
  * 【包含内容】
  * - 聚合根（Aggregates）：Schedule, TimeBlock, Calendar
  * - 实体（Entities）：ScheduleEvent, TimeSlot
- * - 值对象（Value Objects）：TimeRange, Recurrence, Availability 等
+ * - 共享值对象（Shared Value Objects）：从 `../domain-shared` 导入
  * - 仓储接口（Repositories）：IScheduleRepository, ICalendarRepository
  * - 领域服务（Domain Services）：SchedulingService, ConflictDetectionService
  * - 业务计算器（Calculators）：时间计算、冲突检测算法
- * - 错误类（Errors）：ScheduleErrors - 调度相关业务异常
+ * - 错误类（Errors）：调度相关业务异常
  * 
  * 【业务特性】
  * - 日程管理：事件创建、编辑、删除、查询
@@ -34,9 +34,6 @@
  * - @dailyuse/application-*（应用层）
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
  */
-
-// ============ 错误类 ============
-export * from './value-objects/ScheduleErrors';
 
 // ============ 值对象 ============
 export * from './value-objects';

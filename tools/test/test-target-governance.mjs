@@ -446,6 +446,11 @@ async function checkDomainStructure(projectName, projectDir, errors) {
       label: 'aggregate',
     },
     {
+      implementationDirectories: ['src/domain-server/entities'],
+      testDirectories: ['src/domain-server/entities', 'src/domain-server/aggregates'],
+      label: 'entity',
+    },
+    {
       implementationDirectories: ['src/domain-server/services'],
       testDirectories: ['src/domain-server/services'],
       label: 'domain service',

@@ -87,7 +87,6 @@ export class ReminderTriggerService {
       triggeredAt: triggerTime,
       result: TriggerResult.Success,
     });
-    template.addHistory(history);
 
     // 计算下次触发时间
     const nextTriggerTime = template.calculateNextTrigger();
@@ -115,12 +114,11 @@ export class ReminderTriggerService {
     error: string,
     triggerTime: number = Date.now(),
   ): Promise<void> {
-    const history = template.createHistory({
+    template.createHistory({
       triggeredAt: triggerTime,
       result: TriggerResult.Failed,
       error: error,
     });
-    template.addHistory(history);
 
     await this.templateRepository.save(template);
   }
@@ -133,12 +131,11 @@ export class ReminderTriggerService {
     reason: string,
     triggerTime: number = Date.now(),
   ): Promise<void> {
-    const history = template.createHistory({
+    template.createHistory({
       triggeredAt: triggerTime,
       result: TriggerResult.Skipped,
       error: reason,
     });
-    template.addHistory(history);
 
     await this.templateRepository.save(template);
   }

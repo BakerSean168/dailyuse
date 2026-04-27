@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig, mergeConfig } from 'vitest/config';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Alias } from 'vite';
 import { createContractsAliasEntries } from './vite.workspace-aliases';
@@ -45,7 +46,7 @@ interface PackageVitestConfigOptions extends SharedConfigOptions {
   testTimeout?: number;
   pool?: 'forks' | 'threads' | 'vmForks' | 'vmThreads';
   setupFiles?: string[];
-  governedCoverage?: boolean;
+  governedCoverage?: boolean | { extraRoots?: string[] };
 }
 
 export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
@@ -55,31 +56,106 @@ export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
   branches: 70,
 } as const;
 
-function createGovernedCoverageInclude(projectRoot: string) {
-  const projectName = path.basename(projectRoot);
-  const baseInclude = [
-    'src/domain-server/aggregates/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    'src/domain-server/services/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    'src/domain-server/value-objects/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    'src/domain-shared/value-objects/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-  ];
+const DEFAULT_GOVERNED_COVERAGE_ROOTS = [
+  'src/domain-server/aggregates',
+  'src/domain-server/entities',
+  'src/domain-server/services',
+  'src/domain-server/value-objects',
+  'src/domain-shared/value-objects',
+] as const;
 
-  if (projectName === 'domain-shared') {
-    baseInclude.push('src/shared/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}');
-  }
+const SOURCE_FILE_PATTERN = /\.[cm]?[jt]sx?$/;
+const RUNTIME_IMPLEMENTATION_PATTERN =
+  /\b(class|function|const|let|var|enum|if|switch|throw|return|new)\b|=>/;
 
-  return baseInclude;
+function stripComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '');
 }
 
-export function createGovernedCoverage(projectRoot: string) {
+function isIgnorableGovernedFile(fileName: string) {
+  return (
+    fileName === 'index.ts'
+    || fileName.endsWith('.d.ts')
+    || /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName)
+    || fileName.endsWith('.config.ts')
+  );
+}
+
+function isRuntimeImplementationSource(source: string) {
+  const normalized = stripComments(source).trim();
+  if (!normalized) {
+    return false;
+  }
+
+  return RUNTIME_IMPLEMENTATION_PATTERN.test(normalized);
+}
+
+function collectGovernedCoverageFiles(projectRoot: string, roots: readonly string[]) {
+  const includedFiles = new Set<string>();
+
+  for (const root of roots) {
+    const absoluteRoot = path.resolve(projectRoot, root);
+    if (!pathExists(absoluteRoot)) {
+      continue;
+    }
+
+    walkGovernedCoverageRoot(projectRoot, absoluteRoot, includedFiles);
+  }
+
+  return [...includedFiles].sort();
+}
+
+function walkGovernedCoverageRoot(
+  projectRoot: string,
+  currentPath: string,
+  includedFiles: Set<string>,
+) {
+  for (const entry of readdirSync(currentPath, { withFileTypes: true })) {
+    const absolutePath = path.join(currentPath, entry.name);
+
+    if (entry.isDirectory()) {
+      if (entry.name === '__tests__') {
+        continue;
+      }
+      walkGovernedCoverageRoot(projectRoot, absolutePath, includedFiles);
+      continue;
+    }
+
+    if (!SOURCE_FILE_PATTERN.test(entry.name) || isIgnorableGovernedFile(entry.name)) {
+      continue;
+    }
+
+    const source = readFileSync(absolutePath, 'utf8');
+    if (!isRuntimeImplementationSource(source)) {
+      continue;
+    }
+
+    includedFiles.add(path.relative(projectRoot, absolutePath).replaceAll(path.sep, '/'));
+  }
+}
+
+function pathExists(targetPath: string) {
+  return existsSync(targetPath);
+}
+
+export function createGovernedCoverage(
+  projectRoot: string,
+  options: { extraRoots?: string[] } = {},
+) {
   const workspaceRoot = path.resolve(projectRoot, '../..');
   const relativeProjectRoot = path
     .relative(workspaceRoot, projectRoot)
     .replaceAll(path.sep, '/');
+  const include = collectGovernedCoverageFiles(projectRoot, [
+    ...DEFAULT_GOVERNED_COVERAGE_ROOTS,
+    ...(options.extraRoots ?? []),
+  ]);
 
   return {
     all: true,
-    include: createGovernedCoverageInclude(projectRoot),
+    include,
     exclude: [
       '**/index.ts',
       '**/*.d.ts',
@@ -251,7 +327,10 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
         ...(setupFiles?.length ? { setupFiles } : {}),
         ...(governedCoverage
           ? {
-              coverage: createGovernedCoverage(projectRoot),
+              coverage: createGovernedCoverage(
+                projectRoot,
+                governedCoverage === true ? {} : governedCoverage,
+              ),
             }
           : {}),
       },

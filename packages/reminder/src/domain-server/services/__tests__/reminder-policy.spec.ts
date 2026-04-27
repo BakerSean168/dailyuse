@@ -172,10 +172,12 @@ describe('ReminderPolicy', () => {
     });
 
     it('should throw when identities do not match', () => {
+      const anotherIdentity = IdentityId.generate();
+      const differentIdentity = IdentityId.generate();
       const template = ReminderTemplate.load(
-        makeTemplateState({ identityId: IdentityId.of('IdentityId_user-A') }),
+        makeTemplateState({ identityId: IdentityId.of(String(anotherIdentity)) }),
       );
-      const group = ReminderGroup.load(makeGroupState({ identityId: 'IdentityId_user-B' }));
+      const group = ReminderGroup.load(makeGroupState({ identityId: String(differentIdentity) }));
 
       expect(() => policy.assertValidGroupAssignment(template, group)).toThrow(
         'Reminder template and group must belong to the same identity',
