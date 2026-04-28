@@ -103,7 +103,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-4xl px-4 py-10">
+  <div data-testid="account-center-view" class="mx-auto max-w-4xl px-4 py-10">
     <Card
       class="border-border/70 bg-card/95 text-card-foreground shadow-xl shadow-foreground/5 backdrop-blur-sm"
     >
@@ -189,7 +189,12 @@ onMounted(() => {
           {{ t('account.logoutConfirm.description') }}
         </p>
 
-        <Button variant="destructive" :disabled="isLoading" @click="handleLogout">
+        <Button
+          data-testid="account-logout-button"
+          variant="destructive"
+          :disabled="isLoading"
+          @click="handleLogout"
+        >
           <LogOut class="mr-2 h-4 w-4" />
           {{ t('account.actions.logout') }}
         </Button>

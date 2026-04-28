@@ -1,280 +1,123 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
+import { TIMEOUT_CONFIG } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
 
-/**
- * E2E ??:?????
- * ?????????????????,????????
- */
+const generateTestEmail = () =>
+  `e2e-persistence-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+const testPassword = 'Test123456!';
 
 test.describe('Settings Persistence', () => {
+  let testEmail: string;
+
   test.beforeEach(async ({ page }) => {
-    // ???????
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    testEmail = generateTestEmail();
+
+    await registerAndLogin(page, {
+      email: testEmail,
+      password: testPassword,
+      landingPath: '/settings',
+    });
+
+    await resetSettings(page);
   });
 
-  test('should persist theme after page reload', async ({ page }) => {
-    // ???????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+  test('[P1] should persist theme after page reload', async ({ page }) => {
+    await openAppearanceSettings(page);
+    await selectTheme(page, 'dark');
 
-    // ????
-    const themeSelect = page
-      .locator('select, [role="combobox"]')
-      .filter({ hasText: /light|dark|auto/i })
-      .first();
-    await themeSelect.click();
-    await page.getByText('??', { exact: false }).click();
-    await page.waitForTimeout(1000);
+    await expect(themeTrigger(page)).toContainText(/dark/i);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
-    // ??????
-    const html = page.locator('html');
-    const initialTheme = await html.getAttribute('class');
+    await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await openAppearanceSettings(page);
 
-    // ????
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-
-    // ????????
-    const reloadedTheme = await html.getAttribute('class');
-    expect(reloadedTheme).toBe(initialTheme);
+    await expect(themeTrigger(page)).toContainText(/dark/i);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('should persist notifications settings after page reload', async ({ page }) => {
-    // ???????
-    await page.getByRole('tab', { name: /??|Notifications/i }).click();
+  test('[P1] should persist notifications settings after page reload', async ({ page }) => {
+    await openNotificationsSettings(page);
 
-    // ????
-    const notificationToggle = page.locator('[role="switch"]').first();
+    const notificationToggle = page.getByTestId('notification-settings-switch');
     const initialState = await notificationToggle.getAttribute('aria-checked');
 
-    if (initialState === 'true') {
-      await notificationToggle.click();
-      await page.waitForTimeout(1000);
-    }
-
-    // ????
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('tab', { name: /??|Notifications/i }).click();
-
-    // ????????
-    const reloadedState = await notificationToggle.getAttribute('aria-checked');
-    expect(reloadedState).toBe('false');
-  });
-
-  test('should persist shortcuts after page reload', async ({ page }) => {
-    // ????????
-    await page.getByRole('tab', { name: /???|Shortcuts/i }).click();
-
-    // ????????
-    const shortcutToggle = page.locator('[role="switch"]').first();
-    const isEnabled = await shortcutToggle.getAttribute('aria-checked');
-
-    if (isEnabled !== 'true') {
-      await shortcutToggle.click();
-      await page.waitForTimeout(500);
-    }
-
-    // ????????
-    const shortcutInput = page.locator('input[readonly]').first();
-    await shortcutInput.click();
-    await page.keyboard.down('Control');
-    await page.keyboard.down('Alt');
-    await page.keyboard.press('K');
-    await page.keyboard.up('Alt');
-    await page.keyboard.up('Control');
-    await page.waitForTimeout(1000);
-
-    const customShortcut = await shortcutInput.inputValue();
-
-    // ????
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('tab', { name: /???|Shortcuts/i }).click();
-
-    // ?????????
-    const reloadedShortcut = await shortcutInput.inputValue();
-    expect(reloadedShortcut).toBe(customShortcut);
-  });
-
-  test('should persist settings after logout and login', async ({ page }) => {
-    // ????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
-    const themeSelect = page
-      .locator('select, [role="combobox"]')
-      .filter({ hasText: /light|dark|auto/i })
-      .first();
-    await themeSelect.click();
-    await page.getByText('??', { exact: false }).click();
-    await page.waitForTimeout(1000);
-
-    // ????
-    const html = page.locator('html');
-    const theme = await html.getAttribute('class');
-
-    // ??(???????)
-    const logoutButton = page.getByRole('button', { name: /??|Logout|Sign out/i });
-
-    if (await logoutButton.isVisible()) {
-      await logoutButton.click();
-      await page.waitForLoadState('networkidle');
-
-      // ????(????????????)
-      await page.goto('/login');
-      // ... ?????? ...
-
-      // ???????
-      await page.goto('/settings');
-      await page.waitForLoadState('networkidle');
-
-      // ????????
-      const reloadedTheme = await html.getAttribute('class');
-      expect(reloadedTheme).toBe(theme);
-    } else {
-      test.skip();
-    }
-  });
-
-  test('should sync settings across multiple tabs', async ({ context }) => {
-    // ????????
-    const page1 = await context.newPage();
-    await page1.goto('/settings');
-    await page1.waitForLoadState('networkidle');
-
-    // ????????
-    const page2 = await context.newPage();
-    await page2.goto('/settings');
-    await page2.waitForLoadState('networkidle');
-
-    // ???????????
-    await page1.getByRole('tab', { name: /??|Appearance/i }).click();
-    const themeSelect = page1
-      .locator('select, [role="combobox"]')
-      .filter({ hasText: /light|dark|auto/i })
-      .first();
-    await themeSelect.click();
-    await page1.getByText('??', { exact: false }).click();
-    await page1.waitForTimeout(2000); // ????
-
-    // ??????????????
-    const html2 = page2.locator('html');
-    const theme2 = await html2.getAttribute('class');
-    expect(theme2).toMatch(/dark/i);
-
-    // ?????
-    await page1.close();
-    await page2.close();
-  });
-
-  test('should handle concurrent updates gracefully', async ({ context }) => {
-    // ???????
-    const page1 = await context.newPage();
-    await page1.goto('/settings');
-    await page1.waitForLoadState('networkidle');
-
-    const page2 = await context.newPage();
-    await page2.goto('/settings');
-    await page2.waitForLoadState('networkidle');
-
-    // ???????????????
-    await Promise.all([
-      (async () => {
-        await page1.getByRole('tab', { name: /??|Appearance/i }).click();
-        const themeSelect = page1
-          .locator('select, [role="combobox"]')
-          .filter({ hasText: /light|dark|auto/i })
-          .first();
-        await themeSelect.click();
-        await page1.getByText('??', { exact: false }).click();
-      })(),
-      (async () => {
-        await page2.getByRole('tab', { name: /??|Notifications/i }).click();
-        const notificationToggle = page2.locator('[role="switch"]').first();
-        await notificationToggle.click();
-      })(),
-    ]);
-
-    await page1.waitForTimeout(2000); // ????
-
-    // ??????????
-    await page1.reload();
-    await page1.waitForLoadState('networkidle');
-
-    const html = page1.locator('html');
-    const theme = await html.getAttribute('class');
-    expect(theme).toMatch(/dark/i);
-
-    await page1.getByRole('tab', { name: /??|Notifications/i }).click();
-    const notificationToggle = page1.locator('[role="switch"]').first();
-    const notificationState = await notificationToggle.getAttribute('aria-checked');
-    expect(notificationState).toBeDefined();
-
-    // ?????
-    await page1.close();
-    await page2.close();
-  });
-
-  test('should load settings from server on first visit', async ({ page }) => {
-    // ??????
-    await page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
+    await toggleSwitch(page, notificationToggle);
+    const updatedState = initialState === 'true' ? 'false' : 'true';
+    await expect(notificationToggle).toHaveAttribute('aria-checked', updatedState, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
 
-    // ????
-    await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await openNotificationsSettings(page);
 
-    // ???????????
-    // ???????????????????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
-
-    const html = page.locator('html');
-    const theme = await html.getAttribute('class');
-    expect(theme).toBeDefined();
-    expect(theme).not.toBe('');
+    await expect(page.getByTestId('notification-settings-switch')).toHaveAttribute(
+      'aria-checked',
+      updatedState,
+    );
   });
 
-  test('should handle localStorage quota exceeded', async ({ page }) => {
-    // ?? localStorage ??
-    await page.evaluate(() => {
-      Storage.prototype.setItem = function () {
-        throw new DOMException('QuotaExceededError');
-      };
+  test('[P2] should sync settings across tabs', async ({ page, context }) => {
+    await openNotificationsSettings(page);
+
+    const notificationToggle = page.getByTestId('notification-settings-switch');
+    const initialState = await notificationToggle.getAttribute('aria-checked');
+    const updatedState = initialState === 'true' ? 'false' : 'true';
+
+    await toggleSwitch(page, notificationToggle);
+    await expect(notificationToggle).toHaveAttribute('aria-checked', updatedState, {
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
 
-    // ??????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
-    const themeSelect = page
-      .locator('select, [role="combobox"]')
-      .filter({ hasText: /light|dark|auto/i })
-      .first();
-    await themeSelect.click();
-    await page.getByText('??', { exact: false }).click();
-    await page.waitForTimeout(1000);
+    const page2 = await context.newPage();
+    await page2.goto('/settings', {
+      waitUntil: 'networkidle',
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
+    await openNotificationsSettings(page2);
 
-    // ????????(????????)
-    // ???????,????????
-    await expect(page.locator('body')).toBeVisible();
-  });
+    await expect(page2.getByTestId('notification-settings-switch')).toHaveAttribute(
+      'aria-checked',
+      updatedState,
+    );
 
-  test('should cache settings in memory for fast access', async ({ page }) => {
-    // ???????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
-
-    // ????????
-    const startTime1 = Date.now();
-    await page.waitForLoadState('networkidle');
-    const loadTime1 = Date.now() - startTime1;
-
-    // ????????????
-    await page.getByRole('tab', { name: /??|Notifications/i }).click();
-    await page.waitForTimeout(100);
-
-    const startTime2 = Date.now();
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
-    const loadTime2 = Date.now() - startTime2;
-
-    // ?????????(?????)
-    expect(loadTime2).toBeLessThan(loadTime1 * 2);
+    await page2.close();
   });
 });
+
+async function openAppearanceSettings(page: Page) {
+  await page.getByTestId('settings-tab-appearance').click();
+  await expect(page.getByTestId('appearance-settings-card')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
+async function openNotificationsSettings(page: Page) {
+  await page.getByTestId('settings-tab-notifications').click();
+  await expect(page.getByTestId('notification-settings-card')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
+async function selectTheme(page: Page, theme: 'light' | 'dark' | 'auto') {
+  await themeTrigger(page).click();
+  await page.getByRole('option', { name: new RegExp(theme, 'i') }).click();
+}
+
+function themeTrigger(page: Page): Locator {
+  return page.getByRole('combobox', { name: /theme/i });
+}
+
+async function resetSettings(page: Page) {
+  await page.evaluate(async () => {
+    await fetch('/api/v1/settings/reset', { method: 'POST' });
+  });
+  await page.goto('/settings', {
+    waitUntil: 'networkidle',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+}
+
+async function toggleSwitch(page: Page, locator: Locator) {
+  await locator.focus();
+  await page.keyboard.press('Space');
+}

@@ -12,6 +12,7 @@
             size="icon"
             class="h-8 w-8"
             :title="t('goal.list.newGoal')"
+            data-testid="create-goal-entry"
             @click="openGoalDialog"
           >
             <Plus class="h-4 w-4" />
@@ -126,8 +127,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Target, Plus, FolderPlus, LayoutGrid, Folder } from 'lucide-vue-next';
 import { createLogger } from '@dailyuse/utils';
@@ -145,6 +146,7 @@ import { GoalDialog, GoalFolderDialog, ActivateFocusModeDialog } from '../compon
 
 const { t, locale } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const logger = createLogger('goal:layout');
 const stringify = (value: unknown): string => {
   try {
@@ -162,6 +164,7 @@ const {
   setSelectedFolderId,
   setSystemView,
   fetchGoals,
+  fetchGoal,
   fetchFolders,
   getCurrentFocusMode,
   activateFocusMode,
@@ -232,6 +235,67 @@ function openGoalDialog() {
   goalDialogMode.value = 'create';
   editingGoal.value = null;
   defaultGoalFolderId.value = null;
+  goalDialogOpen.value = true;
+}
+
+async function clearGoalDialogQuery() {
+  if (route.name !== 'goal-list') {
+    return;
+  }
+
+  const nextQuery = { ...route.query };
+  delete nextQuery.dialog;
+  delete nextQuery.goalId;
+
+  await router.replace({
+    name: 'goal-list',
+    query: nextQuery,
+  });
+}
+
+async function syncGoalDialogFromRoute() {
+  if (route.name !== 'goal-list') {
+    goalDialogOpen.value = false;
+    editingGoal.value = null;
+    defaultGoalFolderId.value = null;
+    return;
+  }
+
+  const dialog = typeof route.query.dialog === 'string' ? route.query.dialog : null;
+  const goalId = typeof route.query.goalId === 'string' ? route.query.goalId : null;
+
+  if (dialog !== 'goal') {
+    goalDialogOpen.value = false;
+    editingGoal.value = null;
+    defaultGoalFolderId.value = null;
+    return;
+  }
+
+  if (!goalId) {
+    goalDialogMode.value = 'create';
+    editingGoal.value = null;
+    defaultGoalFolderId.value = null;
+    goalDialogOpen.value = true;
+    return;
+  }
+
+  goalDialogMode.value = 'edit';
+  defaultGoalFolderId.value = null;
+
+  const cachedGoal = goals.value.find((goal) => goal.id === goalId) ?? null;
+  if (cachedGoal) {
+    editingGoal.value = cachedGoal;
+    goalDialogOpen.value = true;
+    return;
+  }
+
+  const fetchedGoal = await fetchGoal(goalId);
+  if (!fetchedGoal) {
+    await clearGoalDialogQuery();
+    return;
+  }
+
+  editingGoal.value = fetchedGoal;
   goalDialogOpen.value = true;
 }
 
@@ -326,5 +390,19 @@ onMounted(async () => {
       folders: goalFolders.value.length,
     })}`,
   );
+});
+
+watch(
+  () => [route.name, route.query.dialog, route.query.goalId, goals.value.length],
+  () => {
+    void syncGoalDialogFromRoute();
+  },
+  { immediate: true },
+);
+
+watch(goalDialogOpen, (open) => {
+  if (!open && route.name === 'goal-list' && route.query.dialog === 'goal') {
+    void clearGoalDialogQuery();
+  }
 });
 </script>

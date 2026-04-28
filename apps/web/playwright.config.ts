@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { createApiServer, createWebServer } from './playwright.server';
 
 /**
  * Playwright 配置
@@ -8,7 +9,28 @@ export default defineConfig({
   // 默认 E2E 只覆盖纯 Web 流程；desktop-web 同步回归单独放到 sync 配置里，
   // 避免日常回归被跨进程准备成本拖慢。
   testDir: './e2e',
-  testIgnore: ['sync/**'],
+  // 默认入口进一步收口成 AI 可依赖的核心业务回归集合。
+  testMatch: [
+    '**/authentication/auth-flow.spec.ts',
+    '**/authentication/auth-login.spec.ts',
+    '**/dashboard/dashboard-overview.spec.ts',
+    '**/goal/goal-crud.spec.ts',
+    '**/notification/notification-center.spec.ts',
+    '**/reminder/reminder-template-crud.spec.ts',
+    '**/task/task-template-crud.spec.ts',
+    '**/user-settings/notifications.spec.ts',
+    '**/user-settings/persistence.spec.ts',
+  ],
+  testIgnore: [
+    'sync/**',
+    'desktop-screenshots/**',
+    'performance/**',
+    'debug/**',
+    '**/debug*.spec.ts',
+    '**/*-debug.spec.ts',
+    '**/explore*.spec.ts',
+    '**/check-route.spec.ts',
+  ],
 
   // 单个测试最大执行时间 (5分钟，因为需要等待 Reminder 触发)
   timeout: 5 * 60 * 1000,
@@ -66,11 +88,6 @@ export default defineConfig({
     },
   ],
 
-  // 由 Playwright 托管本地 Web 服务，确保本地和 CI 使用同一启动方式。
-  webServer: {
-    command: 'pnpm --filter @dailyuse/web dev -- --host 127.0.0.1 --port 5173',
-    url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  // 默认业务回归依赖真实登录和 CRUD，必须同时托管 API + Web。
+  webServer: [createApiServer(), createWebServer()],
 });

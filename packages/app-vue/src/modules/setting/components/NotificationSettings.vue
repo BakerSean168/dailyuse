@@ -1,5 +1,5 @@
 <template>
-  <Card>
+  <Card data-testid="notification-settings-card">
     <CardHeader>
       <CardTitle class="text-lg font-medium">{{ t('setting.notifications.title') }}</CardTitle>
       <CardDescription>
@@ -9,12 +9,14 @@
     <CardContent class="p-6 space-y-6">
       <div class="flex items-center justify-between">
         <div class="space-y-0.5">
-          <Label class="text-base font-medium">{{ t('setting.notifications.useCustomNotification') }}</Label>
+          <Label for="notification-switch" class="text-base font-medium">{{ t('setting.notifications.useCustomNotification') }}</Label>
           <p class="text-[13px] text-muted-foreground max-w-sm">
             {{ t('setting.notifications.useCustomNotificationDescription') }}
           </p>
         </div>
         <Switch
+          id="notification-switch"
+          data-testid="notification-settings-switch"
           :checked="useCustomNotification"
           @update:checked="updateCustomNotification"
           :disabled="isLoading"

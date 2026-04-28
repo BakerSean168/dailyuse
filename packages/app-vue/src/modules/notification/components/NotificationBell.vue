@@ -1,6 +1,12 @@
 <template>
   <div class="relative inline-block">
-    <Button variant="ghost" size="icon" :disabled="loading" @click="$emit('click')">
+    <Button
+      data-testid="notification-bell-icon"
+      variant="ghost"
+      size="icon"
+      :disabled="loading"
+      @click="$emit('click')"
+    >
       <Bell class="h-5 w-5" />
       <span
         v-if="hasUnread"

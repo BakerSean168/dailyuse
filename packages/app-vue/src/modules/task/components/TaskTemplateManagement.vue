@@ -80,6 +80,7 @@
           <h3 class="text-xl font-semibold mb-2">{{ getEmptyStateText() }}</h3>
           <Button
             v-if="currentStatus === 'ACTIVE'"
+            data-testid="create-first-task-template-button"
             variant="secondary"
             class="mt-4"
             @click="emit('create-template')"

@@ -23,6 +23,10 @@ env:
   NODE_VERSION: '22'
   CI: 'true'
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
+  GOVERNED_DOMAIN_COVERAGE_PROJECTS: 'account,ai,authentication,domain-shared,editor,goal,governance,notification,reminder,schedule,setting,task'
+  APP_VUE_STORE_COVERAGE_PROJECTS: 'app-vue'
+  USE_CASES_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'
+  PRISMA_MAPPERS_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'
 
 jobs:
   lint:
@@ -111,10 +115,236 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🔎 Detect affected governed domain coverage targets
+        id: detect-domain-coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_target=false
+          selected_projects=""
+          allowed=",${GOVERNED_DOMAIN_COVERAGE_PROJECTS},"
+
+          while IFS= read -r project; do
+            [ -z "$project" ] && continue
+
+            if [[ "$allowed" != *",$project,"* ]]; then
+              continue
+            fi
+
+            if pnpm exec nx show project "$project" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);process.exit(p.targets && p.targets['test:coverage'] ? 0 : 1);});"; then
+              echo "Affected governed project with test:coverage: $project"
+              has_target=true
+              if [ -z "$selected_projects" ]; then
+                selected_projects="$project"
+              else
+                selected_projects="$selected_projects,$project"
+              fi
+            fi
+          done < <(pnpm exec nx show projects --affected)
+
+          echo "has_target=$has_target" >> "$GITHUB_OUTPUT"
+          echo "projects=$selected_projects" >> "$GITHUB_OUTPUT"
+
+      - name: ℹ️ Skip governed domain coverage tests
+        if: steps.detect-domain-coverage.outputs.has_target != 'true'
+        run: echo "No affected governed projects expose test:coverage; skipping."
+
       - name: 📊 Run affected domain coverage gates
+        if: steps.detect-domain-coverage.outputs.has_target == 'true'
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test:coverage --parallel=2 --outputStyle=static
+        run: pnpm exec nx run-many -t test:coverage --projects="${{ steps.detect-domain-coverage.outputs.projects }}" --parallel=2 --outputStyle=static
+
+  store-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔎 Detect affected app-vue store coverage targets
+        id: detect-store-coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_target=false
+          selected_projects=""
+          allowed=",${APP_VUE_STORE_COVERAGE_PROJECTS},"
+
+          if [ -z "${APP_VUE_STORE_COVERAGE_PROJECTS}" ]; then
+            echo "has_target=false" >> "$GITHUB_OUTPUT"
+            echo "projects=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          while IFS= read -r project; do
+            [ -z "$project" ] && continue
+
+            if [[ "$allowed" != *",$project,"* ]]; then
+              continue
+            fi
+
+            if pnpm exec nx show project "$project" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);process.exit(p.targets && p.targets['test:coverage'] ? 0 : 1);});"; then
+              echo "Affected project with test:coverage: $project"
+              has_target=true
+              if [ -z "$selected_projects" ]; then
+                selected_projects="$project"
+              else
+                selected_projects="$selected_projects,$project"
+              fi
+            fi
+          done < <(pnpm exec nx show projects --affected)
+
+          echo "has_target=$has_target" >> "$GITHUB_OUTPUT"
+          echo "projects=$selected_projects" >> "$GITHUB_OUTPUT"
+
+      - name: ℹ️ Skip app-vue store coverage tests
+        if: steps.detect-store-coverage.outputs.has_target != 'true'
+        run: echo "No affected app-vue projects expose store coverage; skipping."
+
+      - name: 📊 Run affected app-vue store coverage gates
+        if: steps.detect-store-coverage.outputs.has_target == 'true'
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run-many -t test:coverage --projects="${{ steps.detect-store-coverage.outputs.projects }}" --parallel=1 --outputStyle=static
+
+  use-cases-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔎 Detect affected use-cases coverage targets
+        id: detect-use-cases
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_target=false
+          selected_projects=""
+          allowed=",${USE_CASES_COVERAGE_PROJECTS},"
+
+          if [ -z "${USE_CASES_COVERAGE_PROJECTS}" ]; then
+            echo "has_target=false" >> "$GITHUB_OUTPUT"
+            echo "projects=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          while IFS= read -r project; do
+            [ -z "$project" ] && continue
+
+            if [[ "$allowed" != *",$project,"* ]]; then
+              continue
+            fi
+
+            if pnpm exec nx show project "$project" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);process.exit(p.targets && p.targets['test:coverage:use-cases'] ? 0 : 1);});"; then
+              echo "Affected project with test:coverage:use-cases: $project"
+              has_target=true
+              if [ -z "$selected_projects" ]; then
+                selected_projects="$project"
+              else
+                selected_projects="$selected_projects,$project"
+              fi
+            fi
+          done < <(pnpm exec nx show projects --affected)
+
+          echo "has_target=$has_target" >> "$GITHUB_OUTPUT"
+          echo "projects=$selected_projects" >> "$GITHUB_OUTPUT"
+
+      - name: ℹ️ Skip use-cases coverage tests
+        if: steps.detect-use-cases.outputs.has_target != 'true'
+        run: echo "No affected projects expose test:coverage:use-cases; skipping."
+
+      - name: 📊 Run affected use-cases coverage gates
+        if: steps.detect-use-cases.outputs.has_target == 'true'
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run-many -t test:coverage:use-cases --projects="${{ steps.detect-use-cases.outputs.projects }}" --parallel=2 --outputStyle=static
+
+  prisma-mappers-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔎 Detect affected prisma-mappers coverage targets
+        id: detect-mappers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_target=false
+          selected_projects=""
+          allowed=",${PRISMA_MAPPERS_COVERAGE_PROJECTS},"
+
+          if [ -z "${PRISMA_MAPPERS_COVERAGE_PROJECTS}" ]; then
+            echo "has_target=false" >> "$GITHUB_OUTPUT"
+            echo "projects=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          while IFS= read -r project; do
+            [ -z "$project" ] && continue
+
+            if [[ "$allowed" != *",$project,"* ]]; then
+              continue
+            fi
+
+            if pnpm exec nx show project "$project" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const p=JSON.parse(s);process.exit(p.targets && p.targets['test:coverage:prisma-mappers'] ? 0 : 1);});"; then
+              echo "Affected project with test:coverage:prisma-mappers: $project"
+              has_target=true
+              if [ -z "$selected_projects" ]; then
+                selected_projects="$project"
+              else
+                selected_projects="$selected_projects,$project"
+              fi
+            fi
+          done < <(pnpm exec nx show projects --affected)
+
+          echo "has_target=$has_target" >> "$GITHUB_OUTPUT"
+          echo "projects=$selected_projects" >> "$GITHUB_OUTPUT"
+
+      - name: ℹ️ Skip prisma-mappers coverage tests
+        if: steps.detect-mappers.outputs.has_target != 'true'
+        run: echo "No affected projects expose test:coverage:prisma-mappers; skipping."
+
+      - name: 📊 Run affected prisma-mappers coverage gates
+        if: steps.detect-mappers.outputs.has_target == 'true'
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run-many -t test:coverage:prisma-mappers --projects="${{ steps.detect-mappers.outputs.projects }}" --parallel=2 --outputStyle=static
 
   build:
     runs-on: ubuntu-latest
@@ -137,7 +367,7 @@ jobs:
         run: pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
 
   ci-success:
-    needs: [lint, typecheck, test, domain-coverage, build]
+    needs: [lint, typecheck, test, domain-coverage, store-coverage, use-cases-coverage, prisma-mappers-coverage, build]
     runs-on: ubuntu-latest
     if: always()
 
@@ -148,6 +378,9 @@ jobs:
              [ "${{ needs.typecheck.result }}" != "success" ] || \
              [ "${{ needs.test.result }}" != "success" ] || \
              [ "${{ needs.domain-coverage.result }}" != "success" ] || \
+             [ "${{ needs.store-coverage.result }}" != "success" ] || \
+             [ "${{ needs.use-cases-coverage.result }}" != "success" ] || \
+             [ "${{ needs.prisma-mappers-coverage.result }}" != "success" ] || \
              [ "${{ needs.build.result }}" != "success" ]; then
             echo "❌ CI failed"
             exit 1

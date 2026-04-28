@@ -1,5 +1,8 @@
 <template>
-  <ActionableWrapper :actions="menuActions">
+  <ActionableWrapper
+    :actions="menuActions"
+    :more-button-test-id="`goal-card-menu-trigger-${goal.id}`"
+  >
     <Card
       class="group relative overflow-hidden transition-all duration-200 hover:shadow-md border border-border/60 bg-card hover:border-border/80"
       data-testid="goal-card"
@@ -119,12 +122,14 @@ const emit = defineEmits<{
 const menuActions = computed<MenuAction[]>(() => [
   {
     key: 'edit',
+    testId: `goal-card-edit-action-${props.goal.id}`,
     label: menuLabel('edit'),
     icon: Pencil,
     handler: () => emit('edit', props.goal),
   },
   {
     key: 'delete',
+    testId: `goal-card-delete-action-${props.goal.id}`,
     label: menuLabel('delete'),
     icon: Trash2,
     destructive: true,

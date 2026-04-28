@@ -1,5 +1,5 @@
 <template>
-  <div class="notification-list">
+  <div class="notification-list" data-testid="notification-list">
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <Loader2 class="h-8 w-8 animate-spin text-primary" />
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Notification List -->
-    <div v-else class="divide-y">
+    <div v-else class="divide-y" data-testid="notifications-list">
       <slot
         v-for="notification in notifications"
         :key="notification.id"

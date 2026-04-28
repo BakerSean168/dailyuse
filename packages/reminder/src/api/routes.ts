@@ -201,10 +201,29 @@ export function registerReminderRoutes(
     (req, ctx) => controller.getTemplate(req.params!.id, ctx),
   );
 
-  // PUT /templates/:id — Update template
+  // PUT /templates/:id — Update template (backwards compatibility)
   r.route(
     {
       method: 'put',
+      path: '/templates/:id',
+      summary: '更新提醒模板',
+      request: {
+        params: z.object({ id: brandedId<ReminderTemplateId>() }),
+        body: { content: { 'application/json': { schema: UpdateReminderTemplateSchema } } },
+      },
+      responses: {
+        200: successResponse(ReminderTemplateResponseSchema, '更新成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
+  );
+
+  // PATCH /templates/:id — Update template (preferred method for partial updates)
+  r.route(
+    {
+      method: 'patch',
       path: '/templates/:id',
       summary: '更新提醒模板',
       request: {
@@ -285,10 +304,29 @@ export function registerReminderRoutes(
     (req, ctx) => controller.getGroup(req.params!.id, ctx),
   );
 
-  // PUT /groups/:id — Update group
+  // PUT /groups/:id — Update group (backwards compatibility)
   r.route(
     {
       method: 'put',
+      path: '/groups/:id',
+      summary: '更新提醒分组',
+      request: {
+        params: z.object({ id: brandedId<ReminderGroupId>() }),
+        body: { content: { 'application/json': { schema: UpdateReminderGroupSchema } } },
+      },
+      responses: {
+        200: successResponse(ReminderGroupResponseSchema, '更新成功'),
+        404: errorResponse('分组不存在'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.updateGroup(req.params!.id, req.body, ctx),
+  );
+
+  // PATCH /groups/:id — Update group (preferred method for partial updates)
+  r.route(
+    {
+      method: 'patch',
       path: '/groups/:id',
       summary: '更新提醒分组',
       request: {

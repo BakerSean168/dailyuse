@@ -50,7 +50,7 @@ const actionClass = computed(() =>
 
 <template>
   <AlertDialog :open="state.open" @update:open="handleOpenUpdate">
-    <AlertDialogContent>
+    <AlertDialogContent data-testid="global-confirm-dialog">
       <AlertDialogHeader>
         <AlertDialogTitle>{{ state.title }}</AlertDialogTitle>
         <AlertDialogDescription v-if="state.description">
@@ -58,10 +58,15 @@ const actionClass = computed(() =>
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <Button variant="outline" class="mt-2 sm:mt-0" @click="handleCancel">
+        <Button
+          data-testid="global-confirm-cancel"
+          variant="outline"
+          class="mt-2 sm:mt-0"
+          @click="handleCancel"
+        >
           {{ state.cancelText }}
         </Button>
-        <Button :class="actionClass" @click="handleConfirm">
+        <Button data-testid="global-confirm-confirm" :class="actionClass" @click="handleConfirm">
           {{ state.confirmText }}
         </Button>
       </AlertDialogFooter>

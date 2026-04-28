@@ -1,0 +1,55 @@
+import { vi, describe, it, expect } from 'vitest';
+import { createMockRepo } from '@dailyuse/test-utils';
+import type { IFocusModeRepository } from '@/domain-server';
+import { GetCurrentFocusMode } from '../get-current-focus-mode';
+
+function createFocusModeFixture(overrides?: Record<string, any>) {
+  const dto = {
+    id: overrides?.id ?? 'focus-1',
+    isActive: true,
+    remainingDays: 3,
+  };
+  return {
+    id: overrides?.id ?? 'focus-1',
+    isActive: overrides?.isActive ?? true,
+    getRemainingDays: vi.fn().mockReturnValue(overrides?.remainingDays ?? 3),
+    toClientDTO: vi.fn().mockReturnValue({
+      id: dto.id,
+      isActive: dto.isActive,
+      remainingDays: dto.remainingDays,
+    }),
+    ...overrides,
+  } as any;
+}
+
+describe('GetCurrentFocusMode', () => {
+  it('should return active focus mode dto', async () => {
+    const focusMode = createFocusModeFixture({ id: 'focus-1', remainingDays: 5 });
+    const findActiveByIdentityId = vi.fn().mockResolvedValue(focusMode);
+    const focusModeRepo = createMockRepo<IFocusModeRepository>({
+      findActiveByIdentityId,
+    });
+    const useCase = new GetCurrentFocusMode(focusModeRepo);
+
+    const result = await useCase.execute('identity-1');
+
+    expect(findActiveByIdentityId).toHaveBeenCalledWith('identity-1');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toEqual({ id: 'focus-1', isActive: true, remainingDays: 3 });
+    expect(focusMode.toClientDTO).toHaveBeenCalled();
+  });
+
+  it('should return null when no active focus mode exists', async () => {
+    const focusModeRepo = createMockRepo<IFocusModeRepository>({
+      findActiveByIdentityId: vi.fn().mockResolvedValue(null),
+    });
+    const useCase = new GetCurrentFocusMode(focusModeRepo);
+
+    const result = await useCase.execute('identity-1');
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toBeNull();
+  });
+});

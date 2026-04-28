@@ -1,10 +1,13 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden p-0">
+    <DialogContent
+      data-testid="reminder-template-detail"
+      class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden p-0"
+    >
       <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <div class="flex items-center gap-2">
           <component :is="getTemplateIcon()" class="h-6 w-6 text-primary" />
-          <DialogTitle>{{
+          <DialogTitle data-testid="reminder-template-detail-title">{{
             template?.name || t('reminder.templateDetail.fallbackTitle')
           }}</DialogTitle>
         </div>

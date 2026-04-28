@@ -46,6 +46,16 @@
         "command": "vitest --config vitest.config.ts",
         "cwd": "packages/app-vue"
       }
+    },
+    "test:coverage": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.store-coverage.config.ts --coverage",
+        "cwd": "packages/app-vue"
+      }
     }
   }
 }

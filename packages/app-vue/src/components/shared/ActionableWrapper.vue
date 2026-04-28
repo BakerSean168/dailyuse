@@ -23,6 +23,7 @@
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <button
+                :data-testid="moreButtonTestId"
                 class="inline-flex items-center justify-center rounded-md h-6 w-6 text-muted-foreground bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm opacity-0 group-hover/actionable:opacity-100 transition-opacity duration-150 hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 @click.stop
               >
@@ -33,6 +34,7 @@
               <template v-for="action in actions" :key="action.key">
                 <DropdownMenuSeparator v-if="action.separator" />
                 <DropdownMenuItem
+                  :data-testid="action.testId"
                   :disabled="action.disabled"
                   :class="{
                     'text-destructive focus:text-destructive focus:bg-destructive/10':
@@ -57,6 +59,7 @@
       <template v-for="action in actions" :key="action.key">
         <ContextMenuSeparator v-if="action.separator" />
         <ContextMenuItem
+          :data-testid="action.testId"
           :disabled="action.disabled"
           :class="{
             'text-destructive focus:text-destructive focus:bg-destructive/10': action.destructive,
@@ -109,6 +112,8 @@ interface Props {
   dropdownSide?: 'top' | 'right' | 'bottom' | 'left';
   /** Width class for both menus */
   menuWidth?: string;
+  /** Optional stable selector for the hover "..." trigger */
+  moreButtonTestId?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -119,6 +124,7 @@ withDefaults(defineProps<Props>(), {
   dropdownAlign: 'end',
   dropdownSide: 'bottom',
   menuWidth: 'w-48',
+  moreButtonTestId: undefined,
 });
 
 const positionClasses = {

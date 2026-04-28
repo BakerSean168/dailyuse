@@ -1,8 +1,5 @@
 import { defineConfig } from '@playwright/test';
-
-const apiOrigin = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-process.env.E2E_API_BASE_URL ??= apiOrigin;
-process.env.E2E_API_FULL_URL ??= `${apiOrigin.replace(/\/+$/, '')}/api/v1`;
+import { createApiServer } from './playwright.server';
 
 export default defineConfig({
   testDir: './e2e/desktop-screenshots',
@@ -28,10 +25,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'pnpm nx serve api',
-      url: `${apiOrigin}/healthz`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 300 * 1000,
+      ...createApiServer(),
     },
   ],
 });

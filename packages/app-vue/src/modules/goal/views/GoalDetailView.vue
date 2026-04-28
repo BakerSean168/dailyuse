@@ -1,11 +1,13 @@
 <template>
-  <div class="flex h-full min-h-0 flex-col overflow-hidden">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="goal-detail">
     <div class="flex items-center gap-3 border-b px-6 py-4">
       <Button variant="ghost" size="sm" @click="$router.back()">
         <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.detail.back') }}
       </Button>
       <Separator orientation="vertical" class="h-6" />
-      <h2 class="text-lg font-semibold">{{ goal?.name || t('goal.detail.title') }}</h2>
+      <h2 class="text-lg font-semibold" data-testid="goal-detail-title">
+        {{ goal?.name || t('goal.detail.title') }}
+      </h2>
       <Button class="ml-auto" size="sm" @click="handleCreateReview">
         <Plus class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.create') }}
       </Button>

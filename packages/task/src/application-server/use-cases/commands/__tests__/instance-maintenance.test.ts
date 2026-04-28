@@ -1,0 +1,132 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import '@dailyuse/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import { CheckExpiredInstances } from '../check-expired-instances';
+import { GenerateTaskInstances } from '../generate-task-instances';
+
+const mockMarkExpiredInstances = vi.fn();
+vi.mock('@/domain-server/services/TaskExpirationService', () => {
+  return {
+    TaskExpirationService: class {
+      markExpiredInstances = mockMarkExpiredInstances;
+    },
+  };
+});
+
+const mockGenerateInstances = vi.fn();
+vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
+  return {
+    TaskInstanceGenerationService: class {
+      generateInstances = mockGenerateInstances;
+    },
+  };
+});
+
+describe('Instance maintenance use-cases', () => {
+  let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
+  let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockMarkExpiredInstances.mockReturnValue([]);
+    mockGenerateInstances.mockReturnValue([]);
+
+    templateRepo = createMockRepo<ITaskTemplateRepository>({
+      findById: vi.fn(),
+      save: vi.fn().mockResolvedValue(undefined),
+    });
+
+    instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      findByIdentityId: vi.fn().mockResolvedValue([]),
+      saveMany: vi.fn().mockResolvedValue(undefined),
+    });
+  });
+
+  describe('CheckExpiredInstances', () => {
+    it('returns expired DTO list and saves when there are expired instances', async () => {
+      const sourceInstances = [{ id: 'i-source' } as any];
+      const expired = [{ toClientDTO: vi.fn().mockReturnValue({ id: 'i-expired' }) } as any];
+      vi.mocked(instanceRepo.findByIdentityId).mockResolvedValue(sourceInstances as any);
+      mockMarkExpiredInstances.mockReturnValue(expired);
+
+      const useCase = new CheckExpiredInstances(instanceRepo);
+      const result = await useCase.execute('identity-1');
+
+      expect(result).toBeOk();
+      expect(instanceRepo.findByIdentityId).toHaveBeenCalledWith('identity-1');
+      expect(mockMarkExpiredInstances).toHaveBeenCalledWith(sourceInstances);
+      expect(instanceRepo.saveMany).toHaveBeenCalledWith(expired);
+      expect(result).toBeOkWith([{ id: 'i-expired' }] as any);
+    });
+
+    it('does not persist when no expired instances are found', async () => {
+      vi.mocked(instanceRepo.findByIdentityId).mockResolvedValue([{ id: 'i1' } as any]);
+      mockMarkExpiredInstances.mockReturnValue([]);
+
+      const useCase = new CheckExpiredInstances(instanceRepo);
+      const result = await useCase.execute('identity-1');
+
+      expect(result).toBeOkWith([] as any);
+      expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GenerateTaskInstances', () => {
+    it('returns NOT_FOUND when template does not exist', async () => {
+      vi.mocked(templateRepo.findById).mockResolvedValue(null);
+      const useCase = new GenerateTaskInstances(templateRepo, instanceRepo);
+
+      const result = await useCase.execute('tpl-404', {
+        fromDate: 0,
+        toDate: Date.now(),
+      });
+
+      expect(result).toBeErrorWithCode('NOT_FOUND');
+      expect(mockGenerateInstances).not.toHaveBeenCalled();
+      expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+      expect(templateRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('returns empty list without persisting when generator yields none', async () => {
+      const template = { id: 'tpl-1' } as any;
+      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      mockGenerateInstances.mockReturnValue([]);
+      const useCase = new GenerateTaskInstances(templateRepo, instanceRepo);
+
+      const result = await useCase.execute('tpl-1', {
+        fromDate: 1,
+        toDate: 2,
+      });
+
+      expect(result).toBeOkWith([] as any);
+      expect(mockGenerateInstances).toHaveBeenCalledWith(template, {
+        forceGenerate: true,
+        targetDate: 2,
+      });
+      expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+      expect(templateRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('persists generated instances and returns DTO list', async () => {
+      const template = { id: 'tpl-1' } as any;
+      const generated = [
+        { toClientDTO: vi.fn().mockReturnValue({ id: 'i-1' }) },
+        { toClientDTO: vi.fn().mockReturnValue({ id: 'i-2' }) },
+      ];
+      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      mockGenerateInstances.mockReturnValue(generated as any);
+      const useCase = new GenerateTaskInstances(templateRepo, instanceRepo);
+
+      const result = await useCase.execute('tpl-1', {
+        fromDate: 10,
+        toDate: 20,
+      });
+
+      expect(result).toBeOkWith([{ id: 'i-1' }, { id: 'i-2' }] as any);
+      expect(instanceRepo.saveMany).toHaveBeenCalledWith(generated);
+      expect(templateRepo.save).toHaveBeenCalledWith(template);
+    });
+  });
+});

@@ -1,0 +1,29 @@
+{
+  "name": "@dailyuse/test-utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/test-utils/src",
+  "projectType": "library",
+  "tags": ["scope:test-utils", "type:lib", "layer:testing"],
+  "targets": {
+    "build": {
+      "executor": "nx:noop",
+      "outputs": [],
+      "dependsOn": [],
+      "cache": false
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/test-utils/**/*.{ts,js}"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/test-utils"
+      }
+    }
+  }
+}

@@ -83,7 +83,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Target, Plus, LayoutGrid, Search } from 'lucide-vue-next';
-import { Button, ScrollArea, Input } from '@dailyuse/ui-vue-shadcn';
+import { Button, ScrollArea, Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { GoalCard } from '../components';
 import { useGoal } from '../composables/useGoal';
 import type { GoalClientDTO, GoalSystemView } from '@dailyuse/contracts/goal';
@@ -100,6 +100,7 @@ const {
   systemView,
   setSelectedFolderId,
   setSystemView,
+  deleteGoal,
 } = useGoal();
 const searchQuery = ref('');
 
@@ -147,7 +148,19 @@ function handleEditGoal(goal: GoalClientDTO) {
 }
 
 async function handleDeleteGoal(id: string) {
-  router.push({ name: 'goal-detail', params: { id } });
+  const confirmed = await useConfirm({
+    title: t('goal.list.confirmDeleteTitle'),
+    description: t('goal.list.confirmDelete'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  await deleteGoal(id);
 }
 
 onMounted(async () => {

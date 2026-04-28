@@ -4,7 +4,7 @@
 
 ## 目录边界
 
-- `e2e/**`：常规 Web 浏览器流程
+- `e2e/**`：Web 端到端测试源码；其中默认 `web:e2e` 只跑核心业务回归
 - `e2e/sync/**`：desktop-web 同步回归
 - `e2e/helpers/**`：传统 Web E2E 通用 helper
 - `e2e/sync/helpers/**`：sync 专用 helper
@@ -22,6 +22,22 @@ pnpm nx run web:e2e:report
 ```
 
 更细的调试参数优先通过 `web:e2e` 或 `web:e2e:sync` 传递，而不是把裸 `playwright test` 写成主文档入口。
+
+## 默认回归范围
+
+默认 `web:e2e` 当前只保留这组核心 flow oracle：
+
+- `authentication/auth-login.spec.ts`
+- `authentication/auth-flow.spec.ts`
+- `dashboard/dashboard-overview.spec.ts`
+- `goal/goal-crud.spec.ts`
+- `notification/notification-center.spec.ts`
+- `reminder/reminder-template-crud.spec.ts`
+- `task/task-template-crud.spec.ts`
+- `user-settings/notifications.spec.ts`
+- `user-settings/persistence.spec.ts`
+
+其他 Web E2E 仍保留在仓库中，但不再自动进入默认 `web:e2e`；需要时通过显式路径或后续专项 target 运行。
 
 ## 配置入口
 

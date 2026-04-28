@@ -35,6 +35,10 @@ interface SharedConfigOptions {
   projectRoot: string;
   /** Test environment: 'node' | 'happy-dom' | 'jsdom' */
   environment?: 'node' | 'happy-dom' | 'jsdom';
+  /** Explicit test include globs. Defaults to workspace test/spec pattern. */
+  testInclude?: string[];
+  /** Extra test exclude globs appended to shared defaults. */
+  testExclude?: string[];
   /** Additional path aliases */
   aliases?: Record<string, string>;
   /** Additional alias entries that must precede the generic @/@/ aliases */
@@ -47,6 +51,17 @@ interface PackageVitestConfigOptions extends SharedConfigOptions {
   pool?: 'forks' | 'threads' | 'vmForks' | 'vmThreads';
   setupFiles?: string[];
   governedCoverage?: boolean | { extraRoots?: string[] };
+  sliceCoverage?: {
+    roots: string[];
+    thresholds: {
+      statements: number;
+      lines: number;
+      functions: number;
+      branches: number;
+    };
+    reportsDirectory: string;
+    fileIncludePattern?: RegExp;
+  };
 }
 
 export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
@@ -168,10 +183,67 @@ export function createGovernedCoverage(
 }
 
 /**
+ * Generic coverage config generator for any slice/layer
+ * @example
+ * ```ts
+ * createSliceCoverage({
+ *   projectRoot: __dirname,
+ *   roots: ['src/application-server/use-cases'],
+ *   thresholds: { statements: 70, lines: 70, functions: 70, branches: 60 },
+ *   reportsDirectory: 'coverage/use-cases',
+ * })
+ * ```
+ */
+export function createSliceCoverage(options: {
+  projectRoot: string;
+  roots: string[];
+  thresholds: {
+    statements: number;
+    lines: number;
+    functions: number;
+    branches: number;
+  };
+  reportsDirectory: string;
+  fileIncludePattern?: RegExp;
+}) {
+  const {
+    projectRoot,
+    roots,
+    thresholds,
+    reportsDirectory,
+    fileIncludePattern,
+  } = options;
+  const workspaceRoot = path.resolve(projectRoot, '../..');
+  const include = collectGovernedCoverageFiles(projectRoot, roots).filter((relativePath) =>
+    fileIncludePattern ? fileIncludePattern.test(relativePath) : true,
+  );
+
+  return {
+    all: true,
+    include,
+    exclude: [
+      '**/index.ts',
+      '**/*.d.ts',
+      '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+    ],
+    reportsDirectory: path.resolve(workspaceRoot, reportsDirectory),
+    reporter: ['text', 'json', 'html', 'lcov'] as const,
+    thresholds,
+  };
+}
+
+/**
  * Create a shared configuration for a project
  */
 export function createSharedConfig(options: SharedConfigOptions) {
-  const { projectRoot, environment = 'node', aliases = {}, aliasEntries = [] } = options;
+  const {
+    projectRoot,
+    environment = 'node',
+    testInclude,
+    testExclude = [],
+    aliases = {},
+    aliasEntries = [],
+  } = options;
   const projectSrc = path.resolve(projectRoot, './src');
   const workspaceRoot = path.resolve(projectRoot, '../..');
   const commonWorkspacePackages = [
@@ -281,7 +353,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
       globals: true,
       environment,
       passWithNoTests: true,
-      include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      include: testInclude ?? ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       exclude: [
         'node_modules',
         'dist',
@@ -290,13 +362,13 @@ export function createSharedConfig(options: SharedConfigOptions) {
         '.cache',
         '.nx',
         'src/test/setup.ts',
-        '**/prisma/**',
+        ...testExclude,
       ],
       coverage: {
         enabled: false, // Controlled by workspace config
         provider: 'v8',
         reporter: ['text', 'json', 'html', 'lcov'],
-        exclude: ['node_modules/', 'src/test/', 'prisma/', '**/*.d.ts', '**/*.config.*', 'dist/'],
+        exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', 'dist/'],
       },
     },
   });
@@ -310,6 +382,7 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
     pool = 'forks',
     setupFiles,
     governedCoverage = false,
+    sliceCoverage,
     ...sharedOptions
   } = options;
 
@@ -332,7 +405,14 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
                 governedCoverage === true ? {} : governedCoverage,
               ),
             }
-          : {}),
+          : sliceCoverage
+            ? {
+                coverage: createSliceCoverage({
+                  projectRoot,
+                  ...sliceCoverage,
+                }),
+              }
+            : {}),
       },
     }),
   );

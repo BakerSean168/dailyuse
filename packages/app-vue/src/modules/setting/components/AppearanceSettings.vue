@@ -1,5 +1,5 @@
 <template>
-  <Card>
+  <Card data-testid="appearance-settings-card">
     <CardHeader>
       <CardTitle>{{ t('setting.appearance.title') }}</CardTitle>
     </CardHeader>
@@ -13,11 +13,16 @@
               emit('update:modelValue', { ...modelValue, theme: value as AppearanceTheme })
           "
         >
-          <SelectTrigger id="theme-select">
+          <SelectTrigger id="theme-select" data-testid="appearance-theme-trigger">
             <SelectValue :placeholder="t('setting.appearance.themePlaceholder')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem v-for="option in themeOptions" :key="option.value" :value="option.value">
+            <SelectItem
+              v-for="option in themeOptions"
+              :key="option.value"
+              :value="option.value"
+              :data-testid="`appearance-theme-option-${option.value}`"
+            >
               {{ option.label }}
             </SelectItem>
           </SelectContent>

@@ -21,7 +21,7 @@
 | 集成测试 | `packages/task/src/**/*.integration.test.ts` | `pnpm nx run task:test:integration` |
 | API 冒烟测试 | `apps/api/src/__tests__/smoke/**` | `pnpm nx run api:test:smoke` |
 | Web 契约测试 | `apps/web/src/mocks/handlers/*.spec.ts` | `pnpm nx run web:test` |
-| Web E2E | `apps/web/e2e/**` | `pnpm nx run web:e2e` |
+| Web E2E | `apps/web/e2e/**`（默认入口仅核心 flow oracle） | `pnpm nx run web:e2e` |
 | Web 同步回归 E2E | `apps/web/e2e/sync/**` | `pnpm nx run web:e2e:sync` |
 | Desktop 论文截图 E2E | `apps/web/e2e/desktop-screenshots/**` | `pnpm nx run web:e2e:desktop-screenshots` |
 | Desktop 专项测试 | `apps/desktop`、`apps/desktop/src/main/**` | `pnpm nx run desktop:test`、`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main` |

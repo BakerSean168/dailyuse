@@ -1,6 +1,8 @@
 <template>
   <ActionableWrapper :actions="menuActions" :show-more-button="false" wrapper-class="rounded-xl">
     <div
+      data-testid="reminder-template-card"
+      :data-reminder-id="item.id"
       class="relative rounded-xl shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
       :class="[
         'p-4 flex flex-col items-center justify-center gap-2',
@@ -128,24 +130,28 @@ const onDragStart = (event: DragEvent) => {
 const menuActions = computed<MenuAction[]>(() => [
   {
     key: 'toggle-enabled',
+    testId: `reminder-template-toggle-action-${props.item.id}`,
     label: props.item.effectiveEnabled ? menuLabel('pauseTemplate') : menuLabel('enableTemplate'),
     icon: Power,
     handler: () => onToggleTemplate(props.item),
   },
   {
     key: 'move',
+    testId: `reminder-template-move-action-${props.item.id}`,
     label: menuLabel('moveToGroup'),
     icon: FolderInput,
     handler: () => onMoveTemplate(props.item),
   },
   {
     key: 'edit',
+    testId: `reminder-template-edit-action-${props.item.id}`,
     label: menuLabel('editTemplate'),
     icon: Pencil,
     handler: () => onEditTemplate(props.item),
   },
   {
     key: 'delete',
+    testId: `reminder-template-delete-action-${props.item.id}`,
     label: menuLabel('deleteTemplate'),
     icon: Trash2,
     destructive: true,

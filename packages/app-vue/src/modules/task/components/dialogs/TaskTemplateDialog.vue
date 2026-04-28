@@ -1,6 +1,7 @@
 <template>
   <Dialog :open="visible" @update:open="setVisible">
     <DialogContent
+      data-testid="task-template-dialog"
       class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex min-h-0 flex-col overflow-hidden"
     >
       <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
@@ -56,7 +57,12 @@
         <Button variant="ghost" :disabled="saving" @click="handleCancel">{{
           t('task.templateDialog.cancel')
         }}</Button>
-        <Button :disabled="!canSave" :loading="saving" @click="handleSave">
+        <Button
+          data-testid="task-dialog-save-button"
+          :disabled="!canSave"
+          :loading="saving"
+          @click="handleSave"
+        >
           {{
             mode === 'edit' ? t('task.templateDialog.saveChanges') : t('task.templateDialog.create')
           }}

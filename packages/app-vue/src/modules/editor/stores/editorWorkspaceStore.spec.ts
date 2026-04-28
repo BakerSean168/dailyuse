@@ -482,4 +482,316 @@ describe('useEditorWorkspaceStore', () => {
     expect(store.activeTabId).toBe('tab-1');
     expect(store.workspaceLookupId).toBe('repository-1');
   });
+
+  it('short-circuits workspace hydration when an already hydrated lookup id is reopened', async () => {
+    const store = useEditorWorkspaceStore();
+    store.workspaceId = 'workspace-1';
+    store.workspaceLookupId = 'repository-1';
+    store.isHydrated = true;
+    store.sessions = [createSession()];
+    store.activeSessionId = 'session-1';
+
+    await store.setWorkspace('repository-1');
+
+    expect(ensureEditorWorkspace).not.toHaveBeenCalled();
+    expect(listEditorSessions).not.toHaveBeenCalled();
+  });
+
+  it('resets state when the workspace lookup resolves to nothing', async () => {
+    const store = useEditorWorkspaceStore();
+    store.workspaceId = 'workspace-1';
+    store.workspaceLookupId = 'repository-1';
+    store.sessions = [createSession()];
+    store.activeSessionId = 'session-1';
+    store.isHydrated = true;
+    ensureEditorWorkspace.mockResolvedValueOnce(null);
+
+    await store.setWorkspace('missing-workspace');
+
+    expect(store.workspaceId).toBeNull();
+    expect(store.workspaceLookupId).toBeNull();
+    expect(store.sessions).toEqual([]);
+    expect(store.activeSessionId).toBeNull();
+    expect(store.isHydrated).toBe(false);
+  });
+
+  it('returns null when opening a resource without any available workspace id', async () => {
+    const store = useEditorWorkspaceStore();
+
+    await expect(store.openResource({ resourceId: 'resource-1', title: 'Missing.md' })).resolves.toBeNull();
+
+    expect(ensureEditorWorkspace).not.toHaveBeenCalled();
+    expect(createEditorTab).not.toHaveBeenCalled();
+  });
+
+  it('activates an existing resource tab instead of creating a duplicate', async () => {
+    const store = useEditorWorkspaceStore();
+    const existingTab = createTab({
+      id: 'tab-existing',
+      resourceId: 'resource-existing',
+      name: 'Existing.md',
+      isActive: false,
+    });
+
+    store.workspaceId = 'workspace-1';
+    store.workspaceLookupId = 'repository-1';
+    store.isHydrated = true;
+    store.activeSessionId = 'session-1';
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [existingTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+
+    listEditorSessions.mockResolvedValueOnce([
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [{ ...existingTab, isActive: true }],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ]);
+
+    const opened = await store.openResource({
+      resourceId: 'resource-existing',
+      title: 'Existing.md',
+      workspaceId: 'repository-1',
+    });
+
+    expect(createEditorTab).not.toHaveBeenCalled();
+    expect(activateEditorTab).not.toHaveBeenCalled();
+    expect(opened?.id).toBe('tab-existing');
+  });
+
+  it('returns null when no session group is available for opening a resource', async () => {
+    const store = useEditorWorkspaceStore();
+    store.workspaceId = 'workspace-1';
+    store.workspaceLookupId = 'workspace-1';
+    store.isHydrated = true;
+    store.sessions = [createSession({ groups: [] })];
+    store.activeSessionId = 'session-1';
+    firstGroup.mockReturnValueOnce(null);
+
+    const opened = await store.openResource({
+      resourceId: 'resource-2',
+      title: 'NoGroup.md',
+      workspaceId: 'workspace-1',
+    });
+
+    expect(opened).toBeNull();
+    expect(createEditorTab).not.toHaveBeenCalled();
+  });
+
+  it('returns null when pinning or dirty-syncing tabs without a workspace or update result', async () => {
+    const store = useEditorWorkspaceStore();
+    const existingTab = createTab({
+      id: 'tab-existing',
+      resourceId: 'resource-existing',
+      isPinned: false,
+      isDirty: false,
+    });
+
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [existingTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+    store.activeSessionId = 'session-1';
+
+    await expect(store.setTabPinned('tab-existing', true)).resolves.toBeNull();
+    await expect(store.syncTabDirtyState('tab-existing', true)).resolves.toBeNull();
+
+    store.workspaceId = 'workspace-1';
+
+    await expect(store.setTabPinned('tab-existing', false)).resolves.toStrictEqual(existingTab);
+    await expect(store.syncTabDirtyState('tab-existing', false)).resolves.toStrictEqual(existingTab);
+
+    updateEditorTab.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+
+    await expect(store.setTabPinned('tab-existing', true)).resolves.toBeNull();
+    await expect(store.syncTabDirtyState('tab-existing', true)).resolves.toBeNull();
+  });
+
+  it('updates tab metadata when pinning and dirty-state sync succeed', async () => {
+    const store = useEditorWorkspaceStore();
+    const existingTab = createTab({
+      id: 'tab-existing',
+      resourceId: 'resource-existing',
+      isPinned: false,
+      isDirty: false,
+    });
+
+    store.workspaceId = 'workspace-1';
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [existingTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+    store.activeSessionId = 'session-1';
+
+    updateEditorTab
+      .mockResolvedValueOnce({
+        isPinned: true,
+        updatedAt: 1741565800000,
+        formattedUpdatedAt: '2026-03-10 10:16:40',
+      })
+      .mockResolvedValueOnce({
+        isDirty: true,
+        updatedAt: 1741566800000,
+        formattedUpdatedAt: '2026-03-10 10:33:20',
+      });
+
+    const pinned = await store.setTabPinned('tab-existing', true);
+    const dirty = await store.syncTabDirtyState('tab-existing', true);
+
+    expect(pinned?.isPinned).toBe(true);
+    expect(dirty?.isDirty).toBe(true);
+    expect(store.findTabByResourceId('resource-existing')?.id).toBe('tab-existing');
+  });
+
+  it('closes tab collections relative to the active session ordering', async () => {
+    const store = useEditorWorkspaceStore();
+    const firstTab = createTab({ id: 'tab-1', resourceId: 'resource-1', tabIndex: 0, isActive: true });
+    const secondTab = createTab({ id: 'tab-2', resourceId: 'resource-2', tabIndex: 1, isActive: false });
+    const thirdTab = createTab({ id: 'tab-3', resourceId: 'resource-3', tabIndex: 2, isActive: false });
+
+    store.workspaceId = 'workspace-1';
+    store.isHydrated = true;
+    store.activeSessionId = 'session-1';
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [firstTab, secondTab, thirdTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+
+    const closeSpy = vi.spyOn(store, 'closeTab').mockResolvedValue(undefined);
+
+    await store.closeTabsToRight('tab-1');
+    expect(closeSpy.mock.calls.slice(0, 2)).toEqual([['tab-2'], ['tab-3']]);
+
+    await store.closeOtherTabs('tab-2');
+    expect(closeSpy.mock.calls.slice(2, 4)).toEqual([['tab-1'], ['tab-3']]);
+
+    await store.closeAllTabs();
+    expect(closeSpy.mock.calls.slice(4)).toEqual([['tab-1'], ['tab-2'], ['tab-3']]);
+
+    closeSpy.mockRestore();
+  });
+
+  it('exposes active tab getters and no-ops when reactivating the current tab', async () => {
+    const store = useEditorWorkspaceStore();
+    const activeTab = createTab({
+      id: 'tab-1',
+      resourceId: 'resource-1',
+      tabIndex: 0,
+      isActive: true,
+    });
+
+    store.workspaceId = 'workspace-1';
+    store.isHydrated = true;
+    store.activeSessionId = 'session-1';
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [activeTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+
+    expect(store.activeSession?.id).toBe('session-1');
+    expect(store.openTabs.map((tab) => tab.id)).toEqual(['tab-1']);
+    expect(store.activeTab?.id).toBe('tab-1');
+    expect(store.activeTabId).toBe('tab-1');
+    expect(store.activeResourceId).toBe('resource-1');
+
+    await store.setActiveTab('tab-1');
+    await store.setActiveTab('missing-tab');
+
+    expect(activateEditorTab).not.toHaveBeenCalled();
+  });
 });

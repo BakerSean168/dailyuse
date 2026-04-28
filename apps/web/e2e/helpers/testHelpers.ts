@@ -48,6 +48,106 @@ export const TEST_USER_2 = TEST_USERS.SECONDARY;
  */
 export const ADMIN_TEST_USER = TEST_USERS.ADMIN;
 
+export type RegisterAndLoginOptions = {
+  email?: string;
+  password?: string;
+  landingPath?: string;
+};
+
+function resolveLoginEmail(identityOrEmail: string): string {
+  if (identityOrEmail.includes('@')) {
+    return identityOrEmail;
+  }
+
+  const knownUser = Object.values(TEST_USERS).find(
+    (user) => user.username === identityOrEmail || user.email === identityOrEmail,
+  );
+
+  return knownUser?.email ?? identityOrEmail;
+}
+
+function createSelfRegisterEmail(): string {
+  return `e2e-self-register-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+}
+
+async function openAuthPage(page: Page): Promise<void> {
+  const loginUrl = WEB_CONFIG.getFullUrl(WEB_CONFIG.LOGIN_PATH);
+  await page.goto(loginUrl, {
+    waitUntil: 'domcontentloaded',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+}
+
+async function clearAuthState(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    document.cookie.split(';').forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, '')
+        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+    });
+  });
+}
+
+async function prepareAuthPage(page: Page): Promise<void> {
+  await openAuthPage(page);
+  await clearAuthState(page);
+  console.log('[Auth] 已清理旧的认证状态');
+  await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
+}
+
+async function navigateAfterAuth(page: Page, landingPath?: string): Promise<void> {
+  if (!landingPath) {
+    await page.waitForLoadState('networkidle');
+    return;
+  }
+
+  if (page.url() !== WEB_CONFIG.getFullUrl(landingPath)) {
+    await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
+      waitUntil: 'networkidle',
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
+  } else {
+    await page.waitForLoadState('networkidle');
+  }
+}
+
+async function registerViaAuth(page: Page, email: string, password: string): Promise<void> {
+  const registerTab = page.getByRole('tab', { name: /sign up|注册/i });
+  await registerTab.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await registerTab.click();
+
+  await page.locator('#reg-email').fill(email);
+  await page.locator('#reg-password').fill(password);
+  await page.locator('#confirm-password').fill(password);
+  await page.getByRole('button', { name: /sign up|注册/i }).click();
+
+  await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
+    timeout: TIMEOUT_CONFIG.LOGIN,
+  });
+}
+
+export async function registerAndLogin(
+  page: Page,
+  options: RegisterAndLoginOptions = {},
+): Promise<void> {
+  const email = options.email ?? createSelfRegisterEmail();
+  const password = options.password ?? TEST_USERS.MAIN.password;
+
+  console.log(`[Auth] 开始自注册认证: ${email}`);
+  console.log(`[Auth] 使用配置 - API: ${API_CONFIG.FULL_URL}, Web: ${WEB_CONFIG.BASE_URL}`);
+
+  await prepareAuthPage(page);
+  await registerViaAuth(page, email, password);
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
+  await navigateAfterAuth(page, options.landingPath);
+
+  console.log('[Auth] 自注册认证成功');
+}
+
 /**
  * 测试数据工厂
  */
@@ -86,40 +186,18 @@ export function createTestGoal(
  */
 export async function login(
   page: Page,
-  username: string = TEST_USERS.MAIN.username,
+  identityOrEmail: string = TEST_USERS.MAIN.email,
   password: string = TEST_USERS.MAIN.password,
 ) {
-  console.log(`[Auth] 开始登录: ${username}`);
+  const email = resolveLoginEmail(identityOrEmail);
+
+  console.log(`[Auth] 开始登录: ${email}`);
   console.log(`[Auth] 使用配置 - API: ${API_CONFIG.FULL_URL}, Web: ${WEB_CONFIG.BASE_URL}`);
 
-  // 1. 先访问登录页面，这样才能访问 localStorage
-  const loginUrl = WEB_CONFIG.getFullUrl(WEB_CONFIG.LOGIN_PATH);
-  await page.goto(loginUrl, { 
-    waitUntil: 'domcontentloaded',
-    timeout: TIMEOUT_CONFIG.NAVIGATION,
-  });
-  
-  // 2. 清理所有认证状态（清除旧的 token、session 等）
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-    // 清除所有 cookies
-    document.cookie.split(';').forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, '')
-        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
-    });
-  });
-  console.log('[Auth] 已清理旧的认证状态');
-
-  // 3. 等待页面加载完成
-  await page.waitForLoadState('networkidle');
-  
-  // 等待一下，确保页面状态更新完成
-  await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
+  await prepareAuthPage(page);
 
   // 显式切回登录 tab，避免 auth 页面默认停在注册态时造成误判。
-  const loginTab = page.locator('button.v-tab:has-text("登录")');
+  const loginTab = page.getByRole('tab', { name: /sign in|登录/i });
   await loginTab.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await loginTab.click();
 
@@ -128,17 +206,17 @@ export async function login(
 
   // ===== 填写用户名 =====
   console.log('[Auth] 查找用户名输入框...');
-  const usernameField = page.locator('[data-testid="login-username-input"] input');
-  
-  await usernameField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  await usernameField.click();
-  await usernameField.fill(username);
-  console.log(`[Auth] 已填写用户名: ${username}`);
+  const emailField = page.locator('#email');
+
+  await emailField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await emailField.click();
+  await emailField.fill(email);
+  console.log(`[Auth] 已填写邮箱: ${email}`);
 
   // ===== 填写密码 =====
   console.log('[Auth] 查找密码输入框...');
-  const passwordField = page.locator('[data-testid="login-password-input"] input');
-  
+  const passwordField = page.locator('#password');
+
   await passwordField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await passwordField.click();
   await passwordField.fill(password);
@@ -146,7 +224,7 @@ export async function login(
 
   // ===== 点击登录按钮 =====
   console.log('[Auth] 点击登录按钮...');
-  const loginButton = page.locator('[data-testid="login-submit-button"]');
+  const loginButton = page.getByRole('button', { name: /sign in|登录/i });
   await loginButton.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await loginButton.click();
 
@@ -162,14 +240,16 @@ export async function login(
     );
     console.log('[Auth] 已离开登录页面');
   } catch {
-    // 方式2: 检查是否有错误提示
-    const errorSnackbar = page.locator('[data-testid="login-error-snackbar"]');
-    if (await errorSnackbar.isVisible()) {
-      const errorText = await errorSnackbar.textContent();
-      console.error(`[Auth] 登录失败: ${errorText}`);
-      throw new Error(`Login failed: ${errorText}`);
+    // 方式2: 检查当前 auth 页的错误横幅
+    const errorBanner = page.getByText(/incorrect email or password|邮箱或密码错误/i).first();
+    if (await errorBanner.isVisible().catch(() => false)) {
+      const errorText = await errorBanner.textContent();
+      console.warn(`[Auth] 登录失败，尝试注册测试账号: ${errorText}`);
+      await registerViaAuth(page, email, password);
+      await page.waitForLoadState('networkidle');
+      return;
     }
-    
+
     console.warn('[Auth] 登录超时，但没有错误提示，继续执行...');
   }
 

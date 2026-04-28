@@ -75,6 +75,26 @@
         "command": "vitest run --config vitest.config.ts --coverage",
         "cwd": "packages/task"
       }
+    },
+    "test:coverage:use-cases": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/application-server-use-cases"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.use-cases.config.ts --coverage",
+        "cwd": "packages/task"
+      }
+    },
+    "test:coverage:prisma-mappers": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/infrastructure-server-adapters-prisma-mappers"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.mappers.config.ts --coverage",
+        "cwd": "packages/task"
+      }
     }
   }
 }

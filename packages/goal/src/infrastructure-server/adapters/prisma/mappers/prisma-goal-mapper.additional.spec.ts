@@ -1,0 +1,195 @@
+import { describe, expect, it } from 'vitest';
+import { PrismaGoalMapper } from './prisma-goal-mapper';
+
+describe('PrismaGoalMapper additional coverage', () => {
+  it('maps full prisma goal row with relations', () => {
+    const row = {
+      id: 'goal-1',
+      identityId: 'identity-1',
+      name: 'Goal',
+      description: null,
+      color: null,
+      feasibilityAnalysis: null,
+      motivation: null,
+      status: 'InProgress',
+      importance: 'Medium',
+      priority: null,
+      category: null,
+      tags: null,
+      startDate: new Date(1_000),
+      targetDate: null,
+      completedAt: null,
+      archivedAt: null,
+      folderId: null,
+      parentGoalId: null,
+      sortOrder: null,
+      reminderConfig: JSON.stringify({ enabled: true, triggers: '[]' }),
+      keyResults: [
+        {
+          id: 'kr-1',
+          goalId: 'goal-1',
+          title: 'KR',
+          description: null,
+          valueType: null,
+          aggregationMethod: null,
+          initialValue: null,
+          targetValue: null,
+          currentValue: null,
+          unit: null,
+          weight: null,
+          order: null,
+          version: null,
+          createdAt: new Date(1_000),
+          updatedAt: new Date(1_200),
+          deletedAt: null,
+        },
+      ],
+      reviews: [
+        {
+          id: 'review-1',
+          goalId: 'goal-1',
+          reviewType: 'Weekly',
+          rating: null,
+          content: 'summary',
+          achievements: null,
+          challenges: null,
+          lessonsLearned: 'learned',
+          createdAt: new Date(1_300),
+          updatedAt: new Date(1_400),
+          deletedAt: null,
+          version: null,
+        },
+      ],
+      keyResultWeightSnapshots: [
+        {
+          id: 'snapshot-1',
+          goalId: 'goal-1',
+          keyResultId: 'kr-1',
+          identityId: 'identity-1',
+          oldWeight: 1,
+          newWeight: 2,
+          weightDelta: 1,
+          snapshotTime: new Date(1_500),
+          trigger: 'Manual',
+          reason: null,
+          operatorId: 'identity-1',
+          createdAt: new Date(1_600),
+        },
+      ],
+      createdAt: new Date(900),
+      updatedAt: new Date(1_700),
+      deletedAt: null,
+      version: null,
+    } as any;
+
+    const dto = PrismaGoalMapper.toDomainDTO(row);
+
+    expect(dto.color).toBe('#3B82F6');
+    expect(dto.priority).toBe(0);
+    expect(dto.tags).toEqual([]);
+    expect(dto.sortOrder).toBe(0);
+    expect(dto.reminderConfig).toEqual({ enabled: true, triggers: '[]' });
+    expect(dto.keyResults?.[0].weight).toBe(1);
+    expect(dto.keyResults?.[0].sortOrder).toBe(0);
+    expect(dto.goalReviews?.[0].rating).toBe(3);
+    expect(dto.goalReviews?.[0].improvements).toBe('learned');
+    expect(dto.goalReviews?.[0].keyResultSnapshots).toBe('[]');
+    expect(dto.weightSnapshots?.[0].snapshotTime).toBe(1_500);
+    expect(dto.weightSnapshots?.[0].createdAt).toBe(1_600);
+    expect(dto.version).toBe(1);
+  });
+
+  it('maps goal without relations', () => {
+    const row = {
+      id: 'goal-2',
+      identityId: 'identity-1',
+      name: 'Goal2',
+      description: 'desc',
+      color: '#000',
+      feasibilityAnalysis: 'f',
+      motivation: 'm',
+      status: 'Completed',
+      importance: 'High',
+      priority: 10,
+      category: 'cat',
+      tags: ['a'],
+      startDate: null,
+      targetDate: null,
+      completedAt: null,
+      archivedAt: null,
+      folderId: 'folder-1',
+      parentGoalId: 'goal-1',
+      sortOrder: 2,
+      reminderConfig: null,
+      keyResults: undefined,
+      reviews: undefined,
+      keyResultWeightSnapshots: undefined,
+      createdAt: new Date(1_000),
+      updatedAt: new Date(2_000),
+      deletedAt: new Date(3_000),
+      version: 3,
+    } as any;
+
+    const dto = PrismaGoalMapper.toDomainDTO(row);
+
+    expect(dto.keyResults).toBeNull();
+    expect(dto.goalReviews).toBeNull();
+    expect(dto.weightSnapshots).toBeNull();
+    expect(dto.reminderConfig).toBeNull();
+    expect(dto.deletedAt?.getTime()).toBe(3_000);
+  });
+
+  it('maps weight snapshot when time fields are numbers', () => {
+    const dto = PrismaGoalMapper.mapWeightSnapshot({
+      id: 'snapshot-2',
+      goalId: 'goal-1',
+      keyResultId: 'kr-1',
+      identityId: 'identity-1',
+      oldWeight: 2,
+      newWeight: 3,
+      weightDelta: 1,
+      snapshotTime: 2_000,
+      trigger: 'Auto',
+      reason: 'rule',
+      operatorId: 'identity-1',
+      createdAt: 2_100,
+    } as any);
+
+    expect(dto.snapshotTime).toBe(2_000);
+    expect(dto.createdAt).toBe(2_100);
+    expect(dto.trigger).toBe('Auto');
+  });
+
+  it('parses key result progress from string and object with defaults', () => {
+    const fromString = PrismaGoalMapper.parseKeyResultProgress({
+      progress: JSON.stringify({ currentValue: 8 }),
+    } as any);
+    const fromObject = PrismaGoalMapper.parseKeyResultProgress({
+      progress: {
+        valueType: 'Absolute',
+        aggregationMethod: 'Max',
+        initialValue: 2,
+        targetValue: 20,
+        currentValue: 10,
+        unit: 'pt',
+      },
+    } as any);
+
+    expect(fromString).toEqual({
+      valueType: 'Incremental',
+      aggregationMethod: 'Last',
+      initialValue: 0,
+      targetValue: 100,
+      currentValue: 8,
+      unit: null,
+    });
+    expect(fromObject).toEqual({
+      valueType: 'Absolute',
+      aggregationMethod: 'Max',
+      initialValue: 2,
+      targetValue: 20,
+      currentValue: 10,
+      unit: 'pt',
+    });
+  });
+});

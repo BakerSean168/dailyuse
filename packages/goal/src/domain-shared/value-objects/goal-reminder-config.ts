@@ -64,7 +64,12 @@ export class GoalReminderConfig extends ValueObject<GoalReminderConfigDTO> imple
    * 将 JSON 字符串解析回触发器数组
    */
   public static fromPersistenceDTO(dto: GoalReminderConfigPersistenceDTO): GoalReminderConfig {
-    const triggers = typeof dto.triggers === 'string' ? JSON.parse(dto.triggers) : [];
+    const triggers =
+      typeof dto.triggers === 'string'
+        ? JSON.parse(dto.triggers)
+        : Array.isArray(dto.triggers)
+          ? dto.triggers
+          : [];
     return new GoalReminderConfig({
       enabled: dto.enabled,
       triggers: Array.isArray(triggers) ? triggers : [],

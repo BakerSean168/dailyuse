@@ -170,23 +170,29 @@ function setTheme(theme: PresentationThemeMode) {
       <CardContent class="grid gap-4">
         <p
           v-if="error"
+          data-testid="auth-error-banner"
           class="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
         >
           {{ error }}
         </p>
 
-        <Tabs default-value="login" class="w-full">
+        <Tabs default-value="login" class="w-full" data-testid="auth-tabs">
           <TabsList class="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="login">{{ t('auth.login.submit') }}</TabsTrigger>
-            <TabsTrigger value="register">{{ t('auth.register.submit') }}</TabsTrigger>
+            <TabsTrigger value="login" data-testid="login-tab">
+              {{ t('auth.login.submit') }}
+            </TabsTrigger>
+            <TabsTrigger value="register" data-testid="register-tab">
+              {{ t('auth.register.submit') }}
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="login">
+          <TabsContent value="login" data-testid="login-panel">
             <div class="grid gap-4">
               <div class="grid gap-2">
                 <Label htmlFor="email">{{ t('auth.field.email') }}</Label>
                 <Input
                   id="email"
+                  data-testid="login-email-input"
                   v-model="email"
                   type="email"
                   :placeholder="t('auth.page.emailPlaceholder')"
@@ -199,21 +205,28 @@ function setTheme(theme: PresentationThemeMode) {
                     {{ t('auth.login.forgotPassword') }}
                   </a>
                 </div>
-                <Input id="password" type="password" v-model="password" />
+                <Input id="password" data-testid="login-password-input" type="password" v-model="password" />
               </div>
-              <Button class="w-full" type="button" :disabled="isLoading" @click="handleLogin">
+              <Button
+                data-testid="login-submit-button"
+                class="w-full"
+                type="button"
+                :disabled="isLoading"
+                @click="handleLogin"
+              >
                 <template v-if="isLoading">{{ t('common.loading') }}</template>
                 <template v-else>{{ t('auth.login.submit') }}</template>
               </Button>
             </div>
           </TabsContent>
 
-          <TabsContent value="register">
+          <TabsContent value="register" data-testid="register-panel">
             <div class="grid gap-4">
               <div class="grid gap-2">
                 <Label htmlFor="reg-email">{{ t('auth.field.email') }}</Label>
                 <Input
                   id="reg-email"
+                  data-testid="register-email-input"
                   v-model="regEmail"
                   type="email"
                   :placeholder="t('auth.page.emailPlaceholder')"
@@ -221,13 +234,29 @@ function setTheme(theme: PresentationThemeMode) {
               </div>
               <div class="grid gap-2">
                 <Label htmlFor="reg-password">{{ t('auth.field.password') }}</Label>
-                <Input id="reg-password" type="password" v-model="regPassword" />
+                <Input
+                  id="reg-password"
+                  data-testid="register-password-input"
+                  type="password"
+                  v-model="regPassword"
+                />
               </div>
               <div class="grid gap-2">
                 <Label htmlFor="confirm-password">{{ t('auth.field.confirmPassword') }}</Label>
-                <Input id="confirm-password" type="password" v-model="confirmPassword" />
+                <Input
+                  id="confirm-password"
+                  data-testid="register-confirm-password-input"
+                  type="password"
+                  v-model="confirmPassword"
+                />
               </div>
-              <Button class="w-full" type="button" :disabled="isLoading" @click="handleRegister">
+              <Button
+                data-testid="register-submit-button"
+                class="w-full"
+                type="button"
+                :disabled="isLoading"
+                @click="handleRegister"
+              >
                 <template v-if="isLoading">{{ t('common.loading') }}</template>
                 <template v-else>{{ t('auth.register.submit') }}</template>
               </Button>
@@ -244,7 +273,13 @@ function setTheme(theme: PresentationThemeMode) {
           </div>
         </div>
 
-        <Button variant="outline" class="w-full" :disabled="isLoading" @click="handleGuestLogin">
+        <Button
+          data-testid="guest-mode-button"
+          variant="outline"
+          class="w-full"
+          :disabled="isLoading"
+          @click="handleGuestLogin"
+        >
           <UserRound class="mr-2 h-4 w-4" />
           {{ t('auth.page.guestMode') }}
         </Button>

@@ -10,6 +10,7 @@
 
         <div class="ml-auto flex items-center gap-1">
           <Button
+            data-testid="create-reminder-template-button"
             variant="ghost"
             size="icon"
             class="h-8 w-8"
@@ -199,7 +200,10 @@
             </div>
             <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('reminder.empty') }}</h3>
             <p class="mb-6 text-sm">{{ t('reminder.emptyDescription') }}</p>
-            <Button @click="() => handleCreateTemplate(selectedGroupId)">
+            <Button
+              data-testid="create-first-reminder-template-button"
+              @click="() => handleCreateTemplate(selectedGroupId)"
+            >
               <Plus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createReminder') }}
             </Button>
           </div>

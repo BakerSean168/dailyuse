@@ -16,7 +16,7 @@ test.describe('Settings Error Handling', () => {
     await context.setOffline(true);
 
     // ??????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const themeSelect = page
       .locator('select, [role="combobox"]')
       .filter({ hasText: /light|dark|auto/i })
@@ -28,7 +28,7 @@ test.describe('Settings Error Handling', () => {
     await page.waitForTimeout(2000);
 
     // ????????
-    const errorMessage = page.locator('text=/????|Network error|????|Connection failed/i');
+    const errorMessage = page.locator('text=/Network error|????|Connection failed/i');
     await expect(errorMessage).toBeVisible({ timeout: 5000 });
 
     // ????
@@ -49,7 +49,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const themeSelect = page
       .locator('select, [role="combobox"]')
       .filter({ hasText: /light|dark|auto/i })
@@ -66,7 +66,7 @@ test.describe('Settings Error Handling', () => {
 
   test('should show validation errors for invalid input', async ({ page }) => {
     // ???????
-    await page.getByRole('tab', { name: /??|Notifications/i }).click();
+    await page.getByRole('tab', { name: /Notifications/i }).click();
 
     // ???????????
     const timeInput = page.locator('input[type="time"]').first();
@@ -101,7 +101,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ??????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const themeSelect = page
       .locator('select, [role="combobox"]')
       .filter({ hasText: /light|dark|auto/i })
@@ -111,7 +111,7 @@ test.describe('Settings Error Handling', () => {
     await page.waitForTimeout(1000);
 
     // ????????
-    const errorMessage = page.locator('text=/????|Validation failed|??/i');
+    const errorMessage = page.locator('text=/Validation failed|??/i');
     await expect(errorMessage).toBeVisible({ timeout: 3000 });
   });
 
@@ -132,7 +132,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ??????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const themeSelect = page
       .locator('select, [role="combobox"]')
       .filter({ hasText: /light|dark|auto/i })
@@ -143,7 +143,7 @@ test.describe('Settings Error Handling', () => {
 
     // ??????????????
     const currentUrl = page.url();
-    const hasErrorMessage = await page.locator('text=/???|Unauthorized|??/i').isVisible();
+    const hasErrorMessage = await page.locator('text=/Unauthorized|??/i').isVisible();
 
     expect(currentUrl.includes('/login') || hasErrorMessage).toBeTruthy();
   });
@@ -165,7 +165,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ??????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const themeSelect = page
       .locator('select, [role="combobox"]')
       .filter({ hasText: /light|dark|auto/i })
@@ -175,7 +175,7 @@ test.describe('Settings Error Handling', () => {
     await page.waitForTimeout(1000);
 
     // ???????????
-    const errorMessage = page.locator('text=/?????|Server error|500/i');
+    const errorMessage = page.locator('text=/Server error|500/i');
     await expect(errorMessage).toBeVisible({ timeout: 3000 });
   });
 
@@ -184,7 +184,7 @@ test.describe('Settings Error Handling', () => {
     await context.setOffline(true);
 
     // ????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const html = page.locator('html');
     const previousTheme = await html.getAttribute('class');
 
@@ -223,7 +223,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const html = page.locator('html');
 
     const themeSelect = page
@@ -250,7 +250,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
     const themeSelect = page
       .locator('select, [role="combobox"]')
       .filter({ hasText: /light|dark|auto/i })
@@ -260,7 +260,7 @@ test.describe('Settings Error Handling', () => {
 
     // ?????????
     const loadingIndicator = page.locator(
-      '[role="progressbar"], .v-progress-circular, text=/???|Saving/i',
+      '[role="progressbar"], .v-progress-circular, text=/Saving/i',
     );
     await expect(loadingIndicator.first()).toBeVisible({ timeout: 1000 });
 
@@ -279,7 +279,7 @@ test.describe('Settings Error Handling', () => {
     });
 
     // ??????
-    await page.getByRole('tab', { name: /??|Notifications/i }).click();
+    await page.getByRole('tab', { name: /Notifications/i }).click();
     const notificationToggle = page.locator('[role="switch"]').first();
 
     await notificationToggle.click();
@@ -298,7 +298,7 @@ test.describe('Settings Error Handling', () => {
 
   test('should handle concurrent save operations', async ({ page }) => {
     // ??????????
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
 
     const themeSelect = page
       .locator('select, [role="combobox"]')

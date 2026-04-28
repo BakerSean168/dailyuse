@@ -14,12 +14,12 @@ test.describe('Appearance Settings', () => {
     await page.waitForLoadState('networkidle');
 
     // ?????? tab
-    await page.getByRole('tab', { name: /??|Appearance/i }).click();
+    await page.getByRole('tab', { name: /Appearance/i }).click();
   });
 
   test('should display appearance settings', async ({ page }) => {
     // ??????
-    await expect(page.getByText(/????|Appearance/i)).toBeVisible();
+    await expect(page.getByText(/Appearance/i)).toBeVisible();
 
     // ?????????
     await expect(page.locator('text=??')).toBeVisible();
@@ -73,7 +73,7 @@ test.describe('Appearance Settings', () => {
     // ?????????
     const languageSelect = page
       .locator('select, [role="combobox"]')
-      .filter({ hasText: /??|English/i })
+      .filter({ hasText: /English/i })
       .first();
 
     // ??????
@@ -81,7 +81,7 @@ test.describe('Appearance Settings', () => {
 
     // ????
     await languageSelect.click();
-    await page.getByText(/English|??/).click();
+    await page.getByText(/English/i).click();
 
     // ??????
     await page.waitForTimeout(500);
@@ -93,13 +93,13 @@ test.describe('Appearance Settings', () => {
 
   test('should display color scheme options', async ({ page }) => {
     // ??????????
-    await expect(page.locator('text=/??|Auto/')).toBeVisible();
+    await expect(page.locator('text=/Auto/')).toBeVisible();
 
     // ????????
-    await expect(page.locator('text=/??|Light/')).toBeVisible();
+    await expect(page.locator('text=/Light/')).toBeVisible();
 
     // ????????
-    await expect(page.locator('text=/??|Dark/')).toBeVisible();
+    await expect(page.locator('text=/Dark/')).toBeVisible();
   });
 
   test('should show success message after save', async ({ page }) => {
@@ -112,12 +112,12 @@ test.describe('Appearance Settings', () => {
     await page.getByText('??', { exact: false }).click();
 
     // ?????????(???)
-    const saveButton = page.getByRole('button', { name: /??|Save/i });
+    const saveButton = page.getByRole('button', { name: /Save/i });
     if (await saveButton.isVisible()) {
       await saveButton.click();
 
       // ??????
-      await expect(page.locator('text=/????|Saved/i')).toBeVisible({ timeout: 3000 });
+      await expect(page.locator('text=/Saved/i')).toBeVisible({ timeout: 3000 });
     }
   });
 

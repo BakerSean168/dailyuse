@@ -1,193 +1,139 @@
-/**
- * Reminder Template CRUD E2E Test
- * 测试提醒模板的创建、读取、更新、删除功能
- */
+import { test, expect, type Locator, type Page } from '@playwright/test';
+import { TIMEOUT_CONFIG } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
 
-import { test, expect, type Page } from '@playwright/test';
+const generateTestEmail = () =>
+  `e2e-reminder-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+const testPassword = 'Test123456!';
 
 test.describe('Reminder Template CRUD Operations', () => {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
-  const testUsername = 'Test123123';
-  const testPassword = 'Llh123123!';
+  let testEmail: string;
 
   test.beforeEach(async ({ page }) => {
-    // 登录
-    await page.goto(`${baseUrl}/auth`);
-    await page.locator('[data-testid="login-username-input"] input').fill(testUsername);
-    await page.locator('[data-testid="login-password-input"] input').fill(testPassword);
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL(`${baseUrl}/`);
-    await page.waitForTimeout(1000);
+    testEmail = generateTestEmail();
 
-    // 导航到提醒模板页面（注意是复数 reminders）
-    await page.goto(`${baseUrl}/reminders`);
-    await page.waitForTimeout(1000);
+    await registerAndLogin(page, {
+      email: testEmail,
+      password: testPassword,
+      landingPath: '/reminders',
+    });
+
+    await expect(page.getByTestId('create-reminder-template-button')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
   });
 
   test('should create a new reminder template', async ({ page }) => {
-    // 1. 点击创建按钮 - 使用 data-testid
-    const createButton = page.locator('[data-testid="create-reminder-template-button"]');
-    await createButton.click();
-    
-    // 2. 等待对话框打开
-    await expect(page.locator('text=创建提醒模板')).toBeVisible({ timeout: 5000 });
-    
-    // 3. 填写表单
-    const timestamp = Date.now();
-    const templateTitle = `E2E Test Reminder ${timestamp}`;
-    
-    const titleInput = page.locator('input[label="标题"]').or(
-      page.locator('input[placeholder*="标题"]')
-    ).first();
-    await titleInput.fill(templateTitle);
-    
-    const descInput = page.locator('textarea[label="描述"]').or(
-      page.locator('textarea[placeholder*="描述"]')
-    ).first();
-    if (await descInput.isVisible({ timeout: 1000 })) {
-      await descInput.fill('This is an E2E test reminder template');
-    }
-    
-    // 4. 提交表单 - 使用 data-testid
-    await page.locator('[data-testid="reminder-dialog-save-button"]').click();
-    
-    // 5. 验证成功提示
-    await expect(page.locator('text=创建成功').or(
-      page.locator('text=保存成功')
-    )).toBeVisible({ timeout: 5000 });
-    
-    // 6. 验证模板出现
-    await page.waitForTimeout(1000);
-    await expect(page.locator(`text=${templateTitle}`)).toBeVisible();
-    
-    // 清理
-    await cleanupTestReminder(page, templateTitle);
+    const templateTitle = `E2E Reminder ${Date.now()}`;
+
+    await createReminderTemplate(page, templateTitle);
+
+    await expect(reminderCardByTitle(page, templateTitle)).toBeVisible();
   });
 
   test('should display reminder templates', async ({ page }) => {
-    // 验证页面加载
-    await expect(page.locator('text=提醒').or(
-      page.locator('text=Reminder')
-    )).toBeVisible();
-    
-    // 验证有创建按钮 - 使用 data-testid
-    const createButton = page.locator('[data-testid="create-reminder-template-button"]');
-    await expect(createButton).toBeVisible();
+    await expect(page.getByRole('heading', { name: /reminder/i }).first()).toBeVisible();
+    await expect(page.getByTestId('create-reminder-template-button')).toBeVisible();
   });
 
   test('should edit an existing reminder template', async ({ page }) => {
-    // 1. 创建测试模板
-    const timestamp = Date.now();
-    const originalTitle = `E2E Edit Reminder ${timestamp}`;
-    await createTestReminder(page, originalTitle);
-    
-    // 2. 查找并点击编辑按钮
-    const templateCard = page.locator(`text=${originalTitle}`).locator('..').locator('..');
-    await templateCard.locator('button:has-text("编辑")').or(
-      templateCard.locator('button:has(svg.mdi-pencil)')
-    ).first().click();
-    
-    // 3. 等待编辑对话框打开
-    await expect(page.locator('text=编辑提醒模板')).toBeVisible({ timeout: 5000 });
-    
-    // 4. 修改标题
-    const updatedTitle = `${originalTitle} (Updated)`;
-    const titleInput = page.locator('input[label="标题"]').or(
-      page.locator('input[placeholder*="标题"]')
-    ).first();
-    await titleInput.clear();
-    await titleInput.fill(updatedTitle);
-    
-    // 5. 保存 - 使用 data-testid
-    await page.locator('[data-testid="reminder-dialog-save-button"]').click();
-    
-    // 6. 验证成功提示
-    await expect(page.locator('text=更新成功').or(
-      page.locator('text=保存成功')
-    )).toBeVisible({ timeout: 5000 });
-    
-    // 7. 验证更新后的标题显示
-    await page.waitForTimeout(1000);
-    await expect(page.locator(`text=${updatedTitle}`)).toBeVisible();
-    
-    // 清理
-    await cleanupTestReminder(page, updatedTitle);
+    const originalTitle = `E2E Edit Reminder ${Date.now()}`;
+    const updatedTitle = `${originalTitle} Updated`;
+
+    await createReminderTemplate(page, originalTitle);
+
+    const reminderId = await openReminderCardContextMenu(page, originalTitle);
+    await page.getByTestId(`reminder-template-edit-action-${reminderId}`).click();
+
+    const dialog = reminderDialog(page, /edit reminder template/i);
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole('textbox', { name: /title/i }).fill(updatedTitle);
+    await dialog.getByRole('button', { name: /done/i }).click();
+
+    await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(reminderCardByTitle(page, updatedTitle)).toBeVisible();
+    await expect(reminderCardByTitle(page, originalTitle)).toHaveCount(0);
   });
 
   test('should delete a reminder template', async ({ page }) => {
-    // 1. 创建测试模板
-    const timestamp = Date.now();
-    const templateTitle = `E2E Delete Reminder ${timestamp}`;
-    await createTestReminder(page, templateTitle);
-    
-    // 2. 查找并点击删除按钮
-    const templateCard = page.locator(`text=${templateTitle}`).locator('..').locator('..');
-    await templateCard.locator('button:has-text("删除")').or(
-      templateCard.locator('button:has(svg.mdi-delete)')
-    ).first().click();
-    
-    // 3. 确认删除
-    const confirmButton = page.locator('button:has-text("确认")').or(
-      page.locator('button:has-text("删除")')
-    ).last();
-    await confirmButton.click();
-    
-    // 4. 验证删除成功
-    await expect(page.locator('text=删除成功')).toBeVisible({ timeout: 5000 });
-    
-    // 5. 验证模板不再显示
-    await page.waitForTimeout(1000);
-    await expect(page.locator(`text=${templateTitle}`)).not.toBeVisible();
+    const templateTitle = `E2E Delete Reminder ${Date.now()}`;
+
+    await createReminderTemplate(page, templateTitle);
+
+    const reminderId = await openReminderCardContextMenu(page, templateTitle);
+    await page.getByTestId(`reminder-template-delete-action-${reminderId}`).click();
+
+    const confirmDialog = page.getByRole('alertdialog');
+    await expect(confirmDialog).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await confirmDialog.getByRole('button', { name: /delete|删除/i }).click();
+
+    await expect(reminderCardByTitle(page, templateTitle)).toHaveCount(0);
   });
 
-  test('should open reminder desktop view', async ({ page }) => {
-    // 验证桌面视图组件加载
-    const desktopView = page.locator('.reminder-desktop-view').or(
-      page.locator('[class*="desktop"]')
-    );
-    await expect(desktopView).toBeVisible({ timeout: 5000 });
+  test('should open reminder template detail', async ({ page }) => {
+    const templateTitle = `E2E Detail Reminder ${Date.now()}`;
+
+    await createReminderTemplate(page, templateTitle);
+
+    await reminderCardByTitle(page, templateTitle).click();
+
+    const detailDialog = page.getByRole('dialog', { name: new RegExp(templateTitle, 'i') });
+    await expect(detailDialog).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
+    await expect(detailDialog.getByRole('heading', { name: templateTitle })).toBeVisible();
   });
 });
 
-// ===== Helper Functions =====
+async function openCreateReminderDialog(page: Page) {
+  const primaryCreateButton = page.getByTestId('create-reminder-template-button');
 
-async function createTestReminder(page: Page, title: string) {
-  // 使用 data-testid 选择器
-  const createButton = page.locator('[data-testid="create-reminder-template-button"]');
-  await createButton.click();
-  
-  await expect(page.locator('text=创建提醒模板')).toBeVisible({ timeout: 5000 });
-  
-  const titleInput = page.locator('input[label="标题"]').or(
-    page.locator('input[placeholder*="标题"]')
-  ).first();
-  await titleInput.fill(title);
-  
-  // 使用 data-testid
-  await page.locator('[data-testid="reminder-dialog-save-button"]').click();
-  
-  await expect(page.locator('text=创建成功').or(
-    page.locator('text=保存成功')
-  )).toBeVisible({ timeout: 5000 });
-  await page.waitForTimeout(1000);
+  if (await primaryCreateButton.isVisible()) {
+    await primaryCreateButton.click();
+  } else {
+    await page.getByTestId('create-first-reminder-template-button').click();
+  }
+
+  await expect(reminderDialog(page, /create reminder template/i)).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
 }
 
-async function cleanupTestReminder(page: Page, title: string) {
-  try {
-    const templateCard = page.locator(`text=${title}`).locator('..').locator('..');
-    const deleteButton = templateCard.locator('button:has-text("删除")').or(
-      templateCard.locator('button:has(svg.mdi-delete)')
-    ).first();
-    
-    if (await deleteButton.isVisible({ timeout: 2000 })) {
-      await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确认")').or(
-        page.locator('button:has-text("删除")')
-      ).last();
-      await confirmButton.click();
-      await page.waitForTimeout(1000);
-    }
-  } catch (error) {
-    console.log('Cleanup failed, test data may remain:', error);
+async function createReminderTemplate(page: Page, title: string) {
+  await openCreateReminderDialog(page);
+  const dialog = reminderDialog(page, /create reminder template/i);
+
+  await dialog.getByRole('textbox', { name: /title/i }).fill(title);
+  await dialog.getByRole('textbox', { name: /description/i }).fill(`Description for ${title}`);
+  await dialog.getByRole('button', { name: /done/i }).click();
+
+  await expect(dialog).toBeHidden({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  await expect(reminderCardByTitle(page, title)).toBeVisible();
+}
+
+function reminderDialog(page: Page, name: RegExp): Locator {
+  return page.getByRole('dialog', { name });
+}
+
+function reminderCardByTitle(page: Page, title: string): Locator {
+  return page
+    .locator('[data-testid="reminder-template-card"]')
+    .filter({ has: page.getByText(title, { exact: true }) })
+    .first();
+}
+
+async function openReminderCardContextMenu(page: Page, title: string): Promise<string> {
+  const card = reminderCardByTitle(page, title);
+  await expect(card).toBeVisible();
+
+  const reminderId = await card.getAttribute('data-reminder-id');
+  if (!reminderId) {
+    throw new Error(`Reminder card id not found for "${title}"`);
   }
+
+  await card.click({ button: 'right' });
+  return reminderId;
 }

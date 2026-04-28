@@ -170,6 +170,7 @@ async function handleGuestLogin() {
       <CardContent class="grid gap-4">
         <p
           v-if="error"
+          data-testid="auth-error-banner"
           class="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
         >
           {{ error }}
@@ -264,7 +265,13 @@ async function handleGuestLogin() {
           </div>
         </div>
 
-        <Button variant="outline" class="w-full" :disabled="isLoading" @click="handleGuestLogin">
+        <Button
+          data-testid="guest-mode-button"
+          variant="outline"
+          class="w-full"
+          :disabled="isLoading"
+          @click="handleGuestLogin"
+        >
           <UserRound class="mr-2 h-4 w-4" />
           <template v-if="isLoading && authAction === 'guest'">
             {{ t('auth.page.guestLoading') }}

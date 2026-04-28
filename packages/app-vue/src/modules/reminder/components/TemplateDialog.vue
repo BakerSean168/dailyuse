@@ -1,6 +1,9 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-3xl flex-col overflow-hidden p-0">
+    <DialogContent
+      data-testid="reminder-template-dialog"
+      class="flex max-h-[85vh] min-h-0 max-w-3xl flex-col overflow-hidden p-0"
+    >
       <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <DialogTitle class="text-xl">{{
           isEditMode
@@ -30,9 +33,11 @@
 
             <div class="flex gap-3">
               <div class="flex-1">
-                <Label>{{ t('reminder.templateDialog.labelTitle') }}</Label>
+                <Label for="reminder-template-title">{{ t('reminder.templateDialog.labelTitle') }}</Label>
                 <Input
+                  id="reminder-template-title"
                   v-model="formData.title"
+                  data-testid="reminder-template-title-input"
                   :placeholder="t('reminder.templateDialog.placeholderTitle')"
                   class="mt-1.5"
                 />
@@ -49,9 +54,11 @@
             </div>
 
             <div>
-              <Label>{{ t('reminder.templateDialog.labelDescription') }}</Label>
+              <Label for="reminder-template-description">{{ t('reminder.templateDialog.labelDescription') }}</Label>
               <Textarea
+                id="reminder-template-description"
                 v-model="formData.description"
+                data-testid="reminder-template-description-input"
                 :placeholder="t('reminder.templateDialog.placeholderDescription')"
                 rows="2"
                 class="mt-1.5"
@@ -296,7 +303,12 @@
         <Button variant="ghost" @click="close" :disabled="saving">
           {{ t('reminder.templateDialog.btnCancel') }}
         </Button>
-        <Button variant="default" @click="handleSave" :disabled="!formValid || saving">
+        <Button
+          data-testid="reminder-template-save-button"
+          variant="default"
+          @click="handleSave"
+          :disabled="!formValid || saving"
+        >
           {{ t('reminder.templateDialog.btnDone') }}
         </Button>
       </DialogFooter>

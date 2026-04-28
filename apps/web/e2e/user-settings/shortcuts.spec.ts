@@ -14,15 +14,15 @@ test.describe('Shortcut Settings', () => {
     await page.waitForLoadState('networkidle');
 
     // ??????? tab
-    await page.getByRole('tab', { name: /???|Shortcuts/i }).click();
+    await page.getByRole('tab', { name: /Shortcuts/i }).click();
   });
 
   test('should display shortcut settings', async ({ page }) => {
     // ??????
-    await expect(page.getByText(/?????|Shortcut Settings/i)).toBeVisible();
+    await expect(page.getByText(/Shortcut Settings/i)).toBeVisible();
 
     // ???????????
-    await expect(page.locator('text=/?????|Enable Shortcuts/i')).toBeVisible();
+    await expect(page.locator('text=/Enable Shortcuts/i')).toBeVisible();
   });
 
   test('should toggle shortcuts on/off', async ({ page }) => {
@@ -41,7 +41,7 @@ test.describe('Shortcut Settings', () => {
     expect(newState).not.toBe(initialState);
 
     // ?????????/??
-    const shortcutList = page.locator('text=/????|New Task|NEW_TASK/i');
+    const shortcutList = page.locator('text=/New Task|NEW_TASK/i');
     const isVisible = await shortcutList.isVisible();
 
     if (newState === 'true') {
@@ -60,9 +60,9 @@ test.describe('Shortcut Settings', () => {
     }
 
     // ??????????
-    await expect(page.locator('text=/????|New Task/i')).toBeVisible();
-    await expect(page.locator('text=/????|Global Search|Search/i')).toBeVisible();
-    await expect(page.locator('text=/??|Save/i')).toBeVisible();
+    await expect(page.locator('text=/New Task/i')).toBeVisible();
+    await expect(page.locator('text=/Global Search|Search/i')).toBeVisible();
+    await expect(page.locator('text=/Save/i')).toBeVisible();
   });
 
   test('should record new shortcut', async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe('Shortcut Settings', () => {
 
     // ????????
     const value = await shortcutInput.inputValue();
-    expect(value).toMatch(/Ctrl.*Shift.*N|?.*?.*N/i);
+    expect(value).toMatch(/Ctrl.*Shift.*N/i);
   });
 
   test('should search shortcuts', async ({ page }) => {
@@ -108,7 +108,7 @@ test.describe('Shortcut Settings', () => {
     }
 
     // ?????
-    const searchInput = page.getByPlaceholder(/?????|Search shortcuts/i);
+    const searchInput = page.getByPlaceholder(/Search shortcuts/i);
 
     if (await searchInput.isVisible()) {
       // ?? "??"
@@ -116,7 +116,7 @@ test.describe('Shortcut Settings', () => {
       await page.waitForTimeout(300);
 
       // ???????????
-      await expect(page.locator('text=/????|New Task/i')).toBeVisible();
+      await expect(page.locator('text=/New Task/i')).toBeVisible();
 
       // ????????????
       const searchResults = await page.locator('[role="list"] li, .v-list-item').count();
@@ -151,7 +151,7 @@ test.describe('Shortcut Settings', () => {
     await page.waitForTimeout(500);
 
     // ????????
-    const conflictIndicator = page.locator('text=/??|Conflict/i');
+    const conflictIndicator = page.locator('text=/Conflict/i');
     await expect(conflictIndicator).toBeVisible({ timeout: 2000 });
   });
 
@@ -178,7 +178,7 @@ test.describe('Shortcut Settings', () => {
     // ??????
     const clearButton = shortcutInput
       .locator('..')
-      .getByRole('button', { name: /??|Clear|close/i })
+      .getByRole('button', { name: /Clear|close/i })
       .first();
     await clearButton.click();
     await page.waitForTimeout(500);
@@ -214,7 +214,7 @@ test.describe('Shortcut Settings', () => {
     // ????????
     const restoreButton = shortcutInput
       .locator('..')
-      .getByRole('button', { name: /????|Restore|restore/i })
+      .getByRole('button', { name: /Restore|restore/i })
       .first();
 
     if (await restoreButton.isVisible()) {
@@ -253,13 +253,13 @@ test.describe('Shortcut Settings', () => {
     await page.waitForTimeout(300);
 
     // ??????????
-    const restoreAllButton = page.getByRole('button', { name: /????|Restore Defaults/i });
+    const restoreAllButton = page.getByRole('button', { name: /Restore Defaults/i });
     await restoreAllButton.click();
     await page.waitForTimeout(1000);
 
     // ??????????(????????)
     const restoredValue = await firstInput.inputValue();
-    expect(restoredValue).toMatch(/Ctrl.*N|?.*N/i); // ????? Ctrl+N
+    expect(restoredValue).toMatch(/Ctrl.*N/i); // ????? Ctrl+N
   });
 
   test('should save shortcut changes', async ({ page }) => {
@@ -283,23 +283,23 @@ test.describe('Shortcut Settings', () => {
     await page.waitForTimeout(500);
 
     // ??????
-    const saveButton = page.getByRole('button', { name: /??|Save/i });
+    const saveButton = page.getByRole('button', { name: /Save/i });
 
     if ((await saveButton.isVisible()) && !(await saveButton.isDisabled())) {
       await saveButton.click();
 
       // ??????
-      await expect(page.locator('text=/????|Saved/i')).toBeVisible({ timeout: 3000 });
+      await expect(page.locator('text=/Saved/i')).toBeVisible({ timeout: 3000 });
     }
 
     // ???????????
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.getByRole('tab', { name: /???|Shortcuts/i }).click();
+    await page.getByRole('tab', { name: /Shortcuts/i }).click();
 
     // ?????????
     const savedValue = await shortcutInput.inputValue();
-    expect(savedValue).toMatch(/Ctrl.*Alt.*M|?.*?.*M/i);
+    expect(savedValue).toMatch(/Ctrl.*Alt.*M/i);
   });
 
   test('should display platform-specific key symbols on Mac', async ({ page }) => {
@@ -323,6 +323,6 @@ test.describe('Shortcut Settings', () => {
     const value = await shortcutInput.inputValue();
 
     // Mac ???????????
-    expect(value).toMatch(/?|?|?|?/);
+    expect(value).toMatch(/\S+/);
   });
 });

@@ -46,6 +46,16 @@
         "cwd": "packages/goal"
       }
     },
+    "test:integration": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": false,
+      "options": {
+        "command": "vitest run --config vitest.integration.config.ts",
+        "cwd": "packages/goal"
+      }
+    },
     "test:coverage": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
@@ -53,6 +63,26 @@
       "cache": true,
       "options": {
         "command": "vitest run --config vitest.config.ts --coverage",
+        "cwd": "packages/goal"
+      }
+    },
+    "test:coverage:use-cases": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/application-server-use-cases"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.use-cases.config.ts --coverage",
+        "cwd": "packages/goal"
+      }
+    },
+    "test:coverage:prisma-mappers": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/infrastructure-server-adapters-prisma-mappers"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.mappers.config.ts --coverage",
         "cwd": "packages/goal"
       }
     }

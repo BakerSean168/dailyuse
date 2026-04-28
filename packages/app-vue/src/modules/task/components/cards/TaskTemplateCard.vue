@@ -1,5 +1,8 @@
 <template>
-  <ActionableWrapper :actions="menuActions">
+  <ActionableWrapper
+    :actions="menuActions"
+    :more-button-test-id="`task-card-menu-trigger-${template.id}`"
+  >
     <Card
       class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
       :class="[
@@ -360,12 +363,14 @@ const emit = defineEmits<{
 const menuActions = computed<MenuAction[]>(() => [
   {
     key: 'edit',
+    testId: `task-card-edit-action-${props.template.id}`,
     label: menuLabel('edit'),
     icon: Pencil,
     handler: handleEdit,
   },
   {
     key: 'delete',
+    testId: `task-card-delete-action-${props.template.id}`,
     label: menuLabel('delete'),
     icon: Trash2,
     destructive: true,

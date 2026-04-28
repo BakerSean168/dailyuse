@@ -57,7 +57,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     id: string,
     request: UpdateTaskTemplateReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.put(`${this.baseUrl}/${id}`, request);
+    return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
   }
 
   async deleteTaskTemplate(id: string): Promise<Result<void>> {

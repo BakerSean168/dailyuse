@@ -9,6 +9,8 @@ import type { Component } from 'vue';
 export interface MenuAction {
   /** Unique key for v-for */
   key: string;
+  /** Stable selector hook for E2E when needed */
+  testId?: string;
   /** Display label */
   label: string;
   /** Lucide icon component (optional) */

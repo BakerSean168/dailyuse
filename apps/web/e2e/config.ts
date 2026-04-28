@@ -11,9 +11,9 @@
 export const API_CONFIG = {
   /**
    * API 基础 URL
-   * 默认: http://localhost:3888
+   * 默认: http://localhost:3000
    */
-  BASE_URL: process.env.E2E_API_BASE_URL || 'http://localhost:3888',
+  BASE_URL: process.env.E2E_API_BASE_URL || 'http://localhost:3000',
   
   /**
    * API 版本前缀
@@ -40,9 +40,9 @@ export const API_CONFIG = {
 export const WEB_CONFIG = {
   /**
    * Web 应用基础 URL
-   * 默认: http://localhost:5173
+   * 默认: http://127.0.0.1:5173
    */
-  BASE_URL: process.env.E2E_WEB_BASE_URL || 'http://localhost:5173',
+  BASE_URL: process.env.E2E_WEB_BASE_URL || 'http://127.0.0.1:5173',
   
   /**
    * 登录页面路径

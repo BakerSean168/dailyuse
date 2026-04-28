@@ -173,10 +173,29 @@ export function registerTaskTemplateRoutes(
     { requireAuth: false },
   );
 
-  // PUT /:id — Update template
+  // PUT /:id — Update template (backwards compatibility)
   r.route(
     {
       method: 'put',
+      path: '/:id',
+      summary: '更新任务模板',
+      request: {
+        params: z.object({ id: brandedId<TaskTemplateId>() }),
+        body: { content: { 'application/json': { schema: UpdateTaskTemplateSchema } } },
+      },
+      responses: {
+        200: successResponse(TaskTemplateResponseSchema, '更新成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.updateTemplate(req.params!.id, req.body),
+  );
+
+  // PATCH /:id — Update template (preferred method for partial updates)
+  r.route(
+    {
+      method: 'patch',
       path: '/:id',
       summary: '更新任务模板',
       request: {

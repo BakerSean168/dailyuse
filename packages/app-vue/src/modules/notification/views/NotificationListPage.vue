@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col overflow-hidden bg-background">
+  <div class="flex h-full flex-col overflow-hidden bg-background" data-testid="notification-center">
     <!-- Header -->
     <header
       class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
@@ -11,6 +11,7 @@
           <Button
             v-for="tab in filterTabs"
             :key="tab.value"
+            :data-testid="`notification-filter-${tab.value}`"
             variant="ghost"
             size="sm"
             :class="[
@@ -29,6 +30,7 @@
           {{ t('notification.filter.unreadBadge', { count: unreadCount }) }}
         </Badge>
         <Button
+          data-testid="mark-all-read-button"
           variant="outline"
           size="sm"
           class="h-8"
@@ -62,7 +64,7 @@
           <p class="text-sm">{{ t('notification.emptyDescription') }}</p>
         </div>
 
-        <div v-else>
+        <div v-else data-testid="notifications-list">
           <NotificationList
             :notifications="filteredNotifications"
             :loading="isLoading"

@@ -205,7 +205,12 @@ const tabs = computed(() => [
       <!-- Main content -->
       <Tabs v-else v-model="activeTab" class="w-full">
         <TabsList class="w-full flex flex-wrap h-auto gap-1">
-          <TabsTrigger v-for="tab in tabs" :key="tab.value" :value="tab.value">
+          <TabsTrigger
+            v-for="tab in tabs"
+            :key="tab.value"
+            :value="tab.value"
+            :data-testid="`settings-tab-${tab.value}`"
+          >
             {{ tab.label }}
           </TabsTrigger>
         </TabsList>

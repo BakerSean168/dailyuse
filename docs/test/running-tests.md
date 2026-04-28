@@ -37,11 +37,19 @@ pnpm nx run desktop:test:main
 - `task:test:integration`：数据库、Prisma、事务、仓储实现改动
 - `task:test:bench`：性能回归排查或性能优化验证
 - `api:test:smoke`：HTTP 路由、middleware、序列化、状态码改动
-- `web:e2e`：浏览器主流程回归
+- `web:e2e`：核心浏览器主流程回归（登录、注册、任务模板、目标、提醒、通知、仪表盘、设置持久化）
 - `web:e2e:sync`：同步链路、跨端回归
 - `web:e2e:desktop-screenshots`：拉起 Electron desktop，批量生成论文截图
 - `desktop:test:ipc`：IPC handler、preload 暴露面改动
 - `desktop:test:main`：Electron main 进程逻辑改动
+
+首次在本机运行 Web E2E 前，先安装 Playwright 浏览器二进制：
+
+```bash
+pnpm exec playwright install
+```
+
+如果浏览器二进制缺失，Playwright 会在启动测试前直接失败；这类失败属于环境前置条件问题，不应误判为业务回归。
 
 ## 提交前和回归排查
 
@@ -61,6 +69,7 @@ pnpm nx affected -t test:coverage
 - Web adapter / mock handler / contracts：`pnpm nx run web:test`
 - 数据库访问或 Prisma：`pnpm nx run task:test:integration`
 - 关键浏览器流程：`pnpm nx run web:e2e`
+  当前默认只跑核心 Web flow oracle；更宽的浏览器场景不要默认混进这条入口
 - 同步回归：`pnpm nx run web:e2e:sync`
 - 论文截图采集：`pnpm nx run web:e2e:desktop-screenshots`
 - Electron IPC / main：`pnpm nx run desktop:test:ipc`、`pnpm nx run desktop:test:main`

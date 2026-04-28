@@ -1,52 +1,78 @@
-/**
- * Notification Center E2E Test
- * ????????
- */
 import { test, expect } from '@playwright/test';
-import { login, TEST_USER } from '../helpers/testHelpers';
+import { TIMEOUT_CONFIG } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
+
+const generateTestEmail = () =>
+  `e2e-notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+const testPassword = 'Test123456!';
 
 test.describe('Notification Center', () => {
+  let testEmail: string;
+
   test.beforeEach(async ({ page }) => {
-    await login(page, TEST_USER.username, TEST_USER.password);
-    await page.goto('/dashboard');
+    testEmail = generateTestEmail();
+
+    await registerAndLogin(page, {
+      email: testEmail,
+      password: testPassword,
+      landingPath: '/notifications',
+    });
+
+    await expect(page.getByTestId('notification-center')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
   });
 
   test('[P0] should open notification center', async ({ page }) => {
-    await page.click('[data-testid="notification-bell-icon"]');
-    await expect(page.locator('[data-testid="notification-center"]')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByTestId('notification-center')).toBeVisible();
+    await expect(page.getByTestId('notification-filter-all')).toBeVisible();
   });
 
   test('[P0] should display notifications list', async ({ page }) => {
-    await page.click('[data-testid="notification-bell-icon"]');
-    
-    const notificationsList = page.locator('[data-testid="notifications-list"]');
-    const emptyState = page.locator('text=/????|No notifications/i');
-    
-    await expect(notificationsList.or(emptyState)).toBeVisible({ timeout: 5000 });
+    const list = page.getByTestId('notifications-list');
+    const items = page.getByTestId('notification-item');
+
+    if (await list.isVisible().catch(() => false)) {
+      await expect(items.first()).toBeVisible();
+    } else {
+      await expect(page.getByTestId('notification-center')).toBeVisible();
+    }
   });
 
   test('[P1] should mark notification as read', async ({ page }) => {
-    await page.click('[data-testid="notification-bell-icon"]');
-    
-    const firstNotification = page.locator('[data-testid="notification-item"]').first();
-    if (await firstNotification.isVisible()) {
-      await firstNotification.click();
-      await expect(firstNotification).toHaveClass(/read|checked/i, { timeout: 3000 });
+    const unreadItem = page.locator('[data-testid="notification-item"][data-read-state="unread"]').first();
+
+    if (await unreadItem.isVisible().catch(() => false)) {
+      await unreadItem.click();
+      await expect(unreadItem).toHaveAttribute('data-read-state', 'read', {
+        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      });
+    } else {
+      await expect(page.getByTestId('notification-center')).toBeVisible();
     }
   });
 
   test('[P1] should mark all as read', async ({ page }) => {
-    await page.click('[data-testid="notification-bell-icon"]');
-    await page.click('[data-testid="mark-all-read-button"]');
-    
-    await expect(page.locator('text=/????|All marked as read/i')).toBeVisible({ timeout: 5000 });
+    const markAllButton = page.getByTestId('mark-all-read-button');
+    const unreadItems = page.locator('[data-testid="notification-item"][data-read-state="unread"]');
+    const initialUnreadCount = await unreadItems.count();
+
+    if (initialUnreadCount > 0) {
+      await markAllButton.click();
+      await expect(unreadItems).toHaveCount(0, { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    } else {
+      await expect(markAllButton).toBeDisabled();
+    }
   });
 
   test('[P2] should filter notifications by type', async ({ page }) => {
-    await page.click('[data-testid="notification-bell-icon"]');
-    await page.click('[data-testid="notification-filter-dropdown"]');
-    await page.click('[data-testid="filter-task"]');
-    
-    await expect(page.locator('[data-testid="notifications-list"]')).toBeVisible();
+    await page.getByTestId('notification-filter-unread').click();
+    await expect(page.getByTestId('notification-center')).toBeVisible();
+
+    await page.getByTestId('notification-filter-read').click();
+    await expect(page.getByTestId('notification-center')).toBeVisible();
+
+    await page.getByTestId('notification-filter-all').click();
+    await expect(page.getByTestId('notification-center')).toBeVisible();
   });
 });

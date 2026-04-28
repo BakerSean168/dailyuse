@@ -1,93 +1,146 @@
 import { test, expect, type Page } from '@playwright/test';
-import { WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
+import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
+
+const generateTestEmail = () =>
+  `e2e-login-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+const testPassword = 'Test123456!';
 
 test.describe('Authentication - 登录页基础验证', () => {
-  let page: Page;
-
-  test.beforeEach(async ({ page: testPage }) => {
-    page = testPage;
-    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.LOGIN_PATH), {
-      waitUntil: 'domcontentloaded',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
-
-    // 默认展示登录表单
-    const loginTab = page.locator('button.v-tab:has-text("登录")');
-    if (await loginTab.isVisible()) {
-      await loginTab.click();
-      await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
-    }
+  test.beforeEach(async ({ page }) => {
+    await gotoAuthPage(page);
   });
 
-  test('[P0] 正确凭证可以成功登录', async () => {
-    const { username, password } = TEST_USERS.MAIN;
+  test('[P0] 正确凭证可以成功登录', async ({ page }) => {
+    const testEmail = generateTestEmail();
 
-    await fillLoginForm(page, username, password);
+    await registerUser(page, testEmail, testPassword);
+    await expectAuthenticated(page);
+
+    await logoutFromAccountCenter(page);
+    await expectOnAuthPage(page);
+
+    await fillLoginForm(page, testEmail, testPassword);
     await submitLoginForm(page);
 
-    await expect.poll(async () => page.url(), {
-      timeout: TIMEOUT_CONFIG.LOGIN,
-    }).not.toContain(WEB_CONFIG.LOGIN_PATH);
+    await expectAuthenticated(page);
 
     const authState = await readAuthState(page);
     expect(authState.accessToken).toBe(true);
     expect(authState.refreshToken).toBe(true);
-
-    console.log('[PASS] 成功登录校验通过');
   });
 
-  test('[P0] 错误凭证会显示错误提示', async () => {
-    // 使用满足密码规则的错误密码
-    await fillLoginForm(page, 'wronguser', 'WrongPass123!');
+  test('[P0] 错误凭证会显示错误提示', async ({ page }) => {
+    const testEmail = generateTestEmail();
+
+    await registerUser(page, testEmail, testPassword);
+    await expectAuthenticated(page);
+
+    await logoutFromAccountCenter(page);
+    await expectOnAuthPage(page);
+
+    await fillLoginForm(page, testEmail, 'WrongPass123!');
     await submitLoginForm(page);
 
-    // 等待错误提示出现（使用全局 snackbar）
-    const errorSnackbar = page.locator('[data-testid="global-snackbar"]');
-    await expect(errorSnackbar).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
     await expect.poll(async () => page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
-
-    console.log('[PASS] 错误凭证提示校验通过');
   });
 
-  test('[P1] 空表单会提示必填错误', async () => {
-    await submitLoginForm(page);
+  test('[P1] 可以在登录和注册表单间切换', async ({ page }) => {
+    await page.getByRole('tab', { name: /sign up|注册/i }).click();
+    await expect(page.locator('#reg-email')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
 
-    const validationMessages = page.locator('.v-messages__message, [role="alert"]');
-    await expect(validationMessages.first()).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-
-    console.log('[PASS] 空表单错误提示校验通过');
-  });
-
-  test('[P2] 可以切换密码可见性', async () => {
-    const passwordInput = page.locator('[data-testid="login-password-input"] input');
-    await passwordInput.fill(TEST_USERS.MAIN.password);
-
-    await expect(passwordInput).toHaveAttribute('type', 'password');
-
-    const visibilityToggle = page.locator('[data-testid="login-password-input"] i.mdi-eye-off, [data-testid="login-password-input"] i.mdi-eye');
-    await visibilityToggle.click();
-
-    await expect(passwordInput).toHaveAttribute('type', 'text');
-    console.log('[PASS] 密码可见性切换通过');
+    await page.getByRole('tab', { name: /sign in|登录/i }).click();
+    await expect(page.locator('#email')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
   });
 });
 
-async function fillLoginForm(page: Page, username: string, password: string): Promise<void> {
-  const usernameField = page.locator('[data-testid="login-username-input"] input');
-  await usernameField.fill(username);
+async function gotoAuthPage(page: Page): Promise<void> {
+  await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.LOGIN_PATH), {
+    waitUntil: 'domcontentloaded',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
 
-  const passwordField = page.locator('[data-testid="login-password-input"] input');
-  await passwordField.fill(password);
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+}
+
+async function openLoginTab(page: Page): Promise<void> {
+  await page.getByRole('tab', { name: /sign in|登录/i }).click();
+  await expect(page.locator('#email')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
+async function fillLoginForm(page: Page, email: string, password: string): Promise<void> {
+  await page.locator('#email').fill(email);
+  await page.locator('#password').fill(password);
 }
 
 async function submitLoginForm(page: Page): Promise<void> {
-  const submitButton = page.locator('[data-testid="login-submit-button"]');
-  await submitButton.click();
+  await page.getByRole('button', { name: /sign in|登录/i }).click();
 }
 
-async function readAuthState(page: Page): Promise<{ accessToken: boolean; refreshToken: boolean }> {
-  return page.evaluate(() => ({
-    accessToken: !!localStorage.getItem('access_token') || !!sessionStorage.getItem('access_token'),
-    refreshToken: !!localStorage.getItem('refresh_token') || !!sessionStorage.getItem('refresh_token'),
-  }));
+async function registerUser(page: Page, email: string, password: string): Promise<void> {
+  await page.getByRole('tab', { name: /sign up|注册/i }).click();
+  await expect(page.locator('#reg-email')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  await page.locator('#reg-email').fill(email);
+  await page.locator('#reg-password').fill(password);
+  await page.locator('#confirm-password').fill(password);
+  await page.getByRole('button', { name: /sign up|注册/i }).click();
+}
+
+async function expectAuthenticated(page: Page): Promise<void> {
+  await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
+    timeout: TIMEOUT_CONFIG.LOGIN,
+  });
+  await page.waitForLoadState('networkidle');
+}
+
+async function readAuthState(
+  page: Page,
+): Promise<{ accessToken: boolean; refreshToken: boolean }> {
+  return page.evaluate(() => {
+    const rawState = localStorage.getItem('authentication') ?? sessionStorage.getItem('authentication') ?? '';
+
+    return {
+      accessToken: rawState.includes('accessToken') || !!localStorage.getItem('access_token'),
+      refreshToken: rawState.includes('refreshToken') || !!localStorage.getItem('refresh_token'),
+    };
+  });
+}
+
+async function logoutFromAccountCenter(page: Page): Promise<void> {
+  await page.goto(WEB_CONFIG.getFullUrl('/account/center'), {
+    waitUntil: 'networkidle',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+
+  await expect(page.getByTestId('account-center-view')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  await page.getByTestId('account-logout-button').click();
+  const confirmDialog = page.getByRole('alertdialog', { name: /log out of your account|确认退出登录/i });
+  await expect(confirmDialog).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  await confirmDialog.getByRole('button', { name: /log out|退出登录/i }).click();
+}
+
+async function expectOnAuthPage(page: Page): Promise<void> {
+  await page.waitForURL((url) => url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
+    timeout: TIMEOUT_CONFIG.LOGIN,
+  });
+  await openLoginTab(page);
 }

@@ -1,6 +1,9 @@
 <template>
   <ActionableWrapper :actions="menuActions" :show-more-button="false">
     <div
+      data-testid="notification-item"
+      :data-read-state="notification.isRead ? 'read' : 'unread'"
+      :data-notification-type="notification.type"
       :class="[
         'flex gap-3 border-b border-l-4 p-4 cursor-pointer transition-all last:border-b-0',
         notification.isRead

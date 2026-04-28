@@ -1,8 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-
-const apiOrigin = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-process.env.E2E_API_BASE_URL ??= apiOrigin;
-process.env.E2E_API_FULL_URL ??= `${apiOrigin.replace(/\/+$/, '')}/api/v1`;
+import { createApiServer, createWebServer } from './playwright.server';
 
 export default defineConfig({
   testDir: './e2e/sync',
@@ -46,20 +43,10 @@ export default defineConfig({
   // 通过代理访问后端的路径保持一致。
   webServer: [
     {
-      command: 'pnpm nx serve api',
-      url: `${apiOrigin}/healthz`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 300 * 1000,
+      ...createApiServer(),
     },
     {
-      command: 'pnpm nx serve web',
-      url: 'http://127.0.0.1:5173/auth',
-      env: {
-        ...process.env,
-        PROXY_TARGET_URL: apiOrigin,
-      },
-      reuseExistingServer: !process.env.CI,
-      timeout: 300 * 1000,
+      ...createWebServer(),
     },
   ],
 });
