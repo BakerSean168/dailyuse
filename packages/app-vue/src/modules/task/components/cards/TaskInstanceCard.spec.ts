@@ -48,7 +48,7 @@ function createTask(overrides: Partial<TaskInstanceViewModel> = {}): TaskInstanc
     isCompleted: false,
     instanceDate: '2026-04-27',
     timeConfig: {
-      timeType: 'TIME_POINT',
+      timeType: 'TimePoint',
       timePoint: 540,
     },
     ...overrides,
