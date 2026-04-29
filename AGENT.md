@@ -14,6 +14,7 @@
 ## 工作方式
 
 - 先读代码和配置，再修改。
+- 优先使用 `pnpm` 而非 `npm`
 - 所有 Nx 命令统一使用 `pnpm nx ...`。
 - 需要 build、lint、test、e2e 时，优先运行离改动最近的 Nx target。
 - 复杂任务先写计划，再实施。计划统一放在 [`docs/plan/active/README.md`](docs/plan/active/README.md) 说明的目录下。

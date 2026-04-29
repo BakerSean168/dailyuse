@@ -171,4 +171,48 @@ describe('GoalGenerationApplicationService', () => {
       }),
     );
   });
+
+  it('records failed executions when goal planning rejects', async () => {
+    const executionPort = new StubGoalPlanningPort();
+    const executionLogPort = new StubExecutionLogPort();
+    vi.mocked(executionPort.plan).mockRejectedValueOnce(new Error('planning exploded'));
+    const service = new GoalGenerationApplicationService(
+      new StubProviderConfigRepository([
+        {
+          id: 'provider-1',
+          identityId: 'identity-1',
+          providerType: AIProviderType.OpenAICompatible,
+          baseUrl: 'https://api.openai.com/v1',
+          apiKey: 'plain-secret',
+          defaultModel: 'gpt-4o-mini',
+          isActive: true,
+          isDefault: true,
+          name: 'Main provider',
+        },
+      ]) as unknown as IAIProviderConfigRepository,
+      executionPort,
+      executionLogPort,
+    );
+
+    await expect(
+      service.generateGoal({
+        identityId: 'identity-1',
+        idea: 'Use Python engineering best practices to improve the internal ai-service module.',
+        timeframe: 'three weeks',
+        includeKeyResults: true,
+      }),
+    ).rejects.toThrow('planning exploded');
+
+    expect(executionLogPort.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskType: 'GOAL_GENERATION',
+        status: 'FAILED',
+        providerId: 'provider-1',
+        providerName: 'Main provider',
+        model: 'gpt-4o-mini',
+        requestId: expect.any(String),
+        error: 'planning exploded',
+      }),
+    );
+  });
 });

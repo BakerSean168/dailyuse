@@ -1,3 +1,5 @@
+# 说明：本文档保留为工程实现参考，不是当前 canonical plan。当前统一方案见 `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`。
+
 # ai-service TDD 测试框架方案
 
 ## 一、现状分析

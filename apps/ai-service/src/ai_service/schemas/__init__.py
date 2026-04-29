@@ -15,10 +15,12 @@ from .chat import (
 )
 from .common import ErrorResponse, HealthResponse
 from .goals import (
+    ClarificationQuestion,
     GoalAutomationLLMResponse,
     GoalAutomationRequest,
     GoalAutomationResponse,
     GoalAutomationToolCall,
+    GoalClarificationLLMResponse,
     GoalPlanningLLMResponse,
     GoalPlanningRequest,
     GoalPlanningResponse,
@@ -51,10 +53,12 @@ __all__ = [
     "ChatStreamChunk",
     "ChatStreamRequest",
     "ErrorResponse",
+    "ClarificationQuestion",
     "GoalAutomationLLMResponse",
     "GoalAutomationRequest",
     "GoalAutomationResponse",
     "GoalAutomationToolCall",
+    "GoalClarificationLLMResponse",
     "GoalPlanningLLMResponse",
     "GoalPlanningRequest",
     "GoalPlanningResponse",

@@ -1,3 +1,5 @@
+# 说明：本文档保留为工程实现参考，不是当前 canonical plan。当前统一方案见 `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`。
+
 # TDD 在 AI Agent 开发中的应用分析
 
 ## 一、核心问题回答

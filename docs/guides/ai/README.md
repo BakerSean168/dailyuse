@@ -3,38 +3,63 @@ tags:
   - guide
   - ai
   - index
-description: AI 学习与转岗指南目录索引
+description: AI goal 与 agent workflow 文档导航
 created: 2026-04-18T00:00:00
-updated: 2026-04-19T00:00:00
+updated: 2026-04-29T00:00:00
 ---
 
-# AI 学习指南
+# AI Goal / Agent 文档导航
 
-本目录聚焦两个问题：
+这个目录不再维护活跃实施计划。
 
-1. 想转向 `AI Agent / AI 应用工程化`，岗位画像、JD 共性和技能主线是什么。
-2. 想把当前仓库当作主训练项目，应该如何围绕 `AI 辅助创建 Goal` 做系统学习。
+- 活跃计划统一放在 `docs/plan/active`
+- `docs/guides/ai` 只保留索引、学习材料、冻结实现记录和工程参考
+- 当前实现真值优先看代码、配置和 `docs/guides/development`
 
-## 当前入口
+## Canonical Plan
 
-| 文档 | 用途 |
-| --- | --- |
-| [goal-workflow-v1/README.md](./goal-workflow-v1/README.md) | 冻结 2026-04-19 当前第一版 AI 创建 Goal 实现，按链路、运行时、状态与调试拆成多篇笔记 |
-| [ai-agent-role-and-skills-guide.md](./ai-agent-role-and-skills-guide.md) | 梳理相关岗位、JD 共性、技能地图、投递关键词和公开岗位样本 |
-| [memoflow-ai-goal-learning-guide.md](./memoflow-ai-goal-learning-guide.md) | 基于本项目现状，说明 AI 创建 Goal 的工作流、终极目标、需要学习的技能和详细学习流程 |
-| [memoflow-ai-goal-feature-backlog.md](./memoflow-ai-goal-feature-backlog.md) | 把学习路线落成可执行 backlog，按功能项列出改动入口、学习目标和验收标准 |
-| [route-2-unified-ai-workflow-orchestrator-plan.md](./route-2-unified-ai-workflow-orchestrator-plan.md) | Route 2 技术方案：以 Chat Goal Tool 为当前唯一主入口，统一到 AI Workflow Orchestrator 与 provider-native function calling runtime |
+- [2026-04-29-ai-goal-agent-workflow-unification.md](../../plan/active/2026-04-29-ai-goal-agent-workflow-unification.md)
+  - 当前唯一正式 AI goal / agent workflow 实施方案
+- [ai-goal-creation-current-workflow.md](../development/ai-goal-creation-current-workflow.md)
+  - 当前真实主链路说明，帮助区分现状与目标
 
-## 配套阅读
+## Frozen Implementation
 
-- 当前 AI 创建 Goal 实现说明：[`../development/ai-goal-creation-current-workflow.md`](../development/ai-goal-creation-current-workflow.md)
-- 当前 AI 聊天与流式实现说明：[`../development/ai-chat-streaming-current-implementation.md`](../development/ai-chat-streaming-current-implementation.md)
-- 开发流程入口：[`../development/README.md`](../development/README.md)
-- 项目根入口：[`../../../README.md`](../../../README.md)
+- [goal-workflow-v1/README.md](./goal-workflow-v1/README.md)
+  - 冻结 2026-04-19 的第一版 goal workflow 实现记录
+- [ai-chat-streaming-current-implementation.md](../development/ai-chat-streaming-current-implementation.md)
+  - 当前 AI 聊天与流式实现说明
 
-## 使用约定
+## Learning / Career Reference
 
-- 这里优先维护学习路径、岗位理解和项目训练路线，不重复维护运行命令总表。
-- 涉及具体实现细节时，以当前代码和 `docs/guides/development` 中的实现文档为准。
-- 涉及岗位市场判断时，以文档中的公开来源日期为准；招聘信息本身具有时效性。
-- `goal-workflow-v1/` 目录是冻结实现记录；后续规划请优先看统一主线文档，而不是把 v1 结构直接当成未来产品结构。
+- [ai-agent-role-and-skills-guide.md](./ai-agent-role-and-skills-guide.md)
+  - AI Agent / AI 应用工程岗位、技能地图与投递样本
+- [memoflow-ai-goal-learning-guide.md](./memoflow-ai-goal-learning-guide.md)
+  - 基于本仓库的 AI goal workflow 学习路线
+
+## Engineering Reference
+
+这些文档保留实现细节和分析价值，但不是当前 canonical plan：
+
+- [p0-1-python-implementation-guide.md](./p0-1-python-implementation-guide.md)
+- [code-review-python-p0-1.md](./code-review-python-p0-1.md)
+- [code-review-frontend-p0-1.md](./code-review-frontend-p0-1.md)
+- [ai-service-tdd-test-framework.md](./ai-service-tdd-test-framework.md)
+- [TDD-in-AI-agent-development.md](./TDD-in-AI-agent-development.md)
+
+## Archived Plans
+
+以下文档已迁入 `docs/plan/archive`，保留历史参考价值：
+
+- [route-2-unified-ai-workflow-orchestrator-plan.md](../../plan/archive/route-2-unified-ai-workflow-orchestrator-plan.md)
+- [memoflow-ai-goal-feature-backlog.md](../../plan/archive/memoflow-ai-goal-feature-backlog.md)
+- [P0-1-文档导航.md](../../plan/archive/P0-1-文档导航.md)
+- [P0-1-clarification-complete-summary.md](../../plan/archive/P0-1-clarification-complete-summary.md)
+- [p0-1-clarification-implementation-plan.md](../../plan/archive/p0-1-clarification-implementation-plan.md)
+
+## Usage Rules
+
+- 新的 AI 实施计划统一写入 `docs/plan/active`
+- 已完成、暂停或仅保留背景价值的 AI 计划移到 `docs/plan/archive`
+- `goal-workflow-v1/` 只记录历史实现，不混入未来方案
+- 具体实现细节以当前代码、配置、测试和 `docs/guides/development` 为准

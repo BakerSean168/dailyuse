@@ -1,3 +1,5 @@
+# 说明：本文档保留为工程实现参考，不是当前 canonical plan。当前统一方案见 `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`。
+
 # P0-1 代码审查 - Vue 前端层
 
 详细的前端代码审查、架构分析和改动建议。

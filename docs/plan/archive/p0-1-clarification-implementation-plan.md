@@ -1,3 +1,5 @@
+> Superseded by `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`. 本文仅保留为 P0-1 阶段实现计划归档。
+
 # P0-1 澄清式 Goal 创建 实现计划
 
 **状态**：实现中  

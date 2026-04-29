@@ -10,9 +10,11 @@ created: 2026-04-18T00:00:00
 updated: 2026-04-19T00:00:00
 ---
 
+> Superseded by `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`. 本文仅保留为旧阶段 backlog 参考。
+
 # AI 辅助创建 Goal 功能 Backlog
 
-这份 backlog 的作用不是替代需求文档，而是把 [`memoflow-ai-goal-learning-guide.md`](./memoflow-ai-goal-learning-guide.md) 里的学习路线，进一步压成一份可以直接在仓库里开做的任务列表。
+这份 backlog 的作用不是替代需求文档，而是把 [`memoflow-ai-goal-learning-guide.md`](../../guides/ai/memoflow-ai-goal-learning-guide.md) 里的学习路线，进一步压成一份可以直接在仓库里开做的任务列表。
 
 设计原则很简单：
 

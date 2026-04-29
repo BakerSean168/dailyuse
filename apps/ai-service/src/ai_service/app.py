@@ -32,6 +32,8 @@ from ai_service.services import (
     KnowledgeQueryService,
     create_chat_service,
 )
+from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
+from ai_service.orchestrator.handlers.goal_handler import GoalWorkflowHandler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -63,6 +65,10 @@ async def lifespan(app: FastAPI):
     )
     analytics_query_service = AnalyticsQueryService(chat_service)
 
+    orchestrator = AIWorkflowOrchestrator()
+    goal_handler = GoalWorkflowHandler(chat_service)
+    orchestrator.register_handler(goal_handler)
+
     app.state.settings = settings
     app.state.http_client = http_client
     app.state.chat_service = chat_service
@@ -72,6 +78,7 @@ async def lifespan(app: FastAPI):
     app.state.knowledge_query_service = knowledge_query_service
     app.state.knowledge_expansion_service = knowledge_expansion_service
     app.state.analytics_query_service = analytics_query_service
+    app.state.orchestrator = orchestrator
 
     logger.info(
         "AI service resources initialized",
@@ -150,4 +157,5 @@ def get_app_state(app: FastAPI) -> dict[str, Any]:
         "knowledge_query_service": app.state.knowledge_query_service,
         "knowledge_expansion_service": app.state.knowledge_expansion_service,
         "analytics_query_service": app.state.analytics_query_service,
+        "orchestrator": app.state.orchestrator,
     }

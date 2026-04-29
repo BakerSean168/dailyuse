@@ -13,7 +13,7 @@ class TestGoalPlanningRoute:
         """A valid goal plan request returns structured JSON."""
 
         with patch(
-            "ai_service.services.goal_planning_service.GoalPlanningService.plan",
+            "ai_service.services.goal_planning_service.GoalPlanningService.plan_with_clarification",
             new_callable=AsyncMock,
         ) as mock_plan:
             mock_plan.return_value = GoalPlanningResponse.model_validate(

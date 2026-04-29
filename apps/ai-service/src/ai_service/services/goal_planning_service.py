@@ -10,8 +10,10 @@ from pydantic import ValidationError
 from ai_service.errors import StructuredOutputError
 from ai_service.schemas import (
     ChatMessage,
+    ClarificationQuestion,
     GoalAutomationLLMResponse,
     GoalAutomationResponse,
+    GoalClarificationLLMResponse,
     GoalPlanningLLMResponse,
     GoalPlanningResponse,
     PlannedGoal,
@@ -131,6 +133,121 @@ class GoalPlanningService:
             taskTemplates=payload.task_templates if include_task_templates else None,
             toolCalls=payload.tool_calls,
             usage=completion.usage,
+        )
+
+    async def clarify(
+        self,
+        *,
+        idea: str,
+        category: str | None,
+        provider_config: ProviderConfig,
+    ) -> GoalPlanningResponse:
+        """Check if a goal idea needs clarification before planning.
+        
+        Args:
+            idea: The goal idea to check
+            category: Optional category for context
+            provider_config: Configuration for the provider
+            
+        Returns:
+            GoalPlanningResponse with state='clarification' if questions needed,
+            state='draft' if ready to plan
+        """
+
+        completion = await self._chat_service.complete(
+            messages=[
+                ChatMessage(
+                    role="system",
+                    content=build_goal_clarification_system_prompt(),
+                ),
+                ChatMessage(
+                    role="user",
+                    content=build_goal_clarification_user_prompt(
+                        idea=idea,
+                        category=category,
+                    ),
+                ),
+            ],
+            config=provider_config,
+        )
+
+        payload = parse_clarification_payload(completion.content)
+
+        # If clarification is needed, return questions
+        if payload.needs_clarification:
+            return GoalPlanningResponse(
+                state="clarification",
+                clarification=payload,
+                usage=completion.usage,
+            )
+
+        # If ready, return draft state (caller will continue with plan())
+        return GoalPlanningResponse(
+            state="draft",
+            clarification=None,
+            usage=completion.usage,
+        )
+
+    async def plan_with_clarification(
+        self,
+        *,
+        idea: str,
+        category: str | None,
+        timeframe: str | None,
+        include_key_results: bool,
+        provider_config: ProviderConfig,
+        enable_clarification: bool = True,
+        clarification_answers: list[str] | None = None,
+    ) -> GoalPlanningResponse:
+        """Generate a goal plan with optional clarification step.
+        
+        This is the main entry point that handles the two-stage workflow:
+        1. If enable_clarification=True and no answers, check if clarification needed
+        2. If clarification needed, return questions for user to answer
+        3. If answers provided, augment idea with them
+        4. Generate and return goal draft
+        
+        Args:
+            idea: The goal idea
+            category: Optional category
+            timeframe: Optional timeframe
+            include_key_results: Whether to include key results
+            provider_config: Provider configuration
+            enable_clarification: Whether to do clarification check
+            clarification_answers: Answers to previous clarification questions
+            
+        Returns:
+            GoalPlanningResponse with either clarification questions or draft
+        """
+
+        # Step 1: Check if clarification is needed (if enabled and no answers yet)
+        if enable_clarification and not clarification_answers:
+            clarification_response = await self.clarify(
+                idea=idea,
+                category=category,
+                provider_config=provider_config,
+            )
+
+            # If clarification is required, return questions to caller
+            if clarification_response.state == "clarification":
+                return clarification_response
+
+        # Step 2: Augment idea with clarification answers if provided
+        augmented_idea = idea
+        if clarification_answers:
+            # Combine the original idea with the answers
+            answers_text = "\n".join(
+                f"Q: {answer}" for answer in clarification_answers if answer.strip()
+            )
+            augmented_idea = f"{idea}\n\nAdditional context:\n{answers_text}"
+
+        # Step 3: Generate the actual goal draft
+        return await self.plan(
+            idea=augmented_idea,
+            category=category,
+            timeframe=timeframe,
+            include_key_results=include_key_results,
+            provider_config=provider_config,
         )
 
 
@@ -309,6 +426,98 @@ def build_goal_automation_user_prompt(
             ],
         )
     )
+
+def build_goal_clarification_system_prompt() -> str:
+    """System prompt for determining if a goal needs clarification."""
+
+    return "\n".join(
+        [
+            (
+                "You are an assistant that determines whether a goal idea "
+                "is clear enough for structured planning."
+            ),
+            "Respond with JSON only.",
+            "Do not include markdown code fences.",
+            "JSON shape:",
+            "{",
+            '  "needsClarification": boolean,',
+            '  "questions": [',
+            "    {",
+            '      "question": string,',
+            '      "context": string | null',
+            "    }",
+            "  ],",
+            '  "rationale": string | null',
+            "}",
+            "",
+            "Guidelines:",
+            "- If the idea is vague, unclear, or missing key information, set needsClarification to true.",
+            "- Generate 2-4 clarification questions that help fill information gaps.",
+            "- Focus on: motivation, success criteria, timeline, scope, constraints.",
+            "- Keep each question concise (< 15 words).",
+            "- Provide context for each question explaining why it matters.",
+            "- If the idea is already clear and specific, set needsClarification to false.",
+            "- Always explain rationale when clarification is needed.",
+        ]
+    )
+
+
+def build_goal_clarification_user_prompt(
+    *,
+    idea: str,
+    category: str | None = None,
+) -> str:
+    """Build user prompt for clarification check.
+    
+    Args:
+        idea: The goal idea to evaluate
+        category: Optional category hint for context
+    
+    Returns:
+        User prompt string
+    """
+    return "\n".join(
+        filter(
+            None,
+            [
+                f"Goal idea: {idea}",
+                f"Category: {category}" if category else None,
+                "",
+                (
+                    "Determine if this goal idea is clear enough for planning, "
+                    "or if it needs clarification. If clarification is needed, "
+                    "suggest 2-4 clarification questions."
+                ),
+            ],
+        )
+    )
+
+
+def parse_clarification_payload(content: str) -> GoalClarificationLLMResponse:
+    """Parse and validate clarification response from the model.
+    
+    Args:
+        content: Raw model output
+        
+    Returns:
+        Validated GoalClarificationLLMResponse
+        
+    Raises:
+        StructuredOutputError: If parsing or validation fails
+    """
+    try:
+        parsed = json.loads(strip_code_fence(content))
+    except json.JSONDecodeError as exc:
+        raise StructuredOutputError(
+            detail="Provider returned invalid JSON for goal clarification."
+        ) from exc
+
+    try:
+        return GoalClarificationLLMResponse.model_validate(parsed)
+    except ValidationError as exc:
+        raise StructuredOutputError(
+            detail="Provider returned an invalid goal clarification payload."
+        ) from exc
 
 
 def parse_goal_payload(content: str) -> GoalPlanningLLMResponse:

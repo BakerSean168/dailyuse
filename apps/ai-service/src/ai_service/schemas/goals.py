@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ai_service.schemas.chat import ProviderConfig
 
@@ -31,6 +31,56 @@ class GoalPlanningRequest(BaseModel):
     include_key_results: bool = True
     provider_config: ProviderConfig
     request_id: str | None = None
+    enable_clarification: bool = Field(
+        default=True,
+        description="Whether to check for clarification need before planning"
+    )
+    clarification_answers: list[str] | None = Field(
+        default=None,
+        description="Answers to previous clarification questions"
+    )
+
+class ClarificationQuestion(BaseModel):
+    """Single clarification question for goal planning."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    question: str = Field(..., min_length=5, description="The clarification question")
+    context: str | None = Field(
+        default=None,
+        description="Optional context explaining why this question matters"
+    )
+
+class GoalClarificationLLMResponse(BaseModel):
+    """LLM response indicating whether goal planning needs clarification."""
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    needs_clarification: bool = Field(
+        ...,
+        alias="needsClarification",
+        description="Whether the input is too vague for direct planning"
+    )
+    questions: list[ClarificationQuestion] = Field(
+        default_factory=list,
+        description="2-4 clarification questions if clarification is needed"
+    )
+    rationale: str | None = Field(
+        default=None,
+        description="Why clarification is needed"
+    )
+
+    @model_validator(mode="after")
+    def validate_question_bounds(self) -> "GoalClarificationLLMResponse":
+        if not self.needs_clarification:
+            return self
+
+        question_count = len(self.questions)
+        if question_count < 2 or question_count > 4:
+            raise ValueError("Clarification responses must include 2-4 questions.")
+
+        return self
+
 
 
 class GoalAutomationRequest(BaseModel):
@@ -165,14 +215,31 @@ class PlannedGoal(BaseModel):
 
 
 class GoalPlanningResponse(BaseModel):
-    """Final response returned to the internal caller."""
+    """Final response returned to the internal caller.
+    
+    Can be in one of two states:
+    - Clarification needed: state='clarification', clarification contains questions
+    - Draft ready: state='draft', goal and key_results contain the plan
+    """
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
-    goal: PlannedGoal
+    state: Literal["clarification", "draft"] = Field(
+        default="draft",
+        description="Current response state"
+    )
+    goal: PlannedGoal | None = Field(
+        default=None,
+        description="Planned goal (only when state='draft')"
+    )
     key_results: list[KeyResultDraft] | None = Field(
         default=None,
         alias="keyResults",
+        description="Key results (only when state='draft')"
+    )
+    clarification: GoalClarificationLLMResponse | None = Field(
+        default=None,
+        description="Clarification questions (only when state='clarification')"
     )
     usage: dict[str, Any] | None = None
 

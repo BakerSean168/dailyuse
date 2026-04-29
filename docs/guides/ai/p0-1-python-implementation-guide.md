@@ -1,3 +1,5 @@
+# 说明：本文档保留为工程实现参考，不是当前 canonical plan。当前统一方案见 `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`。
+
 # P0-1 Python 实现指南 - 逐步编码
 
 完整的、可直接执行的 Python 澄清逻辑实现指南。
