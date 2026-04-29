@@ -4,6 +4,7 @@ import type {
   TaskInstanceClientDTO,
   TaskTemplateClientDTO,
 } from '@dailyuse/contracts/task';
+import { DependencyType } from '@dailyuse/contracts/task';
 import { createTestPinia } from '@dailyuse/test-utils';
 import { useTaskStore } from './taskStore';
 
@@ -13,7 +14,7 @@ function createTemplate(
   return {
     id: 'template-1' as TaskTemplateClientDTO['id'],
     status: 'Active',
-    title: 'Write tests',
+    name: 'Write tests',
     ...overrides,
   } as TaskTemplateClientDTO;
 }
@@ -40,7 +41,7 @@ describe('useTaskStore', () => {
     const archived = createTemplate({
       id: 'template-2' as TaskTemplateClientDTO['id'],
       status: 'Archived',
-      title: 'Archive old flow',
+      name: 'Archive old flow',
     });
 
     store.setTemplates([archived], 21);
@@ -48,10 +49,10 @@ describe('useTaskStore', () => {
     store.setCurrentTemplate(active);
     store.updateTemplate({
       ...active,
-      title: 'Write stronger tests',
+      name: 'Write stronger tests',
     });
 
-    expect(store.getTemplateById(active.id)?.title).toBe('Write stronger tests');
+    expect(store.getTemplateById(active.id)?.name).toBe('Write stronger tests');
     expect(store.activeTemplateCount).toBe(1);
     expect(store.totalPages).toBe(2);
 
@@ -70,8 +71,11 @@ describe('useTaskStore', () => {
     });
     const dependency = {
       id: 'dependency-1',
-      blockerId: 'template-1',
-      blockedId: 'template-2',
+      predecessorTaskId: 'template-1',
+      successorTaskId: 'template-2',
+      dependencyType: DependencyType.FinishToStart,
+      createdAt: 0,
+      updatedAt: 0,
     } as TaskGraphDependencyDTO;
 
     store.setInstances([instance]);

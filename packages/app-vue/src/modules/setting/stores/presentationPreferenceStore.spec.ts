@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LocalePreferences } from '@dailyuse/contracts/setting';
 import { createTestPinia } from '@dailyuse/test-utils';
 import { usePresentationPreferenceStore } from './presentationPreferenceStore';
 
@@ -38,7 +39,7 @@ describe('usePresentationPreferenceStore', () => {
     expect(store.theme).toBe('dark');
 
     store.syncFromUserSetting({
-      locale: { language: 'en-US' },
+      locale: { language: 'en-US' } as LocalePreferences,
       appearance: { theme: 'invalid-theme' as never },
     });
 
