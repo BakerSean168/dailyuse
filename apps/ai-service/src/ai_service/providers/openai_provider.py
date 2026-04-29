@@ -11,6 +11,9 @@ from ai_service.providers.http_provider import BaseHTTPProvider
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
+    ChatToolCall,
+    ChatToolCallFunction,
+    ChatToolDefinition,
     ChatStreamChunk,
     ProviderConfig,
 )
@@ -28,21 +31,47 @@ class OpenAIProvider(BaseHTTPProvider):
         self,
         messages: list[ChatMessage],
         config: ProviderConfig,
+        *,
+        tools: list[ChatToolDefinition] | None = None,
+        tool_choice: str | None = None,
     ) -> ChatCompleteResponse:
         """Call the provider and return the final message payload."""
 
         response = await self._http_client.post(
             self._build_url(config),
-            json=self._build_payload(messages, config, stream=False),
+            json=self._build_payload(
+                messages,
+                config,
+                stream=False,
+                tools=tools,
+                tool_choice=tool_choice,
+            ),
             headers=self._build_headers(config.api_key),
         )
         data = self.parse_json_response(response, provider_name="openai")
 
         choice = data["choices"][0]
+        message = choice["message"]
+        raw_tool_calls = message.get("tool_calls") or None
         return ChatCompleteResponse(
-            content=choice["message"]["content"],
+            content=message.get("content") or "",
             finish_reason=choice["finish_reason"],
             usage=data.get("usage"),
+            toolCalls=(
+                [
+                    ChatToolCall(
+                        id=item.get("id"),
+                        type=item.get("type", "function"),
+                        function=ChatToolCallFunction(
+                            name=item["function"]["name"],
+                            arguments=item["function"].get("arguments", ""),
+                        ),
+                    )
+                    for item in raw_tool_calls
+                ]
+                if raw_tool_calls
+                else None
+            ),
         )
 
     async def stream(
@@ -124,18 +153,29 @@ class OpenAIProvider(BaseHTTPProvider):
         messages: list[ChatMessage],
         config: ProviderConfig,
         stream: bool,
+        *,
+        tools: list[ChatToolDefinition] | None = None,
+        tool_choice: str | None = None,
     ) -> dict[str, Any]:
         """Translate our internal chat schema into OpenAI request JSON."""
 
         payload: dict[str, Any] = {
             "model": config.model,
-            "messages": [message.model_dump(mode="json") for message in messages],
+            "messages": [
+                message.model_dump(mode="json", exclude_none=True) for message in messages
+            ],
             "temperature": config.temperature,
             "stream": stream,
         }
 
         if config.max_tokens is not None:
             payload["max_tokens"] = config.max_tokens
+
+        if tools:
+            payload["tools"] = [tool.model_dump(mode="json") for tool in tools]
+
+        if tool_choice:
+            payload["tool_choice"] = tool_choice
 
         return payload
 

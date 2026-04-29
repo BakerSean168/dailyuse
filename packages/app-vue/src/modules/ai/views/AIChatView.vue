@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full min-h-0 overflow-hidden bg-background">
+  <div class="flex h-full min-h-0 overflow-hidden bg-background" data-testid="ai-chat-view">
     <aside class="hidden min-h-0 w-72 shrink-0 flex-col border-r bg-sidebar md:flex">
       <!-- Conversation List -->
       <div class="flex h-14 items-center border-b px-4">
@@ -206,7 +206,50 @@
             </div>
           </div>
 
-          <section v-if="toolMode === 'goal' && goalDraft" class="rounded-3xl border bg-card p-5">
+          <section
+            v-if="toolMode === 'goal' && goalClarification"
+            class="rounded-3xl border bg-card p-5"
+            data-testid="goal-clarification-panel"
+          >
+            <div class="flex flex-col gap-4">
+              <div class="space-y-2">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.chatPage.workflow.goalClarificationTitle') }}
+                </p>
+                <p class="text-sm leading-6 text-muted-foreground">
+                  {{ goalClarification.rationale || t('aiAssistant.chatPage.workflow.goalClarificationHint') }}
+                </p>
+              </div>
+
+              <div class="space-y-4">
+                <div
+                  v-for="(item, index) in goalClarification.questions"
+                  :key="`${item.question}-${index}`"
+                  class="rounded-2xl border bg-muted/30 p-4"
+                >
+                  <p class="text-sm font-medium text-foreground">
+                    {{ index + 1 }}. {{ item.question }}
+                  </p>
+                  <p v-if="item.context" class="mt-2 text-sm leading-6 text-muted-foreground">
+                    {{ item.context }}
+                  </p>
+                  <textarea
+                    v-model="clarificationAnswers[index]"
+                    rows="2"
+                    class="mt-3 block w-full resize-none rounded-xl border bg-background px-3 py-2 text-sm leading-6 shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0"
+                    :placeholder="t('aiAssistant.chatPage.workflow.goalClarificationAnswerPlaceholder')"
+                    :data-testid="`goal-clarification-answer-${index}`"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section
+            v-if="toolMode === 'goal' && goalDraft"
+            class="rounded-3xl border bg-card p-5"
+            data-testid="goal-draft-panel"
+          >
             <div class="flex flex-col gap-4">
               <div class="space-y-2">
                 <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -238,9 +281,112 @@
                 @confirm="handleCreateGoalFromDraft"
                 @add-key-result="addKeyResultDraft"
                 @remove-key-result="removeKeyResultDraft"
-                @update-goal="editableGoal = $event"
+                @update-goal="handleUpdateGoalDraft"
                 @update-key-result="updateKeyResultDraft"
               />
+            </div>
+          </section>
+
+          <section
+            v-if="toolMode === 'goal' && goalAutomationResult"
+            class="rounded-3xl border bg-card p-5"
+            data-testid="goal-automation-panel"
+          >
+            <div class="space-y-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.summary') }}
+                </p>
+                <p class="mt-2 text-sm leading-6 text-foreground">
+                  {{ goalAutomationResult.summary }}
+                </p>
+              </div>
+
+              <div v-if="goalAutomationResult.actions.length">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.actions') }}
+                </p>
+                <div class="mt-2 space-y-2">
+                  <div
+                    v-for="(action, index) in goalAutomationResult.actions"
+                    :key="`${action.tool}-${index}`"
+                    class="rounded-2xl border bg-muted/20 p-4"
+                  >
+                    <p class="text-sm font-medium text-foreground">
+                      {{ formatAutomationTool(action.tool) }}
+                    </p>
+                    <p v-if="action.rationale" class="mt-2 text-sm leading-6 text-muted-foreground">
+                      {{ action.rationale }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="goalExecutedActions.length">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.executionStatus') }}
+                </p>
+                <p
+                  v-if="goalExecutionSummary"
+                  class="mt-2 text-sm leading-6 text-muted-foreground"
+                >
+                  {{
+                    t('aiAssistant.dialogs.automation.executionSummaryText', {
+                      status: formatExecutionOutcome(goalExecutionSummary.status),
+                      executed: goalExecutionSummary.executedCount,
+                      skipped: goalExecutionSummary.skippedCount,
+                      failed: goalExecutionSummary.failedCount,
+                    })
+                  }}
+                </p>
+              </div>
+
+              <div v-if="goalExecutedActions.length">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.executionTimeline') }}
+                </p>
+                <div class="mt-2 space-y-2">
+                  <div
+                    v-for="(action, index) in goalExecutedActions"
+                    :key="`${action.tool}-${action.status}-${index}`"
+                    class="rounded-2xl border bg-muted/20 p-4"
+                  >
+                    <p class="text-sm font-medium text-foreground">
+                      {{ formatAutomationTool(action.tool) }} · {{ formatActionStatus(action.status) }}
+                    </p>
+                    <p class="mt-2 text-sm leading-6 text-muted-foreground">
+                      {{ action.message }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="goalExecutionRecovery && (goalExecutionRecovery.canRetry || goalExecutionRecovery.suggestions.length)"
+              >
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {{ t('aiAssistant.dialogs.automation.recoveryTitle') }}
+                </p>
+                <p
+                  v-if="goalExecutionRecovery.canRetry"
+                  class="mt-2 text-sm leading-6 text-foreground"
+                >
+                  {{ t('aiAssistant.dialogs.automation.recoveryRetryReady') }}
+                </p>
+                <div v-if="goalExecutionRecovery.suggestions.length" class="mt-2 space-y-2">
+                  <p class="text-sm leading-6 text-muted-foreground">
+                    {{ t('aiAssistant.dialogs.automation.recoverySuggestions') }}
+                  </p>
+                  <div
+                    v-for="(suggestion, index) in goalExecutionRecovery.suggestions"
+                    :key="`${suggestion}-${index}`"
+                    class="rounded-2xl border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
+                  >
+                    {{ suggestion }}
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 
@@ -309,9 +455,24 @@
               <div class="flex flex-wrap gap-2">
                 <template v-if="toolMode === 'goal'">
                   <Button
-                    v-if="!goalDraft"
+                    v-if="goalClarification"
                     variant="outline"
-                    :disabled="goalDraftLoading || !canRunWorkflowActions"
+                    :disabled="goalDraftLoading || !canRunGoalWorkflow"
+                    data-testid="goal-workflow-submit-clarification"
+                    @click="generateGoalDraftFromConversation"
+                  >
+                    {{
+                      goalDraftLoading
+                        ? t('aiAssistant.dialogs.generateGoal.generating')
+                        : t('aiAssistant.chatPage.workflow.submitGoalClarification')
+                    }}
+                  </Button>
+
+                  <Button
+                    v-else-if="!goalDraft"
+                    variant="outline"
+                    :disabled="goalDraftLoading || !canRunGoalWorkflow"
+                    data-testid="goal-workflow-generate-draft"
                     @click="generateGoalDraftFromConversation"
                   >
                     {{
@@ -337,8 +498,40 @@
                       }}
                     </Button>
                     <Button
+                      variant="outline"
+                      :disabled="!canPlanGoalAutomation"
+                      data-testid="goal-workflow-plan-automation"
+                      @click="handlePlanGoalAutomation"
+                    >
+                      {{
+                        automationLoading
+                          ? t('aiAssistant.dialogs.automation.planning')
+                          : t('aiAssistant.dialogs.automation.planAutomation')
+                      }}
+                    </Button>
+                    <Button
+                      v-if="goalWorkflowStage === 'confirm' && !goalExecutedActions.length"
+                      variant="outline"
+                      :disabled="automationExecuting"
+                      data-testid="goal-workflow-confirm-execute"
+                      @click="handleExecuteGoalAutomation"
+                    >
+                      {{
+                        automationExecuting
+                          ? t('aiAssistant.dialogs.automation.executing')
+                          : t('aiAssistant.dialogs.automation.confirmAndExecute')
+                      }}
+                    </Button>
+                    <Button
+                      v-if="automatedGoalId"
+                      variant="outline"
+                      @click="openAutomatedGoal"
+                    >
+                      {{ t('aiAssistant.dialogs.automation.openCreatedGoal') }}
+                    </Button>
+                    <Button
                       variant="ghost"
-                      :disabled="goalDraftLoading || !canRunWorkflowActions"
+                      :disabled="goalDraftLoading || !canRunGoalWorkflow"
                       @click="generateGoalDraftFromConversation"
                     >
                       {{ t('aiAssistant.chatPage.workflow.regenerateGoalDraft') }}
@@ -378,6 +571,7 @@
               class="block w-full resize-none border-0 bg-transparent px-1 py-1 text-sm leading-6 shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0"
               :disabled="chatLoading || !canSendMessage"
               :placeholder="t('aiAssistant.dialogs.chat.messagePlaceholder')"
+              data-testid="ai-chat-composer"
               @input="handleComposerInput"
               @keydown="handleComposerKeydown"
             />
@@ -387,21 +581,31 @@
                 <div class="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger as-child>
-                      <Button variant="outline" class="h-9 rounded-xl sm:shrink-0">
+                      <Button
+                        variant="outline"
+                        class="h-9 rounded-xl sm:shrink-0"
+                        data-testid="ai-chat-tool-menu-trigger"
+                      >
                         <Sparkles class="mr-2 h-4 w-4" />
                         {{ currentToolButtonLabel }}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" class="w-64">
-                      <DropdownMenuItem @click="startNewConversation()">
+                      <DropdownMenuItem data-testid="ai-chat-tool-chat" @click="startNewConversation()">
                         <MessageSquare class="mr-2 h-4 w-4" />
                         {{ t('aiAssistant.chatPage.workflow.tools.chat') }}
                       </DropdownMenuItem>
-                      <DropdownMenuItem @click="startNewConversation('goal')">
+                      <DropdownMenuItem
+                        data-testid="ai-chat-tool-goal"
+                        @click="startNewConversation('goal')"
+                      >
                         <Sparkles class="mr-2 h-4 w-4" />
                         {{ t('aiAssistant.chatPage.workflow.tools.goal') }}
                       </DropdownMenuItem>
-                      <DropdownMenuItem @click="startNewConversation('knowledge-note')">
+                      <DropdownMenuItem
+                        data-testid="ai-chat-tool-knowledge-note"
+                        @click="startNewConversation('knowledge-note')"
+                      >
                         <NotebookPen class="mr-2 h-4 w-4" />
                         {{ t('aiAssistant.chatPage.workflow.tools.knowledgeNote') }}
                       </DropdownMenuItem>
@@ -476,6 +680,7 @@
                   v-else
                   class="rounded-xl lg:shrink-0"
                   :disabled="!chatMessage.trim() || !canSendMessage"
+                  data-testid="ai-chat-send-message"
                   @click="handleSendChat"
                 >
                   <ArrowUp class="mr-2 h-4 w-4" />
@@ -533,6 +738,11 @@ import {
   type AddKeyResultReq,
   type CreateGoalReq,
 } from '@dailyuse/contracts/goal';
+import type {
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
+  GenerateGoalsRes,
+} from '@dailyuse/contracts/ai';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useAI } from '../composables/useAI';
 import { useGoal } from '../../goal/composables/useGoal';
@@ -596,31 +806,18 @@ type StreamDoneResult = {
   assistantMessage?: { id: string; content: string };
 };
 
-type GoalDraft = {
-  goal: {
-    name?: string;
-    title?: string;
-    description: string;
-    category: string;
-    importance: CreateGoalReq['importance'];
-    motivation?: string;
-    feasibilityAnalysis?: string;
-    tags?: string[];
-    suggestedStartDate: number;
-    suggestedEndDate: number;
-  };
-  keyResults?: Array<{
-    title: string;
-    description?: string;
-    valueType: AddKeyResultReq['valueType'];
-    calculationMethod: AddKeyResultReq['calculationMethod'];
-    startValue: number;
-    currentValue: number;
-    targetValue: number;
-    unit: string;
-    weight: number;
-  }>;
-};
+type GoalDraft = GoalWorkflowDraftResultDTO;
+type GoalClarification = GoalClarificationDTO;
+type GoalAutomationResult = Extract<GenerateGoalsRes, { state: 'confirm' | 'result' }>;
+type GoalExecutedAction = Extract<GenerateGoalsRes, { state: 'result' }>['executedActions'][number];
+type GoalWorkflowStage =
+  | 'collect'
+  | 'clarification'
+  | 'draft'
+  | 'plan'
+  | 'confirm'
+  | 'execute'
+  | 'result';
 
 type NoteSummary = {
   resolvedPath: string;
@@ -636,7 +833,11 @@ const CONVERSATION_MODEL_STORAGE_KEY = 'ai:conversation-model-map';
 
 type PersistedWorkflowEntry = {
   mode: WorkflowMode;
+  goalWorkflowStage?: GoalWorkflowStage;
   goalDraft: GoalDraft | null;
+  goalClarification: GoalClarification | null;
+  goalAutomationResult: GoalAutomationResult | null;
+  clarificationAnswers: string[];
   editableGoal: {
     name: string;
     description: string;
@@ -690,9 +891,15 @@ const activeStreamAbortController = ref<AbortController | null>(null);
 // Workflow state that piggybacks on the same conversation transcript.
 const toolMode = ref<WorkflowMode>('chat');
 const goalDraftLoading = ref(false);
+const goalWorkflowStage = ref<GoalWorkflowStage>('collect');
 const goalDraft = ref<GoalDraft | null>(null);
+const goalClarification = ref<GoalClarification | null>(null);
+const goalAutomationResult = ref<GoalAutomationResult | null>(null);
+const clarificationAnswers = ref<string[]>([]);
 const showGoalDraftEditor = ref(false);
 const creatingGoal = ref(false);
+const automationLoading = ref(false);
+const automationExecuting = ref(false);
 const editableGoal = ref<{
   name: string;
   description: string;
@@ -770,6 +977,39 @@ const hasWorkflowUserMessages = computed(() =>
 const canRunWorkflowActions = computed(
   () => Boolean(selectedModel.value) && !chatLoading.value && hasWorkflowMessages.value,
 );
+const canSubmitGoalClarification = computed(() => {
+  if (!goalClarification.value) {
+    return false;
+  }
+
+  return goalClarification.value.questions.every(
+    (_, index) => (clarificationAnswers.value[index] || '').trim().length > 0,
+  );
+});
+const canRunGoalWorkflow = computed(() =>
+  goalClarification.value
+    ? Boolean(selectedModel.value) && !chatLoading.value && canSubmitGoalClarification.value
+    : Boolean(selectedModel.value) && !chatLoading.value && hasWorkflowUserMessages.value,
+);
+const canPlanGoalAutomation = computed(
+  () =>
+    Boolean(selectedModel.value) &&
+    !automationLoading.value &&
+    !automationExecuting.value &&
+    Boolean(goalDraft.value),
+);
+const goalExecutedActions = computed(() =>
+  goalAutomationResult.value?.state === 'result' ? goalAutomationResult.value.executedActions : [],
+);
+const goalExecutionSummary = computed(() =>
+  goalAutomationResult.value?.state === 'result' ? goalAutomationResult.value.executionSummary : null,
+);
+const goalExecutionRecovery = computed(() =>
+  goalAutomationResult.value?.state === 'result' ? goalAutomationResult.value.recovery : null,
+);
+const automatedGoalId = computed(
+  () => goalExecutedActions.value.find((action) => action.tool === 'create_goal')?.entityId ?? '',
+);
 const currentConversationLabel = computed(
   () => conversationTitle.value || getDefaultConversationName(toolMode.value),
 );
@@ -789,11 +1029,35 @@ const workflowStatusText = computed(() => {
       return t('aiAssistant.dialogs.generateGoal.generating');
     }
 
-    if (!hasWorkflowUserMessages.value) {
-      return t('aiAssistant.chatPage.workflow.goalCollectingHint');
+    if (goalWorkflowStage.value === 'plan' || automationLoading.value) {
+      return t('aiAssistant.dialogs.automation.planning');
     }
 
-    if (goalDraft.value) {
+    if (goalWorkflowStage.value === 'execute' || automationExecuting.value) {
+      return t('aiAssistant.dialogs.automation.executing');
+    }
+
+    if (goalWorkflowStage.value === 'confirm') {
+      return t('aiAssistant.dialogs.automation.awaitingConfirmation');
+    }
+
+    if (goalWorkflowStage.value === 'result') {
+      if (goalExecutionSummary.value?.status === 'partial') {
+        return formatExecutionOutcome('partial');
+      }
+
+      if (goalExecutionSummary.value?.status === 'failed') {
+        return formatExecutionOutcome('failed');
+      }
+
+      return t('aiAssistant.dialogs.automation.executionRecorded');
+    }
+
+    if (goalWorkflowStage.value === 'clarification') {
+      return t('aiAssistant.chatPage.workflow.goalClarificationHint');
+    }
+
+    if (goalWorkflowStage.value === 'draft') {
       return t('aiAssistant.chatPage.workflow.goalDraftReadyHint');
     }
 
@@ -1033,6 +1297,30 @@ function createStoredNoteSummary(summary: NoteSummary | null): NoteSummary | nul
   };
 }
 
+function inferGoalWorkflowStage(entry: PersistedWorkflowEntry | undefined | null): GoalWorkflowStage {
+  if (entry?.goalWorkflowStage) {
+    return entry.goalWorkflowStage;
+  }
+
+  if (entry?.goalAutomationResult?.state === 'result' && entry.goalAutomationResult.executedActions.length) {
+    return 'result';
+  }
+
+  if (entry?.goalAutomationResult) {
+    return 'confirm';
+  }
+
+  if (entry?.goalClarification) {
+    return 'clarification';
+  }
+
+  if (entry?.goalDraft) {
+    return 'draft';
+  }
+
+  return 'collect';
+}
+
 function snapshotWorkflowEntry(): PersistedWorkflowEntry | null {
   if (toolMode.value === 'chat') {
     return null;
@@ -1043,7 +1331,11 @@ function snapshotWorkflowEntry(): PersistedWorkflowEntry | null {
   // UI artifacts derived from those messages.
   return {
     mode: toolMode.value,
+    goalWorkflowStage: toolMode.value === 'goal' ? goalWorkflowStage.value : undefined,
     goalDraft: goalDraft.value,
+    goalClarification: goalClarification.value,
+    goalAutomationResult: goalAutomationResult.value,
+    clarificationAnswers: [...clarificationAnswers.value],
     editableGoal: {
       ...editableGoal.value,
       tags: [...editableGoal.value.tags],
@@ -1095,7 +1387,11 @@ function restoreWorkflowState(conversationId: string) {
   }
 
   toolMode.value = entry.mode;
+  goalWorkflowStage.value = entry.mode === 'goal' ? inferGoalWorkflowStage(entry) : 'collect';
   goalDraft.value = entry.goalDraft;
+  goalClarification.value = entry.goalClarification ?? null;
+  goalAutomationResult.value = entry.goalAutomationResult ?? null;
+  clarificationAnswers.value = [...(entry.clarificationAnswers ?? [])];
   editableGoal.value = {
     ...createEmptyGoalDraft(),
     ...entry.editableGoal,
@@ -1127,7 +1423,11 @@ function normalizeChatItem(item: Partial<{ id: string; role: string; content: st
 }
 
 function resetWorkflowArtifacts() {
+  goalWorkflowStage.value = 'collect';
   goalDraft.value = null;
+  goalClarification.value = null;
+  goalAutomationResult.value = null;
+  clarificationAnswers.value = [];
   showGoalDraftEditor.value = false;
   editableGoal.value = createEmptyGoalDraft();
   editableKeyResults.value = [];
@@ -1402,13 +1702,17 @@ function buildKnowledgeNoteTopic() {
 }
 
 function applyGoalDraft(nextDraft: GoalDraft) {
+  goalWorkflowStage.value = 'draft';
+  goalClarification.value = null;
+  goalAutomationResult.value = null;
+  clarificationAnswers.value = [];
   goalDraft.value = nextDraft;
 
   // Goal generation returns an AI-friendly payload shape. The editor needs a
   // mutable form-friendly shape, so we normalize once here and let the editor
   // work only with the editable version afterwards.
   editableGoal.value = {
-    name: nextDraft.goal.name ?? nextDraft.goal.title ?? '',
+    name: nextDraft.goal.title ?? '',
     description: nextDraft.goal.description,
     category: nextDraft.goal.category,
     importance: nextDraft.goal.importance || ImportanceLevel.Moderate,
@@ -1436,30 +1740,230 @@ function applyGoalDraft(nextDraft: GoalDraft) {
     })) ?? [];
 }
 
+function applyGoalClarification(nextClarification: GoalClarification) {
+  goalWorkflowStage.value = 'clarification';
+  goalDraft.value = null;
+  goalAutomationResult.value = null;
+  showGoalDraftEditor.value = false;
+  editableGoal.value = createEmptyGoalDraft();
+  editableKeyResults.value = [];
+  goalClarification.value = nextClarification;
+  clarificationAnswers.value = nextClarification.questions.map(
+    (_, index) => clarificationAnswers.value[index] ?? '',
+  );
+}
+
+function clearGoalAutomationResult() {
+  goalAutomationResult.value = null;
+  goalWorkflowStage.value = goalDraft.value ? 'draft' : goalClarification.value ? 'clarification' : 'collect';
+}
+
 async function generateGoalDraftFromConversation() {
-  if (!selectedModel.value || !hasWorkflowUserMessages.value) {
+  if (!selectedModel.value) {
+    return;
+  }
+
+  if (!goalClarification.value && !hasWorkflowUserMessages.value) {
+    return;
+  }
+
+  if (goalClarification.value && !canSubmitGoalClarification.value) {
     return;
   }
 
   goalDraftLoading.value = true;
   try {
-    const draft = (await service.generateGoal({
+    const response = (await service.generateGoal({
       idea: buildConversationTranscript(),
       includeKeyResults: true,
       providerId: selectedModel.value.providerId,
       model: selectedModel.value.modelId,
-    })) as GoalDraft;
+      clarificationAnswers: goalClarification.value
+        ? clarificationAnswers.value.map((item) => item.trim())
+        : undefined,
+    })) as GenerateGoalsRes;
 
-    applyGoalDraft(draft);
-    showGoalDraftEditor.value = false;
-    await maybeRenameCurrentConversation(editableGoal.value.name || conversationTitle.value);
-    toast.success(t('aiAssistant.dialogs.generateGoal.draftGenerated'));
+    if (response.state === 'clarification') {
+      applyGoalClarification(response.clarification);
+    } else if (response.state === 'draft') {
+      applyGoalDraft(response);
+      showGoalDraftEditor.value = false;
+      await maybeRenameCurrentConversation(editableGoal.value.name || conversationTitle.value);
+      toast.success(t('aiAssistant.dialogs.generateGoal.draftGenerated'));
+    } else {
+      throw new Error('Goal draft generation returned an unexpected workflow state.');
+    }
     scrollMessagesToBottom();
   } catch (error) {
     toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.generateGoal.generateFailed'));
   } finally {
     goalDraftLoading.value = false;
   }
+}
+
+async function handlePlanGoalAutomation() {
+  if (!selectedModel.value || !goalDraft.value) {
+    return;
+  }
+
+  goalWorkflowStage.value = 'plan';
+  automationLoading.value = true;
+  try {
+    const response = (await service.generateGoal({
+      idea: buildConversationTranscript(),
+      command: 'prepare',
+      includeKeyResults: true,
+      includeTaskTemplates: true,
+      draftContext: {
+        goal: {
+          title: editableGoal.value.name || goalDraft.value.goal.title || currentConversationLabel.value,
+          description: editableGoal.value.description,
+          category: editableGoal.value.category || undefined,
+          importance: editableGoal.value.importance,
+          motivation: editableGoal.value.motivation || undefined,
+          feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
+          tags: editableGoal.value.tags.length ? editableGoal.value.tags : undefined,
+          suggestedStartDate: editableGoal.value.startDate ?? undefined,
+          suggestedEndDate: editableGoal.value.targetDate ?? undefined,
+        },
+        keyResults: editableKeyResults.value.length
+          ? editableKeyResults.value.map((item) => ({
+              title: item.title,
+              description: item.description || undefined,
+              valueType: item.valueType,
+              calculationMethod: item.calculationMethod,
+              startValue: item.startValue,
+              currentValue: item.currentValue,
+              targetValue: item.targetValue,
+              unit: item.unit,
+              weight: item.weight,
+            }))
+          : undefined,
+      },
+      providerId: selectedModel.value.providerId,
+      model: selectedModel.value.modelId,
+    })) as GenerateGoalsRes;
+
+    if (response.state !== 'confirm' && response.state !== 'result') {
+      throw new Error('Goal automation planning returned an unexpected workflow state.');
+    }
+
+    goalAutomationResult.value = response;
+    goalWorkflowStage.value = response.state === 'result' ? 'result' : 'confirm';
+    toast.success(t('aiAssistant.dialogs.automation.planReady'));
+    scrollMessagesToBottom();
+  } catch (error) {
+    goalWorkflowStage.value = goalDraft.value ? 'draft' : 'collect';
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.automation.planFailed'));
+  } finally {
+    automationLoading.value = false;
+  }
+}
+
+async function handleExecuteGoalAutomation() {
+  if (!selectedModel.value || !goalAutomationResult.value) {
+    return;
+  }
+
+  goalWorkflowStage.value = 'execute';
+  automationExecuting.value = true;
+  try {
+    const response = (await service.generateGoal({
+      idea: buildConversationTranscript(),
+      command: 'execute',
+      includeKeyResults: true,
+      includeTaskTemplates: true,
+      draftContext: {
+        goal: {
+          title: editableGoal.value.name || goalDraft.value?.goal.title || currentConversationLabel.value,
+          description: editableGoal.value.description,
+          category: editableGoal.value.category || undefined,
+          importance: editableGoal.value.importance,
+          motivation: editableGoal.value.motivation || undefined,
+          feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
+          tags: editableGoal.value.tags.length ? editableGoal.value.tags : undefined,
+          suggestedStartDate: editableGoal.value.startDate ?? undefined,
+          suggestedEndDate: editableGoal.value.targetDate ?? undefined,
+        },
+        keyResults: editableKeyResults.value.length
+          ? editableKeyResults.value.map((item) => ({
+              title: item.title,
+              description: item.description || undefined,
+              valueType: item.valueType,
+              calculationMethod: item.calculationMethod,
+              startValue: item.startValue,
+              currentValue: item.currentValue,
+              targetValue: item.targetValue,
+              unit: item.unit,
+              weight: item.weight,
+            }))
+          : undefined,
+      },
+      approvedSummary: goalAutomationResult.value.summary,
+      approvedPlan: goalAutomationResult.value.plan,
+      approvedActions: goalAutomationResult.value.actions,
+      providerId: selectedModel.value.providerId,
+      model: selectedModel.value.modelId,
+    })) as GenerateGoalsRes;
+
+    if (response.state !== 'result') {
+      throw new Error('Goal automation execution returned an unexpected workflow state.');
+    }
+
+    goalAutomationResult.value = response;
+    goalWorkflowStage.value = 'result';
+    toast.success(t('aiAssistant.dialogs.automation.executed'));
+    scrollMessagesToBottom();
+  } catch (error) {
+    goalWorkflowStage.value = goalAutomationResult.value ? 'confirm' : goalDraft.value ? 'draft' : 'collect';
+    toast.error(getAIErrorMessage(error, 'aiAssistant.dialogs.automation.executeFailed'));
+  } finally {
+    automationExecuting.value = false;
+  }
+}
+
+async function openAutomatedGoal() {
+  if (!automatedGoalId.value) {
+    return;
+  }
+
+  await router.push(`/goals/${automatedGoalId.value}`);
+}
+
+function formatAutomationTool(tool: GoalAutomationResult['actions'][number]['tool']) {
+  const labels: Record<GoalAutomationResult['actions'][number]['tool'], string> = {
+    create_goal: t('aiAssistant.dialogs.automation.toolLabels.createGoal'),
+    create_key_result: t('aiAssistant.dialogs.automation.toolLabels.createKeyResult'),
+    create_task_template: t('aiAssistant.dialogs.automation.toolLabels.createTaskTemplate'),
+    search_notes: t('aiAssistant.dialogs.automation.toolLabels.searchNotes'),
+    fetch_stats: t('aiAssistant.dialogs.automation.toolLabels.fetchStats'),
+  };
+
+  return labels[tool];
+}
+
+function formatActionStatus(
+  status: GoalExecutedAction['status'],
+) {
+  const labels = {
+    executed: t('aiAssistant.dialogs.automation.statusLabels.executed'),
+    skipped: t('aiAssistant.dialogs.automation.statusLabels.skipped'),
+    failed: t('aiAssistant.dialogs.automation.statusLabels.failed'),
+  } as const;
+
+  return labels[status];
+}
+
+function formatExecutionOutcome(
+  status: NonNullable<typeof goalExecutionSummary.value>['status'],
+) {
+  const labels = {
+    success: t('aiAssistant.dialogs.automation.outcomeLabels.success'),
+    partial: t('aiAssistant.dialogs.automation.outcomeLabels.partial'),
+    failed: t('aiAssistant.dialogs.automation.outcomeLabels.failed'),
+  } as const;
+
+  return labels[status];
 }
 
 async function handleCreateGoalFromDraft() {
@@ -1562,6 +2066,7 @@ async function openCreatedNote() {
 }
 
 function addKeyResultDraft() {
+  clearGoalAutomationResult();
   editableKeyResults.value.push({
     title: '',
     description: '',
@@ -1576,6 +2081,7 @@ function addKeyResultDraft() {
 }
 
 function removeKeyResultDraft(index: number) {
+  clearGoalAutomationResult();
   editableKeyResults.value.splice(index, 1);
 }
 
@@ -1593,7 +2099,13 @@ function updateKeyResultDraft(payload: {
     weight: number;
   };
 }) {
+  clearGoalAutomationResult();
   editableKeyResults.value.splice(payload.index, 1, payload.value);
+}
+
+function handleUpdateGoalDraft(payload: typeof editableGoal.value) {
+  clearGoalAutomationResult();
+  editableGoal.value = payload;
 }
 
 function toggleGoalDraftEditor() {
@@ -1774,8 +2286,12 @@ watch(
     [
       chatConversationId.value,
       toolMode.value,
+      goalWorkflowStage.value,
       showGoalDraftEditor.value ? '1' : '0',
       JSON.stringify(goalDraft.value),
+      JSON.stringify(goalClarification.value),
+      JSON.stringify(goalAutomationResult.value),
+      JSON.stringify(clarificationAnswers.value),
       JSON.stringify(editableGoal.value),
       JSON.stringify(editableKeyResults.value),
       JSON.stringify(createStoredNoteSummary(noteSummary.value)),

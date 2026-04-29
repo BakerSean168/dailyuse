@@ -59,7 +59,6 @@ const Ch = {
   PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
   PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
   GOAL_GENERATE: 'ai:goal:generate',
-  GOAL_AUTOMATE: 'ai:goal:automate',
   CONVERSATION_CREATE: 'ai:chat:conversation:create',
   CONVERSATION_UPDATE: 'ai:chat:conversation:update',
   CONVERSATION_LIST: 'ai:chat:conversation:list',
@@ -227,14 +226,6 @@ export function createAIElectronModule(options: {
       ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.generateGoal({
-            identityId: requestContext.identityId,
-            ...dto,
-          }),
-        ),
-      );
-      ipcMain.handle(Ch.GOAL_AUTOMATE, async (_, dto) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.automateGoal({
             identityId: requestContext.identityId,
             ...dto,
           }),

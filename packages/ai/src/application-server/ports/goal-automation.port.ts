@@ -5,7 +5,9 @@ import type {
   KeyResultPreview,
 } from '@dailyuse/contracts/ai';
 
+import type { AnalyticsQueryContext } from './analytics-query.port';
 import type { ChatExecutionProviderConfig, ChatExecutionUsage } from './chat-execution.port';
+import type { KnowledgeSourceResource } from './knowledge-ingestion.port';
 
 export interface GoalAutomationPlanningInput {
   identityId: string;
@@ -15,6 +17,8 @@ export interface GoalAutomationPlanningInput {
   timeframe?: string;
   includeKeyResults: boolean;
   includeTaskTemplates: boolean;
+  relatedResources?: KnowledgeSourceResource[];
+  analyticsContext?: AnalyticsQueryContext;
   requestId?: string;
 }
 

@@ -44,6 +44,7 @@ export class DirectProviderGoalPlanningAdapter implements IGoalPlanningPort {
     );
 
     return {
+      state: 'draft',
       goal: parsed.goal,
       keyResults: parsed.keyResults,
       usage: completion.usage,

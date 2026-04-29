@@ -22,7 +22,7 @@ class TestAnalyticsQueryRoute:
             )
 
             response = client.post(
-                "/internal/analytics/query",
+                "/internal/workflows/analytics",
                 json={
                     "question": "What should I pay attention to today?",
                     "context": {

@@ -1,6 +1,5 @@
 export * from './ai-analytics-query.service';
 export * from './ai-evaluation-report.service';
-export * from './ai-goal-automation.service';
 export * from './ai-knowledge-index.service';
 export * from './a-i-chat-application-service';
 export * from './a-i-conversation-service';

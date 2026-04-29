@@ -87,6 +87,45 @@ const i18n = createI18n({
             created: 'Created',
             createFailed: 'Create failed',
           },
+          automation: {
+            planning: 'Planning automation',
+            planAutomation: 'Plan Automation',
+            executing: 'Executing automation',
+            confirmAndExecute: 'Confirm and Execute',
+            openCreatedGoal: 'Open Created Goal',
+            summary: 'Summary',
+            actions: 'Actions',
+            executionStatus: 'Execution Status',
+            executionTimeline: 'Execution Timeline',
+            executionResult: 'Execution Result',
+            executionSummaryText: '{status}: {executed} executed, {skipped} skipped, {failed} failed.',
+            awaitingConfirmation: 'awaiting confirmation',
+            executionRecorded: 'execution recorded',
+            recoveryTitle: 'Recovery',
+            recoveryRetryReady: 'You can retry execution after fixing the failed action inputs or runtime issue.',
+            recoverySuggestions: 'Recommended recovery steps:',
+            planReady: 'Automation plan ready',
+            planFailed: 'Automation plan failed',
+            executed: 'Automation executed',
+            executeFailed: 'Automation execute failed',
+            toolLabels: {
+              createGoal: 'Create Goal',
+              createKeyResult: 'Create Key Result',
+              createTaskTemplate: 'Create Task Template',
+              searchNotes: 'Search Notes',
+              fetchStats: 'Fetch Stats',
+            },
+            statusLabels: {
+              executed: 'Executed',
+              skipped: 'Skipped',
+              failed: 'Failed',
+            },
+            outcomeLabels: {
+              success: 'Success',
+              partial: 'Partial success',
+              failed: 'Failed',
+            },
+          },
           note: {
             creating: 'Creating note',
             created: 'Created note',
@@ -116,10 +155,14 @@ const i18n = createI18n({
             toolButton: 'Tools',
             goalDraftTitle: 'Goal draft',
             goalCollectingHint: 'Collecting details for the goal',
+            goalClarificationHint: 'Needs clarification',
             goalDraftReadyHint: 'Draft ready',
+            goalClarificationTitle: 'Goal clarification',
+            goalClarificationAnswerPlaceholder: 'Answer here',
             noteCreatedHint: 'Note created: {path}',
             noteCollectingHint: 'Collecting note context',
             generateGoalDraft: 'Generate goal draft',
+            submitGoalClarification: 'Continue With Answers',
             regenerateGoalDraft: 'Regenerate draft',
             createGoalDirectly: 'Create goal directly',
             editGoalBeforeCreate: 'Edit goal before create',
@@ -186,6 +229,7 @@ const DivStub = defineComponent({
 
 function createGoalDraft(title: string, description: string) {
   return {
+    state: 'draft',
     goal: {
       title,
       description,
@@ -196,6 +240,37 @@ function createGoalDraft(title: string, description: string) {
       suggestedEndDate: 2,
     },
     keyResults: [],
+  };
+}
+
+function createAutomationResult(overrides?: Partial<any>) {
+  return {
+    summary: 'Drafted a practical execution plan.',
+    plan: {
+      goal: {
+        title: 'Generated AI Goal',
+        description: 'Generated from the current conversation',
+      },
+      keyResults: [],
+      taskTemplates: [],
+    },
+    actions: [
+      {
+        tool: 'create_goal',
+        rationale: 'Create the goal first.',
+      },
+    ],
+    executedActions: undefined,
+    executionSummary: undefined,
+    recovery: undefined,
+    providerId: 'provider-1',
+    tokenUsage: {
+      promptTokens: 10,
+      completionTokens: 5,
+      totalTokens: 15,
+    },
+    processingTimeMs: 80,
+    ...overrides,
   };
 }
 
@@ -308,7 +383,11 @@ describe('AIChatView', () => {
       JSON.stringify({
         'conv-1': {
           mode: 'goal',
+          goalWorkflowStage: 'draft',
           goalDraft: createGoalDraft('Restored AI Goal', 'Recovered draft from storage'),
+          goalClarification: null,
+          goalAutomationResult: null,
+          clarificationAnswers: [],
           editableGoal: {
             name: 'Restored AI Goal',
             description: 'Recovered draft from storage',
@@ -350,7 +429,11 @@ describe('AIChatView', () => {
       JSON.stringify({
         'conv-1': {
           mode: 'goal',
+          goalWorkflowStage: 'collect',
           goalDraft: null,
+          goalClarification: null,
+          goalAutomationResult: null,
+          clarificationAnswers: [],
           editableGoal: {
             name: '',
             description: '',
@@ -395,8 +478,380 @@ describe('AIChatView', () => {
       includeKeyResults: true,
       providerId: 'provider-1',
       model: 'gpt-4o-mini',
+      clarificationAnswers: undefined,
     });
     expect(wrapper.text()).toContain('Generated AI Goal');
     expect(wrapper.text()).toContain('Generated from the current conversation');
+  });
+
+  it('collects clarification answers before generating the final goal draft', async () => {
+    localStorage.setItem('ai:last-conversation-id', 'conv-1');
+    localStorage.setItem(
+      'ai:conversation-workflow-map',
+      JSON.stringify({
+        'conv-1': {
+          mode: 'goal',
+          goalWorkflowStage: 'collect',
+          goalDraft: null,
+          goalClarification: null,
+          goalAutomationResult: null,
+          clarificationAnswers: [],
+          editableGoal: {
+            name: '',
+            description: '',
+            category: '',
+            importance: 'Moderate',
+            motivation: '',
+            feasibilityAnalysis: '',
+            tags: [],
+            startDate: null,
+            targetDate: null,
+          },
+          editableKeyResults: [],
+          noteSummary: null,
+          showGoalDraftEditor: false,
+        },
+      }),
+    );
+    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
+    service.listConversations.mockResolvedValue({
+      data: [{ id: 'conv-1', name: 'Goal session' }],
+    });
+    service.listMessages.mockResolvedValue({
+      data: [{ id: 'm-1', role: 'user', content: 'Help me get better at AI work.' }],
+    });
+    service.generateGoal
+      .mockResolvedValueOnce({
+        state: 'clarification',
+        clarification: {
+          needsClarification: true,
+          rationale: 'Need more scope before drafting.',
+          questions: [
+            {
+              question: 'What exact outcome do you want?',
+              context: 'This defines success.',
+            },
+            {
+              question: 'What timeline are you targeting?',
+              context: 'This defines urgency.',
+            },
+          ],
+        },
+        tokenUsage: {
+          promptTokens: 10,
+          completionTokens: 5,
+          totalTokens: 15,
+        },
+        providerId: 'provider-1',
+        processingTimeMs: 50,
+        generatedAt: 1,
+      })
+      .mockResolvedValueOnce(
+        createGoalDraft('Clarified AI Goal', 'Generated after providing clarification answers'),
+      );
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const firstButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Generate goal draft'));
+    expect(firstButton).toBeDefined();
+    await firstButton!.trigger('click');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Goal clarification');
+    expect(wrapper.text()).toContain('What exact outcome do you want?');
+
+    const clarificationInputs = wrapper
+      .findAll('textarea')
+      .filter((item) => item.attributes('placeholder') === 'Answer here');
+    expect(clarificationInputs).toHaveLength(2);
+    await clarificationInputs[0].setValue('Ship an AI workflow for goal planning.');
+    await clarificationInputs[1].setValue('Within the next quarter.');
+    await flushPromises();
+
+    const continueButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Continue With Answers'));
+    expect(continueButton).toBeDefined();
+    await continueButton!.trigger('click');
+    await flushPromises();
+
+    expect(service.generateGoal).toHaveBeenLastCalledWith({
+      idea: 'User: Help me get better at AI work.',
+      includeKeyResults: true,
+      providerId: 'provider-1',
+      model: 'gpt-4o-mini',
+      clarificationAnswers: [
+        'Ship an AI workflow for goal planning.',
+        'Within the next quarter.',
+      ],
+    });
+    expect(wrapper.text()).toContain('Clarified AI Goal');
+    expect(wrapper.text()).toContain('Generated after providing clarification answers');
+  });
+
+  it('plans and executes goal automation from the draft inside the chat workflow', async () => {
+    localStorage.setItem('ai:last-conversation-id', 'conv-1');
+    localStorage.setItem(
+      'ai:conversation-workflow-map',
+      JSON.stringify({
+        'conv-1': {
+          mode: 'goal',
+          goalWorkflowStage: 'collect',
+          goalDraft: null,
+          goalClarification: null,
+          goalAutomationResult: null,
+          clarificationAnswers: [],
+          editableGoal: {
+            name: '',
+            description: '',
+            category: '',
+            importance: 'Moderate',
+            motivation: '',
+            feasibilityAnalysis: '',
+            tags: [],
+            startDate: null,
+            targetDate: null,
+          },
+          editableKeyResults: [],
+          noteSummary: null,
+          showGoalDraftEditor: false,
+        },
+      }),
+    );
+    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
+    service.listConversations.mockResolvedValue({
+      data: [{ id: 'conv-1', name: 'Goal session' }],
+    });
+    service.listMessages.mockResolvedValue({
+      data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
+    });
+    service.generateGoal
+      .mockResolvedValueOnce(
+        createGoalDraft('Generated AI Goal', 'Generated from the current conversation'),
+      )
+      .mockResolvedValueOnce({
+        state: 'confirm',
+        ...createAutomationResult(),
+        plan: {
+          goal: {
+            title: 'Generated AI Goal',
+            description: 'Generated from the current conversation',
+            category: 'learning',
+            importance: 'Important',
+            suggestedStartDate: 1,
+            suggestedEndDate: 2,
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        state: 'result',
+        ...createAutomationResult({
+          executedActions: [
+            {
+              tool: 'create_goal',
+              status: 'executed',
+              entityId: 'goal-123',
+              message: 'Created goal "Generated AI Goal"',
+            },
+          ],
+          executionSummary: {
+            status: 'success',
+            executedCount: 1,
+            skippedCount: 0,
+            failedCount: 0,
+          },
+          recovery: {
+            canRetry: false,
+            failedActions: [],
+            suggestions: [],
+          },
+        }),
+        plan: {
+          goal: {
+            title: 'Generated AI Goal',
+            description: 'Generated from the current conversation',
+            category: 'learning',
+            importance: 'Important',
+            suggestedStartDate: 1,
+            suggestedEndDate: 2,
+          },
+        },
+      });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const generateButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Generate goal draft'));
+    expect(generateButton).toBeDefined();
+    await generateButton!.trigger('click');
+    await flushPromises();
+
+    const planButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Plan Automation'));
+    expect(planButton).toBeDefined();
+    await planButton!.trigger('click');
+    await flushPromises();
+
+    expect(service.generateGoal).toHaveBeenNthCalledWith(2, {
+      idea: 'User: Help me design an AI goal.',
+      command: 'prepare',
+      includeKeyResults: true,
+      includeTaskTemplates: true,
+      draftContext: {
+        goal: {
+          title: 'Generated AI Goal',
+          description: 'Generated from the current conversation',
+          category: 'learning',
+          importance: 'Important',
+          motivation: undefined,
+          feasibilityAnalysis: undefined,
+          tags: ['ai'],
+          suggestedStartDate: 1,
+          suggestedEndDate: 2,
+        },
+        keyResults: undefined,
+      },
+      providerId: 'provider-1',
+      model: 'gpt-4o-mini',
+    });
+    expect(wrapper.text()).toContain('Drafted a practical execution plan.');
+    expect(wrapper.text()).toContain('awaiting confirmation');
+
+    const confirmButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Confirm and Execute'));
+    expect(confirmButton).toBeDefined();
+    await confirmButton!.trigger('click');
+    await flushPromises();
+
+    expect(service.generateGoal).toHaveBeenNthCalledWith(3, {
+      idea: 'User: Help me design an AI goal.',
+      command: 'execute',
+      includeKeyResults: true,
+      includeTaskTemplates: true,
+      draftContext: {
+        goal: {
+          title: 'Generated AI Goal',
+          description: 'Generated from the current conversation',
+          category: 'learning',
+          importance: 'Important',
+          motivation: undefined,
+          feasibilityAnalysis: undefined,
+          tags: ['ai'],
+          suggestedStartDate: 1,
+          suggestedEndDate: 2,
+        },
+        keyResults: undefined,
+      },
+      approvedSummary: 'Drafted a practical execution plan.',
+      approvedPlan: {
+        goal: {
+          title: 'Generated AI Goal',
+          description: 'Generated from the current conversation',
+          category: 'learning',
+          importance: 'Important',
+          suggestedStartDate: 1,
+          suggestedEndDate: 2,
+        },
+      },
+      approvedActions: [{ tool: 'create_goal', rationale: 'Create the goal first.' }],
+      providerId: 'provider-1',
+      model: 'gpt-4o-mini',
+    });
+    expect(wrapper.text()).toContain('Execution Status');
+    expect(wrapper.text()).toContain('Execution Timeline');
+    expect(wrapper.text()).toContain('Created goal "Generated AI Goal"');
+    expect(wrapper.text()).toContain('execution recorded');
+    expect(wrapper.text()).toContain('Success: 1 executed, 0 skipped, 0 failed.');
+  });
+
+  it('shows recovery guidance when execution finishes with partial success', async () => {
+    localStorage.setItem('ai:last-conversation-id', 'conv-1');
+    localStorage.setItem(
+      'ai:conversation-workflow-map',
+      JSON.stringify({
+        'conv-1': {
+          mode: 'goal',
+          goalWorkflowStage: 'result',
+          goalDraft: createGoalDraft('Generated AI Goal', 'Generated from the current conversation'),
+          goalClarification: null,
+          goalAutomationResult: {
+            state: 'result',
+            ...createAutomationResult({
+              executedActions: [
+                {
+                  tool: 'create_goal',
+                  status: 'executed',
+                  entityId: 'goal-123',
+                  message: 'Created goal "Generated AI Goal"',
+                },
+                {
+                  tool: 'create_key_result',
+                  status: 'failed',
+                  message: 'Missing key result draft for index 0',
+                },
+              ],
+              executionSummary: {
+                status: 'partial',
+                executedCount: 1,
+                skippedCount: 0,
+                failedCount: 1,
+              },
+              recovery: {
+                canRetry: true,
+                failedActions: [
+                  {
+                    tool: 'create_key_result',
+                    status: 'failed',
+                    message: 'Missing key result draft for index 0',
+                  },
+                ],
+                suggestions: [
+                  'Confirm the goal exists and the key result drafts are complete before retrying execution.',
+                ],
+              },
+            }),
+          },
+          clarificationAnswers: [],
+          editableGoal: {
+            name: 'Generated AI Goal',
+            description: 'Generated from the current conversation',
+            category: 'learning',
+            importance: 'Important',
+            motivation: '',
+            feasibilityAnalysis: '',
+            tags: ['ai'],
+            startDate: 1,
+            targetDate: 2,
+          },
+          editableKeyResults: [],
+          noteSummary: null,
+          showGoalDraftEditor: false,
+        },
+      }),
+    );
+    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
+    service.listConversations.mockResolvedValue({
+      data: [{ id: 'conv-1', name: 'Goal session' }],
+    });
+    service.listMessages.mockResolvedValue({
+      data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Execution Status');
+    expect(wrapper.text()).toContain('Partial success: 1 executed, 0 skipped, 1 failed.');
+    expect(wrapper.text()).toContain('Recovery');
+    expect(wrapper.text()).toContain(
+      'Confirm the goal exists and the key result drafts are complete before retrying execution.',
+    );
   });
 });

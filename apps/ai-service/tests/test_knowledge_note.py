@@ -25,7 +25,7 @@ class TestKnowledgeNoteRoute:
             )
 
             response = client.post(
-                "/internal/knowledge/generate-note",
+                "/internal/workflows/knowledge-note",
                 json={
                     "topic": "Python tooling",
                     "title": "Python Tooling",

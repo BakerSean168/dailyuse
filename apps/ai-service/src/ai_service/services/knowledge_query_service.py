@@ -506,6 +506,23 @@ class KnowledgeQueryService:
             usage=completion.usage,
         )
 
+    async def select_citations(
+        self,
+        *,
+        question: str,
+        indexed_resources: list[IndexedKnowledgeResource],
+        provider_config: ProviderConfig,
+        max_citations: int = 3,
+    ) -> list[KnowledgeCitation]:
+        """Public wrapper for deterministic citation selection."""
+
+        return await self._select_citations(
+            question,
+            indexed_resources,
+            provider_config=provider_config,
+            max_citations=max_citations,
+        )
+
     async def _select_citations(
         self,
         question: str,

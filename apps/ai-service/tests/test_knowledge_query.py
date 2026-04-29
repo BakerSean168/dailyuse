@@ -25,8 +25,11 @@ class FakeChatService:
         self,
         messages: list[ChatMessage],
         config: ProviderConfig,
+        *,
+        tools=None,
+        tool_choice=None,
     ) -> ChatCompleteResponse:
-        del messages, config
+        del messages, config, tools, tool_choice
         return ChatCompleteResponse(
             content="Grounded answers should cite the relevant repository resource.",
             finish_reason="stop",
@@ -85,7 +88,7 @@ class TestKnowledgeIndexRoute:
         """A text resource is chunked into an indexed representation."""
 
         response = client.post(
-            "/internal/knowledge/index-resource",
+            "/internal/workflows/knowledge-index",
             json={
                 "resource": {
                     "identity_id": "identity-1",
@@ -141,7 +144,7 @@ class TestKnowledgeQueryRoute:
             )
 
             response = client.post(
-                "/internal/knowledge/query",
+                "/internal/workflows/knowledge",
                 json={
                     "question": "How does the AI service answer from notes?",
                     "indexed_resources": [
@@ -212,7 +215,7 @@ class TestKnowledgeQueryRoute:
             )
 
             response = client.post(
-                "/internal/knowledge/expand",
+                "/internal/workflows/knowledge-expand",
                 json={
                     "instruction": "Expand this note with citation guidance.",
                     "current_content": "# Repository Grounding",

@@ -9,7 +9,7 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import { GenerateGoalsSchema, GenerateGoalResultDTOSchema } from '@dailyuse/contracts/ai';
+import { GenerateGoalsSchema, GoalWorkflowResultDTOSchema } from '@dailyuse/contracts/ai';
 import type { AIGoalGenerationController } from '../controllers/ai-goal-generation.controller';
 
 interface PlatformMiddleware {
@@ -38,7 +38,7 @@ export function registerAIGoalGenerationRoutes(
       summary: '生成目标',
       request: { body: { content: { 'application/json': { schema: GenerateGoalsSchema } } } },
       responses: {
-        200: successResponse(GenerateGoalResultDTOSchema, '生成成功'),
+        200: successResponse(GoalWorkflowResultDTOSchema, '生成成功'),
         400: errorResponse('参数错误'),
       },
     },

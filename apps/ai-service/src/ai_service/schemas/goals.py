@@ -6,7 +6,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ai_service.schemas.analytics import AnalyticsQueryContext
 from ai_service.schemas.chat import ProviderConfig
+from ai_service.schemas.knowledge import KnowledgeCitation, KnowledgeResourceDocument
 
 GoalCategory = Literal[
     "work",
@@ -93,8 +95,29 @@ class GoalAutomationRequest(BaseModel):
     timeframe: str | None = None
     include_key_results: bool = True
     include_task_templates: bool = True
+    related_resources: list[KnowledgeResourceDocument] = Field(default_factory=list)
+    analytics_context: AnalyticsQueryContext | None = None
     provider_config: ProviderConfig
     request_id: str | None = None
+
+
+class GoalAutomationSearchNotesResult(BaseModel):
+    """Structured result returned by the search_notes read-only tool."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    query: str = Field(..., min_length=1)
+    citations: list[KnowledgeCitation] = Field(default_factory=list)
+
+
+class GoalAutomationFetchStatsResult(BaseModel):
+    """Structured result returned by the fetch_stats read-only tool."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(..., min_length=1)
+    answer: str = Field(..., min_length=1)
+    highlights: list[str] = Field(default_factory=list)
 
 
 class GoalPlanDraftInput(BaseModel):

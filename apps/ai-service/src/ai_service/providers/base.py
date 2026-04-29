@@ -9,6 +9,7 @@ from ai_service.errors import UnsupportedProviderError
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
+    ChatToolDefinition,
     ChatStreamChunk,
     ProviderConfig,
 )
@@ -22,6 +23,9 @@ class LLMProvider(ABC):
         self,
         messages: list[ChatMessage],
         config: ProviderConfig,
+        *,
+        tools: list[ChatToolDefinition] | None = None,
+        tool_choice: str | None = None,
     ) -> ChatCompleteResponse:
         """Return a full completion in one response."""
 

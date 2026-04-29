@@ -171,8 +171,11 @@ class StubChatService:
         self,
         messages: list[ChatMessage],
         config: ProviderConfig,
+        *,
+        tools=None,
+        tool_choice=None,
     ) -> ChatCompleteResponse:
-        del messages, config
+        del messages, config, tools, tool_choice
         if self._cursor >= len(self._responses):
             raise RuntimeError("StubChatService ran out of responses.")
 

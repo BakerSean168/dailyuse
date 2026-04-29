@@ -38,7 +38,6 @@ import {
   registerAICapabilitiesRoutes,
   registerAIAnalyticsQueryRoutes,
   registerAIEvaluationReportRoutes,
-  registerAIGoalAutomationRoutes,
   registerAIGoalGenerationRoutes,
   registerAIProviderRoutes,
   registerAIChatRoutes,
@@ -48,7 +47,6 @@ import {
 import { AICapabilitiesController } from './controllers/ai-capabilities.controller';
 import { AIAnalyticsQueryController } from './controllers/ai-analytics-query.controller';
 import { AIEvaluationReportController } from './controllers/ai-evaluation-report.controller';
-import { AIGoalAutomationController } from './controllers/ai-goal-automation.controller';
 import { AIGoalGenerationController } from './controllers/ai-goal-generation.controller';
 import { AIProviderConfigController } from './controllers/ai-provider-config.controller';
 import { AIChatController } from './controllers/ai-chat.controller';
@@ -176,9 +174,6 @@ export function createAIApiModule(options: {
       const capabilitiesController = new AICapabilitiesController({
         getCapabilities: handlers.getCapabilities,
       });
-      const goalAutomationController = new AIGoalAutomationController({
-        automateGoal: handlers.automateGoal,
-      });
       const providerController = new AIProviderConfigController({
         createProvider: handlers.createProvider,
         updateProvider: handlers.updateProvider,
@@ -247,11 +242,6 @@ export function createAIApiModule(options: {
         middleware,
         context.openApiRegistry,
       );
-      const goalAutomationRoutes = registerAIGoalAutomationRoutes(
-        goalAutomationController,
-        middleware,
-        context.openApiRegistry,
-      );
       const providerRoutes = registerAIProviderRoutes(
         providerController,
         middleware,
@@ -288,7 +278,6 @@ export function createAIApiModule(options: {
       router.use('/ai/analytics', analyticsQueryRoutes);
       router.use('/ai', evaluationReportRoutes);
       router.use('/ai/generate', goalRoutes);
-      router.use('/ai/generate', goalAutomationRoutes);
     },
 
     destroy() {

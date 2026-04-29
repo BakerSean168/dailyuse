@@ -66,7 +66,7 @@ export class AIServiceKnowledgeQueryAdapter implements IKnowledgeQueryPort {
         request_id?: string;
       }
     >({
-      path: '/internal/knowledge/expand',
+      path: '/internal/workflows/knowledge-expand',
       identityId: input.identityId,
       requestId: input.requestId,
       body: {
@@ -156,7 +156,7 @@ export class AIServiceKnowledgeQueryAdapter implements IKnowledgeQueryPort {
         request_id?: string;
       }
     >({
-      path: '/internal/knowledge/query',
+      path: '/internal/workflows/knowledge',
       identityId: input.identityId,
       requestId: input.requestId,
       body: {

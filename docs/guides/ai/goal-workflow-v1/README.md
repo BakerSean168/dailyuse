@@ -6,7 +6,7 @@ tags:
   - workflow
 description: 冻结 2026-04-19 当前 AI 创建 Goal v1 实现的拆分笔记索引
 created: 2026-04-19T00:00:00
-updated: 2026-04-19T00:00:00
+updated: 2026-04-29T14:40:00
 ---
 
 # AI Goal Workflow V1
@@ -14,6 +14,8 @@ updated: 2026-04-19T00:00:00
 这组笔记用于**定格 2026-04-19 当天仓库里的第一版 AI 创建 Goal 实现**。
 
 它记录的是“现在代码到底怎么跑”，不是未来规划稿，也不是理想架构设计。
+
+注意：这组 v1 笔记里提到的 `AIWorkspaceToolbox.vue`、`ai-goal-automation.service.ts` 等文件已在 2026-04-29 删除。相关描述仅作历史实现参考。
 
 ## 这组笔记覆盖什么
 
@@ -41,10 +43,10 @@ updated: 2026-04-19T00:00:00
 ## 核心入口
 
 - 聊天页：[../../../packages/app-vue/src/modules/ai/views/AIChatView.vue](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue)
-- 工作区工具箱：[../../../packages/app-vue/src/modules/ai/components/AIWorkspaceToolbox.vue](../../../packages/app-vue/src/modules/ai/components/AIWorkspaceToolbox.vue)
+- 工作区工具箱：已删除，仅保留历史说明
 - AI 客户端门面：[../../../packages/ai/src/application-client/ai-client-service.ts](../../../packages/ai/src/application-client/ai-client-service.ts)
 - goal draft 编排：[../../../packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts](../../../packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts)
-- automation 编排：[../../../packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts](../../../packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts)
+- automation 编排：已并入统一 workflow，原独立 service 已删除
 - Python planning：[../../../apps/ai-service/src/ai_service/services/goal_planning_service.py](../../../apps/ai-service/src/ai_service/services/goal_planning_service.py)
 
 ## 与现有文档的关系

@@ -7,7 +7,7 @@ tags:
   - project
 description: 基于当前仓库的 AI 创建 Goal 学习指南，聚焦 Chat Goal Tool 主线、统一 AI Workflow Orchestrator 与 function calling runtime 路线
 created: 2026-04-18T00:00:00
-updated: 2026-04-19T00:00:00
+updated: 2026-04-29T14:40:00
 ---
 
 # 基于本项目的 AI 创建 Goal 学习指南
@@ -41,9 +41,9 @@ updated: 2026-04-19T00:00:00
 - 当前工作流说明：[`../development/ai-goal-creation-current-workflow.md`](../development/ai-goal-creation-current-workflow.md)
 - 当前聊天与流式说明：[`../development/ai-chat-streaming-current-implementation.md`](../development/ai-chat-streaming-current-implementation.md)
 - 聊天页：[`../../../packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue)
-- 旧 workspace 工具箱实现：[`../../../packages/app-vue/src/modules/ai/components/AIWorkspaceToolbox.vue`](../../../packages/app-vue/src/modules/ai/components/AIWorkspaceToolbox.vue)
+- 旧 workspace 工具箱实现：已于 2026-04-29 删除，不再作为学习入口
 - AI 客户端门面：[`../../../packages/ai/src/application-client/ai-client-service.ts`](../../../packages/ai/src/application-client/ai-client-service.ts)
-- Goal automation service：[`../../../packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts`](../../../packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts)
+- 统一 goal workflow 编排：[`../../../packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts`](../../../packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts)
 - AI 模块能力判断：[`../../../packages/ai/src/infrastructure-server/ai.module.ts`](../../../packages/ai/src/infrastructure-server/ai.module.ts)
 - Python goal planning：[`../../../apps/ai-service/src/ai_service/services/goal_planning_service.py`](../../../apps/ai-service/src/ai_service/services/goal_planning_service.py)
 - Python chat service：[`../../../apps/ai-service/src/ai_service/services/chat_service.py`](../../../apps/ai-service/src/ai_service/services/chat_service.py)
@@ -264,7 +264,7 @@ updated: 2026-04-19T00:00:00
 
 在本项目中的对应入口：
 
-- `ai-goal-automation.service.ts`
+- `goal-generation-application-service.ts` 中统一后的 `plan / execute` 分支
 - `backend-automation-tool-executor.adapter.ts`
 - `chat_service.py`
 - future `GoalWorkflowHandler`
@@ -401,7 +401,7 @@ updated: 2026-04-19T00:00:00
 
 你要重点看的代码：
 
-- `ai-goal-automation.service.ts`
+- `goal-generation-application-service.ts` 中统一后的 `plan / execute` 分支
 - `backend-automation-tool-executor.adapter.ts`
 
 你要学会的东西：

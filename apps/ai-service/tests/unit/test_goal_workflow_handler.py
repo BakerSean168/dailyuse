@@ -2,10 +2,12 @@ import pytest
 from unittest.mock import AsyncMock
 from ai_service.orchestrator.handlers.goal_handler import GoalWorkflowHandler
 from ai_service.orchestrator.models import WorkflowContext
+from ai_service.schemas import GoalPlanningResponse, GoalClarificationLLMResponse
 
 @pytest.fixture
 def handler():
-    return GoalWorkflowHandler(chat_service=AsyncMock())
+    service = AsyncMock()
+    return GoalWorkflowHandler(goal_planning_service=service)
 
 def test_can_handle(handler):
     assert handler.can_handle("goal") is True
@@ -13,16 +15,24 @@ def test_can_handle(handler):
 
 @pytest.mark.asyncio
 async def test_goal_handler_clarification_flow(handler):
-    # Mock the chat service to return needsClarification=True
-    handler.chat_service.complete.return_value.content = '''{
-        "needsClarification": true,
-        "questions": [
-            {"question": "What outcome do you want from this goal?", "context": null},
-            {"question": "What timeline are you targeting?", "context": null}
-        ],
-        "rationale": "Vague"
-    }'''
-    handler.chat_service.complete.return_value.usage = {"prompt_tokens": 10}
+    handler.goal_planning_service.plan_with_clarification.return_value = GoalPlanningResponse(
+        state="clarification",
+        clarification=GoalClarificationLLMResponse(
+            needsClarification=True,
+            rationale="Vague",
+            questions=[
+                {
+                    "question": "What outcome do you want from this goal?",
+                    "context": None,
+                },
+                {
+                    "question": "What timeline are you targeting?",
+                    "context": None,
+                },
+            ],
+        ),
+        usage={"prompt_tokens": 10},
+    )
 
     context = WorkflowContext(
         request_id="req-123",
@@ -41,3 +51,4 @@ async def test_goal_handler_clarification_flow(handler):
     assert result.state == "clarification"
     assert result.clarification is not None
     assert result.clarification.needs_clarification is True
+    handler.goal_planning_service.plan_with_clarification.assert_awaited_once()

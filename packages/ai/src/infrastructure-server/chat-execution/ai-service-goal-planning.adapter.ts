@@ -7,8 +7,10 @@ import type { AIServiceInternalClientOptions } from './ai-service-internal-clien
 import { AIServiceInternalClient } from './ai-service-internal-client';
 
 interface AIServiceGoalPlanningResponse {
-  goal: GoalPlanningResult['goal'];
-  keyResults?: GoalPlanningResult['keyResults'];
+  state?: GoalPlanningResult['state'];
+  goal?: Extract<GoalPlanningResult, { state: 'draft' }>['goal'];
+  keyResults?: Extract<GoalPlanningResult, { state: 'draft' }>['keyResults'];
+  clarification?: Extract<GoalPlanningResult, { state: 'clarification' }>['clarification'];
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
@@ -31,6 +33,7 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
         category?: string;
         timeframe?: string;
         include_key_results: boolean;
+        clarification_answers?: string[];
         provider_config: {
           provider: string;
           model: string;
@@ -42,7 +45,7 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
         request_id?: string;
       }
     >({
-      path: '/internal/goals/plan',
+      path: '/internal/workflows/goal',
       identityId: input.identityId,
       requestId: input.requestId,
       body: {
@@ -50,6 +53,7 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
         category: input.category,
         timeframe: input.timeframe,
         include_key_results: input.includeKeyResults,
+        clarification_answers: input.clarificationAnswers,
         provider_config: {
           provider: input.providerConfig.provider,
           model: input.providerConfig.model,
@@ -62,16 +66,31 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
       },
     });
 
+    const usage = {
+      promptTokens: payload.usage?.prompt_tokens ?? 0,
+      completionTokens: payload.usage?.completion_tokens ?? 0,
+      totalTokens:
+        payload.usage?.total_tokens ??
+        (payload.usage?.prompt_tokens ?? 0) + (payload.usage?.completion_tokens ?? 0),
+    };
+
+    if (payload.state === 'clarification' && payload.clarification) {
+      return {
+        state: 'clarification',
+        clarification: payload.clarification,
+        usage,
+      };
+    }
+
+    if (!payload.goal) {
+      throw new Error('ai-service goal planning returned no goal draft payload');
+    }
+
     return {
+      state: 'draft',
       goal: payload.goal,
       keyResults: payload.keyResults,
-      usage: {
-        promptTokens: payload.usage?.prompt_tokens ?? 0,
-        completionTokens: payload.usage?.completion_tokens ?? 0,
-        totalTokens:
-          payload.usage?.total_tokens ??
-          (payload.usage?.prompt_tokens ?? 0) + (payload.usage?.completion_tokens ?? 0),
-      },
+      usage,
     };
   }
 }

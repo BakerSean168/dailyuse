@@ -1,14 +1,12 @@
 from typing import Any
 from ai_service.orchestrator.models import WorkflowContext
 from ai_service.orchestrator.orchestrator import WorkflowHandler
-from ai_service.services.chat_service import ChatService
 from ai_service.schemas.goals import GoalPlanningResponse
 from ai_service.services.goal_planning_service import GoalPlanningService
 
 class GoalWorkflowHandler(WorkflowHandler):
-    def __init__(self, chat_service: ChatService) -> None:
-        self.chat_service = chat_service
-        self.goal_planning_service = GoalPlanningService(chat_service)
+    def __init__(self, goal_planning_service: GoalPlanningService) -> None:
+        self.goal_planning_service = goal_planning_service
         
     def can_handle(self, workflow_type: str) -> bool:
         return workflow_type == "goal"

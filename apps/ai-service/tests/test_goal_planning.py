@@ -47,7 +47,7 @@ class TestGoalPlanningRoute:
             )
 
             response = client.post(
-                "/internal/goals/plan",
+                "/internal/workflows/goal",
                 json={
                     "idea": (
                         "Use Python engineering practices to finish the "

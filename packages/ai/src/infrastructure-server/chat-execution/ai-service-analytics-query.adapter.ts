@@ -46,7 +46,7 @@ export class AIServiceAnalyticsQueryAdapter implements IAnalyticsQueryPort {
         request_id?: string;
       }
     >({
-      path: '/internal/analytics/query',
+      path: '/internal/workflows/analytics',
       identityId: input.identityId,
       requestId: input.requestId,
       body: {

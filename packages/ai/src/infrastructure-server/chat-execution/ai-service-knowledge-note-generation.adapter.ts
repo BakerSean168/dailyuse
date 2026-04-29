@@ -39,7 +39,7 @@ export class AIServiceKnowledgeNoteGenerationAdapter implements IKnowledgeNoteGe
         request_id?: string;
       }
     >({
-      path: '/internal/knowledge/generate-note',
+      path: '/internal/workflows/knowledge-note',
       identityId: input.identityId,
       requestId: input.requestId,
       body: {

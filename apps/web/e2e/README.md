@@ -29,6 +29,7 @@ pnpm nx run web:e2e:report
 
 - `authentication/auth-login.spec.ts`
 - `authentication/auth-flow.spec.ts`
+- `ai/goal-workflow.spec.ts`
 - `dashboard/dashboard-overview.spec.ts`
 - `goal/goal-crud.spec.ts`
 - `notification/notification-center.spec.ts`

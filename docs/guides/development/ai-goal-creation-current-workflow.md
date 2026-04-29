@@ -6,7 +6,7 @@ tags:
   - goal
 description: 当前 AI 创建 Goal 工作流说明，聚焦 Chat Goal Tool 主线、保留的执行能力层与后续收敛方向
 created: 2026-04-15T00:00:00
-updated: 2026-04-19T00:00:00
+updated: 2026-04-29T22:05:00
 ---
 
 # AI 创建 Goal 当前工作流说明
@@ -23,7 +23,7 @@ updated: 2026-04-19T00:00:00
 
 - 当前用户真正能稳定走通的主流程，是 `AIChatView` 里的 `goal` workflow。
 - 这条链路当前的核心是：`chat context -> goal draft -> edit -> create goal`。
-- `goal automation` 相关 service、route、executor 仍然存在，但当前 UI 主入口并没有把它作为主产品流接出来。
+- `goal automation` 的 planning / execution 能力仍然存在，但独立 public API 与旧弹窗入口已经移除。
 - automation 最有价值的不是独立面板，而是其中的 `plan / confirm / execute` 思想，以及 tool executor、execution log、approved actions 复用机制。
 - 后续更合理的方向不是继续维护两条并行产品流，而是：**以 Chat Goal Tool 为唯一主线，吸收 automation 的 planning 和 execution 能力。**
 
@@ -51,22 +51,21 @@ Goal 相关的可用动作主要是：
 
 ## 为什么说旧 automation 不是当前主入口
 
-仓库里仍然保留了这些 automation 相关实现：
+仓库里当前保留的 automation 相关实现主要是能力层和执行器：
 
-- [packages/app-vue/src/modules/ai/components/AIWorkspaceToolbox.vue](../../../packages/app-vue/src/modules/ai/components/AIWorkspaceToolbox.vue)
-- [packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts](../../../packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts)
+- [packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts](../../../packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts)
 - [apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts](../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts)
 - [apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts](../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts)
 
 但从当前页面接线看：
 
-- `AIWorkspaceToolbox` 组件没有成为当前 AI Chat 页的主承载面
-- `AIChatView` 的工具菜单里，workspace 相关项当前是 disabled 占位，而不是当前主工作流
+- 旧 `AIWorkspaceToolbox` 与相关弹窗代码已经删除
+- `AIChatView` 的工具菜单就是当前唯一的主工作流入口
 
-所以更准确的表述不是“automation 已删除”，而是：
+所以更准确的表述不是“automation 能力消失了”，而是：
 
-- **实现层仍在**
-- **服务端链路仍在**
+- **能力层仍在**
+- **独立 public API 已删除**
 - **产品层主入口已经收敛到 chat goal workflow**
 
 ## 当前系统边界
@@ -156,6 +155,30 @@ draft 返回后，前端会：
 
 这一步是当前 chat goal workflow 最成熟、最接近真实产品的一层。
 
+此外，`AIChatView` 当前已经把 goal workflow 明确整理成前端阶段机：
+
+- `collect`
+- `clarification`
+- `draft`
+- `plan`
+- `confirm`
+- `execute`
+- `result`
+
+其中 `plan / confirm / execute / result` 主要用于聊天页内的 UI 状态表达与恢复；请求侧当前已经统一成 `command: 'draft' | 'prepare' | 'execute'`，后端统一 response contract 则进一步收敛为 `clarification | draft | confirm | result`，也就是“待确认方案”直接表达为 `confirm`，而不是再暴露独立 `plan` 响应态；执行阶段仍然是同步完成后直接返回 `result`。不过 `result` 现在已经不只是原始 `executedActions` 列表，还额外带有 `executionSummary + recovery`，聊天页会直接展示 execution timeline、partial success / failed action 状态和恢复建议。
+
+另外，`ai-service` 现在已经进入 provider-native tool calling 阶段，并完成了第一版可复用 runtime：
+
+- OpenAI-compatible provider 可以在 non-streaming completion 里返回原生 `tool_calls`
+- goal automation planning 会优先使用 `submit_goal_automation_plan` 这个 provider-native function 来提交最终 automation plan
+- 在提供 repository resources 的内部链路上，goal automation planning 已能自动执行 `search_notes`
+- 在提供 analytics context 的内部链路上，goal automation planning 已能自动执行 `fetch_stats`
+- 读工具执行后的继续规划，当前已通过结构化 `assistant/tool` message 回合回灌到 provider，不再依赖临时文本 prompt
+- 当前这套回合控制、usage 累加和 assistant/tool 消息重建已经抽成通用 provider tool runtime，goal automation 只是第一条落地链路
+- `ai-service` orchestrator 当前已落地七条 handler：`goal`、`goal-automation`、`analytics`、`knowledge`、`knowledge-note`、`knowledge-index` 和 `knowledge-expand`
+- 这些 internal workflow transport 现在全部统一收口到 `/internal/workflows/{type}`；旧的 `/internal/goals/*`、`/internal/analytics/query`、`/internal/knowledge/*` 平行 route 已删除
+- 当前还不是覆盖所有 workflow 的完整通用多轮 agent runtime；聊天页主链路暂时也还没有直接暴露这些只读工具上下文，只在统一 `generateGoal(command: 'prepare')` 的服务端链路内部使用
+
 ## 第 4 步：真实创建
 
 用户点击创建后，已经不再走 AI 模块。
@@ -176,7 +199,7 @@ draft 返回后，前端会：
 
 ## 1. plan / confirm / execute 分层
 
-[ai-goal-automation.service.ts](../../../packages/ai/src/application-server/use-cases/commands/ai-goal-automation.service.ts) 当前已经明确区分：
+[goal-generation-application-service.ts](../../../packages/ai/src/application-server/use-cases/commands/goal-generation-application-service.ts) 当前已经明确区分：
 
 - 第一次请求：生成 plan
 - 第二次请求：基于 `approvedPlan + approvedActions` 执行
@@ -213,7 +236,7 @@ automation service 当前已经具备：
 如果你只看旧说法，很容易误以为：
 
 - chat draft chain 和 automation chain 是并列主产品流
-- `AIWorkspaceToolbox` 仍然是当前主要入口
+- 已删除的 `AIWorkspaceToolbox` 仍然是当前主要入口
 - 后续应该继续分别把这两条流各自做强
 
 这已经不再符合当前产品现实。
@@ -242,7 +265,7 @@ automation service 当前已经具备：
   - confirm gate
   - side-effect action 显式化
   - action executor
-  - executedActions / timeline / retry / observability
+  - executedActions / executionSummary / recovery / observability
 
 ## 新人建议的阅读顺序
 
@@ -251,7 +274,7 @@ automation service 当前已经具备：
 1. 先看 [AIChatView.vue](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue)，理解 chat goal workflow 是怎么跑通的。
 2. 再看 `generateGoalDraftFromConversation()`、`handleCreateGoalFromDraft()`，理解 draft 与真实创建的边界。
 3. 再看 goal generation application service 和 `goal_planning_service.py`，理解结构化 draft 是怎么来的。
-4. 然后再看 `ai-goal-automation.service.ts`，把它当成“后续统一工作流的 planning / execution 资产”来读，而不是当前主入口。
+4. 然后再看 `goal-generation-application-service.ts` 里统一后的 `plan / execute` 分支，把它当成当前统一工作流的执行能力层来读。
 5. 最后看 `backend-automation-tool-executor.adapter.ts`，理解未来执行阶段可复用的能力边界。
 
 ## 一句话记忆版

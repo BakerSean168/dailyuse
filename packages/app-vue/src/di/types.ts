@@ -49,7 +49,6 @@ export interface IAIService {
   setDefaultProvider(providerId: string): Promise<void>;
   refreshProviderModels(id: string): Promise<unknown>;
   generateGoal(request: unknown): Promise<unknown>;
-  automateGoal(request: unknown): Promise<unknown>;
   createConversation(request: unknown): Promise<unknown>;
   updateConversation(id: string, request: unknown): Promise<unknown>;
   listConversations(params?: { page?: number; pageSize?: number }): Promise<unknown>;

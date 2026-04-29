@@ -35,6 +35,23 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
         timeframe?: string;
         include_key_results: boolean;
         include_task_templates: boolean;
+        related_resources?: Array<{
+          identity_id: string;
+          repository_id: string;
+          resource_id: string;
+          resource_path: string;
+          title?: string;
+          mime_type: string;
+          content: string;
+          metadata?: Record<string, unknown>;
+        }>;
+        analytics_context?: {
+          dashboard?: Record<string, unknown>;
+          task_dashboard?: Record<string, unknown>;
+          goals: Array<Record<string, unknown>>;
+          goal_search_results: Array<Record<string, unknown>>;
+          extra: Record<string, unknown>;
+        };
         provider_config: {
           provider: string;
           model: string;
@@ -46,7 +63,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
         request_id?: string;
       }
     >({
-      path: '/internal/goals/plan-actions',
+      path: '/internal/workflows/goal-automation',
       identityId: input.identityId,
       requestId: input.requestId,
       body: {
@@ -55,6 +72,25 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
         timeframe: input.timeframe,
         include_key_results: input.includeKeyResults,
         include_task_templates: input.includeTaskTemplates,
+        related_resources: input.relatedResources?.map((resource) => ({
+          identity_id: resource.identityId,
+          repository_id: resource.repositoryId,
+          resource_id: resource.resourceId,
+          resource_path: resource.resourcePath,
+          title: resource.title,
+          mime_type: resource.mimeType,
+          content: resource.content,
+          metadata: resource.metadata,
+        })),
+        analytics_context: input.analyticsContext
+          ? {
+              dashboard: input.analyticsContext.dashboard,
+              task_dashboard: input.analyticsContext.taskDashboard,
+              goals: input.analyticsContext.goals,
+              goal_search_results: input.analyticsContext.goalSearchResults,
+              extra: input.analyticsContext.extra,
+            }
+          : undefined,
         provider_config: {
           provider: input.providerConfig.provider,
           model: input.providerConfig.model,

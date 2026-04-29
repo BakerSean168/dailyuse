@@ -143,7 +143,6 @@ export default {
       emptyTitle: 'Start with a prompt',
       emptyDescription:
         'Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.',
-      workspaceToolsButton: 'Workspace Tools',
       chatUnavailable:
         'The current AI runtime mode does not support chat. Check the AI service configuration first.',
       modelPending: 'No model selected',
@@ -166,12 +165,15 @@ export default {
         toolButton: 'Tools',
         goalCollectingHint:
           'Keep adding context in chat, then generate a structured goal draft when ready.',
+        goalClarificationHint:
+          'The draft needs a few clarifications before AI can generate a reliable goal.',
         goalDraftReadyHint:
           'The goal draft is ready. Create it directly or open the editor for final adjustments.',
         noteCollectingHint:
           'Keep refining the note through chat, then create it directly in the knowledge base.',
         noteCreatedHint: 'Knowledge note created at {path}.',
         generateGoalDraft: 'Generate Goal Draft',
+        submitGoalClarification: 'Continue With Answers',
         regenerateGoalDraft: 'Regenerate',
         createGoalDirectly: 'Create Goal',
         editGoalBeforeCreate: 'Edit Before Create',
@@ -180,6 +182,8 @@ export default {
         openCreatedNote: 'Open Note',
         startAnotherNote: 'New Note Chat',
         exitTool: 'Exit Tool',
+        goalClarificationTitle: 'Goal Clarification',
+        goalClarificationAnswerPlaceholder: 'Add the missing detail here...',
         goalDraftTitle: 'Goal Draft',
         noteCreatedTitle: 'Knowledge Note Created',
         noteTopicFallback: 'Create a knowledge note from this conversation',
@@ -263,9 +267,15 @@ export default {
         summary: 'Summary',
         goal: 'Goal',
         actions: 'Actions',
+        executionStatus: 'Execution Status',
+        executionTimeline: 'Execution Timeline',
         executionResult: 'Execution Result',
+        executionSummaryText: '{status}: {executed} executed, {skipped} skipped, {failed} failed.',
         awaitingConfirmation: 'awaiting confirmation',
         executionRecorded: 'execution recorded',
+        recoveryTitle: 'Recovery',
+        recoveryRetryReady: 'You can retry execution after fixing the failed action inputs or runtime issue.',
+        recoverySuggestions: 'Recommended recovery steps:',
         emptyState:
           'AI will draft the goal, choose explicit tool calls, and wait for confirmation before creating real goal or task entities.',
         planReady: 'Automation plan ready for review',
@@ -282,6 +292,11 @@ export default {
         statusLabels: {
           executed: 'Executed',
           skipped: 'Skipped',
+          failed: 'Failed',
+        },
+        outcomeLabels: {
+          success: 'Success',
+          partial: 'Partial success',
           failed: 'Failed',
         },
       },

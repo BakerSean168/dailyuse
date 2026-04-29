@@ -1,7 +1,6 @@
 export * from './ai-capabilities.routes';
 export * from './ai-analytics-query.routes';
 export * from './ai-evaluation-report.routes';
-export * from './ai-goal-automation.routes';
 export * from './ai-goal-generation.routes';
 export * from './ai-provider.routes';
 export * from './ai-chat.routes';

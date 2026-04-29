@@ -41,7 +41,6 @@ import {
   DeleteConversation,
   AIConversationService,
   AIEvaluationReportService,
-  AIGoalAutomationService,
   AIProviderConfigService,
   AIChatApplicationService,
   AIKnowledgeIndexService,
@@ -81,8 +80,6 @@ import type {
   ExpandKnowledgeRes,
   QueryAnalyticsReq,
   QueryAnalyticsRes,
-  GenerateGoalAutomationReq,
-  GenerateGoalAutomationRes,
   GetAIEvaluationOverviewReq,
   GetAIEvaluationOverviewRes,
   QueryKnowledgeReq,
@@ -197,7 +194,6 @@ export interface AIModuleServices {
   readonly knowledgeNoteService: AIKnowledgeNoteService | null;
   readonly knowledgeQueryService: AIKnowledgeQueryService | null;
   readonly analyticsQueryService: AIAnalyticsQueryService | null;
-  readonly goalAutomationService: AIGoalAutomationService | null;
   readonly evaluationReportService: AIEvaluationReportService | null;
 }
 
@@ -262,9 +258,6 @@ export interface AIApplicationPort {
 
   // -- Goal Generation --
   generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<GenerateGoalsRes>;
-  automateGoal(
-    params: GenerateGoalAutomationReq & { identityId: string },
-  ): Promise<GenerateGoalAutomationRes>;
 
   // -- Knowledge Notes --
   createKnowledgeNote(
@@ -440,17 +433,12 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
   const goalGenerationService = new GoalGenerationApplicationService(
     providerConfigRepository,
     goalPlanningPort,
+    dependencies.goalAutomationPlanningPort,
+    dependencies.automationToolExecutorPort,
     dependencies.executionLogPort,
+    dependencies.knowledgeSourcePort,
+    dependencies.analyticsReadPort,
   );
-  const goalAutomationService =
-    dependencies.goalAutomationPlanningPort && dependencies.automationToolExecutorPort
-      ? new AIGoalAutomationService(
-          providerConfigRepository,
-          dependencies.goalAutomationPlanningPort,
-          dependencies.automationToolExecutorPort,
-          dependencies.executionLogPort,
-        )
-      : null;
 
   let knowledgeIndexService: AIKnowledgeIndexService | null = null;
 
@@ -508,7 +496,6 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
     knowledgeNoteService,
     knowledgeQueryService,
     analyticsQueryService,
-    goalAutomationService,
     evaluationReportService,
   };
 }
@@ -595,12 +582,6 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
     // -- Goal Generation --
     generateGoal: (params) => services.goalGenerationService.generateGoal(params),
-    automateGoal: (params) => {
-      if (!services.goalAutomationService) {
-        return Promise.reject(buildCapabilityUnavailableError('Goal automation', baseCapabilities));
-      }
-      return services.goalAutomationService.automateGoal(params.identityId, params);
-    },
 
     // -- Knowledge Notes --
     createKnowledgeNote: (identityId, req) => {

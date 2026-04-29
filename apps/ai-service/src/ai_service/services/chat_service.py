@@ -19,6 +19,7 @@ from ai_service.providers.factory import create_provider_registry
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
+    ChatToolDefinition,
     ChatStreamChunk,
     ProviderConfig,
 )
@@ -48,11 +49,19 @@ class ChatService:
         self,
         messages: list[ChatMessage],
         config: ProviderConfig,
+        *,
+        tools: list[ChatToolDefinition] | None = None,
+        tool_choice: str | None = None,
     ) -> ChatCompleteResponse:
         """Delegate non-streaming completion work to the selected provider."""
 
         provider = self.get_provider(config.provider)
-        return await provider.complete(messages, config)
+        return await provider.complete(
+            messages,
+            config,
+            tools=tools,
+            tool_choice=tool_choice,
+        )
 
     async def embed(
         self,

@@ -19,8 +19,6 @@ import type {
   SendMessageReq,
   GenerateGoalsReq,
   GenerateGoalsRes,
-  GenerateGoalAutomationReq,
-  GenerateGoalAutomationRes,
   AIProviderConfigClientDTO,
   CreateAIProviderConfigReq,
   UpdateAIProviderConfigReq,
@@ -115,7 +113,6 @@ export interface IAIStreamMessageApiClient {
 
 export interface IAIGoalApiClient {
   generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
-  automateGoal(request: GenerateGoalAutomationReq): Promise<GenerateGoalAutomationRes>;
 }
 
 export interface IAICapabilitiesApiClient {

@@ -7,7 +7,7 @@ tags:
   - workflow
 description: AI goal 与 agent workflow 文档统一及后续实现主计划
 created: 2026-04-29T00:00:00
-updated: 2026-04-29T00:00:00
+updated: 2026-04-29T22:05:00
 ---
 
 # AI Goal / Agent Workflow Unification
@@ -21,14 +21,29 @@ updated: 2026-04-29T00:00:00
 - 当前主产品流仍然是 `AI Chat -> goal -> draft -> edit -> create`
 - `goal automation` 的价值保留在 `plan / confirm / execute` 能力层，而不是并列产品入口
 
+## Progress Snapshot
+
+- Phase 1 已完成：文档 canonical 入口已经统一到 `docs/plan/active`
+- Phase 2 已完成第四段：请求侧已收敛为 `command: 'draft' | 'prepare' | 'execute'`，后端统一 workflow response 维持 `clarification | draft | confirm | result`
+- Phase 3 已完成第一段：`AIChatView` 已支持澄清问题展示、回答提交，以及会话级状态持久化与恢复
+- Phase 4 已完成第二段：`AIChatView` 已通过同一个 `generateGoal` 入口串起 `draft -> plan -> confirm -> execute -> result`
+- Phase 4 已完成第三段：废弃的 `AIWorkspaceToolbox` / 弹窗入口与独立 `automateGoal` public surface 已删除，goal workflow 只保留聊天页主入口
+- Phase 4 已完成第四段：`AIChatView` 已把 `plan / confirm / execute / result` 收敛成显式前端状态机，并纳入会话级恢复
+- Phase 4 已完成第五段：统一 workflow 的 `result` 响应已补齐 `executionSummary + recovery`；聊天页已显式展示 execution timeline、partial success / failed action 状态，以及可重试恢复建议
+- Phase 5 已完成第五段：`ai-service` 的 OpenAI-compatible provider 已支持 native tool call 返回，goal automation planning 已能通过 `submit_goal_automation_plan` 提交最终方案，并在内部提供 repository resources / analytics context 时自动执行 `search_notes` 与 `fetch_stats` 两类只读 tool；tool result 回合已收口为结构化 `assistant/tool` message，并已抽成可复用的 provider tool runtime，供后续 workflow handler 复用
+- Phase 5 已完成第六段：`ai-service` orchestrator 已不再停留在单一 `goal` handler；`goal` handler 已复用统一 `GoalPlanningService` wiring，`analytics` handler 已接入统一 workflow orchestrator
+- Phase 5 已完成第七段：`knowledge` handler 已接入统一 workflow orchestrator，`ai-service` 当前已真实承载 `goal / analytics / knowledge` 三条 workflow 链
+- Phase 5 已完成第八段：`goal / analytics / knowledge` 三条 handler 驱动链路已统一收口到 `/internal/workflows/{type}`；旧的 `/internal/goals/plan`、`/internal/analytics/query`、`/internal/knowledge/query` 已删除，TS adapters 已切换到统一入口
+- Phase 5 已完成第九段：剩余的 `goal-automation`、`knowledge-note`、`knowledge-index`、`knowledge-expand` 也已并入 `/internal/workflows/{type}`；`goals.py` 与 `knowledge.py` 平行 internal route 已删除，`ai-service` 内部 workflow transport 现已只保留统一入口
+
 ## Current State
 
 当前代码和文档存在 4 个需要先校准的事实：
 
-1. Python `ai-service` 已经具备 `AIWorkflowOrchestrator`、`GoalWorkflowHandler` 和 clarification 能力。
-2. TypeScript 主链路仍然按单次 `GenerateGoalsReq -> GenerateGoalsRes` draft 生成建模，没有统一 workflow state。
-3. `AIChatView` 是当前唯一真实主入口；`AIWorkspaceToolbox` 更适合作为 legacy/debug capability UI。
-4. `docs/guides/ai` 混入了学习材料、冻结记录、活跃计划和实现草稿，缺少 canonical 入口。
+1. Python `ai-service` 已经具备 `AIWorkflowOrchestrator`、`GoalWorkflowHandler`、`AnalyticsWorkflowHandler`、`KnowledgeWorkflowHandler` 和 clarification 能力；OpenAI-compatible provider 也已能在 non-streaming completion 中返回 native tool calls，并在 goal automation planning 中执行 `search_notes`、`fetch_stats` 两类只读 tool。
+2. TypeScript 主链路已经切到统一 `GenerateGoalsReq -> GoalWorkflowResultDTO` workflow contract；请求侧使用 `command: 'draft' | 'prepare' | 'execute'`，聊天页前端已显式维护 `plan / confirm / execute / result` 阶段，但后端 public response 已收敛为 `clarification | draft | confirm | result`，其中 `plan` 是前端本地阶段，`execute` 仍未单独抽成响应 state。执行结果侧当前已经补齐 `executionSummary + recovery`，用于表达 success / partial / failed 和失败动作的恢复建议。`ai-service` 内部 transport 也已统一为 `/internal/workflows/{type}`，不再保留平行 internal route。
+3. `AIChatView` 是当前唯一真实主入口；旧 `AIWorkspaceToolbox` 与悬浮弹窗代码已移除。
+4. `docs/guides/ai` 已经收敛为 canonical plan 导航页，但仍保留冻结记录和历史材料；后续判断一律以 `docs/plan/active` 与当前代码为准。
 
 ## Target Workflow
 
@@ -43,12 +58,12 @@ updated: 2026-04-29T00:00:00
 - `plan`：显式展示将要执行的 side-effect actions 和理由
 - `confirm`：用户审批已生成的 plan 与 actions
 - `execute`：执行 approved actions，不重新规划
-- `result`：展示执行结果、部分成功、失败原因与后续恢复信息
+- `result`：展示 execution timeline、部分成功、失败原因与后续恢复信息
 
 ## Architecture Decisions
 
 - `AIChatView` 保持唯一产品入口，不再发展两套并列 goal 产品流。
-- `AIGoalAutomationService` 中已有的 `approvedPlan + approvedActions`、确认闸门和 executor 边界，需要被吸收到统一 workflow，而不是继续维持孤立 workflow。
+- 旧 `goal automation` public API 中的 `approvedPlan + approvedActions`、确认闸门和 executor 边界，已经被吸收到统一 workflow，不再保留独立 transport 入口。
 - `apps/ai-service` 中的 orchestrator / handler 作为后端统一工作流内核继续演进。
 - side-effect tools 只能被模型提议，不能自动落库；执行必须经过 confirm。
 - Goal 是第一批 workflow handler，不作为永久顶层命名；后续可扩展到 knowledge、query、analytics。
@@ -97,10 +112,11 @@ updated: 2026-04-29T00:00:00
   - `timeframe?: string`
   - `providerId?: AiProviderConfigId`
   - `model?: string`
+  - `command?: 'draft' | 'prepare' | 'execute'`
   - `clarificationAnswers?: string[]`
   - continuation 所需 workflow context
 - `GoalWorkflowResponse`
-  - `state: 'clarification' | 'draft' | 'plan' | 'confirm' | 'execute' | 'result'`
+  - `state: 'clarification' | 'draft' | 'confirm' | 'result'`
   - 按 state 暴露对应 payload，而不是始终只返回 draft
 
 ## Test Plan

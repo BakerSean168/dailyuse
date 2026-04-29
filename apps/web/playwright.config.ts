@@ -11,6 +11,7 @@ export default defineConfig({
   testDir: './e2e',
   // 默认入口进一步收口成 AI 可依赖的核心业务回归集合。
   testMatch: [
+    '**/ai/goal-workflow.spec.ts',
     '**/authentication/auth-flow.spec.ts',
     '**/authentication/auth-login.spec.ts',
     '**/dashboard/dashboard-overview.spec.ts',

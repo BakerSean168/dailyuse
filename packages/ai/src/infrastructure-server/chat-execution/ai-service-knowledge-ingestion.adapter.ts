@@ -70,7 +70,7 @@ export class AIServiceKnowledgeIngestionAdapter implements IKnowledgeIngestionPo
         overlap_chars?: number;
       }
     >({
-      path: '/internal/knowledge/index-resource',
+      path: '/internal/workflows/knowledge-index',
       identityId: input.resource.identityId,
       body: {
         resource: {

@@ -24,7 +24,6 @@ import type {
   CreateAIProviderConfigReq,
   CreateConversationReq,
   CreateKnowledgeNoteReq,
-  GenerateGoalAutomationReq,
   GenerateGoalsReq,
   GetAIEvaluationOverviewReq,
   ExpandKnowledgeReq,
@@ -65,7 +64,6 @@ export class AIClientService {
     this.setDefaultProvider = this.setDefaultProvider.bind(this);
     this.refreshProviderModels = this.refreshProviderModels.bind(this);
     this.generateGoal = this.generateGoal.bind(this);
-    this.automateGoal = this.automateGoal.bind(this);
     this.createConversation = this.createConversation.bind(this);
     this.updateConversation = this.updateConversation.bind(this);
     this.listConversations = this.listConversations.bind(this);
@@ -124,10 +122,6 @@ export class AIClientService {
 
   generateGoal(request: GenerateGoalsReq) {
     return this.goalApi.generateGoal(request);
-  }
-
-  automateGoal(request: GenerateGoalAutomationReq) {
-    return this.goalApi.automateGoal(request);
   }
 
   createConversation(request: CreateConversationReq) {

@@ -355,3 +355,196 @@ class TestChatService:
                 service.get_provider("unknown")
         finally:
             asyncio.run(http_client.aclose())
+
+    @pytest.mark.asyncio
+    async def test_complete_passes_native_tool_call_options_to_provider(self):
+        """Tool-capable calls should be forwarded to the selected provider."""
+
+        from ai_service.schemas import (
+            ChatCompleteResponse,
+            ChatMessage,
+            ChatToolDefinition,
+            ChatToolFunction,
+            ProviderConfig,
+        )
+        from ai_service.services.chat_service import ChatService
+
+        provider = AsyncMock()
+        provider.complete.return_value = ChatCompleteResponse(
+            content="",
+            finish_reason="tool_calls",
+            usage=None,
+        )
+        service = ChatService(providers={"openai": provider})
+
+        tool = ChatToolDefinition(
+            function=ChatToolFunction(
+                name="submit_goal_automation_plan",
+                description="Submit the final plan.",
+                parameters={"type": "object", "properties": {}},
+            )
+        )
+
+        await service.complete(
+            messages=[ChatMessage(role="user", content="Plan this goal.")],
+            config=ProviderConfig(
+                provider="openai",
+                model="gpt-4o-mini",
+                api_key="secret",
+            ),
+            tools=[tool],
+            tool_choice="required",
+        )
+
+        provider.complete.assert_awaited_once_with(
+            [ChatMessage(role="user", content="Plan this goal.")],
+            ProviderConfig(
+                provider="openai",
+                model="gpt-4o-mini",
+                api_key="secret",
+            ),
+            tools=[tool],
+            tool_choice="required",
+        )
+
+
+class TestOpenAIProvider:
+    """Tests for the OpenAI-compatible provider adapter."""
+
+    @pytest.mark.asyncio
+    async def test_complete_parses_native_tool_calls(self):
+        """Provider responses with tool_calls should be exposed structurally."""
+
+        from ai_service.providers import OpenAIProvider
+        from ai_service.schemas import (
+            ChatMessage,
+            ChatToolDefinition,
+            ChatToolFunction,
+            ProviderConfig,
+        )
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            payload = json.loads(request.content.decode("utf-8"))
+            assert payload["tool_choice"] == "required"
+            assert payload["tools"][0]["function"]["name"] == "submit_goal_automation_plan"
+            return httpx.Response(
+                200,
+                json={
+                    "choices": [
+                        {
+                            "message": {
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call_1",
+                                        "type": "function",
+                                        "function": {
+                                            "name": "submit_goal_automation_plan",
+                                            "arguments": "{\"summary\":\"ok\"}",
+                                        },
+                                    }
+                                ],
+                            },
+                            "finish_reason": "tool_calls",
+                        }
+                    ],
+                    "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+                },
+            )
+
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as http_client:
+            provider = OpenAIProvider(http_client=http_client)
+            result = await provider.complete(
+                [ChatMessage(role="user", content="Plan this goal.")],
+                ProviderConfig(
+                    provider="openai",
+                    model="gpt-4o-mini",
+                    api_key="secret",
+                ),
+                tools=[
+                    ChatToolDefinition(
+                        function=ChatToolFunction(
+                            name="submit_goal_automation_plan",
+                            description="Submit the final plan.",
+                            parameters={"type": "object", "properties": {}},
+                        )
+                    )
+                ],
+                tool_choice="required",
+            )
+
+        assert result.finish_reason == "tool_calls"
+        assert result.tool_calls is not None
+        assert result.tool_calls[0].function.name == "submit_goal_automation_plan"
+        assert result.tool_calls[0].function.arguments == "{\"summary\":\"ok\"}"
+
+    @pytest.mark.asyncio
+    async def test_complete_serializes_structured_tool_loop_messages(self):
+        """Assistant tool calls and tool results should be serialized for OpenAI."""
+
+        from ai_service.providers import OpenAIProvider
+        from ai_service.schemas import (
+            ChatMessage,
+            ChatToolCall,
+            ChatToolCallFunction,
+            ProviderConfig,
+        )
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            payload = json.loads(request.content.decode("utf-8"))
+            assert payload["messages"][0] == {"role": "system", "content": "You are planning."}
+            assert payload["messages"][1]["role"] == "assistant"
+            assert payload["messages"][1]["tool_calls"][0]["id"] == "call_1"
+            assert payload["messages"][1]["tool_calls"][0]["function"]["name"] == "search_notes"
+            assert payload["messages"][2] == {
+                "role": "tool",
+                "content": "{\"query\": \"approval workflow\"}",
+                "tool_call_id": "call_1",
+            }
+            return httpx.Response(
+                200,
+                json={
+                    "choices": [
+                        {
+                            "message": {"content": "ok"},
+                            "finish_reason": "stop",
+                        }
+                    ],
+                    "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+                },
+            )
+
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as http_client:
+            provider = OpenAIProvider(http_client=http_client)
+            result = await provider.complete(
+                [
+                    ChatMessage(role="system", content="You are planning."),
+                    ChatMessage(
+                        role="assistant",
+                        content="",
+                        tool_calls=[
+                            ChatToolCall(
+                                id="call_1",
+                                function=ChatToolCallFunction(
+                                    name="search_notes",
+                                    arguments='{"query":"approval workflow"}',
+                                ),
+                            )
+                        ],
+                    ),
+                    ChatMessage(
+                        role="tool",
+                        content='{"query": "approval workflow"}',
+                        tool_call_id="call_1",
+                    ),
+                ],
+                ProviderConfig(
+                    provider="openai",
+                    model="gpt-4o-mini",
+                    api_key="secret",
+                ),
+            )
+
+        assert result.content == "ok"

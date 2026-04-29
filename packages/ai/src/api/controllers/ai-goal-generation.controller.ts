@@ -38,6 +38,13 @@ export class AIGoalGenerationController {
           category: parsed.data.category,
           timeframe: parsed.data.timeframe,
           includeKeyResults: parsed.data.includeKeyResults,
+          includeTaskTemplates: parsed.data.includeTaskTemplates,
+          command: parsed.data.command,
+          clarificationAnswers: parsed.data.clarificationAnswers,
+          draftContext: parsed.data.draftContext,
+          approvedSummary: parsed.data.approvedSummary,
+          approvedPlan: parsed.data.approvedPlan,
+          approvedActions: parsed.data.approvedActions,
         }),
       );
     } catch (error) {

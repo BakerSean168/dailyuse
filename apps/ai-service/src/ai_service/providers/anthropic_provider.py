@@ -8,9 +8,11 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ai_service.providers.http_provider import BaseHTTPProvider
+from ai_service.errors import UnsupportedProviderError
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
+    ChatToolDefinition,
     ChatStreamChunk,
     ProviderConfig,
 )
@@ -28,8 +30,18 @@ class AnthropicProvider(BaseHTTPProvider):
         self,
         messages: list[ChatMessage],
         config: ProviderConfig,
+        *,
+        tools: list[ChatToolDefinition] | None = None,
+        tool_choice: str | None = None,
     ) -> ChatCompleteResponse:
         """Call the non-streaming Messages API."""
+
+        if tools or tool_choice:
+            raise UnsupportedProviderError(
+                detail=(
+                    "The selected provider does not implement native tool calling."
+                )
+            )
 
         response = await self._http_client.post(
             self._build_url(config),

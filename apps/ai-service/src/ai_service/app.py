@@ -19,7 +19,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ai_service.api.error_handlers import register_exception_handlers
-from ai_service.api.routes import analytics, chat, goals, health, knowledge
+from ai_service.api.routes import chat, health, workflows
 from ai_service.config import get_settings
 from ai_service.infrastructure.http_client import create_shared_async_client
 from ai_service.middleware import RequestContextMiddleware, ServiceAuthMiddleware
@@ -33,7 +33,21 @@ from ai_service.services import (
     create_chat_service,
 )
 from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
+from ai_service.orchestrator.handlers.analytics_handler import AnalyticsWorkflowHandler
+from ai_service.orchestrator.handlers.goal_automation_handler import (
+    GoalAutomationWorkflowHandler,
+)
 from ai_service.orchestrator.handlers.goal_handler import GoalWorkflowHandler
+from ai_service.orchestrator.handlers.knowledge_expand_handler import (
+    KnowledgeExpandWorkflowHandler,
+)
+from ai_service.orchestrator.handlers.knowledge_index_handler import (
+    KnowledgeIndexWorkflowHandler,
+)
+from ai_service.orchestrator.handlers.knowledge_handler import KnowledgeWorkflowHandler
+from ai_service.orchestrator.handlers.knowledge_note_handler import (
+    KnowledgeNoteWorkflowHandler,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,22 +66,43 @@ async def lifespan(app: FastAPI):
     # place to define timeouts and default headers.
     http_client = create_shared_async_client(settings)
     chat_service = create_chat_service(http_client=http_client)
-    goal_planning_service = GoalPlanningService(chat_service)
     knowledge_note_service = KnowledgeNoteService(chat_service)
     knowledge_indexing_service = KnowledgeIndexingService(chat_service)
     knowledge_query_service = KnowledgeQueryService(
         chat_service,
         knowledge_indexing_service,
     )
+    analytics_query_service = AnalyticsQueryService(chat_service)
+    goal_planning_service = GoalPlanningService(
+        chat_service,
+        knowledge_indexing_service,
+        knowledge_query_service,
+        analytics_query_service,
+    )
     knowledge_expansion_service = KnowledgeExpansionService(
         chat_service,
         knowledge_indexing_service,
     )
-    analytics_query_service = AnalyticsQueryService(chat_service)
 
     orchestrator = AIWorkflowOrchestrator()
-    goal_handler = GoalWorkflowHandler(chat_service)
+    goal_handler = GoalWorkflowHandler(goal_planning_service)
+    goal_automation_handler = GoalAutomationWorkflowHandler(goal_planning_service)
+    analytics_handler = AnalyticsWorkflowHandler(analytics_query_service)
+    knowledge_handler = KnowledgeWorkflowHandler(knowledge_query_service)
+    knowledge_note_handler = KnowledgeNoteWorkflowHandler(knowledge_note_service)
+    knowledge_index_handler = KnowledgeIndexWorkflowHandler(
+        knowledge_indexing_service
+    )
+    knowledge_expand_handler = KnowledgeExpandWorkflowHandler(
+        knowledge_expansion_service
+    )
     orchestrator.register_handler(goal_handler)
+    orchestrator.register_handler(goal_automation_handler)
+    orchestrator.register_handler(analytics_handler)
+    orchestrator.register_handler(knowledge_handler)
+    orchestrator.register_handler(knowledge_note_handler)
+    orchestrator.register_handler(knowledge_index_handler)
+    orchestrator.register_handler(knowledge_expand_handler)
 
     app.state.settings = settings
     app.state.http_client = http_client
@@ -127,9 +162,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(chat.router)
-    app.include_router(goals.router)
-    app.include_router(knowledge.router)
-    app.include_router(analytics.router)
+    app.include_router(workflows.router)
     register_exception_handlers(app)
 
     logger.info(
