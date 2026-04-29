@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, LocalePreferences, UserSettingPreferences } from '@dailyuse/contracts/setting';
 import { createTestPinia } from '@dailyuse/test-utils';
 import { useUserSettingStore } from './userSettingStore';
 
@@ -10,8 +10,8 @@ function createSetting(
     id: 'setting-1' as UserSettingClientDTO['id'],
     preferences: {
       appearance: { theme: 'dark' },
-      locale: { language: 'zh-CN' },
-    },
+      locale: { language: 'zh-CN' } as LocalePreferences,
+    } as UserSettingPreferences,
     ...overrides,
   } as UserSettingClientDTO;
 }
@@ -28,8 +28,8 @@ describe('useUserSettingStore', () => {
       id: 'setting-defaults' as UserSettingClientDTO['id'],
       preferences: {
         appearance: { theme: 'auto' },
-        locale: { language: 'en-US' },
-      },
+        locale: { language: 'en-US' } as LocalePreferences,
+      } as UserSettingPreferences,
     });
 
     store.setUserSetting(setting);

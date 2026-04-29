@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it } from 'vitest';
 import TaskInstanceCard from './TaskInstanceCard.vue';
-import type { TaskInstanceViewModel } from '../../types';
+import type { TaskInstanceViewModel } from '../types';
 
 const i18n = createI18n({
   legacy: false,
