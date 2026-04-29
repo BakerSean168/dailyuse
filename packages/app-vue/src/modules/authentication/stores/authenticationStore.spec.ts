@@ -44,7 +44,7 @@ describe('useAuthenticationStore', () => {
         identity: createIdentity(),
         session: createSession(),
       },
-    } as AuthBootstrapSnapshot;
+    } as unknown as AuthBootstrapSnapshot;
 
     store.hydrateDesktopBootstrapSnapshot(snapshot);
 
