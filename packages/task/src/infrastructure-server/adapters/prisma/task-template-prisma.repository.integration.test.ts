@@ -1,10 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
-import {
-  TaskTemplate,
-  RecurrenceRule,
-  TaskTimeConfig,
-} from '@/domain-server/aggregates/task-template';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
+import { RecurrenceRule, TaskTimeConfig } from '@/domain-server/value-objects';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
 import {
   cleanAll,
@@ -39,7 +37,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
       title: 'Complete Project',
       description: 'Finish the quarterly project',
       folderId: null,
-      importance: 'High',
+      importance: ImportanceLevel.Important,
       dueDate: tomorrow,
     });
 
@@ -61,22 +59,12 @@ describe('TaskTemplatePrismaRepository integration', () => {
     const prisma = await getPrisma();
     const repository = new TaskTemplatePrismaRepository(prisma);
 
-    const now = new Date();
     const startDate = new Date();
     startDate.setHours(9, 0, 0, 0);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate,
-      activatedAt: now.getTime(),
-    };
+    const timeConfig = TaskTimeConfig.createTimePoint(startDate, 9 * 60);
 
-    const recurrenceRule: RecurrenceRule = {
-      frequency: 'Weekly',
-      interval: 1,
-      daysOfWeek: [0],
-      occurrences: null,
-      endDate: null,
-    };
+    const recurrenceRule = RecurrenceRule.createWeekly([0], 1);
 
     // Create a recurring task template
     const template = TaskTemplate.createRecurringTask({
@@ -84,7 +72,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
       title: 'Weekly Review',
       description: 'Review the week',
       folderId: null,
-      importance: 'Medium',
+      importance: ImportanceLevel.Moderate,
       timeConfig,
       recurrenceRule,
     });
@@ -112,7 +100,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     const template1 = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Task 1',
-      importance: 'High',
+      importance: ImportanceLevel.Important,
       dueDate: tomorrow,
     });
 
@@ -122,7 +110,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     const template2 = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Task 2',
-      importance: 'Low',
+      importance: ImportanceLevel.Minor,
       dueDate: nextDay,
     });
 
@@ -150,14 +138,14 @@ describe('TaskTemplatePrismaRepository integration', () => {
       identityId,
       title: 'Important Task',
       description: 'A high-importance task',
-      importance: 'High',
+      importance: ImportanceLevel.Important,
       dueDate: tomorrow,
     });
 
     await repository.save(template);
     const saved = await repository.findById(template.id);
 
-    expect(saved?.importance).toBe('High');
+    expect(saved?.importance).toBe(ImportanceLevel.Important);
     expect(saved?.title).toBe('Important Task');
   });
 
@@ -174,16 +162,14 @@ describe('TaskTemplatePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Original Title',
-      importance: 'Low',
+      importance: ImportanceLevel.Minor,
       dueDate: tomorrow,
     });
 
     await repository.save(template);
 
     // Update the template
-    template.updateMetadata({
-      title: 'Updated Title',
-    });
+    template.updateTitle('Updated Title');
 
     await repository.save(template);
 
@@ -205,7 +191,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'To Delete',
-      importance: 'Medium',
+      importance: ImportanceLevel.Moderate,
       dueDate: tomorrow,
     });
 
@@ -233,7 +219,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'One-time Task',
-      importance: 'Medium',
+      importance: ImportanceLevel.Moderate,
       dueDate: tomorrow,
     });
 
@@ -253,26 +239,15 @@ describe('TaskTemplatePrismaRepository integration', () => {
 
     const startDate = new Date();
     startDate.setHours(9, 0, 0, 0);
-    const now = new Date();
+    const timeConfig = TaskTimeConfig.createTimePoint(startDate, 9 * 60);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate,
-      activatedAt: now.getTime(),
-    };
-
-    const recurrenceRule: RecurrenceRule = {
-      frequency: 'Daily',
-      interval: 2,
-      daysOfWeek: null,
-      occurrences: null,
-      endDate: null,
-    };
+    const recurrenceRule = RecurrenceRule.createDaily(2);
 
     const original = TaskTemplate.createRecurringTask({
       identityId,
       title: 'Complex Recurring Task',
       description: 'A detailed recurring task',
-      importance: 'Medium',
+      importance: ImportanceLevel.Moderate,
       timeConfig,
       recurrenceRule,
     });
