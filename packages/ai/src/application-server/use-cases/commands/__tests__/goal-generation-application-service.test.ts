@@ -634,4 +634,47 @@ describe('GoalGenerationApplicationService', () => {
       'Confirm the goal exists and the key result drafts are complete before retrying execution.',
     );
   });
+
+  it('reuses a caller-provided request id for downstream goal planning calls', async () => {
+    const executionPort = new StubGoalPlanningPort();
+    const executionLogPort = new StubExecutionLogPort();
+    const service = new GoalGenerationApplicationService(
+      new StubProviderConfigRepository([
+        {
+          id: 'provider-1',
+          identityId: 'identity-1',
+          providerType: AIProviderType.OpenAICompatible,
+          baseUrl: 'https://api.openai.com/v1',
+          apiKey: 'plain-secret',
+          defaultModel: 'gpt-4o-mini',
+          isActive: true,
+          isDefault: true,
+          name: 'Main provider',
+        },
+      ]) as unknown as IAIProviderConfigRepository,
+      executionPort,
+      undefined,
+      undefined,
+      executionLogPort,
+    );
+
+    await service.generateGoal({
+      identityId: 'identity-1',
+      requestId: 'trace-goal-application-1',
+      idea: 'Use Python engineering best practices to improve the internal ai-service module.',
+      timeframe: 'three weeks',
+      includeKeyResults: true,
+    });
+
+    expect(executionPort.plan).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestId: 'trace-goal-application-1',
+      }),
+    );
+    expect(executionLogPort.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestId: 'trace-goal-application-1',
+      }),
+    );
+  });
 });

@@ -1,0 +1,11 @@
+{
+  "minimum_pass_rate": 1.0,
+  "required_case_ids": [
+    "goal-workflow-clarification-search-notes-partial",
+    "goal-workflow-direct-fetch-stats-success",
+    "goal-workflow-direct-submit-success",
+    "goal-workflow-invalid-prepare-payload"
+  ],
+  "max_allowed_score_drop": 0.0,
+  "require_no_new_failures": true
+}

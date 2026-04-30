@@ -33,6 +33,42 @@ const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
   'create_task_template',
 ]);
 
+function previewText(value: string | null | undefined, maxLength = 240): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
+
+function summarizeProviderConfig(providerConfig: {
+  provider: string;
+  model: string;
+  baseUrl?: string;
+  temperature?: number;
+  maxTokens?: number;
+}) {
+  return {
+    provider: providerConfig.provider,
+    model: providerConfig.model,
+    baseUrl: providerConfig.baseUrl,
+    temperature: providerConfig.temperature,
+    maxTokens: providerConfig.maxTokens,
+  };
+}
+
+function summarizeActions(actions: GoalAutomationAction[] | undefined) {
+  return (actions ?? []).map((action) => ({
+    tool: action.tool,
+    index: action.index ?? null,
+    rationale: previewText(action.rationale),
+  }));
+}
+
 /**
  * GoalGenerationApplicationService
  *
@@ -51,9 +87,11 @@ export class GoalGenerationApplicationService {
     private readonly analyticsReadPort?: IAnalyticsReadPort,
   ) {}
 
-  async generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<GenerateGoalsRes> {
+  async generateGoal(
+    params: GenerateGoalsReq & { identityId: string; requestId?: string },
+  ): Promise<GenerateGoalsRes> {
     const startedAt = Date.now();
-    const requestId = createAIRequestId();
+    const requestId = params.requestId ?? createAIRequestId();
     let providerMetadata: {
       providerId?: string;
       providerName?: string;
@@ -61,6 +99,20 @@ export class GoalGenerationApplicationService {
     } = {};
 
     try {
+      logger.info('Goal flow request started', {
+        identityId: params.identityId,
+        requestId,
+        command: params.command ?? 'draft',
+        ideaPreview: previewText(params.idea),
+        category: params.category,
+        timeframe: params.timeframe,
+        includeKeyResults: params.includeKeyResults ?? true,
+        includeTaskTemplates: params.includeTaskTemplates ?? true,
+        clarificationAnswersCount: params.clarificationAnswers?.length ?? 0,
+        approvedActionsCount: params.approvedActions?.length ?? 0,
+        hasDraftContext: Boolean(params.draftContext),
+        hasApprovedPlan: Boolean(params.approvedPlan),
+      });
       const provider = await resolveActiveProviderConfig(
         this.providerConfigRepository,
         params.identityId,
@@ -75,6 +127,13 @@ export class GoalGenerationApplicationService {
         providerName: provider.name,
         model: executionProviderConfig.model,
       };
+      logger.info('Goal flow provider resolved', {
+        identityId: params.identityId,
+        requestId,
+        providerId: provider.id,
+        providerName: provider.name,
+        providerConfig: summarizeProviderConfig(executionProviderConfig),
+      });
 
       const result =
         params.command === 'prepare' || params.command === 'execute'
@@ -96,6 +155,33 @@ export class GoalGenerationApplicationService {
               requestId,
               startedAt,
             });
+
+      logger.info('Goal flow request completed', {
+        identityId: params.identityId,
+        requestId,
+        state: result.state,
+        processingTimeMs: result.processingTimeMs,
+        providerId: providerMetadata.providerId,
+        model: providerMetadata.model,
+        summary: 'summary' in result ? previewText(result.summary) : undefined,
+        goalTitle:
+          result.state === 'draft'
+            ? result.goal.title
+            : result.state === 'confirm' || result.state === 'result'
+              ? result.plan.goal.title
+              : undefined,
+        keyResultCount:
+          result.state === 'draft'
+            ? result.keyResults?.length ?? 0
+            : result.state === 'confirm' || result.state === 'result'
+              ? result.plan.keyResults?.length ?? 0
+              : undefined,
+        actionCount:
+          result.state === 'confirm' || result.state === 'result'
+            ? result.actions.length
+            : undefined,
+        executionSummary: result.state === 'result' ? result.executionSummary : undefined,
+      });
 
       await this.recordExecution({
         identityId: params.identityId,
@@ -201,6 +287,16 @@ export class GoalGenerationApplicationService {
     requestId: string;
     startedAt: number;
   }): Promise<GenerateGoalsRes> {
+    logger.info('Goal draft workflow started', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      command: input.params.command ?? 'draft',
+      ideaPreview: previewText(input.params.idea),
+      category: input.params.category,
+      timeframe: input.params.timeframe,
+      includeKeyResults: input.params.includeKeyResults ?? true,
+      clarificationAnswersCount: input.params.clarificationAnswers?.length ?? 0,
+    });
     const planning = await this.goalPlanningPort.plan({
       identityId: input.params.identityId,
       providerConfig: input.providerConfig,
@@ -210,6 +306,17 @@ export class GoalGenerationApplicationService {
       includeKeyResults: input.params.includeKeyResults ?? true,
       clarificationAnswers: input.params.clarificationAnswers,
       requestId: input.requestId,
+    });
+
+    logger.info('Goal draft workflow received planning response', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      state: planning.state,
+      clarificationQuestionCount:
+        planning.state === 'clarification' ? planning.clarification.questions.length : 0,
+      goalTitle: planning.state === 'draft' ? planning.goal.title : undefined,
+      keyResultCount: planning.state === 'draft' ? planning.keyResults?.length ?? 0 : undefined,
+      usage: planning.usage,
     });
 
     return planning.state === 'clarification'
@@ -245,6 +352,19 @@ export class GoalGenerationApplicationService {
     requestId: string;
     startedAt: number;
   }): Promise<GenerateGoalsRes> {
+    logger.info('Goal automation workflow started', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      command: input.params.command,
+      ideaPreview: previewText(input.params.idea),
+      automationIdeaPreview: previewText(this.buildAutomationIdea(input.params)),
+      category: input.params.category ?? input.params.draftContext?.goal.category,
+      timeframe: input.params.timeframe,
+      includeKeyResults: input.params.includeKeyResults ?? true,
+      includeTaskTemplates: input.params.includeTaskTemplates ?? true,
+      approvedActionsCount: input.params.approvedActions?.length ?? 0,
+      hasApprovedPlan: Boolean(input.params.approvedPlan),
+    });
     if (!this.goalAutomationPlanningPort || !this.automationToolExecutorPort) {
       throw new Error(
         'Goal automation is unavailable in the current AI runtime. Configure ai-service execution first.',
@@ -255,6 +375,13 @@ export class GoalGenerationApplicationService {
       if (!input.params.approvedPlan || !input.params.approvedActions?.length) {
         throw new Error('Approved automation plan and actions are required for execution.');
       }
+
+      logger.info('Goal automation execute phase started', {
+        identityId: input.params.identityId,
+        requestId: input.requestId,
+        approvedSummary: previewText(input.params.approvedSummary),
+        actions: summarizeActions(input.params.approvedActions),
+      });
 
       const executedActions = await this.automationToolExecutorPort.executeGoalAutomation({
         identityId: input.params.identityId,
@@ -269,6 +396,13 @@ export class GoalGenerationApplicationService {
           taskTemplates: input.params.approvedPlan.taskTemplates,
         },
         actions: input.params.approvedActions,
+      });
+
+      logger.info('Goal automation execute phase completed', {
+        identityId: input.params.identityId,
+        requestId: input.requestId,
+        executedActions,
+        executionSummary: this.buildExecutionSummary(executedActions),
       });
 
       return {
@@ -296,25 +430,48 @@ export class GoalGenerationApplicationService {
       };
     }
 
+    const automationIdea = this.buildAutomationIdea(input.params);
+    const relatedResources = await this.loadRelatedKnowledgeResources(
+      input.params.identityId,
+      automationIdea,
+    );
+    const analyticsContext = await this.loadAnalyticsContext(
+      input.params.identityId,
+      automationIdea,
+    );
+    logger.info('Goal automation planning dependencies loaded', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      relatedResourceCount: relatedResources?.length ?? 0,
+      hasAnalyticsContext: Boolean(analyticsContext),
+      analyticsGoalCount: analyticsContext?.goals?.length ?? 0,
+    });
+
     const plan = await this.goalAutomationPlanningPort.plan({
       identityId: input.params.identityId,
       providerConfig: input.providerConfig,
-      idea: this.buildAutomationIdea(input.params),
+      idea: automationIdea,
       category: input.params.category ?? input.params.draftContext?.goal.category,
       timeframe: input.params.timeframe,
       includeKeyResults: input.params.includeKeyResults ?? true,
       includeTaskTemplates: input.params.includeTaskTemplates ?? true,
-      relatedResources: await this.loadRelatedKnowledgeResources(
-        input.params.identityId,
-        this.buildAutomationIdea(input.params),
-      ),
-      analyticsContext: await this.loadAnalyticsContext(
-        input.params.identityId,
-        this.buildAutomationIdea(input.params),
-      ),
+      relatedResources,
+      analyticsContext,
       requestId: input.requestId,
     });
     const requiresConfirmation = plan.actions.some((action) => SIDE_EFFECT_TOOLS.has(action.tool));
+
+    logger.info('Goal automation plan received', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      summary: previewText(plan.summary),
+      goalTitle: plan.goal.title,
+      keyResultCount: plan.keyResults?.length ?? 0,
+      taskTemplateCount: plan.taskTemplates?.length ?? 0,
+      actions: summarizeActions(plan.actions),
+      requiresConfirmation,
+      usage: plan.usage,
+    });
 
     if (requiresConfirmation) {
       return {
@@ -335,10 +492,15 @@ export class GoalGenerationApplicationService {
       };
     }
 
+    logger.info('Goal automation auto-execute started', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      actions: summarizeActions(plan.actions),
+    });
     const executedActions = await this.automationToolExecutorPort.executeGoalAutomation({
       identityId: input.params.identityId,
       request: {
-        idea: this.buildAutomationIdea(input.params),
+        idea: automationIdea,
         category: input.params.category,
         timeframe: input.params.timeframe,
       },
@@ -348,6 +510,12 @@ export class GoalGenerationApplicationService {
         taskTemplates: plan.taskTemplates,
       },
       actions: plan.actions,
+    });
+    logger.info('Goal automation auto-execute completed', {
+      identityId: input.params.identityId,
+      requestId: input.requestId,
+      executedActions,
+      executionSummary: this.buildExecutionSummary(executedActions),
     });
 
     return {
@@ -421,11 +589,21 @@ export class GoalGenerationApplicationService {
     query: string,
   ) {
     if (!this.knowledgeSourcePort) {
+      logger.info('Goal automation knowledge source unavailable', {
+        identityId,
+        queryPreview: previewText(query),
+      });
       return undefined;
     }
 
     try {
       const resources = await this.knowledgeSourcePort.listRelevantResources(identityId, query, 6);
+      logger.info('Goal automation knowledge resources loaded', {
+        identityId,
+        queryPreview: previewText(query),
+        resourceCount: resources.length,
+        resourcePaths: resources.map((resource) => resource.resourcePath),
+      });
       return resources.length ? resources : undefined;
     } catch (error) {
       logger.warn('Failed to load related knowledge resources for goal automation planning', {
@@ -438,11 +616,24 @@ export class GoalGenerationApplicationService {
 
   private async loadAnalyticsContext(identityId: string, question: string) {
     if (!this.analyticsReadPort) {
+      logger.info('Goal automation analytics context unavailable', {
+        identityId,
+        questionPreview: previewText(question),
+      });
       return undefined;
     }
 
     try {
-      return await this.analyticsReadPort.buildContext(identityId, question);
+      const context = await this.analyticsReadPort.buildContext(identityId, question);
+      logger.info('Goal automation analytics context loaded', {
+        identityId,
+        questionPreview: previewText(question),
+        goalCount: context.goals.length,
+        goalSearchResultCount: context.goalSearchResults.length,
+        hasDashboard: Boolean(context.dashboard),
+        hasTaskDashboard: Boolean(context.taskDashboard),
+      });
+      return context;
     } catch (error) {
       logger.warn('Failed to load analytics context for goal automation planning', {
         error,

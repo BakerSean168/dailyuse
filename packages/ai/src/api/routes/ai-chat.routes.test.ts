@@ -79,7 +79,60 @@ describe('registerAIChatRoutes', () => {
     expect(writes[0]).toContain('"details":[{"code":"RETRY_LATER","message":"slow down"}]');
   });
 
-  it('aborts stream processing when request connection closes', async () => {
+  it('does not abort stream processing when only the request stream closes', async () => {
+    const controller = createControllerStub();
+    let capturedSignal: AbortSignal | undefined;
+
+    vi.mocked(controller.streamMessage).mockImplementation(async (_input, _identityId, onChunk, signal) => {
+      capturedSignal = signal;
+      await Promise.resolve();
+      onChunk({ role: 'assistant', content: 'hello' });
+      return {
+        ok: true,
+        data: {
+          userMessage: { id: 'user-1', content: 'hi' },
+          assistantMessage: { id: 'assistant-1', content: 'hello' },
+          tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+          providerId: 'provider-1',
+          processingTimeMs: 123,
+        },
+      } as Awaited<ReturnType<AIChatController['streamMessage']>>;
+    });
+
+    const router = registerAIChatRoutes(controller, {
+      auth: ((_, __, next) => next()) as any,
+    });
+    const handler = getRouteHandler(router, 'post', '/messages/sse');
+
+    const writes: string[] = [];
+    const req = Object.assign(new EventEmitter(), {
+      body: { conversationId: 'conv-1', content: 'hi' },
+      user: { identityId: 'identity-1' },
+    });
+    const res = Object.assign(new EventEmitter(), {
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn((chunk: string) => writes.push(chunk)),
+      end: vi.fn(function (this: { writableEnded: boolean }) {
+        this.writableEnded = true;
+      }),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+    });
+
+    const pending = handler(req, res);
+    req.emit('close');
+    await pending;
+
+    expect(capturedSignal).toBeDefined();
+    expect(capturedSignal?.aborted).toBe(false);
+    expect(writes).toHaveLength(2);
+    expect(writes[0]).toContain('event: message');
+    expect(writes[1]).toContain('event: done');
+  });
+
+  it('aborts stream processing when the response connection closes', async () => {
     const controller = createControllerStub();
     let capturedSignal: AbortSignal | undefined;
 
@@ -125,7 +178,7 @@ describe('registerAIChatRoutes', () => {
     });
 
     const pending = handler(req, res);
-    req.emit('close');
+    res.emit('close');
     await pending;
 
     expect(capturedSignal).toBeDefined();

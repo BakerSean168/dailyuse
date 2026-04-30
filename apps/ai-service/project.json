@@ -99,6 +99,28 @@
       },
       "cache": false
     },
+    "goal-workflow-eval": {
+      "executor": "@nxlv/python:run-commands",
+      "outputs": [
+        "{workspaceRoot}/reports/{projectRoot}/evals"
+      ],
+      "options": {
+        "command": "uv run python -m ai_service.evals.runner --cases evals/goal_workflow_cases.json --policy evals/goal_workflow_policy.json --baseline evals/goal_workflow_baseline.json --output ../../reports/apps/ai-service/evals/goal-workflow-latest.json --archive-dir ../../reports/apps/ai-service/evals/goal-workflow-history",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true
+    },
+    "goal-workflow-eval-live": {
+      "executor": "@nxlv/python:run-commands",
+      "outputs": [
+        "{workspaceRoot}/reports/{projectRoot}/evals"
+      ],
+      "options": {
+        "command": "uv run python -m ai_service.evals.runner --mode live --cases evals/goal_workflow_live_cases.json --policy evals/goal_workflow_live_policy.json --baseline evals/goal_workflow_live_baseline.json --output ../../reports/apps/ai-service/evals/goal-workflow-live-latest.json --archive-dir ../../reports/apps/ai-service/evals/goal-workflow-live-history",
+        "cwd": "{projectRoot}"
+      },
+      "cache": false
+    },
     "typecheck": {
       "executor": "@nxlv/python:run-commands",
       "options": {

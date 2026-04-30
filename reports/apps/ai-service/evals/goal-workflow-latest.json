@@ -1,0 +1,370 @@
+{
+  "generated_at": "2026-04-30T04:00:29.016520+00:00",
+  "mode": "deterministic",
+  "provider": null,
+  "model": null,
+  "base_url": null,
+  "cases_path": "evals\\goal_workflow_cases.json",
+  "total_cases": 4,
+  "passed_cases": 4,
+  "failed_cases": 0,
+  "pass_rate": 1.0,
+  "by_type": {
+    "goal_workflow": 4
+  },
+  "failed_case_ids": [],
+  "gate_passed": true,
+  "gate_failures": [],
+  "baseline_path": "evals\\goal_workflow_baseline.json",
+  "archive_path": "..\\..\\reports\\apps\\ai-service\\evals\\goal-workflow-history\\2026-04-30T04-00-29.016520+00-00.json",
+  "results": [
+    {
+      "id": "goal-workflow-clarification-search-notes-partial",
+      "type": "goal_workflow",
+      "description": "The workflow should support clarification, read-only note search, and partial fake execution recovery.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:workflow",
+          "passed": true,
+          "detail": "Goal output mentions \"workflow\"."
+        },
+        {
+          "name": "goal_mentions:agent",
+          "passed": true,
+          "detail": "Goal output mentions \"agent\"."
+        },
+        {
+          "name": "tool_call_seen:search_notes",
+          "passed": true,
+          "detail": "Observed provider tool call \"search_notes\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        },
+        {
+          "name": "recovery_mentions:key result drafts",
+          "passed": true,
+          "detail": "Recovery output mentions \"key result drafts\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "clarification",
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "search_notes",
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "建立稳定的 AI agent 工作流",
+        "action_tools": [
+          "create_goal",
+          "create_key_result",
+          "create_task_template"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_key_result",
+            "status": "failed",
+            "message": "关键结果创建失败，字段仍需修正。"
+          },
+          {
+            "tool": "create_task_template",
+            "status": "executed",
+            "message": "Created task template in fake execution.",
+            "entityId": "fake-task-template-1"
+          }
+        ],
+        "execution_status": "partial",
+        "failure_stage": null,
+        "failure_detail": null,
+        "recovery": {
+          "canRetry": true,
+          "failedActions": [
+            {
+              "tool": "create_key_result",
+              "status": "failed",
+              "message": "关键结果创建失败，字段仍需修正。"
+            }
+          ],
+          "suggestions": [
+            "Confirm the goal exists and the key result drafts are complete before retrying execution."
+          ]
+        },
+        "completion_count": 4
+      }
+    },
+    {
+      "id": "goal-workflow-direct-fetch-stats-success",
+      "type": "goal_workflow",
+      "description": "The workflow should skip clarification when the idea is concrete and use analytics read-only context before a successful fake execute.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:weekly",
+          "passed": true,
+          "detail": "Goal output mentions \"weekly\"."
+        },
+        {
+          "name": "goal_mentions:workflow",
+          "passed": true,
+          "detail": "Goal output mentions \"workflow\"."
+        },
+        {
+          "name": "tool_call_seen:fetch_stats",
+          "passed": true,
+          "detail": "Observed provider tool call \"fetch_stats\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "fetch_stats",
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "Ship a weekly AI workflow review system",
+        "action_tools": [
+          "create_goal",
+          "create_task_template"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_task_template",
+            "status": "executed",
+            "message": "Created task template in fake execution.",
+            "entityId": "fake-task-template-1"
+          }
+        ],
+        "execution_status": "success",
+        "failure_stage": null,
+        "failure_detail": null,
+        "recovery": {
+          "canRetry": false,
+          "failedActions": [],
+          "suggestions": []
+        },
+        "completion_count": 4
+      }
+    },
+    {
+      "id": "goal-workflow-direct-submit-success",
+      "type": "goal_workflow",
+      "description": "The workflow should support the straightforward draft -> confirm -> result path without read-only tools.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:learning",
+          "passed": true,
+          "detail": "Goal output mentions \"learning\"."
+        },
+        {
+          "name": "goal_mentions:habit",
+          "passed": true,
+          "detail": "Goal output mentions \"habit\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "Build a structured AI learning habit",
+        "action_tools": [
+          "create_goal",
+          "create_key_result"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_key_result",
+            "status": "executed",
+            "message": "Created key result in fake execution.",
+            "entityId": "fake-key-result-1"
+          }
+        ],
+        "execution_status": "success",
+        "failure_stage": null,
+        "failure_detail": null,
+        "recovery": {
+          "canRetry": false,
+          "failedActions": [],
+          "suggestions": []
+        },
+        "completion_count": 3
+      }
+    },
+    {
+      "id": "goal-workflow-invalid-prepare-payload",
+      "type": "goal_workflow",
+      "description": "The workflow should surface the prepare-stage failure when the provider submits invalid automation payload arguments.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "failure_stage_matches",
+          "passed": true,
+          "detail": "Workflow failed at the expected stage."
+        },
+        {
+          "name": "goal_mentions:approval",
+          "passed": true,
+          "detail": "Goal output mentions \"approval\"."
+        },
+        {
+          "name": "goal_mentions:workflow",
+          "passed": true,
+          "detail": "Goal output mentions \"workflow\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "draft"
+        ],
+        "tool_calls_seen": [
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "Ship an approval-first AI workflow loop",
+        "action_tools": [],
+        "executed_actions": [],
+        "execution_status": null,
+        "failure_stage": "prepare",
+        "failure_detail": "Provider requested goal automation tools that are not available in the current read-only runtime.",
+        "recovery": null,
+        "completion_count": 3
+      }
+    }
+  ]
+}

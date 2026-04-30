@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-04-30T00:00:00+00:00",
+  "cases_path": "evals/goal_workflow_live_cases.json",
+  "total_cases": 1,
+  "passed_cases": 1,
+  "failed_cases": 0,
+  "pass_rate": 1.0,
+  "by_type": {
+    "goal_workflow": 1
+  },
+  "failed_case_ids": [],
+  "gate_passed": true,
+  "gate_failures": [],
+  "baseline_path": null,
+  "archive_path": null,
+  "results": [
+    {
+      "id": "live-goal-workflow-direct-submit",
+      "type": "goal_workflow",
+      "description": "Live provider should complete the direct goal workflow path and submit an automation plan.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [],
+      "metadata": {}
+    }
+  ]
+}

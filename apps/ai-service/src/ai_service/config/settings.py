@@ -66,6 +66,7 @@ class Settings(BaseSettings):
     # Debug controls developer-friendly features such as docs exposure.
     debug: bool = False
     log_level: str = "INFO"
+    log_dir: str | None = None
 
     # Outbound provider timeout controls.
     request_timeout_seconds: float = 60.0

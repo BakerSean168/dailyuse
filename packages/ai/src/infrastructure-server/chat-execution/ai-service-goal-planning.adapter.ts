@@ -3,8 +3,23 @@ import type {
   GoalPlanningResult,
   IGoalPlanningPort,
 } from '../../application-server/ports';
+import { createLogger } from '@dailyuse/utils';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
+
+const logger = createLogger('AIServiceGoalPlanningAdapter');
+
+function previewText(value: string | undefined, maxLength = 200): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
 
 interface AIServiceGoalPlanningResponse {
   state?: GoalPlanningResult['state'];
@@ -26,6 +41,17 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
   }
 
   async plan(input: GoalPlanningInput): Promise<GoalPlanningResult> {
+    logger.info('ai-service goal planning adapter request started', {
+      identityId: input.identityId,
+      requestId: input.requestId,
+      ideaPreview: previewText(input.idea),
+      category: input.category,
+      timeframe: input.timeframe,
+      includeKeyResults: input.includeKeyResults,
+      clarificationAnswersCount: input.clarificationAnswers?.length ?? 0,
+      provider: input.providerConfig.provider,
+      model: input.providerConfig.model,
+    });
     const payload = await this.client.postJson<
       AIServiceGoalPlanningResponse,
       {
@@ -75,6 +101,13 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
     };
 
     if (payload.state === 'clarification' && payload.clarification) {
+      logger.info('ai-service goal planning adapter clarification response completed', {
+        identityId: input.identityId,
+        requestId: input.requestId,
+        state: 'clarification',
+        clarificationQuestionCount: payload.clarification.questions.length,
+        usage,
+      });
       return {
         state: 'clarification',
         clarification: payload.clarification,
@@ -83,8 +116,22 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
     }
 
     if (!payload.goal) {
+      logger.warn('ai-service goal planning adapter received no goal payload', {
+        identityId: input.identityId,
+        requestId: input.requestId,
+        state: payload.state,
+      });
       throw new Error('ai-service goal planning returned no goal draft payload');
     }
+
+    logger.info('ai-service goal planning adapter response completed', {
+      identityId: input.identityId,
+      requestId: input.requestId,
+      state: payload.state ?? 'draft',
+      goalTitle: payload.goal.title,
+      keyResultCount: payload.keyResults?.length ?? 0,
+      usage,
+    });
 
     return {
       state: 'draft',

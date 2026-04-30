@@ -20,6 +20,11 @@ from typing import Annotated, Any, Literal, cast
 import httpx
 from pydantic import BaseModel, Field, TypeAdapter
 
+from ai_service.evals.goal_workflow_harness import (
+    GoalWorkflowEvalCase,
+    GoalWorkflowTrace,
+    run_goal_workflow_case,
+)
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
@@ -148,7 +153,10 @@ class KnowledgeGroundingEvalCase(BaseModel):
 
 
 EvalCase = Annotated[
-    ChatSanityEvalCase | GoalPlanningEvalCase | KnowledgeGroundingEvalCase,
+    ChatSanityEvalCase
+    | GoalPlanningEvalCase
+    | KnowledgeGroundingEvalCase
+    | GoalWorkflowEvalCase,
     Field(discriminator="type"),
 ]
 EvalMode = Literal["deterministic", "live"]
@@ -163,8 +171,14 @@ class LiveEvalConfig(BaseModel):
 class StubChatService:
     """Fixed-output chat service used by the deterministic eval runner."""
 
-    def __init__(self, responses: list[str] | str) -> None:
-        self._responses = responses if isinstance(responses, list) else [responses]
+    def __init__(
+        self,
+        responses: list[str | ChatCompleteResponse] | str | ChatCompleteResponse,
+    ) -> None:
+        if isinstance(responses, list):
+            self._responses = list(responses)
+        else:
+            self._responses = [responses]
         self._cursor = 0
 
     async def complete(
@@ -181,6 +195,8 @@ class StubChatService:
 
         response = self._responses[self._cursor]
         self._cursor += 1
+        if isinstance(response, ChatCompleteResponse):
+            return response.model_copy(deep=True)
         return ChatCompleteResponse(
             content=response,
             finish_reason="stop",
@@ -197,6 +213,22 @@ def load_eval_cases(path: Path) -> list[EvalCase]:
 
     raw = json.loads(path.read_text(encoding="utf-8"))
     return TypeAdapter(list[EvalCase]).validate_python(raw)
+
+
+def filter_eval_cases(
+    cases: list[EvalCase],
+    *,
+    case_id: str | None,
+) -> list[EvalCase]:
+    """Optionally narrow the case set to one explicit case id."""
+
+    if case_id is None:
+        return cases
+
+    filtered = [case for case in cases if case.id == case_id]
+    if not filtered:
+        raise ValueError(f"No evaluation case found for id: {case_id}")
+    return filtered
 
 
 def load_policy(path: Path) -> EvalPolicy:
@@ -253,6 +285,18 @@ async def evaluate_cases_with_mode(
                 )
             else:
                 results.append(await evaluate_goal_planning(case))
+            continue
+        if case.type == "goal_workflow":
+            if mode == "live":
+                results.append(
+                    await evaluate_live_goal_workflow(
+                        case,
+                        chat_service=ensure_live_chat_service(chat_service),
+                        provider_config=ensure_live_provider_config(live_eval_config),
+                    )
+                )
+            else:
+                results.append(await evaluate_goal_workflow(case))
             continue
         if mode == "live":
             results.append(
@@ -332,6 +376,34 @@ async def evaluate_live_goal_planning(
     )
 
     return build_goal_planning_eval_result(case=case, response=response)
+
+
+async def evaluate_goal_workflow(case: GoalWorkflowEvalCase) -> EvalResult:
+    """Run the full goal workflow against scripted provider responses."""
+
+    trace = await run_goal_workflow_case(
+        case,
+        provider_config=DEFAULT_PROVIDER,
+        mode="deterministic",
+    )
+    return build_goal_workflow_eval_result(case=case, trace=trace)
+
+
+async def evaluate_live_goal_workflow(
+    case: GoalWorkflowEvalCase,
+    *,
+    chat_service: ChatService | StubChatService,
+    provider_config: ProviderConfig,
+) -> EvalResult:
+    """Run the full goal workflow against a real provider."""
+
+    trace = await run_goal_workflow_case(
+        case,
+        provider_config=provider_config,
+        mode="live",
+        chat_service=chat_service,
+    )
+    return build_goal_workflow_eval_result(case=case, trace=trace)
 
 
 def build_goal_planning_eval_result(
@@ -418,6 +490,175 @@ def build_goal_planning_eval_result(
             "goal_title": response.goal.title,
             "key_result_count": len(key_results),
             "goal_category": response.goal.category,
+        },
+    )
+
+
+def build_goal_workflow_eval_result(
+    *,
+    case: GoalWorkflowEvalCase,
+    trace: GoalWorkflowTrace,
+) -> EvalResult:
+    """Convert one workflow trace into standardized checks."""
+
+    checks = [
+        EvalCheck(
+            name="stage_sequence_matches",
+            passed=trace.stages == case.expected.stage_sequence,
+            detail=(
+                f"Expected stages {case.expected.stage_sequence}, got {trace.stages}."
+                if trace.stages != case.expected.stage_sequence
+                else "Workflow stages match expectations."
+            ),
+        ),
+        EvalCheck(
+            name="action_tools_match",
+            passed=trace.action_tools == case.expected.action_tools,
+            detail=(
+                f"Expected action tools {case.expected.action_tools}, got {trace.action_tools}."
+                if trace.action_tools != case.expected.action_tools
+                else "Workflow action tools match expectations."
+            ),
+        ),
+    ]
+
+    if case.expected.failure_stage is None:
+        checks.append(
+            EvalCheck(
+                name="workflow_completes_without_failure_stage",
+                passed=trace.failure_stage is None,
+                detail=(
+                    "Workflow completed without internal failures."
+                    if trace.failure_stage is None
+                    else (
+                        f"Workflow failed during {trace.failure_stage}: "
+                        f"{trace.failure_detail or 'unknown failure'}"
+                    )
+                ),
+            )
+        )
+    else:
+        checks.append(
+            EvalCheck(
+                name="failure_stage_matches",
+                passed=trace.failure_stage == case.expected.failure_stage,
+                detail=(
+                    f"Expected failure stage {case.expected.failure_stage}, got {trace.failure_stage}."
+                    if trace.failure_stage != case.expected.failure_stage
+                    else "Workflow failed at the expected stage."
+                ),
+            )
+        )
+
+    if case.expected.execution_status is not None:
+        actual_status = (
+            trace.execution_summary.get("status")
+            if trace.execution_summary is not None
+            else None
+        )
+        checks.append(
+            EvalCheck(
+                name="execution_status_matches",
+                passed=actual_status == case.expected.execution_status,
+                detail=(
+                    f"Expected execution status {case.expected.execution_status}, got {actual_status}."
+                    if actual_status != case.expected.execution_status
+                    else "Execution status matches expectations."
+                ),
+            )
+        )
+
+    if case.expected.can_retry is not None:
+        actual_can_retry = (
+            bool(trace.recovery.get("canRetry"))
+            if trace.recovery is not None
+            else None
+        )
+        checks.append(
+            EvalCheck(
+                name="recovery_can_retry_matches",
+                passed=actual_can_retry == case.expected.can_retry,
+                detail=(
+                    f"Expected canRetry={case.expected.can_retry}, got {actual_can_retry}."
+                    if actual_can_retry != case.expected.can_retry
+                    else "Recovery canRetry matches expectations."
+                ),
+            )
+        )
+
+    goal_blob = trace.goal_text.lower()
+    checks.extend(
+        [
+            EvalCheck(
+                name=f"goal_mentions:{term}",
+                passed=term.lower() in goal_blob,
+                detail=(
+                    f'Goal output should mention "{term}".'
+                    if term.lower() not in goal_blob
+                    else f'Goal output mentions "{term}".'
+                ),
+            )
+            for term in case.expected.goal_terms
+        ]
+    )
+
+    seen_tool_calls = set(trace.tool_calls_seen)
+    checks.extend(
+        [
+            EvalCheck(
+                name=f"tool_call_seen:{tool_name}",
+                passed=tool_name in seen_tool_calls,
+                detail=(
+                    f'Expected provider tool call "{tool_name}" was not observed.'
+                    if tool_name not in seen_tool_calls
+                    else f'Observed provider tool call "{tool_name}".'
+                ),
+            )
+            for tool_name in case.expected.required_tool_calls
+        ]
+    )
+
+    recovery_blob = " ".join(
+        [
+            *(trace.recovery.get("suggestions", []) if trace.recovery else []),
+            *(action.get("message", "") for action in trace.executed_actions),
+        ]
+    ).lower()
+    checks.extend(
+        [
+            EvalCheck(
+                name=f"recovery_mentions:{term}",
+                passed=term.lower() in recovery_blob,
+                detail=(
+                    f'Recovery output should mention "{term}".'
+                    if term.lower() not in recovery_blob
+                    else f'Recovery output mentions "{term}".'
+                ),
+            )
+            for term in case.expected.required_recovery_terms
+        ]
+    )
+
+    return build_eval_result(
+        case_id=case.id,
+        case_type=case.type,
+        description=case.description,
+        checks=checks,
+        metadata={
+            "stages": trace.stages,
+            "tool_calls_seen": trace.tool_calls_seen,
+            "goal_title": trace.goal_title,
+            "action_tools": trace.action_tools,
+            "executed_actions": trace.executed_actions,
+            "execution_status": (
+                trace.execution_summary.get("status")
+                if trace.execution_summary is not None
+                else None
+            ),
+            "failure_stage": trace.failure_stage,
+            "failure_detail": trace.failure_detail,
+            "recovery": trace.recovery,
+            "completion_count": trace.completion_count,
         },
     )
 
@@ -800,6 +1041,11 @@ def parse_args() -> argparse.Namespace:
         help="Directory where timestamped report history should be written.",
     )
     parser.add_argument(
+        "--case-id",
+        default=None,
+        help="Run only one named evaluation case from the selected case file.",
+    )
+    parser.add_argument(
         "--provider",
         default=None,
         help="Live mode only: provider name, for example openai or anthropic.",
@@ -838,7 +1084,7 @@ async def run() -> int:
     policy_path = resolve_policy_path(args)
     baseline_path = resolve_baseline_path(args)
     archive_dir = resolve_archive_dir(args)
-    cases = load_eval_cases(cases_path)
+    cases = filter_eval_cases(load_eval_cases(cases_path), case_id=args.case_id)
     policy = load_policy(policy_path)
     baseline_report = load_report(baseline_path) if baseline_path.exists() else None
 

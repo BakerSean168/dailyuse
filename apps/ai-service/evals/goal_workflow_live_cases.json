@@ -1,0 +1,23 @@
+[
+  {
+    "id": "live-goal-workflow-direct-submit",
+    "type": "goal_workflow",
+    "description": "Live provider should complete the direct goal workflow path and submit an automation plan.",
+    "initial_request": {
+      "idea": "Create a concrete AI workflow goal for weekly execution reviews with one measurable milestone.",
+      "category": "work",
+      "timeframe": "this quarter",
+      "include_key_results": true,
+      "include_task_templates": false
+    },
+    "expected": {
+      "stage_sequence": ["draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_key_result"],
+      "execution_status": "success",
+      "can_retry": false,
+      "goal_terms": ["workflow"],
+      "required_tool_calls": ["submit_goal_automation_plan"],
+      "required_recovery_terms": []
+    }
+  }
+]

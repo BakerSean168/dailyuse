@@ -60,6 +60,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
     // - `message`: incremental assistant delta
     // - `done`: final persisted message payload
     // - `error`: structured application error after stream bootstrap
+    let completed = false;
     try {
       for await (const event of parseSSE(response)) {
         if (event.event === 'message' && event.data) {
@@ -69,6 +70,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
         }
 
         if (event.event === 'done' && event.data) {
+          completed = true;
           handlers.onDone?.(
             JSON.parse(event.data) as {
               userMessage: SendMessageRes['userMessage'];
@@ -96,6 +98,10 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
             payload.details,
           );
         }
+      }
+
+      if (!completed) {
+        throw createResultClientError('AI 响应流在完成前已断开', 'STREAM_TERMINATED');
       }
     } catch (error) {
       if (isAbortLikeError(error) || signal?.aborted) {

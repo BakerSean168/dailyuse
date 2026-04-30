@@ -57,3 +57,12 @@ async def test_goal_automation_handler_executes_plan(handler):
     assert result.summary == "Create the goal first."
     assert result.tool_calls[0].tool == "create_goal"
     handler.goal_planning_service.plan_automation.assert_awaited_once()
+    kwargs = handler.goal_planning_service.plan_automation.await_args.kwargs
+    assert kwargs["idea"] == "Automate goal setup with a confirmation step."
+    assert kwargs["category"] is None
+    assert kwargs["timeframe"] is None
+    assert kwargs["include_key_results"] is True
+    assert kwargs["include_task_templates"] is True
+    assert kwargs["related_resources"] == []
+    assert kwargs["analytics_context"] is None
+    assert kwargs["request_id"] == "req-101"

@@ -79,6 +79,51 @@ describe('AIGoalGenerationController', () => {
     });
   });
 
+  it('forwards an explicit request id when provided by the route layer', async () => {
+    const response: GenerateGoalsRes = {
+      state: 'draft',
+      goal: {
+        title: 'Ship the AI goal workflow',
+        description: 'Unify draft planning and execution.',
+        category: 'work',
+        importance: 'Important',
+        tags: ['ai'],
+        suggestedStartDate: 1,
+        suggestedEndDate: 2,
+      },
+      keyResults: [],
+      tokenUsage: {
+        promptTokens: 12,
+        completionTokens: 8,
+        totalTokens: 20,
+      },
+      providerId: 'provider-1' as GenerateGoalsRes['providerId'],
+      processingTimeMs: 120,
+      generatedAt: 123,
+      providerUsed: 'OpenAI',
+      modelUsed: 'gpt-4o-mini',
+    };
+    const service = {
+      generateGoal: vi.fn(async () => response),
+    };
+    const controller = new AIGoalGenerationController(service);
+
+    await controller.generateGoal(
+      {
+        idea: 'Build a unified AI goal workflow for the chat entry point.',
+      },
+      'identity-1',
+      'trace-goal-123',
+    );
+
+    expect(service.generateGoal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identityId: 'identity-1',
+        requestId: 'trace-goal-123',
+      }),
+    );
+  });
+
   it('returns clarification payloads without reshaping them', async () => {
     const response: GenerateGoalsRes = {
       state: 'clarification',

@@ -12,13 +12,19 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 import { toAIControllerFailure } from './ai-controller-errors';
 
 interface AIGoalGenerationControllerService {
-  generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<GenerateGoalsRes>;
+  generateGoal(
+    params: GenerateGoalsReq & { identityId: string; requestId?: string },
+  ): Promise<GenerateGoalsRes>;
 }
 
 export class AIGoalGenerationController {
   constructor(private readonly service: AIGoalGenerationControllerService) {}
 
-  async generateGoal(input: unknown, identityId: string): Promise<Result<GenerateGoalsRes>> {
+  async generateGoal(
+    input: unknown,
+    identityId: string,
+    requestId?: string,
+  ): Promise<Result<GenerateGoalsRes>> {
     const parsed = GenerateGoalsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -32,6 +38,7 @@ export class AIGoalGenerationController {
       return ok(
         await this.service.generateGoal({
           identityId,
+          ...(requestId ? { requestId } : {}),
           idea: parsed.data.idea,
           providerId: parsed.data.providerId,
           model: parsed.data.model,

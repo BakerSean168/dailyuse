@@ -3,8 +3,23 @@ import type {
   GoalAutomationPlanningResult,
   IGoalAutomationPlanningPort,
 } from '../../application-server/ports';
+import { createLogger } from '@dailyuse/utils';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
+
+const logger = createLogger('AIServiceGoalAutomationAdapter');
+
+function previewText(value: string | undefined, maxLength = 220): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
 
 interface AIServiceGoalAutomationResponse {
   summary: string;
@@ -27,6 +42,19 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
   }
 
   async plan(input: GoalAutomationPlanningInput): Promise<GoalAutomationPlanningResult> {
+    logger.info('ai-service goal automation adapter request started', {
+      identityId: input.identityId,
+      requestId: input.requestId,
+      ideaPreview: previewText(input.idea),
+      category: input.category,
+      timeframe: input.timeframe,
+      includeKeyResults: input.includeKeyResults,
+      includeTaskTemplates: input.includeTaskTemplates,
+      relatedResourceCount: input.relatedResources?.length ?? 0,
+      hasAnalyticsContext: Boolean(input.analyticsContext),
+      provider: input.providerConfig.provider,
+      model: input.providerConfig.model,
+    });
     const payload = await this.client.postJson<
       AIServiceGoalAutomationResponse,
       {
@@ -103,19 +131,33 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
       },
     });
 
+    const usage = {
+      promptTokens: payload.usage?.prompt_tokens ?? 0,
+      completionTokens: payload.usage?.completion_tokens ?? 0,
+      totalTokens:
+        payload.usage?.total_tokens ??
+        (payload.usage?.prompt_tokens ?? 0) + (payload.usage?.completion_tokens ?? 0),
+    };
+
+    logger.info('ai-service goal automation adapter response completed', {
+      identityId: input.identityId,
+      requestId: input.requestId,
+      summary: previewText(payload.summary),
+      goalTitle: payload.goal.title,
+      keyResultCount: payload.keyResults?.length ?? 0,
+      taskTemplateCount: payload.taskTemplates?.length ?? 0,
+      actionCount: payload.toolCalls.length,
+      actionTools: payload.toolCalls.map((action) => action.tool),
+      usage,
+    });
+
     return {
       summary: payload.summary,
       goal: payload.goal,
       keyResults: payload.keyResults,
       taskTemplates: payload.taskTemplates,
       actions: payload.toolCalls,
-      usage: {
-        promptTokens: payload.usage?.prompt_tokens ?? 0,
-        completionTokens: payload.usage?.completion_tokens ?? 0,
-        totalTokens:
-          payload.usage?.total_tokens ??
-          (payload.usage?.prompt_tokens ?? 0) + (payload.usage?.completion_tokens ?? 0),
-      },
+      usage,
     };
   }
 }

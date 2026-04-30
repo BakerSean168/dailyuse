@@ -1,0 +1,321 @@
+[
+  {
+    "id": "goal-workflow-clarification-search-notes-partial",
+    "type": "goal_workflow",
+    "description": "The workflow should support clarification, read-only note search, and partial fake execution recovery.",
+    "initial_request": {
+      "idea": "I want to build a reliable AI goal workflow for daily execution but the current process is still messy.",
+      "category": "learning",
+      "timeframe": "within two months",
+      "include_key_results": true,
+      "include_task_templates": true
+    },
+    "clarification_answers": [
+      "先把 goal workflow 跑通，并能稳定执行。",
+      "重点是每天复盘、每周校准。"
+    ],
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":true,\"questions\":[{\"question\":\"你最想先改善哪一段 workflow？\",\"context\":\"先确定第一优先级。\"},{\"question\":\"你希望这套 workflow 以什么节奏运行？\",\"context\":\"这会影响关键结果和任务节奏。\"}],\"rationale\":\"还需要补充执行重点与节奏。\"}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 18,
+          "completion_tokens": 11,
+          "total_tokens": 29
+        }
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"建立稳定的 AI agent 工作流\",\"description\":\"围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。\",\"motivation\":\"把 AI 想法稳定转成可执行目标。\",\"category\":\"learning\",\"importance\":\"Important\",\"tags\":[\"ai\",\"workflow\",\"agent\"],\"feasibilityAnalysis\":\"聚焦日常执行和每周复盘，范围可控。\",\"aiInsights\":\"先跑通 goal workflow，再逐步补执行可靠性。\",\"suggestedDurationDays\":60},\"keyResults\":[{\"title\":\"每周复盘 workflow 结果\",\"description\":\"至少完成 8 次每周复盘。\",\"targetValue\":8,\"unit\":\"次\"},{\"title\":\"记录每日 execution 问题\",\"description\":\"累计记录 40 条执行问题与修正项。\",\"targetValue\":40,\"unit\":\"条\"}]}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 42,
+          "completion_tokens": 56,
+          "total_tokens": 98
+        }
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [
+          {
+            "id": "call_search_1",
+            "function": {
+              "name": "search_notes",
+              "arguments": "{\"query\":\"approval workflow for goal execution\",\"maxCitations\":2}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 30,
+          "completion_tokens": 8,
+          "total_tokens": 38
+        }
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [
+          {
+            "id": "call_submit_1",
+            "function": {
+              "name": "submit_goal_automation_plan",
+              "arguments": "{\"summary\":\"先创建目标与关键结果，再补上复盘任务模板。\",\"goal\":{\"title\":\"建立稳定的 AI agent 工作流\",\"description\":\"围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。\",\"motivation\":\"把 AI 想法稳定转成可执行目标。\",\"category\":\"learning\",\"importance\":\"Important\",\"tags\":[\"ai\",\"workflow\",\"agent\"],\"feasibilityAnalysis\":\"聚焦日常执行和每周复盘，范围可控。\",\"aiInsights\":\"先跑通 goal workflow，再逐步补执行可靠性。\",\"suggestedDurationDays\":60},\"keyResults\":[{\"title\":\"每周复盘 workflow 结果\",\"description\":\"至少完成 8 次每周复盘。\",\"targetValue\":8,\"unit\":\"次\"},{\"title\":\"记录每日 execution 问题\",\"description\":\"累计记录 40 条执行问题与修正项。\",\"targetValue\":40,\"unit\":\"条\"}],\"taskTemplates\":[{\"name\":\"每周 workflow 复盘\",\"description\":\"记录执行质量与下周修正点。\",\"importance\":\"Important\",\"cadence\":\"weekly\"}],\"toolCalls\":[{\"tool\":\"create_goal\",\"rationale\":\"先创建目标主记录。\"},{\"tool\":\"create_key_result\",\"index\":0,\"rationale\":\"补上第一条关键结果。\"},{\"tool\":\"create_task_template\",\"index\":0,\"rationale\":\"保留每周复盘动作。\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 26,
+          "completion_tokens": 32,
+          "total_tokens": 58
+        }
+      }
+    ],
+    "related_resources": [
+      {
+        "identity_id": "identity-1",
+        "repository_id": "repo-1",
+        "resource_id": "resource-approval",
+        "resource_path": "notes/approval-workflow.md",
+        "title": "Approval Workflow",
+        "mime_type": "text/markdown",
+        "content": "确认 side effects 之前先走 review，再执行 create_goal 和 create_key_result。",
+        "metadata": {}
+      }
+    ],
+    "fake_execution": [
+      {
+        "tool": "create_key_result",
+        "index": 0,
+        "status": "failed",
+        "message": "关键结果创建失败，字段仍需修正。"
+      }
+    ],
+    "expected": {
+      "stage_sequence": ["clarification", "draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_key_result", "create_task_template"],
+      "execution_status": "partial",
+      "can_retry": true,
+      "goal_terms": ["workflow", "agent"],
+      "required_tool_calls": ["search_notes", "submit_goal_automation_plan"],
+      "required_recovery_terms": ["key result drafts"]
+    }
+  },
+  {
+    "id": "goal-workflow-direct-fetch-stats-success",
+    "type": "goal_workflow",
+    "description": "The workflow should skip clarification when the idea is concrete and use analytics read-only context before a successful fake execute.",
+    "initial_request": {
+      "idea": "Build a weekly AI workflow review system for the product team with measurable execution checkpoints.",
+      "category": "work",
+      "timeframe": "this quarter",
+      "include_key_results": true,
+      "include_task_templates": true
+    },
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":false,\"questions\":[],\"rationale\":\"The idea already includes scope, audience, and cadence.\"}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 12,
+          "completion_tokens": 7,
+          "total_tokens": 19
+        }
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"Ship a weekly AI workflow review system\",\"description\":\"Create a repeatable team workflow for weekly AI execution reviews.\",\"motivation\":\"Keep execution quality visible and actionable.\",\"category\":\"work\",\"importance\":\"Important\",\"tags\":[\"ai\",\"review\",\"workflow\"],\"feasibilityAnalysis\":\"The team already has weekly review rituals to build on.\",\"aiInsights\":\"Use current workload metrics to keep the plan realistic.\",\"suggestedDurationDays\":90},\"keyResults\":[{\"title\":\"Run 10 weekly workflow reviews\",\"description\":\"Complete 10 review sessions with written outcomes.\",\"targetValue\":10,\"unit\":\"sessions\"},{\"title\":\"Track execution blockers\",\"description\":\"Capture 20 blockers with owners and follow-up actions.\",\"targetValue\":20,\"unit\":\"blockers\"}]}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 36,
+          "completion_tokens": 52,
+          "total_tokens": 88
+        }
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [
+          {
+            "id": "call_stats_1",
+            "function": {
+              "name": "fetch_stats",
+              "arguments": "{\"question\":\"What workload constraints should shape this plan?\"}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 28,
+          "completion_tokens": 8,
+          "total_tokens": 36
+        }
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [
+          {
+            "id": "call_submit_2",
+            "function": {
+              "name": "submit_goal_automation_plan",
+              "arguments": "{\"summary\":\"先创建目标，再保留每周 review 任务模板。\",\"goal\":{\"title\":\"Ship a weekly AI workflow review system\",\"description\":\"Create a repeatable team workflow for weekly AI execution reviews.\",\"motivation\":\"Keep execution quality visible and actionable.\",\"category\":\"work\",\"importance\":\"Important\",\"tags\":[\"ai\",\"review\",\"workflow\"],\"feasibilityAnalysis\":\"The team already has weekly review rituals to build on.\",\"aiInsights\":\"Use current workload metrics to keep the plan realistic.\",\"suggestedDurationDays\":90},\"keyResults\":[{\"title\":\"Run 10 weekly workflow reviews\",\"description\":\"Complete 10 review sessions with written outcomes.\",\"targetValue\":10,\"unit\":\"sessions\"},{\"title\":\"Track execution blockers\",\"description\":\"Capture 20 blockers with owners and follow-up actions.\",\"targetValue\":20,\"unit\":\"blockers\"}],\"taskTemplates\":[{\"name\":\"Weekly AI workflow review\",\"description\":\"Review execution outcomes and assign next actions.\",\"importance\":\"Important\",\"cadence\":\"weekly\"}],\"toolCalls\":[{\"tool\":\"create_goal\",\"rationale\":\"Create the goal first.\"},{\"tool\":\"create_task_template\",\"index\":0,\"rationale\":\"Schedule the weekly review ritual.\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 24,
+          "completion_tokens": 28,
+          "total_tokens": 52
+        }
+      }
+    ],
+    "analytics_context": {
+      "dashboard": {
+        "stats": {
+          "activeGoals": 3,
+          "completedToday": 1
+        }
+      },
+      "task_dashboard": {
+        "summary": {
+          "totalTasks": 7,
+          "overdue": 1
+        }
+      },
+      "goals": [
+        {
+          "id": "goal-1",
+          "title": "Ship workflow review"
+        }
+      ],
+      "goal_search_results": [],
+      "extra": {
+        "evalAnswer": "There are 3 active goals and 7 open tasks, so keep the plan tight and weekly."
+      }
+    },
+    "expected": {
+      "stage_sequence": ["draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_task_template"],
+      "execution_status": "success",
+      "can_retry": false,
+      "goal_terms": ["weekly", "workflow"],
+      "required_tool_calls": ["fetch_stats", "submit_goal_automation_plan"],
+      "required_recovery_terms": []
+    }
+  },
+  {
+    "id": "goal-workflow-direct-submit-success",
+    "type": "goal_workflow",
+    "description": "The workflow should support the straightforward draft -> confirm -> result path without read-only tools.",
+    "initial_request": {
+      "idea": "Create a structured AI learning goal with one clear milestone and a weekly study habit.",
+      "category": "learning",
+      "timeframe": "next month",
+      "include_key_results": true,
+      "include_task_templates": false
+    },
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":false,\"questions\":[],\"rationale\":\"The idea is already specific enough for planning.\"}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 11,
+          "completion_tokens": 6,
+          "total_tokens": 17
+        }
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"Build a structured AI learning habit\",\"description\":\"Turn AI learning into a weekly habit with one concrete milestone.\",\"motivation\":\"Sustain progress instead of random exploration.\",\"category\":\"learning\",\"importance\":\"Important\",\"tags\":[\"ai\",\"learning\",\"habit\"],\"feasibilityAnalysis\":\"The scope is limited to one month and one milestone.\",\"aiInsights\":\"Keep the plan small so weekly execution stays realistic.\",\"suggestedDurationDays\":30},\"keyResults\":[{\"title\":\"Complete one AI agent milestone\",\"description\":\"Finish one scoped milestone with notes and code examples.\",\"targetValue\":1,\"unit\":\"milestone\"}]}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 30,
+          "completion_tokens": 44,
+          "total_tokens": 74
+        }
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [
+          {
+            "id": "call_submit_3",
+            "function": {
+              "name": "submit_goal_automation_plan",
+              "arguments": "{\"summary\":\"创建目标并补上唯一关键结果。\",\"goal\":{\"title\":\"Build a structured AI learning habit\",\"description\":\"Turn AI learning into a weekly habit with one concrete milestone.\",\"motivation\":\"Sustain progress instead of random exploration.\",\"category\":\"learning\",\"importance\":\"Important\",\"tags\":[\"ai\",\"learning\",\"habit\"],\"feasibilityAnalysis\":\"The scope is limited to one month and one milestone.\",\"aiInsights\":\"Keep the plan small so weekly execution stays realistic.\",\"suggestedDurationDays\":30},\"keyResults\":[{\"title\":\"Complete one AI agent milestone\",\"description\":\"Finish one scoped milestone with notes and code examples.\",\"targetValue\":1,\"unit\":\"milestone\"}],\"taskTemplates\":[],\"toolCalls\":[{\"tool\":\"create_goal\",\"rationale\":\"Create the learning goal first.\"},{\"tool\":\"create_key_result\",\"index\":0,\"rationale\":\"Attach the single milestone as a measurable KR.\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 20,
+          "completion_tokens": 22,
+          "total_tokens": 42
+        }
+      }
+    ],
+    "expected": {
+      "stage_sequence": ["draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_key_result"],
+      "execution_status": "success",
+      "can_retry": false,
+      "goal_terms": ["learning", "habit"],
+      "required_tool_calls": ["submit_goal_automation_plan"],
+      "required_recovery_terms": []
+    }
+  },
+  {
+    "id": "goal-workflow-invalid-prepare-payload",
+    "type": "goal_workflow",
+    "description": "The workflow should surface the prepare-stage failure when the provider submits invalid automation payload arguments.",
+    "initial_request": {
+      "idea": "Design an AI workflow planning loop with explicit approval before execution.",
+      "category": "work",
+      "timeframe": "this sprint",
+      "include_key_results": true,
+      "include_task_templates": true
+    },
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":false,\"questions\":[],\"rationale\":\"The idea is clear enough to plan directly.\"}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 6,
+          "total_tokens": 16
+        }
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"Ship an approval-first AI workflow loop\",\"description\":\"Plan AI workflow steps with explicit review before execution.\",\"motivation\":\"Avoid hidden side effects during workflow automation.\",\"category\":\"work\",\"importance\":\"Important\",\"tags\":[\"ai\",\"approval\",\"workflow\"],\"feasibilityAnalysis\":\"The existing workflow already separates planning from execution.\",\"aiInsights\":\"Approval gates should stay visible and auditable.\",\"suggestedDurationDays\":14},\"keyResults\":[{\"title\":\"Expose the approval review step\",\"description\":\"Make the confirm gate visible before any side effects run.\",\"targetValue\":1,\"unit\":\"step\"}]}",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 28,
+          "completion_tokens": 40,
+          "total_tokens": 68
+        }
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [
+          {
+            "id": "call_submit_bad",
+            "function": {
+              "name": "submit_goal_automation_plan",
+              "arguments": "{"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 18,
+          "completion_tokens": 6,
+          "total_tokens": 24
+        }
+      }
+    ],
+    "expected": {
+      "stage_sequence": ["draft"],
+      "action_tools": [],
+      "goal_terms": ["approval", "workflow"],
+      "required_tool_calls": ["submit_goal_automation_plan"],
+      "required_recovery_terms": [],
+      "failure_stage": "prepare"
+    }
+  }
+]

@@ -22,6 +22,7 @@ from ai_service.api.error_handlers import register_exception_handlers
 from ai_service.api.routes import chat, health, workflows
 from ai_service.config import get_settings
 from ai_service.infrastructure.http_client import create_shared_async_client
+from ai_service.logging_utils import compact_log, configure_logging
 from ai_service.middleware import RequestContextMiddleware, ServiceAuthMiddleware
 from ai_service.services import (
     AnalyticsQueryService,
@@ -49,10 +50,6 @@ from ai_service.orchestrator.handlers.knowledge_note_handler import (
     KnowledgeNoteWorkflowHandler,
 )
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 
@@ -116,12 +113,12 @@ async def lifespan(app: FastAPI):
     app.state.orchestrator = orchestrator
 
     logger.info(
-        "AI service resources initialized",
-        extra={
-            "service_name": settings.service_name,
-            "version": settings.app_version,
-            "debug": settings.debug,
-        },
+        "AI service resources initialized | %s",
+        compact_log(
+            service_name=settings.service_name,
+            version=settings.app_version,
+            debug=settings.debug,
+        ),
     )
 
     try:
@@ -135,7 +132,7 @@ def create_app() -> FastAPI:
     """Build a configured FastAPI application instance."""
 
     settings = get_settings()
-    logging.getLogger().setLevel(settings.log_level)
+    log_dir = configure_logging(settings)
 
     app = FastAPI(
         title="AI Service",
@@ -166,12 +163,13 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     logger.info(
-        "AI service application created",
-        extra={
-            "service_name": settings.service_name,
-            "version": settings.app_version,
-            "log_level": settings.log_level,
-        },
+        "AI service application created | %s",
+        compact_log(
+            service_name=settings.service_name,
+            version=settings.app_version,
+            log_level=settings.log_level,
+            log_dir=str(log_dir),
+        ),
     )
 
     return app

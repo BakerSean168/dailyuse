@@ -192,7 +192,6 @@ export function registerAIChatRoutes(
     };
 
     req.on('aborted', handleConnectionClosed);
-    req.on('close', handleConnectionClosed);
     res.on('close', handleConnectionClosed);
 
     const writeSseEvent = (
@@ -249,7 +248,6 @@ export function registerAIChatRoutes(
       }
     } finally {
       req.removeListener('aborted', handleConnectionClosed);
-      req.removeListener('close', handleConnectionClosed);
       res.removeListener('close', handleConnectionClosed);
       if (!res.writableEnded) {
         res.end();

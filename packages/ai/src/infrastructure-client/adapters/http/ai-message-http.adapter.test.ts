@@ -157,6 +157,31 @@ describe('AIMessageHttpAdapter', () => {
     });
   });
 
+  it('fails when the SSE stream closes without a done event', async () => {
+    const onChunk = vi.fn();
+    const onDone = vi.fn();
+    const httpClient = createHttpClientStub({
+      stream: vi.fn().mockResolvedValue(
+        createSseResponse([createCrlfSseEvent('message', { role: 'assistant', content: '2' })]),
+      ),
+    });
+    const adapter = new AIMessageHttpAdapter(httpClient);
+
+    await expect(
+      adapter.streamMessage(
+        { conversationId: 'conv-1' as never, content: '1+1' },
+        { onChunk, onDone },
+      ),
+    ).rejects.toMatchObject({
+      name: 'ResultErrorException',
+      code: 'STREAM_TERMINATED',
+      message: 'AI 响应流在完成前已断开',
+    } satisfies Partial<ResultClientError>);
+
+    expect(onChunk).toHaveBeenCalledWith({ role: 'assistant', content: '2' });
+    expect(onDone).not.toHaveBeenCalled();
+  });
+
   it('forwards AbortSignal to stream and normalizes abort failures', async () => {
     const request = { conversationId: 'conv-1' as never, content: 'hi' };
     const abortError = new Error('The operation was aborted');

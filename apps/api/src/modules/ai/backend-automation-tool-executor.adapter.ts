@@ -27,6 +27,18 @@ import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.
 
 const logger = createLogger('BackendAutomationToolExecutor');
 
+function previewText(value: string | null | undefined, maxLength = 200): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
+
 function readNestedNumber(source: unknown, path: readonly string[]): number {
   let current = source;
 
@@ -67,8 +79,25 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
     let createdGoalId: GoalId | null = null;
     const createdKeyResultIds = new Map<number, KeyResultId>();
 
+    logger.info('Goal automation executor started', {
+      identityId: input.identityId,
+      actionCount: input.actions.length,
+      actionTools: input.actions.map((action) => action.tool),
+      goalTitle: input.plan.goal.title,
+      keyResultCount: input.plan.keyResults?.length ?? 0,
+      taskTemplateCount: input.plan.taskTemplates?.length ?? 0,
+      requestIdeaPreview: previewText(input.request.idea),
+    });
+
     for (const action of input.actions) {
       try {
+        logger.info('Goal automation executor action started', {
+          identityId: input.identityId,
+          tool: action.tool,
+          index: action.index ?? null,
+          rationale: previewText(action.rationale),
+          hasCreatedGoal: Boolean(createdGoalId),
+        });
         if (action.tool === 'create_goal') {
           const result = await this.goalModule.api.createGoal(
             {
@@ -93,6 +122,12 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
           actions.push({
             tool: action.tool,
             status: 'executed',
+            entityId: createdGoalId,
+            message: `Created goal "${goal.name}"`,
+          });
+          logger.info('Goal automation executor action succeeded', {
+            identityId: input.identityId,
+            tool: action.tool,
             entityId: createdGoalId,
             message: `Created goal "${goal.name}"`,
           });
@@ -124,6 +159,13 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
           actions.push({
             tool: action.tool,
             status: 'executed',
+            entityId: createdKeyResult.id,
+            message: `Created key result "${createdKeyResult.title}"`,
+          });
+          logger.info('Goal automation executor action succeeded', {
+            identityId: input.identityId,
+            tool: action.tool,
+            index: action.index ?? null,
             entityId: createdKeyResult.id,
             message: `Created key result "${createdKeyResult.title}"`,
           });
@@ -172,6 +214,13 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             entityId: taskTemplateResult.template.id,
             message: `Created task template "${taskTemplateResult.template.name}"`,
           });
+          logger.info('Goal automation executor action succeeded', {
+            identityId: input.identityId,
+            tool: action.tool,
+            index: action.index ?? null,
+            entityId: taskTemplateResult.template.id,
+            message: `Created task template "${taskTemplateResult.template.name}"`,
+          });
           continue;
         }
 
@@ -186,6 +235,11 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             status: 'executed',
             message: `Found ${resources.length} relevant note(s)`,
           });
+          logger.info('Goal automation executor action succeeded', {
+            identityId: input.identityId,
+            tool: action.tool,
+            resourceCount: resources.length,
+          });
           continue;
         }
 
@@ -198,6 +252,12 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             status: 'executed',
             message: `Fetched stats: activeGoals=${activeGoals}, overdue=${overdue}`,
           });
+          logger.info('Goal automation executor action succeeded', {
+            identityId: input.identityId,
+            tool: action.tool,
+            activeGoals,
+            overdue,
+          });
           continue;
         }
 
@@ -205,6 +265,10 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
           tool: action.tool,
           status: 'skipped',
           message: `Skipped unsupported tool ${action.tool}`,
+        });
+        logger.info('Goal automation executor action skipped', {
+          identityId: input.identityId,
+          tool: action.tool,
         });
       } catch (error) {
         logger.warn('Goal automation action failed', {
@@ -219,6 +283,15 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
         });
       }
     }
+
+    logger.info('Goal automation executor completed', {
+      identityId: input.identityId,
+      actionCount: actions.length,
+      executedCount: actions.filter((action) => action.status === 'executed').length,
+      skippedCount: actions.filter((action) => action.status === 'skipped').length,
+      failedCount: actions.filter((action) => action.status === 'failed').length,
+      actions,
+    });
 
     return actions;
   }

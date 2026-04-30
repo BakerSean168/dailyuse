@@ -3,11 +3,20 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 
 from pydantic import ValidationError
 
 from ai_service.errors import StructuredOutputError
+from ai_service.logging_utils import (
+    compact_log,
+    preview_text,
+    summarize_completion,
+    summarize_provider_config,
+    summarize_tool_calls,
+    summarize_usage,
+)
 from ai_service.schemas import (
     AnalyticsQueryContext,
     ChatMessage,
@@ -36,6 +45,8 @@ from ai_service.services.provider_tool_runtime import (
     extract_completion_tool_calls,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class GoalPlanningService:
     """Generate structured goal drafts through the shared chat service."""
@@ -60,9 +71,21 @@ class GoalPlanningService:
         timeframe: str | None,
         include_key_results: bool,
         provider_config: ProviderConfig,
+        request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Generate and validate a structured goal draft."""
 
+        logger.info(
+            "goal planning started | %s",
+            compact_log(
+                request_id=request_id,
+                idea_preview=preview_text(idea),
+                category=category,
+                timeframe=timeframe,
+                include_key_results=include_key_results,
+                provider=summarize_provider_config(provider_config),
+            ),
+        )
         completion = await self._chat_service.complete(
             messages=[
                 ChatMessage(role="system", content=build_goal_system_prompt()),
@@ -78,14 +101,30 @@ class GoalPlanningService:
             ],
             config=provider_config,
         )
+        logger.info(
+            "goal planning completion received | %s",
+            compact_log(
+                request_id=request_id,
+                completion=summarize_completion(completion),
+            ),
+        )
 
-        payload = parse_goal_payload(completion.content)
+        try:
+            payload = parse_goal_payload(completion.content)
+        except StructuredOutputError:
+            logger.exception(
+                "goal planning payload parsing failed | %s",
+                compact_log(
+                    request_id=request_id,
+                    completion=summarize_completion(completion),
+                ),
+            )
+            raise
         now_ms = int(time.time() * 1000)
         suggested_end_date = (
             now_ms + payload.goal.suggested_duration_days * 24 * 60 * 60 * 1000
         )
-
-        return GoalPlanningResponse(
+        response = GoalPlanningResponse(
             goal=PlannedGoal(
                 title=payload.goal.title,
                 description=payload.goal.description,
@@ -101,6 +140,16 @@ class GoalPlanningService:
             keyResults=payload.key_results if include_key_results else None,
             usage=completion.usage,
         )
+        logger.info(
+            "goal planning completed | %s",
+            compact_log(
+                request_id=request_id,
+                goal_title=response.goal.title,
+                key_result_count=len(response.key_results or []),
+                usage=summarize_usage(response.usage),
+            ),
+        )
+        return response
 
     async def plan_automation(
         self,
@@ -113,6 +162,7 @@ class GoalPlanningService:
         related_resources: list[KnowledgeResourceDocument] | None = None,
         analytics_context: AnalyticsQueryContext | None = None,
         provider_config: ProviderConfig,
+        request_id: str | None = None,
     ) -> GoalAutomationResponse:
         """Generate a structured automation plan with explicit tool calls."""
 
@@ -127,6 +177,23 @@ class GoalPlanningService:
             native_tool_support
             and analytics_context is not None
             and self._analytics_query_service is not None
+        )
+        logger.info(
+            "goal automation planning started | %s",
+            compact_log(
+                request_id=request_id,
+                idea_preview=preview_text(idea),
+                category=category,
+                timeframe=timeframe,
+                include_key_results=include_key_results,
+                include_task_templates=include_task_templates,
+                related_resource_count=len(related_resources or []),
+                has_analytics_context=analytics_context is not None,
+                native_tool_support=native_tool_support,
+                search_notes_support=search_notes_support,
+                fetch_stats_support=fetch_stats_support,
+                provider=summarize_provider_config(provider_config),
+            ),
         )
         messages = [
             ChatMessage(
@@ -162,13 +229,13 @@ class GoalPlanningService:
             tools=tools,
             related_resources=related_resources or [],
             analytics_context=analytics_context,
+            request_id=request_id,
         )
         now_ms = int(time.time() * 1000)
         suggested_end_date = (
             now_ms + payload.goal.suggested_duration_days * 24 * 60 * 60 * 1000
         )
-
-        return GoalAutomationResponse(
+        response = GoalAutomationResponse(
             summary=payload.summary,
             goal=PlannedGoal(
                 title=payload.goal.title,
@@ -187,6 +254,17 @@ class GoalPlanningService:
             toolCalls=payload.tool_calls,
             usage=completion.usage,
         )
+        logger.info(
+            "goal automation planning completed | %s",
+            compact_log(
+                request_id=request_id,
+                goal_title=response.goal.title,
+                action_count=len(response.tool_calls),
+                tool_names=[tool.tool for tool in response.tool_calls],
+                usage=summarize_usage(response.usage),
+            ),
+        )
+        return response
 
     async def _complete_goal_automation_with_tools(
         self,
@@ -196,7 +274,19 @@ class GoalPlanningService:
         tools: list[ChatToolDefinition] | None,
         related_resources: list[KnowledgeResourceDocument],
         analytics_context: AnalyticsQueryContext | None,
+        request_id: str | None,
     ):
+        logger.info(
+            "goal automation tool loop requested | %s",
+            compact_log(
+                request_id=request_id,
+                tool_names=[
+                    tool.function.name for tool in tools or [] if getattr(tool, "function", None)
+                ],
+                related_resource_count=len(related_resources),
+                has_analytics_context=analytics_context is not None,
+            ),
+        )
         return await complete_with_tool_loop(
             chat_service=self._chat_service,
             messages=messages,
@@ -208,6 +298,7 @@ class GoalPlanningService:
                 provider_config=provider_config,
                 related_resources=related_resources,
                 analytics_context=analytics_context,
+                request_id=request_id,
             ),
             unavailable_tool_detail=(
                 "Provider requested goal automation tools that are not "
@@ -216,6 +307,7 @@ class GoalPlanningService:
             final_submission_missing_detail=(
                 "Provider did not submit a final goal automation plan after tool execution."
             ),
+            request_id=request_id,
         )
 
     async def _execute_goal_read_only_tool_calls(
@@ -225,8 +317,16 @@ class GoalPlanningService:
         provider_config: ProviderConfig,
         related_resources: list[KnowledgeResourceDocument],
         analytics_context: AnalyticsQueryContext | None,
+        request_id: str | None,
     ) -> list[ToolLoopResult]:
         results: list[ToolLoopResult] = []
+        logger.info(
+            "goal automation read-only tool execution started | %s",
+            compact_log(
+                request_id=request_id,
+                tool_calls=summarize_tool_calls(tool_calls),
+            ),
+        )
 
         for index, tool_call in enumerate(tool_calls):
             if tool_call.function.name == "search_notes":
@@ -234,6 +334,7 @@ class GoalPlanningService:
                     tool_call.function.arguments,
                     provider_config=provider_config,
                     related_resources=related_resources,
+                    request_id=request_id,
                 )
                 results.append(
                     {
@@ -247,6 +348,7 @@ class GoalPlanningService:
                     tool_call.function.arguments,
                     provider_config=provider_config,
                     analytics_context=analytics_context,
+                    request_id=request_id,
                 )
                 results.append(
                     {
@@ -255,7 +357,14 @@ class GoalPlanningService:
                         "result": result.model_dump(mode="json"),
                     }
                 )
-
+        logger.info(
+            "goal automation read-only tool execution finished | %s",
+            compact_log(
+                request_id=request_id,
+                result_count=len(results),
+                result_tools=[result["tool"] for result in results],
+            ),
+        )
         return results
 
     async def _search_notes_for_goal_planning(
@@ -264,6 +373,7 @@ class GoalPlanningService:
         *,
         provider_config: ProviderConfig,
         related_resources: list[KnowledgeResourceDocument],
+        request_id: str | None,
     ) -> GoalAutomationSearchNotesResult:
         if not related_resources:
             raise StructuredOutputError(
@@ -279,6 +389,15 @@ class GoalPlanningService:
             )
 
         query, max_citations = parse_search_notes_tool_arguments(arguments)
+        logger.info(
+            "goal automation search_notes executing | %s",
+            compact_log(
+                request_id=request_id,
+                query=query,
+                max_citations=max_citations,
+                related_resource_count=len(related_resources),
+            ),
+        )
         indexed_resources = [
             self._knowledge_indexing_service.index_resource(resource)
             for resource in related_resources
@@ -289,10 +408,19 @@ class GoalPlanningService:
             provider_config=provider_config,
             max_citations=max_citations,
         )
-        return GoalAutomationSearchNotesResult(
+        result = GoalAutomationSearchNotesResult(
             query=query,
             citations=citations,
         )
+        logger.info(
+            "goal automation search_notes completed | %s",
+            compact_log(
+                request_id=request_id,
+                query=query,
+                citation_count=len(result.citations),
+            ),
+        )
+        return result
 
     async def _fetch_stats_for_goal_planning(
         self,
@@ -300,6 +428,7 @@ class GoalPlanningService:
         *,
         provider_config: ProviderConfig,
         analytics_context: AnalyticsQueryContext | None,
+        request_id: str | None,
     ) -> GoalAutomationFetchStatsResult:
         if analytics_context is None:
             raise StructuredOutputError(
@@ -312,16 +441,35 @@ class GoalPlanningService:
             )
 
         question = parse_fetch_stats_tool_arguments(arguments)
+        logger.info(
+            "goal automation fetch_stats executing | %s",
+            compact_log(
+                request_id=request_id,
+                question=question,
+                has_dashboard=analytics_context.dashboard is not None,
+                has_task_dashboard=analytics_context.task_dashboard is not None,
+            ),
+        )
         response = await self._analytics_query_service.query(
             question=question,
             context=analytics_context,
             provider_config=provider_config,
         )
-        return GoalAutomationFetchStatsResult(
+        result = GoalAutomationFetchStatsResult(
             question=question,
             answer=response.answer,
             highlights=response.highlights,
         )
+        logger.info(
+            "goal automation fetch_stats completed | %s",
+            compact_log(
+                request_id=request_id,
+                question=question,
+                highlight_count=len(result.highlights),
+                answer_preview=preview_text(result.answer),
+            ),
+        )
+        return result
 
     async def clarify(
         self,
@@ -329,6 +477,7 @@ class GoalPlanningService:
         idea: str,
         category: str | None,
         provider_config: ProviderConfig,
+        request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Check if a goal idea needs clarification before planning.
         
@@ -341,7 +490,15 @@ class GoalPlanningService:
             GoalPlanningResponse with state='clarification' if questions needed,
             state='draft' if ready to plan
         """
-
+        logger.info(
+            "goal clarification started | %s",
+            compact_log(
+                request_id=request_id,
+                idea_preview=preview_text(idea),
+                category=category,
+                provider=summarize_provider_config(provider_config),
+            ),
+        )
         completion = await self._chat_service.complete(
             messages=[
                 ChatMessage(
@@ -358,23 +515,58 @@ class GoalPlanningService:
             ],
             config=provider_config,
         )
+        logger.info(
+            "goal clarification completion received | %s",
+            compact_log(
+                request_id=request_id,
+                completion=summarize_completion(completion),
+            ),
+        )
 
-        payload = parse_clarification_payload(completion.content)
+        try:
+            payload = parse_clarification_payload(completion.content)
+        except StructuredOutputError:
+            logger.exception(
+                "goal clarification payload parsing failed | %s",
+                compact_log(
+                    request_id=request_id,
+                    completion=summarize_completion(completion),
+                ),
+            )
+            raise
 
         # If clarification is needed, return questions
         if payload.needs_clarification:
-            return GoalPlanningResponse(
+            response = GoalPlanningResponse(
                 state="clarification",
                 clarification=payload,
                 usage=completion.usage,
             )
+            logger.info(
+                "goal clarification requested follow-up questions | %s",
+                compact_log(
+                    request_id=request_id,
+                    question_count=len(payload.questions),
+                    rationale=preview_text(payload.rationale),
+                    usage=summarize_usage(response.usage),
+                ),
+            )
+            return response
 
         # If ready, return draft state (caller will continue with plan())
-        return GoalPlanningResponse(
+        response = GoalPlanningResponse(
             state="draft",
             clarification=None,
             usage=completion.usage,
         )
+        logger.info(
+            "goal clarification determined no follow-up is needed | %s",
+            compact_log(
+                request_id=request_id,
+                usage=summarize_usage(response.usage),
+            ),
+        )
+        return response
 
     async def plan_with_clarification(
         self,
@@ -386,6 +578,7 @@ class GoalPlanningService:
         provider_config: ProviderConfig,
         enable_clarification: bool = True,
         clarification_answers: list[str] | None = None,
+        request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Generate a goal plan with optional clarification step.
         
@@ -407,17 +600,40 @@ class GoalPlanningService:
         Returns:
             GoalPlanningResponse with either clarification questions or draft
         """
-
+        logger.info(
+            "goal planning with clarification started | %s",
+            compact_log(
+                request_id=request_id,
+                idea_preview=preview_text(idea),
+                category=category,
+                timeframe=timeframe,
+                include_key_results=include_key_results,
+                enable_clarification=enable_clarification,
+                clarification_answers_count=len(clarification_answers or []),
+            ),
+        )
         # Step 1: Check if clarification is needed (if enabled and no answers yet)
         if enable_clarification and not clarification_answers:
             clarification_response = await self.clarify(
                 idea=idea,
                 category=category,
                 provider_config=provider_config,
+                request_id=request_id,
             )
 
             # If clarification is required, return questions to caller
             if clarification_response.state == "clarification":
+                logger.info(
+                    "goal planning stopped at clarification stage | %s",
+                    compact_log(
+                        request_id=request_id,
+                        question_count=(
+                            len(clarification_response.clarification.questions)
+                            if clarification_response.clarification
+                            else 0
+                        ),
+                    ),
+                )
                 return clarification_response
 
         # Step 2: Augment idea with clarification answers if provided
@@ -428,6 +644,14 @@ class GoalPlanningService:
                 f"Q: {answer}" for answer in clarification_answers if answer.strip()
             )
             augmented_idea = f"{idea}\n\nAdditional context:\n{answers_text}"
+            logger.info(
+                "goal planning augmented idea with clarification answers | %s",
+                compact_log(
+                    request_id=request_id,
+                    clarification_answers_count=len(clarification_answers),
+                    augmented_idea_preview=preview_text(augmented_idea),
+                ),
+            )
 
         # Step 3: Generate the actual goal draft
         return await self.plan(
@@ -436,6 +660,7 @@ class GoalPlanningService:
             timeframe=timeframe,
             include_key_results=include_key_results,
             provider_config=provider_config,
+            request_id=request_id,
         )
 
 

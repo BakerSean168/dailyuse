@@ -52,3 +52,11 @@ async def test_goal_handler_clarification_flow(handler):
     assert result.clarification is not None
     assert result.clarification.needs_clarification is True
     handler.goal_planning_service.plan_with_clarification.assert_awaited_once()
+    kwargs = handler.goal_planning_service.plan_with_clarification.await_args.kwargs
+    assert kwargs["idea"] == "learn something"
+    assert kwargs["category"] is None
+    assert kwargs["timeframe"] is None
+    assert kwargs["include_key_results"] is True
+    assert kwargs["enable_clarification"] is True
+    assert kwargs["clarification_answers"] is None
+    assert kwargs["request_id"] == "req-123"

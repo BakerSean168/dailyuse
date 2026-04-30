@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { createLogger } from '@dailyuse/utils';
 
 import {
   INTERNAL_CONTENT_HASH_HEADER,
@@ -7,6 +8,16 @@ import {
   INTERNAL_TIMESTAMP_HEADER,
   signInternalRequest,
 } from './internal-ai-service-request-signer';
+
+const logger = createLogger('AIServiceInternalClient');
+
+function previewText(value: string, maxLength = 240): string {
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
 
 export interface AIServiceInternalClientOptions {
   baseUrl: string;
@@ -75,6 +86,14 @@ export class AIServiceInternalClient {
     const { signal, cleanup } = composeAbortSignal(request.signal, timeoutController.signal);
 
     try {
+      logger.info('ai-service internal request started', {
+        requestId,
+        path: request.path,
+        identityId: request.identityId,
+        baseUrl: this.options.baseUrl,
+        timeoutMs: this.timeoutMs,
+        bodyPreview: previewText(body),
+      });
       const response = await fetch(new URL(request.path, this.options.baseUrl).toString(), {
         method: 'POST',
         headers: {
@@ -101,6 +120,14 @@ export class AIServiceInternalClient {
               : response.status >= 500
                 ? 'upstream_provider_error'
                 : 'transport';
+        logger.warn('ai-service internal request failed with non-2xx response', {
+          requestId,
+          path: request.path,
+          identityId: request.identityId,
+          statusCode: response.status,
+          category,
+          detail: previewText(detail),
+        });
         throw new AIServiceInternalRequestError(
           `ai-service request failed (${response.status}) [requestId: ${requestId}] ${detail}`,
           requestId,
@@ -109,6 +136,12 @@ export class AIServiceInternalClient {
         );
       }
 
+      logger.info('ai-service internal request completed', {
+        requestId,
+        path: request.path,
+        identityId: request.identityId,
+        statusCode: response.status,
+      });
       return response;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -117,6 +150,12 @@ export class AIServiceInternalClient {
           category === 'aborted'
             ? `ai-service request aborted by caller [requestId: ${requestId}]`
             : `ai-service request timed out [requestId: ${requestId}]`;
+        logger.warn('ai-service internal request aborted or timed out', {
+          requestId,
+          path: request.path,
+          identityId: request.identityId,
+          category,
+        });
         throw new AIServiceInternalRequestError(
           message,
           requestId,
@@ -124,9 +163,23 @@ export class AIServiceInternalClient {
         );
       }
       if (error instanceof AIServiceInternalRequestError) {
+        logger.warn('ai-service internal request raised structured request error', {
+          requestId,
+          path: request.path,
+          identityId: request.identityId,
+          category: error.category,
+          statusCode: error.statusCode,
+          message: error.message,
+        });
         throw error;
       }
       if (error instanceof Error) {
+        logger.warn('ai-service internal request transport error', {
+          requestId,
+          path: request.path,
+          identityId: request.identityId,
+          message: error.message,
+        });
         throw new AIServiceInternalRequestError(
           `${error.message} [requestId: ${requestId}]`,
           requestId,

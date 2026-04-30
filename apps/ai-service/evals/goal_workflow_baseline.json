@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-04-30T00:00:00+00:00",
+  "cases_path": "evals/goal_workflow_cases.json",
+  "total_cases": 4,
+  "passed_cases": 4,
+  "failed_cases": 0,
+  "pass_rate": 1.0,
+  "by_type": {
+    "goal_workflow": 4
+  },
+  "failed_case_ids": [],
+  "gate_passed": true,
+  "gate_failures": [],
+  "baseline_path": null,
+  "archive_path": null,
+  "results": [
+    {
+      "id": "goal-workflow-clarification-search-notes-partial",
+      "type": "goal_workflow",
+      "description": "The workflow should support clarification, read-only note search, and partial fake execution recovery.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [],
+      "metadata": {}
+    },
+    {
+      "id": "goal-workflow-direct-fetch-stats-success",
+      "type": "goal_workflow",
+      "description": "The workflow should skip clarification when the idea is concrete and use analytics read-only context before a successful fake execute.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [],
+      "metadata": {}
+    },
+    {
+      "id": "goal-workflow-direct-submit-success",
+      "type": "goal_workflow",
+      "description": "The workflow should support the straightforward draft -> confirm -> result path without read-only tools.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [],
+      "metadata": {}
+    },
+    {
+      "id": "goal-workflow-invalid-prepare-payload",
+      "type": "goal_workflow",
+      "description": "The workflow should surface the prepare-stage failure when the provider submits invalid automation payload arguments.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [],
+      "metadata": {}
+    }
+  ]
+}
