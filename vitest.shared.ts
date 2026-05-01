@@ -362,6 +362,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
         '.cache',
         '.nx',
         'src/test/setup.ts',
+        'src/**/*.integration.{test,spec}.*',
         ...testExclude,
       ],
       coverage: {

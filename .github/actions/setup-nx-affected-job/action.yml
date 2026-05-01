@@ -5,6 +5,14 @@ inputs:
   node-version:
     description: Node.js version to install
     required: true
+  setup-python:
+    description: Whether to set up Python for ai-service and other Python-backed Nx targets
+    required: false
+    default: 'true'
+  setup-uv:
+    description: Whether to set up uv for ai-service and other Python-backed Nx targets
+    required: false
+    default: 'true'
 
 runs:
   using: composite
@@ -13,14 +21,17 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        package-manager-cache: false
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
 
     - name: Setup Python
+      if: ${{ inputs.setup-python == 'true' }}
       uses: actions/setup-python@v6
       with:
         python-version-file: apps/ai-service/.python-version
 
     - name: Setup uv
+      if: ${{ inputs.setup-uv == 'true' }}
       uses: astral-sh/setup-uv@v7
       with:
         working-directory: apps/ai-service
@@ -64,4 +75,3 @@ runs:
         echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
         echo "Using NX_BASE=$NX_BASE_VALUE"
         echo "Using NX_HEAD=$NX_HEAD_VALUE"
-
