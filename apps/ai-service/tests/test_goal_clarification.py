@@ -147,7 +147,7 @@ class TestGoalClarificationService:
             "needsClarification": true,
             "questions": [
                 {"question": "Question 1", "context": null},
-                {"question": "Question 2", "context": null},
+                {"question": "Question 2", "context": null}
             ],
             "rationale": "Vague"
         }
