@@ -7,7 +7,14 @@
     "paths": {
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/*": ["packages/domain-shared/src/*/index.ts"],
-      "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"]
+      "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
+      "@dailyuse/utils": ["packages/utils/src/index.ts"],
+      "@dailyuse/utils/*": ["packages/utils/src/*/index.ts", "packages/utils/src/*.ts"],
+      "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/*": [
+        "packages/contracts/src/modules/*/index.ts",
+        "packages/contracts/src/*/index.ts"
+      ]
     }
   },
   "include": ["src/**/*.ts"]
