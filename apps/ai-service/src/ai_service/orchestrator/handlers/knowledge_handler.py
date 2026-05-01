@@ -1,10 +1,10 @@
 from ai_service.orchestrator.models import WorkflowContext
 from ai_service.orchestrator.orchestrator import WorkflowHandler
+from ai_service.orchestrator.handlers.input_parsing import parse_provider_config
 from ai_service.schemas import (
     IndexedKnowledgeResource,
     KnowledgeQueryResponse,
 )
-from ai_service.schemas.chat import ProviderConfig
 from ai_service.services.knowledge_query_service import KnowledgeQueryService
 
 
@@ -21,11 +21,7 @@ class KnowledgeWorkflowHandler(WorkflowHandler):
         provider_config_data = context.input_data.get("provider_config")
         max_citations = int(context.input_data.get("max_citations", 3))
 
-        provider_config = (
-            ProviderConfig(**provider_config_data)
-            if isinstance(provider_config_data, dict)
-            else provider_config_data
-        )
+        provider_config = parse_provider_config(provider_config_data)
         indexed_resources = [
             IndexedKnowledgeResource(**item)
             if isinstance(item, dict)

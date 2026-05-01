@@ -18,6 +18,8 @@
       "@dailyuse/contracts/goal": ["../contracts/src/modules/goal/index.ts"],
       "@dailyuse/contracts/task": ["../contracts/src/modules/task/index.ts"],
       "@dailyuse/contracts/reminder": ["../contracts/src/modules/reminder/index.ts"],
+      "@dailyuse/test-utils": ["../test-utils/src/index.ts"],
+      "@dailyuse/test-utils/*": ["../test-utils/src/*", "../test-utils/src/*.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
       "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
       "@dailyuse/patterns": ["../patterns/src/index.ts"],

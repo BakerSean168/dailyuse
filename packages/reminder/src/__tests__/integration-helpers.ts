@@ -1,8 +1,9 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@dailyuse/database';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { cleanAllTables } from '@dailyuse/test-utils/setup/database';
 
 let prismaPromise: Promise<PrismaClient> | null = null;
+type AccountJsonInput = Prisma.AccountUncheckedCreateInput['profile'];
 
 export async function getPrisma(): Promise<PrismaClient> {
   if (!prismaPromise) {
@@ -27,8 +28,8 @@ export async function seedAccount(
   overrides: {
     id?: string;
     emailAddress?: string;
-    profile?: Record<string, unknown>;
-    settings?: Record<string, unknown>;
+    profile?: AccountJsonInput;
+    settings?: AccountJsonInput;
     status?: string;
   } = {},
 ) {

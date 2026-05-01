@@ -54,7 +54,7 @@
     // 路径别名
     "paths": {
       // 项目内部别名：@/ 指向 src 目录
-      "@/components/ui/*": ["../../packages/ui-vue-shadcn/src/components/ui/*/index.ts"],
+      "@/components/ui/*": ["../../packages/ui-vue-shadcn/dist/components/ui/*/index.d.ts"],
       "@/lib/*": ["../../packages/ui-vue-shadcn/src/lib/*"],
       "@/*": ["./src/*"],
 
@@ -69,9 +69,11 @@
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
       "@dailyuse/notification-runtime": ["../../packages/notification-runtime/src/index.ts"],
       "@dailyuse/ui-vue-shadcn/components/ui/*": [
-        "../../packages/ui-vue-shadcn/src/components/ui/*/index.ts"
+        "../../packages/ui-vue-shadcn/dist/components/ui/*/index.d.ts"
       ],
-      "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
+      "@dailyuse/ui-vue-shadcn/composables/*": [
+        "../../packages/ui-vue-shadcn/dist/composables/*.d.ts"
+      ],
       "@dailyuse/authentication/application-client": [
         "../../packages/authentication/src/application-client/index.ts"
       ],

@@ -1,7 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { logo, logo128, logos, defaultAvatar } from '../images';
-
-vi.mock('../images/logos/Memoflow.icns', () => ({ default: 'mock-icns-url' }));
 
 describe('@dailyuse/assets - Images', () => {
   it('should export logo paths', () => {

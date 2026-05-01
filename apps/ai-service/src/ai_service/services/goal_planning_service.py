@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import time
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -144,7 +145,7 @@ class GoalPlanningService:
             "goal planning completed | %s",
             compact_log(
                 request_id=request_id,
-                goal_title=response.goal.title,
+                goal_title=response.goal.title if response.goal is not None else None,
                 key_result_count=len(response.key_results or []),
                 usage=summarize_usage(response.usage),
             ),

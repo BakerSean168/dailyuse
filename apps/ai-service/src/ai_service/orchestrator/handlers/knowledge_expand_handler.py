@@ -1,9 +1,11 @@
 from ai_service.orchestrator.models import WorkflowContext
 from ai_service.orchestrator.orchestrator import WorkflowHandler
-from ai_service.schemas.chat import ProviderConfig
 from ai_service.schemas.knowledge import (
     KnowledgeExpansionResponse,
-    KnowledgeResourceDocument,
+)
+from ai_service.orchestrator.handlers.input_parsing import (
+    parse_knowledge_resource_list,
+    parse_provider_config,
 )
 from ai_service.services.knowledge_expansion_service import KnowledgeExpansionService
 
@@ -19,16 +21,10 @@ class KnowledgeExpandWorkflowHandler(WorkflowHandler):
         return workflow_type == "knowledge-expand"
 
     async def handle(self, context: WorkflowContext) -> KnowledgeExpansionResponse:
-        provider_config_data = context.input_data.get("provider_config")
-        provider_config = (
-            ProviderConfig(**provider_config_data)
-            if isinstance(provider_config_data, dict)
-            else provider_config_data
+        provider_config = parse_provider_config(context.input_data.get("provider_config"))
+        related_resources = parse_knowledge_resource_list(
+            context.input_data.get("related_resources")
         )
-        related_resources = [
-            KnowledgeResourceDocument(**item) if isinstance(item, dict) else item
-            for item in context.input_data.get("related_resources", [])
-        ]
 
         return await self.knowledge_expansion_service.expand(
             instruction=context.input_data.get("instruction", ""),

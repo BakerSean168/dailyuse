@@ -17,7 +17,7 @@ import {
   aLoadedTaskTemplate,
   anAllDayTimeConfig,
   aDailyRecurrenceRule,
-} from '@dailyuse/test-utils';
+} from '@dailyuse/task/testing';
 
 const DAY_MS = 86400000;
 

@@ -1,9 +1,11 @@
 from ai_service.orchestrator.models import WorkflowContext
 from ai_service.orchestrator.orchestrator import WorkflowHandler
-from ai_service.schemas.chat import ProviderConfig
+from ai_service.orchestrator.handlers.input_parsing import (
+    parse_knowledge_resource,
+    parse_optional_provider_config,
+)
 from ai_service.schemas.knowledge import (
     KnowledgeIndexResourceResponse,
-    KnowledgeResourceDocument,
 )
 from ai_service.services.knowledge_query_service import KnowledgeIndexingService
 
@@ -17,17 +19,10 @@ class KnowledgeIndexWorkflowHandler(WorkflowHandler):
 
     async def handle(self, context: WorkflowContext) -> KnowledgeIndexResourceResponse:
         resource_data = context.input_data.get("resource")
-        provider_config_data = context.input_data.get("provider_config")
-        provider_config = (
-            ProviderConfig(**provider_config_data)
-            if isinstance(provider_config_data, dict)
-            else provider_config_data
+        provider_config = parse_optional_provider_config(
+            context.input_data.get("provider_config")
         )
-        resource = (
-            KnowledgeResourceDocument(**resource_data)
-            if isinstance(resource_data, dict)
-            else resource_data
-        )
+        resource = parse_knowledge_resource(resource_data)
 
         indexed_resource = await self.knowledge_indexing_service.index_resource_async(
             resource,

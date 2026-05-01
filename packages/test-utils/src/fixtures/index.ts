@@ -6,4 +6,3 @@
 
 export * from './base.fixture.js';
 export * from './account.fixture.js';
-export * from './task.fixture.js';

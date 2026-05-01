@@ -43,6 +43,10 @@
       "types": "./dist/api/index.d.ts",
       "import": "./dist/api/index.js"
     },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
     "./electron-entry": {
       "types": "./dist/electron-entry/index.d.ts",
       "import": "./dist/electron-entry/index.js"
@@ -57,7 +61,6 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/goal": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
     "@dailyuse/schedule": "workspace:*",

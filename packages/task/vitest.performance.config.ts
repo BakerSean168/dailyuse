@@ -15,7 +15,7 @@ const sharedConfig = createSharedConfig({
     '@dailyuse/test-utils': '../test-utils/src/index.ts',
     '@dailyuse/test-utils/mocks': '../test-utils/src/mocks/index.ts',
     '@dailyuse/test-utils/helpers/result-matchers': '../test-utils/src/helpers/result-matchers.ts',
-    '@dailyuse/test-utils/fixtures': '../test-utils/src/fixtures/index.ts',
+    '@dailyuse/task/testing': './src/testing/index.ts',
     '@dailyuse/task': './src/index.ts',
     '@dailyuse/task/domain-shared': './src/domain-shared/index.ts',
     '@dailyuse/task/domain-server': './src/domain-server/index.ts',

@@ -16,14 +16,12 @@
     "./setup/*": "./src/setup/*.ts"
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@vue/test-utils": "^2.4.6",
     "pinia": "^3.0.3",
     "vitest": "^4.0.15"
   },
   "devDependencies": {
-    "@dailyuse/task": "workspace:*",
     "@types/node": "^22.0.0",
     "typescript": "^5.9.3",
     "vue": "^3.4.0"

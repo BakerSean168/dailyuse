@@ -106,7 +106,7 @@ services:
     environment:
       POSTGRES_USER: ${TEST_DB_USER:-test_user}
       POSTGRES_PASSWORD: ${TEST_DB_PASS:-test_pass}
-      POSTGRES_DB: ${TEST_DB_NAME:-Memoflow_test}
+      POSTGRES_DB: ${TEST_DB_NAME:-memoflow_test}
     ports:
       - '${TEST_DB_PORT:-5433}:5432'
     tmpfs:
@@ -121,7 +121,7 @@ services:
       - full_page_writes=off
     healthcheck:
       test:
-        ['CMD-SHELL', 'pg_isready -U ${TEST_DB_USER:-test_user} -d ${TEST_DB_NAME:-Memoflow_test}']
+        ['CMD-SHELL', 'pg_isready -U ${TEST_DB_USER:-test_user} -d ${TEST_DB_NAME:-memoflow_test}']
       interval: 5s
       timeout: 5s
       retries: 5

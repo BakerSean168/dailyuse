@@ -20,6 +20,8 @@
       "@dailyuse/schedule/domain-server": ["../schedule/src/domain-server/index.ts"],
       "@dailyuse/schedule/domain-shared": ["../schedule/src/domain-shared/index.ts"],
       "@dailyuse/schedule/infrastructure-server": ["../schedule/src/infrastructure-server/index.ts"],
+      "@dailyuse/test-utils": ["../test-utils/src/index.ts"],
+      "@dailyuse/test-utils/*": ["../test-utils/src/*", "../test-utils/src/*.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
       "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
       "@dailyuse/patterns": ["../patterns/src/index.ts"]

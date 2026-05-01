@@ -2,6 +2,8 @@
 
 import os
 
+from ai_service.config import get_settings
+
 
 def test_health_check(client):
     """Test health endpoint returns healthy status."""
@@ -12,7 +14,7 @@ def test_health_check(client):
     data = response.json()
     assert data["status"] == "healthy"
     assert data["service"] == "ai-service"
-    assert data["version"] == "0.1.0"
+    assert data["version"] == get_settings().app_version
 
 
 def test_health_check_no_auth_required():

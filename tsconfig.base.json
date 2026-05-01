@@ -32,7 +32,6 @@
         "packages/contracts/src/modules/*/index.ts",
         "packages/contracts/src/*/index.ts"
       ],
-      "@dailyuse/contracts/modules/*": ["packages/contracts/src/modules/*/index.ts"],
       "@dailyuse/assets": ["packages/assets/src/index.ts"],
       "@dailyuse/assets/*": ["packages/assets/src/*/index.ts", "packages/assets/src/*.ts"],
 

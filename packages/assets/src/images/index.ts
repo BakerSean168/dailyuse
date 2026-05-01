@@ -20,7 +20,6 @@ import logo256Url from './logos/Memoflow-256.png';
 import logo512Url from './logos/Memoflow-512.png';
 import logo1024Url from './logos/Memoflow-1024.png';
 import logoIcoUrl from './logos/Memoflow.ico';
-import logoIcnsUrl from './logos/Memoflow.icns';
 import trayWin16Url from './logos/Memoflow-Tray-Windows-16.png';
 import trayWin32Url from './logos/Memoflow-Tray-Windows-32.png';
 import defaultAvatarUrl from './avatars/profile1.png';
@@ -67,7 +66,7 @@ export const logo256 = logo256Url;
 export const logo512 = logo512Url;
 export const logo1024 = logo1024Url;
 export const logoIco = logoIcoUrl;
-export const logoIcns = logoIcnsUrl;
+export const logoIcns = imageAssetPaths.logoIcns;
 export const trayWin16 = trayWin16Url;
 export const trayWin32 = trayWin32Url;
 

@@ -72,7 +72,8 @@
         "default",
         "^production"
       ],
-      "cache": false
+      "cache": false,
+      "parallelism": false
     },
     "test:smoke": {
       "inputs": [

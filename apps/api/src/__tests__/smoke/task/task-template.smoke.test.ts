@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TaskType } from '@dailyuse/contracts/modules/task';
+import { TaskType } from '@dailyuse/contracts/task';
 import request from 'supertest';
 import {
   createSmokeApp,

@@ -57,6 +57,9 @@ export default tseslint.config(
         '**/node_modules/**',
         '**/coverage/**',
         '**/.nx/**',
+        '**/test-results/**',
+        '**/playwright-report/**',
+        '**/playwright-*-report/**',
         '**/dist-renderer/**',
         '**/dist-electron/**',
         '**/src/generated/prisma/**',
@@ -81,7 +84,10 @@ export default tseslint.config(
     {
       rules: {
         '@typescript-eslint/no-explicit-any': 'warn',
-        '@typescript-eslint/no-unused-vars': 'warn',
+        '@typescript-eslint/no-unused-vars': [
+          'warn',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
         '@typescript-eslint/no-require-imports': 'off',
         '@typescript-eslint/no-unsafe-function-type': 'off',
         // 临时禁用这些规则，后续逐步修复
@@ -93,7 +99,7 @@ export default tseslint.config(
         'vue/valid-v-slot': 'warn',
         'vue/no-v-text-v-html-on-component': 'warn',
         'vue/no-use-v-if-with-v-for': 'warn',
-        'vue/no-unused-vars': 'warn',
+        'vue/no-unused-vars': ['warn', { ignorePattern: '^_' }],
       },
     },
     // ============ Module Boundary Enforcement ============
@@ -102,6 +108,28 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': ['error', moduleBoundaryOptions],
+      },
+    },
+    {
+      files: ['packages/goal/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: ['@dailyuse/task', '@dailyuse/task/*'],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/task/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: ['@dailyuse/goal', '@dailyuse/goal/*'],
+          },
+        ],
       },
     },
     {

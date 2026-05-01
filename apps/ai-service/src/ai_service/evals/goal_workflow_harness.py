@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -216,11 +216,10 @@ class StaticAnalyticsQueryService:
                     if value is not None:
                         highlights.append(f"task.{key}: {value}")
 
+        eval_answer = context.extra.get("evalAnswer") if isinstance(context.extra, dict) else None
         answer = (
-            context.extra.get("evalAnswer")
-            if isinstance(context.extra, dict)
-            and isinstance(context.extra.get("evalAnswer"), str)
-            and context.extra.get("evalAnswer")
+            eval_answer
+            if isinstance(eval_answer, str) and eval_answer
             else (
                 f"Analytics context for '{question}' suggests: "
                 f"{'; '.join(highlights) if highlights else 'no prominent metrics provided.'}"
@@ -329,13 +328,13 @@ async def run_goal_workflow_case(
 
     recording_chat = RecordingChatService(delegate)
     indexing_service = KnowledgeIndexingService()
-    knowledge_query_service = KnowledgeQueryService(recording_chat, indexing_service)
+    knowledge_query_service = KnowledgeQueryService(cast(Any, recording_chat), indexing_service)
     analytics_query_service = StaticAnalyticsQueryService()
     goal_planning_service = GoalPlanningService(
-        recording_chat,
+        cast(Any, recording_chat),
         indexing_service,
         knowledge_query_service,
-        analytics_query_service,
+        cast(Any, analytics_query_service),
     )
     goal_handler = GoalWorkflowHandler(goal_planning_service)
     goal_automation_handler = GoalAutomationWorkflowHandler(goal_planning_service)

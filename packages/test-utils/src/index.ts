@@ -6,16 +6,16 @@
  * Sub-modules:
  * - helpers:  Random data generators, Result matchers, async waitFor
  * - mocks:    Proxy-based repository/event-bus mock factories
- * - fixtures: Domain-specific test data factories (task, account)
+ * - fixtures: Lightweight shared test data factories (account, base helpers)
  * - setup:    Fast-test hooks, browser mocks, and database lifecycle management
  *
  * @example
  * ```typescript
  * // Import everything
- * import { createMockRepo, aOneTimeTask, anIdentityId } from '@dailyuse/test-utils';
+ * import { createMockRepo, anIdentityId } from '@dailyuse/test-utils';
  *
  * // Or import from sub-modules for tree-shaking
- * import { aOneTimeTask } from '@dailyuse/test-utils/fixtures';
+ * import { anIdentityId } from '@dailyuse/test-utils/fixtures';
  * import { createMockRepo } from '@dailyuse/test-utils/mocks';
  * import { ensureTestDatabase } from '@dailyuse/test-utils/setup';
  * ```
@@ -49,28 +49,6 @@ export {
   // Account
   anIdentityId,
   TEST_IDENTITY_ID,
-  // Task templates
-  aOneTimeTask,
-  aRecurringTask,
-  aTaskTemplateState,
-  aLoadedTaskTemplate,
-  // Task instances
-  aTaskInstance,
-  // Value objects
-  anAllDayTimeConfig,
-  aTimePointConfig,
-  aTimeRangeConfig,
-  aDailyRecurrenceRule,
-  aWeeklyRecurrenceRule,
-  aDisabledReminderConfig,
-  aRelativeReminder,
-  aCompletionRecord,
-  aCompletionWithDuration,
-  aChecklist,
-  // IDs
-  aTaskTemplateId,
-  aTaskInstanceId,
-  aTaskFolderId,
 } from './fixtures/index.js';
 
 // Setup (re-export selectively to avoid pulling in node:child_process for unit tests)
