@@ -21,6 +21,7 @@ pnpm nx run desktop:test:watch
 ## 专项测试入口
 
 ```bash
+pnpm test:integration
 pnpm nx run task:test:integration
 pnpm nx run task:test:bench
 pnpm nx run api:test:smoke
@@ -34,6 +35,7 @@ pnpm nx run desktop:test:main
 
 适用场景：
 
+- `pnpm test:integration`：顺序执行 `task`、`goal`、`schedule`、`reminder` 的 Prisma 集成测试，共享一套本地测试库
 - `task:test:integration`：数据库、Prisma、事务、仓储实现改动
 - `task:test:bench`：性能回归排查或性能优化验证
 - `api:test:smoke`：HTTP 路由、middleware、序列化、状态码改动
@@ -67,7 +69,7 @@ pnpm nx affected -t test:coverage
 
 - API 路由或控制器：`pnpm nx run api:test:smoke`
 - Web adapter / mock handler / contracts：`pnpm nx run web:test`
-- 数据库访问或 Prisma：`pnpm nx run task:test:integration`
+- 数据库访问或 Prisma：`pnpm test:integration` 或 `pnpm nx run <project>:test:integration`
 - 关键浏览器流程：`pnpm nx run web:e2e`
   当前默认只跑核心 Web flow oracle；更宽的浏览器场景不要默认混进这条入口
 - 同步回归：`pnpm nx run web:e2e:sync`
@@ -76,7 +78,7 @@ pnpm nx affected -t test:coverage
 
 ## 集成测试数据库
 
-`task:test:integration` 的 global setup 会通过 [`packages/task/src/__tests__/integration-global-setup.ts`](../../packages/task/src/__tests__/integration-global-setup.ts) 调用 `@dailyuse/test-utils/setup/database`，在本地尝试确保测试数据库可用。
+`task`、`goal`、`schedule`、`reminder` 的 `test:integration` target 都会通过各自的 `integration-global-setup.ts` 调用 `@dailyuse/test-utils/setup/database`，在本地尝试确保测试数据库可用。
 
 当前仓库默认使用根目录 [`docker-compose.yml`](../../docker-compose.yml) 的 `test` profile，而不是旧文档里提到的 `docker-compose.test.yml`。
 
@@ -87,6 +89,14 @@ docker compose -f docker-compose.yml --profile test up -d postgres-test
 ```
 
 默认测试库连接信息由 `TEST_DATABASE_URL` 或相关 `TEST_DB_*` 环境变量决定；未覆盖时默认走本地 `127.0.0.1:5433`。
+
+默认数据库名是 `memoflow_test`。`TEST_DATABASE_URL`、`DATABASE_URL`、`TEST_DB_NAME` 和 `docker-compose.yml` 的 `postgres-test` 默认值必须保持一致。
+
+当前集成测试共享同一个本地测试库，并且每个 suite 会在运行前清空全部表。因此：
+
+- 使用根命令 `pnpm test:integration` 时会强制顺序执行
+- 不要手工并发运行多个 `pnpm nx run <project>:test:integration`
+- 如果出现外键随机失败，先检查是否有其他 integration suite 同时占用 `postgres-test`
 
 ## CI 对应
 

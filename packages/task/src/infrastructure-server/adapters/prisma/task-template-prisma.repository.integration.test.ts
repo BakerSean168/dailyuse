@@ -5,7 +5,7 @@ import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { RecurrenceRule, TaskTimeConfig } from '@/domain-server/value-objects';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
 import {
-  cleanAll,
+  cleanTaskTables,
   disconnectPrisma,
   getPrisma,
   seedAccount,
@@ -13,12 +13,11 @@ import {
 
 describe('TaskTemplatePrismaRepository integration', () => {
   afterAll(async () => {
-    await cleanAll();
     await disconnectPrisma();
   });
 
   beforeEach(async () => {
-    await cleanAll();
+    await cleanTaskTables();
   });
 
   it('persists and loads a one-time task template by id', async () => {

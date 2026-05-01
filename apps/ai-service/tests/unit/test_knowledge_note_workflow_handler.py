@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from ai_service.orchestrator.handlers.knowledge_note_handler import (
     KnowledgeNoteWorkflowHandler,

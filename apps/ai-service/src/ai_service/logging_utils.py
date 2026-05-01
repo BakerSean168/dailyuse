@@ -77,7 +77,9 @@ def configure_logging(settings: Settings) -> Path:
     return log_dir
 
 
-def preview_text(value: str | None, *, max_length: int = _MAX_PREVIEW_LENGTH) -> str | None:
+def preview_text(
+    value: str | None, *, max_length: int = _MAX_PREVIEW_LENGTH
+) -> str | None:
     """Return one-line truncated text preview for logs."""
 
     if value is None:
@@ -92,11 +94,7 @@ def preview_text(value: str | None, *, max_length: int = _MAX_PREVIEW_LENGTH) ->
 def compact_log(**fields: Any) -> str:
     """Serialize structured log fields into one grep-friendly JSON string."""
 
-    payload = {
-        key: value
-        for key, value in fields.items()
-        if value is not None
-    }
+    payload = {key: value for key, value in fields.items() if value is not None}
     return json.dumps(payload, ensure_ascii=False, default=str, sort_keys=True)
 
 
@@ -165,6 +163,8 @@ def summarize_completion(completion: Any) -> dict[str, Any]:
         "finish_reason": getattr(completion, "finish_reason", None),
         "content_length": len(content) if isinstance(content, str) else None,
         "content_preview": preview_text(content) if isinstance(content, str) else None,
-        "tool_calls": summarize_tool_calls(tool_calls if isinstance(tool_calls, list) else []),
+        "tool_calls": summarize_tool_calls(
+            tool_calls if isinstance(tool_calls, list) else []
+        ),
         "usage": summarize_usage(getattr(completion, "usage", None)),
     }

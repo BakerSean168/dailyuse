@@ -1,28 +1,28 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
-import {
-  TaskTemplate,
-  RecurrenceRule,
-  TaskTimeConfig,
-} from '@/domain-server/aggregates/task-template';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
+import { TaskTimeConfig } from '@/domain-server/value-objects';
 import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
 import { TaskInstancePrismaRepository } from './task-instance-prisma.repository';
 import {
-  cleanAll,
+  cleanTaskTables,
   disconnectPrisma,
   getPrisma,
   seedAccount,
 } from '../../../__tests__/integration-helpers';
 
+function makeAllDayTimeConfig(startDate: Date): TaskTimeConfig {
+  return TaskTimeConfig.createAllDay(startDate);
+}
+
 describe('TaskInstancePrismaRepository integration', () => {
   afterAll(async () => {
-    await cleanAll();
     await disconnectPrisma();
   });
 
   beforeEach(async () => {
-    await cleanAll();
+    await cleanTaskTables();
   });
 
   it('persists and loads a task instance by id', async () => {
@@ -40,23 +40,20 @@ describe('TaskInstancePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Test Task',
-      importance: 'High',
+      importance: 'Important',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
     // Create an instance from the template
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const instance = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'High',
+      importance: 'Important',
     });
 
     await instanceRepository.save(instance);
@@ -83,22 +80,19 @@ describe('TaskInstancePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Test Task',
-      importance: 'Medium',
+      importance: 'Moderate',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const instance1 = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'Medium',
+      importance: 'Moderate',
     });
 
     const nextDay = new Date();
@@ -108,11 +102,8 @@ describe('TaskInstancePrismaRepository integration', () => {
       templateId: template.id,
       identityId,
       instanceDate: nextDay.getTime(),
-      timeConfig: {
-        startDate: nextDay,
-        activatedAt: Date.now(),
-      },
-      importance: 'Low',
+      timeConfig: makeAllDayTimeConfig(nextDay),
+      importance: 'Minor',
     });
 
     await instanceRepository.save(instance1);
@@ -139,22 +130,19 @@ describe('TaskInstancePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Template for Instances',
-      importance: 'High',
+      importance: 'Important',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const instance1 = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'High',
+      importance: 'Important',
     });
 
     const nextDay = new Date();
@@ -164,11 +152,8 @@ describe('TaskInstancePrismaRepository integration', () => {
       templateId: template.id,
       identityId,
       instanceDate: nextDay.getTime(),
-      timeConfig: {
-        startDate: nextDay,
-        activatedAt: Date.now(),
-      },
-      importance: 'High',
+      timeConfig: makeAllDayTimeConfig(nextDay),
+      importance: 'Important',
     });
 
     await instanceRepository.save(instance1);
@@ -195,28 +180,25 @@ describe('TaskInstancePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Task to Update',
-      importance: 'Medium',
+      importance: 'Moderate',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const instance = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'Medium',
+      importance: 'Moderate',
     });
 
     await instanceRepository.save(instance);
 
     // Update status
-    instance.markInProgress();
+    instance.start();
     await instanceRepository.save(instance);
 
     const saved = await instanceRepository.findById(instance.id);
@@ -238,37 +220,34 @@ describe('TaskInstancePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Task to Complete',
-      importance: 'High',
+      importance: 'Important',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const instance = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'High',
+      importance: 'Important',
     });
 
     await instanceRepository.save(instance);
 
     // Mark as completed
-    instance.markCompleted();
+    instance.complete();
     await instanceRepository.save(instance);
 
     const saved = await instanceRepository.findById(instance.id);
 
     expect(saved?.status).toBe('Completed');
-    expect(saved?.completionRecord).not.toBeNull();
+    expect(saved?.actualEndTime).not.toBeNull();
   });
 
-  it('soft deletes instance', async () => {
+  it('deletes instance', async () => {
     const identityId = IdentityId.generate();
     await seedAccount({ id: identityId });
 
@@ -282,33 +261,28 @@ describe('TaskInstancePrismaRepository integration', () => {
     const template = TaskTemplate.createOneTimeTask({
       identityId,
       title: 'Task to Delete',
-      importance: 'Low',
+      importance: 'Minor',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const instance = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'Low',
+      importance: 'Minor',
     });
 
     await instanceRepository.save(instance);
 
-    // Soft delete
-    instance.softDelete();
-    await instanceRepository.save(instance);
+    await instanceRepository.delete(instance.id);
 
     const saved = await instanceRepository.findById(instance.id);
 
-    expect(saved?.deletedAt).not.toBeNull();
+    expect(saved).toBeNull();
   });
 
   it('round-trip: domain -> persistence -> domain preserves data integrity', async () => {
@@ -326,22 +300,19 @@ describe('TaskInstancePrismaRepository integration', () => {
       identityId,
       title: 'Complex Task',
       description: 'A complex task',
-      importance: 'High',
+      importance: 'Important',
       dueDate: tomorrow,
     });
     await templateRepository.save(template);
 
-    const timeConfig: TaskTimeConfig = {
-      startDate: tomorrow,
-      activatedAt: Date.now(),
-    };
+    const timeConfig = makeAllDayTimeConfig(tomorrow);
 
     const original = TaskInstance.create({
       templateId: template.id,
       identityId,
       instanceDate: tomorrow.getTime(),
       timeConfig,
-      importance: 'High',
+      importance: 'Important',
     });
 
     await instanceRepository.save(original);

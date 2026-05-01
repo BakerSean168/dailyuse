@@ -69,9 +69,7 @@ async def run_goal_workflow(
             goal_title=response.goal.title if response.goal else None,
             key_result_count=len(response.key_results or []),
             clarification_question_count=(
-                len(response.clarification.questions)
-                if response.clarification
-                else 0
+                len(response.clarification.questions) if response.clarification else 0
             ),
         ),
     )

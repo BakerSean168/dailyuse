@@ -165,7 +165,9 @@ class RecordingChatService:
                 "messages": [message.model_copy(deep=True) for message in messages],
                 "tool_choice": tool_choice,
                 "tool_names": [
-                    tool.function.name for tool in tools or [] if getattr(tool, "function", None)
+                    tool.function.name
+                    for tool in tools or []
+                    if getattr(tool, "function", None)
                 ],
             }
         )
@@ -216,20 +218,29 @@ class StaticAnalyticsQueryService:
                     if value is not None:
                         highlights.append(f"task.{key}: {value}")
 
-        eval_answer = context.extra.get("evalAnswer") if isinstance(context.extra, dict) else None
+        eval_answer = (
+            context.extra.get("evalAnswer") if isinstance(context.extra, dict) else None
+        )
         answer = (
             eval_answer
             if isinstance(eval_answer, str) and eval_answer
-            else (
-                f"Analytics context for '{question}' suggests: "
-                f"{'; '.join(highlights) if highlights else 'no prominent metrics provided.'}"
-            )
+            else _build_analytics_answer(question, highlights)
         )
         return AnalyticsQueryResponse(
             answer=answer,
             highlights=highlights[:6],
             usage=None,
         )
+
+
+def _build_analytics_answer(
+    question: str, highlights: list[str]
+) -> str:
+    metrics = (
+        "; ".join(highlights) if highlights
+        else "no prominent metrics provided."
+    )
+    return f"Analytics context for '{question}' suggests: {metrics}"
 
 
 class FakeGoalWorkflowExecutor:
@@ -241,7 +252,9 @@ class FakeGoalWorkflowExecutor:
         self._kr_counter = 0
         self._task_counter = 0
 
-    def execute(self, actions: Sequence[GoalAutomationToolCall]) -> list[dict[str, Any]]:
+    def execute(
+        self, actions: Sequence[GoalAutomationToolCall]
+    ) -> list[dict[str, Any]]:
         return [self._execute_action(action) for action in actions]
 
     def _execute_action(self, action: GoalAutomationToolCall) -> dict[str, Any]:
@@ -306,7 +319,9 @@ class FakeGoalWorkflowExecutor:
             "create_key_result": "Created key result in fake execution.",
             "create_task_template": "Created task template in fake execution.",
             "search_notes": "Read-only note search already resolved during planning.",
-            "fetch_stats": "Read-only analytics fetch already resolved during planning.",
+            "fetch_stats": (
+                "Read-only analytics fetch already resolved during planning."
+            ),
         }.get(tool, f"Executed {tool} in fake execution.")
 
 
@@ -323,12 +338,16 @@ async def run_goal_workflow_case(
         delegate: SupportsComplete = ScriptedChatService(case.provider_script)
     else:
         if chat_service is None:
-            raise ValueError("Live goal workflow evals require a chat service instance.")
+            raise ValueError(
+                "Live goal workflow evals require a chat service instance."
+            )
         delegate = chat_service
 
     recording_chat = RecordingChatService(delegate)
     indexing_service = KnowledgeIndexingService()
-    knowledge_query_service = KnowledgeQueryService(cast(Any, recording_chat), indexing_service)
+    knowledge_query_service = KnowledgeQueryService(
+        cast(Any, recording_chat), indexing_service
+    )
     analytics_query_service = StaticAnalyticsQueryService()
     goal_planning_service = GoalPlanningService(
         cast(Any, recording_chat),
@@ -359,12 +378,15 @@ async def run_goal_workflow_case(
         if draft_response.state == "clarification":
             trace.stages.append("clarification")
             trace.clarification_question_count = len(
-                draft_response.clarification.questions if draft_response.clarification else []
+                draft_response.clarification.questions
+                if draft_response.clarification
+                else []
             )
             if not case.clarification_answers:
                 trace.failure_stage = "clarification"
                 trace.failure_detail = (
-                    "Clarification was required but no clarification_answers were supplied."
+                    "Clarification was required but no "
+                    "clarification_answers were supplied."
                 )
                 return finalize_trace(trace, recording_chat)
 
@@ -398,10 +420,13 @@ async def run_goal_workflow_case(
                 workflow_type="goal-automation",
                 input_data={
                     "idea": build_automation_idea_from_draft(draft_response),
-                    "category": case.initial_request.category or draft_response.goal.category,
+                    "category": case.initial_request.category
+                    or draft_response.goal.category,
                     "timeframe": case.initial_request.timeframe,
                     "include_key_results": case.initial_request.include_key_results,
-                    "include_task_templates": case.initial_request.include_task_templates,
+                    "include_task_templates": (
+                        case.initial_request.include_task_templates
+                    ),
                     "related_resources": list(case.related_resources),
                     "analytics_context": case.analytics_context,
                     "provider_config": provider_config,
@@ -495,9 +520,15 @@ def build_execution_summary(
 ) -> dict[str, Any]:
     """Summarize fake execution results with TS-compatible status names."""
 
-    executed_count = sum(1 for action in executed_actions if action.get("status") == "executed")
-    skipped_count = sum(1 for action in executed_actions if action.get("status") == "skipped")
-    failed_count = sum(1 for action in executed_actions if action.get("status") == "failed")
+    executed_count = sum(
+        1 for action in executed_actions if action.get("status") == "executed"
+    )
+    skipped_count = sum(
+        1 for action in executed_actions if action.get("status") == "skipped"
+    )
+    failed_count = sum(
+        1 for action in executed_actions if action.get("status") == "failed"
+    )
 
     if failed_count == 0:
         status = "success"
@@ -533,25 +564,30 @@ def build_execution_recovery(
         )
     if any(action.get("tool") == "create_key_result" for action in failed_actions):
         suggestions.append(
-            "Confirm the goal exists and the key result drafts are complete before retrying execution."
+            "Confirm the goal exists and the key result drafts "
+            "are complete before retrying execution."
         )
     if any(action.get("tool") == "create_task_template" for action in failed_actions):
         suggestions.append(
-            "Review task template drafts and task module configuration before retrying execution."
+            "Review task template drafts and task module "
+            "configuration before retrying execution."
         )
     if any(action.get("tool") == "search_notes" for action in failed_actions):
         suggestions.append(
-            "Refresh repository resources or narrow the note query before retrying execution."
+            "Refresh repository resources or narrow the "
+            "note query before retrying execution."
         )
     if any(action.get("tool") == "fetch_stats" for action in failed_actions):
         suggestions.append(
-            "Check analytics availability and rerun execute after the dashboard context is healthy."
+            "Check analytics availability and rerun execute "
+            "after the dashboard context is healthy."
         )
     if skipped_actions:
         suggestions.append("Review skipped actions before rerunning execution.")
     if failed_actions and not suggestions:
         suggestions.append(
-            "Review the failed action messages and rerun execute with the approved plan after fixing the underlying issue."
+            "Review the failed action messages and rerun execute "
+            "with the approved plan after fixing the underlying issue."
         )
 
     return {

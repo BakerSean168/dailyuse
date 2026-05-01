@@ -426,7 +426,9 @@ class TestOpenAIProvider:
         def handler(request: httpx.Request) -> httpx.Response:
             payload = json.loads(request.content.decode("utf-8"))
             assert payload["tool_choice"] == "required"
-            assert payload["tools"][0]["function"]["name"] == "submit_goal_automation_plan"
+            assert (
+                payload["tools"][0]["function"]["name"] == "submit_goal_automation_plan"
+            )
             return httpx.Response(
                 200,
                 json={
@@ -440,7 +442,7 @@ class TestOpenAIProvider:
                                         "type": "function",
                                         "function": {
                                             "name": "submit_goal_automation_plan",
-                                            "arguments": "{\"summary\":\"ok\"}",
+                                            "arguments": '{"summary":"ok"}',
                                         },
                                     }
                                 ],
@@ -448,7 +450,11 @@ class TestOpenAIProvider:
                             "finish_reason": "tool_calls",
                         }
                     ],
-                    "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+                    "usage": {
+                        "prompt_tokens": 1,
+                        "completion_tokens": 1,
+                        "total_tokens": 2,
+                    },
                 },
             )
 
@@ -477,7 +483,7 @@ class TestOpenAIProvider:
         assert result.finish_reason == "tool_calls"
         assert result.tool_calls is not None
         assert result.tool_calls[0].function.name == "submit_goal_automation_plan"
-        assert result.tool_calls[0].function.arguments == "{\"summary\":\"ok\"}"
+        assert result.tool_calls[0].function.arguments == '{"summary":"ok"}'
 
     @pytest.mark.asyncio
     async def test_complete_serializes_structured_tool_loop_messages(self):
@@ -493,13 +499,19 @@ class TestOpenAIProvider:
 
         def handler(request: httpx.Request) -> httpx.Response:
             payload = json.loads(request.content.decode("utf-8"))
-            assert payload["messages"][0] == {"role": "system", "content": "You are planning."}
+            assert payload["messages"][0] == {
+                "role": "system",
+                "content": "You are planning.",
+            }
             assert payload["messages"][1]["role"] == "assistant"
             assert payload["messages"][1]["tool_calls"][0]["id"] == "call_1"
-            assert payload["messages"][1]["tool_calls"][0]["function"]["name"] == "search_notes"
+            assert (
+                payload["messages"][1]["tool_calls"][0]["function"]["name"]
+                == "search_notes"
+            )
             assert payload["messages"][2] == {
                 "role": "tool",
-                "content": "{\"query\": \"approval workflow\"}",
+                "content": '{"query": "approval workflow"}',
                 "tool_call_id": "call_1",
             }
             return httpx.Response(
@@ -511,7 +523,11 @@ class TestOpenAIProvider:
                             "finish_reason": "stop",
                         }
                     ],
-                    "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+                    "usage": {
+                        "prompt_tokens": 1,
+                        "completion_tokens": 1,
+                        "total_tokens": 2,
+                    },
                 },
             )
 

@@ -8,7 +8,11 @@ from collections.abc import Awaitable, Callable
 from typing import Any, TypedDict, TypeVar
 
 from ai_service.errors import StructuredOutputError
-from ai_service.logging_utils import compact_log, summarize_completion, summarize_tool_calls
+from ai_service.logging_utils import (
+    compact_log,
+    summarize_completion,
+    summarize_tool_calls,
+)
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,

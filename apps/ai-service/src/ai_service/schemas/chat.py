@@ -21,7 +21,9 @@ class ChatMessage(BaseModel):
             if not self.content.strip():
                 raise ValueError("System and user messages must include content.")
             if self.tool_call_id or self.tool_calls:
-                raise ValueError("System and user messages cannot include tool metadata.")
+                raise ValueError(
+                    "System and user messages cannot include tool metadata."
+                )
             return self
 
         if self.role == "assistant":
@@ -31,7 +33,8 @@ class ChatMessage(BaseModel):
                 return self
             if not self.content.strip():
                 raise ValueError(
-                    "Assistant messages must include content when no tool calls are present."
+                    "Assistant messages must include content "
+                    "when no tool calls are present."
                 )
             return self
 

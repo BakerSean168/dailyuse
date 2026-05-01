@@ -1,9 +1,9 @@
-from ai_service.orchestrator.models import WorkflowContext
-from ai_service.orchestrator.orchestrator import WorkflowHandler
 from ai_service.orchestrator.handlers.input_parsing import (
     parse_knowledge_resource,
     parse_optional_provider_config,
 )
+from ai_service.orchestrator.models import WorkflowContext
+from ai_service.orchestrator.orchestrator import WorkflowHandler
 from ai_service.schemas.knowledge import (
     KnowledgeIndexResourceResponse,
 )

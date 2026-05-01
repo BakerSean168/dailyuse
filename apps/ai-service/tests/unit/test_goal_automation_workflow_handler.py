@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from ai_service.orchestrator.handlers.goal_automation_handler import (
     GoalAutomationWorkflowHandler,

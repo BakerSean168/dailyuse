@@ -31,7 +31,7 @@ describe('PrismaTaskInstanceMapper', () => {
       timePoint: '09:00',
       startDate: 1710000000000,
     }),
-    importance: 'High',
+    importance: 'Important',
     priority: 1,
     status: 'Completed',
     actualStartTime: new Date('2024-04-10T09:00:00Z'),
@@ -71,7 +71,7 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(domain.templateId).toBe('template-2');
       expect(domain.identityId).toBe('identity-2');
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
-      expect(domain.importance).toBe('High');
+      expect(domain.importance).toBe('Important');
       expect(domain.priority).toBe(1);
       expect(domain.status).toBe('Completed');
       expect(domain.actualStartTime).toBe(row.actualStartTime!.getTime());
@@ -145,7 +145,7 @@ describe('PrismaTaskInstanceMapper', () => {
         instanceDate: new Date('2024-05-01T00:00:00Z').getTime(),
         timeConfig: { timeType: 'Flexible' },
         status: 'Pending' as const,
-        importance: 'Low' as const,
+        importance: 'Minor' as const,
         version: 1,
       } as any;
 
@@ -153,7 +153,7 @@ describe('PrismaTaskInstanceMapper', () => {
 
       expect(persistence.templateId).toBe('template-3');
       expect(persistence.identityId).toBe('identity-3');
-      expect(persistence.importance).toBe('Low');
+      expect(persistence.importance).toBe('Minor');
       expect(persistence.status).toBe('Pending');
       expect(persistence.priority).toBeNull();
       expect(persistence.actualStartTime).toBeNull();
@@ -170,7 +170,7 @@ describe('PrismaTaskInstanceMapper', () => {
         instanceDate: new Date('2024-05-15T08:00:00Z').getTime(),
         timeConfig: { timeType: 'FixedTime', timePoint: '08:00' },
         status: 'Completed' as const,
-        importance: 'High' as const,
+        importance: 'Important' as const,
         priority: 2,
         actualStartTime: new Date('2024-05-15T08:00:00Z').getTime(),
         actualEndTime: new Date('2024-05-15T09:30:00Z').getTime(),
@@ -181,7 +181,7 @@ describe('PrismaTaskInstanceMapper', () => {
       const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
 
       expect(persistence.templateId).toBe('template-4');
-      expect(persistence.importance).toBe('High');
+      expect(persistence.importance).toBe('Important');
       expect(persistence.priority).toBe(2);
       expect(persistence.status).toBe('Completed');
       expect(persistence.comment).toBe('Successfully completed');

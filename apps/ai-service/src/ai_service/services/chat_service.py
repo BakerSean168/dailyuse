@@ -19,8 +19,8 @@ from ai_service.providers.factory import create_provider_registry
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
-    ChatToolDefinition,
     ChatStreamChunk,
+    ChatToolDefinition,
     ProviderConfig,
 )
 

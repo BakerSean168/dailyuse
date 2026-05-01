@@ -1,6 +1,8 @@
 import pytest
-from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
+
 from ai_service.orchestrator.models import WorkflowContext
+from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
+
 
 @pytest.fixture
 def orchestrator():
@@ -23,6 +25,7 @@ class StubHandler:
             raise self.error
         return self.result
 
+
 @pytest.mark.asyncio
 async def test_orchestrator_routing(orchestrator):
     handler = StubHandler(handles=True, result={"state": "draft", "goal": "test"})
@@ -30,9 +33,7 @@ async def test_orchestrator_routing(orchestrator):
     orchestrator.register_handler(handler)
 
     context = WorkflowContext(
-        request_id="req-123",
-        workflow_type="goal",
-        input_data={"idea": "test"}
+        request_id="req-123", workflow_type="goal", input_data={"idea": "test"}
     )
 
     result = await orchestrator.execute(context)
@@ -42,16 +43,18 @@ async def test_orchestrator_routing(orchestrator):
 
 @pytest.mark.asyncio
 async def test_orchestrator_uses_first_matching_handler(orchestrator):
-    first_handler = StubHandler(handles=True, result={"state": "draft", "goal": "first"})
-    second_handler = StubHandler(handles=True, result={"state": "draft", "goal": "second"})
+    first_handler = StubHandler(
+        handles=True, result={"state": "draft", "goal": "first"}
+    )
+    second_handler = StubHandler(
+        handles=True, result={"state": "draft", "goal": "second"}
+    )
 
     orchestrator.register_handler(first_handler)
     orchestrator.register_handler(second_handler)
 
     context = WorkflowContext(
-        request_id="req-123",
-        workflow_type="goal",
-        input_data={"idea": "test"}
+        request_id="req-123", workflow_type="goal", input_data={"idea": "test"}
     )
 
     result = await orchestrator.execute(context)
@@ -66,21 +69,18 @@ async def test_orchestrator_bubbles_handler_errors(orchestrator):
     orchestrator.register_handler(handler)
 
     context = WorkflowContext(
-        request_id="req-123",
-        workflow_type="goal",
-        input_data={"idea": "test"}
+        request_id="req-123", workflow_type="goal", input_data={"idea": "test"}
     )
 
     with pytest.raises(RuntimeError, match="handler failed"):
         await orchestrator.execute(context)
 
+
 @pytest.mark.asyncio
 async def test_orchestrator_no_handler(orchestrator):
     context = WorkflowContext(
-        request_id="req-123",
-        workflow_type="unknown",
-        input_data={"idea": "test"}
+        request_id="req-123", workflow_type="unknown", input_data={"idea": "test"}
     )
-    
+
     with pytest.raises(ValueError, match="No handler found for workflow type: unknown"):
         await orchestrator.execute(context)

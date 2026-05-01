@@ -1,5 +1,6 @@
 from pydantic import BaseModel, model_validator
 
+
 class ToolDefinition(BaseModel):
     name: str
     description: str
@@ -13,6 +14,7 @@ class ToolDefinition(BaseModel):
             raise ValueError("requires_confirmation must be True for side-effect tools")
         return self
 
+
 class ToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[str, ToolDefinition] = {}
@@ -24,6 +26,6 @@ class ToolRegistry:
         if name not in self._tools:
             raise KeyError(f"Tool {name} not found")
         return self._tools[name]
-        
+
     def has_tool(self, name: str) -> bool:
         return name in self._tools

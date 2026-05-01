@@ -10,7 +10,9 @@ from ai_service.schemas.knowledge import KnowledgeResourceDocument
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
-def parse_required_model(raw: object, model_type: type[ModelT], field_name: str) -> ModelT:
+def parse_required_model(
+    raw: object, model_type: type[ModelT], field_name: str
+) -> ModelT:
     if isinstance(raw, model_type):
         return raw
 
@@ -29,7 +31,9 @@ def parse_optional_model(
     return parse_required_model(raw, model_type, field_name)
 
 
-def parse_model_list(raw: object, model_type: type[ModelT], field_name: str) -> list[ModelT]:
+def parse_model_list(
+    raw: object, model_type: type[ModelT], field_name: str
+) -> list[ModelT]:
     if raw is None:
         return []
 

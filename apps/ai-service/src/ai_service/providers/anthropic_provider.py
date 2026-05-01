@@ -7,13 +7,13 @@ import logging
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from ai_service.providers.http_provider import BaseHTTPProvider
 from ai_service.errors import UnsupportedProviderError
+from ai_service.providers.http_provider import BaseHTTPProvider
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
-    ChatToolDefinition,
     ChatStreamChunk,
+    ChatToolDefinition,
     ProviderConfig,
 )
 
@@ -38,9 +38,7 @@ class AnthropicProvider(BaseHTTPProvider):
 
         if tools or tool_choice:
             raise UnsupportedProviderError(
-                detail=(
-                    "The selected provider does not implement native tool calling."
-                )
+                detail=("The selected provider does not implement native tool calling.")
             )
 
         response = await self._http_client.post(

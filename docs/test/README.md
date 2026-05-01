@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | 快测试（TDD 默认） | `packages/*`、`apps/*` 下的 `*.test.ts` / `*.spec.ts` | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch` |
 | 覆盖率门禁 | 领域包与 `domain-shared` 的快测试集合 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected` |
-| 集成测试 | `packages/task/src/**/*.integration.test.ts` | `pnpm nx run task:test:integration` |
+| 集成测试 | `packages/{task,goal,schedule,reminder}/src/**/*.integration.test.ts` | `pnpm test:integration`、`pnpm nx run <project>:test:integration` |
 | API 冒烟测试 | `apps/api/src/__tests__/smoke/**` | `pnpm nx run api:test:smoke` |
 | Web 契约测试 | `apps/web/src/mocks/handlers/*.spec.ts` | `pnpm nx run web:test` |
 | Web E2E | `apps/web/e2e/**`（默认入口仅核心 flow oracle） | `pnpm nx run web:e2e` |

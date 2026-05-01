@@ -18,7 +18,9 @@ from ai_service.evals.runner import DEFAULT_PROVIDER
 
 def load_goal_workflow_cases() -> list[GoalWorkflowEvalCase]:
     root = Path(__file__).resolve().parents[1]
-    raw = json.loads((root / "evals" / "goal_workflow_cases.json").read_text(encoding="utf-8"))
+    raw = json.loads(
+        (root / "evals" / "goal_workflow_cases.json").read_text(encoding="utf-8")
+    )
     return [GoalWorkflowEvalCase.model_validate(item) for item in raw]
 
 
@@ -35,7 +37,11 @@ async def test_goal_workflow_harness_runs_bundled_partial_case():
 
     assert trace.stages == ["clarification", "draft", "confirm", "result"]
     assert trace.failure_stage is None
-    assert trace.action_tools == ["create_goal", "create_key_result", "create_task_template"]
+    assert trace.action_tools == [
+        "create_goal",
+        "create_key_result",
+        "create_task_template",
+    ]
     assert trace.execution_summary == {
         "status": "partial",
         "executedCount": 2,
@@ -49,10 +55,12 @@ async def test_goal_workflow_harness_runs_bundled_partial_case():
 
 
 @pytest.mark.asyncio
-async def test_goal_workflow_harness_requires_clarification_answers_when_questions_are_returned():
-    """If the clarification step stops the workflow, the harness should mark that stage."""
+async def test_harness_requires_clarification_answers_when_questions_returned():
+    """If clarification step stops the workflow, mark that stage."""
 
-    case = load_goal_workflow_cases()[0].model_copy(update={"clarification_answers": None})
+    case = load_goal_workflow_cases()[0].model_copy(
+        update={"clarification_answers": None}
+    )
     trace = await run_goal_workflow_case(
         case,
         provider_config=DEFAULT_PROVIDER,
@@ -65,10 +73,15 @@ async def test_goal_workflow_harness_requires_clarification_answers_when_questio
 
 
 def test_goal_workflow_recovery_helpers_match_ts_status_semantics():
-    """Fake execute summaries should retain the same status semantics as the TS workflow."""
+    """Fake execute summaries should match TS workflow status semantics."""
 
     executed_actions = [
-        {"tool": "create_goal", "status": "executed", "message": "ok", "entityId": "goal-1"},
+        {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "ok",
+            "entityId": "goal-1",
+        },
         {"tool": "create_key_result", "status": "failed", "message": "broken"},
         {"tool": "create_task_template", "status": "skipped", "message": "later"},
     ]
@@ -85,7 +98,8 @@ def test_goal_workflow_recovery_helpers_match_ts_status_semantics():
             {"tool": "create_key_result", "status": "failed", "message": "broken"}
         ],
         "suggestions": [
-            "Confirm the goal exists and the key result drafts are complete before retrying execution.",
+            "Confirm the goal exists and the key result drafts "
+            "are complete before retrying execution.",
             "Review skipped actions before rerunning execution.",
         ],
     }

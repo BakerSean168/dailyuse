@@ -25,7 +25,7 @@ pnpm nx run desktop:test:watch
 
 如果改动跨越边界，再补跑对应专项测试：
 
-- 数据库 / Prisma：`pnpm nx run task:test:integration`
+- 数据库 / Prisma：`pnpm test:integration` 或 `pnpm nx run <project>:test:integration`
 - API 路由 / middleware：`pnpm nx run api:test:smoke`
 - Web 真实流程：`pnpm nx run web:e2e`
 - 同步回归：`pnpm nx run web:e2e:sync`
@@ -44,5 +44,6 @@ pnpm nx run desktop:test:watch
 
 - 文档只保留入口、边界和约束，不再展开底层实现。
 - `pnpm nx affected -t test` 只负责快测试，不默认替代 integration / smoke / E2E。
+- 共享 `postgres-test` 的 integration suite 必须顺序运行；默认使用 `pnpm test:integration`。
 - 具体实现理由应写在测试配置、setup、fixture 和 helper 注释中。
 - 如果文档与当前 `project.json`、测试配置或目录结构冲突，以代码为准。

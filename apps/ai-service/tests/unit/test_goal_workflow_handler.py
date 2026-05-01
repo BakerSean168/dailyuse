@@ -1,37 +1,44 @@
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
+
 from ai_service.orchestrator.handlers.goal_handler import GoalWorkflowHandler
 from ai_service.orchestrator.models import WorkflowContext
-from ai_service.schemas import GoalPlanningResponse, GoalClarificationLLMResponse
+from ai_service.schemas import GoalClarificationLLMResponse, GoalPlanningResponse
+
 
 @pytest.fixture
 def handler():
     service = AsyncMock()
     return GoalWorkflowHandler(goal_planning_service=service)
 
+
 def test_can_handle(handler):
     assert handler.can_handle("goal") is True
     assert handler.can_handle("knowledge") is False
 
+
 @pytest.mark.asyncio
 async def test_goal_handler_clarification_flow(handler):
-    handler.goal_planning_service.plan_with_clarification.return_value = GoalPlanningResponse(
-        state="clarification",
-        clarification=GoalClarificationLLMResponse(
-            needsClarification=True,
-            rationale="Vague",
-            questions=[
-                {
-                    "question": "What outcome do you want from this goal?",
-                    "context": None,
-                },
-                {
-                    "question": "What timeline are you targeting?",
-                    "context": None,
-                },
-            ],
-        ),
-        usage={"prompt_tokens": 10},
+    handler.goal_planning_service.plan_with_clarification.return_value = (
+        GoalPlanningResponse(
+            state="clarification",
+            clarification=GoalClarificationLLMResponse(
+                needsClarification=True,
+                rationale="Vague",
+                questions=[
+                    {
+                        "question": "What outcome do you want from this goal?",
+                        "context": None,
+                    },
+                    {
+                        "question": "What timeline are you targeting?",
+                        "context": None,
+                    },
+                ],
+            ),
+            usage={"prompt_tokens": 10},
+        )
     )
 
     context = WorkflowContext(
@@ -42,9 +49,9 @@ async def test_goal_handler_clarification_flow(handler):
             "provider_config": {
                 "provider": "openai",
                 "model": "gpt-4o-mini",
-                "api_key": "secret"
-            }
-        }
+                "api_key": "secret",
+            },
+        },
     )
 
     result = await handler.handle(context)

@@ -11,6 +11,7 @@ from typing import cast
 from fastapi import Request
 
 from ai_service.config import Settings
+from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
 from ai_service.services import (
     AnalyticsQueryService,
     ChatService,
@@ -73,9 +74,7 @@ def get_analytics_query_service(request: Request) -> AnalyticsQueryService:
     return cast(AnalyticsQueryService, request.app.state.analytics_query_service)
 
 
-from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
 
 def get_workflow_orchestrator(request: Request) -> AIWorkflowOrchestrator:
     """Read the shared workflow orchestrator from app state."""
     return cast(AIWorkflowOrchestrator, request.app.state.orchestrator)
-

@@ -15,8 +15,8 @@ from ai_service.evals.runner import (
     build_report,
     evaluate_cases,
     evaluate_cases_with_mode,
-    filter_eval_cases,
     evaluate_quality_gate,
+    filter_eval_cases,
     load_eval_cases,
     load_report,
 )
@@ -44,7 +44,9 @@ async def test_eval_runner_passes_bundled_regression_cases():
 async def test_eval_runner_passes_bundled_goal_workflow_cases():
     """The checked-in workflow fixtures should all pass through the shared runner."""
 
-    cases_path = Path(__file__).resolve().parents[1] / "evals" / "goal_workflow_cases.json"
+    cases_path = (
+        Path(__file__).resolve().parents[1] / "evals" / "goal_workflow_cases.json"
+    )
     cases = load_eval_cases(cases_path)
     results = await evaluate_cases(cases)
     report = build_report(cases_path=cases_path, results=results)
@@ -58,7 +60,9 @@ async def test_eval_runner_passes_bundled_goal_workflow_cases():
 def test_filter_eval_cases_supports_case_id_selection():
     """The runner should support replaying a single named case."""
 
-    cases_path = Path(__file__).resolve().parents[1] / "evals" / "goal_workflow_cases.json"
+    cases_path = (
+        Path(__file__).resolve().parents[1] / "evals" / "goal_workflow_cases.json"
+    )
     cases = load_eval_cases(cases_path)
 
     filtered = filter_eval_cases(
@@ -194,42 +198,81 @@ async def test_eval_runner_supports_live_mode_with_stubbed_provider_responses():
 
 
 @pytest.mark.asyncio
-async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider_responses():
+async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider():
     """Live mode should also support the workflow harness when responses are stubbed."""
 
     root = Path(__file__).resolve().parents[1]
     cases_path = root / "evals" / "goal_workflow_live_cases.json"
     cases = load_eval_cases(cases_path)
+    clarification_json = json.dumps(
+        {
+            "needsClarification": False,
+            "questions": [],
+            "rationale": "The idea is specific enough.",
+        }
+    )
+    draft_goal = {
+        "title": "Create a concrete AI workflow goal",
+        "description": (
+            "Run weekly execution reviews around one "
+            "measurable milestone."
+        ),
+        "motivation": "Keep AI workflow progress visible.",
+        "category": "work",
+        "importance": "Important",
+        "tags": ["ai", "workflow"],
+        "feasibilityAnalysis": (
+            "One milestone and a weekly ritual are narrow enough."
+        ),
+        "aiInsights": (
+            "Start with the execution review loop "
+            "before adding more automation."
+        ),
+        "suggestedDurationDays": 90,
+    }
+    draft_key_results = [
+        {
+            "title": "Finish one workflow milestone",
+            "description": "Ship one measurable workflow improvement.",
+            "targetValue": 1,
+            "unit": "milestone",
+        }
+    ]
+    draft_response = json.dumps(
+        {
+            "goal": draft_goal,
+            "keyResults": draft_key_results,
+        }
+    )
+    submit_plan = json.dumps(
+        {
+            "summary": (
+                "Create the goal and attach one measurable key result."
+            ),
+            "goal": draft_goal,
+            "keyResults": draft_key_results,
+            "taskTemplates": [],
+            "toolCalls": [
+                {
+                    "tool": "create_goal",
+                    "rationale": "Create the goal first.",
+                },
+                {
+                    "tool": "create_key_result",
+                    "index": 0,
+                    "rationale": "Attach the milestone as a KR.",
+                },
+            ],
+        }
+    )
     results = await evaluate_cases_with_mode(
         cases,
         mode="live",
         live_eval_config=LiveEvalConfig(provider_config=DEFAULT_PROVIDER),
         chat_service=StubChatService(
             [
-                '{"needsClarification":false,"questions":[],"rationale":"The idea is specific enough."}',
-                json.dumps(
-                    {
-                        "goal": {
-                            "title": "Create a concrete AI workflow goal",
-                            "description": "Run weekly execution reviews around one measurable milestone.",
-                            "motivation": "Keep AI workflow progress visible.",
-                            "category": "work",
-                            "importance": "Important",
-                            "tags": ["ai", "workflow"],
-                            "feasibilityAnalysis": "One milestone and a weekly ritual are narrow enough.",
-                            "aiInsights": "Start with the execution review loop before adding more automation.",
-                            "suggestedDurationDays": 90,
-                        },
-                        "keyResults": [
-                            {
-                                "title": "Finish one workflow milestone",
-                                "description": "Ship one measurable workflow improvement.",
-                                "targetValue": 1,
-                                "unit": "milestone",
-                            }
-                        ],
-                    }
-                ),
+                clarification_json,
+                draft_response,
                 ChatCompleteResponse(
                     content="",
                     finish_reason="tool_calls",
@@ -238,46 +281,15 @@ async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider_res
                             id="call_submit_live",
                             function=ChatToolCallFunction(
                                 name="submit_goal_automation_plan",
-                                arguments=json.dumps(
-                                    {
-                                        "summary": "Create the goal and attach one measurable key result.",
-                                        "goal": {
-                                            "title": "Create a concrete AI workflow goal",
-                                            "description": "Run weekly execution reviews around one measurable milestone.",
-                                            "motivation": "Keep AI workflow progress visible.",
-                                            "category": "work",
-                                            "importance": "Important",
-                                            "tags": ["ai", "workflow"],
-                                            "feasibilityAnalysis": "One milestone and a weekly ritual are narrow enough.",
-                                            "aiInsights": "Start with the execution review loop before adding more automation.",
-                                            "suggestedDurationDays": 90,
-                                        },
-                                        "keyResults": [
-                                            {
-                                                "title": "Finish one workflow milestone",
-                                                "description": "Ship one measurable workflow improvement.",
-                                                "targetValue": 1,
-                                                "unit": "milestone",
-                                            }
-                                        ],
-                                        "taskTemplates": [],
-                                        "toolCalls": [
-                                            {
-                                                "tool": "create_goal",
-                                                "rationale": "Create the goal first.",
-                                            },
-                                            {
-                                                "tool": "create_key_result",
-                                                "index": 0,
-                                                "rationale": "Attach the milestone as a KR.",
-                                            },
-                                        ],
-                                    }
-                                ),
+                                arguments=submit_plan,
                             ),
                         )
                     ],
-                    usage={"prompt_tokens": 10, "completion_tokens": 8, "total_tokens": 18},
+                    usage={
+                        "prompt_tokens": 10,
+                        "completion_tokens": 8,
+                        "total_tokens": 18,
+                    },
                 ),
             ]
         ),

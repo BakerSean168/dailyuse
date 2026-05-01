@@ -1,5 +1,6 @@
 """Tests for goal automation planning endpoints and service parsing."""
 
+import json
 from unittest.mock import AsyncMock, Mock, patch
 
 from ai_service.errors import StructuredOutputError
@@ -108,7 +109,10 @@ class TestGoalAutomationService:
                         id="call_search_1",
                         function=ChatToolCallFunction(
                             name="search_notes",
-                            arguments='{"query":"approval workflow", "maxCitations": 2}',
+                            arguments=(
+                                '{"query":"approval workflow",'
+                                ' "maxCitations": 2}'
+                            ),
                         ),
                     )
                 ],
@@ -122,30 +126,44 @@ class TestGoalAutomationService:
                         id="call_submit_1",
                         function=ChatToolCallFunction(
                             name="submit_goal_automation_plan",
-                            arguments="""
-                            {
-                              "summary": "Create the goal with explicit approval steps.",
-                              "goal": {
-                                "title": "Ship AI automation",
-                                "description": "Expose a reviewable automation flow.",
-                                "motivation": "Reduce repetitive setup.",
-                                "category": "work",
-                                "importance": "Important",
-                                "tags": ["ai", "automation"],
-                                "feasibilityAnalysis": "A focused implementation is enough.",
-                                "aiInsights": "Use repository evidence before proposing actions.",
-                                "suggestedDurationDays": 14
-                              },
-                              "keyResults": [],
-                              "taskTemplates": [],
-                              "toolCalls": [
+                            arguments=json.dumps(
                                 {
-                                  "tool": "create_goal",
-                                  "rationale": "Create the main goal first."
+                                    "summary": (
+                                        "Create the goal with explicit "
+                                        "approval steps."
+                                    ),
+                                    "goal": {
+                                        "title": "Ship AI automation",
+                                        "description": (
+                                            "Expose a reviewable "
+                                            "automation flow."
+                                        ),
+                                        "motivation": "Reduce repetitive setup.",
+                                        "category": "work",
+                                        "importance": "Important",
+                                        "tags": ["ai", "automation"],
+                                        "feasibilityAnalysis": (
+                                            "A focused implementation "
+                                            "is enough."
+                                        ),
+                                        "aiInsights": (
+                                            "Use repository evidence "
+                                            "before proposing actions."
+                                        ),
+                                        "suggestedDurationDays": 14,
+                                    },
+                                    "keyResults": [],
+                                    "taskTemplates": [],
+                                    "toolCalls": [
+                                        {
+                                            "tool": "create_goal",
+                                            "rationale": (
+                                                "Create the main goal first."
+                                            ),
+                                        }
+                                    ],
                                 }
-                              ]
-                            }
-                            """,
+                            ),
                         ),
                     )
                 ],
@@ -212,7 +230,9 @@ class TestGoalAutomationService:
         assert result.tool_calls[0].tool == "create_goal"
         assert chat_service.complete.await_count == 2
         assert chat_service.complete.await_args_list[0].kwargs["tool_choice"] == "auto"
-        assert chat_service.complete.await_args_list[1].kwargs["tool_choice"] == "required"
+        assert (
+            chat_service.complete.await_args_list[1].kwargs["tool_choice"] == "required"
+        )
         follow_up_messages = chat_service.complete.await_args_list[1].kwargs["messages"]
         assert follow_up_messages[-2].role == "assistant"
         assert follow_up_messages[-2].tool_calls is not None
@@ -222,7 +242,7 @@ class TestGoalAutomationService:
         knowledge_query_service.select_citations.assert_awaited_once()
 
     async def test_fetch_stats_tool_call_runs_read_only_tool_loop(self):
-        """fetch_stats should run from analytics context before final plan submission."""
+        """fetch_stats should run from analytics before final plan submission."""
 
         from ai_service.schemas import (
             AnalyticsQueryContext,
@@ -259,30 +279,47 @@ class TestGoalAutomationService:
                         id="call_submit_2",
                         function=ChatToolCallFunction(
                             name="submit_goal_automation_plan",
-                            arguments="""
-                            {
-                              "summary": "Create the goal with realistic workload expectations.",
-                              "goal": {
-                                "title": "Stabilize AI workflow delivery",
-                                "description": "Ship the remaining workflow milestones with a realistic load.",
-                                "motivation": "Reduce planning drift.",
-                                "category": "work",
-                                "importance": "Important",
-                                "tags": ["ai", "workflow"],
-                                "feasibilityAnalysis": "Current workload supports a focused iteration.",
-                                "aiInsights": "Use current task pressure to avoid overcommitting.",
-                                "suggestedDurationDays": 10
-                              },
-                              "keyResults": [],
-                              "taskTemplates": [],
-                              "toolCalls": [
+                            arguments=json.dumps(
                                 {
-                                  "tool": "create_goal",
-                                  "rationale": "Create the main goal first."
+                                    "summary": (
+                                        "Create the goal with realistic "
+                                        "workload expectations."
+                                    ),
+                                    "goal": {
+                                        "title": (
+                                            "Stabilize AI workflow delivery"
+                                        ),
+                                        "description": (
+                                            "Ship the remaining workflow "
+                                            "milestones with a realistic "
+                                            "load."
+                                        ),
+                                        "motivation": "Reduce planning drift.",
+                                        "category": "work",
+                                        "importance": "Important",
+                                        "tags": ["ai", "workflow"],
+                                        "feasibilityAnalysis": (
+                                            "Current workload supports a "
+                                            "focused iteration."
+                                        ),
+                                        "aiInsights": (
+                                            "Use current task pressure "
+                                            "to avoid overcommitting."
+                                        ),
+                                        "suggestedDurationDays": 10,
+                                    },
+                                    "keyResults": [],
+                                    "taskTemplates": [],
+                                    "toolCalls": [
+                                        {
+                                            "tool": "create_goal",
+                                            "rationale": (
+                                                "Create the main goal first."
+                                            ),
+                                        }
+                                    ],
                                 }
-                              ]
-                            }
-                            """,
+                            ),
                         ),
                     )
                 ],
@@ -291,7 +328,10 @@ class TestGoalAutomationService:
         ]
         analytics_query_service = AsyncMock(spec=AnalyticsQueryService)
         analytics_query_service.query.return_value = AnalyticsQueryResponse(
-            answer="There are 3 active goals and 7 open tasks, so keep the scope tight.",
+            answer=(
+                "There are 3 active goals and 7 open tasks, "
+                "so keep the scope tight."
+            ),
             highlights=["activeGoals: 3", "task.totalTasks: 7"],
             usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
         )
@@ -352,45 +392,64 @@ class TestGoalAutomationService:
                     id="call_1",
                     function=ChatToolCallFunction(
                         name="submit_goal_automation_plan",
-                        arguments="""
-                        {
-                          "summary": "Create the goal and supporting structure.",
-                          "goal": {
-                            "title": "Ship AI automation",
-                            "description": "Expose a reviewable automation flow.",
-                            "motivation": "Reduce repetitive setup.",
-                            "category": "work",
-                            "importance": "Important",
-                            "tags": ["ai", "automation"],
-                            "feasibilityAnalysis": "A focused implementation is enough.",
-                            "aiInsights": "Keep side effects on the TS boundary.",
-                            "suggestedDurationDays": 14
-                          },
-                          "keyResults": [
+                        arguments=json.dumps(
                             {
-                              "title": "Add automation approval",
-                              "description": "Require user confirmation.",
-                              "targetValue": 1,
-                              "unit": "milestone"
+                                "summary": (
+                                    "Create the goal and supporting "
+                                    "structure."
+                                ),
+                                "goal": {
+                                    "title": "Ship AI automation",
+                                    "description": (
+                                        "Expose a reviewable "
+                                        "automation flow."
+                                    ),
+                                    "motivation": "Reduce repetitive setup.",
+                                    "category": "work",
+                                    "importance": "Important",
+                                    "tags": ["ai", "automation"],
+                                    "feasibilityAnalysis": (
+                                        "A focused implementation "
+                                        "is enough."
+                                    ),
+                                    "aiInsights": (
+                                        "Keep side effects on the "
+                                        "TS boundary."
+                                    ),
+                                    "suggestedDurationDays": 14,
+                                },
+                                "keyResults": [
+                                    {
+                                        "title": "Add automation approval",
+                                        "description": (
+                                            "Require user confirmation."
+                                        ),
+                                        "targetValue": 1,
+                                        "unit": "milestone",
+                                    }
+                                ],
+                                "taskTemplates": [
+                                    {
+                                        "name": "Review AI plan",
+                                        "description": (
+                                            "Confirm actions before "
+                                            "execution."
+                                        ),
+                                        "importance": "Important",
+                                        "cadence": "once",
+                                    }
+                                ],
+                                "toolCalls": [
+                                    {
+                                        "tool": "create_goal",
+                                        "rationale": (
+                                            "Create the main goal first."
+                                        ),
+                                    }
+                                ],
                             }
-                          ],
-                          "taskTemplates": [
-                            {
-                              "name": "Review AI plan",
-                              "description": "Confirm actions before execution.",
-                              "importance": "Important",
-                              "cadence": "once"
-                            }
-                          ],
-                          "toolCalls": [
-                            {
-                              "tool": "create_goal",
-                              "rationale": "Create the main goal first."
-                            }
-                          ]
-                        }
-                        """,
-                    )
+                        ),
+                    ),
                 )
             ],
             usage={"prompt_tokens": 14, "completion_tokens": 9, "total_tokens": 23},
@@ -414,7 +473,10 @@ class TestGoalAutomationService:
         assert result.tool_calls[0].tool == "create_goal"
         chat_service.complete.assert_awaited_once()
         assert chat_service.complete.await_args.kwargs["tool_choice"] == "required"
-        assert chat_service.complete.await_args.kwargs["tools"][0].function.name == "submit_goal_automation_plan"
+        assert (
+            chat_service.complete.await_args.kwargs["tools"][0].function.name
+            == "submit_goal_automation_plan"
+        )
 
     async def test_invalid_json_raises_structured_output_error(self):
         """Malformed JSON from the provider should fail cleanly."""

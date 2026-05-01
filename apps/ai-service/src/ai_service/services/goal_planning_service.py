@@ -22,7 +22,6 @@ from ai_service.schemas import (
     AnalyticsQueryContext,
     ChatMessage,
     ChatToolDefinition,
-    ClarificationQuestion,
     GoalAutomationFetchStatsResult,
     GoalAutomationLLMResponse,
     GoalAutomationResponse,
@@ -282,7 +281,9 @@ class GoalPlanningService:
             compact_log(
                 request_id=request_id,
                 tool_names=[
-                    tool.function.name for tool in tools or [] if getattr(tool, "function", None)
+                    tool.function.name
+                    for tool in tools or []
+                    if getattr(tool, "function", None)
                 ],
                 related_resource_count=len(related_resources),
                 has_analytics_context=analytics_context is not None,
@@ -294,19 +295,22 @@ class GoalPlanningService:
             provider_config=provider_config,
             tools=tools,
             parse_completion=parse_goal_automation_completion,
-            execute_read_only_tools=lambda tool_calls: self._execute_goal_read_only_tool_calls(
-                tool_calls,
-                provider_config=provider_config,
-                related_resources=related_resources,
-                analytics_context=analytics_context,
-                request_id=request_id,
+            execute_read_only_tools=lambda tool_calls: (
+                self._execute_goal_read_only_tool_calls(
+                    tool_calls,
+                    provider_config=provider_config,
+                    related_resources=related_resources,
+                    analytics_context=analytics_context,
+                    request_id=request_id,
+                )
             ),
             unavailable_tool_detail=(
                 "Provider requested goal automation tools that are not "
                 "available in the current read-only runtime."
             ),
             final_submission_missing_detail=(
-                "Provider did not submit a final goal automation plan after tool execution."
+                "Provider did not submit a final goal automation "
+                "plan after tool execution."
             ),
             request_id=request_id,
         )
@@ -481,12 +485,12 @@ class GoalPlanningService:
         request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Check if a goal idea needs clarification before planning.
-        
+
         Args:
             idea: The goal idea to check
             category: Optional category for context
             provider_config: Configuration for the provider
-            
+
         Returns:
             GoalPlanningResponse with state='clarification' if questions needed,
             state='draft' if ready to plan
@@ -582,13 +586,13 @@ class GoalPlanningService:
         request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Generate a goal plan with optional clarification step.
-        
+
         This is the main entry point that handles the two-stage workflow:
         1. If enable_clarification=True and no answers, check if clarification needed
         2. If clarification needed, return questions for user to answer
         3. If answers provided, augment idea with them
         4. Generate and return goal draft
-        
+
         Args:
             idea: The goal idea
             category: Optional category
@@ -597,7 +601,7 @@ class GoalPlanningService:
             provider_config: Provider configuration
             enable_clarification: Whether to do clarification check
             clarification_answers: Answers to previous clarification questions
-            
+
         Returns:
             GoalPlanningResponse with either clarification questions or draft
         """
@@ -762,7 +766,8 @@ def build_goal_automation_system_prompt(
     if use_native_tool_calling:
         lines.extend(
             [
-                "When the submit_goal_automation_plan tool is available, call it exactly once.",
+                "When the submit_goal_automation_plan tool is available, "
+                "call it exactly once.",
                 "Do not answer with free-form JSON when you can call the tool.",
                 (
                     "Use search_notes only when repository resources are available "
@@ -775,7 +780,10 @@ def build_goal_automation_system_prompt(
                     "and concrete product metrics would materially improve the plan."
                 )
                 if allow_fetch_stats
-                else "Do not request fetch_stats unless analytics context is available.",
+                else (
+                    "Do not request fetch_stats unless analytics "
+                    "context is available."
+                ),
             ]
         )
     else:
@@ -871,6 +879,7 @@ def build_goal_automation_user_prompt(
         )
     )
 
+
 def build_goal_clarification_system_prompt() -> str:
     """System prompt for determining if a goal needs clarification."""
 
@@ -895,12 +904,14 @@ def build_goal_clarification_system_prompt() -> str:
             "}",
             "",
             "Guidelines:",
-            "- If the idea is vague, unclear, or missing key information, set needsClarification to true.",
+            "- If the idea is vague, unclear, or missing key "
+            "information, set needsClarification to true.",
             "- Generate 2-4 clarification questions that help fill information gaps.",
             "- Focus on: motivation, success criteria, timeline, scope, constraints.",
             "- Keep each question concise (< 15 words).",
             "- Provide context for each question explaining why it matters.",
-            "- If the idea is already clear and specific, set needsClarification to false.",
+            "- If the idea is already clear and specific, "
+            "set needsClarification to false.",
             "- Always explain rationale when clarification is needed.",
         ]
     )
@@ -912,11 +923,11 @@ def build_goal_clarification_user_prompt(
     category: str | None = None,
 ) -> str:
     """Build user prompt for clarification check.
-    
+
     Args:
         idea: The goal idea to evaluate
         category: Optional category hint for context
-    
+
     Returns:
         User prompt string
     """
@@ -939,13 +950,13 @@ def build_goal_clarification_user_prompt(
 
 def parse_clarification_payload(content: str) -> GoalClarificationLLMResponse:
     """Parse and validate clarification response from the model.
-    
+
     Args:
         content: Raw model output
-        
+
     Returns:
         Validated GoalClarificationLLMResponse
-        
+
     Raises:
         StructuredOutputError: If parsing or validation fails
     """
@@ -1019,7 +1030,10 @@ def parse_goal_automation_tool_arguments(arguments: str) -> GoalAutomationLLMRes
         parsed = json.loads(arguments)
     except json.JSONDecodeError as exc:
         raise StructuredOutputError(
-            detail="Provider returned invalid tool arguments for goal automation planning."
+            detail=(
+                "Provider returned invalid tool arguments "
+                "for goal automation planning."
+            )
         ) from exc
 
     try:
@@ -1040,9 +1054,12 @@ def build_goal_automation_submission_tool() -> ChatToolDefinition:
                 "name": "submit_goal_automation_plan",
                 "description": (
                     "Submit the final goal automation plan, including draft goal, "
-                    "optional key results, optional task templates, and proposed tool calls."
+                    "optional key results, optional task templates, "
+                    "and proposed tool calls."
                 ),
-                "parameters": GoalAutomationLLMResponse.model_json_schema(by_alias=True),
+                "parameters": GoalAutomationLLMResponse.model_json_schema(
+                    by_alias=True
+                ),
             },
         }
     )
@@ -1065,11 +1082,17 @@ def build_goal_automation_search_notes_tool() -> ChatToolDefinition:
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "What evidence or context to look for in the notes.",
+                            "description": (
+                                "What evidence or context "
+                                "to look for in the notes."
+                            ),
                         },
                         "maxCitations": {
                             "type": "integer",
-                            "description": "Maximum number of supporting excerpts to return.",
+                            "description": (
+                                "Maximum number of supporting "
+                                "excerpts to return."
+                            ),
                             "minimum": 1,
                             "maximum": 6,
                             "default": 3,
@@ -1171,7 +1194,9 @@ def parse_fetch_stats_tool_arguments(arguments: str) -> str:
     return question.strip()
 
 
-def supports_native_goal_tools(provider_config: ProviderConfig | dict[str, Any]) -> bool:
+def supports_native_goal_tools(
+    provider_config: ProviderConfig | dict[str, Any],
+) -> bool:
     """Return whether the provider can use native function calling for goal planning."""
 
     provider_name = (

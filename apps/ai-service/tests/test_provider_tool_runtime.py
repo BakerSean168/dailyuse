@@ -33,7 +33,7 @@ class TestProviderToolRuntime:
     """Tests for the extracted provider-native tool loop."""
 
     def test_build_tool_loop_messages_creates_structured_turns(self):
-        """Provider tool calls and local results should become assistant/tool messages."""
+        """Provider tool calls and results should become assistant/tool messages."""
 
         messages = build_tool_loop_messages(
             [
@@ -97,7 +97,11 @@ class TestProviderToolRuntime:
         )
 
         assert payload == {"state": "submitted"}
-        assert completion.usage == {"prompt_tokens": 10, "completion_tokens": 4, "total_tokens": 14}
+        assert completion.usage == {
+            "prompt_tokens": 10,
+            "completion_tokens": 4,
+            "total_tokens": 14,
+        }
 
     @pytest.mark.asyncio
     async def test_complete_with_tool_loop_runs_read_only_rounds(self):

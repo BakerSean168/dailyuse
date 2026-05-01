@@ -11,10 +11,10 @@ from ai_service.providers.http_provider import BaseHTTPProvider
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
+    ChatStreamChunk,
     ChatToolCall,
     ChatToolCallFunction,
     ChatToolDefinition,
-    ChatStreamChunk,
     ProviderConfig,
 )
 
@@ -162,7 +162,8 @@ class OpenAIProvider(BaseHTTPProvider):
         payload: dict[str, Any] = {
             "model": config.model,
             "messages": [
-                message.model_dump(mode="json", exclude_none=True) for message in messages
+                message.model_dump(mode="json", exclude_none=True)
+                for message in messages
             ],
             "temperature": config.temperature,
             "stream": stream,

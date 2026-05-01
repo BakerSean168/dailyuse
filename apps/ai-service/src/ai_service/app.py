@@ -24,16 +24,6 @@ from ai_service.config import get_settings
 from ai_service.infrastructure.http_client import create_shared_async_client
 from ai_service.logging_utils import compact_log, configure_logging
 from ai_service.middleware import RequestContextMiddleware, ServiceAuthMiddleware
-from ai_service.services import (
-    AnalyticsQueryService,
-    GoalPlanningService,
-    KnowledgeExpansionService,
-    KnowledgeIndexingService,
-    KnowledgeNoteService,
-    KnowledgeQueryService,
-    create_chat_service,
-)
-from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
 from ai_service.orchestrator.handlers.analytics_handler import AnalyticsWorkflowHandler
 from ai_service.orchestrator.handlers.goal_automation_handler import (
     GoalAutomationWorkflowHandler,
@@ -42,12 +32,22 @@ from ai_service.orchestrator.handlers.goal_handler import GoalWorkflowHandler
 from ai_service.orchestrator.handlers.knowledge_expand_handler import (
     KnowledgeExpandWorkflowHandler,
 )
+from ai_service.orchestrator.handlers.knowledge_handler import KnowledgeWorkflowHandler
 from ai_service.orchestrator.handlers.knowledge_index_handler import (
     KnowledgeIndexWorkflowHandler,
 )
-from ai_service.orchestrator.handlers.knowledge_handler import KnowledgeWorkflowHandler
 from ai_service.orchestrator.handlers.knowledge_note_handler import (
     KnowledgeNoteWorkflowHandler,
+)
+from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
+from ai_service.services import (
+    AnalyticsQueryService,
+    GoalPlanningService,
+    KnowledgeExpansionService,
+    KnowledgeIndexingService,
+    KnowledgeNoteService,
+    KnowledgeQueryService,
+    create_chat_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -87,9 +87,7 @@ async def lifespan(app: FastAPI):
     analytics_handler = AnalyticsWorkflowHandler(analytics_query_service)
     knowledge_handler = KnowledgeWorkflowHandler(knowledge_query_service)
     knowledge_note_handler = KnowledgeNoteWorkflowHandler(knowledge_note_service)
-    knowledge_index_handler = KnowledgeIndexWorkflowHandler(
-        knowledge_indexing_service
-    )
+    knowledge_index_handler = KnowledgeIndexWorkflowHandler(knowledge_indexing_service)
     knowledge_expand_handler = KnowledgeExpandWorkflowHandler(
         knowledge_expansion_service
     )

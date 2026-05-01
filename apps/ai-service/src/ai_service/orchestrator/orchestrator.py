@@ -6,17 +6,17 @@ from ai_service.orchestrator.models import WorkflowContext
 
 logger = logging.getLogger(__name__)
 
+
 class WorkflowHandler(Protocol):
-    def can_handle(self, workflow_type: str) -> bool:
-        ...
-        
-    async def handle(self, context: WorkflowContext) -> Any:
-        ...
+    def can_handle(self, workflow_type: str) -> bool: ...
+
+    async def handle(self, context: WorkflowContext) -> Any: ...
+
 
 class AIWorkflowOrchestrator:
     def __init__(self) -> None:
         self._handlers: list[WorkflowHandler] = []
-        
+
     def register_handler(self, handler: WorkflowHandler) -> None:
         self._handlers.append(handler)
         logger.info(
@@ -26,7 +26,7 @@ class AIWorkflowOrchestrator:
                 total_handlers=len(self._handlers),
             ),
         )
-        
+
     async def execute(self, context: WorkflowContext) -> Any:
         logger.info(
             "workflow execution started | %s",
@@ -57,5 +57,5 @@ class AIWorkflowOrchestrator:
                     ),
                 )
                 return result
-                
+
         raise ValueError(f"No handler found for workflow type: {context.workflow_type}")

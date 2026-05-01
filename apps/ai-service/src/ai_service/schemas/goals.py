@@ -35,12 +35,12 @@ class GoalPlanningRequest(BaseModel):
     request_id: str | None = None
     enable_clarification: bool = Field(
         default=True,
-        description="Whether to check for clarification need before planning"
+        description="Whether to check for clarification need before planning",
     )
     clarification_answers: list[str] | None = Field(
-        default=None,
-        description="Answers to previous clarification questions"
+        default=None, description="Answers to previous clarification questions"
     )
+
 
 class ClarificationQuestion(BaseModel):
     """Single clarification question for goal planning."""
@@ -50,8 +50,9 @@ class ClarificationQuestion(BaseModel):
     question: str = Field(..., min_length=5, description="The clarification question")
     context: str | None = Field(
         default=None,
-        description="Optional context explaining why this question matters"
+        description="Optional context explaining why this question matters",
     )
+
 
 class GoalClarificationLLMResponse(BaseModel):
     """LLM response indicating whether goal planning needs clarification."""
@@ -61,19 +62,18 @@ class GoalClarificationLLMResponse(BaseModel):
     needs_clarification: bool = Field(
         ...,
         alias="needsClarification",
-        description="Whether the input is too vague for direct planning"
+        description="Whether the input is too vague for direct planning",
     )
     questions: list[ClarificationQuestion] = Field(
         default_factory=list,
-        description="2-4 clarification questions if clarification is needed"
+        description="2-4 clarification questions if clarification is needed",
     )
     rationale: str | None = Field(
-        default=None,
-        description="Why clarification is needed"
+        default=None, description="Why clarification is needed"
     )
 
     @model_validator(mode="after")
-    def validate_question_bounds(self) -> "GoalClarificationLLMResponse":
+    def validate_question_bounds(self) -> GoalClarificationLLMResponse:
         if not self.needs_clarification:
             return self
 
@@ -82,7 +82,6 @@ class GoalClarificationLLMResponse(BaseModel):
             raise ValueError("Clarification responses must include 2-4 questions.")
 
         return self
-
 
 
 class GoalAutomationRequest(BaseModel):
@@ -239,7 +238,7 @@ class PlannedGoal(BaseModel):
 
 class GoalPlanningResponse(BaseModel):
     """Final response returned to the internal caller.
-    
+
     Can be in one of two states:
     - Clarification needed: state='clarification', clarification contains questions
     - Draft ready: state='draft', goal and key_results contain the plan
@@ -248,21 +247,19 @@ class GoalPlanningResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     state: Literal["clarification", "draft"] = Field(
-        default="draft",
-        description="Current response state"
+        default="draft", description="Current response state"
     )
     goal: PlannedGoal | None = Field(
-        default=None,
-        description="Planned goal (only when state='draft')"
+        default=None, description="Planned goal (only when state='draft')"
     )
     key_results: list[KeyResultDraft] | None = Field(
         default=None,
         alias="keyResults",
-        description="Key results (only when state='draft')"
+        description="Key results (only when state='draft')",
     )
     clarification: GoalClarificationLLMResponse | None = Field(
         default=None,
-        description="Clarification questions (only when state='clarification')"
+        description="Clarification questions (only when state='clarification')",
     )
     usage: dict[str, Any] | None = None
 

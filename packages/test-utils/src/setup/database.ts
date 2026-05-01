@@ -35,12 +35,19 @@ import { resolve } from 'node:path';
 
 // ─── Constants ──────────────────────────────────────────────────────
 
-const TEST_DB_USER = process.env.TEST_DB_USER ?? 'test_user';
-const TEST_DB_PASS = process.env.TEST_DB_PASS ?? 'test_pass';
-const TEST_DB_NAME = process.env.TEST_DB_NAME ?? 'Memoflow_test';
-const TEST_DB_HOST = process.env.TEST_DB_HOST ?? '127.0.0.1';
-const TEST_DB_PORT = Number(process.env.TEST_DB_PORT ?? '5433');
-const TEST_DB_CONTAINER = process.env.TEST_DB_CONTAINER ?? 'Memoflow-test-db';
+export const DEFAULT_TEST_DB_USER = 'test_user';
+export const DEFAULT_TEST_DB_PASS = 'test_pass';
+export const DEFAULT_TEST_DB_NAME = 'memoflow_test';
+export const DEFAULT_TEST_DB_HOST = '127.0.0.1';
+export const DEFAULT_TEST_DB_PORT = 5433;
+export const DEFAULT_TEST_DB_CONTAINER = 'Memoflow-test-db';
+
+const TEST_DB_USER = process.env.TEST_DB_USER ?? DEFAULT_TEST_DB_USER;
+const TEST_DB_PASS = process.env.TEST_DB_PASS ?? DEFAULT_TEST_DB_PASS;
+const TEST_DB_NAME = process.env.TEST_DB_NAME ?? DEFAULT_TEST_DB_NAME;
+const TEST_DB_HOST = process.env.TEST_DB_HOST ?? DEFAULT_TEST_DB_HOST;
+const TEST_DB_PORT = Number(process.env.TEST_DB_PORT ?? String(DEFAULT_TEST_DB_PORT));
+const TEST_DB_CONTAINER = process.env.TEST_DB_CONTAINER ?? DEFAULT_TEST_DB_CONTAINER;
 const LEGACY_TEST_COMPOSE_FILE = 'docker-compose.test.yml';
 const WORKSPACE_COMPOSE_FILE = 'docker-compose.yml';
 const TEST_COMPOSE_SERVICE = 'postgres-test';
@@ -51,6 +58,22 @@ const DEFAULT_TEST_DATABASE_URL = `postgresql://${TEST_DB_USER}:${TEST_DB_PASS}@
  * running Prisma or connecting to the database.
  */
 export const TEST_DATABASE_URL = DEFAULT_TEST_DATABASE_URL;
+
+export function createIntegrationTestEnv(): Record<string, string> {
+  const testDatabaseUrl = process.env.TEST_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL;
+
+  return {
+    NODE_ENV: 'test',
+    TEST_DB_HOST: process.env.TEST_DB_HOST ?? DEFAULT_TEST_DB_HOST,
+    TEST_DB_PORT: process.env.TEST_DB_PORT ?? String(DEFAULT_TEST_DB_PORT),
+    TEST_DB_NAME: process.env.TEST_DB_NAME ?? DEFAULT_TEST_DB_NAME,
+    TEST_DB_USER: process.env.TEST_DB_USER ?? DEFAULT_TEST_DB_USER,
+    TEST_DB_PASS: process.env.TEST_DB_PASS ?? DEFAULT_TEST_DB_PASS,
+    TEST_DB_CONTAINER: process.env.TEST_DB_CONTAINER ?? DEFAULT_TEST_DB_CONTAINER,
+    TEST_DATABASE_URL: process.env.TEST_DATABASE_URL ?? testDatabaseUrl,
+    DATABASE_URL: testDatabaseUrl,
+  };
+}
 
 // ─── Docker Container Management ────────────────────────────────────
 
@@ -178,11 +201,12 @@ export function syncPrismaSchema(prismaDir?: string): void {
 export async function ensureTestDatabase(projectRoot?: string): Promise<void> {
   const root = projectRoot ?? findProjectRoot();
   const isCI = process.env.CI === 'true';
-  const databaseUrl = getTestDatabaseUrl();
+  const integrationEnv = createIntegrationTestEnv();
 
   // Set env vars first — Prisma needs DATABASE_URL
-  process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL = databaseUrl;
+  for (const [key, value] of Object.entries(integrationEnv)) {
+    process.env[key] = value;
+  }
   process.env.JWT_SECRET = 'test-jwt-secret-not-for-production';
   process.env.PRISMA_HIDE_UPDATE_MESSAGE = 'true';
 

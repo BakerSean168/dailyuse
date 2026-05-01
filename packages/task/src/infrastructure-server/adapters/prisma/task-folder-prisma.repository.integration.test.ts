@@ -4,7 +4,7 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { TaskFolderId } from '@/domain-shared/value-objects';
 import { TaskFolderPrismaRepository } from './task-folder-prisma.repository';
 import {
-  cleanAll,
+  cleanTaskTables,
   disconnectPrisma,
   getPrisma,
   seedAccount,
@@ -12,12 +12,11 @@ import {
 
 describe('TaskFolderPrismaRepository integration', () => {
   afterAll(async () => {
-    await cleanAll();
     await disconnectPrisma();
   });
 
   beforeEach(async () => {
-    await cleanAll();
+    await cleanTaskTables();
   });
 
   it('persists and loads a folder by id', async () => {

@@ -515,7 +515,8 @@ def build_goal_workflow_eval_result(
             name="action_tools_match",
             passed=trace.action_tools == case.expected.action_tools,
             detail=(
-                f"Expected action tools {case.expected.action_tools}, got {trace.action_tools}."
+                f"Expected action tools {case.expected.action_tools}, "
+                f"got {trace.action_tools}."
                 if trace.action_tools != case.expected.action_tools
                 else "Workflow action tools match expectations."
             ),
@@ -543,7 +544,8 @@ def build_goal_workflow_eval_result(
                 name="failure_stage_matches",
                 passed=trace.failure_stage == case.expected.failure_stage,
                 detail=(
-                    f"Expected failure stage {case.expected.failure_stage}, got {trace.failure_stage}."
+                    f"Expected failure stage {case.expected.failure_stage}, "
+                    f"got {trace.failure_stage}."
                     if trace.failure_stage != case.expected.failure_stage
                     else "Workflow failed at the expected stage."
                 ),
@@ -561,7 +563,8 @@ def build_goal_workflow_eval_result(
                 name="execution_status_matches",
                 passed=actual_status == case.expected.execution_status,
                 detail=(
-                    f"Expected execution status {case.expected.execution_status}, got {actual_status}."
+                    f"Expected execution status "
+                    f"{case.expected.execution_status}, got {actual_status}."
                     if actual_status != case.expected.execution_status
                     else "Execution status matches expectations."
                 ),
@@ -570,16 +573,15 @@ def build_goal_workflow_eval_result(
 
     if case.expected.can_retry is not None:
         actual_can_retry = (
-            bool(trace.recovery.get("canRetry"))
-            if trace.recovery is not None
-            else None
+            bool(trace.recovery.get("canRetry")) if trace.recovery is not None else None
         )
         checks.append(
             EvalCheck(
                 name="recovery_can_retry_matches",
                 passed=actual_can_retry == case.expected.can_retry,
                 detail=(
-                    f"Expected canRetry={case.expected.can_retry}, got {actual_can_retry}."
+                    f"Expected canRetry={case.expected.can_retry}, "
+                    f"got {actual_can_retry}."
                     if actual_can_retry != case.expected.can_retry
                     else "Recovery canRetry matches expectations."
                 ),

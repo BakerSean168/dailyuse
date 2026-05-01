@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from ai_service.errors import StructuredOutputError
 from ai_service.schemas.goals import (
@@ -21,14 +22,11 @@ class TestGoalClarificationSchemas:
             "questions": [
                 {
                     "question": "What is your motivation?",
-                    "context": "Understanding why helps with long-term commitment"
+                    "context": "Understanding why helps with long-term commitment",
                 },
-                {
-                    "question": "What's your timeline?",
-                    "context": None
-                }
+                {"question": "What's your timeline?", "context": None},
             ],
-            "rationale": "The idea is vague about timing and motivation"
+            "rationale": "The idea is vague about timing and motivation",
         }
 
         clari = GoalClarificationLLMResponse.model_validate(clarification_json)
@@ -87,15 +85,17 @@ class TestGoalClarificationSchemas:
         clari = GoalClarificationLLMResponse(
             needs_clarification=True,
             questions=[
-                ClarificationQuestion(question="What outcome are you aiming for?", context=None),
-                ClarificationQuestion(question="What timeline are you targeting?", context=None),
+                ClarificationQuestion(
+                    question="What outcome are you aiming for?", context=None
+                ),
+                ClarificationQuestion(
+                    question="What timeline are you targeting?", context=None
+                ),
             ],
-            rationale="Test"
+            rationale="Test",
         )
         response = GoalPlanningResponse(
-            state="clarification",
-            clarification=clari,
-            usage={"prompt_tokens": 100}
+            state="clarification", clarification=clari, usage={"prompt_tokens": 100}
         )
         assert response.state == "clarification"
         assert response.goal is None
@@ -112,10 +112,7 @@ class TestGoalClarificationSchemas:
         )
 
         response = GoalPlanningResponse(
-            state="draft",
-            goal=goal,
-            keyResults=[],
-            usage=None
+            state="draft", goal=goal, keyResults=[], usage=None
         )
         assert response.state == "draft"
         assert response.clarification is None
@@ -141,15 +138,20 @@ class TestGoalClarificationService:
             "api_key": "secret",
         }
 
-    async def test_clarify_returns_clarification_response(self, service, mock_chat_service, provider_config):
+    async def test_clarify_returns_clarification_response(
+        self, service, mock_chat_service, provider_config
+    ):
         """When LLM returns needsClarification=True, return clarification state."""
-        mock_chat_service.complete.return_value.content = '''```json
+        mock_chat_service.complete.return_value.content = """```json
         {
             "needsClarification": true,
-            "questions": [{"question": "Question 1", "context": null}, {"question": "Question 2", "context": null}],
+            "questions": [
+                {"question": "Question 1", "context": null},
+                {"question": "Question 2", "context": null},
+            ],
             "rationale": "Vague"
         }
-        ```'''
+        ```"""
         mock_chat_service.complete.return_value.usage = {"prompt_tokens": 10}
 
         response = await service.clarify(
@@ -163,13 +165,15 @@ class TestGoalClarificationService:
         assert response.clarification.needs_clarification is True
         assert len(response.clarification.questions) == 2
 
-    async def test_clarify_returns_draft_state(self, service, mock_chat_service, provider_config):
+    async def test_clarify_returns_draft_state(
+        self, service, mock_chat_service, provider_config
+    ):
         """When LLM returns needsClarification=False, return draft state."""
-        mock_chat_service.complete.return_value.content = '''{
+        mock_chat_service.complete.return_value.content = """{
             "needsClarification": false,
             "questions": [],
             "rationale": "Clear enough"
-        }'''
+        }"""
         mock_chat_service.complete.return_value.usage = None
 
         response = await service.clarify(
@@ -181,8 +185,10 @@ class TestGoalClarificationService:
         assert response.state == "draft"
         assert response.clarification is None
 
-    async def test_invalid_json_raises_structured_output_error(self, service, mock_chat_service, provider_config):
-        """Malformed JSON from provider during clarify should raise StructuredOutputError."""
+    async def test_invalid_json_raises_structured_output_error(
+        self, service, mock_chat_service, provider_config
+    ):
+        """Malformed JSON from provider raises StructuredOutputError."""
         mock_chat_service.complete.return_value.content = "not json"
 
         try:
@@ -192,12 +198,16 @@ class TestGoalClarificationService:
                 provider_config=provider_config,
             )
         except StructuredOutputError as exc:
-            assert exc.detail == "Provider returned invalid JSON for goal clarification."
+            assert (
+                exc.detail == "Provider returned invalid JSON for goal clarification."
+            )
         else:
             raise AssertionError("StructuredOutputError was not raised")
 
-    async def test_plan_with_clarification_needs_questions(self, service, mock_chat_service, provider_config):
-        """When enable_clarification=True and questions are needed, it stops and returns questions."""
+    async def test_plan_with_clarification_needs_questions(
+        self, service, mock_chat_service, provider_config
+    ):
+        """When clarification is enabled and questions are needed, returns them."""
         with patch.object(service, "clarify", new_callable=AsyncMock) as mock_clarify:
             mock_clarify.return_value = GoalPlanningResponse(
                 state="clarification",
@@ -213,9 +223,9 @@ class TestGoalClarificationService:
                             context=None,
                         ),
                     ],
-                    rationale="Test"
+                    rationale="Test",
                 ),
-                usage=None
+                usage=None,
             )
 
             response = await service.plan_with_clarification(
@@ -225,15 +235,17 @@ class TestGoalClarificationService:
                 include_key_results=True,
                 provider_config=provider_config,
                 enable_clarification=True,
-                clarification_answers=None
+                clarification_answers=None,
             )
 
             assert response.state == "clarification"
             # It shouldn't call plan()
             mock_chat_service.complete.assert_not_called()
 
-    async def test_plan_with_clarification_augments_idea(self, service, provider_config):
-        """When clarification answers are provided, it augments the idea and calls plan()."""
+    async def test_plan_with_clarification_augments_idea(
+        self, service, provider_config
+    ):
+        """When clarification answers are provided, it augments the idea."""
         with patch.object(service, "plan", new_callable=AsyncMock) as mock_plan:
             mock_plan.return_value = GoalPlanningResponse(
                 state="draft",
@@ -247,7 +259,7 @@ class TestGoalClarificationService:
                     suggestedEndDate=2,
                 ),
                 keyResults=None,
-                usage=None
+                usage=None,
             )
 
             response = await service.plan_with_clarification(
@@ -257,7 +269,7 @@ class TestGoalClarificationService:
                 include_key_results=True,
                 provider_config=provider_config,
                 enable_clarification=True,
-                clarification_answers=["Python", "3 months"]
+                clarification_answers=["Python", "3 months"],
             )
 
             assert response.state == "draft"

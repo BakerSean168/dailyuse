@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from ai_service.orchestrator.handlers.analytics_handler import AnalyticsWorkflowHandler
 from ai_service.orchestrator.models import WorkflowContext

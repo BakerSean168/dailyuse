@@ -54,7 +54,7 @@ describe('PrismaTaskTemplateMapper', () => {
     identityId: 'identity-2',
     name: 'Complex Recurring Task',
     description: 'A task with full configuration',
-    importance: 'High',
+    importance: 'Important',
     color: '#FF5733',
     tags: JSON.stringify(['urgent', 'work']),
     folderId: 'folder-1',
@@ -128,7 +128,7 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(domain.id).toBe('template-2');
       expect(domain.title).toBe('Complex Recurring Task');
       expect(domain.description).toBe('A task with full configuration');
-      expect(domain.importance).toBe('High');
+      expect(domain.importance).toBe('Important');
       expect(domain.color).toBe('#FF5733');
       expect(domain.tags).toEqual(['urgent', 'work']);
       expect(domain.folderId).toBe('folder-1');
@@ -235,7 +235,7 @@ describe('PrismaTaskTemplateMapper', () => {
         identityId: 'identity-3',
         name: 'New Task',
         description: null,
-        importance: 'Low',
+        importance: 'Minor',
         color: null,
         tags: [],
         folderId: null,
@@ -258,7 +258,7 @@ describe('PrismaTaskTemplateMapper', () => {
 
       expect(persistence.name).toBe('New Task');
       expect(persistence.description).toBeNull();
-      expect(persistence.importance).toBe('Low');
+      expect(persistence.importance).toBe('Minor');
       expect(persistence.tags).toBe('[]');
       expect(persistence.timeConfigType).toBeNull();
       expect(persistence.recurrenceRuleType).toBeNull();
@@ -273,7 +273,7 @@ describe('PrismaTaskTemplateMapper', () => {
         identityId: 'identity-4',
         name: 'Full Task',
         description: 'Complete description',
-        importance: 'High',
+        importance: 'Important',
         color: '#FF5733',
         tags: ['important', 'urgent'],
         folderId: 'folder-2',
@@ -309,7 +309,7 @@ describe('PrismaTaskTemplateMapper', () => {
       const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
 
       expect(persistence.name).toBe('Full Task');
-      expect(persistence.importance).toBe('High');
+      expect(persistence.importance).toBe('Important');
       expect(persistence.color).toBe('#FF5733');
       expect(persistence.folderId).toBe('folder-2');
       expect(persistence.parentTaskId).toBe('template-2');
