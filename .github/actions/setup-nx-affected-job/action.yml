@@ -21,8 +21,6 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
 
     - name: Setup Python
       if: ${{ inputs.setup-python == 'true' }}
@@ -42,6 +40,13 @@ runs:
       run: |
         corepack enable
         pnpm --version
+
+    - name: Cache pnpm store
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/share/pnpm/store/v3
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-
 
     - name: Install dependencies
       shell: bash
