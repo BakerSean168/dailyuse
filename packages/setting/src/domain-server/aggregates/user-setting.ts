@@ -119,8 +119,8 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     this._props.version += 1;
     this.touch();
 
-    this.addDomainEvent<SettingEventMap['setting:UserSettingPatched']>(
-      'setting:UserSettingPatched',
+    this.addDomainEvent<SettingEventMap['setting:user-setting-patched']>(
+      'setting:user-setting-patched',
       {
         identityId: this._props.identityId,
         category,
@@ -170,7 +170,7 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     this._props.version += 1;
     this.touch();
 
-    this.addDomainEvent<SettingEventMap['setting:UserSettingReset']>('setting:UserSettingReset', {
+    this.addDomainEvent<SettingEventMap['setting:user-setting-reset']>('setting:user-setting-reset', {
       identityId: this._props.identityId,
       category,
     });
@@ -184,7 +184,7 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     this._props.version += 1;
     this.touch();
 
-    this.addDomainEvent<SettingEventMap['setting:UserSettingReset']>('setting:UserSettingReset', {
+    this.addDomainEvent<SettingEventMap['setting:user-setting-reset']>('setting:user-setting-reset', {
       identityId: this._props.identityId,
     });
   }
@@ -273,8 +273,8 @@ export class UserSetting extends AggregateRoot<ISettingId> {
       updatedAt: now,
     });
 
-    setting.addDomainEvent<SettingEventMap['setting:UserSettingCreated']>(
-      'setting:UserSettingCreated',
+    setting.addDomainEvent<SettingEventMap['setting:user-setting-created']>(
+      'setting:user-setting-created',
       { identityId },
     );
 

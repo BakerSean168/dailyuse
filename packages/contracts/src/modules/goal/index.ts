@@ -1,13 +1,28 @@
 /**
  * Goal Module Exports
- * @module @dailyuse/contracts/goal
+ * 目标模块 - 统一导出
  */
 
+// ============ Aggregates ============
 export * from './aggregates';
+
+// ============ Entities ============
 export * from './entities';
+
+// ============ Value Objects ============
 export * from './value-objects';
-export * from './events';
+
+// ============ Domain Events ============
+export * from './domain/events';
+
+// ============ Rules ============
 export * from './rules';
+
+// ============ Protocol ============
 export * from './protocol';
+
+// ============ API ============
 export * from './api';
+
+// ============ DTOs ============
 export * from './dtos';

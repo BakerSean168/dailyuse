@@ -11,57 +11,22 @@ import type {
 
 /**
  * Notification Module - Event Map
+ * 通知模块 - 事件映射
  *
- * Event Naming Convention: notification:<action>
- * Maps event names to their payload types for type-safe event handling
+ * 事件命名规范：notification:{kebab-action-past-tense}
  */
-
 export type NotificationEventMap = {
-  /**
-   * Notification created event
-   * Triggered when notification is created
-   */
-  'notification:create': NotificationCreatedEvent;
-
-  /**
-   * Notification sent event
-   * Triggered when notification is sent through channels
-   */
-  'notification:send': NotificationSentEvent;
-
-  /**
-   * Notification read event
-   * Triggered when notification is marked as read
-   */
+  'notification:created': NotificationCreatedEvent;
+  'notification:sent': NotificationSentEvent;
   'notification:read': NotificationReadEvent;
-
-  /**
-   * Notification deleted event
-   * Triggered when notification is deleted
-   */
-  'notification:delete': NotificationDeletedEvent;
-
-  /**
-   * Notification status changed event
-   * Triggered when notification status changes
-   */
-  'notification:status-change': NotificationStatusChangedEvent;
-
-  /**
-   * Notification channel failed event
-   * Triggered when notification fails to send through channel
-   */
+  'notification:deleted': NotificationDeletedEvent;
+  'notification:status-changed': NotificationStatusChangedEvent;
   'notification:channel-failed': NotificationChannelFailedEvent;
 
   /**
-   * Notification dispatch event (desktop)
-   * Triggered when notification should be rendered on desktop
+   * Dispatch events (integration, not domain events).
+   * These use underscore convention for transport-layer events.
    */
   'notification:dispatch_desktop': NotificationDispatchDesktopEvent;
-
-  /**
-   * Notification dispatch event (in-app)
-   * Triggered when notification should be rendered in app
-   */
   'notification:dispatch_in_app': NotificationDispatchInAppEvent;
 };

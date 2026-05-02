@@ -201,7 +201,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
       version: 1,
     });
 
-    folder.addDomainEvent<GoalEventMap['goal:folder-create']>('goal:folder-create', {
+    folder.addDomainEvent<GoalEventMap['goal:folder-created']>('goal:folder-created', {
       identityId: params.identityId,
       folderId: folder.id,
       folder: folder.toServerDTO(),
@@ -309,7 +309,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     this._props.completedGoalCount = completedCount;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:folder-stats-update']>('goal:folder-stats-update', {
+    this.addDomainEvent<GoalEventMap['goal:folder-stats-updated']>('goal:folder-stats-updated', {
       identityId: this._props.identityId,
       folderId: this.id,
       folder: this.toServerDTO(),
@@ -337,7 +337,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     this._props.deletedAt = new Date();
     this._props.updatedAt = this._props.deletedAt;
 
-    this.addDomainEvent<GoalEventMap['goal:folder-delete']>('goal:folder-delete', {
+    this.addDomainEvent<GoalEventMap['goal:folder-deleted']>('goal:folder-deleted', {
       identityId: this._props.identityId,
       folderId: this.id,
       folder: this.toServerDTO(),
@@ -424,7 +424,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   }
 
   private emitUpdated(changes: string[]): void {
-    this.addDomainEvent<GoalEventMap['goal:folder-update']>('goal:folder-update', {
+    this.addDomainEvent<GoalEventMap['goal:folder-updated']>('goal:folder-updated', {
       identityId: this._props.identityId,
       folderId: this.id,
       folder: this.toServerDTO(),
@@ -433,7 +433,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   }
 
   private emitStatsUpdated(): void {
-    this.addDomainEvent<GoalEventMap['goal:folder-stats-update']>('goal:folder-stats-update', {
+    this.addDomainEvent<GoalEventMap['goal:folder-stats-updated']>('goal:folder-stats-updated', {
       identityId: this._props.identityId,
       folderId: this.id,
       folder: this.toServerDTO(),

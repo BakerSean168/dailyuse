@@ -17,18 +17,25 @@ import type { SessionRevokedEvent } from '../domain/events/session-revoked.event
  * Maps event names to their payload types for type-safe event handling
  */
 
+/**
+ * Authentication Module - Event Map
+ * 认证模块 - 事件映射
+ *
+ * 事件命名规范：auth:{kebab-action-past-tense}
+ * 参见：packages/governance/src/contracts/protocol/governance-event-map.ts
+ */
 export type AuthEventMap = {
   /**
    * User login event
    * Triggered when user successfully logs in
    */
-  'auth:login': UserLoggedInEvent;
+  'auth:logged-in': UserLoggedInEvent;
 
   /**
    * User logout event
    * Triggered when user logs out
    */
-  'auth:logout': UserLoggedOutEvent;
+  'auth:logged-out': UserLoggedOutEvent;
 
   /**
    * User registration event

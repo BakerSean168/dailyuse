@@ -424,7 +424,7 @@ export class Goal extends AggregateRoot<GoalId> {
     goal.refreshPriority();
 
     // 🎯 触发领域事件
-    goal.addDomainEvent<GoalEventMap['goal:create']>('goal:create', {
+    goal.addDomainEvent<GoalEventMap['goal:created']>('goal:created', {
       identityId: params.identityId,
       folderId: params.folderId,
       goal: goal.toServerDTO(true),
@@ -673,7 +673,7 @@ export class Goal extends AggregateRoot<GoalId> {
     }
 
     // 🎯 触发状态变更事件
-    this.addDomainEvent<GoalEventMap['goal:status-change']>('goal:status-change', {
+    this.addDomainEvent<GoalEventMap['goal:status-changed']>('goal:status-changed', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       previousStatus,
@@ -700,7 +700,7 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.archivedAt = this._props.archivedAt ?? now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent<GoalEventMap['goal:complete']>('goal:complete', {
+    this.addDomainEvent<GoalEventMap['goal:completed']>('goal:completed', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       finalProgress: this.calculateProgress(),
@@ -744,7 +744,7 @@ export class Goal extends AggregateRoot<GoalId> {
     const now = new Date();
     this._props.deletedAt = now;
     this._props.updatedAt = now;
-    this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
+    this.addDomainEvent<GoalEventMap['goal:deleted']>('goal:deleted', {
       identityId: this._props.identityId,
       goalId: this.id,
       goal: this.toServerDTO(true),
@@ -918,7 +918,7 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.keyResults.push(keyResult);
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
+    this.addDomainEvent<GoalEventMap['goal:key-result-added']>('goal:key-result-added', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       keyResult: keyResult.toServerDTO(),
@@ -977,7 +977,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:key-result-update']>('goal:key-result-update', {
+    this.addDomainEvent<GoalEventMap['goal:key-result-updated']>('goal:key-result-updated', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       keyResult: keyResult.toServerDTO(),
@@ -1046,7 +1046,7 @@ export class Goal extends AggregateRoot<GoalId> {
     keyResult.recalculateProgress(newValue);
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:key-result-update']>('goal:key-result-update', {
+    this.addDomainEvent<GoalEventMap['goal:key-result-updated']>('goal:key-result-updated', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       keyResult: keyResult.toServerDTO(),
@@ -1071,7 +1071,7 @@ export class Goal extends AggregateRoot<GoalId> {
       const removed = this._props.keyResults.splice(index, 1)[0];
       this._props.updatedAt = new Date();
 
-      this.addDomainEvent<GoalEventMap['goal:key-result-delete']>('goal:key-result-delete', {
+      this.addDomainEvent<GoalEventMap['goal:key-result-deleted']>('goal:key-result-deleted', {
         identityId: this._props.identityId,
         goal: this.toServerDTO(true),
         keyResultId: keyResultId,
@@ -1259,7 +1259,7 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.goalReviews.push(review);
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
+    this.addDomainEvent<GoalEventMap['goal:review-added']>('goal:review-added', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       review: review.toServerDTO() as GoalReviewServerDTO,
@@ -1563,7 +1563,7 @@ export class Goal extends AggregateRoot<GoalId> {
   }
 
   private emitGoalUpdated(changes: string[]): void {
-    this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
+    this.addDomainEvent<GoalEventMap['goal:updated']>('goal:updated', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       changes,
@@ -1571,7 +1571,7 @@ export class Goal extends AggregateRoot<GoalId> {
   }
 
   private emitGoalArchived(archivedAt: number): void {
-    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {
+    this.addDomainEvent<GoalEventMap['goal:archived']>('goal:archived', {
       identityId: this._props.identityId,
       goal: this.toServerDTO(true),
       archivedAt,

@@ -74,19 +74,19 @@ const notificationEventHandlersInitTask: InitializationTask = {
     };
 
     const handleScheduleExecuted = (event: ScheduleEventMap['schedule:task:executed']): void => {
-      const identityId = event.payload?.identityId;
+      const identityId = event.identityId;
       if (!identityId) {
         console.warn('[NotificationInit] Missing identityId in schedule:task:executed');
         return;
       }
 
-      if (event.payload?.status && event.payload.status !== ExecutionStatus.Success) {
+      if (event.status && event.status !== ExecutionStatus.Success) {
         return;
       }
 
-      const payload = event.payload?.payload ?? {};
-      const taskId = event.payload?.taskId;
-      const sourceModule = event.payload?.sourceModule;
+      const payload = event.payload ?? {};
+      const taskId = event.taskId;
+      const sourceModule = event.sourceModule;
       const titleFallback =
         sourceModule === SourceModule.Goal
           ? 'Goal reminder'

@@ -91,7 +91,7 @@ export class Account extends AggregateRoot<IdentityId> {
     };
     const account = new Account(state);
 
-    account.addDomainEvent<AccountEventMap['account:create']>('account:create', {
+    account.addDomainEvent<AccountEventMap['account:created']>('account:created', {
       identityId: params.id.toString(),
       accountId: account.id.toString(),
       account: account.toServerDTO(),
@@ -114,7 +114,7 @@ export class Account extends AggregateRoot<IdentityId> {
     this._props.profile = profile;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AccountEventMap['account:update-profile']>('account:update-profile', {
+    this.addDomainEvent<AccountEventMap['account:profile-updated']>('account:profile-updated', {
       identityId: this.id.toString(),
       accountId: this.id.toString(),
       account: this.toServerDTO(),
@@ -126,7 +126,7 @@ export class Account extends AggregateRoot<IdentityId> {
     this._props.settings = settings;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AccountEventMap['account:update-settings']>('account:update-settings', {
+    this.addDomainEvent<AccountEventMap['account:settings-updated']>('account:settings-updated', {
       identityId: this.id.toString(),
       accountId: this.id.toString(),
       account: this.toServerDTO(),
@@ -145,7 +145,7 @@ export class Account extends AggregateRoot<IdentityId> {
     this._props.status = AccountStatus.Deactivated;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AccountEventMap['account:close']>('account:close', {
+    this.addDomainEvent<AccountEventMap['account:closed']>('account:closed', {
       identityId: this.id.toString(),
       accountId: this.id.toString(),
       account: this.toServerDTO(),

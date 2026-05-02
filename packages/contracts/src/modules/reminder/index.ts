@@ -1,22 +1,25 @@
 /**
  * Reminder Module Exports
- * 提醒模块 - 简化导出
+ * 提醒模块 - 统一导出
  */
 
-// ============ Constants ============
-export * from './configs';
-
-// ============ Protocol ============
-export * from './protocol';
-
-// ============ Value Objects ============
-export * from './value-objects';
+// ============ Aggregates ============
+export * from './aggregates';
 
 // ============ Entities ============
 export * from './entities';
 
-// ============ Aggregates ============
-export * from './aggregates';
+// ============ Value Objects ============
+export * from './value-objects';
+
+// ============ Domain Events ============
+export * from './domain/events';
+
+// ============ Protocol ============
+export * from './protocol';
+
+// ============ Configs ============
+export * from './configs';
 
 // ============ API ============
 export * from './api';

@@ -145,8 +145,8 @@ export function createGoalScheduleRuntimeContribution(deps: {
 
   const upsertFromEvent = async (
     event:
-      | GoalEventMap['goal:create']
-      | GoalEventMap['goal:update']
+      | GoalEventMap['goal:created']
+      | GoalEventMap['goal:updated']
       | GoalEventMap['goal:schedule-time-changed']
       | GoalEventMap['goal:reminder-config-changed'],
   ) => {
@@ -154,7 +154,7 @@ export function createGoalScheduleRuntimeContribution(deps: {
   };
 
   const deleteFromEvent = async (
-    event: GoalEventMap['goal:complete'] | GoalEventMap['goal:archive'] | GoalEventMap['goal:delete'],
+    event: GoalEventMap['goal:completed'] | GoalEventMap['goal:archived'] | GoalEventMap['goal:deleted'],
   ) => {
     await deleteGoalTasks(event.goal.id, String(event.identityId));
   };
@@ -167,13 +167,13 @@ export function createGoalScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.on('goal:create', upsertFromEvent as any);
-      eventBus.on('goal:update', upsertFromEvent as any);
+      eventBus.on('goal:created', upsertFromEvent as any);
+      eventBus.on('goal:updated', upsertFromEvent as any);
       eventBus.on('goal:schedule-time-changed', upsertFromEvent as any);
       eventBus.on('goal:reminder-config-changed', upsertFromEvent as any);
-      eventBus.on('goal:complete', deleteFromEvent as any);
-      eventBus.on('goal:archive', deleteFromEvent as any);
-      eventBus.on('goal:delete', deleteFromEvent as any);
+      eventBus.on('goal:completed', deleteFromEvent as any);
+      eventBus.on('goal:archived', deleteFromEvent as any);
+      eventBus.on('goal:deleted', deleteFromEvent as any);
 
       started = true;
       logger.info('[Goal] Schedule projection runtime started');
@@ -184,13 +184,13 @@ export function createGoalScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.off('goal:create', upsertFromEvent as any);
-      eventBus.off('goal:update', upsertFromEvent as any);
+      eventBus.off('goal:created', upsertFromEvent as any);
+      eventBus.off('goal:updated', upsertFromEvent as any);
       eventBus.off('goal:schedule-time-changed', upsertFromEvent as any);
       eventBus.off('goal:reminder-config-changed', upsertFromEvent as any);
-      eventBus.off('goal:complete', deleteFromEvent as any);
-      eventBus.off('goal:archive', deleteFromEvent as any);
-      eventBus.off('goal:delete', deleteFromEvent as any);
+      eventBus.off('goal:completed', deleteFromEvent as any);
+      eventBus.off('goal:archived', deleteFromEvent as any);
+      eventBus.off('goal:deleted', deleteFromEvent as any);
 
       started = false;
       logger.info('[Goal] Schedule projection runtime stopped');

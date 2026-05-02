@@ -82,7 +82,7 @@ describe('Notification Aggregate Root', () => {
       const notification = aNotification();
 
       expect(notification.domainEvents).toHaveLength(1);
-      expect(notification.domainEvents[0].eventType).toBe('notification:create');
+      expect(notification.domainEvents[0].eventType).toBe('notification:created');
       expect(notification.domainEvents[0].payload.notificationId).toBe(String(notification.id));
       expect(notification.domainEvents[0].payload.notification.title).toBe(notification.title);
     });
@@ -120,8 +120,8 @@ describe('Notification Aggregate Root', () => {
       await notification.send();
 
       expect(notification.domainEvents.map((event) => event.eventType)).toEqual([
-        'notification:send',
-        'notification:status-change',
+        'notification:sent',
+        'notification:status-changed',
       ]);
     });
   });
@@ -198,7 +198,7 @@ describe('Notification Aggregate Root', () => {
 
       expect(notification.domainEvents.map((event) => event.eventType)).toEqual([
         'notification:read',
-        'notification:status-change',
+        'notification:status-changed',
       ]);
     });
   });
@@ -437,7 +437,7 @@ describe('Notification Aggregate Root', () => {
 
       expect(notification.deletedAt).toBeInstanceOf(Date);
       expect(notification.domainEvents).toHaveLength(1);
-      expect(notification.domainEvents[0].eventType).toBe('notification:delete');
+      expect(notification.domainEvents[0].eventType).toBe('notification:deleted');
     });
   });
 });

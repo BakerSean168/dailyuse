@@ -1,9 +1,19 @@
 /**
  * Notification Module Exports
- * 通知模块 - 简化导出
- *
- * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
+ * 通知模块 - 统一导出
  */
+
+// ============ Aggregates ============
+export * from './aggregates';
+
+// ============ Entities ============
+export * from './entities';
+
+// ============ Value Objects ============
+export * from './value-objects';
+
+// ============ Domain Events ============
+export * from './domain/events';
 
 // ============ Protocol ============
 export * from './protocol';
@@ -12,15 +22,6 @@ export type {
   NotificationDispatchDesktopEvent,
   NotificationDispatchInAppEvent,
 } from './protocol';
-
-// ============ Value Objects ============
-export * from './value-objects';
-
-// ============ Entities ============
-export * from './entities';
-
-// ============ Aggregates ============
-export * from './aggregates';
 
 // ============ API ============
 export * from './api';

@@ -244,7 +244,7 @@ export class NotificationService {
 
     // Listen for setting changes to dynamically update notification style preference
     eventBus.on(
-      'setting:UserSettingPatched',
+      'setting:user-setting-patched',
       (eventData: { category: string; changes: Record<string, unknown> }) => {
         if (eventData.category === 'notification' && 'useCustomNotification' in eventData.changes) {
           this.useCustomNotification = Boolean(eventData.changes.useCustomNotification);
@@ -256,7 +256,7 @@ export class NotificationService {
     );
 
     // Also listen to full import/reset events where we might receive the full tree
-    eventBus.on('setting:SettingImported' as any, (eventData: any) => {
+    eventBus.on('setting:setting-imported' as any, (eventData: any) => {
       if (eventData?.preferences?.notification?.useCustomNotification !== undefined) {
         this.useCustomNotification = Boolean(
           eventData.preferences.notification.useCustomNotification,

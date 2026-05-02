@@ -37,7 +37,7 @@ describe('UserSetting Aggregate Root', () => {
       const events = setting.pullDomainEvents();
 
       expect(events.length).toBe(1);
-      expect(events[0].eventType).toBe('setting:UserSettingCreated');
+      expect(events[0].eventType).toBe('setting:user-setting-created');
       expect(events[0].payload).toEqual({ identityId: testIdentityId });
     });
   });
@@ -72,7 +72,7 @@ describe('UserSetting Aggregate Root', () => {
 
       const events = setting.pullDomainEvents();
       expect(events.length).toBe(1);
-      expect(events[0].eventType).toBe('setting:UserSettingPatched');
+      expect(events[0].eventType).toBe('setting:user-setting-patched');
       expect(events[0].payload).toMatchObject({
         identityId: testIdentityId,
         category: 'notification',
@@ -148,7 +148,7 @@ describe('UserSetting Aggregate Root', () => {
 
       const events = setting.pullDomainEvents();
       expect(events.length).toBe(1);
-      expect(events[0].eventType).toBe('setting:UserSettingReset');
+      expect(events[0].eventType).toBe('setting:user-setting-reset');
       expect(events[0].payload).toMatchObject({
         identityId: testIdentityId,
         category: 'appearance',
@@ -182,7 +182,7 @@ describe('UserSetting Aggregate Root', () => {
 
       const events = setting.pullDomainEvents();
       expect(events.length).toBe(1);
-      expect(events[0].eventType).toBe('setting:UserSettingReset');
+      expect(events[0].eventType).toBe('setting:user-setting-reset');
       expect(events[0].payload).toMatchObject({ identityId: testIdentityId });
       expect((events[0].payload as any).category).toBeUndefined();
     });

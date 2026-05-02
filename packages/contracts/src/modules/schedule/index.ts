@@ -3,23 +3,23 @@
  * 调度模块 - 子文件夹显式导出
  */
 
+// ============ Aggregates ============
+export * from './aggregates';
+
+// ============ Entities ============
+export * from './entities';
+
+// ============ Value Objects ============
+export * from './value-objects';
+
+// ============ Domain ============
+export * from './domain';
+
 // ============ Protocol ============
 export * from './protocol';
 
 // ============ API ============
 export * from './api';
 
-// ============ Domain ============
-export * from './domain';
-
 // ============ DTOs ============
 export * from './dtos';
-
-// ============ Value Objects ============
-export * from './value-objects';
-
-// ============ Entities ============
-export * from './entities';
-
-// ============ Aggregates ============
-export * from './aggregates';

@@ -27,15 +27,6 @@ export type {
 export type {
   ScheduleTaskServerDTO,
   ScheduleTaskPersistenceDTO,
-  ScheduleTaskCreatedEvent,
-  ScheduleTaskPausedEvent,
-  ScheduleTaskResumedEvent,
-  ScheduleTaskCompletedEvent,
-  ScheduleTaskCancelledEvent,
-  ScheduleTaskFailedEvent,
-  ScheduleTaskExecutedEvent,
-  ScheduleTaskScheduleUpdatedEvent,
-  ScheduleTaskDomainEvent,
 } from './schedule-task-server';
 
 export type {

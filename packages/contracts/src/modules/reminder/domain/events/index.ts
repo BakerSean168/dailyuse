@@ -1,7 +1,6 @@
 /**
  * Reminder Module - Domain Events
- * 
- * All domain event types for the Reminder module
+ * 提醒模块 - 领域事件
  */
 
 export type { ReminderTemplateCreatedEvent } from './reminder-template-created.event';
@@ -13,7 +12,7 @@ export type { ReminderTemplateDeletedEvent } from './reminder-template-deleted.e
 export type { ReminderGroupCreatedEvent } from './reminder-group-created.event';
 export type { ReminderGroupUpdatedEvent } from './reminder-group-updated.event';
 export type { ReminderGroupDeletedEvent } from './reminder-group-deleted.event';
+export type { ReminderGroupEnabledEvent } from './reminder-group-enabled.event';
+export type { ReminderGroupPausedEvent } from './reminder-group-paused.event';
+export type { ReminderGroupControlModeSwitchedEvent } from './reminder-group-control-mode-switched.event';
 export type { ReminderTriggeredEvent } from './reminder-triggered.event';
-
-// Re-export union type
-export type { ReminderTemplateCreatedEvent as ReminderDomainEvent } from './reminder-template-created.event';

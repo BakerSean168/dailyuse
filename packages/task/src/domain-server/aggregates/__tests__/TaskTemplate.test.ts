@@ -402,7 +402,7 @@ describe('TaskTemplate Aggregate', () => {
         });
 
         const events = template.domainEvents;
-        const createEvent = events.find((e) => e.eventType === 'task:create');
+        const createEvent = events.find((e) => e.eventType === 'task:created');
         expect(createEvent).toBeDefined();
         expect(createEvent?.payload).toMatchObject({
           identityId: template.identityId,
@@ -548,7 +548,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should emit task:delete domain event', () => {
         template.softDelete();
         const events = template.domainEvents;
-        const deleteEvent = events.find((e) => e.eventType === 'task:delete');
+        const deleteEvent = events.find((e) => e.eventType === 'task:deleted');
         expect(deleteEvent).toBeDefined();
         expect(deleteEvent!.payload).toHaveProperty('isSoftDelete', true);
       });
@@ -633,7 +633,7 @@ describe('TaskTemplate Aggregate', () => {
 
       it('should emit task:update domain event with "title" in changes', () => {
         template.updateTitle('Changed');
-        const event = template.domainEvents.find((e) => e.eventType === 'task:update');
+        const event = template.domainEvents.find((e) => e.eventType === 'task:updated');
         expect(event).toBeDefined();
         expect(event!.payload).toHaveProperty('changes');
         expect((event!.payload as any).changes).toContain('title');
@@ -2100,7 +2100,7 @@ describe('TaskTemplate Aggregate', () => {
 
       const events = template.pullDomainEvents();
       expect(events).toHaveLength(1);
-      expect(events[0]?.eventType).toBe('task:create');
+      expect(events[0]?.eventType).toBe('task:created');
 
       // After pull, events should be cleared
       expect(template.domainEvents).toHaveLength(0);
@@ -2114,7 +2114,7 @@ describe('TaskTemplate Aggregate', () => {
 
       template.softDelete();
       const events = template.domainEvents;
-      const deleteEvent = events.find((e) => e.eventType === 'task:delete');
+      const deleteEvent = events.find((e) => e.eventType === 'task:deleted');
       expect(deleteEvent).toBeDefined();
     });
 
@@ -2126,7 +2126,7 @@ describe('TaskTemplate Aggregate', () => {
 
       template.updateTitle('Updated');
       const events = template.domainEvents;
-      const updateEvent = events.find((e) => e.eventType === 'task:update');
+      const updateEvent = events.find((e) => e.eventType === 'task:updated');
       expect(updateEvent).toBeDefined();
     });
 

@@ -36,10 +36,10 @@ export type AuthenticationRuntimeContribution = AuthenticationModuleRuntimeContr
 const authenticationEventHandlers: Partial<{
   [K in AuthEventName]: AuthEventHandler<K>;
 }> = {
-  'auth:login': (payload) => {
+  'auth:logged-in': (payload) => {
     logger.info(`[Authentication] User logged in (method: ${payload.method})`);
   },
-  'auth:logout': () => {
+  'auth:logged-out': () => {
     logger.info('[Authentication] User logged out');
   },
   'auth:registered': (payload) => {

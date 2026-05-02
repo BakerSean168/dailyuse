@@ -236,7 +236,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     this._props.pauseCount += 1;
     this._props.updatedAt = now;
 
-    this.addDomainEvent<GoalEventMap['goal:focus-session-pause']>('goal:focus-session-pause', {
+    this.addDomainEvent<GoalEventMap['goal:focus-session-paused']>('goal:focus-session-paused', {
       identityId: this._props.identityId,
       sessionId: this.id,
       goalId: this._props.goalId,
@@ -265,7 +265,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     this._props.resumedAt = now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent<GoalEventMap['goal:focus-session-resume']>('goal:focus-session-resume', {
+    this.addDomainEvent<GoalEventMap['goal:focus-session-resumed']>('goal:focus-session-resumed', {
       identityId: this._props.identityId,
       sessionId: this.id,
       goalId: this._props.goalId,
@@ -299,7 +299,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     this._props.completedAt = now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent<GoalEventMap['goal:focus-session-complete']>('goal:focus-session-complete', {
+    this.addDomainEvent<GoalEventMap['goal:focus-session-completed']>('goal:focus-session-completed', {
       identityId: this._props.identityId,
       sessionId: this.id,
       goalId: this._props.goalId,
@@ -325,7 +325,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     this._props.pausedAt = null;
     this._props.updatedAt = now;
 
-    this.addDomainEvent<GoalEventMap['goal:focus-session-cancel']>('goal:focus-session-cancel', {
+    this.addDomainEvent<GoalEventMap['goal:focus-session-cancelled']>('goal:focus-session-cancelled', {
       identityId: this._props.identityId,
       sessionId: this.id,
       goalId: this._props.goalId,
@@ -432,7 +432,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
       throw new Error('开始时间不存在，无法发送开始事件');
     }
 
-    this.addDomainEvent<GoalEventMap['goal:focus-session-start']>('goal:focus-session-start', {
+    this.addDomainEvent<GoalEventMap['goal:focus-session-started']>('goal:focus-session-started', {
       identityId: this._props.identityId,
       sessionId: this.id,
       goalId: this._props.goalId,

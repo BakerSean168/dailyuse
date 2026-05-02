@@ -73,7 +73,7 @@ describe('Account', () => {
       const account = anAccount();
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
-      expect(events[0].eventType).toBe('account:create');
+      expect(events[0].eventType).toBe('account:created');
       expect(events[0].payload.accountId).toBe(account.id.toString());
       expect(events[0].payload.account.email.address).toBe(account.email.address);
     });
@@ -119,7 +119,7 @@ describe('Account', () => {
       account.close();
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
-      expect(events[0].eventType).toBe('account:close');
+      expect(events[0].eventType).toBe('account:closed');
       expect(events[0].payload.accountId).toBe(account.id.toString());
       expect(events[0].payload.account.status).toBe(AccountStatus.Deactivated);
     });
@@ -176,7 +176,7 @@ describe('Account', () => {
       account.updateProfile(newProfile);
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
-      expect(events[0].eventType).toBe('account:update-profile');
+      expect(events[0].eventType).toBe('account:profile-updated');
       expect(events[0].payload.account.profile.nickname).toBe('Updated');
     });
 
@@ -207,7 +207,7 @@ describe('Account', () => {
       account.updateSettings(newSettings);
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
-      expect(events[0].eventType).toBe('account:update-settings');
+      expect(events[0].eventType).toBe('account:settings-updated');
       expect(events[0].payload.account.settings.timezone).toBe('America/New_York');
     });
   });

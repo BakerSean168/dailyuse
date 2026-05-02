@@ -553,7 +553,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this.addHistory('Deleted');
 
     // Publish domain event
-    this.addDomainEvent<TaskEventMap['task:delete']>('task:delete', {
+    this.addDomainEvent<TaskEventMap['task:deleted']>('task:deleted', {
       identityId: this._props.identityId,
       taskTemplateId: this.id,
       isSoftDelete: true,
@@ -647,7 +647,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this.addHistory('title_updated', { oldTitle, newTitle: this._props.title });
 
     // Publish domain event
-    this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
+    this.addDomainEvent<TaskEventMap['task:updated']>('task:updated', {
       identityId: this._props.identityId,
       task: this.toServerDTO(),
       changes: ['title'],
@@ -675,7 +675,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newReminderConfig: newReminderConfig?.toDTO() ?? null,
     });
 
-    this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
+    this.addDomainEvent<TaskEventMap['task:updated']>('task:updated', {
       identityId: this._props.identityId,
       task: this.toServerDTO(),
       changes: ['reminderConfig'],
@@ -878,7 +878,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('priority_updated', { oldImportance, newImportance });
 
-    this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
+    this.addDomainEvent<TaskEventMap['task:updated']>('task:updated', {
       identityId: this._props.identityId,
       task: this.toServerDTO(),
       changes: ['importance'],
@@ -1649,7 +1649,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     });
 
     template.addHistory('created');
-    template.addDomainEvent<TaskEventMap['task:create']>('task:create', {
+    template.addDomainEvent<TaskEventMap['task:created']>('task:created', {
       identityId: params.identityId,
       task: template.toServerDTO(),
       templateId: template.id,

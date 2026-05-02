@@ -30,7 +30,7 @@ describe('Goal domain events', () => {
     goal.updateBasicInfo({ name: 'Launch Goal v2', color: '#111827' });
 
     const [event] = goal.pullDomainEvents();
-    expect(event.eventType).toBe('goal:update');
+    expect(event.eventType).toBe('goal:updated');
     expect(event.payload).toMatchObject({
       identityId: goal.identityId,
       changes: ['name', 'color'],
@@ -55,7 +55,7 @@ describe('Goal domain events', () => {
     });
 
     let [event] = goal.pullDomainEvents();
-    expect(event.eventType).toBe('goal:key-result-add');
+    expect(event.eventType).toBe('goal:key-result-added');
     expect(event.payload).toMatchObject({
       identityId: goal.identityId,
       keyResult: {
@@ -69,7 +69,7 @@ describe('Goal domain events', () => {
 
     goal.updateKeyResultProgress(keyResult.id as unknown as string, 40);
     [event] = goal.pullDomainEvents();
-    expect(event.eventType).toBe('goal:key-result-update');
+    expect(event.eventType).toBe('goal:key-result-updated');
     expect(event.payload).toMatchObject({
       identityId: goal.identityId,
       changes: ['currentValue', 'progress'],
@@ -87,7 +87,7 @@ describe('Goal domain events', () => {
       rating: 4,
     });
     [event] = goal.pullDomainEvents();
-    expect(event.eventType).toBe('goal:review-add');
+    expect(event.eventType).toBe('goal:review-added');
     expect(event.payload).toMatchObject({
       identityId: goal.identityId,
       review: {
@@ -100,7 +100,7 @@ describe('Goal domain events', () => {
 
     goal.removeKeyResult(keyResult.id as unknown as string);
     [event] = goal.pullDomainEvents();
-    expect(event.eventType).toBe('goal:key-result-delete');
+    expect(event.eventType).toBe('goal:key-result-deleted');
     expect(event.payload).toMatchObject({
       identityId: goal.identityId,
       keyResultId: keyResult.id,
@@ -121,7 +121,7 @@ describe('Goal domain events', () => {
 
     const events = goal.pullDomainEvents();
     expect(events).toHaveLength(2);
-    expect(events[0].eventType).toBe('goal:complete');
+    expect(events[0].eventType).toBe('goal:completed');
     expect(events[0].payload).toMatchObject({
       identityId: goal.identityId,
       goal: {
@@ -129,7 +129,7 @@ describe('Goal domain events', () => {
       },
       finalProgress: 0,
     });
-    expect(events[1].eventType).toBe('goal:archive');
+    expect(events[1].eventType).toBe('goal:archived');
     expect(events[1].payload).toMatchObject({
       identityId: goal.identityId,
       goal: {
@@ -151,7 +151,7 @@ describe('GoalFolder domain events', () => {
     });
 
     let [event] = folder.pullDomainEvents();
-    expect(event.eventType).toBe('goal:folder-create');
+    expect(event.eventType).toBe('goal:folder-created');
     expect(event.payload).toMatchObject({
       identityId: folder.identityId,
       folderId: folder.id,
@@ -163,7 +163,7 @@ describe('GoalFolder domain events', () => {
 
     folder.updateDescription('Top level projects');
     [event] = folder.pullDomainEvents();
-    expect(event.eventType).toBe('goal:folder-update');
+    expect(event.eventType).toBe('goal:folder-updated');
     expect(event.payload).toMatchObject({
       changes: ['description'],
       folder: {
@@ -173,7 +173,7 @@ describe('GoalFolder domain events', () => {
 
     folder.incrementGoalCount();
     [event] = folder.pullDomainEvents();
-    expect(event.eventType).toBe('goal:folder-stats-update');
+    expect(event.eventType).toBe('goal:folder-stats-updated');
     expect(event.payload).toMatchObject({
       goalCount: 1,
       completedGoalCount: 0,
@@ -182,7 +182,7 @@ describe('GoalFolder domain events', () => {
 
     folder.softDelete();
     [event] = folder.pullDomainEvents();
-    expect(event.eventType).toBe('goal:folder-delete');
+    expect(event.eventType).toBe('goal:folder-deleted');
     expect(event.payload).toMatchObject({
       identityId: folder.identityId,
       folderId: folder.id,
@@ -205,7 +205,7 @@ describe('FocusSession domain events', () => {
     });
 
     let [event] = session.pullDomainEvents();
-    expect(event.eventType).toBe('goal:focus-session-start');
+    expect(event.eventType).toBe('goal:focus-session-started');
     expect(event.payload).toMatchObject({
       identityId: session.identityId,
       sessionId: session.id,
@@ -219,7 +219,7 @@ describe('FocusSession domain events', () => {
 
     session.pause();
     [event] = session.pullDomainEvents();
-    expect(event.eventType).toBe('goal:focus-session-pause');
+    expect(event.eventType).toBe('goal:focus-session-paused');
     expect(event.payload).toMatchObject({
       pausedAt: expect.any(Number),
       pauseCount: 1,
@@ -230,7 +230,7 @@ describe('FocusSession domain events', () => {
 
     session.resume();
     [event] = session.pullDomainEvents();
-    expect(event.eventType).toBe('goal:focus-session-resume');
+    expect(event.eventType).toBe('goal:focus-session-resumed');
     expect(event.payload).toMatchObject({
       resumedAt: expect.any(Number),
       pausedDurationMinutes: expect.any(Number),
@@ -241,7 +241,7 @@ describe('FocusSession domain events', () => {
 
     session.complete();
     [event] = session.pullDomainEvents();
-    expect(event.eventType).toBe('goal:focus-session-complete');
+    expect(event.eventType).toBe('goal:focus-session-completed');
     expect(event.payload).toMatchObject({
       completedAt: expect.any(Number),
       actualDurationMinutes: expect.any(Number),

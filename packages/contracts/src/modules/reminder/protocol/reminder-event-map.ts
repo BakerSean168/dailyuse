@@ -7,6 +7,9 @@ import type { ReminderTemplateDeletedEvent } from '../domain/events/reminder-tem
 import type { ReminderGroupCreatedEvent } from '../domain/events/reminder-group-created.event';
 import type { ReminderGroupUpdatedEvent } from '../domain/events/reminder-group-updated.event';
 import type { ReminderGroupDeletedEvent } from '../domain/events/reminder-group-deleted.event';
+import type { ReminderGroupEnabledEvent } from '../domain/events/reminder-group-enabled.event';
+import type { ReminderGroupPausedEvent } from '../domain/events/reminder-group-paused.event';
+import type { ReminderGroupControlModeSwitchedEvent } from '../domain/events/reminder-group-control-mode-switched.event';
 import type { ReminderTriggeredEvent } from '../domain/events/reminder-triggered.event';
 import type {
   ReminderFrequencyAdjustedEvent,
@@ -16,9 +19,10 @@ import type {
 
 /**
  * Reminder Module - Event Map
+ * 提醒模块 - 事件映射
  *
- * Event Naming Convention: reminder:<action>
- * Maps event names to their payload types for type-safe event handling
+ * 事件命名规范：reminder:{kebab-entity}-{kebab-action-past-tense}
+ * 参见：packages/governance/src/contracts/protocol/governance-event-map.ts
  */
 
 export type ReminderEventMap = {
@@ -74,19 +78,19 @@ export type ReminderEventMap = {
    * Reminder group enabled event
    * Triggered when reminder group is enabled
    */
-  'reminder:group:enabled': ReminderGroupUpdatedEvent;
+  'reminder:group:enabled': ReminderGroupEnabledEvent;
 
   /**
    * Reminder group paused event
    * Triggered when reminder group is paused
    */
-  'reminder:group:paused': ReminderGroupUpdatedEvent;
+  'reminder:group:paused': ReminderGroupPausedEvent;
 
   /**
    * Reminder group control mode switched event
    * Triggered when reminder group control mode changes
    */
-  'reminder:group:control-mode-switched': ReminderGroupUpdatedEvent;
+  'reminder:group:control-mode-switched': ReminderGroupControlModeSwitchedEvent;
 
   /**
    * Reminder group deleted event

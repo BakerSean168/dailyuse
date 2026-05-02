@@ -87,7 +87,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
       messages: [],
     });
 
-    conversation.addDomainEvent<AIEventMap['ai.conversation.created']>('ai.conversation.created', {
+    conversation.addDomainEvent<AIEventMap['ai:conversation-created']>('ai:conversation-created', {
       identityId: params.identityId,
       conversation: conversation.toServerDTO(),
     });
@@ -108,7 +108,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.lastMessageAt = message.createdAt;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<AIEventMap['ai.message.added']>('ai.message.added', {
+    this.addDomainEvent<AIEventMap['ai:message-added']>('ai:message-added', {
       identityId: String(this._props.identityId),
       conversationId: String(this.id),
       conversation: this.toServerDTO(true),
@@ -135,8 +135,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.status = status;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<AIEventMap['ai.conversation.status_changed']>(
-      'ai.conversation.status_changed',
+    this.addDomainEvent<AIEventMap['ai:conversation-status-changed']>(
+      'ai:conversation-status-changed',
       {
       identityId: String(this._props.identityId),
       conversation: this.toServerDTO(true),
@@ -155,7 +155,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.name = trimmed;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<AIEventMap['ai.conversation.updated']>('ai.conversation.updated', {
+    this.addDomainEvent<AIEventMap['ai:conversation-updated']>('ai:conversation-updated', {
       identityId: String(this._props.identityId),
       conversation: this.toServerDTO(true),
       changes: ['name'],
@@ -168,7 +168,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.status = ConversationStatus.Archived;
     this._props.updatedAt = deletedAt;
 
-    this.addDomainEvent<AIEventMap['ai.conversation.deleted']>('ai.conversation.deleted', {
+    this.addDomainEvent<AIEventMap['ai:conversation-deleted']>('ai:conversation-deleted', {
       identityId: String(this._props.identityId),
       conversationId: String(this.id),
       conversation: this.toServerDTO(true),

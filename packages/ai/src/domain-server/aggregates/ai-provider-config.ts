@@ -131,7 +131,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
       deletedAt: null,
     });
 
-    instance.addDomainEvent<AIEventMap['ai.provider_config.created']>('ai.provider_config.created', {
+    instance.addDomainEvent<AIEventMap['ai:provider-config-created']>('ai:provider-config-created', {
       identityId: String(instance._props.identityId),
       providerConfig: instance.toServerDTO(),
     });
@@ -179,8 +179,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     this._props.availableModels = models;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<AIEventMap['ai.provider_config.models_updated']>(
-      'ai.provider_config.models_updated',
+    this.addDomainEvent<AIEventMap['ai:provider-config-models-updated']>(
+      'ai:provider-config-models-updated',
       {
       identityId: String(this._props.identityId),
       providerConfig: this.toServerDTO(),
@@ -209,8 +209,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     this._props.isDefault = true;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<AIEventMap['ai.provider_config.set_default']>(
-      'ai.provider_config.set_default',
+    this.addDomainEvent<AIEventMap['ai:provider-config-set-default']>(
+      'ai:provider-config-set-default',
       {
         identityId: String(this._props.identityId),
         providerConfig: this.toServerDTO(),

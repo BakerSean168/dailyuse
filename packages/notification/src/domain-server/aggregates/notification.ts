@@ -147,7 +147,7 @@ export class Notification extends AggregateRoot<NotificationId> {
     this._props.status = NotificationStatus.Sent;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<NotificationEventMap['notification:send']>('notification:send', {
+    this.addDomainEvent<NotificationEventMap['notification:sent']>('notification:sent', {
       identityId: String(this._props.identityId),
       notificationId: String(this.id),
       notification: this.toServerDTO(),
@@ -230,7 +230,7 @@ export class Notification extends AggregateRoot<NotificationId> {
     this._props.deletedAt = new Date();
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent<NotificationEventMap['notification:delete']>('notification:delete', {
+    this.addDomainEvent<NotificationEventMap['notification:deleted']>('notification:deleted', {
       identityId: String(this._props.identityId),
       notificationId: String(this.id),
       notification: this.toServerDTO(),
@@ -343,7 +343,7 @@ export class Notification extends AggregateRoot<NotificationId> {
       status: notification.status,
     });
 
-    notification.addDomainEvent<NotificationEventMap['notification:create']>('notification:create', {
+    notification.addDomainEvent<NotificationEventMap['notification:created']>('notification:created', {
       identityId: String(notification.identityId),
       notificationId: String(notification.id),
       notification: notification.toServerDTO(),
@@ -360,8 +360,8 @@ export class Notification extends AggregateRoot<NotificationId> {
       return;
     }
 
-    this.addDomainEvent<NotificationEventMap['notification:status-change']>(
-      'notification:status-change',
+    this.addDomainEvent<NotificationEventMap['notification:status-changed']>(
+      'notification:status-changed',
       {
         identityId: String(this._props.identityId),
         notificationId: String(this.id),

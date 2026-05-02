@@ -31,7 +31,7 @@ describe('AIConversation Aggregate', () => {
       expect(conversation.version).toBe(1);
       expect(conversation.domainEvents).toHaveLength(1);
       const createdEvent = conversation.domainEvents[0];
-      expect(createdEvent.eventType).toBe('ai.conversation.created');
+      expect(createdEvent.eventType).toBe('ai:conversation-created');
       expect(createdEvent.aggregateId).toBe(String(conversation.id));
       expect(createdEvent.occurredAt).toBeInstanceOf(Date);
       expect(createdEvent.payload.identityId).toBe(identityId);
@@ -169,7 +169,7 @@ describe('AIConversation Aggregate', () => {
       conversation.clearDomainEvents();
       conversation.rename('New Name');
       const event = conversation.domainEvents[0];
-      expect(event.eventType).toBe('ai.conversation.updated');
+      expect(event.eventType).toBe('ai:conversation-updated');
     });
 
     it('跟踪更新时间', () => {
@@ -198,7 +198,7 @@ describe('AIConversation Aggregate', () => {
       conversation.clearDomainEvents();
       conversation.updateStatus(ConversationStatus.Archived);
       const event = conversation.domainEvents[0];
-      expect(event.eventType).toBe('ai.conversation.status_changed');
+      expect(event.eventType).toBe('ai:conversation-status-changed');
     });
   });
 
@@ -224,7 +224,7 @@ describe('AIConversation Aggregate', () => {
       conversation.clearDomainEvents();
       conversation.softDelete();
       const event = conversation.domainEvents[0];
-      expect(event.eventType).toBe('ai.conversation.deleted');
+      expect(event.eventType).toBe('ai:conversation-deleted');
     });
   });
 

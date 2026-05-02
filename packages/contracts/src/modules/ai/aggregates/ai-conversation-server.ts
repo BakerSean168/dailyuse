@@ -51,56 +51,5 @@ export interface AIConversationPersistenceDTO {
 }
 
 // ============ 领域事件 ============
-
-/**
- * 对话创建事件
- */
-export interface AIConversationCreatedEvent {
-  type: 'ai_conversation.created';
-  aggregateId: AiConversationId;
-  timestamp: DomainDate;
-  payload: {
-    conversation: AIConversationServerDTO;
-    identityId: IdentityId;
-  };
-}
-
-/**
- * 对话更新事件
- */
-export interface AIConversationUpdatedEvent {
-  type: 'ai_conversation.updated';
-  aggregateId: AiConversationId;
-  timestamp: DomainDate;
-  payload: {
-    conversationId: AiConversationId;
-    previousData: Partial<AIConversationServerDTO>;
-    changes: string[];
-  };
-}
-
-/**
- * 消息添加事件
- */
-export interface AIMessageAddedEvent {
-  type: 'ai_conversation.message_added';
-  aggregateId: AiConversationId;
-  timestamp: DomainDate;
-  payload: {
-    conversationId: AiConversationId;
-    message: MessageServerDTO;
-  };
-}
-
-/**
- * 对话删除事件
- */
-export interface AIConversationDeletedEvent {
-  type: 'ai_conversation.deleted';
-  aggregateId: AiConversationId;
-  timestamp: DomainDate;
-  payload: {
-    conversationId: AiConversationId;
-    deletedAt: DomainDate;
-  };
-}
+// 事件接口已移至 domain/events/ 目录，使用 payload-only 格式。
+// Event interfaces moved to domain/events/ directory with payload-only format.

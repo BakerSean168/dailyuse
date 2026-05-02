@@ -5,10 +5,13 @@ import type { AccountSettingsUpdatedEvent } from '../domain/events/account-setti
 
 /**
  * Account Module - Event Map
+ * 账户模块 - 事件映射
+ *
+ * 事件命名规范：account:{kebab-action-past-tense}
  */
 export type AccountEventMap = {
-  'account:create': AccountCreatedEvent;
-  'account:close': AccountClosedEvent;
-  'account:update-profile': AccountProfileUpdatedEvent;
-  'account:update-settings': AccountSettingsUpdatedEvent;
+  'account:created': AccountCreatedEvent;
+  'account:closed': AccountClosedEvent;
+  'account:profile-updated': AccountProfileUpdatedEvent;
+  'account:settings-updated': AccountSettingsUpdatedEvent;
 };

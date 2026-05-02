@@ -1,17 +1,13 @@
 /**
  * Schedule Module - Domain Events
- *
- * ScheduleTask 相关事件定义在 aggregates/schedule-task-server.ts 中
+ * 调度模块 - 领域事件统一导出
  */
 
-// Legacy compatibility
-export interface ScheduleCreatedDomainEvent {
-  aggregateId: string;
-  timestamp: number;
-}
-
-export interface ScheduleTaskExecutedDomainEvent {
-  aggregateId: string;
-  timestamp: number;
-  executionId: string;
-}
+export type { ScheduleTaskCreatedEvent } from './schedule-task-created.event';
+export type { ScheduleTaskPausedEvent } from './schedule-task-paused.event';
+export type { ScheduleTaskResumedEvent } from './schedule-task-resumed.event';
+export type { ScheduleTaskCompletedEvent } from './schedule-task-completed.event';
+export type { ScheduleTaskCancelledEvent } from './schedule-task-cancelled.event';
+export type { ScheduleTaskFailedEvent } from './schedule-task-failed.event';
+export type { ScheduleTaskExecutedEvent } from './schedule-task-executed.event';
+export type { ScheduleTaskScheduleUpdatedEvent } from './schedule-task-schedule-updated.event';

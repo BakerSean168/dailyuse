@@ -1,21 +1,23 @@
-// Aggregates (server & client DTOs)
+// ============ Aggregates ============
 export * from './aggregates';
 
-// Value Objects
+// ============ Value Objects ============
 export * from './value-objects';
 
-// Domain Events & Protocol (RPC / Event maps)
+// ============ Domain Events ============
 export * from './domain';
+
+// ============ Protocol ============
 export * from './protocol';
 
-// API DTOs (request/response schemas)
-export * from './api';
-
-// Composed DTOs (overview, summary)
-export * from './dtos';
-
-// Configs (validation helpers, registry)
+// ============ Configs ============
 export * from './configs';
 
-// Preferences (defaults, schemas, inferred types)
+// ============ API ============
+export * from './api';
+
+// ============ DTOs ============
+export * from './dtos';
+
+// ============ Preferences ============
 export * from './preferences';

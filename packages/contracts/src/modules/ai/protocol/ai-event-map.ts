@@ -8,15 +8,21 @@ import type { AIProviderConfigModelsUpdatedEvent } from '../domain/events/ai-pro
 import type { AIProviderConfigSetDefaultEvent } from '../domain/events/ai-provider-config-set-default.event';
 import type { StreamMessageChunk, StreamMessageDonePayload } from '../api/ai-chat.dto';
 
+/**
+ * AI Module - Event Map
+ * AI模块 - 事件映射
+ *
+ * 事件命名规范：ai:{kebab-entity}-{kebab-action-past-tense}
+ */
 export type AIEventMap = {
-  'ai.conversation.created': AIConversationCreatedEvent;
-  'ai.conversation.updated': AIConversationUpdatedEvent;
-  'ai.conversation.status_changed': AIConversationStatusChangedEvent;
-  'ai.conversation.deleted': AIConversationDeletedEvent;
-  'ai.message.added': AIMessageAddedEvent;
-  'ai.provider_config.created': AIProviderConfigCreatedEvent;
-  'ai.provider_config.models_updated': AIProviderConfigModelsUpdatedEvent;
-  'ai.provider_config.set_default': AIProviderConfigSetDefaultEvent;
+  'ai:conversation-created': AIConversationCreatedEvent;
+  'ai:conversation-updated': AIConversationUpdatedEvent;
+  'ai:conversation-status-changed': AIConversationStatusChangedEvent;
+  'ai:conversation-deleted': AIConversationDeletedEvent;
+  'ai:message-added': AIMessageAddedEvent;
+  'ai:provider-config-created': AIProviderConfigCreatedEvent;
+  'ai:provider-config-models-updated': AIProviderConfigModelsUpdatedEvent;
+  'ai:provider-config-set-default': AIProviderConfigSetDefaultEvent;
   'ai:chat:message:stream:chunk': { streamId: string; chunk: StreamMessageChunk };
   'ai:chat:message:stream:done': { streamId: string; result: StreamMessageDonePayload };
   'ai:chat:message:stream:error': {
