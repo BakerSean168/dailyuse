@@ -15,20 +15,33 @@ import type {
  * 【规范说明：事件映射】
  * 定义模块发出的所有领域事件，用于模块间异步通信。
  *
- * 【事件命名规范】
- * 格式：{module}:{action}
- * - governance:rule-created - 规则创建
- * - governance:rule-updated - 规则更新
- * - governance:rule-deprecated - 规则废弃
- * - governance:rule-reactivated - 规则重新激活
- * - governance:rule-status-changed - 规则状态变更（通用）
+ * 【事件命名规范 ★ 所有业务模块必须遵循】
+ * 标准格式：{module}:{kebab-entity}-{kebab-action-past-tense}
+ *
+ * ✅ 正确示例：
+ *   governance:rule-created         — 规则创建
+ *   governance:rule-updated         — 规则更新
+ *   governance:rule-deprecated      — 规则废弃
+ *   governance:rule-status-changed  — 规则状态变更
+ *   auth:identity-created           — 认证身份创建
+ *   schedule:task-created           — 日程任务创建（子实体）
+ *
+ * ❌ 错误示例：
+ *   account:create                  — 缺少过去式后缀，应为 account:created
+ *   editor:EditorWorkspaceUpdatedEvent — 使用了类名，应为 editor:workspace-updated
+ *   ai.conversation.created         — 使用了点分隔符，应为 ai:conversation-created
+ *   setting:UserSettingCreated      — PascalCase，应为 setting:user-setting-created
+ *
+ * 参见：docs/standards/contract-module-development-spec.md
+ * 参见：docs/standards/domain-event-spec.md
  *
  * 【使用场景】
  * - 事件发布：eventBus.publish('governance:rule-created', payload)
  * - 事件订阅：eventBus.subscribe('governance:rule-created', handler)
  *
+ * 【关于 payload-only】
  * utils 的 addDomainEvent 能接收 type 和 payload，自动生成 aggregateId 和 occurredAt，
- * 所以 Event 中不需要包含这些字段
+ * 所以 Event 接口中不需要包含这些信封字段。
  */
 export type GovernanceEventMap = {
   /**

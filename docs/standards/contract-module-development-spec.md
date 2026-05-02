@@ -46,7 +46,7 @@ modules/{domain}/
 
 - 只定义对外协议映射，例如 RPC map、event map。
 - RPC key 使用 `'domain:kebab-case-operation'`。
-- Event key 使用 `'domain:PascalCaseEvent'`。
+- Event key 使用 `'domain:kebab-action-past-tense'`（如 `governance:rule-created`）。
 - 不允许在协议映射里内联复杂对象类型，统一从 `../api` 或其他下层目录导入。
 
 ### API
