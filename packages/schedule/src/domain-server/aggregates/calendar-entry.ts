@@ -100,6 +100,9 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     if (params.startTime >= params.endTime) {
       throw new Error('CalendarEntry startTime must be before endTime');
     }
+    if (params.priority !== undefined && (params.priority < 1 || params.priority > 5)) {
+      throw new Error('Priority must be between 1 and 5');
+    }
 
     const now = new Date();
     const duration = Math.round((params.endTime - params.startTime) / 60000);

@@ -1,42 +1,62 @@
-import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
-import { CalendarEntry as DomainCalendarEntry } from '../../domain-server/aggregates/calendar-entry';
+import type {
+  CalendarEntryServerDTO,
+  ConflictDetectionResult,
+} from '@dailyuse/contracts/schedule';
 import type { CalendarEntryState } from '../../domain-server/aggregates/calendar-entry';
-import type { ConflictDetectionResult, CalendarEntryServerDTO } from '@dailyuse/contracts/schedule';
+import { CalendarEntry as DomainCalendarEntry } from '../../domain-server/aggregates/calendar-entry';
+import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
 export class ScheduleConflictDetectionService {
   constructor(private readonly scheduleRepository: IScheduleRepository) {}
 
-  /**
-   * Detect conflicts for a given schedule (by its server DTO).
-   * - Loads other schedules in the same account that overlap the time window
-   * - Uses the Domain Schedule aggregate to perform conflict detection
-   */
   async detectConflictsForSchedule(
     scheduleDto: CalendarEntryServerDTO,
   ): Promise<ConflictDetectionResult> {
-    const { identityId, startTime, endTime, id } = scheduleDto;
+    return this.detectConflictsForEntry(this.toAggregate(scheduleDto), scheduleDto.id);
+  }
 
-    // Parse timestamps
-    const startTimestamp = new Date(startTime).getTime();
-    const endTimestamp = new Date(endTime).getTime();
+  async detectConflictsForTimeRange(params: {
+    identityId: string;
+    startTime: number;
+    endTime: number;
+    excludeId?: string;
+  }): Promise<ConflictDetectionResult> {
+    const transientEntry = DomainCalendarEntry.load(this.toTransientState(params));
+    return this.detectConflictsForEntry(transientEntry, params.excludeId);
+  }
 
-    // Validate time range
-    if (startTimestamp >= endTimestamp) {
+  async detectConflictsForEntry(
+    schedule: DomainCalendarEntry,
+    excludeId: string | undefined = schedule.id,
+  ): Promise<ConflictDetectionResult> {
+    if (schedule.startTime >= schedule.endTime) {
       throw new Error('Invalid time range: startTime must be before endTime');
     }
 
-    // Find other schedules overlapping this time window (exclude the current schedule)
-    const otherAggregates = await this.scheduleRepository.findByTimeRange(
-      identityId,
-      startTimestamp,
-      endTimestamp,
-      id,
+    const overlappingSchedules = await this.scheduleRepository.findByTimeRange(
+      schedule.identityId,
+      schedule.startTime,
+      schedule.endTime,
+      excludeId,
     );
 
-    // Reconstruct domain aggregate from DTO via load
-    const state: CalendarEntryState = {
-      id: ScheduleId.of(scheduleDto.id),
+    return schedule.detectConflicts(overlappingSchedules);
+  }
+
+  async getScheduleConflicts(scheduleId: string): Promise<ConflictDetectionResult> {
+    const scheduleAggregate = await this.scheduleRepository.findById(scheduleId);
+
+    if (!scheduleAggregate) {
+      throw new Error(`Schedule not found: ${scheduleId}`);
+    }
+
+    return this.detectConflictsForEntry(scheduleAggregate);
+  }
+
+  private toAggregate(scheduleDto: CalendarEntryServerDTO): DomainCalendarEntry {
+    return DomainCalendarEntry.load({
+      id: scheduleDto.id ? ScheduleId.of(scheduleDto.id) : ScheduleId.generate(),
       identityId: scheduleDto.identityId,
       title: scheduleDto.title,
       description: scheduleDto.description ?? null,
@@ -46,58 +66,38 @@ export class ScheduleConflictDetectionService {
         scheduleDto.duration ??
         Math.round((Number(scheduleDto.endTime) - Number(scheduleDto.startTime)) / 60000),
       hasConflict: scheduleDto.hasConflict ?? false,
-      conflictingEntries: scheduleDto.conflictingEntries
-        ? [...scheduleDto.conflictingEntries]
-        : null,
+      conflictingEntries: scheduleDto.conflictingEntries ? [...scheduleDto.conflictingEntries] : null,
       priority: scheduleDto.priority ?? null,
       location: scheduleDto.location ?? null,
       attendees: scheduleDto.attendees ? [...scheduleDto.attendees] : null,
       createdAt: new Date(scheduleDto.createdAt),
       updatedAt: new Date(scheduleDto.updatedAt),
-    };
-    const target = DomainCalendarEntry.load(state);
-
-    // Perform conflict detection using domain logic
-    const result = target.detectConflicts(otherAggregates);
-
-    // Persist conflict state on the target aggregate
-    if (result.hasConflict) {
-      const conflictingIds = result.conflicts.map((c) => c.scheduleId);
-      target.markAsConflicting(conflictingIds);
-    } else if (target.hasConflict) {
-      // Clear stale conflict state if no conflicts found
-      target.clearConflicts();
-    }
-
-    // Save if we have a valid persisted entity (non-empty id means it exists in the repo)
-    if (scheduleDto.id) {
-      await this.scheduleRepository.save(target);
-    }
-
-    return result;
+    });
   }
 
-  /**
-   * Get conflicts for an existing schedule by its UUID.
-   * Queries the schedule from repository and detects conflicts with other schedules
-   * in the same time window.
-   *
-   * @param scheduleId - UUID of the schedule to check for conflicts
-   * @returns ConflictDetectionResult with detected conflicts and suggestions
-   * @throws Error if schedule not found
-   */
-  async getScheduleConflicts(scheduleId: string): Promise<ConflictDetectionResult> {
-    // Find the schedule (repository returns domain aggregate)
-    const scheduleAggregate = await this.scheduleRepository.findById(scheduleId);
-
-    if (!scheduleAggregate) {
-      throw new Error(`Schedule not found: ${scheduleId}`);
-    }
-
-    // Convert aggregate to DTO for detectConflictsForSchedule method
-    const scheduleDto = scheduleAggregate.toServerDTO();
-
-    return this.detectConflictsForSchedule(scheduleDto);
+  private toTransientState(params: {
+    identityId: string;
+    startTime: number;
+    endTime: number;
+    excludeId?: string;
+  }): CalendarEntryState {
+    const now = new Date();
+    return {
+      id: ScheduleId.generate(),
+      identityId: params.identityId,
+      title: 'Conflict check',
+      description: null,
+      startTime: params.startTime,
+      endTime: params.endTime,
+      duration: Math.max(Math.round((params.endTime - params.startTime) / 60000), 0),
+      hasConflict: false,
+      conflictingEntries: null,
+      priority: null,
+      location: null,
+      attendees: null,
+      createdAt: now,
+      updatedAt: now,
+    };
   }
 }
 

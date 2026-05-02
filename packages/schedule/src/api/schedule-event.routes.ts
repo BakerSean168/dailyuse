@@ -22,6 +22,8 @@ import {
 import {
   CreateScheduleRequestSchema,
   UpdateScheduleRequestSchema,
+  DetectConflictsRequestSchema,
+  ResolveConflictRequestSchema,
   CalendarEntryResponseSchema,
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
@@ -168,7 +170,7 @@ export function registerScheduleEventRoutes(
       path: '/conflicts/detect',
       summary: '检测日程冲突',
       request: {
-        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+        body: { content: { 'application/json': { schema: DetectConflictsRequestSchema } } },
       },
       responses: {
         200: successResponse(z.object({}).passthrough(), '检测完成'),
@@ -223,13 +225,7 @@ export function registerScheduleEventRoutes(
         params: z.object({ id: brandedId<ScheduleId>() }),
         body: {
           content: {
-            'application/json': {
-              schema: z.object({
-                strategy: z.enum(['reschedule', 'acknowledge']),
-                startTime: z.unknown().optional(),
-                endTime: z.unknown().optional(),
-              }),
-            },
+            'application/json': { schema: ResolveConflictRequestSchema },
           },
         },
       },

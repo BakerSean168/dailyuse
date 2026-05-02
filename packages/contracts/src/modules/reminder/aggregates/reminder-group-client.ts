@@ -39,7 +39,3 @@ export interface ReminderGroupClientDTO {
   controlDescription: string; // "所有提醒统一启用" | "提醒独立控制"
   effectiveTemplatePolicyText: string;
 }
-
-/**
- * Reminder Group Client 静态工厂方法接?
- */

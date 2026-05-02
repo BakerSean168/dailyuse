@@ -167,7 +167,6 @@ export class ScheduleClientService {
   }
 
   async detectConflicts(params: {
-    userId: string;
     startTime: number;
     endTime: number;
     excludeId?: string;

@@ -27,7 +27,7 @@ export const CreateScheduleRequestSchema = z.object({
   startTime: z.number().positive(),
   endTime: z.number().positive(),
   duration: z.number().positive(),
-  priority: z.number().int().min(0).max(10).optional(),
+  priority: z.number().int().min(1).max(5).optional(),
   location: z.string().max(500).optional(),
   attendees: z.array(z.string().email()).optional(),
   autoDetectConflicts: z.boolean().optional(),
@@ -39,7 +39,7 @@ export const UpdateScheduleRequestSchema = z.object({
   startTime: z.number().positive().optional(),
   endTime: z.number().positive().optional(),
   duration: z.number().positive().optional(),
-  priority: z.number().int().min(0).max(10).optional(),
+  priority: z.number().int().min(1).max(5).optional(),
   location: z.string().max(500).optional(),
   attendees: z.array(z.string().email()).optional(),
 });

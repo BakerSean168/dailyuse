@@ -176,32 +176,6 @@ function toUpdateSchedulePayload(data: UpdateScheduleRequest) {
   };
 }
 
-function toDraftScheduleDto(
-  identityId: string,
-  data: Pick<
-    CreateScheduleRequest,
-    'name' | 'startTime' | 'endTime' | 'description' | 'location' | 'priority' | 'attendees'
-  >,
-  id = '',
-) {
-  const now = Date.now();
-  return {
-    id,
-    identityId,
-    title: data.name,
-    startTime: data.startTime,
-    endTime: data.endTime,
-    duration: Math.max(Math.round((data.endTime - data.startTime) / 60000), 0),
-    hasConflict: false,
-    description: data.description ?? undefined,
-    location: data.location ?? undefined,
-    priority: data.priority ?? undefined,
-    attendees: data.attendees ?? undefined,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
 /**
  * Pure assembly helper used by the class facade and tests.
  * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
@@ -445,21 +419,12 @@ export function createScheduleModule(
     },
     detectConflicts: async (data) => {
       try {
-        const result = await useCases.conflictDetectionService.detectConflictsForSchedule({
-          id: data.excludeId ?? '',
+        const result = await useCases.conflictDetectionService.detectConflictsForTimeRange({
           identityId: data.identityId,
-          title: '',
           startTime: data.startTime,
           endTime: data.endTime,
-          duration: Math.max(Math.round((data.endTime - data.startTime) / 60000), 0),
-          hasConflict: false,
-          description: undefined,
-          location: undefined,
-          priority: undefined,
-          attendees: undefined,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        } as any);
+          excludeId: data.excludeId,
+        });
         return ok(result);
       } catch (err: unknown) {
         return fail({
@@ -470,13 +435,11 @@ export function createScheduleModule(
     },
     createEventWithConflictDetection: async (data, ctx) => {
       try {
-        const conflicts = await useCases.conflictDetectionService.detectConflictsForSchedule(
-          toDraftScheduleDto(ctx.identityId, data),
-        );
-        const event = await useCases.scheduleEventService.createSchedule(
+        const schedule = await useCases.scheduleEventService.createSchedule(
           toCreateSchedulePayload(data, ctx.identityId),
         );
-        return ok({ event, conflicts });
+        const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(schedule.id);
+        return ok({ schedule, conflicts });
       } catch (err: unknown) {
         return fail({
           code: 'INTERNAL_ERROR',
@@ -506,6 +469,7 @@ export function createScheduleModule(
             if (!conflicts.hasConflict || conflicts.suggestions.length === 0) {
               return ok({
                 schedule: currentEvent,
+                conflicts,
                 applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
               });
             }
@@ -534,6 +498,7 @@ export function createScheduleModule(
             if (!conflicts.hasConflict) {
               return ok({
                 schedule: currentEvent,
+                conflicts,
                 applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
               });
             }
@@ -565,6 +530,7 @@ export function createScheduleModule(
             if (!conflicts.hasConflict) {
               return ok({
                 schedule: currentEvent,
+                conflicts,
                 applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
               });
             }
@@ -600,6 +566,7 @@ export function createScheduleModule(
             if (!conflicts.hasConflict) {
               return ok({
                 schedule: currentEvent,
+                conflicts,
                 applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
               });
             }

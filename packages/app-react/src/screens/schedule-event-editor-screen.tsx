@@ -121,6 +121,34 @@ export function ScheduleEventEditorScreen() {
     void loadSchedule();
   }, [scheduleId, service]);
 
+  useEffect(() => {
+    if (!parsedRange.isValid || parsedRange.startTime === null || parsedRange.endTime === null) {
+      setConflicts(null);
+      setConflictError(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      void (async () => {
+        const result = await service.detectConflicts({
+          startTime: parsedRange.startTime!,
+          endTime: parsedRange.endTime!,
+          excludeId: scheduleId ?? undefined,
+        });
+
+        if (!result.ok) {
+          setConflictError(result.error.message);
+          return;
+        }
+
+        setConflictError(null);
+        setConflicts(result.data);
+      })();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [parsedRange.endTime, parsedRange.isValid, parsedRange.startTime, scheduleId, service]);
+
   async function handleDetectConflicts() {
     if (!parsedRange.isValid || parsedRange.startTime === null || parsedRange.endTime === null) {
       setConflictError('Use a valid date and time range first.');
@@ -130,7 +158,6 @@ export function ScheduleEventEditorScreen() {
     setConflictError(null);
 
     const result = await service.detectConflicts({
-      userId: 'mobile-shell',
       startTime: parsedRange.startTime,
       endTime: parsedRange.endTime,
       excludeId: scheduleId ?? undefined,
@@ -220,12 +247,26 @@ export function ScheduleEventEditorScreen() {
     <PageShell
       eyebrow="Schedule"
       title={scheduleId ? 'Edit event' : 'Create event'}
-      subtitle="事件编辑页先完成时间范围、冲突检测和基础字段闭环。">
+      subtitle="事件编辑页支持自动冲突检测，冲突只做提示，不阻止保存。">
       <SectionCard title="Navigation" description="保存后返回周视图继续检查时间流。">
         <View style={styles.actionRow}>
           <PrimaryButton label="Back" onPress={() => router.back()} variant="secondary" />
           <PrimaryButton label="Week view" onPress={() => router.replace('./week')} variant="ghost" />
-          <PrimaryButton label={isSubmitting ? 'Saving…' : scheduleId ? 'Save event' : 'Create event'} onPress={handleSubmit} disabled={isSubmitting || isLoading} />
+          <PrimaryButton
+            label={
+              isSubmitting
+                ? 'Saving…'
+                : conflicts?.hasConflict
+                  ? scheduleId
+                    ? 'Save anyway'
+                    : 'Create anyway'
+                  : scheduleId
+                    ? 'Save event'
+                    : 'Create event'
+            }
+            onPress={handleSubmit}
+            disabled={isSubmitting || isLoading}
+          />
         </View>
       </SectionCard>
 
@@ -255,6 +296,11 @@ export function ScheduleEventEditorScreen() {
             {scheduleId ? <PrimaryButton label={isDeleting ? 'Deleting…' : 'Delete event'} onPress={handleDelete} disabled={isDeleting} variant="ghost" /> : null}
           </View>
           <StatusPill label={describeConflict(conflicts)} tone={conflicts?.hasConflict ? 'warning' : 'success'} />
+          {conflicts?.hasConflict ? (
+            <ThemedText type="small" themeColor="warning">
+              Conflicts are warnings only. Saving will keep the event and refresh conflict badges.
+            </ThemedText>
+          ) : null}
           {conflictError ? <ThemedText type="small" themeColor="warning">{conflictError}</ThemedText> : null}
           {conflicts?.conflicts?.length ? (
             <View style={styles.conflictColumn}>

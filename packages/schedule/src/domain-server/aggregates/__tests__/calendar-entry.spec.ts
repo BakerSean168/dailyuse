@@ -78,6 +78,28 @@ describe('CalendarEntry Aggregate', () => {
       }).toThrow('CalendarEntry startTime must be before endTime');
     });
 
+    it('should throw error if priority is outside the supported range', () => {
+      expect(() => {
+        CalendarEntry.create({
+          identityId: 'acc-123',
+          title: 'Invalid Priority',
+          startTime: hour(14),
+          endTime: hour(15),
+          priority: 0,
+        });
+      }).toThrow('Priority must be between 1 and 5');
+
+      expect(() => {
+        CalendarEntry.create({
+          identityId: 'acc-123',
+          title: 'Invalid Priority',
+          startTime: hour(14),
+          endTime: hour(15),
+          priority: 6,
+        });
+      }).toThrow('Priority must be between 1 and 5');
+    });
+
     it('should calculate duration correctly', () => {
       const schedule = CalendarEntry.create({
         identityId: 'acc-123',
