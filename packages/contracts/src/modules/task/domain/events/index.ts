@@ -17,6 +17,9 @@ export type { TaskTemplateScheduleTimeChangedEvent } from './task-template-sched
 export type { TaskTemplateRecurrenceChangedEvent } from './task-template-recurrence-changed.event';
 export type { TaskUncompletedEvent } from './task-uncompleted.event';
 export type { TaskRescheduledEvent } from './task-rescheduled.event';
+export type { TaskDependencyCreatedEvent } from './task-dependency-created.event';
+export type { TaskDependencyUpdatedEvent } from './task-dependency-updated.event';
+export type { TaskDependencyDeletedEvent } from './task-dependency-deleted.event';
 
 // Re-export union type
 export type { TaskCreatedEvent as TaskDomainEvent } from './task-created.event';

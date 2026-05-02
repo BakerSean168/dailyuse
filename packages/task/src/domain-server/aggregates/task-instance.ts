@@ -38,8 +38,8 @@ export interface TaskInstanceState {
   actualStartTime: number | null;
   actualEndTime: number | null;
   note: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   version: number;
   deletedAt: Date | null;
 }
@@ -118,11 +118,11 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.note;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._props.updatedAt;
   }
 
@@ -144,7 +144,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
     this._props.status = TaskInstanceStatus.InProgress;
     this._props.actualStartTime = Date.now();
-    this._props.updatedAt = Date.now();
+    this._props.updatedAt = new Date();
   }
 
   /** Completes the task. */
@@ -170,7 +170,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.note = note;
     }
 
-    this._props.updatedAt = now;
+    this._props.updatedAt = new Date(now);
 
     // Trigger domain event
     this.addDomainEvent<TaskEventMap['task:instance:completed']>('task:instance:completed', {
@@ -200,7 +200,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.note = reason;
     }
 
-    this._props.updatedAt = now;
+    this._props.updatedAt = new Date(now);
 
     this.addDomainEvent<TaskEventMap['task:instance:skipped']>('task:instance:skipped', {
       identityId: this._props.identityId,
@@ -218,7 +218,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.status === TaskInstanceStatus.InProgress
     ) {
       this._props.status = TaskInstanceStatus.Expired;
-      this._props.updatedAt = Date.now();
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -269,8 +269,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualStartTime: this._props.actualStartTime,
       actualEndTime: this._props.actualEndTime,
       comment: this._props.note,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
       version: this._props.version,
       deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
     };
@@ -290,8 +290,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualEndTime: this._props.actualEndTime,
       comment: this._props.note,
       version: this._props.version,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
@@ -325,6 +325,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
+    const nowDate = new Date(now);
     const instance = new TaskInstance({
       id: TaskInstanceId.generate(),
       templateId: params.templateId,
@@ -338,8 +339,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualStartTime: null,
       actualEndTime: null,
       note: null,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: nowDate,
+      updatedAt: nowDate,
       version: 1,
       deletedAt: null,
     });

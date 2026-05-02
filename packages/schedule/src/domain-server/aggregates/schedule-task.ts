@@ -9,7 +9,8 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type { ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
+import { IdentityId } from '@dailyuse/domain-shared';
+import type { ScheduleEventMap, ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import {
   ExecutionInfo,
@@ -25,7 +26,7 @@ import { ScheduleExecution } from '../entities/schedule-execution';
  */
 export interface ScheduleTaskState {
   id: ScheduleTaskId;
-  identityId: string;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   sourceModule: SourceModule;
@@ -59,7 +60,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
   // ===== Getter Properties =====
 
-  public get identityId(): string {
+  public get identityId(): IdentityId {
     return this._props.identityId;
   }
   public get name(): string {
@@ -211,7 +212,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // Publish event
-    this.addDomainEvent('schedule:task:paused', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:paused']>('schedule:task:paused', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -234,11 +235,11 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.execution = this._props.execution.with({ nextRunAt });
 
     // Publish event
-    this.addDomainEvent('schedule:task:resumed', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:resumed']>('schedule:task:resumed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
-      nextRunAt,
+      nextRunAt: nextRunAt ?? Date.now(),
     });
   }
 
@@ -248,7 +249,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // Publish event
-    this.addDomainEvent('schedule:task:completed', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:completed']>('schedule:task:completed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -265,7 +266,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // Publish event
-    this.addDomainEvent('schedule:task:cancelled', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:cancelled']>('schedule:task:cancelled', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -279,7 +280,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // Publish event
-    this.addDomainEvent('schedule:task:failed', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:failed']>('schedule:task:failed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -300,11 +301,11 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.execution = this._props.execution.with({ nextRunAt });
 
     // Publish event
-    this.addDomainEvent('schedule:task:schedule-updated', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:schedule-updated']>('schedule:task:schedule-updated', {
       taskId: this.id,
-      previousCronExpression: oldCron,
-      newCronExpression: this._props.schedule.cronExpression,
-      nextRunAt,
+      previousCronExpression: oldCron ?? '',
+      newCronExpression: this._props.schedule.cronExpression ?? '',
+      nextRunAt: nextRunAt ?? Date.now(),
     });
   }
 
@@ -342,13 +343,13 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     // 2. Publish domain event (notify other modules that the task was triggered)
     // Fully serialize metadata DTO to ensure correct propagation
     const metadataDTO = this._props.metadata.toServerDTO();
-    this.addDomainEvent('schedule:task:triggered', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:triggered']>('schedule:task:triggered', {
       taskId: this.id,
       taskName: this._props.name,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       executionTime: Date.now(),
-      metadata: metadataDTO,
+      metadata: metadataDTO as Record<string, any>,
     });
 
     return true;
@@ -418,7 +419,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // Publish event
-    this.addDomainEvent('schedule:task:executed', {
+    this.addDomainEvent<ScheduleEventMap['schedule:task:executed']>('schedule:task:executed', {
       taskId: this.id,
       executionId: execution.id,
       sourceModule: this._props.sourceModule,
@@ -500,11 +501,11 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       this._props.status = ScheduleTaskStatus.Active;
       const nextRunAt = this._props.schedule.calculateNextRun(Date.now());
       this._props.execution = this._props.execution.with({ nextRunAt });
-      this.addDomainEvent('schedule:task:resumed', {
+      this.addDomainEvent<ScheduleEventMap['schedule:task:resumed']>('schedule:task:resumed', {
         taskId: this.id,
         sourceModule: this._props.sourceModule,
         sourceEntityId: this._props.sourceEntityId,
-        nextRunAt,
+        nextRunAt: nextRunAt ?? Date.now(),
       });
     }
     this._props.updatedAt = new Date();
@@ -516,7 +517,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.enabled = false;
     if (wasActive) {
       this._props.status = ScheduleTaskStatus.Paused;
-      this.addDomainEvent('schedule:task:paused', {
+      this.addDomainEvent<ScheduleEventMap['schedule:task:paused']>('schedule:task:paused', {
         taskId: this.id,
         sourceModule: this._props.sourceModule,
         sourceEntityId: this._props.sourceEntityId,
@@ -720,7 +721,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
     const state: ScheduleTaskState = {
       id: ScheduleTaskId.generate(),
-      identityId: params.identityId,
+      identityId: params.identityId as IdentityId,
       name: params.name,
       description: params.description ?? null,
       sourceModule: params.sourceModule,
@@ -747,13 +748,13 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     const task = new ScheduleTask(state);
 
     // Publish creation event
-    task.addDomainEvent('schedule:task:created', {
+    task.addDomainEvent<ScheduleEventMap['schedule:task:created']>('schedule:task:created', {
       taskId: task.id,
       name: params.name,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
       cronExpression: params.schedule.toServerDTO().cronExpression ?? '',
-      nextRunAt,
+      nextRunAt: nextRunAt ?? Date.now(),
     });
 
     return task;

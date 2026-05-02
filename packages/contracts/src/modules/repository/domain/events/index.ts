@@ -1,10 +1,8 @@
-export interface RepositoryStatisticsUpdatedEvent {
-  aggregateId: string;
-  timestamp: number;
-  identityId: string;
-  totalRepositories: number;
-  totalResources: number;
-}
+export { type RepositoryCreatedEvent } from './repository-created.event';
+export { type RepositoryUpdatedEvent } from './repository-updated.event';
+export { type RepositoryArchivedEvent } from './repository-archived.event';
+export { type RepositoryDeletedEvent } from './repository-deleted.event';
+export { type RepositoryStatisticsUpdatedEvent } from './repository-statistics-updated.event';
 
 export const REPOSITORY_RESOURCE_MUTATED_EVENT = 'repository:resource:mutated' as const;
 

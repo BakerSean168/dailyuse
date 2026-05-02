@@ -28,7 +28,7 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalRecordId, KeyResultId } from '../../domain-shared';
-import type { GoalRecordServerDTO } from '@dailyuse/contracts/goal';
+import type { GoalRecordServerDTO, GoalEventMap } from '@dailyuse/contracts/goal';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 // 内部状态接口
@@ -145,7 +145,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     });
 
     // 🎯 触发领域事件
-    record.addDomainEvent('goal-record:created', {
+    record.addDomainEvent<GoalEventMap['goal-record:created']>('goal-record:created', {
       keyResultId: params.keyResultId,
       value: params.value,
       note: params.note || null,

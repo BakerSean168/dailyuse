@@ -99,6 +99,12 @@ export interface RuleRevisionState {
  * - changedFields 至少包含 1 个字段
  */
 export class RuleRevision extends Entity<RuleRevisionId> {
+  /**
+   * `readonly _props` — 不可变实体的关键标志。
+   * 与聚合根的 `private _props: RuleState`（可变）不同，
+   * 不可变实体创建后永不修改，所有字段 readonly。
+   * 适用于审计记录、快照、历史版本等追加型场景。
+   */
   private readonly _props: RuleRevisionState;
 
   // ================= 构造函数（私有） =================

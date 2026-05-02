@@ -34,6 +34,11 @@
  * - @dailyuse/infrastructure-*（基础设施层）
  * - @dailyuse/application-*（应用层）
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
+ *
+ * 【三层 Domain 的关系】
+ * - domain-shared: 纯值对象 + 枚举 + 品牌化 ID（无 AggregateRoot/Entity 依赖）
+ * - domain-server: 聚合根 + 实体 + 仓储接口 + 领域服务（导入 domain-shared 的值对象）
+ * - domain-client: 客户端聚合根 + 实体（只读视图 + UI 辅助方法，共享 State 接口）
  */
 
 export * from './aggregates';

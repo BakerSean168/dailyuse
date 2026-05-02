@@ -10,6 +10,7 @@ import type { KeyResultAddedEvent } from '../domain/events/key-result-added.even
 import type { KeyResultUpdatedEvent } from '../domain/events/key-result-updated.event';
 import type { KeyResultDeletedEvent } from '../domain/events/key-result-deleted.event';
 import type { ReviewAddedEvent } from '../domain/events/review-added.event';
+import type { GoalRecordCreatedEvent } from '../domain/events/goal-record-created.event';
 import type { GoalFolderCreatedEvent } from '../domain/events/goal-folder-created.event';
 import type { GoalFolderUpdatedEvent } from '../domain/events/goal-folder-updated.event';
 import type { GoalFolderDeletedEvent } from '../domain/events/goal-folder-deleted.event';
@@ -44,6 +45,9 @@ export type GoalEventMap = {
 
   // ============ GoalReview Events ============
   'goal:review-added': ReviewAddedEvent;
+
+  // ============ GoalRecord Events ============
+  'goal-record:created': GoalRecordCreatedEvent;
 
   // ============ GoalFolder Events ============
   'goal:folder-created': GoalFolderCreatedEvent;

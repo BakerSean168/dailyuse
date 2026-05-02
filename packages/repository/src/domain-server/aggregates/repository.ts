@@ -10,6 +10,7 @@ import type {
   RepositoryServerDTO,
   RepositoryConfigDTO,
   RepositoryStatsDTO,
+  RepositoryEventMap,
 } from '@dailyuse/contracts/repository';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository';
@@ -115,33 +116,71 @@ export class Repository extends AggregateRoot<RepositoryId> {
     }
     this._props.name = name;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
+      repositoryId: String(this.id),
+      changedFields: ['name'],
+    });
   }
 
   public updateDescription(description: string | null): void {
     this._props.description = description;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
+      repositoryId: String(this.id),
+      changedFields: ['description'],
+    });
   }
 
   public updatePath(path: string | null): void {
     this._props.path = path;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
+      repositoryId: String(this.id),
+      changedFields: ['path'],
+    });
   }
 
   public updateConfig(config: Partial<RepositoryConfigDTO>): void {
     const currentConfig = this._props.config.toDTO();
     this._props.config = RepositoryConfig.fromDTO({ ...currentConfig, ...config });
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
+      repositoryId: String(this.id),
+      changedFields: ['config'],
+    });
   }
 
   public updateStats(stats: Partial<RepositoryStatsDTO>): void {
     const currentStats = this._props.stats.toDTO();
     this._props.stats = RepositoryStats.fromDTO({ ...currentStats, ...stats });
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:statistics-updated']>(
+      'repository:statistics-updated',
+      {
+        identityId: this._props.identityId,
+        totalRepositories: 1,
+        totalResources: this._props.stats.resourceCount,
+      },
+    );
   }
 
   public recordResourceAdded(sizeBytes: number = 0): void {
     this._props.stats = this._props.stats.incrementResources().addSize(sizeBytes);
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:statistics-updated']>(
+      'repository:statistics-updated',
+      {
+        identityId: this._props.identityId,
+        totalRepositories: 1,
+        totalResources: this._props.stats.resourceCount,
+      },
+    );
   }
 
   public recordResourceRemoved(sizeBytes: number = 0): void {
@@ -152,11 +191,29 @@ export class Repository extends AggregateRoot<RepositoryId> {
       totalSize: Math.max(0, current.totalSize - sizeBytes),
     });
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:statistics-updated']>(
+      'repository:statistics-updated',
+      {
+        identityId: this._props.identityId,
+        totalRepositories: 1,
+        totalResources: this._props.stats.resourceCount,
+      },
+    );
   }
 
   public recordFolderAdded(): void {
     this._props.stats = this._props.stats.incrementFolders();
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:statistics-updated']>(
+      'repository:statistics-updated',
+      {
+        identityId: this._props.identityId,
+        totalRepositories: 1,
+        totalResources: this._props.stats.resourceCount,
+      },
+    );
   }
 
   public recordFolderRemoved(): void {
@@ -167,6 +224,15 @@ export class Repository extends AggregateRoot<RepositoryId> {
       totalSize: current.totalSize,
     });
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:statistics-updated']>(
+      'repository:statistics-updated',
+      {
+        identityId: this._props.identityId,
+        totalRepositories: 1,
+        totalResources: this._props.stats.resourceCount,
+      },
+    );
   }
 
   public archive(): void {
@@ -175,6 +241,10 @@ export class Repository extends AggregateRoot<RepositoryId> {
     }
     this._props.status = RepositoryStatus.Archived;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:archived']>('repository:archived', {
+      repositoryId: String(this.id),
+    });
   }
 
   public unarchive(): void {
@@ -188,6 +258,10 @@ export class Repository extends AggregateRoot<RepositoryId> {
   public delete(): void {
     this._props.status = RepositoryStatus.Deleted;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<RepositoryEventMap['repository:deleted']>('repository:deleted', {
+      repositoryId: String(this.id),
+    });
   }
 
   public isActive(): boolean {
@@ -292,7 +366,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
         })
       : RepositoryConfig.createDefault();
 
-    return new Repository({
+    const repository = new Repository({
       id,
       identityId: params.identityId,
       name: params.name,
@@ -307,6 +381,14 @@ export class Repository extends AggregateRoot<RepositoryId> {
       version: 1,
       deletedAt: null,
     });
+
+    repository.addDomainEvent<RepositoryEventMap['repository:created']>('repository:created', {
+      identityId: params.identityId,
+      name: params.name,
+      path: params.path ?? '',
+    });
+
+    return repository;
   }
 
   public static load(state: RepositoryState): Repository {

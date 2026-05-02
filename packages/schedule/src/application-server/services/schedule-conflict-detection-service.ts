@@ -6,6 +6,7 @@ import type { CalendarEntryState } from '../../domain-server/aggregates/calendar
 import { CalendarEntry as DomainCalendarEntry } from '../../domain-server/aggregates/calendar-entry';
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 export class ScheduleConflictDetectionService {
   constructor(private readonly scheduleRepository: IScheduleRepository) {}
@@ -57,7 +58,7 @@ export class ScheduleConflictDetectionService {
   private toAggregate(scheduleDto: CalendarEntryServerDTO): DomainCalendarEntry {
     return DomainCalendarEntry.load({
       id: scheduleDto.id ? ScheduleId.of(scheduleDto.id) : ScheduleId.generate(),
-      identityId: scheduleDto.identityId,
+      identityId: scheduleDto.identityId as IdentityId,
       title: scheduleDto.title,
       description: scheduleDto.description ?? null,
       startTime: Number(scheduleDto.startTime),
@@ -84,7 +85,7 @@ export class ScheduleConflictDetectionService {
     const now = new Date();
     return {
       id: ScheduleId.generate(),
-      identityId: params.identityId,
+      identityId: params.identityId as IdentityId,
       title: 'Conflict check',
       description: null,
       startTime: params.startTime,

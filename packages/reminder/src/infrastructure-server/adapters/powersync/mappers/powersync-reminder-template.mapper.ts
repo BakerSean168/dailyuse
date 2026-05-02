@@ -144,7 +144,7 @@ export class PowerSyncReminderTemplateMapper {
       nextTriggerAt: data.next_trigger_at ? new Date(data.next_trigger_at).getTime() : null,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
-      deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
+      deletedAt: data.deleted_at ? new Date(data.deleted_at) : null,
       version: data.version ?? 1,
       responseMetrics,
       frequencyAdjustment,

@@ -10,6 +10,7 @@ import type {
   FrequencyAdjustmentDTO,
   NotificationConfigServer,
   NotificationConfigServerDTO,
+  ReminderEventMap,
   ReminderTemplateClientDTO,
   ReminderTemplateServerDTO,
   ResponseMetricsDTO,
@@ -62,7 +63,7 @@ export interface ReminderTemplateState {
   nextTriggerAt: number | null;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: number | null;
+  deletedAt: Date | null;
   version: number;
   // 智能频率相关字段 (Story 5-2)
   responseMetrics: ResponseMetrics | null;
@@ -148,7 +149,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     return this._props.updatedAt;
   }
   public get deletedAt(): Date | null {
-    return this._props.deletedAt !== null ? new Date(this._props.deletedAt) : null;
+    return this._props.deletedAt;
   }
 
   public get version(): number {
@@ -242,7 +243,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     template._props.nextTriggerAt = template.calculateNextTrigger();
 
     // 发布创建事件
-    template.addDomainEvent('reminder:template:created', {
+    template.addDomainEvent<ReminderEventMap['reminder:template:created']>('reminder:template:created', {
       identityId: params.identityId,
       templateId: id as string,
       reminder: template.toServerDTO(),
@@ -361,7 +362,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布更新事件
     const changes = Object.keys(updates);
-    this.addDomainEvent('reminder:template:updated', {
+    this.addDomainEvent<ReminderEventMap['reminder:template:updated']>('reminder:template:updated', {
       identityId: this._props.identityId,
       templateId: this.id,
       reminder: this.toServerDTO(),
@@ -389,7 +390,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = true;
 
     // 发布启用事件
-    this.addDomainEvent('reminder:template:enabled', {
+    this.addDomainEvent<ReminderEventMap['reminder:template:enabled']>('reminder:template:enabled', {
       activatedAt: now,
       identityId: this._props.identityId,
       templateId: this.id,
@@ -411,7 +412,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = false;
 
     // 发布暂停事件
-    this.addDomainEvent('reminder:template:paused', {
+    this.addDomainEvent<ReminderEventMap['reminder:template:paused']>('reminder:template:paused', {
       identityId: this._props.identityId,
       templateId: this.id,
       reminder: this.toServerDTO(),
@@ -449,7 +450,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     // 应用层需要调用 setEffectiveEnabled 来更新
 
     // 发布移动事件
-    this.addDomainEvent('reminder:template:moved', {
+    this.addDomainEvent<ReminderEventMap['reminder:template:moved']>('reminder:template:moved', {
       identityId: this._props.identityId,
       templateId: this.id,
       oldGroupId,
@@ -546,7 +547,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(now);
 
     // 发布触发事件
-    this.addDomainEvent('reminder:triggered', {
+    this.addDomainEvent<ReminderEventMap['reminder:triggered']>('reminder:triggered', {
       identityId: this._props.identityId,
       templateId: this.id,
       groupId: this._props.groupId,
@@ -588,17 +589,17 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
    * 软删除
    */
   public softDelete(): void {
-    this._props.deletedAt = Date.now();
+    this._props.deletedAt = new Date();
     this._props.updatedAt = new Date(Date.now());
 
     // 发布删除事件
-    this.addDomainEvent('reminder:template:deleted', {
+    this.addDomainEvent<ReminderEventMap['reminder:template:deleted']>('reminder:template:deleted', {
       identityId: this._props.identityId,
       templateId: this.id,
       templateTitle: this._props.title,
       reminder: this.toServerDTO(),
       isSoftDelete: true,
-      deletedAt: this._props.deletedAt,
+      deletedAt: this._props.deletedAt!.getTime(),
     });
   }
 
@@ -785,7 +786,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       nextTriggerAt: this._props.nextTriggerAt,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
       version: this._props.version,
     } as ReminderTemplateServerDTO;
 
@@ -879,7 +880,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
 
       // 子实体
       history: null,

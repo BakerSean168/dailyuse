@@ -21,6 +21,7 @@ import {
   ScheduleTaskMetadata,
 } from '../../../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../../../domain-shared/value-objects/schedule-task-id';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 /**
  * Prisma ScheduleTask with optional executions relation
@@ -34,7 +35,7 @@ export class PrismaScheduleTaskMapper {
   static toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
     const state: ScheduleTaskState = {
       id: ScheduleTaskId.of(data.id),
-      identityId: data.identityId,
+      identityId: data.identityId as IdentityId,
       name: data.name,
       description: data.description,
       sourceModule: data.sourceModule as SourceModule,

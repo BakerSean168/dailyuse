@@ -44,8 +44,8 @@ export class PrismaTaskInstanceMapper {
       actualEndTime: data.actualEndTime?.getTime() ?? null,
       note: data.comment ?? null,
       version: data.version,
-      createdAt: data.createdAt.getTime(),
-      updatedAt: data.updatedAt.getTime(),
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
       deletedAt: data.deletedAt ?? null,
     });
   }

@@ -18,6 +18,7 @@ export type { KeyResultUpdatedEvent } from './key-result-updated.event';
 export type { KeyResultDeletedEvent } from './key-result-deleted.event';
 
 export type { ReviewAddedEvent } from './review-added.event';
+export type { GoalRecordCreatedEvent } from './goal-record-created.event';
 
 export type { GoalFolderCreatedEvent } from './goal-folder-created.event';
 export type { GoalFolderUpdatedEvent } from './goal-folder-updated.event';

@@ -9,6 +9,7 @@ import type { ReminderGroup as PrismaReminderGroup } from '@dailyuse/database';
 import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@/domain-server/aggregates/reminder-group';
 import { GroupStats } from '@/domain-server/value-objects';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 export class PrismaReminderGroupMapper {
   /**
@@ -21,7 +22,7 @@ export class PrismaReminderGroupMapper {
 
     return ReminderGroup.load({
       id: data.id,
-      identityId: data.identityId,
+      identityId: data.identityId as IdentityId,
       name: data.name,
       description: data.description ?? null,
       color: data.color ?? null,

@@ -10,6 +10,8 @@
 export * from './ai-conversation-id';
 export * from './ai-message-id';
 export * from './ai-provider-config-id';
+export * from './ai-generation-task-id';
+export * from './ai-usage-quota-id';
 
 // Value Objects
 export * from './conversation-status';

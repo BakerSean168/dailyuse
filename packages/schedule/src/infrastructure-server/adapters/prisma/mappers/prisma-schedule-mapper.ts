@@ -9,13 +9,14 @@ import type { Schedule as PrismaSchedule } from '@dailyuse/database';
 import { CalendarEntry } from '../../../../domain-server/aggregates/calendar-entry';
 import type { CalendarEntryState } from '../../../../domain-server/aggregates/calendar-entry';
 import { ScheduleId } from '../../../../domain-shared/value-objects/schedule-id';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 export class PrismaScheduleMapper {
   /** Converts a Prisma Schedule to a Domain CalendarEntry aggregate. */
   static toDomain(data: PrismaSchedule): CalendarEntry {
     const state: CalendarEntryState = {
       id: ScheduleId.of(data.id),
-      identityId: data.identityId,
+      identityId: data.identityId as IdentityId,
       title: data.title,
       description: data.description,
       startTime: data.startTime.getTime(),

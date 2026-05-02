@@ -101,7 +101,7 @@ describe('Notification Aggregate Root', () => {
       const notification = aNotification();
       await notification.send();
 
-      await expect(notification.send()).rejects.toThrow();
+      expect(() => notification.send()).toThrow();
     });
 
     it('should update updatedAt after sending', async () => {

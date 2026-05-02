@@ -8,13 +8,14 @@ import type {
   UserReminderPreferencesServerDTO,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { IdentityId } from '@dailyuse/domain-shared';
 
 /**
  * UserReminderPreferences 内部状态接口
  */
 export interface UserReminderPreferencesState {
   id: string;
-  identityId: string;
+  identityId: IdentityId;
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
   globalReminderEnabled: boolean;
@@ -34,7 +35,7 @@ export interface UserReminderPreferencesState {
  */
 export class UserReminderPreferences extends AggregateRoot<string> {
   // ===== 私有字段 =====
-  private _identityId: string;
+  private _identityId: IdentityId;
   private _bestTimeSlots: TimeSlotDTO[];
   private _worstTimeSlots: TimeSlotDTO[];
   private _globalReminderEnabled: boolean;
@@ -56,7 +57,7 @@ export class UserReminderPreferences extends AggregateRoot<string> {
 
   // ===== Getter 属性 =====
 
-  public get identityId(): string {
+  public get identityId(): IdentityId {
     return this._identityId;
   }
 
@@ -104,7 +105,7 @@ export class UserReminderPreferences extends AggregateRoot<string> {
 
     return new UserReminderPreferences({
       id: generateUUID(),
-      identityId: params.identityId,
+      identityId: params.identityId as IdentityId,
       bestTimeSlots: params.bestTimeSlots ?? [],
       worstTimeSlots: params.worstTimeSlots ?? [],
       globalReminderEnabled: params.globalReminderEnabled ?? true,

@@ -18,10 +18,10 @@
  */
 
 // ===== Aggregates =====
-export * from './aggregates/index.js';
+export * from './aggregates';
 
 // ===== Entities =====
-export * from './entities/index.js';
+export * from './entities';
 
 // ===== Value Objects (re-export from domain-shared) =====
 export * from '../domain-shared';

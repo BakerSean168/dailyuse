@@ -5,21 +5,20 @@
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import type {
   GroupStatsServer,
+  ReminderEventMap,
   ReminderGroupClientDTO,
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { GroupStats } from '../value-objects';
-
-// IdentityId branded type (从 contracts 内部定义)
-type IdentityId = string & { readonly __brand: 'IdentityId' };
 
 /**
  * ReminderGroup 内部状态接口
  */
 export interface ReminderGroupState {
   id: string;
-  identityId: string;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   controlMode: ControlMode;
@@ -53,7 +52,7 @@ export class ReminderGroup extends AggregateRoot<string> {
 
   private constructor(state: ReminderGroupState) {
     super(state.id);
-    this._identityId = state.identityId as IdentityId;
+    this._identityId = state.identityId;
     this._name = state.name;
     this._description = state.description;
     this._controlMode = state.controlMode;
@@ -130,7 +129,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     const stats = GroupStats.createEmpty();
     const group = new ReminderGroup({
       id: newId,
-      identityId: params.identityId,
+      identityId: params.identityId as IdentityId,
       name: params.name,
       description: params.description ?? null,
       controlMode: params.controlMode || ControlMode.Individual,
@@ -145,7 +144,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       deletedAt: null,
       version: 1,
     });
-    group.addDomainEvent('reminder:group:created', {
+    group.addDomainEvent<ReminderEventMap['reminder:group:created']>('reminder:group:created', {
       identityId: params.identityId,
       group: group.toServerDTO(),
     });
@@ -157,7 +156,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     const oldMode = this._controlMode;
     this._controlMode = ControlMode.Group;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('reminder:group:control-mode-switched', {
+    this.addDomainEvent<ReminderEventMap['reminder:group:control-mode-switched']>('reminder:group:control-mode-switched', {
       identityId: this._identityId,
       groupId: this.id,
       previousMode: oldMode,
@@ -170,7 +169,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     const oldMode = this._controlMode;
     this._controlMode = ControlMode.Individual;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('reminder:group:control-mode-switched', {
+    this.addDomainEvent<ReminderEventMap['reminder:group:control-mode-switched']>('reminder:group:control-mode-switched', {
       identityId: this._identityId,
       groupId: this.id,
       previousMode: oldMode,
@@ -190,7 +189,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._enabled = true;
     this._status = ReminderStatus.Active;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('reminder:group:enabled', {
+    this.addDomainEvent<ReminderEventMap['reminder:group:enabled']>('reminder:group:enabled', {
       identityId: this._identityId,
       groupId: this.id,
     });
@@ -200,7 +199,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._enabled = false;
     this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('reminder:group:paused', {
+    this.addDomainEvent<ReminderEventMap['reminder:group:paused']>('reminder:group:paused', {
       identityId: this._identityId,
       groupId: this.id,
     });
@@ -214,7 +213,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     }
   }
 
-  public async enableAllTemplates(): Promise<void> {
+  public enableAllTemplates(): void {
     if (this._controlMode !== ControlMode.Group) {
       throw new Error('只能在 GROUP 模式下批量启用模板');
     }
@@ -222,7 +221,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
   }
 
-  public async pauseAllTemplates(): Promise<void> {
+  public pauseAllTemplates(): void {
     if (this._controlMode !== ControlMode.Group) {
       throw new Error('只能在 GROUP 模式下批量暂停模板');
     }
@@ -230,14 +229,14 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
   }
 
-  public async enableGroupAndAllTemplates(): Promise<void> {
+  public enableGroupAndAllTemplates(): void {
     this.enable();
-    await this.enableAllTemplates();
+    this.enableAllTemplates();
   }
 
-  public async pauseGroupAndAllTemplates(): Promise<void> {
+  public pauseGroupAndAllTemplates(): void {
     this.pause();
-    await this.pauseAllTemplates();
+    this.pauseAllTemplates();
   }
 
   public updateStats(stats: GroupStats): void {
@@ -245,11 +244,11 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
   }
 
-  public async getTemplatesCount(): Promise<number> {
+  public getTemplatesCount(): number {
     return this._stats.totalTemplates;
   }
 
-  public async getActiveTemplatesCount(): Promise<number> {
+  public getActiveTemplatesCount(): number {
     return this._stats.activeTemplates;
   }
 
@@ -263,7 +262,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._deletedAt = Date.now();
     this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('reminder:group:deleted', {
+    this.addDomainEvent<ReminderEventMap['reminder:group:deleted']>('reminder:group:deleted', {
       identityId: this._identityId,
       groupId: this.id,
       groupName: this._name,

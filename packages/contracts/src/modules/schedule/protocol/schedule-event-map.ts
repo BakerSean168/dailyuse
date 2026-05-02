@@ -7,6 +7,11 @@ import type {
   ScheduleTaskFailedEvent,
   ScheduleTaskExecutedEvent,
   ScheduleTaskScheduleUpdatedEvent,
+  ScheduleTaskTriggeredEvent,
+  CalendarEntryCreatedEvent,
+  CalendarEntryUpdatedEvent,
+  CalendarEntryRescheduledEvent,
+  CalendarEntryDeletedEvent,
 } from '../domain/events';
 
 /**
@@ -24,4 +29,10 @@ export type ScheduleEventMap = {
   'schedule:task:failed': ScheduleTaskFailedEvent;
   'schedule:task:executed': ScheduleTaskExecutedEvent;
   'schedule:task:schedule-updated': ScheduleTaskScheduleUpdatedEvent;
+  'schedule:task:triggered': ScheduleTaskTriggeredEvent;
+
+  'schedule:calendar-entry-created': CalendarEntryCreatedEvent;
+  'schedule:calendar-entry-updated': CalendarEntryUpdatedEvent;
+  'schedule:calendar-entry-rescheduled': CalendarEntryRescheduledEvent;
+  'schedule:calendar-entry-deleted': CalendarEntryDeletedEvent;
 };

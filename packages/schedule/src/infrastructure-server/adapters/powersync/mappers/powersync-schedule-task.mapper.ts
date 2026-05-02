@@ -12,6 +12,7 @@ import {
   ScheduleTaskMetadata,
 } from '../../../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../../../domain-shared/value-objects/schedule-task-id';
+import type { IdentityId } from '@dailyuse/domain-shared';
 import {
   PowerSyncScheduleExecutionMapper,
   type PowerSyncScheduleExecutionRow,
@@ -59,7 +60,7 @@ export class PowerSyncScheduleTaskMapper {
   ): ScheduleTask {
     const state: ScheduleTaskState = {
       id: ScheduleTaskId.of(data.id),
-      identityId: data.identity_id,
+      identityId: data.identity_id as IdentityId,
       name: data.name,
       description: data.description,
       sourceModule: data.source_module as SourceModule,

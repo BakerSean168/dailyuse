@@ -5,6 +5,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../../domain-server/aggregates/reminder-group';
 import { GroupStats } from '../../../../domain-server/value-objects';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 export type PowerSyncReminderGroupRow = {
   id: string;
@@ -32,7 +33,7 @@ export class PowerSyncReminderGroupMapper {
 
     return ReminderGroup.load({
       id: data.id,
-      identityId: data.identity_id,
+      identityId: data.identity_id as IdentityId,
       name: data.name,
       description: data.description ?? null,
       color: data.color ?? null,

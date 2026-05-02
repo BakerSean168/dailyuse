@@ -1,9 +1,14 @@
 /**
  * Governance Module - Value Objects Export. 治理模块 - 值对象导出。
  *
- * 【规范说明：value-objects模块导出】
- * - 使用 详细命名导出 模式
- * 注意只需要直接导出。如 export { ExampleStatus } from './example-status'; 不需要重复导出类型：export type { ExampleStatus };
+ * 【规范说明：显式命名导出】
+ * 使用 `export { X } from './file'` 而非 `export * from './file'`：
+ * - 防止意外泄露内部类型（如 @internal 标记的 PersistenceDTO）
+ * - 导出列表即文档——一眼看出暴露了哪些公共 API
+ * - 重构时更容易追踪依赖
+ *
+ * 注意只需要直接导出。如 export { ExampleStatus } from './example-status';
+ * 不需要重复导出类型：export type { ExampleStatus };
  */
 
 // ============ Governance Value Objects ============

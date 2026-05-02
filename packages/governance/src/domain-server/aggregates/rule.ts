@@ -162,6 +162,12 @@ export interface RuleState {
  * - 使用值对象（RuleTag, CodeSnippet）封装验证逻辑
  */
 export class Rule extends AggregateRoot<RuleId> {
+  /**
+   * 使用 `_props` 对象封装所有状态（而非个体字段如 `_status`, `_title`）：
+   * - 序列化友好：`{ ...this._props }` 即可快照全部状态
+   * - 一致性：所有字段在同一对象上，避免遗漏更新
+   * - 可扩展：新增字段只需修改 RuleState 接口，无需改动类结构
+   */
   private _props: RuleState;
 
   // ================= 构造函数（私有） =================
@@ -741,6 +747,10 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 转换为 Client DTO（用于 API 响应）
+   *
+   * ACL 转换：Date → number (TransferDate)
+   * 领域层内部使用 Date 对象（便于日期计算），
+   * 传输层转为 Unix 时间戳（便于 JSON 序列化和跨语言兼容）。
    */
   toClientDTO(): RuleClientDTO {
     return {

@@ -7,6 +7,7 @@
 import type { UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
 import type { TimeSlotDTO } from '@dailyuse/contracts/reminder';
 import { UserReminderPreferences } from '@/domain-server/aggregates/user-reminder-preferences';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 export class PrismaUserReminderPreferenceMapper {
   /**
@@ -15,7 +16,7 @@ export class PrismaUserReminderPreferenceMapper {
   static toDomain(data: PrismaUserReminderPreference): UserReminderPreferences {
     return UserReminderPreferences.load({
       id: data.id,
-      identityId: data.identityId,
+      identityId: data.identityId as IdentityId,
       bestTimeSlots: JSON.parse(data.bestTimeSlots ?? '[]') as TimeSlotDTO[],
       worstTimeSlots: JSON.parse(data.worstTimeSlots ?? '[]') as TimeSlotDTO[],
       globalReminderEnabled: data.globalReminderEnabled ?? true,

@@ -49,61 +49,46 @@ export interface AuthSessionState {
  * Manages a user's login session.
  */
 export class AuthSession extends AggregateRoot<AuthSessionId> {
-  // ================= 1. Internal State (Backing Fields) =================
-  private _identityId: IdentityId;
-  private _deviceInfo: DeviceInfo;
-  private _refreshTokenHash: string | undefined;
-  private _status: typeof SessionStatus.Active;
-  private _createdAt: Date;
-  private _expiresAt: Date;
-  private _lastActiveAt: Date;
-  private _isRevoked: boolean;
+  // ================= 1. Internal State =================
+  private _props: AuthSessionState;
 
   // ================= 2. Constructor (Private) =================
   private constructor(state: AuthSessionState) {
     super(state.id);
-
-    this._identityId = state.identityId;
-    this._deviceInfo = state.deviceInfo;
-    this._refreshTokenHash = state.refreshTokenHash;
-    this._status = state.status;
-    this._createdAt = state.createdAt;
-    this._expiresAt = state.expiresAt;
-    this._lastActiveAt = state.lastActiveAt;
-    this._isRevoked = state.isRevoked;
+    this._props = state;
   }
 
   // ================= 3. Public Properties (Getters) =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get deviceInfo(): IDeviceInfo {
-    return this._deviceInfo.toDTO();
+    return this._props.deviceInfo.toDTO();
   }
 
   get refreshTokenHash(): string | undefined {
-    return this._refreshTokenHash;
+    return this._props.refreshTokenHash;
   }
 
   get status(): typeof SessionStatus.Active {
-    return this._status;
+    return this._props.status;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get expiresAt(): Date {
-    return this._expiresAt;
+    return this._props.expiresAt;
   }
 
   get lastActiveAt(): Date {
-    return this._lastActiveAt;
+    return this._props.lastActiveAt;
   }
 
   get isRevoked(): boolean {
-    return this._isRevoked;
+    return this._props.isRevoked;
   }
 
   // ================= 4. Factory Methods =================
@@ -185,12 +170,12 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
    */
   public isValid(): boolean {
     // 1. Check if revoked
-    if (this._isRevoked) {
+    if (this._props.isRevoked) {
       return false;
     }
 
     // 2. Check status
-    if (!SessionStatus.isActive(this._status)) {
+    if (!SessionStatus.isActive(this._props.status)) {
       return false;
     }
 
@@ -206,7 +191,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
    * Checks whether the session has expired.
    */
   public isExpired(): boolean {
-    return this._expiresAt.getTime() < Date.now();
+    return this._props.expiresAt.getTime() < Date.now();
   }
 
   /**
@@ -219,14 +204,14 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     }
 
     const now = Date.now();
-    const timeSinceLastActive = now - this._lastActiveAt.getTime();
+    const timeSinceLastActive = now - this._props.lastActiveAt.getTime();
 
     // Only refresh if threshold exceeded, to avoid frequent updates
     if (timeSinceLastActive < SLIDING_WINDOW_THRESHOLD_MS) {
       return false;
     }
 
-    this._lastActiveAt = new Date(now);
+    this._props.lastActiveAt = new Date(now);
     return true;
   }
 
@@ -241,23 +226,23 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     const duration = durationMs ?? DEFAULT_SESSION_DURATION_MS;
     const now = Date.now();
 
-    this._expiresAt = new Date(now + duration);
-    this._lastActiveAt = new Date(now);
+    this._props.expiresAt = new Date(now + duration);
+    this._props.lastActiveAt = new Date(now);
   }
 
   /**
    * Revokes the session (user logout).
    */
   public revoke(): void {
-    if (this._isRevoked) {
+    if (this._props.isRevoked) {
       return; // Idempotent
     }
 
-    this._isRevoked = true;
-    this._status = SessionStatus.Revoked;
+    this._props.isRevoked = true;
+    this._props.status = SessionStatus.Revoked;
 
     this.addDomainEvent<AuthEventMap['auth:session-revoked']>('auth:session-revoked', {
-      identityId: this._identityId,
+      identityId: this._props.identityId,
     });
   }
 
@@ -265,11 +250,11 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
    * Marks the session as expired.
    */
   public markExpired(): void {
-    if (SessionStatus.isExpired(this._status)) {
+    if (SessionStatus.isExpired(this._props.status)) {
       return; // Idempotent
     }
 
-    this._status = SessionStatus.Expired;
+    this._props.status = SessionStatus.Expired;
   }
 
   /**
@@ -280,8 +265,8 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       throw new Error('Cannot update refresh token on an invalid session');
     }
 
-    this._refreshTokenHash = hash;
-    this._lastActiveAt = new Date();
+    this._props.refreshTokenHash = hash;
+    this._props.lastActiveAt = new Date();
   }
 
   /**
@@ -292,7 +277,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       return 0;
     }
 
-    const remaining = this._expiresAt.getTime() - Date.now();
+    const remaining = this._props.expiresAt.getTime() - Date.now();
     return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   }
 
@@ -304,14 +289,14 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   public toServerDTO(): AuthSessionServerDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      deviceInfo: this._deviceInfo.toDTO(),
-      refreshTokenHash: this._refreshTokenHash,
-      status: this._status,
-      createdAt: this._createdAt.getTime(),
-      expiresAt: this._expiresAt.getTime(),
-      lastActiveAt: this._lastActiveAt.getTime(),
-      isRevoked: this._isRevoked,
+      identityId: this._props.identityId,
+      deviceInfo: this._props.deviceInfo.toDTO(),
+      refreshTokenHash: this._props.refreshTokenHash,
+      status: this._props.status,
+      createdAt: this._props.createdAt.getTime(),
+      expiresAt: this._props.expiresAt.getTime(),
+      lastActiveAt: this._props.lastActiveAt.getTime(),
+      isRevoked: this._props.isRevoked,
     };
   }
 
@@ -321,15 +306,15 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   public toClientDTO(isCurrentSession: boolean = false): AuthSessionClientDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      deviceInfo: this._deviceInfo.toDTO(),
+      identityId: this._props.identityId,
+      deviceInfo: this._props.deviceInfo.toDTO(),
       isCurrentSession,
       version: 1,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._lastActiveAt.getTime(), // Use lastActiveAt as updatedAt
-      expiresAt: this._expiresAt.getTime(),
-      lastActiveAt: this._lastActiveAt.getTime(),
-      deletedAt: this._isRevoked ? Date.now() : null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.lastActiveAt.getTime(), // Use lastActiveAt as updatedAt
+      expiresAt: this._props.expiresAt.getTime(),
+      lastActiveAt: this._props.lastActiveAt.getTime(),
+      deletedAt: this._props.isRevoked ? Date.now() : null,
     };
   }
 }

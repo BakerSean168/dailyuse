@@ -1,14 +1,8 @@
 /**
  * Account Domain-Shared Layer
+ * 账户模块 - 共享领域层
  *
- * Value object implementations shared between client and server.
+ * 包含值对象（Value Objects）—— 在 server 和 client 之间共享的业务规则和类型。
  */
 
-export { AccountSettings } from './value-objects/account-settings';
-export { ContactEmail } from './value-objects/contact-email';
-export { ContactPhone } from './value-objects/contact-phone';
-export { ThemeType } from './value-objects/theme-type';
-export { AccountStatus } from './value-objects/account-status';
-export { GenderType } from './value-objects/gender-type';
-export { AccountProfile } from './value-objects/account-profile';
-export { LanguageCode } from './value-objects/language-code';
+export * from './value-objects';

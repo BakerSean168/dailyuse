@@ -128,7 +128,7 @@ export class Notification extends AggregateRoot<NotificationId> {
 
   // ===== 业务方法 =====
 
-  public async send(): Promise<void> {
+  public send(): void {
     logger.info('📨 [聚合根] 发送通知', {
       id: String(this.id),
       title: this._props.title,

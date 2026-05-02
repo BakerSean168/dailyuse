@@ -48,7 +48,6 @@ export { NotificationHistory } from './entities/notification-history';
 export type { NotificationHistoryState } from './entities/notification-history';
 
 // Repositories
-export * from './repositories/NotificationRepository.interface';
 export type { INotificationRepository } from './repositories/INotificationRepository';
 export type { INotificationTemplateRepository } from './repositories/INotificationTemplateRepository';
 export type { INotificationPreferenceRepository } from './repositories/INotificationPreferenceRepository';

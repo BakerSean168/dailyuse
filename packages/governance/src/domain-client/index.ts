@@ -38,3 +38,7 @@ export * from './aggregates';
 // ===== Entities =====
 export * from './entities';
 
+// NOTE: 大多数业务模块在此处添加 `export * from '../domain-shared/value-objects'` 以便利访问。
+// Governance 选择不这样做——从 domain-client 导入值对象时应明确使用 domain-shared 路径，
+// 保持三层边界清晰。如果需要值对象，请从 `@dailyuse/governance/domain-shared` 导入。
+

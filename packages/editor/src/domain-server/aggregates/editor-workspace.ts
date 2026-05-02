@@ -13,8 +13,10 @@ import type {
 } from '@dailyuse/contracts/primitives';
 import type {
   EditorWorkspaceServerDTO,
+  EditorWorkspaceClientDTO,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
+  EditorEventMap,
 } from '@dailyuse/contracts/editor';
 import { ProjectType } from '@dailyuse/contracts/editor';
 import { EditorWorkspaceId } from '../../domain-shared';
@@ -46,89 +48,65 @@ export interface EditorWorkspaceState {
  * EditorWorkspace 聚合根
  */
 export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _projectPath: string;
-  private _projectType: ProjectType;
-  private _layout: WorkspaceLayout;
-  private _settings: WorkspaceSettings;
-  private _isActive: boolean;
-  private _lastActiveSessionId: EditorSessionId | null;
-  private _lastAccessedAt: Date | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _sessions: EditorSession[];
+  private _props: EditorWorkspaceState;
 
   private constructor(state: EditorWorkspaceState) {
     super(state.id);
-    this._identityId = state.identityId;
-    this._name = state.name;
-    this._description = state.description;
-    this._projectPath = state.projectPath;
-    this._projectType = state.projectType;
-    this._layout = state.layout;
-    this._settings = state.settings;
-    this._isActive = state.isActive;
-    this._lastActiveSessionId = state.lastActiveSessionId;
-    this._lastAccessedAt = state.lastAccessedAt;
-    this._createdAt = state.createdAt;
-    this._updatedAt = state.updatedAt;
-    this._sessions = state.sessions;
+    this._props = state;
   }
 
   // ===== Getters =====
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get projectPath(): string {
-    return this._projectPath;
+    return this._props.projectPath;
   }
 
   get projectType(): ProjectType {
-    return this._projectType;
+    return this._props.projectType;
   }
 
   get layout(): WorkspaceLayoutServerDTO {
-    return this._layout.toServerDTO();
+    return this._props.layout.toServerDTO();
   }
 
   get settings(): WorkspaceSettingsServerDTO {
-    return this._settings.toServerDTO();
+    return this._props.settings.toServerDTO();
   }
 
   get isActive(): boolean {
-    return this._isActive;
+    return this._props.isActive;
   }
 
   get lastActiveSessionId(): EditorSessionId | null {
-    return this._lastActiveSessionId;
+    return this._props.lastActiveSessionId;
   }
 
   get lastAccessedAt(): DomainDate | null {
-    return this._lastAccessedAt;
+    return this._props.lastAccessedAt;
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get sessions(): EditorSession[] {
-    return [...this._sessions];
+    return [...this._props.sessions];
   }
 
   // ===== Factory Methods =====
@@ -176,9 +154,16 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
         identityId: params.identityId,
         name: 'Default Session',
       });
-      workspace._sessions.push(defaultSession);
-      workspace._lastActiveSessionId = defaultSession.id;
+      workspace._props.sessions.push(defaultSession);
+      workspace._props.lastActiveSessionId = defaultSession.id;
     }
+
+    workspace.addDomainEvent<EditorEventMap['editor:workspace-created']>('editor:workspace-created', {
+      identityId: params.identityId,
+      name: params.name,
+      projectPath: params.projectPath,
+      projectType: params.projectType ?? ProjectType.Other,
+    });
 
     return workspace;
   }
@@ -186,76 +171,96 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
   // ===== Business Methods =====
 
   updateName(name: string): void {
-    this._name = name;
-    this._updatedAt = new Date();
+    this._props.name = name;
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<EditorEventMap['editor:workspace-updated']>('editor:workspace-updated', {
+      changedFields: ['name'],
+    });
   }
 
   updateDescription(description: string | null): void {
-    this._description = description;
-    this._updatedAt = new Date();
+    this._props.description = description;
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<EditorEventMap['editor:workspace-updated']>('editor:workspace-updated', {
+      changedFields: ['description'],
+    });
   }
 
   updateProjectPath(projectPath: string): void {
-    this._projectPath = projectPath;
-    this._updatedAt = new Date();
+    this._props.projectPath = projectPath;
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<EditorEventMap['editor:workspace-updated']>('editor:workspace-updated', {
+      changedFields: ['projectPath'],
+    });
   }
 
   updateLayout(layout: Partial<WorkspaceLayoutServerDTO>): void {
-    this._layout = this._layout.with(layout);
-    this._updatedAt = new Date();
+    this._props.layout = this._props.layout.with(layout);
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<EditorEventMap['editor:workspace-updated']>('editor:workspace-updated', {
+      changedFields: ['layout'],
+    });
   }
 
   updateSettings(settings: Partial<WorkspaceSettingsServerDTO>): void {
-    this._settings = this._settings.with(settings);
-    this._updatedAt = new Date();
+    this._props.settings = this._props.settings.with(settings);
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<EditorEventMap['editor:workspace-updated']>('editor:workspace-updated', {
+      changedFields: ['settings'],
+    });
   }
 
   activate(): void {
-    this._isActive = true;
-    this._lastAccessedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.isActive = true;
+    this._props.lastAccessedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   deactivate(): void {
-    this._isActive = false;
-    this._updatedAt = new Date();
+    this._props.isActive = false;
+    this._props.updatedAt = new Date();
   }
 
   addSession(session: EditorSession): void {
-    this._sessions.push(session);
-    this._lastActiveSessionId = session.id;
-    this._updatedAt = new Date();
+    this._props.sessions.push(session);
+    this._props.lastActiveSessionId = session.id;
+    this._props.updatedAt = new Date();
   }
 
   removeSession(sessionId: EditorSessionId): boolean {
-    const index = this._sessions.findIndex((s) => s.id === sessionId);
+    const index = this._props.sessions.findIndex((s) => s.id === sessionId);
     if (index === -1) return false;
 
-    this._sessions.splice(index, 1);
-    if (this._lastActiveSessionId === sessionId) {
-      this._lastActiveSessionId = this._sessions[0]?.id ?? null;
+    this._props.sessions.splice(index, 1);
+    if (this._props.lastActiveSessionId === sessionId) {
+      this._props.lastActiveSessionId = this._props.sessions[0]?.id ?? null;
     }
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
     return true;
   }
 
   setActiveSession(sessionId: EditorSessionId): void {
-    const session = this._sessions.find((s) => s.id === sessionId);
+    const session = this._props.sessions.find((s) => s.id === sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found in workspace`);
     }
-    this._lastActiveSessionId = sessionId;
-    this._lastAccessedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.lastActiveSessionId = sessionId;
+    this._props.lastAccessedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   getSession(sessionId: EditorSessionId): EditorSession | undefined {
-    return this._sessions.find((s) => s.id === sessionId);
+    return this._props.sessions.find((s) => s.id === sessionId);
   }
 
   getActiveSession(): EditorSession | undefined {
-    if (!this._lastActiveSessionId) return undefined;
-    return this._sessions.find((s) => s.id === this._lastActiveSessionId);
+    if (!this._props.lastActiveSessionId) return undefined;
+    return this._props.sessions.find((s) => s.id === this._props.lastActiveSessionId);
   }
 
   // ===== Serialization =====
@@ -263,19 +268,56 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
   toServerDTO(): EditorWorkspaceServerDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      projectPath: this._projectPath,
-      projectType: this._projectType,
-      layout: this._layout.toServerDTO(),
-      settings: this._settings.toServerDTO(),
-      sessions: this._sessions.map((s) => s.toServerDTO()),
-      isActive: this._isActive,
-      lastActiveSessionId: this._lastActiveSessionId,
-      lastAccessedAt: this._lastAccessedAt ? (this._lastAccessedAt.getTime() as TransferDate) : null,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      projectPath: this._props.projectPath,
+      projectType: this._props.projectType,
+      layout: this._props.layout.toServerDTO(),
+      settings: this._props.settings.toServerDTO(),
+      sessions: this._props.sessions.map((s) => s.toServerDTO()),
+      isActive: this._props.isActive,
+      lastActiveSessionId: this._props.lastActiveSessionId,
+      lastAccessedAt: this._props.lastAccessedAt ? (this._props.lastAccessedAt.getTime() as TransferDate) : null,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+    };
+  }
+
+  toClientDTO(): EditorWorkspaceClientDTO {
+    const settingsServerDTO = this._props.settings.toServerDTO();
+    const autoSave = settingsServerDTO.autoSave ?? { enabled: false, interval: 0 };
+    const autoSaveFormatted = autoSave.enabled ? `every ${autoSave.interval}s` : 'Disabled';
+
+    return {
+      id: this.id,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      projectPath: this._props.projectPath,
+      projectType: this._props.projectType,
+      layout: this._props.layout.toServerDTO(),
+      settings: {
+        theme: settingsServerDTO.theme ?? 'default',
+        fontSize: settingsServerDTO.fontSize ?? 14,
+        fontFamily: settingsServerDTO.fontFamily ?? 'Consolas',
+        lineHeight: settingsServerDTO.lineHeight ?? 1.5,
+        tabSize: settingsServerDTO.tabSize ?? 2,
+        wordWrap: settingsServerDTO.wordWrap ?? true,
+        lineNumbers: settingsServerDTO.lineNumbers ?? true,
+        minimap: settingsServerDTO.minimap ?? true,
+        autoSave,
+        autoSaveFormatted,
+      },
+      sessions: this._props.sessions.map((s) => s.toClientDTO()),
+      isActive: this._props.isActive,
+      lastActiveSessionId: this._props.lastActiveSessionId,
+      lastAccessedAt: this._props.lastAccessedAt ? this._props.lastAccessedAt.getTime() : null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      formattedLastAccessed: this._props.lastAccessedAt ? this._props.lastAccessedAt.toLocaleString() : null,
+      formattedCreatedAt: this._props.createdAt.toLocaleDateString(),
+      formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
     };
   }
 

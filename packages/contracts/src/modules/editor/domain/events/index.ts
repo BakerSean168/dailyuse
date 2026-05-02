@@ -1,11 +1,10 @@
-export interface EditorWorkspaceUpdatedDomainEvent {
-  aggregateId: string;
-  timestamp: number;
-  changedFields: string[];
-}
+/**
+ * Editor Module - Domain Events
+ *
+ * All domain event types for the Editor module
+ */
 
-export interface EditorResourceSavedDomainEvent {
-  aggregateId: string;
-  timestamp: number;
-  resourceId: string;
-}
+export type { EditorWorkspaceUpdatedDomainEvent } from './editor-workspace-updated.event';
+export type { EditorResourceSavedDomainEvent } from './editor-resource-saved.event';
+export type { EditorWorkspaceCreatedDomainEvent } from './editor-workspace-created.event';
+export type { EditorWorkspaceDeletedDomainEvent } from './editor-workspace-deleted.event';

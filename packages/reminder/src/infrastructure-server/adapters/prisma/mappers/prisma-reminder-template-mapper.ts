@@ -119,7 +119,7 @@ export class PrismaReminderTemplateMapper {
       smartFrequencyEnabled: data.smartFrequencyEnabled ?? true,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt?.getTime() ?? null,
+      deletedAt: data.deletedAt ?? null,
       version: data.version ?? 1,
       history,
     });

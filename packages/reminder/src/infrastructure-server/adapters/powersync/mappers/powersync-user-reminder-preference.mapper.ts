@@ -1,5 +1,6 @@
 import type { TimeSlotDTO } from '@dailyuse/contracts/reminder';
 import { UserReminderPreferences } from '../../../../domain-server/aggregates/user-reminder-preferences';
+import type { IdentityId } from '@dailyuse/domain-shared';
 
 export type PowerSyncUserReminderPreferenceRow = {
   id: string;
@@ -16,7 +17,7 @@ export class PowerSyncUserReminderPreferenceMapper {
   static toDomain(data: PowerSyncUserReminderPreferenceRow): UserReminderPreferences {
     return UserReminderPreferences.load({
       id: data.id,
-      identityId: data.identity_id,
+      identityId: data.identity_id as IdentityId,
       bestTimeSlots: JSON.parse(data.best_time_slots ?? '[]') as TimeSlotDTO[],
       worstTimeSlots: JSON.parse(data.worst_time_slots ?? '[]') as TimeSlotDTO[],
       globalReminderEnabled:

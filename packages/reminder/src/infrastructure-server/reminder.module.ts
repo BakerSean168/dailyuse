@@ -482,7 +482,7 @@ export function createReminderModule(
       }
       const updated = ReminderGroup.load({
         id: existing.id,
-        identityId: existing.identityId as string,
+        identityId: existing.identityId,
         name: data.name ?? existing.name,
         description: 'description' in data ? (data.description ?? null) : existing.description,
         controlMode: data.controlMode ?? existing.controlMode,

@@ -1,10 +1,12 @@
 import { AggregateRoot } from '@dailyuse/utils';
+import { IdentityId } from '@dailyuse/domain-shared';
 import type {
   CalendarEntryClientDTO,
   CalendarEntryServerDTO,
   ConflictDetail,
   ConflictDetectionResult,
   ConflictSuggestion,
+  ScheduleEventMap,
 } from '@dailyuse/contracts/schedule';
 import { ConflictSeverity } from '@dailyuse/contracts/schedule';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
@@ -12,7 +14,7 @@ import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 /** Domain state interface for the CalendarEntry aggregate */
 export interface CalendarEntryState {
   id: ScheduleId;
-  identityId: string;
+  identityId: IdentityId;
   title: string;
   description: string | null;
   startTime: number;
@@ -35,7 +37,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     this._props = state;
   }
 
-  public get identityId(): string {
+  public get identityId(): IdentityId {
     return this._props.identityId;
   }
 
@@ -107,9 +109,9 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     const now = new Date();
     const duration = Math.round((params.endTime - params.startTime) / 60000);
 
-    return new CalendarEntry({
+    const entry = new CalendarEntry({
       id: ScheduleId.generate(),
-      identityId: params.identityId,
+      identityId: params.identityId as IdentityId,
       title: params.title,
       description: params.description ?? null,
       startTime: params.startTime,
@@ -123,6 +125,18 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
       createdAt: now,
       updatedAt: now,
     });
+
+    entry.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-created']>(
+      'schedule:calendar-entry-created',
+      {
+        identityId: params.identityId,
+        title: params.title,
+        startTime: params.startTime,
+        endTime: params.endTime,
+      },
+    );
+
+    return entry;
   }
 
   public static load(state: CalendarEntryState): CalendarEntry {
@@ -254,10 +268,24 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
       throw new Error('Invalid time range: startTime must be before endTime');
     }
 
+    const oldStartTime = this._props.startTime;
+    const oldEndTime = this._props.endTime;
+
     this._props.startTime = newStartTime;
     this._props.endTime = newEndTime;
     this._props.duration = this.calculateDuration(newStartTime, newEndTime);
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-rescheduled']>(
+      'schedule:calendar-entry-rescheduled',
+      {
+        entryId: String(this.id),
+        oldStartTime,
+        oldEndTime,
+        newStartTime,
+        newEndTime,
+      },
+    );
   }
 
   public updateTitle(title: string): void {
@@ -266,11 +294,21 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     }
     this._props.title = title;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
+      'schedule:calendar-entry-updated',
+      { entryId: String(this.id), changedFields: ['title'] },
+    );
   }
 
   public updateDescription(description: string | null): void {
     this._props.description = description;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
+      'schedule:calendar-entry-updated',
+      { entryId: String(this.id), changedFields: ['description'] },
+    );
   }
 
   public updatePriority(priority: number | null): void {
@@ -279,15 +317,30 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     }
     this._props.priority = priority;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
+      'schedule:calendar-entry-updated',
+      { entryId: String(this.id), changedFields: ['priority'] },
+    );
   }
 
   public updateLocation(location: string | null): void {
     this._props.location = location;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
+      'schedule:calendar-entry-updated',
+      { entryId: String(this.id), changedFields: ['location'] },
+    );
   }
 
   public updateAttendees(attendees: string[] | null): void {
     this._props.attendees = attendees ? [...attendees] : null;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
+      'schedule:calendar-entry-updated',
+      { entryId: String(this.id), changedFields: ['attendees'] },
+    );
   }
 }

@@ -4,6 +4,7 @@
  */
 
 import type { NotificationTemplateId } from '@dailyuse/contracts/primitives';
+import type { NotificationEventMap } from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { AggregateRoot, createLogger } from '@dailyuse/utils';
 import { NotificationTemplateId as NotificationTemplateIdType } from '../../domain-shared/value-objects/notification-template-id';
@@ -134,6 +135,12 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
     if (this._props.isActive) return;
     this._props.isActive = true;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<NotificationEventMap['notification:template-activated']>(
+      'notification:template-activated',
+      { templateId: String(this.id) },
+    );
+
     logger.info('✅ [聚合根] 模板已激活', { id: String(this.id) });
   }
 
@@ -144,6 +151,12 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
     if (!this._props.isActive) return;
     this._props.isActive = false;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<NotificationEventMap['notification:template-deactivated']>(
+      'notification:template-deactivated',
+      { templateId: String(this.id) },
+    );
+
     logger.info('✅ [聚合根] 模板已停用', { id: String(this.id) });
   }
 
@@ -155,6 +168,12 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
     const updated = { ...current, ...template };
     this._props.template = NotificationTemplateConfig.fromContract(updated);
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<NotificationEventMap['notification:template-updated']>(
+      'notification:template-updated',
+      { templateId: String(this.id), changedFields: Object.keys(template) },
+    );
+
     logger.info('✅ [聚合根] 模板配置已更新', { id: String(this.id) });
   }
 
@@ -281,6 +300,13 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
     });
 
     logger.info('✅ [聚合根] NotificationTemplate 实例已创建', { id: String(id) });
+
+    // NOTE: NotificationTemplate does not have identityId; using template id as fallback.
+    template.addDomainEvent<NotificationEventMap['notification:template-created']>(
+      'notification:template-created',
+      { identityId: String(id), name: params.name, type: params.type, category: params.category },
+    );
+
     return template;
   }
 }

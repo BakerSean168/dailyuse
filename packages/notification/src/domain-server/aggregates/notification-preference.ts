@@ -4,6 +4,7 @@
 
 import type {
   NotificationPreferenceServerDTO,
+  NotificationPreferenceClientDTO,
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
@@ -141,6 +142,22 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
       deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
+    };
+  }
+
+  public toClientDTO(): NotificationPreferenceClientDTO {
+    const settingsRecord: Record<string, NotificationChannelType[]> = {};
+    for (const [key, value] of this._props.settings) {
+      settingsRecord[key] = [...value];
+    }
+    return {
+      id: String(this.id),
+      identityId: this._props.identityId,
+      settings: settingsRecord,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
     };
   }
 

@@ -4,7 +4,8 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import { IdentityId } from '@dailyuse/domain-shared';
+import type { TaskDependencyServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
 import { TaskDependencyId } from '../../domain-shared/value-objects/task-dependency-id';
 import { DependencyType, DependencyStatus } from '../value-objects';
 
@@ -13,7 +14,7 @@ import { DependencyType, DependencyStatus } from '../value-objects';
  */
 export interface TaskDependencyState {
   id: TaskDependencyId;
-  identityId: string;
+  identityId: IdentityId;
   predecessorTaskId: string;
   successorTaskId: string;
   dependencyType: DependencyType;
@@ -36,7 +37,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
   // ============ Getters ============
 
-  get identityId(): string {
+  get identityId(): IdentityId {
     return this._props.identityId;
   }
 
@@ -86,9 +87,9 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     const id = props.id ? TaskDependencyId.of(props.id) : TaskDependencyId.generate();
     const now = new Date();
 
-    return new TaskDependency({
+    const dependency = new TaskDependency({
       id,
-      identityId: props.identityId,
+      identityId: props.identityId as IdentityId,
       predecessorTaskId: props.predecessorTaskId,
       successorTaskId: props.successorTaskId,
       dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
@@ -96,6 +97,18 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
       createdAt: now,
       updatedAt: now,
     });
+
+    dependency.addDomainEvent<TaskEventMap['task:dependency-created']>(
+      'task:dependency-created',
+      {
+        identityId: props.identityId,
+        predecessorTaskId: props.predecessorTaskId,
+        successorTaskId: props.successorTaskId,
+        dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
+      },
+    );
+
+    return dependency;
   }
 
   /**
@@ -113,6 +126,11 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   public updateDependencyType(dependencyType: DependencyType): void {
     this._props.dependencyType = dependencyType;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
+      'task:dependency-updated',
+      { dependencyId: String(this.id), changedFields: ['dependencyType'] },
+    );
   }
 
   /**
@@ -121,6 +139,11 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   public updateLagDays(lagDays: number | undefined): void {
     this._props.lagDays = lagDays;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
+      'task:dependency-updated',
+      { dependencyId: String(this.id), changedFields: ['lagDays'] },
+    );
   }
 
   /**
