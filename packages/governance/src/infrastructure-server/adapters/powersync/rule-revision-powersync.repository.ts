@@ -12,13 +12,12 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { IRuleRevisionRepository } from '../../../domain-server/repositories/i-rule-revision-repository';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import type { RuleId } from '../../../domain-shared/value-objects/rule-id';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import { mapInfraErrorToResultError } from '@dailyuse/utils';
 import {
   PowerSyncRuleRevisionMapper,
   type PowerSyncRuleRevisionRow,
 } from './mappers/powersync-rule-revision.mapper';
-import { withCause } from '../mapper-helpers';
 
 /**
  * PowerSync-backed RuleRevision repository.
@@ -35,9 +34,8 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
    * 插入新的修订版本记录（仅追加，不更新）。
    *
    * @param revision - RuleRevision domain entity 规则修订版本领域实体
-   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
    */
-  async save(revision: RuleRevision): Promise<Result<void>> {
+  async save(revision: RuleRevision): Promise<void> {
     try {
       const row = PowerSyncRuleRevisionMapper.toPersistence(revision);
       await this.db.execute(
@@ -58,9 +56,8 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
           row.created_at,
         ],
       );
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to save revision', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save revision'));
     }
   }
 
@@ -69,17 +66,17 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
    * 查找指定规则的所有修订版本，按修订版本号升序排列。
    *
    * @param ruleId - ID of the parent rule 父规则的 ID
-   * @returns Result containing array of RuleRevision entities
+   * @returns Array of RuleRevision entities 修订版本实体数组
    */
-  async findByRuleId(ruleId: RuleId): Promise<Result<RuleRevision[]>> {
+  async findByRuleId(ruleId: RuleId): Promise<RuleRevision[]> {
     try {
       const rows = await this.db.getAll<PowerSyncRuleRevisionRow>(
         `SELECT * FROM rule_revisions WHERE rule_id = ? ORDER BY revision_number ASC`,
         [ruleId],
       );
-      return ok(PowerSyncRuleRevisionMapper.toDomainMany(rows));
+      return PowerSyncRuleRevisionMapper.toDomainMany(rows);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find revisions', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find revisions'));
     }
   }
 
@@ -89,20 +86,20 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
    *
    * @param ruleId - ID of the parent rule 父规则的 ID
    * @param revisionNumber - Revision number to find 要查找的修订版本号
-   * @returns Result containing the RuleRevision or null if not found
+   * @returns The RuleRevision or null if not found 返回修订版本，未找到时返回 null
    */
   async findByRuleIdAndNumber(
     ruleId: RuleId,
     revisionNumber: number,
-  ): Promise<Result<RuleRevision | null>> {
+  ): Promise<RuleRevision | null> {
     try {
       const row = await this.db.getOptional<PowerSyncRuleRevisionRow>(
         `SELECT * FROM rule_revisions WHERE rule_id = ? AND revision_number = ?`,
         [ruleId, revisionNumber],
       );
-      return ok(row ? PowerSyncRuleRevisionMapper.toDomain(row) : null);
+      return row ? PowerSyncRuleRevisionMapper.toDomain(row) : null;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find revision', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find revision'));
     }
   }
 
@@ -111,17 +108,17 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
    * 统计规则的修订版本总数（用于确定下一个修订版本号）。
    *
    * @param ruleId - ID of the parent rule 父规则的 ID
-   * @returns Result containing the count
+   * @returns Total revision count 修订总数
    */
-  async countByRuleId(ruleId: RuleId): Promise<Result<number>> {
+  async countByRuleId(ruleId: RuleId): Promise<number> {
     try {
       const result = await this.db.get<{ count: number }>(
         `SELECT COUNT(*) as count FROM rule_revisions WHERE rule_id = ?`,
         [ruleId],
       );
-      return ok(result.count);
+      return result.count;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to count revisions', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to count revisions'));
     }
   }
 }

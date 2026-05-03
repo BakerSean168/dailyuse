@@ -34,7 +34,7 @@ import {
 import { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
 import { ScheduleConflictDetectionService } from '../application-server/services/schedule-conflict-detection-service';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail, isOk } from '@dailyuse/contracts/result';
+import { ok, fail, isOk, toResultErrorException } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   CreateScheduleRequest,
@@ -45,6 +45,7 @@ import type {
   UpdateScheduleRequest,
   UpdateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
+import { resultify } from '@dailyuse/utils/result';
 
 /**
  * Everything the schedule server runtime needs from the outside world.
@@ -325,139 +326,82 @@ export function createScheduleModule(
   };
 
   const eventApi: ScheduleEventApplicationPort = {
-    createEvent: async (data, ctx) => {
-      try {
-        const event = await useCases.scheduleEventService.createSchedule(
-          toCreateSchedulePayload(data, ctx.identityId),
-        );
-        return ok(event);
-      } catch (err: unknown) {
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    getEvent: async (id) => {
-      try {
+    createEvent: async (data, ctx) =>
+      resultify(
+        () =>
+          useCases.scheduleEventService.createSchedule(toCreateSchedulePayload(data, ctx.identityId)),
+        'Failed to create schedule event',
+      ),
+    getEvent: async (id) =>
+      resultify(async () => {
         const event = await useCases.scheduleEventService.getSchedule(id);
         if (!event) {
-          return fail({ code: 'NOT_FOUND', message: '日程不存在' });
+          throw toResultErrorException({ code: 'NOT_FOUND', message: '日程不存在' }, 404);
         }
-        return ok(event);
-      } catch (err: unknown) {
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    listEvents: async (query, ctx) => {
-      try {
-        // Use identityId from the internal query (already injected from ctx by controller)
-        const events = await useCases.scheduleEventService.getSchedulesByRange(
-          query.identityId,
-          query.startTime,
-          query.endTime,
-        );
-        return ok(events);
-      } catch (err: unknown) {
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    updateEvent: async (id, data) => {
-      try {
-        const event = await useCases.scheduleEventService.updateSchedule(
-          id,
-          toUpdateSchedulePayload(data),
-        );
-        return ok(event);
-      } catch (err: unknown) {
-        if (err instanceof Error && err.message.includes('not found')) {
-          return fail({ code: 'NOT_FOUND', message: err.message });
-        }
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    deleteEvent: async (id) => {
-      try {
+        return event;
+      }, 'Failed to get schedule event'),
+    listEvents: async (query, ctx) =>
+      resultify(
+        () =>
+          useCases.scheduleEventService.getSchedulesByRange(
+            query.identityId,
+            query.startTime,
+            query.endTime,
+          ),
+        'Failed to list schedule events',
+      ),
+    updateEvent: async (id, data) =>
+      resultify(
+        () => useCases.scheduleEventService.updateSchedule(id, toUpdateSchedulePayload(data)),
+        'Failed to update schedule event',
+      ),
+    deleteEvent: async (id) =>
+      resultify(async () => {
         await useCases.scheduleEventService.deleteSchedule(id);
-        return ok(null);
-      } catch (err: unknown) {
-        if (err instanceof Error && err.message.includes('not found')) {
-          return fail({ code: 'NOT_FOUND', message: err.message });
-        }
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    getConflicts: async (id) => {
-      try {
-        const result = await useCases.conflictDetectionService.getScheduleConflicts(id);
-        return ok(result);
-      } catch (err: unknown) {
-        if (err instanceof Error && err.message.includes('not found')) {
-          return fail({ code: 'NOT_FOUND', message: err.message });
-        }
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    detectConflicts: async (data) => {
-      try {
-        const result = await useCases.conflictDetectionService.detectConflictsForTimeRange({
-          identityId: data.identityId,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          excludeId: data.excludeId,
-        });
-        return ok(result);
-      } catch (err: unknown) {
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
-    createEventWithConflictDetection: async (data, ctx) => {
-      try {
+        return null;
+      }, 'Failed to delete schedule event'),
+    getConflicts: async (id) =>
+      resultify(
+        () => useCases.conflictDetectionService.getScheduleConflicts(id),
+        'Failed to get schedule conflicts',
+      ),
+    detectConflicts: async (data) =>
+      resultify(
+        () =>
+          useCases.conflictDetectionService.detectConflictsForTimeRange({
+            identityId: data.identityId,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            excludeId: data.excludeId,
+          }),
+        'Failed to detect schedule conflicts',
+      ),
+    createEventWithConflictDetection: async (data, ctx) =>
+      resultify(async () => {
         const schedule = await useCases.scheduleEventService.createSchedule(
           toCreateSchedulePayload(data, ctx.identityId),
         );
         const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(schedule.id);
-        return ok({ schedule, conflicts });
-      } catch (err: unknown) {
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    },
+        return { schedule, conflicts };
+      }, 'Failed to create schedule event with conflict detection'),
     resolveConflict: async (id, data) => {
       const { resolution, newStartTime, newEndTime, newDuration } = data;
 
-      try {
+      return resultify(async () => {
         const currentEvent = await useCases.scheduleEventService.getSchedule(id);
         if (!currentEvent) {
-          return fail({ code: 'NOT_FOUND', message: '日程不存在' });
+          throw toResultErrorException({ code: 'NOT_FOUND', message: '日程不存在' }, 404);
         }
 
         switch (resolution) {
           case 'REJECT': {
-            return fail({
-              code: 'CONFLICT_REJECTED',
-              message: 'Schedule conflict was rejected by the user',
-            });
+            throw toResultErrorException(
+              {
+                code: 'CONFLICT_REJECTED',
+                message: 'Schedule conflict was rejected by the user',
+              },
+              409,
+            );
           }
 
           case 'AUTO': {
@@ -536,10 +480,13 @@ export function createScheduleModule(
             );
             const adjustedEndTime = newEndTime ?? earliestOverlapStart;
             if (adjustedEndTime <= currentEvent.startTime) {
-              return fail({
-                code: 'VALIDATION_ERROR',
-                message: 'Cannot adjust end time: would result in zero or negative duration',
-              });
+              throw toResultErrorException(
+                {
+                  code: 'VALIDATION_ERROR',
+                  message: 'Cannot adjust end time: would result in zero or negative duration',
+                },
+                422,
+              );
             }
 
             const event = await useCases.scheduleEventService.updateSchedule(id, {
@@ -574,10 +521,13 @@ export function createScheduleModule(
               ? currentEvent.startTime + newDuration * 60000
               : earliestOverlapStart;
             if (adjustedEndTime <= currentEvent.startTime) {
-              return fail({
-                code: 'VALIDATION_ERROR',
-                message: 'Cannot adjust duration: would result in zero or negative duration',
-              });
+              throw toResultErrorException(
+                {
+                  code: 'VALIDATION_ERROR',
+                  message: 'Cannot adjust duration: would result in zero or negative duration',
+                },
+                422,
+              );
             }
 
             const event = await useCases.scheduleEventService.updateSchedule(id, {
@@ -598,21 +548,16 @@ export function createScheduleModule(
           }
 
           default: {
-            return fail({
-              code: 'VALIDATION_ERROR',
-              message: `Unknown resolution strategy: ${resolution}`,
-            });
+            throw toResultErrorException(
+              {
+                code: 'VALIDATION_ERROR',
+                message: `Unknown resolution strategy: ${resolution}`,
+              },
+              422,
+            );
           }
         }
-      } catch (err: unknown) {
-        if (err instanceof Error && err.message.includes('not found')) {
-          return fail({ code: 'NOT_FOUND', message: err.message });
-        }
-        return fail({
-          code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
+      }, 'Failed to resolve schedule conflict');
     },
   };
 

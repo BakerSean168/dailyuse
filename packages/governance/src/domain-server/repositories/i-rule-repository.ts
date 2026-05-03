@@ -9,7 +9,6 @@
  * - DI token for container binding / DI token 用于容器绑定
  */
 
-import type { Result } from '@dailyuse/contracts/result';
 import type { Rule } from '../aggregates/rule';
 import type { RuleRevision } from '../entities/rule-revision';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
@@ -34,47 +33,47 @@ export interface IRuleRepository {
   /**
    * Saves rule (insert or update). 保存规则（插入或更新）。
    */
-  save(rule: Rule): Promise<Result<void>>;
+  save(rule: Rule): Promise<void>;
 
   /**
    * Saves rule and revision atomically in a single transaction. 在单个事务中原子保存规则和修订记录。
    */
-  saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>>;
+  saveWithRevision(rule: Rule, revision: RuleRevision): Promise<void>;
 
   /**
    * Finds rule by ID. 根据 ID 查找规则。
    */
-  findById(id: RuleId): Promise<Result<Rule | null>>;
+  findById(id: RuleId): Promise<Rule | null>;
 
   /**
    * Finds rule by unique code. 根据唯一代码查找规则。
    */
-  findByCode(code: string): Promise<Result<Rule | null>>;
+  findByCode(code: string): Promise<Rule | null>;
 
   /**
    * Finds all rules matching filter. 查找所有匹配筛选条件的规则。
    */
-  findAll(filter?: RuleFilter): Promise<Result<Rule[]>>;
+  findAll(filter?: RuleFilter): Promise<Rule[]>;
 
   /**
    * Searches rules by keyword (title, description, code, tags). 按关键词搜索规则（标题、描述、代码、标签）。
    */
-  search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>>;
+  search(query: string, filter?: RuleFilter): Promise<Rule[]>;
 
   /**
    * Deletes rule (hard delete for Draft, soft delete for others). 删除规则（草稿硬删除，其他软删除）。
    */
-  delete(id: RuleId): Promise<Result<void>>;
+  delete(id: RuleId): Promise<void>;
 
   /**
    * Checks if a rule with the given code already exists.
    * 检查指定代码的规则是否已存在。
    *
    * @param code - Rule code to check 要检查的规则代码
-   * @returns Result<boolean> - ok(true) if exists, ok(false) if not, error on failure
-   *          ok(true) 如果存在，ok(false) 如果不存在，失败时返回 error
+   * @returns true if exists, false if not; throws on infrastructure failure
+   *          存在返回 true，不存在返回 false；基础设施失败时抛异常
    */
-  exists(code: string): Promise<Result<boolean>>;
+  exists(code: string): Promise<boolean>;
 }
 
 /**

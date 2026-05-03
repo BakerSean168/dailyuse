@@ -1,6 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import { ok, error } from '@dailyuse/contracts/result';
 import { ListRulesUseCase } from '../list-rules.use-case';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { ListRulesQuery } from '../../../../contracts/api/rules';
@@ -62,7 +61,7 @@ describe('ListRulesUseCase', () => {
       createRuleFixture({ id: 'rule-3', code: 'DDD-003' }),
     ];
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findAll: vi.fn().mockResolvedValue(ok(rules)),
+      findAll: vi.fn().mockResolvedValue(rules),
     });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -77,7 +76,7 @@ describe('ListRulesUseCase', () => {
   });
 
   it('should apply status filter', async () => {
-    const findAll = vi.fn().mockResolvedValue(ok([]));
+    const findAll = vi.fn().mockResolvedValue([]);
     const ruleRepo = createMockRepo<IRuleRepository>({ findAll });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -87,7 +86,7 @@ describe('ListRulesUseCase', () => {
   });
 
   it('should apply severity filter', async () => {
-    const findAll = vi.fn().mockResolvedValue(ok([]));
+    const findAll = vi.fn().mockResolvedValue([]);
     const ruleRepo = createMockRepo<IRuleRepository>({ findAll });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -99,7 +98,7 @@ describe('ListRulesUseCase', () => {
   });
 
   it('should apply tags filter', async () => {
-    const findAll = vi.fn().mockResolvedValue(ok([]));
+    const findAll = vi.fn().mockResolvedValue([]);
     const ruleRepo = createMockRepo<IRuleRepository>({ findAll });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -115,7 +114,7 @@ describe('ListRulesUseCase', () => {
       createRuleFixture({ id: `rule-${i + 1}`, code: `DDD-00${i + 1}` }),
     );
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findAll: vi.fn().mockResolvedValue(ok(rules)),
+      findAll: vi.fn().mockResolvedValue(rules),
     });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -133,7 +132,7 @@ describe('ListRulesUseCase', () => {
 
   it('should return empty list when no rules match', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findAll: vi.fn().mockResolvedValue(ok([])),
+      findAll: vi.fn().mockResolvedValue([]),
     });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -148,7 +147,7 @@ describe('ListRulesUseCase', () => {
   it('should map rules to client DTOs', async () => {
     const rules = [createRuleFixture()];
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findAll: vi.fn().mockResolvedValue(ok(rules)),
+      findAll: vi.fn().mockResolvedValue(rules),
     });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -167,7 +166,7 @@ describe('ListRulesUseCase', () => {
 
   it('should propagate repository errors', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findAll: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Connection failed')),
+      findAll: vi.fn().mockRejectedValue(new Error('Connection failed')),
     });
     const useCase = new ListRulesUseCase(ruleRepo);
 

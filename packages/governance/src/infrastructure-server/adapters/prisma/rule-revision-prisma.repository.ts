@@ -9,8 +9,8 @@
  * 主要特性：
  * - Append-only audit log: revision records are created, never updated
  *   仅追加审计日志：修订记录只创建，不更新
- * - All methods return Result<T> — never throws
- *   所有方法返回 Result<T> —— 永不抛出异常
+ * - Throws structured errors on infrastructure failure
+ *   基础设施失败时抛出结构化异常
  * - Query by ruleId (all revisions) or by ruleId + revisionNumber (specific)
  *   按 ruleId 查询（全部修订版本）或按 ruleId + revisionNumber 查询（特定版本）
  *
@@ -22,10 +22,9 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { IRuleRevisionRepository } from '../../../domain-server/repositories/i-rule-revision-repository';
 import { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import { mapInfraErrorToResultError } from '@dailyuse/utils';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
-import { withCause } from '../mapper-helpers';
 
 /**
  * Prisma RuleRevision Repository
@@ -44,17 +43,14 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
    * 插入新的修订版本记录（仅追加，不更新）。
    *
    * @param revision - RuleRevision domain entity to persist 要持久化的 RuleRevision 领域实体
-   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
    */
-  async save(revision: RuleRevision): Promise<Result<void>> {
+  async save(revision: RuleRevision): Promise<void> {
     try {
       await this.prisma.ruleRevision.create({
         data: RuleRevisionPrismaMapper.toPersistence(revision),
       });
-
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to save revision', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save revision'));
     }
   }
 
@@ -63,20 +59,18 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
    * 查找指定规则的所有修订版本，按修订版本号升序排列。
    *
    * @param ruleId - ID of the parent rule 父规则的 ID
-   * @returns Result containing array of RuleRevision entities
+   * @returns Array of RuleRevision entities 修订版本实体数组
    */
-  async findByRuleId(ruleId: RuleId): Promise<Result<RuleRevision[]>> {
+  async findByRuleId(ruleId: RuleId): Promise<RuleRevision[]> {
     try {
       const prismaRevisions = await this.prisma.ruleRevision.findMany({
         where: { ruleId },
         orderBy: { revisionNumber: 'asc' },
       });
 
-      const revisions = RuleRevisionPrismaMapper.toDomainMany(prismaRevisions);
-
-      return ok(revisions);
+      return RuleRevisionPrismaMapper.toDomainMany(prismaRevisions);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find revisions', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find revisions'));
     }
   }
 
@@ -86,12 +80,12 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
    *
    * @param ruleId - ID of the parent rule 父规则的 ID
    * @param revisionNumber - Revision number to find 要查找的修订版本号
-   * @returns Result containing the RuleRevision or null if not found
+   * @returns The RuleRevision or null if not found 返回修订版本，未找到时返回 null
    */
   async findByRuleIdAndNumber(
     ruleId: RuleId,
     revisionNumber: number,
-  ): Promise<Result<RuleRevision | null>> {
+  ): Promise<RuleRevision | null> {
     try {
       const prismaRevision = await this.prisma.ruleRevision.findUnique({
         where: {
@@ -103,14 +97,12 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
       });
 
       if (!prismaRevision) {
-        return ok(null);
+        return null;
       }
 
-      const revision = RuleRevisionPrismaMapper.toDomain(prismaRevision);
-
-      return ok(revision);
+      return RuleRevisionPrismaMapper.toDomain(prismaRevision);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find revision', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find revision'));
     }
   }
 
@@ -119,17 +111,17 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
    * 统计规则的修订版本总数（用于确定下一个修订版本号）。
    *
    * @param ruleId - ID of the parent rule 父规则的 ID
-   * @returns Result containing the count
+   * @returns Total revision count 修订总数
    */
-  async countByRuleId(ruleId: RuleId): Promise<Result<number>> {
+  async countByRuleId(ruleId: RuleId): Promise<number> {
     try {
       const count = await this.prisma.ruleRevision.count({
         where: { ruleId },
       });
 
-      return ok(count);
+      return count;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to count revisions', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to count revisions'));
     }
   }
 }

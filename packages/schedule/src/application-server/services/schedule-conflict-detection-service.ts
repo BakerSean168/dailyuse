@@ -1,3 +1,4 @@
+import { toResultErrorException } from '@dailyuse/contracts/result';
 import type {
   CalendarEntryServerDTO,
   ConflictDetectionResult,
@@ -32,7 +33,10 @@ export class ScheduleConflictDetectionService {
     excludeId: string | undefined = schedule.id,
   ): Promise<ConflictDetectionResult> {
     if (schedule.startTime >= schedule.endTime) {
-      throw new Error('Invalid time range: startTime must be before endTime');
+      throw toResultErrorException(
+        { code: 'VALIDATION_ERROR', message: 'Invalid time range: startTime must be before endTime' },
+        422,
+      );
     }
 
     const overlappingSchedules = await this.scheduleRepository.findByTimeRange(
@@ -49,7 +53,10 @@ export class ScheduleConflictDetectionService {
     const scheduleAggregate = await this.scheduleRepository.findById(scheduleId);
 
     if (!scheduleAggregate) {
-      throw new Error(`Schedule not found: ${scheduleId}`);
+      throw toResultErrorException(
+        { code: 'NOT_FOUND', message: `Schedule not found: ${scheduleId}` },
+        404,
+      );
     }
 
     return this.detectConflictsForEntry(scheduleAggregate);

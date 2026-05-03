@@ -86,6 +86,8 @@ export {
   type IpcAdapterOptions,
 } from './ipc-adapter';
 
+export { resultify } from './resultify';
+
 // ============================================================================
 // Route Registrar (unified Express + OpenAPI registration)
 // ============================================================================

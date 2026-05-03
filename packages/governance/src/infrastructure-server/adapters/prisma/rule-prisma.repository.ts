@@ -11,8 +11,8 @@
  *   Upsert 语义：save() 同时处理插入和更新
  * - Atomic saveWithRevision: rule + revision persisted in a single transaction
  *   原子化 saveWithRevision：规则 + 修订版本在单个事务中持久化
- * - All methods return Result<T> — never throws
- *   所有方法返回 Result<T> —— 永不抛出异常
+ * - Throws structured errors on infrastructure failure
+ *   基础设施失败时抛出结构化异常
  * - Filter support: status (single/array), severity, tags (OR logic)
  *   过滤支持：状态（单值/数组）、严重级别、标签（OR 逻辑）
  *
@@ -28,11 +28,10 @@ import type {
 import type { Rule } from '../../../domain-server/aggregates/rule';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects/rule-id';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import { mapInfraErrorToResultError } from '@dailyuse/utils';
 import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
-import { withCause } from '../mapper-helpers';
 
 /**
  * Prisma Rule Repository
@@ -54,10 +53,8 @@ export class RulePrismaRepository implements IRuleRepository {
    * 使用 Prisma upsert 在单次操作中处理两种情况。
    *
    * @param rule - Domain Rule aggregate to persist 要持久化的领域规则聚合根
-   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
-   *                         成功返回 ok，失败返回 error('INTERNAL_ERROR')
    */
-  async save(rule: Rule): Promise<Result<void>> {
+  async save(rule: Rule): Promise<void> {
     try {
       const prismaData = RulePrismaMapper.toPersistence(rule);
 
@@ -74,10 +71,8 @@ export class RulePrismaRepository implements IRuleRepository {
           updatedAt: rule.updatedAt,
         },
       });
-
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to save rule', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save rule'));
     }
   }
 
@@ -90,9 +85,8 @@ export class RulePrismaRepository implements IRuleRepository {
    *
    * @param rule - Domain Rule aggregate 领域规则聚合根
    * @param revision - Associated RuleRevision entity 关联的修订版本实体
-   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
    */
-  async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>> {
+  async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<void> {
     try {
       const prismaData = RulePrismaMapper.toPersistence(rule);
 
@@ -115,10 +109,10 @@ export class RulePrismaRepository implements IRuleRepository {
 
         await tx.ruleRevision.create({ data: revisionData });
       });
-
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to save rule with revision', err));
+      throw toResultErrorException(
+        mapInfraErrorToResultError(err, 'Failed to save rule with revision'),
+      );
     }
   }
 
@@ -127,23 +121,21 @@ export class RulePrismaRepository implements IRuleRepository {
    * 根据唯一 ID 查找规则。
    *
    * @param id - Rule ID (branded type) 规则 ID（品牌类型）
-   * @returns Result containing the Rule or null if not found
-   *          包含规则的 Result，未找到时为 null
+   * @returns The Rule or null if not found 返回规则，未找到时返回 null
    */
-  async findById(id: RuleId): Promise<Result<Rule | null>> {
+  async findById(id: RuleId): Promise<Rule | null> {
     try {
       const prismaRule = await this.prisma.rule.findUnique({
         where: { id },
       });
 
       if (!prismaRule) {
-        return ok(null);
+        return null;
       }
 
-      const rule = RulePrismaMapper.toDomain(prismaRule);
-      return ok(rule);
+      return RulePrismaMapper.toDomain(prismaRule);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find rule by ID', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find rule by ID'));
     }
   }
 
@@ -152,22 +144,23 @@ export class RulePrismaRepository implements IRuleRepository {
    * 根据唯一代码查找规则（例如 'DDD-001'）。
    *
    * @param code - Rule code string 规则代码字符串
-   * @returns Result containing the Rule or null if not found
+   * @returns The Rule or null if not found 返回规则，未找到时返回 null
    */
-  async findByCode(code: string): Promise<Result<Rule | null>> {
+  async findByCode(code: string): Promise<Rule | null> {
     try {
       const prismaRule = await this.prisma.rule.findUnique({
         where: { code },
       });
 
       if (!prismaRule) {
-        return ok(null);
+        return null;
       }
 
-      const rule = RulePrismaMapper.toDomain(prismaRule);
-      return ok(rule);
+      return RulePrismaMapper.toDomain(prismaRule);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find rule by code', err));
+      throw toResultErrorException(
+        mapInfraErrorToResultError(err, 'Failed to find rule by code'),
+      );
     }
   }
 
@@ -186,9 +179,9 @@ export class RulePrismaRepository implements IRuleRepository {
    *   标签：OR 逻辑 —— 匹配任一标签即可（JSON 包含匹配）
    *
    * @param filter - Optional filter criteria 可选的过滤条件
-   * @returns Result containing array of Rule aggregates
+   * @returns Array of Rule aggregates 规则聚合数组
    */
-  async findAll(filter?: RuleFilter): Promise<Result<Rule[]>> {
+  async findAll(filter?: RuleFilter): Promise<Rule[]> {
     try {
       const where: Prisma.RuleWhereInput = {};
 
@@ -222,10 +215,9 @@ export class RulePrismaRepository implements IRuleRepository {
         orderBy: { updatedAt: 'desc' },
       });
 
-      const rules = RulePrismaMapper.toDomainMany(prismaRules);
-      return ok(rules);
+      return RulePrismaMapper.toDomainMany(prismaRules);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find rules', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find rules'));
     }
   }
 
@@ -240,13 +232,13 @@ export class RulePrismaRepository implements IRuleRepository {
    *
    * @param query - Search keyword 搜索关键词
    * @param filter - Optional additional filters 可选的附加过滤条件
-   * @returns Result containing matched Rule aggregates
+   * @returns Matched Rule aggregates 匹配到的规则聚合数组
    */
-  async search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>> {
+  async search(query: string, filter?: RuleFilter): Promise<Rule[]> {
     try {
       const keyword = query.trim();
       if (keyword.length === 0) {
-        return ok([]);
+        return [];
       }
 
       const keywordConditions: Prisma.RuleWhereInput[] = [
@@ -285,10 +277,9 @@ export class RulePrismaRepository implements IRuleRepository {
         orderBy: { updatedAt: 'desc' },
       });
 
-      const rules = RulePrismaMapper.toDomainMany(prismaRules);
-      return ok(rules);
+      return RulePrismaMapper.toDomainMany(prismaRules);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to search rules', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to search rules'));
     }
   }
 
@@ -300,22 +291,14 @@ export class RulePrismaRepository implements IRuleRepository {
    * 如果规则不存在，返回 NOT_FOUND。
    *
    * @param id - Rule ID to delete 要删除的规则 ID
-   * @returns Result<void> - ok on success, error('NOT_FOUND') if missing, error('INTERNAL_ERROR') on failure
    */
-  async delete(id: RuleId): Promise<Result<void>> {
+  async delete(id: RuleId): Promise<void> {
     try {
       await this.prisma.rule.delete({
         where: { id },
       });
-
-      return ok(undefined);
     } catch (err) {
-      // Handle case where rule doesn't exist
-      if (err instanceof Error && err.message.includes('Record to delete does not exist')) {
-        return error('NOT_FOUND', `Rule with ID '${id}' not found`);
-      }
-
-      return error('INTERNAL_ERROR', withCause('Failed to delete rule', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to delete rule'));
     }
   }
 
@@ -324,17 +307,19 @@ export class RulePrismaRepository implements IRuleRepository {
    * 检查指定代码的规则是否已存在。
    *
    * @param code - Rule code to check 要检查的规则代码
-   * @returns Result<boolean> - ok(true) if exists, ok(false) if not
+   * @returns true if exists, false if not 存在返回 true，否则返回 false
    */
-  async exists(code: string): Promise<Result<boolean>> {
+  async exists(code: string): Promise<boolean> {
     try {
       const count = await this.prisma.rule.count({
         where: { code },
       });
 
-      return ok(count > 0);
+      return count > 0;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to check rule existence', err));
+      throw toResultErrorException(
+        mapInfraErrorToResultError(err, 'Failed to check rule existence'),
+      );
     }
   }
 }

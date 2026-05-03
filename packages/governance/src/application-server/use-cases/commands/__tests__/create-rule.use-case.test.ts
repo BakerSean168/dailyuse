@@ -1,6 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import { ok, error } from '@dailyuse/contracts/result';
 import { CreateRuleUseCase } from '../create-rule.use-case';
 import type { ExecutionContext } from '../../execution-context';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
@@ -29,11 +28,11 @@ function validReq(overrides?: Partial<CreateRuleReq>): CreateRuleReq {
 describe('CreateRuleUseCase', () => {
   it('should create a rule successfully and return DTO', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
-      saveWithRevision: vi.fn().mockResolvedValue(ok(undefined)),
+      findByCode: vi.fn().mockResolvedValue(null),
+      saveWithRevision: vi.fn().mockResolvedValue(undefined),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      countByRuleId: vi.fn().mockResolvedValue(ok(0)),
+      countByRuleId: vi.fn().mockResolvedValue(0),
     });
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
 
@@ -52,13 +51,13 @@ describe('CreateRuleUseCase', () => {
   });
 
   it('should call saveWithRevision on the repository', async () => {
-    const saveWithRevision = vi.fn().mockResolvedValue(ok(undefined));
+    const saveWithRevision = vi.fn().mockResolvedValue(undefined);
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
+      findByCode: vi.fn().mockResolvedValue(null),
       saveWithRevision,
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      countByRuleId: vi.fn().mockResolvedValue(ok(0)),
+      countByRuleId: vi.fn().mockResolvedValue(0),
     });
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
 
@@ -70,7 +69,7 @@ describe('CreateRuleUseCase', () => {
   it('should return DUPLICATE_CODE when code already exists', async () => {
     const existingRule = {} as any; // non-null means existing
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(existingRule)),
+      findByCode: vi.fn().mockResolvedValue(existingRule),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
@@ -85,7 +84,7 @@ describe('CreateRuleUseCase', () => {
 
   it('should return error when findByCode fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Database connection failed')),
+      findByCode: vi.fn().mockRejectedValue(new Error('Database connection failed')),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
@@ -99,7 +98,7 @@ describe('CreateRuleUseCase', () => {
 
   it('should return error for invalid severity', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
+      findByCode: vi.fn().mockResolvedValue(null),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
@@ -113,7 +112,7 @@ describe('CreateRuleUseCase', () => {
 
   it('should return error for invalid language in examples', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
+      findByCode: vi.fn().mockResolvedValue(null),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
@@ -130,11 +129,11 @@ describe('CreateRuleUseCase', () => {
 
   it('should return error when saveWithRevision fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
-      saveWithRevision: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Save failed')),
+      findByCode: vi.fn().mockResolvedValue(null),
+      saveWithRevision: vi.fn().mockRejectedValue(new Error('Save failed')),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      countByRuleId: vi.fn().mockResolvedValue(ok(0)),
+      countByRuleId: vi.fn().mockResolvedValue(0),
     });
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
 
@@ -147,10 +146,10 @@ describe('CreateRuleUseCase', () => {
 
   it('should return error when countByRuleId fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
+      findByCode: vi.fn().mockResolvedValue(null),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      countByRuleId: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Count failed')),
+      countByRuleId: vi.fn().mockRejectedValue(new Error('Count failed')),
     });
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
 

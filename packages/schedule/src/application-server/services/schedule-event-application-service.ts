@@ -1,3 +1,4 @@
+import { toResultErrorException } from '@dailyuse/contracts/result';
 import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
@@ -13,6 +14,13 @@ import { ScheduleConflictCacheService } from './schedule-conflict-cache-service'
  */
 export class ScheduleEventApplicationService {
   constructor(private scheduleRepository: IScheduleRepository) {}
+
+  private static notFound(id: string): never {
+    throw toResultErrorException(
+      { code: 'NOT_FOUND', message: `Schedule event ${id} not found` },
+      404,
+    );
+  }
 
   async createSchedule(params: {
     identityId: string;
@@ -65,7 +73,7 @@ export class ScheduleEventApplicationService {
       const conflictCacheService = new ScheduleConflictCacheService(scheduleRepository);
       const schedule = await scheduleRepository.findById(id);
       if (!schedule) {
-        throw new Error(`Schedule event ${id} not found`);
+        ScheduleEventApplicationService.notFound(id);
       }
 
       const previousStartTime = schedule.startTime;
@@ -99,7 +107,7 @@ export class ScheduleEventApplicationService {
       const conflictCacheService = new ScheduleConflictCacheService(scheduleRepository);
       const schedule = await scheduleRepository.findById(id);
       if (!schedule) {
-        throw new Error(`Schedule event ${id} not found`);
+        ScheduleEventApplicationService.notFound(id);
       }
 
       await scheduleRepository.deleteById(id);

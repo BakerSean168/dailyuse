@@ -8,9 +8,8 @@
  * （RuleRevision 由 Rule 聚合根自动创建，不可直接操作）
  */
 
-import type { Result } from '@dailyuse/contracts/result';
 import type { RuleRevision } from '../entities/rule-revision';
-import { RuleId, RuleRevisionId } from '../../domain-shared/value-objects';
+import { RuleId } from '../../domain-shared/value-objects';
 
 /**
  * Rule Revision repository interface.
@@ -23,12 +22,12 @@ export interface IRuleRevisionRepository {
   /**
    * Saves revision (insert only — revisions are immutable). 保存修订记录（仅插入 — 修订记录不可变）。
    */
-  save(revision: RuleRevision): Promise<Result<void>>;
+  save(revision: RuleRevision): Promise<void>;
 
   /**
    * Finds all revisions for a rule. 查找指定规则的所有修订记录。
    */
-  findByRuleId(ruleId: RuleId): Promise<Result<RuleRevision[]>>;
+  findByRuleId(ruleId: RuleId): Promise<RuleRevision[]>;
 
   /**
    * Finds specific revision by rule ID and revision number. 根据规则 ID 和修订编号查找特定修订记录。
@@ -36,12 +35,12 @@ export interface IRuleRevisionRepository {
   findByRuleIdAndNumber(
     ruleId: RuleId,
     revisionNumber: number,
-  ): Promise<Result<RuleRevision | null>>;
+  ): Promise<RuleRevision | null>;
 
   /**
    * Counts total revisions for a rule. 统计指定规则的修订记录总数。
    */
-  countByRuleId(ruleId: RuleId): Promise<Result<number>>;
+  countByRuleId(ruleId: RuleId): Promise<number>;
 }
 
 /**

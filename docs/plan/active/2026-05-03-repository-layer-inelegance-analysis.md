@@ -31,11 +31,12 @@
 **影响**: 调用方代码风格不一致。governance 的调用方不需要 try/catch，其他模块必须 try/catch 或信任框架。
 
 **改造方案**:
-- A. **全局迁移到 Result\<T\>** — 最一致，但改动量大（涉及所有模块的仓储接口 + 实现 + 调用方）
+- A. **全局迁移到 Result\<T\>** — 一致但代价高，而且会把基础设施错误分支扩散到所有 use case
 - B. **保持现状，仅在新模块采用 Result\<T\>** — 渐进，但长期不一致
-- C. **在 AggregateRepositoryBase 中统一 try/catch → Result\<T\>** — 基类自动包装，子类无需改动
+- C. **在 AggregateRepositoryBase 中统一 try/catch → Result\<T\>** — 不成立，基类只覆盖 `save()`，无法统一查询/批量/事务方法
+- D. **Repository 统一 throw 结构化异常，Application Port / Use Case 边界统一 Result\<T\>** — 保留边界一致性，同时避免业务层被基础设施分支污染
 
-选择：方案A
+选择：方案D
 
 ---
 

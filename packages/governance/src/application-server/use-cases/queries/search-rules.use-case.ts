@@ -6,7 +6,8 @@
 import type { IRuleRepository, RuleFilter } from '@/domain-server/repositories/i-rule-repository';
 import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import { resultify } from '@dailyuse/utils/result';
 import type { SearchRulesQueryInput, SearchRulesRes } from '../../../contracts/api/rules';
 import { RuleStatus } from '../../../contracts/value-objects/rule-status';
 import type { ExecutionContext } from '../execution-context';
@@ -32,56 +33,54 @@ export class SearchRulesUseCase {
     req: SearchRulesQueryInput,
     cx?: ExecutionContext,
   ): Promise<Result<SearchRulesRes>> {
-    const startedAt = Date.now();
+    return resultify(async () => {
+      const startedAt = Date.now();
+      const normalizedQuery = req.query.trim();
+      if (normalizedQuery.length === 0) {
+        throw toResultErrorException(
+          { code: 'VALIDATION_ERROR', message: 'Search query cannot be empty' },
+          422,
+        );
+      }
 
-    const normalizedQuery = req.query.trim();
-    if (normalizedQuery.length === 0) {
-      return error('VALIDATION_ERROR', 'Search query cannot be empty');
-    }
+      const filter: RuleFilter = {};
+      if (req.status) {
+        filter.status = req.status;
+      }
+      if (req.severity) {
+        filter.severity = req.severity;
+      }
+      if (req.tags) {
+        filter.tags = req.tags;
+      }
 
-    const filter: RuleFilter = {};
-    if (req.status) {
-      filter.status = req.status;
-    }
-    if (req.severity) {
-      filter.severity = req.severity;
-    }
-    if (req.tags) {
-      filter.tags = req.tags;
-    }
+      const scoredRules = (await this.ruleRepository.search(normalizedQuery, filter))
+        .map((rule) => ({
+          rule,
+          score: this.calculateRelevanceScore(rule, normalizedQuery),
+        }))
+        .sort((left, right) => {
+          if (right.score !== left.score) {
+            return right.score - left.score;
+          }
+          return right.rule.updatedAt.getTime() - left.rule.updatedAt.getTime();
+        });
 
-    const rulesResult = await this.ruleRepository.search(normalizedQuery, filter);
-    if (!rulesResult.ok) {
-      return error(rulesResult.error.code, rulesResult.error.message, rulesResult.error.details);
-    }
+      const total = scoredRules.length;
+      const page = req.page ?? 1;
+      const pageSize = req.pageSize ?? 20;
+      const offset = (page - 1) * pageSize;
 
-    const scoredRules = rulesResult.data
-      .map((rule) => ({
-        rule,
-        score: this.calculateRelevanceScore(rule, normalizedQuery),
-      }))
-      .sort((left, right) => {
-        if (right.score !== left.score) {
-          return right.score - left.score;
-        }
-        return right.rule.updatedAt.getTime() - left.rule.updatedAt.getTime();
-      });
-
-    const total = scoredRules.length;
-    const page = req.page ?? 1;
-    const pageSize = req.pageSize ?? 20;
-    const offset = (page - 1) * pageSize;
-    const items = scoredRules
-      .slice(offset, offset + pageSize)
-      .map(({ rule }) => rule.toClientDTO());
-
-    return ok({
-      items,
-      total,
-      page,
-      pageSize,
-      searchTime: Date.now() - startedAt,
-    });
+      return {
+        items: scoredRules
+          .slice(offset, offset + pageSize)
+          .map(({ rule }) => rule.toClientDTO()),
+        total,
+        page,
+        pageSize,
+        searchTime: Date.now() - startedAt,
+      };
+    }, 'Failed to search rules');
   }
 
   private calculateRelevanceScore(rule: Rule, query: string): number {

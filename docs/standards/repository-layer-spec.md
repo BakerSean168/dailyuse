@@ -36,25 +36,45 @@ infrastructure-server (RulePrismaRepository 实现)
 - 参考实现: [TaskTemplatePrismaRepository](../../../packages/task/src/infrastructure-server/adapters/prisma/task-template-prisma.repository.ts)
 - 参考实现: [GoalPrismaRepository](../../../packages/goal/src/infrastructure-server/adapters/prisma/goal-prisma.repository.ts)
 
-### 3.2 Result\<T\> 错误处理（推荐）
+### 3.2 结构化异常 + 边界 Result（推荐）
 
-仓储方法应返回 `Promise<Result<T>>`，永不抛异常。每个方法包裹 try/catch，错误码 + 原始原因链入消息。
+仓储方法应返回普通的 `Promise<T>` / `Promise<T | null>` / `Promise<void>`。
+仓储内部可以 `try/catch`，但失败时应抛出**结构化异常**，而不是返回 `Result<T>`。
 
-**规范写法**（参考 governance）:
+`Result<T>` 的统一边界应放在 module `api`、controller 或 use case 外层，由边界层负责把 throw 转成 `fail(...)`。
+
+**规范写法**（仓储层）:
 
 ```typescript
-async findById(id: RuleId): Promise<Result<Rule | null>> {
+async findById(id: RuleId): Promise<Rule | null> {
   try {
     const row = await this.prisma.rule.findUnique({ where: { id } });
-    return ok(row ? RulePrismaMapper.toDomain(row) : null);
+    return row ? RulePrismaMapper.toDomain(row) : null;
   } catch (err) {
-    return error('INTERNAL_ERROR', withCause('Failed to find rule by ID', err));
+    throw toResultErrorException(
+      mapInfraErrorToResultError(err, 'Failed to find rule by ID'),
+    );
   }
 }
 ```
 
+**规范写法**（应用边界）:
+
+```typescript
+async execute(req: GetRuleReq): Promise<Result<GetRuleRes>> {
+  return resultify(async () => {
+    const rule = await this.ruleRepository.findById(req.id);
+    if (!rule) {
+      throw toResultErrorException({ code: 'NOT_FOUND', message: 'Rule not found' }, 404);
+    }
+    return rule.toClientDTO();
+  }, 'Failed to get rule');
+}
+```
+
 - 参考实现: [RulePrismaRepository](../../../packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts)
-- 共享工具: [mapper-helpers.ts](../../../packages/governance/src/infrastructure-server/adapters/mapper-helpers.ts)
+- 参考实现: [createScheduleModule](../../../packages/schedule/src/infrastructure-server/schedule.module.ts)
+- 共享工具: [resultify](../../../packages/utils/src/result/resultify.ts)
 
 ### 3.3 Mapper 静态类
 

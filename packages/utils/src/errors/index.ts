@@ -5,3 +5,4 @@
 
 export * from './DomainError';
 export * from './prisma-error-mapper';
+export * from './result-error-mapper';

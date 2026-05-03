@@ -1,6 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import { ok, error } from '@dailyuse/contracts/result';
 import { GetRuleRevisionsUseCase } from '../get-rule-revisions.use-case';
 import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import type { GetRuleRevisionsQuery } from '../../../../contracts/api/rule-revisions';
@@ -46,7 +45,7 @@ describe('GetRuleRevisionsUseCase', () => {
       }),
     ];
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      findByRuleId: vi.fn().mockResolvedValue(ok(revisions)),
+      findByRuleId: vi.fn().mockResolvedValue(revisions),
     });
     const useCase = new GetRuleRevisionsUseCase(revisionRepo);
 
@@ -64,7 +63,7 @@ describe('GetRuleRevisionsUseCase', () => {
   it('should apply default pagination', async () => {
     const revisions = [createRevisionFixture()];
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      findByRuleId: vi.fn().mockResolvedValue(ok(revisions)),
+      findByRuleId: vi.fn().mockResolvedValue(revisions),
     });
     const useCase = new GetRuleRevisionsUseCase(revisionRepo);
 
@@ -85,7 +84,7 @@ describe('GetRuleRevisionsUseCase', () => {
       }),
     );
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      findByRuleId: vi.fn().mockResolvedValue(ok(revisions)),
+      findByRuleId: vi.fn().mockResolvedValue(revisions),
     });
     const useCase = new GetRuleRevisionsUseCase(revisionRepo);
 
@@ -108,7 +107,7 @@ describe('GetRuleRevisionsUseCase', () => {
 
   it('should return empty list when no revisions exist', async () => {
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      findByRuleId: vi.fn().mockResolvedValue(ok([])),
+      findByRuleId: vi.fn().mockResolvedValue([]),
     });
     const useCase = new GetRuleRevisionsUseCase(revisionRepo);
 
@@ -123,7 +122,7 @@ describe('GetRuleRevisionsUseCase', () => {
   it('should call toClientDTO on each revision', async () => {
     const revision = createRevisionFixture();
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      findByRuleId: vi.fn().mockResolvedValue(ok([revision])),
+      findByRuleId: vi.fn().mockResolvedValue([revision]),
     });
     const useCase = new GetRuleRevisionsUseCase(revisionRepo);
 
@@ -135,7 +134,7 @@ describe('GetRuleRevisionsUseCase', () => {
 
   it('should propagate repository errors', async () => {
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      findByRuleId: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Connection failed')),
+      findByRuleId: vi.fn().mockRejectedValue(new Error('Connection failed')),
     });
     const useCase = new GetRuleRevisionsUseCase(revisionRepo);
 

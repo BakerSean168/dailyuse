@@ -1,6 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import { ok, error } from '@dailyuse/contracts/result';
 import { GetRuleUseCase } from '../get-rule.use-case';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { GetRuleReq } from '../../../../contracts/api/rules';
@@ -58,7 +57,7 @@ describe('GetRuleUseCase', () => {
   it('should get a rule by ID and return DTO', async () => {
     const rule = createRuleFixture();
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(rule)),
+      findById: vi.fn().mockResolvedValue(rule),
     });
     const useCase = new GetRuleUseCase(ruleRepo);
 
@@ -81,7 +80,7 @@ describe('GetRuleUseCase', () => {
 
   it('should get a rule by code', async () => {
     const rule = createRuleFixture();
-    const findByCode = vi.fn().mockResolvedValue(ok(rule));
+    const findByCode = vi.fn().mockResolvedValue(rule);
     const ruleRepo = createMockRepo<IRuleRepository>({
       findByCode,
     });
@@ -97,7 +96,7 @@ describe('GetRuleUseCase', () => {
 
   it('should prefer ID over code when both are provided', async () => {
     const rule = createRuleFixture();
-    const findById = vi.fn().mockResolvedValue(ok(rule));
+    const findById = vi.fn().mockResolvedValue(rule);
     const ruleRepo = createMockRepo<IRuleRepository>({
       findById,
     });
@@ -123,7 +122,7 @@ describe('GetRuleUseCase', () => {
 
   it('should return NOT_FOUND when rule does not exist by ID', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(null)),
+      findById: vi.fn().mockResolvedValue(null),
     });
     const useCase = new GetRuleUseCase(ruleRepo);
 
@@ -137,7 +136,7 @@ describe('GetRuleUseCase', () => {
 
   it('should return NOT_FOUND when rule does not exist by code', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(ok(null)),
+      findByCode: vi.fn().mockResolvedValue(null),
     });
     const useCase = new GetRuleUseCase(ruleRepo);
 
@@ -151,7 +150,7 @@ describe('GetRuleUseCase', () => {
 
   it('should propagate repository errors', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Connection failed')),
+      findById: vi.fn().mockRejectedValue(new Error('Connection failed')),
     });
     const useCase = new GetRuleUseCase(ruleRepo);
 

@@ -26,9 +26,9 @@ function createRuleFixture(
 describe('DeleteRuleUseCase', () => {
   it('should hard delete a Draft rule', async () => {
     const rule = createRuleFixture({ status: RuleStatus.Draft });
-    const deleteFn = vi.fn().mockResolvedValue(ok(undefined));
+    const deleteFn = vi.fn().mockResolvedValue(undefined);
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(rule)),
+      findById: vi.fn().mockResolvedValue(rule),
       delete: deleteFn,
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
@@ -44,9 +44,9 @@ describe('DeleteRuleUseCase', () => {
   it('should soft delete (deprecate) an Active rule', async () => {
     const deprecate = vi.fn().mockReturnValue(ok(undefined));
     const rule = createRuleFixture({ status: RuleStatus.Active, deprecate });
-    const saveFn = vi.fn().mockResolvedValue(ok(undefined));
+    const saveFn = vi.fn().mockResolvedValue(undefined);
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(rule)),
+      findById: vi.fn().mockResolvedValue(rule),
       save: saveFn,
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
@@ -64,7 +64,7 @@ describe('DeleteRuleUseCase', () => {
     const deprecate = vi.fn().mockReturnValue(error('INVALID_TRANSITION', 'Already deprecated'));
     const rule = createRuleFixture({ status: RuleStatus.Deprecated, deprecate });
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(rule)),
+      findById: vi.fn().mockResolvedValue(rule),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -77,7 +77,7 @@ describe('DeleteRuleUseCase', () => {
 
   it('should return NOT_FOUND when rule does not exist', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(null)),
+      findById: vi.fn().mockResolvedValue(null),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -91,7 +91,7 @@ describe('DeleteRuleUseCase', () => {
 
   it('should return error when findById fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Database connection failed')),
+      findById: vi.fn().mockRejectedValue(new Error('Database connection failed')),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -105,8 +105,8 @@ describe('DeleteRuleUseCase', () => {
   it('should return error when hard delete fails', async () => {
     const rule = createRuleFixture({ status: RuleStatus.Draft });
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(rule)),
-      delete: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Delete failed')),
+      findById: vi.fn().mockResolvedValue(rule),
+      delete: vi.fn().mockRejectedValue(new Error('Delete failed')),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -120,8 +120,8 @@ describe('DeleteRuleUseCase', () => {
   it('should return error when save after deprecate fails', async () => {
     const rule = createRuleFixture({ status: RuleStatus.Active });
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(ok(rule)),
-      save: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Save failed')),
+      findById: vi.fn().mockResolvedValue(rule),
+      save: vi.fn().mockRejectedValue(new Error('Save failed')),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 

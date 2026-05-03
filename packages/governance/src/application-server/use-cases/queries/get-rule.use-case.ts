@@ -5,7 +5,8 @@
 
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import { resultify } from '@dailyuse/utils/result';
 import type { GetRuleReq, GetRuleRes } from '../../../contracts/api/rules';
 import type { RuleId } from '../../../contracts/primitives/ids';
 
@@ -20,30 +21,29 @@ export class GetRuleUseCase {
    * Execute: Retrieves single rule by ID or code
    */
   async execute(req: GetRuleReq): Promise<Result<GetRuleRes>> {
-    let ruleResult;
+    return resultify(async () => {
+      let rule = null;
 
-    if (req.id) {
-      ruleResult = await this.ruleRepository.findById(req.id as RuleId);
-    } else if (req.code) {
-      ruleResult = await this.ruleRepository.findByCode(req.code);
-    } else {
-      return error('BAD_REQUEST', 'Must provide either id or code');
-    }
+      if (req.id) {
+        rule = await this.ruleRepository.findById(req.id as RuleId);
+      } else if (req.code) {
+        rule = await this.ruleRepository.findByCode(req.code);
+      } else {
+        throw toResultErrorException(
+          { code: 'BAD_REQUEST', message: 'Must provide either id or code' },
+          400,
+        );
+      }
 
-    if (!ruleResult.ok) {
-      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
-    }
+      if (rule === null) {
+        const identifier = req.id ? `ID '${req.id}'` : `code '${req.code}'`;
+        throw toResultErrorException(
+          { code: 'NOT_FOUND', message: `Rule with ${identifier} not found` },
+          404,
+        );
+      }
 
-    if (ruleResult.data === null) {
-      const identifier = req.id ? `ID '${req.id}'` : `code '${req.code}'`;
-      return error('NOT_FOUND', `Rule with ${identifier} not found`);
-    }
-
-    const rule = ruleResult.data;
-
-    // Convert to ClientDTO
-    const dto = rule.toClientDTO();
-
-    return ok(dto);
+      return rule.toClientDTO();
+    }, 'Failed to get rule');
   }
 }

@@ -5,7 +5,8 @@
 
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
+import { resultify } from '@dailyuse/utils/result';
 import type { DeleteRuleReq, DeleteRuleRes } from '../../../contracts/api/rules';
 import type { RuleId } from '../../../contracts/primitives/ids';
 import { RuleStatus } from '../../../contracts/value-objects/rule-status';
@@ -28,55 +29,31 @@ export class DeleteRuleUseCase {
    * Soft delete: Active/Deprecated rules (via deprecate method)
    */
   async execute(req: DeleteRuleReq, cx: ExecutionContext): Promise<Result<DeleteRuleRes>> {
-    // Fetch rule
-    const ruleResult = await this.ruleRepository.findById(req.id as RuleId);
-    if (!ruleResult.ok) {
-      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
-    }
-
-    if (ruleResult.data === null) {
-      return error('NOT_FOUND', `Rule with ID '${req.id}' not found`);
-    }
-
-    const rule = ruleResult.data;
-
-    // Hard delete if Draft without revisions
-    // TODO: Dispatch RuleDeletedEvent via event bus after hard delete.
-    // The aggregate is destroyed so addDomainEvent() cannot be used here.
-    // 待办：硬删除后通过事件总线发布 RuleDeletedEvent，聚合已销毁无法使用 addDomainEvent()。
-    if (rule.status === RuleStatus.Draft) {
-      const deleteResult = await this.ruleRepository.delete(rule.id);
-      if (!deleteResult.ok) {
-        return error(
-          deleteResult.error.code,
-          deleteResult.error.message,
-          deleteResult.error.details,
+    return resultify(async () => {
+      const rule = await this.ruleRepository.findById(req.id as RuleId);
+      if (rule === null) {
+        throw toResultErrorException(
+          { code: 'NOT_FOUND', message: `Rule with ID '${req.id}' not found` },
+          404,
         );
       }
 
-      return ok({ success: true });
-    }
-
-    // Soft delete for Active/Deprecated rules
-    const reason = `Deleted by user ${cx.identityId}`;
-    const deprecateResult = rule.deprecate(reason);
-    if (!deprecateResult.ok) {
-      // If already deprecated, treat as success
-      if (rule.status === RuleStatus.Deprecated) {
-        return ok({ success: true });
+      if (rule.status === RuleStatus.Draft) {
+        await this.ruleRepository.delete(rule.id);
+        return { success: true };
       }
-      return error(
-        deprecateResult.error.code,
-        deprecateResult.error.message,
-        deprecateResult.error.details,
-      );
-    }
 
-    const saveResult = await this.ruleRepository.save(rule);
-    if (!saveResult.ok) {
-      return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
-    }
+      const reason = `Deleted by user ${cx.identityId}`;
+      const deprecateResult = rule.deprecate(reason);
+      if (!deprecateResult.ok) {
+        if (rule.status === RuleStatus.Deprecated) {
+          return { success: true };
+        }
+        unwrapOrThrowError(deprecateResult);
+      }
 
-    return ok({ success: true });
+      await this.ruleRepository.save(rule);
+      return { success: true };
+    }, 'Failed to delete rule');
   }
 }

@@ -12,7 +12,8 @@ import { RuleSeverity } from '@/domain-shared/value-objects/rule-severity';
 import { Language } from '@/domain-shared/value-objects/language';
 import type { Language as RuleLanguage } from '@/domain-shared/value-objects/language';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
+import { resultify } from '@dailyuse/utils/result';
 import type { CreateRuleReq, CreateRuleRes } from '../../../contracts/api/rules';
 import type { ExecutionContext } from '../execution-context';
 
@@ -42,134 +43,86 @@ export class CreateRuleUseCase {
    * 4. Convert to RuleClientDTO and return
    */
   async execute(req: CreateRuleReq, cx: ExecutionContext): Promise<Result<CreateRuleRes>> {
-    // Check for duplicate code
-    const existingResult = await this.ruleRepository.findByCode(req.code);
-    if (!existingResult.ok) {
-      return error(
-        existingResult.error.code,
-        existingResult.error.message,
-        existingResult.error.details,
-      );
-    }
-
-    if (existingResult.data !== null) {
-      return error('DUPLICATE_CODE', `Rule with code '${req.code}' already exists`);
-    }
-
-    const severityResult = RuleSeverity.create(req.severity);
-    if (!severityResult.ok) {
-      return error(
-        severityResult.error.code,
-        severityResult.error.message,
-        severityResult.error.details,
-      );
-    }
-
-    const goodExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
-    for (const example of req.goodExamples) {
-      const languageResult = Language.create(example.language);
-      if (!languageResult.ok) {
-        return error(
-          languageResult.error.code,
-          languageResult.error.message,
-          languageResult.error.details,
+    return resultify(async () => {
+      const existingRule = await this.ruleRepository.findByCode(req.code);
+      if (existingRule !== null) {
+        throw toResultErrorException(
+          { code: 'DUPLICATE_CODE', message: `Rule with code '${req.code}' already exists` },
+          409,
         );
       }
 
-      goodExamples.push({
-        language: languageResult.data,
-        content: example.content,
-        caption: example.caption ?? undefined,
-      });
-    }
+      const severity = unwrapOrThrowError(RuleSeverity.create(req.severity));
 
-    const badExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
-    for (const example of req.badExamples) {
-      const languageResult = Language.create(example.language);
-      if (!languageResult.ok) {
-        return error(
-          languageResult.error.code,
-          languageResult.error.message,
-          languageResult.error.details,
-        );
+      const goodExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
+      for (const example of req.goodExamples) {
+        const language = unwrapOrThrowError(Language.create(example.language));
+        goodExamples.push({
+          language,
+          content: example.content,
+          caption: example.caption ?? undefined,
+        });
       }
 
-      badExamples.push({
-        language: languageResult.data,
-        content: example.content,
-        caption: example.caption ?? undefined,
-      });
-    }
+      const badExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
+      for (const example of req.badExamples) {
+        const language = unwrapOrThrowError(Language.create(example.language));
+        badExamples.push({
+          language,
+          content: example.content,
+          caption: example.caption ?? undefined,
+        });
+      }
 
-    // Create Rule aggregate
-    const ruleResult = Rule.create({
-      code: req.code,
-      title: req.title,
-      description: req.description,
-      severity: severityResult.data,
-      tags: req.tags,
-      goodExamples,
-      badExamples,
-      liveReferenceLocation: req.liveReferenceLocation ?? undefined,
-      authorId: cx.identityId,
-    });
-
-    if (!ruleResult.ok) {
-      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
-    }
-
-    const rule = ruleResult.data;
-
-    const revisionCountResult = await this.revisionRepository.countByRuleId(rule.id);
-    if (!revisionCountResult.ok) {
-      return error(
-        revisionCountResult.error.code,
-        revisionCountResult.error.message,
-        revisionCountResult.error.details,
+      const rule = unwrapOrThrowError(
+        Rule.create({
+          code: req.code,
+          title: req.title,
+          description: req.description,
+          severity,
+          tags: req.tags,
+          goodExamples,
+          badExamples,
+          liveReferenceLocation: req.liveReferenceLocation ?? undefined,
+          authorId: cx.identityId,
+        }),
       );
-    }
 
-    const revision = RuleRevision.create({
-      ruleId: rule.id,
-      revisionNumber: revisionCountResult.data + 1,
-      authorId: cx.identityId,
-      changedFields: [
-        'code',
-        'title',
-        'description',
-        'severity',
-        'status',
-        'tags',
-        'goodExamples',
-        'badExamples',
-        'liveReferenceLocation',
-      ],
-      previousValues: {},
-      newValues: {
-        code: rule.code,
-        title: rule.title,
-        description: rule.description,
-        severity: rule.severity,
-        status: rule.status,
-        tags: rule.tags.map((tag) => tag.toDTO()),
-        goodExamples: rule.goodExamples.map((example) => example.toDTO()),
-        badExamples: rule.badExamples.map((example) => example.toDTO()),
-        liveReferenceLocation: rule.liveReferenceLocation,
-      },
-      changeType: ChangeType.Created,
-    });
+      const revisionCount = await this.revisionRepository.countByRuleId(rule.id);
+      const revision = unwrapOrThrowError(
+        RuleRevision.create({
+          ruleId: rule.id,
+          revisionNumber: revisionCount + 1,
+          authorId: cx.identityId,
+          changedFields: [
+            'code',
+            'title',
+            'description',
+            'severity',
+            'status',
+            'tags',
+            'goodExamples',
+            'badExamples',
+            'liveReferenceLocation',
+          ],
+          previousValues: {},
+          newValues: {
+            code: rule.code,
+            title: rule.title,
+            description: rule.description,
+            severity: rule.severity,
+            status: rule.status,
+            tags: rule.tags.map((tag) => tag.toDTO()),
+            goodExamples: rule.goodExamples.map((example) => example.toDTO()),
+            badExamples: rule.badExamples.map((example) => example.toDTO()),
+            liveReferenceLocation: rule.liveReferenceLocation,
+          },
+          changeType: ChangeType.Created,
+        }),
+      );
 
-    if (!revision.ok) {
-      return error(revision.error.code, revision.error.message, revision.error.details);
-    }
-
-    // Persist rule + revision atomically
-    const saveResult = await this.ruleRepository.saveWithRevision(rule, revision.data);
-    if (!saveResult.ok) {
-      return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
-    }
-
-    // Convert to ClientDTO and return
-    return ok(rule.toClientDTO());
+      await this.ruleRepository.saveWithRevision(rule, revision);
+      return rule.toClientDTO();
+    }, 'Failed to create rule');
   }
 }

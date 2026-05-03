@@ -13,8 +13,8 @@
  *   与远程 Supabase/Postgres 双向同步
  * - Transaction support for atomic rule + revision saves
  *   支持事务以原子化保存规则 + 修订版本
- * - All errors mapped to canonical Result<T> type
- *   所有错误映射为标准的 Result<T> 类型
+ * - Throws structured errors on infrastructure failure
+ *   基础设施失败时抛出结构化异常
  */
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
@@ -24,15 +24,15 @@ import type {
 import type { Rule } from '../../../domain-server/aggregates/rule';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import type { RuleId } from '../../../domain-shared/value-objects/rule-id';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import { mapInfraErrorToResultError } from '@dailyuse/utils';
 import {
   PowerSyncRuleMapper,
   type PowerSyncRuleRow,
   type PowerSyncRuleWriteRow,
 } from './mappers/powersync-rule.mapper';
 import { PowerSyncRuleRevisionMapper } from './mappers/powersync-rule-revision.mapper';
-import { withCause, escapeSqlLike } from '../mapper-helpers';
+import { escapeSqlLike } from '../mapper-helpers';
 
 /**
  * PowerSync-backed Rule repository for offline-capable desktop.
@@ -133,16 +133,13 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * 保存规则（存在则更新，不存在则插入）。
    *
    * @param rule - Domain Rule aggregate to persist 要持久化的领域规则聚合根
-   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
-   *                         成功返回 ok，失败返回 error('INTERNAL_ERROR')
    */
-  async save(rule: Rule): Promise<Result<void>> {
+  async save(rule: Rule): Promise<void> {
     try {
       const row = PowerSyncRuleMapper.toPersistence(rule);
       await this._upsertRule(this.db, row);
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to save rule', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save rule'));
     }
   }
 
@@ -157,9 +154,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    *
    * @param rule - Domain Rule aggregate 领域规则聚合根
    * @param revision - Associated RuleRevision entity 关联的修订版本实体
-   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
    */
-  async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>> {
+  async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<void> {
     try {
       const ruleRow = PowerSyncRuleMapper.toPersistence(rule);
       const revRow = PowerSyncRuleRevisionMapper.toPersistence(revision);
@@ -187,9 +183,10 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         );
       });
 
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to save rule with revision', err));
+      throw toResultErrorException(
+        mapInfraErrorToResultError(err, 'Failed to save rule with revision'),
+      );
     }
   }
 
@@ -198,17 +195,16 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * 根据唯一 ID 查找规则。
    *
    * @param id - Rule ID (branded type) 规则 ID（品牌类型）
-   * @returns Result containing the Rule or null if not found
-   *          包含规则的 Result，未找到时为 null
+   * @returns The Rule or null if not found 返回规则，未找到时返回 null
    */
-  async findById(id: RuleId): Promise<Result<Rule | null>> {
+  async findById(id: RuleId): Promise<Rule | null> {
     try {
       const row = await this.db.getOptional<PowerSyncRuleRow>(`SELECT * FROM rules WHERE id = ?`, [
         id,
       ]);
-      return ok(row ? PowerSyncRuleMapper.toDomain(row) : null);
+      return row ? PowerSyncRuleMapper.toDomain(row) : null;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find rule by ID', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find rule by ID'));
     }
   }
 
@@ -217,17 +213,19 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * 根据唯一代码查找规则（例如 'DDD-001'）。
    *
    * @param code - Rule code string 规则代码字符串
-   * @returns Result containing the Rule or null if not found
+   * @returns The Rule or null if not found 返回规则，未找到时返回 null
    */
-  async findByCode(code: string): Promise<Result<Rule | null>> {
+  async findByCode(code: string): Promise<Rule | null> {
     try {
       const row = await this.db.getOptional<PowerSyncRuleRow>(
         `SELECT * FROM rules WHERE code = ?`,
         [code],
       );
-      return ok(row ? PowerSyncRuleMapper.toDomain(row) : null);
+      return row ? PowerSyncRuleMapper.toDomain(row) : null;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find rule by code', err));
+      throw toResultErrorException(
+        mapInfraErrorToResultError(err, 'Failed to find rule by code'),
+      );
     }
   }
 
@@ -239,18 +237,18 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * 结果按 updated_at 降序排列（最近更新的排在前面）。
    *
    * @param filter - Optional filter criteria 可选的过滤条件
-   * @returns Result containing array of Rule aggregates
+   * @returns Array of Rule aggregates 规则聚合数组
    */
-  async findAll(filter?: RuleFilter): Promise<Result<Rule[]>> {
+  async findAll(filter?: RuleFilter): Promise<Rule[]> {
     try {
       const { sql, params } = buildFilterWhere(filter);
       const rows = await this.db.getAll<PowerSyncRuleRow>(
         `SELECT * FROM rules${sql} ORDER BY updated_at DESC`,
         params,
       );
-      return ok(PowerSyncRuleMapper.toDomainMany(rows));
+      return PowerSyncRuleMapper.toDomainMany(rows);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to find rules', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to find rules'));
     }
   }
 
@@ -265,12 +263,12 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    *
    * @param query - Search keyword 搜索关键词
    * @param filter - Optional additional filter criteria 可选的附加过滤条件
-   * @returns Result containing matched Rule aggregates
+   * @returns Matched Rule aggregates 匹配到的规则聚合数组
    */
-  async search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>> {
+  async search(query: string, filter?: RuleFilter): Promise<Rule[]> {
     try {
       const keyword = query.trim();
-      if (!keyword) return ok([]);
+      if (!keyword) return [];
 
       const kw = `%${keyword}%`;
       const kwClause = `(code LIKE ? OR title LIKE ? OR description LIKE ? OR tags LIKE ?)`;
@@ -286,9 +284,9 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         [...kwParams, ...filterParams],
       );
 
-      return ok(PowerSyncRuleMapper.toDomainMany(rows));
+      return PowerSyncRuleMapper.toDomainMany(rows);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to search rules', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to search rules'));
     }
   }
 
@@ -297,17 +295,18 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * 根据 ID 删除规则。如果没有匹配的行，返回 NOT_FOUND。
    *
    * @param id - Rule ID to delete 要删除的规则 ID
-   * @returns Result<void> - ok on success, error('NOT_FOUND') if missing
    */
-  async delete(id: RuleId): Promise<Result<void>> {
+  async delete(id: RuleId): Promise<void> {
     try {
       const result = await this.db.execute(`DELETE FROM rules WHERE id = ?`, [id]);
       if (result.rowsAffected === 0) {
-        return error('NOT_FOUND', `Rule with ID '${id}' not found`);
+        throw toResultErrorException(
+          { code: 'NOT_FOUND', message: `Rule with ID '${id}' not found` },
+          404,
+        );
       }
-      return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to delete rule', err));
+      throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to delete rule'));
     }
   }
 
@@ -316,17 +315,19 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * 检查指定代码的规则是否已存在。
    *
    * @param code - Rule code to check 要检查的规则代码
-   * @returns Result<boolean> - ok(true) if exists, ok(false) if not
+   * @returns true if exists, false if not 存在返回 true，否则返回 false
    */
-  async exists(code: string): Promise<Result<boolean>> {
+  async exists(code: string): Promise<boolean> {
     try {
       const row = await this.db.getOptional<{ id: string }>(
         `SELECT id FROM rules WHERE code = ? LIMIT 1`,
         [code],
       );
-      return ok(row !== null);
+      return row !== null;
     } catch (err) {
-      return error('INTERNAL_ERROR', withCause('Failed to check rule existence', err));
+      throw toResultErrorException(
+        mapInfraErrorToResultError(err, 'Failed to check rule existence'),
+      );
     }
   }
 }

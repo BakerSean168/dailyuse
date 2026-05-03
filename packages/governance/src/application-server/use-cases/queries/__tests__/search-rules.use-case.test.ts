@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SearchRulesUseCase } from '../search-rules.use-case';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
-import { ok } from '@dailyuse/contracts/result';
 import { RuleStatus } from '../../../../contracts/value-objects/rule-status';
 import { RuleSeverity } from '../../../../contracts/value-objects/rule-severity';
 
@@ -67,8 +66,7 @@ function createRepositoryMock(searchImpl: IRuleRepository['search']): IRuleRepos
 
 describe('SearchRulesUseCase', () => {
   it('orders results by relevance and status weight', async () => {
-    const repository = createRepositoryMock(async () =>
-      ok([
+    const repository = createRepositoryMock(async () => [
         createRuleFixture({
           id: 'rule-1',
           code: 'DDD-200',
@@ -93,7 +91,7 @@ describe('SearchRulesUseCase', () => {
           status: RuleStatus.Active,
           updatedAt: new Date('2026-02-11T00:00:00.000Z'),
         }),
-      ]),
+      ],
     );
 
     const useCase = new SearchRulesUseCase(repository);
@@ -109,7 +107,7 @@ describe('SearchRulesUseCase', () => {
   });
 
   it('returns validation error for empty query', async () => {
-    const repository = createRepositoryMock(async () => ok([]));
+    const repository = createRepositoryMock(async () => []);
     const useCase = new SearchRulesUseCase(repository);
 
     const result = await useCase.execute({ query: '   ' });
@@ -123,8 +121,7 @@ describe('SearchRulesUseCase', () => {
   });
 
   it('applies pagination to scored results', async () => {
-    const repository = createRepositoryMock(async () =>
-      ok([
+    const repository = createRepositoryMock(async () => [
         createRuleFixture({
           id: 'rule-a',
           code: 'DDD-010',
@@ -149,7 +146,7 @@ describe('SearchRulesUseCase', () => {
           status: RuleStatus.Deprecated,
           updatedAt: new Date('2026-02-10T00:00:00.000Z'),
         }),
-      ]),
+      ],
     );
 
     const useCase = new SearchRulesUseCase(repository);

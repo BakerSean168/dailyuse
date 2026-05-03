@@ -21,7 +21,7 @@ This duality causes:
 We will **unify all operation results** using the **Result Pattern** defined in `@dailyuse/contracts/result`.
 
 ### 1. The Single Source of Truth
-- **Module**: `@dailyuse/contracts/result` is the **ONLY** legal way to return outcomes from Domain and Application layers.
+- **Module**: `@dailyuse/contracts/result` is the **ONLY** legal way to return outcomes from Application-facing boundaries and external APIs.
 - **Legacy**: `@dailyuse/contracts/response` is **DEPRECATED** and will be removed.
 
 ### 2. Standard Schema
@@ -47,7 +47,8 @@ interface Failure {
 ```
 
 ### 3. Separation of Concerns
-- **Domain Layer**: Returns `Result<T>`. Knows nothing about HTTP 200/404.
+- **Domain Layer**: May return domain-specific `Result<T>` for validation/business-rule operations, but repositories and low-level persistence ports are allowed to throw structured exceptions.
+- **Application Layer / Module API**: Returns `Result<T>` to callers and is the preferred boundary for converting thrown exceptions into failures.
 - **Infrastructure (Web) Layer**: Maps `Result.code` to HTTP Status.
     - `ResultCode.NOT_FOUND` -> 404
     - `ResultCode.PERMISSION_DENIED` -> 403
@@ -62,6 +63,7 @@ interface Failure {
     - Requires refactoring existing code using `ResponseBuilder` or `success: boolean`.
 
 ## Migration Strategy
-1. Update `ExpressResponseHelper` to consume `Result<T>` instead of legacy types.
-2. Mark `contracts/src/response` as `@deprecated`.
-3. Bulk refactor Controllers to use new Helper.
+1. Update transport adapters to consume `Result<T>` instead of legacy types.
+2. Keep persistence interfaces free to throw structured errors where that keeps use cases simpler.
+3. Mark `contracts/src/response` as `@deprecated`.
+4. Bulk refactor Controllers/module APIs to use shared Result helpers.
