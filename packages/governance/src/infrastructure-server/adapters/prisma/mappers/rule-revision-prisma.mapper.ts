@@ -1,19 +1,27 @@
 /**
- * RuleRevisionPrismaMapper — Prisma ↔ Domain 转换
+ * RuleRevisionPrismaMapper — Bidirectional mapping between Prisma RuleRevision rows and domain entity.
+ * RuleRevisionPrismaMapper —— Prisma RuleRevision 行数据与领域实体之间的双向映射。
  *
+ * Responsibilities:
  * 职责：
- * - RuleRevision 分表（ruleRevision）与领域实体之间的双向映射
- * - JSON 字段解析：changedFields、previousValues、newValues
- * - 从 RuleRevision Repository 中提取的内联映射逻辑，集中复用
+ * - toDomain: PrismaRuleRevision → RuleRevision entity (defensive JSON parsing)
+ *   toDomain: PrismaRuleRevision → RuleRevision 实体（防御性 JSON 解析）
+ * - toPersistence: RuleRevision → Prisma write format (serialize arrays/objects to JSON strings)
+ *   toPersistence: RuleRevision → Prisma 写入格式（将数组/对象序列化为 JSON 字符串）
+ * - JSON field parsing: changedFields (string[]), previousValues/newValues (Record)
+ *   JSON 字段解析：changedFields (string[])、previousValues/newValues (Record)
  *
- * SQLite 兼容：
- * - changedFields / previousValues / newValues 均存为 TEXT（JSON 字符串）
- * - 统一使用 parseStringArray / parseRecord 防御性解析
- * - DateTime 字段通过 fromDbDate 处理 string / Date 两种形式
+ * SQLite compatibility notes:
+ * SQLite 兼容性说明：
+ * - changedFields / previousValues / newValues stored as TEXT (JSON string)
+ *   changedFields / previousValues / newValues 存储为 TEXT（JSON 字符串）
+ * - Defensive parsing via parseStringArray / parseRecord with fallback defaults
+ *   通过 parseStringArray / parseRecord 防御性解析，带回退默认值
+ * - RuleRevision is immutable audit record: only create, no updatedAt
+ *   RuleRevision 是不可变审计记录：仅支持 create，无 updatedAt 字段
  *
- * 不负责：
- * - Rule 主表映射（见 rule-prisma.mapper.ts）
- * - 数据库查询逻辑
+ * @internal Persistence mapper — not part of the public API.
+ * @internal 持久化映射器 — 非公开 API。
  */
 
 import type { RuleRevision as PrismaRuleRevision } from '@dailyuse/database';
@@ -34,9 +42,14 @@ import type { ChangeType } from '../../../../domain-shared/value-objects/change-
 
 export class RuleRevisionPrismaMapper {
   /**
-   * Prisma RuleRevision → Domain RuleRevision 实体
+   * Converts a Prisma row to a domain RuleRevision entity.
+   * 将 Prisma 行数据转换为领域 RuleRevision 实体。
    *
-   * 用于从数据库加载修订记录。
+   * Defensively parses JSON fields with fallback defaults.
+   * 对 JSON 字段进行防御性解析，带回退默认值。
+   *
+   * @param raw - Prisma RuleRevision row from database 从数据库获取的 Prisma RuleRevision 行数据
+   * @returns Hydrated RuleRevision domain entity 水合后的 RuleRevision 领域实体
    */
   static toDomain(raw: PrismaRuleRevision): RuleRevision {
     return RuleRevision.load({
@@ -53,13 +66,15 @@ export class RuleRevisionPrismaMapper {
   }
 
   /**
-   * Domain RuleRevision 实体 → Prisma 写入格式
+   * Converts a domain RuleRevision entity to Prisma write format.
+   * 将领域 RuleRevision 实体转换为 Prisma 写入格式。
    *
-   * RuleRevision 是不可变审计记录，仅支持 create，无 updatedAt。
+   * RuleRevision is an immutable audit record: only create, no updatedAt.
+   * RuleRevision 是不可变审计记录：仅支持 create，无 updatedAt。
    *
-   * SQLite 注意事项：
-   * - changedFields / previousValues / newValues 序列化为 JSON 字符串
-   * - Set 类型的 changedFields 需先展开为数组
+   * @param revision - Domain RuleRevision entity 领域 RuleRevision 实体
+   * @returns Object suitable for Prisma create operations
+   *          适用于 Prisma create 操作的对象
    */
   static toPersistence(revision: RuleRevision): Omit<PrismaRuleRevision, never> {
     return {
@@ -75,7 +90,7 @@ export class RuleRevisionPrismaMapper {
     };
   }
 
-  /** 批量转换（read-side 常用） */
+  /** Batch converts multiple rows to domain entities. 批量将多行数据转换为领域实体。 */
   static toDomainMany(raws: PrismaRuleRevision[]): RuleRevision[] {
     return raws.map((raw) => RuleRevisionPrismaMapper.toDomain(raw));
   }

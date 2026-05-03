@@ -1,15 +1,36 @@
 /**
- * Infrastructure Server Layer - Barrel Export.
- * 基础设施服务端层 - 统一导出。
+ * Infrastructure Server Layer — Barrel Export.
+ * 基础设施服务端层 —— 统一导出。
  *
- * Server-side infrastructure:
- * 服务端基础设施：
- * - Repository implementations (Prisma, PowerSync)
- *   仓储实现（Prisma、PowerSync）
- * - Persistence mappers
- *   持久化映射器
- * - Explicit composition root and runtime assembly
- *   显式组合根与运行时组装
+ * This barrel exports the public surface of the server-side infrastructure layer.
+ * 本 barrel 导出服务端基础设施层的公开接口。
+ *
+ * Expected folder structure for each module's infrastructure-server:
+ * 每个模块 infrastructure-server 的标准文件夹结构：
+ *
+ * ```
+ * infrastructure-server/
+ *   adapters/
+ *     prisma/
+ *       mappers/           ← Entity ↔ Prisma row mapping
+ *       <entity>-prisma.repository.ts
+ *     powersync/
+ *       mappers/           ← Entity ↔ SQLite row mapping
+ *       <entity>-powersync.repository.ts
+ *     mapper-helpers.ts    ← Shared parsing utilities
+ *   <module>.module.ts     ← Composition root (create<Module>Module factory)
+ *   powersync.ts           ← PowerSync convenience composition root (optional)
+ *   index.ts               ← This barrel file
+ * ```
+ *
+ * Export organization:
+ * 导出组织原则：
+ * - Concrete repository implementations are marked @internal — use domain interfaces instead
+ *   具体仓储实现标记为 @internal —— 请改用领域接口
+ * - Composition root types (ModuleDependencies, ModuleInstance, ApplicationPort) are public
+ *   组合根类型（ModuleDependencies、ModuleInstance、ApplicationPort）为公开 API
+ * - Factory functions (create<Module>Module) are the primary entry point
+ *   工厂函数（create<Module>Module）是主要入口点
  */
 
 // ============ Adapters - Prisma ============

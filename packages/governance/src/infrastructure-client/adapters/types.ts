@@ -1,11 +1,22 @@
 /**
- * Governance Module - Adapter Types.
- * 治理模块 - 适配器类型。
+ * Governance Module — Adapter Types.
+ * 治理模块 —— 适配器类型。
  *
- * Local transport interfaces for dependency inversion.
- * 用于依赖倒置的本地传输接口。
- * Modules define their own transport interfaces and accept injected implementations.
- * 模块定义自己的传输接口并接受注入的实现。
+ * Local transport interfaces for dependency inversion at the transport layer.
+ * 传输层依赖倒置的本地传输接口。
+ *
+ * Each module defines its own transport interfaces (IResultHttpClient, IResultIpcClient)
+ * and accepts injected implementations from the App level. This avoids coupling to
+ * specific HTTP/IPC libraries at the package level.
+ * 每个模块定义自己的传输接口（IResultHttpClient、IResultIpcClient），
+ * 并从应用层接受注入的实现。这避免了在包级别耦合具体的 HTTP/IPC 库。
+ *
+ * Re-exported types:
+ * 重新导出的类型：
+ * - IRuleApiClient: port interface that HTTP/IPC adapters both implement
+ *   IRuleApiClient：HTTP 和 IPC 适配器共同实现的端口接口
+ * - Request/Response types: from contracts/api for type-safe transport
+ *   请求/响应类型：来自 contracts/api，用于类型安全的传输
  */
 
 import type { Result } from '@dailyuse/contracts/result';

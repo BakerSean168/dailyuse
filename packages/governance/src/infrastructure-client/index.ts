@@ -1,8 +1,18 @@
 /**
- * Infrastructure Client Layer - Barrel Export
- * 基础设施客户端层 - 统一导出
+ * Infrastructure Client Layer — Barrel Export.
+ * 基础设施客户端层 —— 统一导出。
  *
- * 提供规则模块的 HTTP 和 IPC 适配器实现
+ * Client-side infrastructure provides transport adapters that implement
+ * the same port interface (IRuleApiClient) over different channels:
+ * 客户端基础设施提供在同一端口接口（IRuleApiClient）上、通过不同通道实现的传输适配器：
+ *
+ * - HTTP adapter: REST API calls for web/desktop
+ *   HTTP 适配器：面向 Web/Desktop 的 REST API 调用
+ * - IPC adapter: Electron IPC for desktop (main↔renderer)
+ *   IPC 适配器：面向 Electron 桌面端的 IPC 通信（main↔renderer）
+ *
+ * Factory pattern: `createGovernanceHttpAdapters(client)` / `createGovernanceIpcAdapters(client)`
+ * 工厂模式：通过工厂函数一次性创建所有适配器
  */
 
 // Types (port interfaces + transport interfaces)

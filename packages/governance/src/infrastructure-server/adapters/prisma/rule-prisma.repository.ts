@@ -1,14 +1,23 @@
 /**
- * Rule Prisma Repository
- * 规则仓储 - Prisma实现
+ * RulePrismaRepository — Prisma-backed IRuleRepository implementation.
+ * RulePrismaRepository —— 基于 Prisma 的 IRuleRepository 实现。
  *
- * Implements IRuleRepository using Prisma ORM with PostgreSQL/SQLite database
+ * Implements IRuleRepository using Prisma ORM with PostgreSQL/SQLite.
+ * 使用 Prisma ORM（PostgreSQL/SQLite）实现 IRuleRepository 接口。
  *
- * Responsibilities:
- * - CRUD operations for Rule aggregate
- * - Query operations with filters
- * - Domain ↔ Prisma model conversion
- * - Transaction management (future)
+ * Key characteristics:
+ * 主要特性：
+ * - Upsert semantics: save() handles both insert and update
+ *   Upsert 语义：save() 同时处理插入和更新
+ * - Atomic saveWithRevision: rule + revision persisted in a single transaction
+ *   原子化 saveWithRevision：规则 + 修订版本在单个事务中持久化
+ * - All methods return Result<T> — never throws
+ *   所有方法返回 Result<T> —— 永不抛出异常
+ * - Filter support: status (single/array), severity, tags (OR logic)
+ *   过滤支持：状态（单值/数组）、严重级别、标签（OR 逻辑）
+ *
+ * @internal Concrete Prisma implementation — consumers should use IRuleRepository interface.
+ * @internal Prisma 具体实现 —— 消费方应使用 IRuleRepository 接口。
  */
 
 import type { Prisma, PrismaClient } from '@dailyuse/database';
@@ -38,9 +47,15 @@ export class RulePrismaRepository implements IRuleRepository {
   }
 
   /**
-   * Saves rule (insert or update)
+   * Saves a rule (upsert: insert if new, update if existing).
+   * 保存规则（存在则更新，不存在则插入）。
    *
-   * Uses upsert to handle both create and update cases
+   * Uses Prisma upsert to handle both cases in a single operation.
+   * 使用 Prisma upsert 在单次操作中处理两种情况。
+   *
+   * @param rule - Domain Rule aggregate to persist 要持久化的领域规则聚合根
+   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
+   *                         成功返回 ok，失败返回 error('INTERNAL_ERROR')
    */
   async save(rule: Rule): Promise<Result<void>> {
     try {
@@ -67,7 +82,15 @@ export class RulePrismaRepository implements IRuleRepository {
   }
 
   /**
-   * Saves rule and revision atomically (single transaction)
+   * Atomically saves a rule and its associated revision in a single transaction.
+   * 在单个事务中原子化保存规则及其关联的修订版本。
+   *
+   * Uses Prisma interactive transaction to ensure both operations succeed or fail together.
+   * 使用 Prisma 交互式事务确保两个操作同时成功或失败。
+   *
+   * @param rule - Domain Rule aggregate 领域规则聚合根
+   * @param revision - Associated RuleRevision entity 关联的修订版本实体
+   * @returns Result<void> - ok on success, error('INTERNAL_ERROR') on failure
    */
   async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>> {
     try {
@@ -100,7 +123,12 @@ export class RulePrismaRepository implements IRuleRepository {
   }
 
   /**
-   * Finds rule by ID
+   * Finds a rule by its unique ID.
+   * 根据唯一 ID 查找规则。
+   *
+   * @param id - Rule ID (branded type) 规则 ID（品牌类型）
+   * @returns Result containing the Rule or null if not found
+   *          包含规则的 Result，未找到时为 null
    */
   async findById(id: RuleId): Promise<Result<Rule | null>> {
     try {
@@ -120,7 +148,11 @@ export class RulePrismaRepository implements IRuleRepository {
   }
 
   /**
-   * Finds rule by unique code
+   * Finds a rule by its unique code (e.g. 'DDD-001').
+   * 根据唯一代码查找规则（例如 'DDD-001'）。
+   *
+   * @param code - Rule code string 规则代码字符串
+   * @returns Result containing the Rule or null if not found
    */
   async findByCode(code: string): Promise<Result<Rule | null>> {
     try {
@@ -140,12 +172,21 @@ export class RulePrismaRepository implements IRuleRepository {
   }
 
   /**
-   * Finds all rules matching filter
+   * Retrieves all rules, optionally filtered by status/severity/tags.
+   * 获取所有规则，可按状态/严重级别/标签过滤。
    *
-   * Supports filtering by:
-   * - status (single or array)
-   * - severity (single value)
-   * - tags (OR logic - matches if any tag matches)
+   * Results are ordered by updatedAt DESC (most recently updated first).
+   * 结果按 updatedAt 降序排列（最近更新的排在前面）。
+   *
+   * Filter semantics:
+   * 过滤语义：
+   * - status: single value or array (IN clause) 状态：单值或数组（IN 子句）
+   * - severity: exact match 严重级别：精确匹配
+   * - tags: OR logic — matches if any tag matches (JSON contains)
+   *   标签：OR 逻辑 —— 匹配任一标签即可（JSON 包含匹配）
+   *
+   * @param filter - Optional filter criteria 可选的过滤条件
+   * @returns Result containing array of Rule aggregates
    */
   async findAll(filter?: RuleFilter): Promise<Result<Rule[]>> {
     try {
@@ -252,10 +293,14 @@ export class RulePrismaRepository implements IRuleRepository {
   }
 
   /**
-   * Deletes rule (hard delete)
+   * Deletes a rule by ID (hard delete).
+   * 根据 ID 删除规则（硬删除）。
    *
-   * Note: In production, this should check for revisions first
-   * and only allow deletion of Draft rules without revisions
+   * Returns NOT_FOUND if the rule does not exist.
+   * 如果规则不存在，返回 NOT_FOUND。
+   *
+   * @param id - Rule ID to delete 要删除的规则 ID
+   * @returns Result<void> - ok on success, error('NOT_FOUND') if missing, error('INTERNAL_ERROR') on failure
    */
   async delete(id: RuleId): Promise<Result<void>> {
     try {

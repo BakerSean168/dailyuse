@@ -1,16 +1,25 @@
 /**
- * RulePrismaMapper — Prisma ↔ Domain 转换
+ * RulePrismaMapper — Bidirectional mapping between Prisma Rule rows and domain Rule aggregate.
+ * RulePrismaMapper —— Prisma Rule 行数据与领域 Rule 聚合根之间的双向映射。
  *
+ * Responsibilities:
  * 职责：
- * - Rule 主表（PrismaRule）与 Rule 领域聚合根之间的双向映射
- * - JSON 字段的序列化 / 反序列化（tags、goodExamples、badExamples）
- * - SQLite 兼容：日期字段统一使用 toSqliteDate / fromSqliteDate 处理，
- *   Prisma 在 SQLite 下返回的 DateTime 已是 JS Date，但 JSON.stringify 对
- *   Date 无损，因此写入时统一转为 ISO 字符串以保证跨驱动一致性。
+ * - toDomain: PrismaRule → Rule aggregate (deserialize JSON fields, restore value objects)
+ *   toDomain: PrismaRule → Rule 聚合根（反序列化 JSON 字段，重建值对象）
+ * - toPersistence: Rule → Prisma write format (serialize value objects to JSON strings)
+ *   toPersistence: Rule → Prisma 写入格式（将值对象序列化为 JSON 字符串）
+ * - JSON serialization for tags, goodExamples, badExamples (stored as TEXT in SQLite)
+ *   标签、goodExamples、badExamples 的 JSON 序列化（SQLite 中存储为 TEXT）
  *
- * 不负责：
- * - 子实体 RuleRevision 的映射（见 rule-revision-prisma.mapper.ts）
- * - 数据库查询逻辑
+ * SQLite compatibility notes:
+ * SQLite 兼容性说明：
+ * - DateTime fields: Prisma returns JS Date objects on both PostgreSQL and SQLite drivers
+ *   DateTime 字段：Prisma 在 PostgreSQL 和 SQLite 驱动下都返回 JS Date 对象
+ * - JSON fields: stored as TEXT, deserialized via parseJson with typed fallback
+ *   JSON 字段：存储为 TEXT，通过 parseJson 带类型化回退值反序列化
+ *
+ * @internal Persistence mapper — not part of the public API.
+ * @internal 持久化映射器 — 非公开 API。
  */
 
 import type { Rule as PrismaRule } from '@dailyuse/database';
@@ -30,9 +39,17 @@ import { fromDbDate, parseJson } from '../../mapper-helpers';
 
 export class RulePrismaMapper {
   /**
-   * Prisma Rule → Domain Rule 聚合根
+   * Converts a Prisma row to a domain Rule aggregate.
+   * 将 Prisma 行数据转换为领域 Rule 聚合根。
    *
-   * 用于从数据库加载规则。
+   * Deserializes JSON fields (tags, goodExamples, badExamples) and
+   * reconstructs value objects (RuleTag, CodeSnippet).
+   * 反序列化 JSON 字段（tags、goodExamples、badExamples）并重建值对象。
+   *
+   * @param raw - Prisma Rule row from database 从数据库获取的 Prisma Rule 行数据
+   * @returns Hydrated Rule domain aggregate 水合后的 Rule 领域聚合根
+   * @throws If tag values or code snippets in the database are invalid
+   *         如果数据库中的标签值或代码片段无效则抛出异常
    */
   static toDomain(raw: PrismaRule): Rule {
     const tags = parseJson<string[]>(raw.tags, []);
@@ -80,12 +97,15 @@ export class RulePrismaMapper {
   }
 
   /**
-   * Domain Rule 聚合根 → Prisma 写入格式
+   * Converts a domain Rule aggregate to Prisma write format.
+   * 将领域 Rule 聚合根转换为 Prisma 写入格式。
    *
+   * Excludes createdAt / updatedAt (managed by caller or Prisma).
    * 排除 createdAt / updatedAt（由调用方或 Prisma 自动管理）。
    *
-   * SQLite 注意事项：tags / goodExamples / badExamples 以 JSON 字符串写入，
-   * Prisma 映射为 String 列，查询时使用 contains 做字符串匹配。
+   * @param rule - Domain Rule aggregate 领域 Rule 聚合根
+   * @returns Object suitable for Prisma create/update operations
+   *          适用于 Prisma create/update 操作的对象
    */
   static toPersistence(rule: Rule): Omit<PrismaRule, 'createdAt' | 'updatedAt'> {
     return {
@@ -105,7 +125,7 @@ export class RulePrismaMapper {
     };
   }
 
-  /** 批量转换（read-side 常用） */
+  /** Batch converts multiple rows to domain aggregates. 批量将多行数据转换为领域聚合根。 */
   static toDomainMany(raws: PrismaRule[]): Rule[] {
     return raws.map((raw) => RulePrismaMapper.toDomain(raw));
   }

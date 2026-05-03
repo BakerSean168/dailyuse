@@ -1,9 +1,20 @@
 /**
- * Governance HTTP Adapters - Registration.
- * 治理 HTTP 适配器 - 注册入口。
+ * Governance HTTP Adapters — Factory & Registration.
+ * 治理 HTTP 适配器 —— 工厂与注册入口。
  *
- * Factory functions for creating HTTP-based governance adapters.
- * 创建基于 HTTP 的治理适配器的工厂函数。
+ * Factory pattern: creates all HTTP-based adapters in a single call.
+ * 工厂模式：一次调用创建所有基于 HTTP 的适配器。
+ *
+ * Usage:
+ * 用法：
+ * ```ts
+ * const adapters = createGovernanceHttpAdapters(httpClient);
+ * // adapters.rule.createRule(...)  ← all adapters ready
+ * ```
+ *
+ * Individual adapter factories (createRuleHttpAdapter) are also exported
+ * for granular control in tests.
+ * 单独的适配器工厂（createRuleHttpAdapter）也已导出，方便测试中精细控制。
  */
 
 import type { IResultHttpClient } from '../types';
