@@ -34,12 +34,9 @@ import type {
   TaskGoalBindingDTO,
 } from '@dailyuse/contracts/task';
 import type { TaskFolderId } from '@dailyuse/contracts/primitives';
-import type {
-  ITaskTemplateApiClient,
-  ITaskInstanceApiClient,
-  ITaskDependencyApiClient,
-  TaskTemplateListParams,
-} from '../infrastructure-client/adapters/types';
+import type { ITaskTemplateApiClient, TaskTemplateListParams } from './ports/task-template-api-client.port';
+import type { ITaskInstanceApiClient } from './ports/task-instance-api-client.port';
+import type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
 import { TaskTemplate } from '../domain-client/aggregates/task-template';
 import { TaskInstance } from '../domain-client/aggregates/task-instance';
 import { TaskTemplateId } from '../domain-shared/value-objects/task-template-id';
@@ -137,7 +134,9 @@ function parseGoalBinding(dto: TaskGoalBindingDTO): TaskGoalBinding {
   };
 }
 
-export class TaskClientService {
+import type { TaskClientPort } from './task-client.port';
+
+export class TaskClientService implements TaskClientPort {
   constructor(
     private readonly templateApi: ITaskTemplateApiClient,
     private readonly instanceApi: ITaskInstanceApiClient,
@@ -361,4 +360,14 @@ export class TaskClientService {
   async deleteDependency(id: string): Promise<Result<void>> {
     return this.dependencyApi.deleteDependency(id);
   }
+}
+
+// ===== Factory =====
+
+export function createTaskClientService(
+  templateApi: ITaskTemplateApiClient,
+  instanceApi: ITaskInstanceApiClient,
+  dependencyApi: ITaskDependencyApiClient,
+): TaskClientService {
+  return new TaskClientService(templateApi, instanceApi, dependencyApi);
 }

@@ -13,4 +13,5 @@
  * - 支持依赖注入
  */
 
-export { GovernanceClientService } from './governance-client-service';
+export { GovernanceClientService, createGovernanceClientService } from './governance-client-service';
+export type { GovernanceClientPort } from './governance-client-service';

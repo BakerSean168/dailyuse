@@ -32,7 +32,29 @@ import type {
   RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 
-export class AuthClientService {
+// ─── Client Application Port ────────────────────────────────────────────────
+
+/** High-level client-side operations for the authentication module. */
+export interface AuthenticationClientPort {
+  loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>>;
+  loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>>;
+  registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>>;
+  registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>>;
+  sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>>;
+  refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>>;
+  logout(): Promise<Result<void>>;
+  getCurrentUser(): Promise<Result<GetCurrentUserRes>>;
+  listSessions(): Promise<Result<ListSessionsRes>>;
+  revokeSession(req: RevokeSessionReq): Promise<Result<void>>;
+  changePassword(req: ChangePasswordReq): Promise<Result<void>>;
+  forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
+  resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
+  enterGuestMode(): Promise<Result<GuestModeRes>>;
+  listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
+  removeRememberedAccount(identityId: string): Promise<Result<void>>;
+}
+
+export class AuthClientService implements AuthenticationClientPort {
   constructor(private readonly apiClient: IAuthApiClient) {
     this.loginByEmail = this.loginByEmail.bind(this);
     this.loginByPhone = this.loginByPhone.bind(this);
@@ -129,4 +151,11 @@ export class AuthClientService {
   async removeRememberedAccount(identityId: string): Promise<Result<void>> {
     return this.apiClient.removeRememberedAccount(identityId);
   }
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/** Create an `AuthClientService` from any transport adapter. */
+export function createAuthenticationClientService(apiClient: IAuthApiClient): AuthClientService {
+  return new AuthClientService(apiClient);
 }

@@ -10,7 +10,8 @@
  */
 
 // ===== Port Interfaces / 端口接口 =====
-export type { IReminderApiClient } from '../infrastructure-client/adapters/types';
+export type { IReminderApiClient } from './ports/reminder-api-client.port';
+export type { ReminderClientPort } from './reminder-client.port';
 
 // ===== Client Service / 客户端服务 =====
-export { ReminderClientService } from './reminder-client-service';
+export { ReminderClientService, createReminderClientService } from './reminder-client-service';

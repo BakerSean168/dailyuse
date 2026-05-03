@@ -6,11 +6,11 @@
  */
 
 // ===== Port Interfaces =====
-export type {
-  ITaskTemplateApiClient,
-  ITaskInstanceApiClient,
-  ITaskDependencyApiClient,
-} from '../infrastructure-client/adapters/types';
+export type { ITaskTemplateApiClient, TaskTemplateListParams } from './ports/task-template-api-client.port';
+export type { ITaskInstanceApiClient } from './ports/task-instance-api-client.port';
+export type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
+export type { TaskClientPort } from './task-client.port';
 
-export { TaskClientService } from './task-client-service';
+// ===== Client Service =====
+export { TaskClientService, createTaskClientService } from './task-client-service';
 export * from './types/task-dag.types';

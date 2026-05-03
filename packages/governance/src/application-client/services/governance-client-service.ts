@@ -26,8 +26,21 @@ import type {
 } from '../../contracts/api';
 import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
+// ─── Client Application Port ────────────────────────────────────────────────
+
+/** High-level client-side operations for the governance module. */
+export interface GovernanceClientPort {
+  createRule(req: CreateRuleReq): Promise<Result<RuleClientDTO>>;
+  getRule(req: { id: string } | { code: string }): Promise<Result<RuleClientDTO>>;
+  updateRule(ruleId: string, req: UpdateRuleReq): Promise<Result<RuleClientDTO>>;
+  deleteRule(req: { id: string }): Promise<Result<DeleteRuleRes>>;
+  listRules(query?: ListRulesQuery): Promise<Result<ListRulesRes>>;
+  searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>>;
+  getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>>;
+}
+
 /** Governance frontend service facade. 治理前端服务门面。 */
-export class GovernanceClientService {
+export class GovernanceClientService implements GovernanceClientPort {
   constructor(private readonly ruleApiClient: IRuleApiClient) {
     this.createRule = this.createRule.bind(this);
     this.getRule = this.getRule.bind(this);
@@ -72,4 +85,11 @@ export class GovernanceClientService {
   async getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {
     return this.ruleApiClient.getRevisions(query);
   }
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/** Create a `GovernanceClientService` from any transport adapter. */
+export function createGovernanceClientService(ruleApiClient: IRuleApiClient): GovernanceClientService {
+  return new GovernanceClientService(ruleApiClient);
 }

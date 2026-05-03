@@ -1,9 +1,4 @@
 /**
- * @deprecated Extract operations to individual service files following governance pattern.
- * Each API operation should have its own service file for better maintainability.
- */
-
-/**
  * Reminder Client Service
  *
  * Constructor-injected application service for reminder management.
@@ -27,9 +22,11 @@ import type {
   GetReminderTodayScheduleRes,
 } from '@dailyuse/contracts/reminder';
 import type { ControlMode } from '@dailyuse/contracts/reminder';
-import type { IReminderApiClient } from '../infrastructure-client/adapters/types';
+import type { IReminderApiClient } from './ports/reminder-api-client.port';
 
-export class ReminderClientService {
+import type { ReminderClientPort } from './reminder-client.port';
+
+export class ReminderClientService implements ReminderClientPort {
   constructor(private readonly reminderApi: IReminderApiClient) {
     this.createReminderTemplate = this.createReminderTemplate.bind(this);
     this.getReminderTemplate = this.getReminderTemplate.bind(this);
@@ -162,4 +159,10 @@ export class ReminderClientService {
   ): Promise<Result<UserReminderPreferencesClientDTO>> {
     return (this.reminderApi as any).updatePreferences(data);
   }
+}
+
+// ===== Factory =====
+
+export function createReminderClientService(reminderApi: IReminderApiClient): ReminderClientService {
+  return new ReminderClientService(reminderApi);
 }

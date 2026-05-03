@@ -42,7 +42,18 @@ function accountFromDTO(dto: AccountClientDTO): Account {
   });
 }
 
-export class AccountClientService {
+// ─── Client Application Port ────────────────────────────────────────────────
+
+/** High-level client-side operations for the account module. */
+export interface AccountClientPort {
+  getMyProfile(): Promise<Result<Account>>;
+  updateMyProfile(request: UpdateAccountReq): Promise<Result<Account>>;
+  checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>>;
+  updateSettings(request: UpdateAccountSettingsReq): Promise<Result<UpdateAccountSettingsRes>>;
+  closeAccount(request: CloseAccountReq): Promise<Result<void>>;
+}
+
+export class AccountClientService implements AccountClientPort {
   constructor(private readonly apiClient: IAccountApiClient) {
     this.getMyProfile = this.getMyProfile.bind(this);
     this.updateMyProfile = this.updateMyProfile.bind(this);
@@ -74,4 +85,11 @@ export class AccountClientService {
   async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
     return this.apiClient.closeAccount(request);
   }
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/** Create an `AccountClientService` from any transport adapter. */
+export function createAccountClientService(apiClient: IAccountApiClient): AccountClientService {
+  return new AccountClientService(apiClient);
 }

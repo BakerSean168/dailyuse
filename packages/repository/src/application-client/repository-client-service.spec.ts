@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ok } from '@dailyuse/contracts/result';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
-import type { IRepositoryApiClient } from '../infrastructure-client/adapters/types';
+import type { IRepositoryApiClient } from './ports/repository-api-client.port';
 import { RepositoryClientService } from './repository-client-service';
 
 function createRepositoryDto(overrides: Partial<RepositoryClientDTO> = {}): RepositoryClientDTO {

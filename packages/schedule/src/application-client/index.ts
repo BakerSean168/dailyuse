@@ -6,27 +6,9 @@
  */
 
 // ===== Port Interfaces =====
-export type {
-  IScheduleEventApiClient,
-  IScheduleTaskApiClient,
-} from '../infrastructure-client/adapters/types';
+export type { IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
+export type { IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
+export type { ScheduleClientPort } from './schedule-client.port';
 
-export { ScheduleClientService } from './schedule-client-service';
-
-// ===== Singleton Proxy =====
-let _scheduleApplicationService: any = null;
-
-export function setScheduleApplicationService(service: any) {
-  _scheduleApplicationService = service;
-}
-
-export const scheduleApplicationService: any = new Proxy({} as any, {
-  get(_target, prop) {
-    if (!_scheduleApplicationService) {
-      throw new Error(
-        'scheduleApplicationService not initialized. Call setScheduleApplicationService first.',
-      );
-    }
-    return (_scheduleApplicationService as any)[prop];
-  },
-});
+// ===== Client Service =====
+export { ScheduleClientService, createScheduleClientService } from './schedule-client-service';

@@ -19,9 +19,11 @@ import type {
   EditorContentReadResult,
   IEditorApiClient,
   SaveEditorContentRequest,
-} from '../infrastructure-client/adapters/types';
+} from './ports/editor-api-client.port';
 
-export class EditorClientService {
+import type { EditorClientPort } from './editor-client.port';
+
+export class EditorClientService implements EditorClientPort {
   constructor(private readonly editorApi: IEditorApiClient) {}
 
   listWorkspaces(): Promise<Result<EditorWorkspaceClientDTO[]>> {
@@ -136,4 +138,10 @@ export class EditorClientService {
   searchResources(request: SearchRequest): Promise<Result<SearchResponse>> {
     return this.editorApi.searchResources(request);
   }
+}
+
+// ===== Factory =====
+
+export function createEditorClientService(editorApi: IEditorApiClient): EditorClientService {
+  return new EditorClientService(editorApi);
 }

@@ -1,9 +1,4 @@
 /**
- * @deprecated Extract operations to individual service files following governance pattern.
- * Each API operation should have its own service file for better maintainability.
- */
-
-/**
  * Repository Client Service
  *
  * Constructor-injected application service for repository management.
@@ -33,7 +28,7 @@ import type {
   CreateResourceRequest,
   UpdateResourceRequest,
   UploadResourcesRequest,
-} from '../infrastructure-client/adapters/types';
+} from './ports/repository-api-client.port';
 import { Repository } from '../domain-client/aggregates/Repository';
 import { RepositoryId } from '../domain-shared/value-objects/repository-id';
 import { RepositoryConfig } from '../domain-shared/value-objects/repository-config';
@@ -85,7 +80,9 @@ function repositoryFromDTO(dto: RepositoryClientDTO): Result<Repository> {
   );
 }
 
-export class RepositoryClientService {
+import type { RepositoryClientPort } from './repository-client.port';
+
+export class RepositoryClientService implements RepositoryClientPort {
   constructor(private readonly repositoryApi: IRepositoryApiClient) {
     this.getCurrentRepository = this.getCurrentRepository.bind(this);
     this.createFolder = this.createFolder.bind(this);
@@ -235,4 +232,10 @@ export class RepositoryClientService {
   async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
     return this.repositoryApi.deleteBookmark(repositoryId, bookmarkId);
   }
+}
+
+// ===== Factory =====
+
+export function createRepositoryClientService(repositoryApi: IRepositoryApiClient): RepositoryClientService {
+  return new RepositoryClientService(repositoryApi);
 }

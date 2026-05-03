@@ -1,10 +1,4 @@
 /**
- * @deprecated Extract operations to individual service files following governance pattern.
- * Each API operation should have its own service file for better maintainability.
- * Example: create-goal.ts, update-goal.ts, delete-goal.ts, list-goals.ts
- */
-
-/**
  * Goal Client Service
  *
  * Constructor-injected application service for goal management.
@@ -41,11 +35,9 @@ import type {
   FocusModeClientDTO,
   ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
-import type {
-  IGoalApiClient,
-  IGoalFolderApiClient,
-  IGoalFocusApiClient,
-} from '../infrastructure-client/adapters/types';
+import type { IGoalApiClient } from './ports/goal-api-client.port';
+import type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
+import type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
 import {
   Goal,
   GoalFolder,
@@ -172,7 +164,75 @@ function goalRecordFromDTO(dto: GoalRecordClientDTO): GoalRecord {
   });
 }
 
-export class GoalClientService {
+// ─── Client Application Port ────────────────────────────────────────────────
+
+/** High-level client-side operations for the goal module. */
+export interface GoalClientPort {
+  createGoal(request: CreateGoalReq): Promise<Result<Goal>>;
+  getGoal(id: string): Promise<Result<Goal>>;
+  listGoals(params?: {
+    page?: number;
+    pageSize?: number;
+    query?: string;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
+    startDate?: number;
+    endDate?: number;
+  }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>>;
+  updateGoal(id: string, request: UpdateGoalReq): Promise<Result<Goal>>;
+  deleteGoal(id: string): Promise<Result<void>>;
+  activateGoal(id: string): Promise<Result<Goal>>;
+  completeGoal(id: string): Promise<Result<Goal>>;
+  archiveGoal(id: string): Promise<Result<Goal>>;
+  searchGoals(params: {
+    query: string;
+    page?: number;
+    pageSize?: number;
+    status?: string[];
+    systemView?: GoalSystemView;
+    folderId?: string;
+  }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>>;
+  archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>>;
+  getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>>;
+  cloneGoal(id: string, request?: CloneGoalReq): Promise<Result<Goal>>;
+  createKeyResult(goalId: string, request: Omit<AddKeyResultReq, 'goalId'>): Promise<Result<KeyResult>>;
+  getKeyResults(goalId: string): Promise<Result<{ keyResults: KeyResult[] }>>;
+  updateKeyResult(goalId: string, krId: string, request: UpdateKeyResultReq): Promise<Result<KeyResult>>;
+  deleteKeyResult(goalId: string, krId: string): Promise<Result<void>>;
+  batchUpdateKeyResultWeights(goalId: string, updates: Array<{ keyResultId: string; weight: number }>): Promise<Result<{ keyResults: KeyResult[] }>>;
+  getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
+  generateKeyResults(params: {
+    goalTitle: string;
+    goalDescription?: string;
+    startDate: number;
+    endDate: number;
+    goalContext?: string;
+  }): Promise<Result<{
+    keyResults: Array<{ title: string; description?: string; targetValue?: number; unit?: string }>;
+    tokenUsage: unknown;
+    generatedAt: number;
+  }>>;
+  createGoalRecord(goalId: string, keyResultId: string, request: Pick<CreateGoalRecordReq, 'value' | 'note'>): Promise<Result<GoalRecord>>;
+  getGoalRecordsByKeyResult(goalId: string, krId: string, params?: { limit?: number; offset?: number }): Promise<Result<{ records: GoalRecord[]; total: number }>>;
+  getGoalRecordsByGoal(goalId: string, params?: { limit?: number; offset?: number }): Promise<Result<{ records: GoalRecord[]; total: number }>>;
+  deleteGoalRecord(goalId: string, krId: string, recordId: string): Promise<Result<void>>;
+  createGoalReview(goalId: string, request: CreateGoalReviewReq): Promise<Result<GoalReview>>;
+  getGoalReviews(goalId: string): Promise<Result<{ reviews: GoalReview[] }>>;
+  updateGoalReview(goalId: string, reviewId: string, request: Partial<GoalReviewClientDTO>): Promise<Result<GoalReview>>;
+  deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>>;
+  createGoalFolder(request: CreateGoalFolderReq): Promise<Result<GoalFolder>>;
+  listGoalFolders(): Promise<Result<GoalFolder[]>>;
+  getGoalFolder(id: string): Promise<Result<GoalFolder>>;
+  updateGoalFolder(id: string, request: UpdateGoalFolderReq): Promise<Result<GoalFolder>>;
+  deleteGoalFolder(id: string): Promise<Result<void>>;
+  getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
+  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>>;
+  deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
+  extendFocusMode(newEndTime: number): Promise<Result<FocusModeClientDTO>>;
+}
+
+export class GoalClientService implements GoalClientPort {
   constructor(
     private readonly goalApi: IGoalApiClient,
     private readonly folderApi: IGoalFolderApiClient,
@@ -492,4 +552,15 @@ export class GoalClientService {
   async extendFocusMode(newEndTime: number): Promise<Result<FocusModeClientDTO>> {
     return this.requireFocusApi().extendFocusMode({ newEndTime });
   }
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/** Create a `GoalClientService` from any transport adapter. */
+export function createGoalClientService(
+  goalApi: IGoalApiClient,
+  folderApi: IGoalFolderApiClient,
+  focusApi?: IGoalFocusApiClient,
+): GoalClientService {
+  return new GoalClientService(goalApi, folderApi, focusApi);
 }

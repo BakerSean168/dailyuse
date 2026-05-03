@@ -1,5 +1,4 @@
-export { AIClientService } from './ai-client-service';
-
+// ===== Port Interfaces =====
 export type {
   IAICapabilitiesApiClient,
   AIAnalyticsQueryApiClient,
@@ -9,4 +8,9 @@ export type {
   AIKnowledgeQueryApiClient,
   AIKnowledgeNoteApiClient,
   IAIProviderConfigApiClient,
-} from '../infrastructure-client/adapters/types';
+  AIEvaluationReportApiClient,
+} from './ports/ai-api-client.port';
+export type { AIClientPort } from './ai-client.port';
+
+// ===== Client Service =====
+export { AIClientService, createAIClientService } from './ai-client-service';

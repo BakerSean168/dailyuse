@@ -1,9 +1,4 @@
 /**
- * @deprecated Extract operations to individual service files following governance pattern.
- * Each API operation should have its own service file for better maintainability.
- */
-
-/**
  * Schedule Client Service
  *
  * Constructor-injected application service for schedule management.
@@ -26,10 +21,8 @@ import type {
   ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
-import type {
-  IScheduleEventApiClient,
-  IScheduleTaskApiClient,
-} from '../infrastructure-client/adapters/types';
+import type { IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
+import type { IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
 import {
   ScheduleTask,
   ScheduleConfigVO,
@@ -99,7 +92,9 @@ function scheduleTaskFromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
   });
 }
 
-export class ScheduleClientService {
+import type { ScheduleClientPort } from './schedule-client.port';
+
+export class ScheduleClientService implements ScheduleClientPort {
   constructor(
     private readonly eventApi: IScheduleEventApiClient,
     private readonly taskApi: IScheduleTaskApiClient,
@@ -274,4 +269,13 @@ export class ScheduleClientService {
   ): Promise<Result<void>> {
     return this.taskApi.updateTaskMetadata(taskId, metadata);
   }
+}
+
+// ===== Factory =====
+
+export function createScheduleClientService(
+  eventApi: IScheduleEventApiClient,
+  taskApi: IScheduleTaskApiClient,
+): ScheduleClientService {
+  return new ScheduleClientService(eventApi, taskApi);
 }

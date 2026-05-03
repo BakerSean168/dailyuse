@@ -1,7 +1,10 @@
+// ===== Port Interfaces =====
 export type {
   IEditorApiClient,
   EditorContentReadResult,
   SaveEditorContentRequest,
-} from '../infrastructure-client/adapters/types';
+} from './ports/editor-api-client.port';
+export type { EditorClientPort } from './editor-client.port';
 
-export { EditorClientService } from './editor-client-service';
+// ===== Client Service =====
+export { EditorClientService, createEditorClientService } from './editor-client-service';

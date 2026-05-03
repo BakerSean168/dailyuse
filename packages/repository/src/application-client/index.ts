@@ -9,6 +9,8 @@
 export type {
   IRepositoryApiClient,
   UploadResourcesRequest,
-} from '../infrastructure-client/adapters/types';
+} from './ports/repository-api-client.port';
+export type { RepositoryClientPort } from './repository-client.port';
 
-export { RepositoryClientService } from './repository-client-service';
+// ===== Client Service =====
+export { RepositoryClientService, createRepositoryClientService } from './repository-client-service';

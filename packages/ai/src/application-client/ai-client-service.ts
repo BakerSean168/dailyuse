@@ -19,7 +19,7 @@ import type {
   IAIConversationApiClient,
   IAIMessageApiClient,
   IAIProviderConfigApiClient,
-} from '../infrastructure-client/adapters/types';
+} from './ports/ai-api-client.port';
 import type {
   CreateAIProviderConfigReq,
   CreateConversationReq,
@@ -41,7 +41,9 @@ import type {
  * Thin facade over AI API client ports for UI consumption.
  * 供 UI 层使用的 AI API 客户端端口薄门面。
  */
-export class AIClientService {
+import type { AIClientPort } from './ai-client.port';
+
+export class AIClientService implements AIClientPort {
   constructor(
     private readonly capabilitiesApi: IAICapabilitiesApiClient,
     private readonly evaluationReportApi: AIEvaluationReportApiClient,
@@ -179,4 +181,30 @@ export class AIClientService {
   queryAnalytics(request: QueryAnalyticsReq) {
     return this.analyticsQueryApi.queryAnalytics(request);
   }
+}
+
+// ===== Factory =====
+
+export function createAIClientService(
+  capabilitiesApi: IAICapabilitiesApiClient,
+  evaluationReportApi: AIEvaluationReportApiClient,
+  providerApi: IAIProviderConfigApiClient,
+  conversationApi: IAIConversationApiClient,
+  messageApi: IAIMessageApiClient,
+  goalApi: IAIGoalApiClient,
+  knowledgeQueryApi: AIKnowledgeQueryApiClient,
+  knowledgeNoteApi: AIKnowledgeNoteApiClient,
+  analyticsQueryApi: AIAnalyticsQueryApiClient,
+): AIClientService {
+  return new AIClientService(
+    capabilitiesApi,
+    evaluationReportApi,
+    providerApi,
+    conversationApi,
+    messageApi,
+    goalApi,
+    knowledgeQueryApi,
+    knowledgeNoteApi,
+    analyticsQueryApi,
+  );
 }

@@ -1,9 +1,4 @@
 /**
- * @deprecated Extract operations to individual service files following governance pattern.
- * Each API operation should have its own service file for better maintainability.
- */
-
-/**
  * Notification Client Service
  *
  * Constructor-injected application service for notification management.
@@ -21,9 +16,24 @@ import type {
   QueryNotificationsRequest,
   NotificationListResponse,
   UnreadCountResponse,
-} from '../infrastructure-client/adapters/types';
+} from './ports/notification-api-client.port';
 
-export class NotificationClientService {
+// ─── Client Application Port ────────────────────────────────────────────────
+
+/** High-level client-side operations for the notification module. */
+export interface NotificationClientPort {
+  createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>>;
+  findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
+  findNotificationById(id: string): Promise<Result<NotificationClientDTO>>;
+  markAsRead(id: string): Promise<Result<NotificationClientDTO>>;
+  markAllAsRead(): Promise<Result<CountResult>>;
+  deleteNotification(id: string): Promise<Result<ActionResult>>;
+  batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>>;
+  dismissAll(ids: string[]): Promise<Result<CountResult>>;
+  getUnreadCount(): Promise<Result<UnreadCountResponse>>;
+}
+
+export class NotificationClientService implements NotificationClientPort {
   constructor(private readonly notificationApi: INotificationApiClient) {
     this.createNotification = this.createNotification.bind(this);
     this.findNotifications = this.findNotifications.bind(this);
@@ -77,4 +87,13 @@ export class NotificationClientService {
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
     return this.notificationApi.getUnreadCount();
   }
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/** Create a `NotificationClientService` from any transport adapter. */
+export function createNotificationClientService(
+  apiClient: INotificationApiClient,
+): NotificationClientService {
+  return new NotificationClientService(apiClient);
 }

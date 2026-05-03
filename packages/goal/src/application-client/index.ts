@@ -6,11 +6,9 @@
  */
 
 // ===== Port Interfaces =====
-export type {
-  IGoalApiClient,
-  IGoalFolderApiClient,
-  IGoalFocusApiClient,
-} from '../infrastructure-client/adapters/types';
+export type { IGoalApiClient } from './ports/goal-api-client.port';
+export type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
+export type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
 
 // ===== Data & Rules =====
 export {
@@ -30,23 +28,5 @@ export {
 export type { GoalTemplate, KeyResultTemplate } from './GoalTemplates';
 
 // ===== Constructor-Injected Service (Result-based) =====
-export { GoalClientService } from './goal-client-service';
-
-// ===== Singleton Proxy =====
-// Singleton placeholder - will be replaced during module initialization
-let _goalApplicationService: any = null;
-
-export function setGoalApplicationService(service: any) {
-  _goalApplicationService = service;
-}
-
-export const goalApplicationService: any = new Proxy({} as any, {
-  get(_target, prop) {
-    if (!_goalApplicationService) {
-      throw new Error(
-        'goalApplicationService not initialized. Call setGoalApplicationService first.',
-      );
-    }
-    return (_goalApplicationService as any)[prop];
-  },
-});
+export { GoalClientService, createGoalClientService } from './goal-client-service';
+export type { GoalClientPort } from './goal-client-service';

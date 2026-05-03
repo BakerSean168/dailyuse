@@ -1,0 +1,50 @@
+import type { Result } from '@dailyuse/contracts/result';
+import type {
+  CalendarEntryClientDTO,
+  CreateScheduleRequest,
+  UpdateScheduleRequest,
+  GetSchedulesByTimeRangeRequest,
+  ConflictDetectionResult,
+  ResolveConflictRequest,
+  SourceModule,
+  ScheduleTaskClientDTO,
+  CreateScheduleTaskRequest,
+} from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '../domain-client/aggregates/schedule-task';
+
+export interface ScheduleClientPort {
+  // Schedule Event CRUD
+  createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
+  getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>>;
+  getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>>;
+  getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<CalendarEntryClientDTO[]>>;
+  updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
+  deleteSchedule(id: string): Promise<Result<void>>;
+
+  // Schedule Conflict Detection
+  getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>>;
+  detectConflicts(params: { startTime: number; endTime: number; excludeId?: string }): Promise<Result<ConflictDetectionResult>>;
+  createScheduleWithConflictDetection(request: CreateScheduleRequest): Promise<Result<{ schedule: CalendarEntryClientDTO; conflicts?: ConflictDetectionResult }>>;
+  resolveConflict(scheduleId: string, request: ResolveConflictRequest): Promise<Result<{
+    schedule: CalendarEntryClientDTO;
+    conflicts: ConflictDetectionResult;
+    applied: { strategy: string; previousStartTime?: number; previousEndTime?: number; changes: string[] };
+  }>>;
+
+  // Schedule Task CRUD
+  createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTask>>;
+  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTask[]>>;
+  getTasks(): Promise<Result<{ tasks: ScheduleTask[]; total: number }>>;
+  getTaskById(taskId: string): Promise<Result<ScheduleTask>>;
+  getDueTasks(params?: { beforeTime?: string; limit?: number }): Promise<Result<ScheduleTask[]>>;
+  getTaskBySource(sourceModule: SourceModule, sourceEntityId: string): Promise<Result<ScheduleTask[]>>;
+
+  // Schedule Task Status Management
+  pauseTask(taskId: string): Promise<Result<void>>;
+  resumeTask(taskId: string): Promise<Result<void>>;
+  completeTask(taskId: string, reason?: string): Promise<Result<void>>;
+  cancelTask(taskId: string, reason?: string): Promise<Result<void>>;
+  deleteTask(taskId: string): Promise<Result<void>>;
+  deleteTasksBatch(taskIds: string[]): Promise<Result<void>>;
+  updateTaskMetadata(taskId: string, metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] }): Promise<Result<void>>;
+}
