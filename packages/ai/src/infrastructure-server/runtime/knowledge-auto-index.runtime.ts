@@ -7,7 +7,7 @@ import { createLogger, eventBus } from '@dailyuse/utils';
 import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
 
 import type { AIModuleRuntimeContribution } from '../ai.module';
-import { AIKnowledgeIndexService } from '../../application-server/use-cases';
+import type { AIKnowledgeIndexServices } from '../ai.module';
 import {
   resolveActiveProviderConfig,
   toChatExecutionProviderConfig,
@@ -20,7 +20,7 @@ const runtimeEventBus = eventBus as unknown as {
 };
 
 export function createKnowledgeAutoIndexRuntimeContribution(
-  knowledgeIndexService: AIKnowledgeIndexService,
+  knowledgeIndexServices: AIKnowledgeIndexServices,
   providerConfigRepository: IAIProviderConfigRepository,
 ): AIModuleRuntimeContribution {
   let started = false;
@@ -49,7 +49,7 @@ export function createKnowledgeAutoIndexRuntimeContribution(
         providerConfig = undefined;
       }
 
-      await knowledgeIndexService.syncResourceById(event.identityId, event.resourceId, {
+      await knowledgeIndexServices.syncById.execute(event.resourceId, { identityId: event.identityId }, {
         force: true,
         providerConfig,
       });

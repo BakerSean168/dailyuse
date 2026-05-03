@@ -3,7 +3,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IAccountRepository } from '@/domain-server/repositories/i-account-repository';
 import { Account } from '@/domain-server/aggregates/account';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { CloseAccountUseCase } from '../close-account';
+import { CloseAccountUseCase } from '../close-account.use-case';
 
 describe('CloseAccountUseCase', () => {
   let repo: ReturnType<typeof createMockRepo<IAccountRepository>>;
@@ -28,19 +28,21 @@ describe('CloseAccountUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { reason: 'Test', feedback: '' });
+    const result = await useCase.execute({ reason: 'Test', feedback: '' }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    expect(result.message).toBe('Account closed successfully');
+    expect(result.ok).toBe(true);
     expect(repo.save).toHaveBeenCalledTimes(1);
   });
 
-  it('should throw if account not found', async () => {
+  it('should return NOT_FOUND if account not found', async () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    await expect(useCase.execute('nonexistent', { reason: 'Test', feedback: '' })).rejects.toThrow(
-      'Account not found',
-    );
+    const result = await useCase.execute({ reason: 'Test', feedback: '' }, { identityId: 'nonexistent' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
   it('should propagate aggregate close() errors', async () => {
@@ -49,7 +51,7 @@ describe('CloseAccountUseCase', () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
     await expect(
-      useCase.execute(account.id.toString(), { reason: 'Again', feedback: '' }),
+      useCase.execute({ reason: 'Again', feedback: '' }, { identityId: account.id.toString() }),
     ).rejects.toThrow('Account is already closed');
   });
 });

@@ -2,7 +2,7 @@ import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { GoalFolder } from '@/domain-server';
 import type { IGoalFolderRepository } from '@/domain-server';
-import { CreateGoalFolder } from '../create-goal-folder';
+import { CreateGoalFolderUseCase } from '../create-goal-folder.use-case';
 
 // ============================================================
 // Module mock
@@ -46,14 +46,14 @@ function createFolderFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('CreateGoalFolder', () => {
-  it('should create a folder and return the client DTO', async () => {
+describe('CreateGoalFolderUseCase', () => {
+  it('should create a folder and return ok with the client DTO', async () => {
     const folder = createFolderFixture();
     vi.mocked(GoalFolder.create).mockReturnValue(folder);
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new CreateGoalFolder(folderRepo);
+    const useCase = new CreateGoalFolderUseCase(folderRepo);
 
     const result = await useCase.execute('identity-123' as any, {
       name: 'Test Folder',
@@ -62,6 +62,7 @@ describe('CreateGoalFolder', () => {
       icon: 'star',
     });
 
+    expect(result.ok).toBe(true);
     expect(GoalFolder.create).toHaveBeenCalledWith(
       expect.objectContaining({
         identityId: 'identity-123',
@@ -72,14 +73,16 @@ describe('CreateGoalFolder', () => {
       }),
     );
     expect(folderRepo.save).toHaveBeenCalledWith(folder);
-    expect(result).toEqual({
-      id: 'folder-id-1',
-      identityId: 'identity-123',
-      name: 'Test Folder',
-      description: 'Test description',
-      color: '#FF0000',
-      icon: 'star',
-    });
+    if (result.ok) {
+      expect(result.data).toEqual({
+        id: 'folder-id-1',
+        identityId: 'identity-123',
+        name: 'Test Folder',
+        description: 'Test description',
+        color: '#FF0000',
+        icon: 'star',
+      });
+    }
   });
 
   it('should pass parentFolderId when provided', async () => {
@@ -88,7 +91,7 @@ describe('CreateGoalFolder', () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new CreateGoalFolder(folderRepo);
+    const useCase = new CreateGoalFolderUseCase(folderRepo);
 
     await useCase.execute('identity-123' as any, {
       name: 'Sub Folder',
@@ -111,7 +114,7 @@ describe('CreateGoalFolder', () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new CreateGoalFolder(folderRepo);
+    const useCase = new CreateGoalFolderUseCase(folderRepo);
 
     await useCase.execute('identity-123' as any, {
       name: 'Root Folder',
@@ -133,7 +136,7 @@ describe('CreateGoalFolder', () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new CreateGoalFolder(folderRepo);
+    const useCase = new CreateGoalFolderUseCase(folderRepo);
 
     await useCase.execute('identity-123' as any, {
       name: 'Test Folder',
@@ -151,7 +154,7 @@ describe('CreateGoalFolder', () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       save: vi.fn().mockRejectedValue(new Error('Database connection failed')),
     });
-    const useCase = new CreateGoalFolder(folderRepo);
+    const useCase = new CreateGoalFolderUseCase(folderRepo);
 
     await expect(
       useCase.execute('identity-123' as any, {

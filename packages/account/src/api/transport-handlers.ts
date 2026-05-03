@@ -1,41 +1,28 @@
+import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import type { AccountUseCases } from '../controllers/account.controller';
 import type { AccountApplicationPort } from '../infrastructure-server';
 
 /**
  * Thin transport mapper from account application port to controller port.
  *
- * Each handler converts the transport-neutral `api` return value into the
- * `Result<T>` shape expected by `AccountController`.  No business logic lives
- * here — only result wrapping and null→fail mapping.
+ * ExecutionContext flows through unmodified from the use cases.
  */
 export function createAccountTransportHandlers(api: AccountApplicationPort): AccountUseCases {
   return {
-    getProfile: async (ctx) => {
-      const profile = await api.getProfile(ctx.identityId);
-      if (!profile) {
-        return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
+    getProfile: async (cx): Promise<Result<AccountClientDTO>> => {
+      const result = await api.getProfile(cx);
+      if (!result.ok) return result;
+      if (result.data === null) {
+        return fail({ code: 'NOT_FOUND', message: 'Account not found' });
       }
-      return ok(profile);
+      return ok(result.data);
     },
-
-    updateProfile: async (data, ctx) => {
-      const result = await api.updateProfile(ctx.identityId, data);
-      return ok(result.account);
-    },
-
-    updateSettings: async (data, ctx) => {
-      const result = await api.updateSettings(ctx.identityId, data);
-      return ok(result);
-    },
-
-    checkAvailability: async (data) => {
-      return ok(await api.checkAvailability(data));
-    },
-
-    closeAccount: async (data, ctx) => {
-      await api.closeAccount(ctx.identityId, data);
-      return ok(undefined as void);
-    },
+    updateProfile: (data, cx) => api.updateProfile(data, cx),
+    updateSettings: (data, cx) => api.updateSettings(data, cx),
+    checkAvailability: (data) => api.checkAvailability(data),
+    closeAccount: (data, cx) => api.closeAccount(data, cx),
   };
 }

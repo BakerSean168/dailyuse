@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -7,7 +8,7 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import { CreateKnowledgeNoteSchema } from '@dailyuse/contracts/ai';
-import type { AIKnowledgeNoteController } from '../controllers/ai-knowledge-note.controller';
+import type { AIKnowledgeNoteController } from '../../controllers/ai-knowledge-note.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -41,7 +42,7 @@ export function registerAIKnowledgeNoteRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, ctx.identityId),
+    (req, ctx) => controller.create(req.body, { identityId: ctx.identityId } as ExecutionContext),
     { successStatus: 201 },
   );
 

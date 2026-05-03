@@ -27,7 +27,7 @@ import {
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateStatus, ListTaskTemplateFilters } from '@dailyuse/contracts/task';
-import type { TaskTemplateController } from '../controllers/task-template.controller';
+import type { TaskTemplateController } from '../../controllers/task-template.controller';
 
 // ============ Types ============
 

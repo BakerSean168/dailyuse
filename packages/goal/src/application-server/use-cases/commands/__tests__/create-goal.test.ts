@@ -4,11 +4,11 @@ import { anIdentityId } from '@dailyuse/test-utils';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '@/domain-server';
-import { CreateGoal } from '../create-goal';
+import { CreateGoalUseCase } from '../create-goal.use-case';
 
-describe('CreateGoal', () => {
+describe('CreateGoalUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
-  let useCase: CreateGoal;
+  let useCase: CreateGoalUseCase;
   const testIdentityId = anIdentityId();
 
   function aContext(overrides: Record<string, any> = {}) {
@@ -32,7 +32,7 @@ describe('CreateGoal', () => {
       save: vi.fn().mockResolvedValue(undefined),
       findById: vi.fn().mockResolvedValue(null),
     });
-    useCase = new CreateGoal(goalRepo, new GoalPolicy());
+    useCase = new CreateGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should create a goal and return ok result', async () => {

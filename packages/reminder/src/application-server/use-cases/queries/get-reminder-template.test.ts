@@ -1,17 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GetReminderTemplate } from './get-reminder-template';
+import { GetReminderTemplateUseCase } from './get-reminder-template.use-case';
 
-describe('GetReminderTemplate', () => {
-  it('returns null when template does not exist', async () => {
+describe('GetReminderTemplateUseCase', () => {
+  it('returns NOT_FOUND when template does not exist', async () => {
     const repository = {
       findById: vi.fn().mockResolvedValue(null),
     } as any;
-    const useCase = new GetReminderTemplate(repository);
+    const useCase = new GetReminderTemplateUseCase(repository);
 
     const result = await useCase.execute('tpl-1');
 
     expect(repository.findById).toHaveBeenCalledWith('tpl-1');
-    expect(result).toBeNull();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
   it('returns client dto when template exists', async () => {
@@ -19,11 +22,14 @@ describe('GetReminderTemplate', () => {
     const repository = {
       findById: vi.fn().mockResolvedValue({ toClientDTO }),
     } as any;
-    const useCase = new GetReminderTemplate(repository);
+    const useCase = new GetReminderTemplateUseCase(repository);
 
     const result = await useCase.execute('tpl-1');
 
     expect(toClientDTO).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({ id: 'tpl-1', name: 'demo' });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ id: 'tpl-1', name: 'demo' });
+    }
   });
 });

@@ -4,7 +4,8 @@ import { AIConversation } from '../../../../domain-server/aggregates/ai-conversa
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import type { IAIConversationRepository } from '../../../../domain-server/repositories/IAIConversationRepository';
 import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
-import { AIChatApplicationService } from '../a-i-chat-application-service';
+import { SendAIMessageUseCase } from '../send-ai-message.use-case';
+import { StreamAIMessageUseCase } from '../stream-ai-message.use-case';
 import type {
   AIExecutionLogInput,
   ChatExecutionCompleteInput,
@@ -89,7 +90,7 @@ class StubExecutionLogPort implements IAIExecutionLogPort {
   public readonly record = vi.fn<(input: AIExecutionLogInput) => Promise<void>>(async () => {});
 }
 
-describe('AIChatApplicationService', () => {
+describe('SendAIMessageUseCase', () => {
   it('routes chat execution through the execution port with structured messages', async () => {
     const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
     const conversation = AIConversation.create({
@@ -111,19 +112,22 @@ describe('AIChatApplicationService', () => {
     const executionPort = new StubChatExecutionPort();
     const executionLogPort = new StubExecutionLogPort();
 
-    const service = new AIChatApplicationService(
+    const useCase = new SendAIMessageUseCase(
       conversationRepository as unknown as IAIConversationRepository,
       providerRepository as unknown as IAIProviderConfigRepository,
       executionPort,
       executionLogPort,
     );
 
-    const result = await service.sendMessage(
+    const result = await useCase.execute(
       identityId,
       String(conversation.id),
       'Hello from user',
       'provider-1',
     );
+
+    expect(result.ok).toBe(true);
+    const data = (result as any).data;
 
     expect(executionPort.complete).toHaveBeenCalledTimes(1);
     expect(executionPort.complete).toHaveBeenCalledWith({
@@ -148,9 +152,9 @@ describe('AIChatApplicationService', () => {
       requestId: expect.any(String),
     });
 
-    expect(result.assistantMessage.content).toBe('Assistant reply from ai-service');
-    expect(result.providerId).toBe('provider-1');
-    expect(result.tokenUsage.totalTokens).toBe(20);
+    expect(data.assistantMessage.content).toBe('Assistant reply from ai-service');
+    expect(data.providerId).toBe('provider-1');
+    expect(data.tokenUsage.totalTokens).toBe(20);
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
         taskType: 'CHAT_COMPLETE',
@@ -166,8 +170,10 @@ describe('AIChatApplicationService', () => {
       }),
     );
   });
+});
 
-  it('classifies aborted streaming requests and keeps failed stream metadata', async () => {
+describe('StreamAIMessageUseCase', () => {
+  it('returns error result for aborted streaming requests and keeps failed stream metadata', async () => {
     const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440000';
     const conversation = AIConversation.create({
       identityId,
@@ -202,7 +208,7 @@ describe('AIChatApplicationService', () => {
     );
     const executionLogPort = new StubExecutionLogPort();
 
-    const service = new AIChatApplicationService(
+    const useCase = new StreamAIMessageUseCase(
       conversationRepository as unknown as IAIConversationRepository,
       providerRepository as unknown as IAIProviderConfigRepository,
       executionPort,
@@ -212,17 +218,20 @@ describe('AIChatApplicationService', () => {
     const streamAbortController = new AbortController();
     streamAbortController.abort();
 
-    await expect(
-      service.sendMessageStream(
-        identityId,
-        String(conversation.id),
-        'Hello from user',
-        vi.fn(),
-        'provider-1',
-        undefined,
-        streamAbortController.signal,
-      ),
-    ).rejects.toThrow(/requestId:/i);
+    const result = await useCase.execute(
+      identityId,
+      String(conversation.id),
+      'Hello from user',
+      vi.fn(),
+      'provider-1',
+      undefined,
+      streamAbortController.signal,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toMatch(/requestId:/i);
+    }
 
     expect(executionPort.stream).toHaveBeenCalledWith(
       expect.objectContaining({

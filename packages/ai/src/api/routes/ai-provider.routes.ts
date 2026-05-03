@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -11,7 +12,7 @@ import {
   UpdateAIProviderConfigSchema,
   TestAIProviderSchema,
 } from '@dailyuse/contracts/ai';
-import type { AIProviderConfigController } from '../controllers/ai-provider-config.controller';
+import type { AIProviderConfigController } from '../../controllers/ai-provider-config.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -47,7 +48,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.create(req.body, ctx.identityId),
+    (req, ctx) => controller.create(req.body, { identityId: ctx.identityId } as ExecutionContext),
     { successStatus: 201 },
   );
 
@@ -62,7 +63,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (_req, ctx) => controller.list(ctx.identityId),
+    (_req, ctx) => controller.list({ identityId: ctx.identityId } as ExecutionContext),
   );
 
   // GET /:id — Get provider
@@ -134,7 +135,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.test(req.body, ctx.identityId),
+    (req, ctx) => controller.test(req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // POST /:id/set-default — Set default provider
@@ -152,7 +153,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.setDefault(req.params!.id, ctx.identityId),
+    (req, ctx) => controller.setDefault(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // POST /:id/refresh-models — Refresh provider models
@@ -170,7 +171,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.refreshModels(req.params!.id, ctx.identityId),
+    (req, ctx) => controller.refreshModels(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   return router;

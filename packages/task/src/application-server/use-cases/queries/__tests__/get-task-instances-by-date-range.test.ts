@@ -3,18 +3,18 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance, anIdentityId } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { GetTaskInstancesByDateRange } from '../get-task-instances-by-date-range';
+import { GetTaskInstancesByDateRangeUseCaseUseCase } from '../get-task-instances-by-date-range.use-case';
 
-describe('GetTaskInstancesByDateRange', () => {
+describe('GetTaskInstancesByDateRangeUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: GetTaskInstancesByDateRange;
+  let useCase: GetTaskInstancesByDateRangeUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findByDateRange: vi.fn().mockResolvedValue([]),
     });
-    useCase = new GetTaskInstancesByDateRange(instanceRepo);
+    useCase = new GetTaskInstancesByDateRangeUseCase(instanceRepo);
   });
 
   it('should return empty data with total=0 when no instances in range', async () => {

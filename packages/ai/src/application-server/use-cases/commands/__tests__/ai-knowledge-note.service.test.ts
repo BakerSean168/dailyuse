@@ -14,7 +14,7 @@ import type {
   KnowledgeNoteGenerationResult,
 } from '../../../ports';
 import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
-import { AIKnowledgeNoteService } from '../ai-knowledge-note.service';
+import { ManageAIKnowledgeNoteUseCase } from '../manage-ai-knowledge-note.use-case';
 import { AIKnowledgeNotePathResolver } from '../../../../infrastructure-server/services/ai-knowledge-note-path-resolver';
 
 class StubProviderConfigRepository {
@@ -108,7 +108,7 @@ describe('AIKnowledgeNoteService', () => {
     const executionPort = new StubKnowledgeNoteGenerationPort();
     const persistencePort = new StubKnowledgeNotePersistencePort();
     const executionLogPort = new StubExecutionLogPort();
-    const service = new AIKnowledgeNoteService(
+    const service = new ManageAIKnowledgeNoteUseCase(
       new StubProviderConfigRepository({
         id: 'provider-1',
         identityId: 'identity-1',
@@ -153,9 +153,11 @@ describe('AIKnowledgeNoteService', () => {
       content: '# Python Tooling\n\nA concise note.',
     });
 
-    expect(result.providerId).toBe('provider-1');
-    expect(result.tokenUsage.totalTokens).toBe(30);
-    expect(result.resolvedPath).toBe('/notes/python/Python-Tooling.md');
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.providerId).toBe('provider-1');
+    expect(result.data.tokenUsage.totalTokens).toBe(30);
+    expect(result.data.resolvedPath).toBe('/notes/python/Python-Tooling.md');
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
         taskType: 'KNOWLEDGE_NOTE_GENERATION',

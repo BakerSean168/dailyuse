@@ -4,7 +4,7 @@ import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { INotificationRepository } from '@/domain-server/repositories/INotificationRepository';
 import type { INotificationTemplateRepository } from '@/domain-server/repositories/INotificationTemplateRepository';
 import type { INotificationPreferenceRepository } from '@/domain-server/repositories/INotificationPreferenceRepository';
-import { CreateNotification } from '../create-notification';
+import { CreateNotificationUseCase } from '../create-notification.use-case';
 import {
   NotificationType,
   NotificationCategory,
@@ -13,11 +13,11 @@ import {
 } from '@dailyuse/contracts/notification';
 import { NotificationPreference } from '@/domain-server/aggregates/notification-preference';
 
-describe('CreateNotification', () => {
+describe('CreateNotificationUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;
   let templateRepo: ReturnType<typeof createMockRepo<INotificationTemplateRepository>>;
   let preferenceRepo: ReturnType<typeof createMockRepo<INotificationPreferenceRepository>>;
-  let useCase: CreateNotification;
+  let useCase: CreateNotificationUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -30,7 +30,7 @@ describe('CreateNotification', () => {
       findByIdentityId: vi.fn().mockResolvedValue(null),
     });
 
-    useCase = new CreateNotification(notificationRepo, templateRepo, preferenceRepo);
+    useCase = new CreateNotificationUseCase(notificationRepo, templateRepo, preferenceRepo);
   });
 
   it('should create a notification and return a client DTO', async () => {
@@ -42,13 +42,14 @@ describe('CreateNotification', () => {
       category: NotificationCategory.System,
     });
 
-    expect(result).toBeDefined();
-    expect(result.title).toBe('Test Notification');
-    expect(result.content).toBe('Some content');
-    expect(result.type).toBe(NotificationType.Info);
-    expect(result.category).toBe(NotificationCategory.System);
-    expect(result.status).toBe(NotificationStatus.Sent);
-    expect(result.isRead).toBe(false);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.title).toBe('Test Notification');
+    expect(result.data.content).toBe('Some content');
+    expect(result.data.type).toBe(NotificationType.Info);
+    expect(result.data.category).toBe(NotificationCategory.System);
+    expect(result.data.status).toBe(NotificationStatus.Sent);
+    expect(result.data.isRead).toBe(false);
   });
 
   it('should save the notification to the repository', async () => {
@@ -72,9 +73,11 @@ describe('CreateNotification', () => {
       category: NotificationCategory.System,
     });
 
-    expect(result.notificationChannels).toBeDefined();
-    expect(result.notificationChannels).toHaveLength(1);
-    expect(result.notificationChannels![0].channelType).toBe(NotificationChannelType.InApp);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.notificationChannels).toBeDefined();
+    expect(result.data.notificationChannels).toHaveLength(1);
+    expect(result.data.notificationChannels![0].channelType).toBe(NotificationChannelType.InApp);
   });
 
   it('should add specified channels', async () => {
@@ -87,25 +90,29 @@ describe('CreateNotification', () => {
       channels: [NotificationChannelType.InApp, NotificationChannelType.Email],
     });
 
-    expect(result.notificationChannels).toHaveLength(2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.notificationChannels).toHaveLength(2);
   });
 
-  it('should throw when preference blocks the notification', async () => {
+  it('should return error when preference blocks the notification', async () => {
     const identityId = anIdentityId();
     const pref = NotificationPreference.create({ identityId });
     // No channels configured for System category => shouldSendNotification returns false
     pref.setModuleChannels(NotificationCategory.System, []);
     vi.mocked(preferenceRepo.findByIdentityId).mockResolvedValue(pref);
 
-    await expect(
-      useCase.execute({
-        identityId,
-        title: 'Blocked',
-        content: 'Content',
-        type: NotificationType.Info,
-        category: NotificationCategory.System,
-      }),
-    ).rejects.toThrow();
+    const result = await useCase.execute({
+      identityId,
+      title: 'Blocked',
+      content: 'Content',
+      type: NotificationType.Info,
+      category: NotificationCategory.System,
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected error');
+    expect(result.error.code).toBe('FORBIDDEN');
   });
 
   it('should proceed when no preference exists (null)', async () => {
@@ -119,8 +126,9 @@ describe('CreateNotification', () => {
       category: NotificationCategory.System,
     });
 
-    expect(result).toBeDefined();
-    expect(result.id).toBeTruthy();
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.id).toBeTruthy();
   });
 
   it('should return a client DTO with id and timestamps', async () => {
@@ -132,9 +140,11 @@ describe('CreateNotification', () => {
       category: NotificationCategory.Task,
     });
 
-    expect(result.id).toBeTruthy();
-    expect(typeof result.createdAt).toBe('number');
-    expect(typeof result.updatedAt).toBe('number');
-    expect(result.version).toBe(1);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data.id).toBeTruthy();
+    expect(typeof result.data.createdAt).toBe('number');
+    expect(typeof result.data.updatedAt).toBe('number');
+    expect(result.data.version).toBe(1);
   });
 });

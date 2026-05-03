@@ -44,14 +44,14 @@ import {
   registerAIKnowledgeQueryRoutes,
   registerAIKnowledgeNoteRoutes,
 } from './routes';
-import { AICapabilitiesController } from './controllers/ai-capabilities.controller';
-import { AIAnalyticsQueryController } from './controllers/ai-analytics-query.controller';
-import { AIEvaluationReportController } from './controllers/ai-evaluation-report.controller';
-import { AIGoalGenerationController } from './controllers/ai-goal-generation.controller';
-import { AIProviderConfigController } from './controllers/ai-provider-config.controller';
-import { AIChatController } from './controllers/ai-chat.controller';
-import { AIKnowledgeQueryController } from './controllers/ai-knowledge-query.controller';
-import { AIKnowledgeNoteController } from './controllers/ai-knowledge-note.controller';
+import { AICapabilitiesController } from '../controllers/ai-capabilities.controller';
+import { AIAnalyticsQueryController } from '../controllers/ai-analytics-query.controller';
+import { AIEvaluationReportController } from '../controllers/ai-evaluation-report.controller';
+import { AIGoalGenerationController } from '../controllers/ai-goal-generation.controller';
+import { AIProviderConfigController } from '../controllers/ai-provider-config.controller';
+import { AIChatController } from '../controllers/ai-chat.controller';
+import { AIKnowledgeQueryController } from '../controllers/ai-knowledge-query.controller';
+import { AIKnowledgeNoteController } from '../controllers/ai-knowledge-note.controller';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,
@@ -208,7 +208,7 @@ export function createAIApiModule(options: {
       const knowledgeNoteController = new AIKnowledgeNoteController({
         createKnowledgeNote: handlers.createKnowledgeNote,
       });
-      if (!aiModule.services.knowledgeQueryService) {
+      if (!aiModule.services.knowledgeQueryServices) {
         throw new Error(
           'AI API module requires knowledge query dependencies to be provided. ' +
             'AI API 模块需要注入知识查询依赖。',

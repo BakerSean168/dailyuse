@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { DeleteFolder } from '../use-cases/commands/delete-folder';
+import { DeleteFolderUseCase } from '../use-cases/commands/delete-folder.use-case';
 import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
 import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
 import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
@@ -96,14 +96,15 @@ describe('DeleteFolder', () => {
       repository.recordResourceAdded(resourceTwo.size ?? 0);
       await repositoryRepository.save(repository);
 
-      const deleteFolder = new DeleteFolder(
+      const deleteFolder = new DeleteFolderUseCase(
         folderRepository,
         resourceRepository,
         repositoryRepository,
         storage,
       );
 
-      await deleteFolder.execute({ id: String(rootFolder.id) });
+      const result = await deleteFolder.execute({ id: String(rootFolder.id) });
+      expect(result.ok).toBe(true);
 
       await expect(
         fs.promises.stat(path.join(tempDir, String(repository.id), 'articles')),

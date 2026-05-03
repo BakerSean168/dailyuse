@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
-import { AddGoalReview } from '../add-goal-review';
+import { AddGoalReviewUseCase } from '../add-goal-review.use-case';
 
 // ============================================================
 // Helpers
@@ -50,7 +50,7 @@ function aReviewInput(overrides?: Record<string, any>) {
   };
 }
 
-describe('AddGoalReview', () => {
+describe('AddGoalReviewUseCase', () => {
   it('should add a review to the goal', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
@@ -58,7 +58,7 @@ describe('AddGoalReview', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new AddGoalReview(goalRepo, goalPolicy);
+    const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
     const params = aReviewInput();
 
     const result = await useCase.execute('goal-id-1', params);
@@ -78,7 +78,7 @@ describe('AddGoalReview', () => {
       findById: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new AddGoalReview(goalRepo, goalPolicy);
+    const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('non-existent', aReviewInput());
 
@@ -100,7 +100,7 @@ describe('AddGoalReview', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new AddGoalReview(goalRepo, goalPolicy);
+    const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
     await expect(useCase.execute('goal-id-1', aReviewInput())).rejects.toThrow(
       'Goal cannot be modified',
@@ -116,7 +116,7 @@ describe('AddGoalReview', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new AddGoalReview(goalRepo, goalPolicy);
+    const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
     const params = aReviewInput({
       rating: 4,
       achievements: 'Completed milestone A',
@@ -136,7 +136,7 @@ describe('AddGoalReview', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new AddGoalReview(goalRepo, goalPolicy);
+    const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', aReviewInput());
 
@@ -150,7 +150,7 @@ describe('AddGoalReview', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new AddGoalReview(goalRepo, goalPolicy);
+    const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', aReviewInput());
 

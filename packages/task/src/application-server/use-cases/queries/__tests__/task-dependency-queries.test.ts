@@ -4,11 +4,11 @@ import { ok, error } from '@dailyuse/contracts/result';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { GetDependencyChain } from '../get-dependency-chain';
-import { ListTaskDependencies } from '../list-task-dependencies';
-import { ListTaskTemplatesByPriority } from '../list-task-templates-by-priority';
-import { ValidateTaskDependency } from '../validate-task-dependency';
-import { GetTaskTemplateGraph } from '../get-task-template-graph';
+import { GetDependencyChainUseCaseUseCase } from '../get-dependency-chain.use-case';
+import { ListTaskDependenciesUseCaseUseCase } from '../list-task-dependencies.use-case';
+import { ListTaskTemplatesByPriorityUseCaseUseCase } from '../list-task-templates-by-priority.use-case';
+import { ValidateTaskDependencyUseCaseUseCase } from '../validate-task-dependency.use-case';
+import { GetTaskTemplateGraphUseCaseUseCase } from '../get-task-template-graph.use-case';
 
 describe('Task dependency query use-cases', () => {
   let dependencyRepo: ReturnType<typeof createMockRepo<ITaskDependencyRepository>>;
@@ -29,11 +29,11 @@ describe('Task dependency query use-cases', () => {
     });
   });
 
-  describe('GetDependencyChain', () => {
+  describe('GetDependencyChainUseCase', () => {
     it('returns predecessor/successor chain summary', async () => {
       vi.mocked(dependencyRepo.findAllPredecessorIds).mockResolvedValue(['p1', 'p2']);
       vi.mocked(dependencyRepo.findAllSuccessorIds).mockResolvedValue(['s1']);
-      const useCase = new GetDependencyChain(dependencyRepo);
+      const useCase = new GetDependencyChainUseCase(dependencyRepo);
 
       const result = await useCase.execute('task-1');
 
@@ -47,10 +47,10 @@ describe('Task dependency query use-cases', () => {
     });
   });
 
-  describe('ListTaskDependencies', () => {
+  describe('ListTaskDependenciesUseCase', () => {
     it('lists dependencies by successor id', async () => {
       vi.mocked(dependencyRepo.findBySuccessorId).mockResolvedValue([{ id: 'dep-1' } as any]);
-      const useCase = new ListTaskDependencies(dependencyRepo);
+      const useCase = new ListTaskDependenciesUseCase(dependencyRepo);
 
       const result = await useCase.executeDependencies('task-1');
 
@@ -60,7 +60,7 @@ describe('Task dependency query use-cases', () => {
 
     it('lists dependents by predecessor id', async () => {
       vi.mocked(dependencyRepo.findByPredecessorId).mockResolvedValue([{ id: 'dep-2' } as any]);
-      const useCase = new ListTaskDependencies(dependencyRepo);
+      const useCase = new ListTaskDependenciesUseCase(dependencyRepo);
 
       const result = await useCase.executeDependents('task-1');
 
@@ -69,12 +69,12 @@ describe('Task dependency query use-cases', () => {
     });
   });
 
-  describe('ListTaskTemplatesByPriority', () => {
+  describe('ListTaskTemplatesByPriorityUseCase', () => {
     it('maps sorted templates to client DTO', async () => {
       const t1 = { toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }) };
       const t2 = { toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-2' }) };
       vi.mocked(templateRepo.findSortedByPriority).mockResolvedValue([t1, t2] as any);
-      const useCase = new ListTaskTemplatesByPriority(templateRepo);
+      const useCase = new ListTaskTemplatesByPriorityUseCase(templateRepo);
 
       const result = await useCase.execute('identity-1', 5);
 
@@ -83,9 +83,9 @@ describe('Task dependency query use-cases', () => {
     });
   });
 
-  describe('ValidateTaskDependency', () => {
+  describe('ValidateTaskDependencyUseCase', () => {
     it('rejects self dependency', async () => {
-      const useCase = new ValidateTaskDependency(dependencyRepo);
+      const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('task-1', 'task-1');
 
@@ -100,7 +100,7 @@ describe('Task dependency query use-cases', () => {
       vi.mocked(dependencyRepo.findByPredecessorAndSuccessorId).mockResolvedValue({
         id: 'dep-1',
       } as any);
-      const useCase = new ValidateTaskDependency(dependencyRepo);
+      const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('task-1', 'task-2');
 
@@ -114,7 +114,7 @@ describe('Task dependency query use-cases', () => {
     it('rejects cycle-producing dependency', async () => {
       vi.mocked(dependencyRepo.findByPredecessorAndSuccessorId).mockResolvedValue(null);
       vi.mocked(dependencyRepo.findAllSuccessorIds).mockResolvedValue(['task-1', 'task-9']);
-      const useCase = new ValidateTaskDependency(dependencyRepo);
+      const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('task-1', 'task-2');
 
@@ -130,7 +130,7 @@ describe('Task dependency query use-cases', () => {
     it('returns valid result when checks pass', async () => {
       vi.mocked(dependencyRepo.findByPredecessorAndSuccessorId).mockResolvedValue(null);
       vi.mocked(dependencyRepo.findAllSuccessorIds).mockResolvedValue(['task-5']);
-      const useCase = new ValidateTaskDependency(dependencyRepo);
+      const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('task-1', 'task-2');
 
@@ -141,7 +141,7 @@ describe('Task dependency query use-cases', () => {
     });
   });
 
-  describe('GetTaskTemplateGraph', () => {
+  describe('GetTaskTemplateGraphUseCase', () => {
     it('returns filtered dependencies for listed templates', async () => {
       const listTaskTemplates = {
         execute: vi.fn().mockResolvedValue(
@@ -171,7 +171,7 @@ describe('Task dependency query use-cases', () => {
           updatedAt: 2,
         },
       ] as any);
-      const useCase = new GetTaskTemplateGraph(listTaskTemplates, dependencyRepo);
+      const useCase = new GetTaskTemplateGraphUseCase(listTaskTemplates, dependencyRepo);
 
       const result = await useCase.execute({ identityId: 'identity-1' } as any);
 
@@ -189,7 +189,7 @@ describe('Task dependency query use-cases', () => {
       const listTaskTemplates = {
         execute: vi.fn().mockResolvedValue(failed),
       } as any;
-      const useCase = new GetTaskTemplateGraph(listTaskTemplates, dependencyRepo);
+      const useCase = new GetTaskTemplateGraphUseCase(listTaskTemplates, dependencyRepo);
 
       const result = await useCase.execute({ identityId: 'identity-1' } as any);
 

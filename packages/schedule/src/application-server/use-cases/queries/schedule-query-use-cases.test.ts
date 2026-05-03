@@ -5,7 +5,7 @@ import { ListScheduleTasksBySourceUseCase } from './list-schedule-tasks-by-sourc
 import { ListScheduleTasksByStatusUseCase } from './list-schedule-tasks-by-status.use-case';
 
 describe('Schedule query use-cases', () => {
-  it('get by id returns null when task not found', async () => {
+  it('get by id returns ok(null) when task not found', async () => {
     const repository = {
       findById: vi.fn().mockResolvedValue(null),
     } as any;
@@ -14,10 +14,13 @@ describe('Schedule query use-cases', () => {
     const result = await useCase.execute('task-1');
 
     expect(repository.findById).toHaveBeenCalledWith('task-1');
-    expect(result).toBeNull();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toBeNull();
+    }
   });
 
-  it('get by id returns client dto when task exists', async () => {
+  it('get by id returns ok(client dto) when task exists', async () => {
     const repository = {
       findById: vi.fn().mockResolvedValue({
         toClientDTO: vi.fn().mockReturnValue({ id: 'task-1' }),
@@ -27,7 +30,10 @@ describe('Schedule query use-cases', () => {
 
     const result = await useCase.execute('task-1');
 
-    expect(result).toEqual({ id: 'task-1' });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ id: 'task-1' });
+    }
   });
 
   it('lists tasks by account', async () => {
@@ -42,7 +48,10 @@ describe('Schedule query use-cases', () => {
     const result = await useCase.execute('identity-1');
 
     expect(repository.findByIdentityId).toHaveBeenCalledWith('identity-1');
-    expect(result).toEqual([{ id: 't1' }, { id: 't2' }]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([{ id: 't1' }, { id: 't2' }]);
+    }
   });
 
   it('lists tasks by source', async () => {
@@ -56,7 +65,10 @@ describe('Schedule query use-cases', () => {
     const result = await useCase.execute('notification' as any, 'src-1');
 
     expect(repository.findBySourceEntity).toHaveBeenCalledWith('notification', 'src-1');
-    expect(result).toEqual([{ id: 't1' }]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([{ id: 't1' }]);
+    }
   });
 
   it('lists tasks by status', async () => {
@@ -70,6 +82,9 @@ describe('Schedule query use-cases', () => {
     const result = await useCase.execute('Active' as any);
 
     expect(repository.findByStatus).toHaveBeenCalledWith('Active');
-    expect(result).toEqual([{ id: 't1' }]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([{ id: 't1' }]);
+    }
   });
 });

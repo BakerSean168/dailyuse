@@ -1,8 +1,8 @@
 /**
  * ScheduleTaskExecutorAdapter
  *
- * 将现有的 ScheduleTaskExecutor 适配为 ITaskHandler 接口
- * 这使得 ScheduleTaskExecutor 可以被 scheduler-server 调用
+ * 将 ExecuteScheduleTaskByIdUseCase 适配为 ITaskHandler 接口
+ * 这使得调度任务可以被 scheduler-server 调用
  *
  * 架构改进：
  * - scheduler-server 只依赖 ITaskHandler 接口
@@ -11,7 +11,7 @@
  */
 
 import { createLogger } from '@dailyuse/utils';
-import { ScheduleTaskExecutor } from './schedule-task-executor';
+import { ExecuteScheduleTaskByIdUseCase } from './execute-schedule-task-by-id.use-case';
 
 const logger = createLogger('ScheduleTaskExecutorAdapter');
 
@@ -23,16 +23,16 @@ export interface ITaskHandler {
 }
 
 /**
- * 将 ScheduleTaskExecutor 适配为 ITaskHandler 接口
+ * 将 ExecuteScheduleTaskByIdUseCase 适配为 ITaskHandler 接口
  *
- * 使用适配器模式，使现有的 ScheduleTaskExecutor 可以直接由
+ * 使用适配器模式，使现有的 use case 可以直接由
  * scheduler-server 的 IScheduler 调用
  */
 export class ScheduleTaskExecutorAdapter implements ITaskHandler {
-  private executor: ScheduleTaskExecutor;
+  private readonly executeById: ExecuteScheduleTaskByIdUseCase;
 
-  constructor(executor: ScheduleTaskExecutor) {
-    this.executor = executor;
+  constructor(executeById: ExecuteScheduleTaskByIdUseCase) {
+    this.executeById = executeById;
   }
 
   /**
@@ -45,14 +45,13 @@ export class ScheduleTaskExecutorAdapter implements ITaskHandler {
    */
   async execute(taskId: string, context?: unknown): Promise<void> {
     try {
-      logger.info(`🚀 执行 Schedule 任务`, { taskId });
+      logger.info(`执行 Schedule 任务`, { taskId });
 
-      // 调用现有的执行器
-      await this.executor.executeTaskById(taskId);
+      await this.executeById.execute(taskId);
 
-      logger.info(`✅ Schedule 任务执行完成`, { taskId });
+      logger.info(`Schedule 任务执行完成`, { taskId });
     } catch (error) {
-      logger.error(`❌ Schedule 任务执行失败`, { taskId, error });
+      logger.error(`Schedule 任务执行失败`, { taskId, error });
       throw error;
     }
   }

@@ -2,27 +2,34 @@
  * Authentication transport handler mapping.
  * Authentication 传输层处理器映射。
  *
- * This file converts the module facade into the function signatures required by
- * controllers. It is shared by HTTP and Electron transports so the mapping is
- * defined once.
- *
- * 这个文件把模块门面转换成控制器所需的函数签名。
- * HTTP 和 Electron 共用这一层，避免重复定义同样的 handler 映射。
+ * Bridges the transport-neutral AuthenticationApplicationPort (ExecutionContext)
+ * to the controller port (Context). Passes through all parameters.
  */
 
+import type { Context } from '@dailyuse/contracts/shared';
 import type { AuthenticationUseCases } from '../controllers/auth.controller';
 import type { AuthenticationApplicationPort } from '../infrastructure-server';
 
-/**
- * Creates transport handlers from the application port.
- * 从应用端口创建传输层处理器。
- *
- * The authentication application port already matches the controller port signature,
- * so this mapping is identity (thin and boring — exactly as it should be).
- * 认证应用端口已经与控制器端口签名一致，所以这个映射是恒等映射（薄且无趣 — 正是理想状态）。
- */
 export function createAuthenticationTransportHandlers(
   api: AuthenticationApplicationPort,
 ): AuthenticationUseCases {
-  return api;
+  return {
+    register: (data, cx: Context, deviceId: string) =>
+      api.register(data, cx, deviceId),
+    registerByPhone: (data, cx: Context) => api.registerByPhone(data, cx),
+    login: (data, cx: Context, deviceId: string) =>
+      api.login(data, cx, deviceId),
+    loginByPhone: (data, cx: Context) => api.loginByPhone(data, cx),
+    sendSmsCode: (data) => api.sendSmsCode(data),
+    logout: (cx: Context) => api.logout(cx),
+    refreshToken: (data, cx: Context) => api.refreshToken(data, cx),
+    getCurrentUser: (cx: Context, sessionId?: string) =>
+      api.getCurrentUser(cx, sessionId),
+    listSessions: (cx: Context, sessionId?: string) =>
+      api.listSessions(cx, sessionId),
+    revokeSession: (data, cx: Context) => api.revokeSession(data, cx),
+    changePassword: (data, cx: Context) => api.changePassword(data, cx),
+    forgotPassword: (data) => api.forgotPassword(data),
+    resetPassword: (data) => api.resetPassword(data),
+  };
 }

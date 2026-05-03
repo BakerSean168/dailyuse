@@ -1,0 +1,45 @@
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import { EditorSession } from '../../../domain-server/entities/editor-session';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import type { EditorSessionServerDTO, SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
+import { persistWorkspaceSessionState } from './workspace-helpers';
+
+export class AddWorkspaceSessionUseCase {
+  constructor(
+    private readonly workspaceRepository: IEditorWorkspaceRepository,
+    private readonly sessionRepository: IEditorSessionRepository,
+    private readonly groupRepository: IEditorGroupRepository,
+    private readonly tabRepository: IEditorTabRepository,
+  ) {}
+
+  async execute(params: {
+    workspaceId: string;
+    name: string;
+    layout?: Partial<SessionLayoutServerDTO>;
+  }): Promise<Result<EditorSessionServerDTO>> {
+    const workspace = await this.workspaceRepository.findById(params.workspaceId);
+    if (!workspace) {
+      return error('NOT_FOUND', `Workspace not found: ${params.workspaceId}`);
+    }
+
+    const session = EditorSession.create({
+      workspaceId: workspace.id,
+      identityId: workspace.identityId,
+      name: params.name,
+      layout: params.layout ?? undefined,
+    });
+
+    await persistWorkspaceSessionState(
+      session,
+      this.sessionRepository,
+      this.groupRepository,
+      this.tabRepository,
+    );
+
+    return ok(session.toServerDTO());
+  }
+}

@@ -23,37 +23,37 @@ import type {
 } from '../domain-server';
 import { GoalPolicy, FocusSessionPolicy } from '../domain-server';
 import {
-  CreateGoal,
-  GetGoal,
-  ListGoals,
-  UpdateGoal,
-  DeleteGoal,
-  ArchiveGoal,
-  ArchiveExpiredGoals,
-  ActivateGoal,
-  CompleteGoal,
-  SearchGoals,
-  ListGoalFolders,
-  CreateGoalFolder,
-  GetGoalFolder,
-  UpdateGoalFolder,
-  DeleteGoalFolder,
-  AddGoalKeyResult,
-  UpdateGoalKeyResult,
-  UpdateGoalKeyResultProgress,
-  DeleteGoalKeyResult,
-  AddGoalReview,
-  ListGoalReviews,
-  UpdateGoalReview,
-  DeleteGoalReview,
-  CreateGoalRecord,
-  ListGoalRecords,
-  DeleteGoalRecord,
-  PermanentlyDeleteGoal,
-  GetCurrentFocusMode,
-  ActivateFocusMode,
-  DeactivateFocusMode,
-  ExtendFocusMode,
+  CreateGoalUseCase,
+  GetGoalUseCase,
+  ListGoalsUseCase,
+  UpdateGoalUseCase,
+  DeleteGoalUseCase,
+  ArchiveGoalUseCase,
+  ArchiveExpiredGoalsUseCase,
+  ActivateGoalUseCase,
+  CompleteGoalUseCase,
+  SearchGoalsUseCase,
+  ListGoalFoldersUseCase,
+  CreateGoalFolderUseCase,
+  GetGoalFolderUseCase,
+  UpdateGoalFolderUseCase,
+  DeleteGoalFolderUseCase,
+  AddGoalKeyResultUseCase,
+  UpdateGoalKeyResultUseCase,
+  UpdateGoalKeyResultProgressUseCase,
+  DeleteGoalKeyResultUseCase,
+  AddGoalReviewUseCase,
+  ListGoalReviewsUseCase,
+  UpdateGoalReviewUseCase,
+  DeleteGoalReviewUseCase,
+  CreateGoalRecordUseCase,
+  ListGoalRecordsUseCase,
+  DeleteGoalRecordUseCase,
+  PermanentlyDeleteGoalUseCase,
+  GetCurrentFocusModeUseCase,
+  ActivateFocusModeUseCase,
+  DeactivateFocusModeUseCase,
+  ExtendFocusModeUseCase,
 } from '../application-server';
 import type { Result } from '@dailyuse/contracts/result';
 import type {
@@ -77,13 +77,13 @@ import type {
   UpdateGoalFolderRes,
   GoalServerDTO,
 } from '@dailyuse/contracts/goal';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/domain-shared';
 import type {
   ListGoalRecordsParams,
   ListGoalRecordsResult,
-} from '../application-server/use-cases/queries/list-goal-records';
-import type { ListGoalReviewsResult } from '../application-server/use-cases/queries/list-goal-reviews';
+} from '../application-server/use-cases/queries/list-goal-records.use-case';
+import type { ListGoalReviewsResult } from '../application-server/use-cases/queries/list-goal-reviews.use-case';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the goal server runtime needs from the outside.
@@ -132,47 +132,47 @@ export interface GoalModuleRuntimeContribution {
 
 export interface GoalModuleUseCases {
   // Goal CRUD / 目标增删改查
-  readonly createGoal: CreateGoal;
-  readonly getGoal: GetGoal;
-  readonly listGoals: ListGoals;
-  readonly updateGoal: UpdateGoal;
-  readonly deleteGoal: DeleteGoal;
-  readonly permanentlyDeleteGoal: PermanentlyDeleteGoal;
-  readonly archiveGoal: ArchiveGoal;
-  readonly archiveExpiredGoals: ArchiveExpiredGoals;
-  readonly activateGoal: ActivateGoal;
-  readonly completeGoal: CompleteGoal;
-  readonly searchGoals: SearchGoals;
+  readonly createGoal: CreateGoalUseCase;
+  readonly getGoal: GetGoalUseCase;
+  readonly listGoals: ListGoalsUseCase;
+  readonly updateGoal: UpdateGoalUseCase;
+  readonly deleteGoal: DeleteGoalUseCase;
+  readonly permanentlyDeleteGoal: PermanentlyDeleteGoalUseCase;
+  readonly archiveGoal: ArchiveGoalUseCase;
+  readonly archiveExpiredGoals: ArchiveExpiredGoalsUseCase;
+  readonly activateGoal: ActivateGoalUseCase;
+  readonly completeGoal: CompleteGoalUseCase;
+  readonly searchGoals: SearchGoalsUseCase;
 
   // Folder CRUD / 文件夹增删改查
-  readonly listGoalFolders: ListGoalFolders;
-  readonly createGoalFolder: CreateGoalFolder;
-  readonly getGoalFolder: GetGoalFolder;
-  readonly updateGoalFolder: UpdateGoalFolder;
-  readonly deleteGoalFolder: DeleteGoalFolder;
+  readonly listGoalFolders: ListGoalFoldersUseCase;
+  readonly createGoalFolder: CreateGoalFolderUseCase;
+  readonly getGoalFolder: GetGoalFolderUseCase;
+  readonly updateGoalFolder: UpdateGoalFolderUseCase;
+  readonly deleteGoalFolder: DeleteGoalFolderUseCase;
 
   // Key Result / 关键结果
-  readonly addKeyResult: AddGoalKeyResult;
-  readonly updateKeyResult: UpdateGoalKeyResult;
-  readonly updateKeyResultProgress: UpdateGoalKeyResultProgress;
-  readonly deleteKeyResult: DeleteGoalKeyResult;
+  readonly addKeyResult: AddGoalKeyResultUseCase;
+  readonly updateKeyResult: UpdateGoalKeyResultUseCase;
+  readonly updateKeyResultProgress: UpdateGoalKeyResultProgressUseCase;
+  readonly deleteKeyResult: DeleteGoalKeyResultUseCase;
 
   // Review / 复盘
-  readonly addReview: AddGoalReview;
-  readonly listReviews: ListGoalReviews;
-  readonly updateReview: UpdateGoalReview;
-  readonly deleteReview: DeleteGoalReview;
+  readonly addReview: AddGoalReviewUseCase;
+  readonly listReviews: ListGoalReviewsUseCase;
+  readonly updateReview: UpdateGoalReviewUseCase;
+  readonly deleteReview: DeleteGoalReviewUseCase;
 
   // Record / 进度记录
-  readonly createRecord: CreateGoalRecord;
-  readonly listRecords: ListGoalRecords;
-  readonly deleteRecord: DeleteGoalRecord;
+  readonly createRecord: CreateGoalRecordUseCase;
+  readonly listRecords: ListGoalRecordsUseCase;
+  readonly deleteRecord: DeleteGoalRecordUseCase;
 
   // Focus Mode / 专注模式
-  readonly getCurrentFocusMode: GetCurrentFocusMode;
-  readonly activateFocusMode: ActivateFocusMode;
-  readonly deactivateFocusMode: DeactivateFocusMode;
-  readonly extendFocusMode: ExtendFocusMode;
+  readonly getCurrentFocusMode: GetCurrentFocusModeUseCase;
+  readonly activateFocusMode: ActivateFocusModeUseCase;
+  readonly deactivateFocusMode: DeactivateFocusModeUseCase;
+  readonly extendFocusMode: ExtendFocusModeUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +190,7 @@ export interface GoalModuleUseCases {
 /** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
 export interface GoalApplicationPort {
   // Goal CRUD / 目标增删改查
-  createGoal(input: CreateGoalReq, context: Context): Promise<Result<CreateGoalRes>>;
+  createGoal(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<CreateGoalRes>>;
   getGoal(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
   listGoals(input: ListGoalsQuery): Promise<Result<QueryGoalsRes>>;
   updateGoal(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
@@ -199,7 +199,7 @@ export interface GoalApplicationPort {
   archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
   archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
   activateGoal(id: string): Promise<Result<GoalClientDTO>>;
-  completeGoal(id: string): Promise<{ goal: GoalServerDTO }>;
+  completeGoal(id: string): Promise<Result<{ goal: GoalServerDTO }>>;
   searchGoals(
     identityId: string,
     query: string,
@@ -207,18 +207,18 @@ export interface GoalApplicationPort {
   ): Promise<Result<QueryGoalsRes>>;
 
   // Folder CRUD / 文件夹增删改查
-  listGoalFolders(input: ListGoalFoldersQuery): Promise<QueryGoalFoldersRes>;
+  listGoalFolders(input: ListGoalFoldersQuery): Promise<Result<QueryGoalFoldersRes>>;
   createGoalFolder(
     identityId: IdentityId,
     input: CreateGoalFolderReq,
-  ): Promise<GoalFolderClientDTO>;
-  getGoalFolder(id: string): Promise<GoalFolderClientDTO | null>;
+  ): Promise<Result<GoalFolderClientDTO>>;
+  getGoalFolder(id: string): Promise<Result<GoalFolderClientDTO>>;
   updateGoalFolder(
     id: string,
     identityId: string,
     input: UpdateGoalFolderReq,
-  ): Promise<UpdateGoalFolderRes>;
-  deleteGoalFolder(id: string, identityId: string): Promise<void>;
+  ): Promise<Result<UpdateGoalFolderRes>>;
+  deleteGoalFolder(id: string, identityId: string): Promise<Result<void>>;
 
   // Key Result / 关键结果
   addKeyResult(
@@ -344,52 +344,52 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
 
   return {
     // Goal CRUD / 目标增删改查
-    createGoal: new CreateGoal(goalRepository, goalPolicy),
-    getGoal: new GetGoal(goalRepository),
-    listGoals: new ListGoals(goalRepository),
-    updateGoal: new UpdateGoal(goalRepository, goalPolicy),
-    deleteGoal: new DeleteGoal(goalRepository, goalPolicy),
-    permanentlyDeleteGoal: new PermanentlyDeleteGoal(goalRepository, goalPolicy),
-    archiveGoal: new ArchiveGoal(goalRepository, goalPolicy),
-    archiveExpiredGoals: new ArchiveExpiredGoals(goalRepository),
-    activateGoal: new ActivateGoal(goalRepository, goalPolicy),
-    completeGoal: new CompleteGoal(goalRepository, goalPolicy),
-    searchGoals: new SearchGoals(goalRepository),
+    createGoal: new CreateGoalUseCase(goalRepository, goalPolicy),
+    getGoal: new GetGoalUseCase(goalRepository),
+    listGoals: new ListGoalsUseCase(goalRepository),
+    updateGoal: new UpdateGoalUseCase(goalRepository, goalPolicy),
+    deleteGoal: new DeleteGoalUseCase(goalRepository, goalPolicy),
+    permanentlyDeleteGoal: new PermanentlyDeleteGoalUseCase(goalRepository, goalPolicy),
+    archiveGoal: new ArchiveGoalUseCase(goalRepository, goalPolicy),
+    archiveExpiredGoals: new ArchiveExpiredGoalsUseCase(goalRepository),
+    activateGoal: new ActivateGoalUseCase(goalRepository, goalPolicy),
+    completeGoal: new CompleteGoalUseCase(goalRepository, goalPolicy),
+    searchGoals: new SearchGoalsUseCase(goalRepository),
 
     // Folder CRUD / 文件夹增删改查
-    listGoalFolders: new ListGoalFolders(goalFolderRepository),
-    createGoalFolder: new CreateGoalFolder(goalFolderRepository),
-    getGoalFolder: new GetGoalFolder(goalFolderRepository),
-    updateGoalFolder: new UpdateGoalFolder(goalFolderRepository),
-    deleteGoalFolder: new DeleteGoalFolder(goalFolderRepository),
+    listGoalFolders: new ListGoalFoldersUseCase(goalFolderRepository),
+    createGoalFolder: new CreateGoalFolderUseCase(goalFolderRepository),
+    getGoalFolder: new GetGoalFolderUseCase(goalFolderRepository),
+    updateGoalFolder: new UpdateGoalFolderUseCase(goalFolderRepository),
+    deleteGoalFolder: new DeleteGoalFolderUseCase(goalFolderRepository),
 
     // Key Result / 关键结果
-    addKeyResult: new AddGoalKeyResult(goalRepository, goalPolicy),
-    updateKeyResult: new UpdateGoalKeyResult(goalRepository, goalPolicy),
-    updateKeyResultProgress: new UpdateGoalKeyResultProgress(goalRepository, goalPolicy),
-    deleteKeyResult: new DeleteGoalKeyResult(goalRepository, goalPolicy),
+    addKeyResult: new AddGoalKeyResultUseCase(goalRepository, goalPolicy),
+    updateKeyResult: new UpdateGoalKeyResultUseCase(goalRepository, goalPolicy),
+    updateKeyResultProgress: new UpdateGoalKeyResultProgressUseCase(goalRepository, goalPolicy),
+    deleteKeyResult: new DeleteGoalKeyResultUseCase(goalRepository, goalPolicy),
 
     // Review / 复盘
-    addReview: new AddGoalReview(goalRepository, goalPolicy),
-    listReviews: new ListGoalReviews(goalRepository),
-    updateReview: new UpdateGoalReview(goalRepository, goalPolicy),
-    deleteReview: new DeleteGoalReview(goalRepository, goalPolicy),
+    addReview: new AddGoalReviewUseCase(goalRepository, goalPolicy),
+    listReviews: new ListGoalReviewsUseCase(goalRepository),
+    updateReview: new UpdateGoalReviewUseCase(goalRepository, goalPolicy),
+    deleteReview: new DeleteGoalReviewUseCase(goalRepository, goalPolicy),
 
     // Record / 进度记录
-    createRecord: new CreateGoalRecord(goalRepository, goalRecordRepository),
-    listRecords: new ListGoalRecords(goalRecordRepository, goalRepository),
-    deleteRecord: new DeleteGoalRecord(goalRecordRepository),
+    createRecord: new CreateGoalRecordUseCase(goalRepository, goalRecordRepository),
+    listRecords: new ListGoalRecordsUseCase(goalRecordRepository, goalRepository),
+    deleteRecord: new DeleteGoalRecordUseCase(goalRecordRepository),
 
     // Focus Mode / 专注模式
-    getCurrentFocusMode: new GetCurrentFocusMode(focusModeRepository),
-    activateFocusMode: new ActivateFocusMode(
+    getCurrentFocusMode: new GetCurrentFocusModeUseCase(focusModeRepository),
+    activateFocusMode: new ActivateFocusModeUseCase(
       focusModeRepository,
       goalRepository,
       goalPolicy,
       focusSessionPolicy,
     ),
-    deactivateFocusMode: new DeactivateFocusMode(focusModeRepository),
-    extendFocusMode: new ExtendFocusMode(focusModeRepository),
+    deactivateFocusMode: new DeactivateFocusModeUseCase(focusModeRepository),
+    extendFocusMode: new ExtendFocusModeUseCase(focusModeRepository),
   };
 }
 
@@ -426,7 +426,7 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
 
   const api: GoalApplicationPort = {
     // Goal CRUD / 目标增删改查
-    createGoal: (input, context) => useCases.createGoal.execute(input, context),
+    createGoal: (input, cx) => useCases.createGoal.execute(input, cx),
     getGoal: (id, includeChildren) => useCases.getGoal.execute(id, includeChildren),
     listGoals: (input) => useCases.listGoals.execute(input),
     updateGoal: (id, input) => useCases.updateGoal.execute(id, input),

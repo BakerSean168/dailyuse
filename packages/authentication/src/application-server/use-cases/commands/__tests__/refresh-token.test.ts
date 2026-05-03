@@ -9,14 +9,14 @@
  * - Returning updated auth response
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { RefreshToken } from '../refresh-token';
+import { RefreshTokenUseCase } from '../refresh-token.use-case';
 import { AuthSession } from '@/domain-server/aggregates/auth-session';
 import { AuthIdentity } from '@/domain-server/aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '@/domain-server/repositories/i-auth-identity.repository';
 import type { IAuthSessionRepository } from '@/domain-server/repositories/i-auth-session.repository';
 import type { IPasswordHasher } from '@/domain-shared';
 import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { AuthSessionId, SessionStatus, DeviceInfo } from '@/domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { REFRESH_TOKEN_DURATION_MS } from '@/domain-server/aggregates/auth-session';
@@ -82,8 +82,8 @@ function setTokenPayload(
   });
 }
 
-function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440001'): Context {
-  return { identityId, deviceId: 'test-device-001' };
+function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440001'): ExecutionContext {
+  return { identityId };
 }
 
 function buildActiveSession(
@@ -119,17 +119,17 @@ describe('RefreshToken (Application Command)', () => {
   let identityRepo: IAuthIdentityRepository;
   let sessionRepo: IAuthSessionRepository;
   let tokenProvider: ITokenProvider;
-  let useCase: RefreshToken;
+  let useCase: RefreshTokenUseCase;
 
   beforeEach(() => {
     tokenProvider = createMockTokenProvider('matching-hash');
     identityRepo = createMockIdentityRepo();
     sessionRepo = createMockSessionRepo();
-    useCase = new RefreshToken(sessionRepo, identityRepo, tokenProvider);
+    useCase = new RefreshTokenUseCase(sessionRepo, identityRepo, tokenProvider);
   });
 
   describe('execute', () => {
-    it('should return new auth tokens on successful refresh', async () => {
+    it('should return ok with new auth tokens on successful refresh', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
@@ -143,10 +143,12 @@ describe('RefreshToken (Application Command)', () => {
         createContext(identityId),
       );
 
-      expect(result.accessToken).toBe('new-access-token');
-      expect(result.refreshToken).toBe('new-refresh-token');
-      expect(result.identity).toBeDefined();
-      expect(result.session).toBeDefined();
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok result');
+      expect(result.data.accessToken).toBe('new-access-token');
+      expect(result.data.refreshToken).toBe('new-refresh-token');
+      expect(result.data.identity).toBeDefined();
+      expect(result.data.session).toBeDefined();
     });
 
     it('should update the session refresh token hash', async () => {
@@ -165,18 +167,24 @@ describe('RefreshToken (Application Command)', () => {
       expect(sessionRepo.save).toHaveBeenCalledWith(session);
     });
 
-    it('should throw when no matching session found', async () => {
+    it('should return UNAUTHORIZED error when no matching session found', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       // No sessions at all
       setTokenPayload(tokenProvider, identityId, AuthSessionId.generate());
       (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(
-        useCase.execute({ refreshToken: 'invalid-token' }, createContext(identityId)),
-      ).rejects.toThrow('Invalid refresh token or session expired');
+      const result = await useCase.execute(
+        { refreshToken: 'invalid-token' },
+        createContext(identityId),
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('UNAUTHORIZED');
+      expect(result.error.message).toBe('Invalid refresh token or session expired');
     });
 
-    it('should throw when refresh token hash does not match', async () => {
+    it('should return UNAUTHORIZED error when refresh token hash does not match', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       // Session has a different hash
       const session = buildActiveSession(identityId, 'different-hash');
@@ -184,12 +192,18 @@ describe('RefreshToken (Application Command)', () => {
       setTokenPayload(tokenProvider, identityId, session.id);
       (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
 
-      await expect(
-        useCase.execute({ refreshToken: 'token-with-wrong-hash' }, createContext(identityId)),
-      ).rejects.toThrow('Invalid refresh token or session expired');
+      const result = await useCase.execute(
+        { refreshToken: 'token-with-wrong-hash' },
+        createContext(identityId),
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('UNAUTHORIZED');
+      expect(result.error.message).toBe('Invalid refresh token or session expired');
     });
 
-    it('should throw when session is expired', async () => {
+    it('should return UNAUTHORIZED error when session is expired', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const expiredSession = AuthSession.load({
         id: AuthSessionId.generate(),
@@ -206,12 +220,18 @@ describe('RefreshToken (Application Command)', () => {
       setTokenPayload(tokenProvider, identityId, expiredSession.id);
       (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(expiredSession);
 
-      await expect(
-        useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId)),
-      ).rejects.toThrow('Invalid refresh token or session expired');
+      const result = await useCase.execute(
+        { refreshToken: 'old-refresh-token' },
+        createContext(identityId),
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('UNAUTHORIZED');
+      expect(result.error.message).toBe('Invalid refresh token or session expired');
     });
 
-    it('should throw when session is revoked', async () => {
+    it('should return UNAUTHORIZED error when session is revoked', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const revokedSession = AuthSession.load({
         id: AuthSessionId.generate(),
@@ -228,12 +248,18 @@ describe('RefreshToken (Application Command)', () => {
       setTokenPayload(tokenProvider, identityId, revokedSession.id);
       (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(revokedSession);
 
-      await expect(
-        useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId)),
-      ).rejects.toThrow('Invalid refresh token or session expired');
+      const result = await useCase.execute(
+        { refreshToken: 'old-refresh-token' },
+        createContext(identityId),
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('UNAUTHORIZED');
+      expect(result.error.message).toBe('Invalid refresh token or session expired');
     });
 
-    it('should throw when identity not found after session match', async () => {
+    it('should return NOT_FOUND error when identity not found after session match', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
       const session = buildActiveSession(identityId, 'matching-hash');
 
@@ -241,9 +267,15 @@ describe('RefreshToken (Application Command)', () => {
       (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(
-        useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId)),
-      ).rejects.toThrow('Identity not found');
+      const result = await useCase.execute(
+        { refreshToken: 'old-refresh-token' },
+        createContext(identityId),
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toBe('Identity not found');
     });
 
     it('should generate new auth tokens via token provider', async () => {
@@ -277,7 +309,9 @@ describe('RefreshToken (Application Command)', () => {
         createContext(identityId),
       );
 
-      expect(result.session.isCurrentSession).toBe(true);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok result');
+      expect(result.data.session.isCurrentSession).toBe(true);
     });
   });
 });

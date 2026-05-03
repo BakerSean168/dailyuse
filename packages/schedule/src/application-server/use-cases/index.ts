@@ -16,5 +16,9 @@ export * from './queries';
 
 // Utilities and Supporting Infrastructure
 export * from './calculate-next-run';
-export * from './schedule-task-executor';
+export * from './schedule-executor-helpers';
+export * from './find-due-schedule-tasks.use-case';
+export * from './execute-schedule-task.use-case';
+export * from './execute-due-schedule-tasks.use-case';
+export * from './execute-schedule-task-by-id.use-case';
 export * from './schedule-task-executor-adapter';

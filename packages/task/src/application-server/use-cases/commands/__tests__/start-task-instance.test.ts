@@ -3,18 +3,18 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { StartTaskInstance } from '../start-task-instance';
+import { StartTaskInstanceUseCaseUseCase } from '../start-task-instance.use-case';
 
-describe('StartTaskInstance', () => {
+describe('StartTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: StartTaskInstance;
+  let useCase: StartTaskInstanceUseCase;
 
   beforeEach(() => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new StartTaskInstance(instanceRepo);
+    useCase = new StartTaskInstanceUseCase(instanceRepo);
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {

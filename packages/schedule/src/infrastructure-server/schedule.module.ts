@@ -34,7 +34,7 @@ import {
 import { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
 import { ScheduleConflictDetectionService } from '../application-server/services/schedule-conflict-detection-service';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { ok, fail, isOk } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   CreateScheduleRequest,
@@ -244,7 +244,7 @@ export function createScheduleModule(
    */
   const api: ScheduleApplicationPort = {
     createTask: async (data, ctx) => {
-      const result = await useCases.createScheduleTask.execute({
+      return useCases.createScheduleTask.execute({
         name: data.name,
         sourceModule: data.sourceModule,
         sourceId: data.sourceEntityId,
@@ -255,37 +255,33 @@ export function createScheduleModule(
         enabled: data.enabled,
         identityId: ctx.identityId,
       });
-      return ok(result);
     },
     listTasks: async (query, ctx) => {
-      let tasks;
       if (query.status) {
-        tasks = await useCases.listScheduleTasksByStatus.execute(query.status as any);
+        return useCases.listScheduleTasksByStatus.execute(query.status as any);
       } else if (query.sourceModule && query.sourceEntityId) {
-        tasks = await useCases.listScheduleTasksBySource.execute(
+        return useCases.listScheduleTasksBySource.execute(
           query.sourceModule as any,
           query.sourceEntityId as string,
         );
       } else {
-        tasks = await useCases.listScheduleTasksByAccount.execute(ctx.identityId);
+        return useCases.listScheduleTasksByAccount.execute(ctx.identityId);
       }
-      return ok(tasks);
     },
     updateTask: async (id, data) => {
-      const result = await useCases.updateScheduleTask.execute({
+      return useCases.updateScheduleTask.execute({
         id,
         scheduleConfig: data.schedule as any,
         retryPolicy: data.retryPolicy as any,
         enabled: data.enabled,
         description: data.description,
       });
-      return ok(result);
     },
-    deleteTask: async (id) => ok(await useCases.deleteScheduleTask.execute(id)),
-    pauseTask: async (id) => ok(await useCases.pauseScheduleTask.execute(id)),
-    resumeTask: async (id) => ok(await useCases.resumeScheduleTask.execute(id)),
-    triggerTask: async (id) => ok(await useCases.triggerScheduleTask.execute(id)),
-    getTask: async (id) => ok(await useCases.getScheduleTask.execute(id)),
+    deleteTask: async (id) => useCases.deleteScheduleTask.execute(id),
+    pauseTask: async (id) => useCases.pauseScheduleTask.execute(id),
+    resumeTask: async (id) => useCases.resumeScheduleTask.execute(id),
+    triggerTask: async (id) => useCases.triggerScheduleTask.execute(id),
+    getTask: async (id) => useCases.getScheduleTask.execute(id),
     completeTask: async (id) => {
       const task = await scheduleTaskRepository.findById(id as any);
       if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
@@ -307,13 +303,13 @@ export function createScheduleModule(
     batchDeleteTasks: async (ids) => {
       const results = { success: [] as string[], failed: [] as { id: string; error: string }[] };
       for (const id of ids) {
-        try {
-          await useCases.deleteScheduleTask.execute(id);
+        const result = await useCases.deleteScheduleTask.execute(id);
+        if (isOk(result)) {
           results.success.push(id);
-        } catch (err) {
+        } else {
           results.failed.push({
             id,
-            error: err instanceof Error ? err.message : 'Unknown error',
+            error: result.error.message,
           });
         }
       }

@@ -8,7 +8,7 @@ import type {
   IAIChatExecutionPort,
 } from '../../../ports';
 import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
-import { AIProviderConfigService } from '../a-i-provider-config-service';
+import { TestAIProviderConnectionUseCase } from '../test-ai-provider-connection.use-case';
 
 class StubProviderConfigRepository {
   constructor(
@@ -62,10 +62,10 @@ class StubChatExecutionPort implements IAIChatExecutionPort {
   }));
 }
 
-describe('AIProviderConfigService', () => {
+describe('TestAIProviderConnectionUseCase', () => {
   it('tests a saved provider through the shared execution port', async () => {
     const executionPort = new StubChatExecutionPort();
-    const service = new AIProviderConfigService(
+    const useCase = new TestAIProviderConnectionUseCase(
       new StubProviderConfigRepository({
         id: 'provider-1',
         identityId: 'identity-1',
@@ -86,7 +86,7 @@ describe('AIProviderConfigService', () => {
       executionPort,
     );
 
-    const result = await service.testConnection('identity-1', {
+    const result = await useCase.execute('identity-1', {
       providerId: 'provider-1' as TestAIProviderReq['providerId'],
     });
 
@@ -103,16 +103,19 @@ describe('AIProviderConfigService', () => {
       messages: [{ role: 'user', content: 'Hello, this is a test.' }],
     });
 
-    expect(result).toEqual({
-      ok: true,
-      response: 'Provider connection ok',
-      model: 'gpt-4o-mini',
-      latencyMs: expect.any(Number),
-    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({
+        ok: true,
+        response: 'Provider connection ok',
+        model: 'gpt-4o-mini',
+        latencyMs: expect.any(Number),
+      });
+    }
   });
 
-  it('rejects testing a provider owned by another identity', async () => {
-    const service = new AIProviderConfigService(
+  it('returns error result for provider owned by another identity', async () => {
+    const useCase = new TestAIProviderConnectionUseCase(
       new StubProviderConfigRepository({
         id: 'provider-1',
         identityId: 'someone-else',
@@ -133,10 +136,14 @@ describe('AIProviderConfigService', () => {
       new StubChatExecutionPort(),
     );
 
-    await expect(
-      service.testConnection('identity-1', {
-        providerId: 'provider-1' as TestAIProviderReq['providerId'],
-      }),
-    ).rejects.toThrow('Provider not found');
+    const result = await useCase.execute('identity-1', {
+      providerId: 'provider-1' as TestAIProviderReq['providerId'],
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.ok).toBe(false);
+      expect(result.data.error).toBe('Provider not found');
+    }
   });
 });

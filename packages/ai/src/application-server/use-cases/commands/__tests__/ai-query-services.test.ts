@@ -31,9 +31,12 @@ import type {
   KnowledgeQueryResult,
   KnowledgeSourceResource,
 } from '../../../ports';
-import { AIAnalyticsQueryService } from '../ai-analytics-query.service';
-import { AIKnowledgeIndexService } from '../ai-knowledge-index.service';
-import { AIKnowledgeQueryService } from '../ai-knowledge-query.service';
+import { QueryAIAnalyticsUseCase } from '../query-ai-analytics.use-case';
+import { SyncRelevantKnowledgeUseCase } from '../sync-relevant-knowledge.use-case';
+import { ReindexAllKnowledgeUseCase } from '../reindex-all-knowledge.use-case';
+import { QueryKnowledgeUseCase } from '../query-knowledge.use-case';
+import { ExpandKnowledgeUseCase } from '../expand-knowledge.use-case';
+import { ReindexKnowledgeUseCase } from '../reindex-knowledge.use-case';
 import { createAIModule } from '../../../../infrastructure-server/ai.module';
 
 class StubProviderConfigRepository {
@@ -239,13 +242,13 @@ describe('AIKnowledgeQueryService', () => {
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
     const executionLogPort = new StubExecutionLogPort();
-    const indexService = new AIKnowledgeIndexService(
+    const syncRelevant = new SyncRelevantKnowledgeUseCase(
       sourcePort,
       knowledgeIndexRepository,
       ingestionPort,
       executionLogPort,
     );
-    const service = new AIKnowledgeQueryService(
+    const service = new QueryKnowledgeUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -259,12 +262,12 @@ describe('AIKnowledgeQueryService', () => {
           name: 'Main provider',
         },
       ]) as unknown as IAIProviderConfigRepository,
-      indexService,
+      syncRelevant,
       queryPort,
       executionLogPort,
     );
 
-    const result = await service.queryKnowledge('identity-1', {
+    const result = await service.execute('identity-1', {
       query: 'How does knowledge grounding work?',
     } satisfies QueryKnowledgeReq);
 
@@ -307,10 +310,12 @@ describe('AIKnowledgeQueryService', () => {
         }),
       }),
     );
-    expect(result.answer).toContain('grounded');
-    expect(result.citations[0]?.resourcePath).toBe('notes/python-ai.md');
-    expect(result.providerId).toBe('provider-1');
-    expect(result.matchedResourceCount).toBe(1);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.answer).toContain('grounded');
+    expect(result.data.citations[0]?.resourcePath).toBe('notes/python-ai.md');
+    expect(result.data.providerId).toBe('provider-1');
+    expect(result.data.matchedResourceCount).toBe(1);
   });
 
   it('backs off to broader indexable resources when lexical prefilter recall is too narrow', async () => {
@@ -332,13 +337,13 @@ describe('AIKnowledgeQueryService', () => {
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
     const executionLogPort = new StubExecutionLogPort();
-    const indexService = new AIKnowledgeIndexService(
+    const syncRelevant = new SyncRelevantKnowledgeUseCase(
       sourcePort,
       knowledgeIndexRepository,
       ingestionPort,
       executionLogPort,
     );
-    const service = new AIKnowledgeQueryService(
+    const service = new QueryKnowledgeUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -352,12 +357,12 @@ describe('AIKnowledgeQueryService', () => {
           name: 'Main provider',
         },
       ]) as unknown as IAIProviderConfigRepository,
-      indexService,
+      syncRelevant,
       queryPort,
       executionLogPort,
     );
 
-    const result = await service.queryKnowledge('identity-1', {
+    const result = await service.execute('identity-1', {
       query: 'How does grounding from repos cite sources?',
     } satisfies QueryKnowledgeReq);
 
@@ -368,7 +373,9 @@ describe('AIKnowledgeQueryService', () => {
     );
     expect(sourcePort.listIndexableResources).toHaveBeenCalledWith('identity-1', 32);
     expect(queryPort.query).toHaveBeenCalledTimes(1);
-    expect(result.answer).toContain('grounded');
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.answer).toContain('grounded');
   });
 
   it('prefers indexed retrieval-layer candidates before falling back to raw repository lexical search', async () => {
@@ -393,13 +400,13 @@ describe('AIKnowledgeQueryService', () => {
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
     const executionLogPort = new StubExecutionLogPort();
-    const indexService = new AIKnowledgeIndexService(
+    const syncRelevant = new SyncRelevantKnowledgeUseCase(
       sourcePort,
       knowledgeIndexRepository,
       ingestionPort,
       executionLogPort,
     );
-    const service = new AIKnowledgeQueryService(
+    const service = new QueryKnowledgeUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -413,12 +420,12 @@ describe('AIKnowledgeQueryService', () => {
           name: 'Main provider',
         },
       ]) as unknown as IAIProviderConfigRepository,
-      indexService,
+      syncRelevant,
       queryPort,
       executionLogPort,
     );
 
-    await service.queryKnowledge('identity-1', {
+    await service.execute('identity-1', {
       query: 'How does repository grounding work?',
     } satisfies QueryKnowledgeReq);
 
@@ -438,13 +445,13 @@ describe('AIKnowledgeQueryService', () => {
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
     const executionLogPort = new StubExecutionLogPort();
-    const indexService = new AIKnowledgeIndexService(
+    const syncRelevant = new SyncRelevantKnowledgeUseCase(
       sourcePort,
       knowledgeIndexRepository,
       ingestionPort,
       executionLogPort,
     );
-    const service = new AIKnowledgeQueryService(
+    const service = new ExpandKnowledgeUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -458,12 +465,12 @@ describe('AIKnowledgeQueryService', () => {
           name: 'Main provider',
         },
       ]) as unknown as IAIProviderConfigRepository,
-      indexService,
+      syncRelevant,
       queryPort,
       executionLogPort,
     );
 
-    const result = await service.expandKnowledge('identity-1', {
+    const result = await service.execute('identity-1', {
       instruction: 'Expand this note with citation guidance.',
       currentContent: '# Repository Grounding',
     } satisfies ExpandKnowledgeReq);
@@ -485,25 +492,26 @@ describe('AIKnowledgeQueryService', () => {
         }),
       }),
     );
-    expect(result.expandedContent).toContain('Grounded answers');
-    expect(result.citations[0]?.resourcePath).toBe('notes/python-ai.md');
-    expect(result.providerId).toBe('provider-1');
-    expect(result.matchedResourceCount).toBe(1);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.expandedContent).toContain('Grounded answers');
+    expect(result.data.citations[0]?.resourcePath).toBe('notes/python-ai.md');
+    expect(result.data.providerId).toBe('provider-1');
+    expect(result.data.matchedResourceCount).toBe(1);
   });
 
   it('reindexes knowledge with the active provider config so batch rebuilds can use provider embeddings', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
-    const queryPort = new StubKnowledgeQueryPort();
     const executionLogPort = new StubExecutionLogPort();
-    const indexService = new AIKnowledgeIndexService(
+    const reindexAll = new ReindexAllKnowledgeUseCase(
       sourcePort,
       knowledgeIndexRepository,
       ingestionPort,
       executionLogPort,
     );
-    const service = new AIKnowledgeQueryService(
+    const service = new ReindexKnowledgeUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -517,12 +525,10 @@ describe('AIKnowledgeQueryService', () => {
           name: 'Main provider',
         },
       ]) as unknown as IAIProviderConfigRepository,
-      indexService,
-      queryPort,
-      executionLogPort,
+      reindexAll,
     );
 
-    await service.reindexKnowledge('identity-1', {
+    await service.execute('identity-1', {
       force: true,
       limit: 20,
     });
@@ -542,7 +548,7 @@ describe('AIAnalyticsQueryService', () => {
     const readPort = new StubAnalyticsReadPort();
     const queryPort = new StubAnalyticsQueryPort();
     const executionLogPort = new StubExecutionLogPort();
-    const service = new AIAnalyticsQueryService(
+    const service = new QueryAIAnalyticsUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -592,9 +598,11 @@ describe('AIAnalyticsQueryService', () => {
         }),
       }),
     );
-    expect(result.highlights).toEqual(['activeGoals: 4', 'task.overdue: 2']);
-    expect(result.providerId).toBe('provider-1');
-    expect(result.tokenUsage.totalTokens).toBe(26);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.highlights).toEqual(['activeGoals: 4', 'task.overdue: 2']);
+    expect(result.data.providerId).toBe('provider-1');
+    expect(result.data.tokenUsage.totalTokens).toBe(26);
   });
 });
 
@@ -634,7 +642,10 @@ describe('AI knowledge auto-index runtime', () => {
       knowledgeQueryPort: new StubKnowledgeQueryPort(),
     } as any);
 
-    await expect(aiModule.api.getCapabilities()).resolves.toEqual(
+    const capabilities = await aiModule.api.getCapabilities();
+    expect(capabilities.ok).toBe(true);
+    if (!capabilities.ok) throw new Error('expected ok');
+    expect(capabilities.data).toEqual(
       expect.objectContaining({
         supportsKnowledgeQuery: true,
         knowledgeIndexDiagnostics: {

@@ -10,7 +10,7 @@ import { ResourceBookmarkMemoryRepository } from '../../infrastructure-server/ad
 import { createRepositoryModule } from '../../infrastructure-server/repository.module';
 import { Repository } from '../../domain-server/aggregates/repository';
 import { Folder } from '../../domain-server/entities/folder';
-import { CreateRepository } from '../use-cases/commands/create-repository';
+import { CreateRepositoryUseCase } from '../use-cases/commands/create-repository.use-case';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import {
   REPOSITORY_RESOURCE_MUTATED_EVENT,
@@ -152,7 +152,7 @@ describe('Repository resource mutations', () => {
 
   it('returns the existing repository when createRepository is called again for the same user', async () => {
     const repositoryRepository = new RepositoryMemoryRepository();
-    const createRepository = new CreateRepository(repositoryRepository);
+    const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const first = await createRepository.execute({
       identityId: String(IdentityId.generate()),
@@ -161,17 +161,23 @@ describe('Repository resource mutations', () => {
       path: '/repo-1',
     });
 
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error('Expected first create success');
+
     const second = await createRepository.execute({
-      identityId: first.repository.identityId,
+      identityId: first.data.repository.identityId,
       name: 'Another Repository',
       type: 'Mixed' as any,
       path: '/repo-2',
     });
 
-    expect(second.repository.id).toBe(first.repository.id);
-    expect(second.repository.name).toBe(first.repository.name);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected second create success');
 
-    const repositories = await repositoryRepository.findByIdentityId(first.repository.identityId);
+    expect(second.data.repository.id).toBe(first.data.repository.id);
+    expect(second.data.repository.name).toBe(first.data.repository.name);
+
+    const repositories = await repositoryRepository.findByIdentityId(first.data.repository.identityId);
     expect(repositories).toHaveLength(1);
   });
 

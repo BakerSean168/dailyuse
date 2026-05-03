@@ -21,7 +21,7 @@ import {
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskInstanceController } from '../controllers/task-instance.controller';
+import type { TaskInstanceController } from '../../controllers/task-instance.controller';
 
 // ============ Types ============
 

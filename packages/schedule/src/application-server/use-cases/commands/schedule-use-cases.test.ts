@@ -120,10 +120,12 @@ describe('Schedule Use Cases', () => {
 
       const result = await useCase.execute(request);
 
-      expect(result).toBeDefined();
-      expect(result.name).toBe('Daily Report Generator');
-      expect(result.enabled).toBe(true);
-      expect(result.identityId).toBe('identity-1');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.name).toBe('Daily Report Generator');
+        expect(result.data.enabled).toBe(true);
+        expect(result.data.identityId).toBe('identity-1');
+      }
     });
 
     it('sets default values for optional fields', async () => {
@@ -137,8 +139,11 @@ describe('Schedule Use Cases', () => {
 
       const result = await useCase.execute(request);
 
-      expect(result.name).toBe('Daily Report Generator');
-      expect(result.sourceModule).toBe('notification');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.name).toBe('Daily Report Generator');
+        expect(result.data.sourceModule).toBe('notification');
+      }
     });
 
     it('persists the created task to repository', async () => {
@@ -146,10 +151,13 @@ describe('Schedule Use Cases', () => {
       const request = createValidCreateRequest();
 
       const result = await useCase.execute(request);
-      const persisted = await repository.findById(result.id);
 
-      expect(persisted).toBeDefined();
-      expect(persisted.name).toBe(request.name);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const persisted = await repository.findById(result.data.id);
+        expect(persisted).toBeDefined();
+        expect(persisted.name).toBe(request.name);
+      }
     });
 
     it('assigns unique ID to each created task', async () => {
@@ -160,7 +168,11 @@ describe('Schedule Use Cases', () => {
       const result1 = await useCase.execute(request1);
       const result2 = await useCase.execute(request2);
 
-      expect(result1.id).not.toBe(result2.id);
+      expect(result1.ok).toBe(true);
+      expect(result2.ok).toBe(true);
+      if (result1.ok && result2.ok) {
+        expect(result1.data.id).not.toBe(result2.data.id);
+      }
     });
 
     it('stores schedule configuration correctly', async () => {
@@ -169,9 +181,11 @@ describe('Schedule Use Cases', () => {
 
       const result = await useCase.execute(request);
 
-      expect(result.schedule).toBeDefined();
-      // Verify schedule object contains expected config
-      expect(result).toHaveProperty('schedule');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.schedule).toBeDefined();
+        expect(result.data).toHaveProperty('schedule');
+      }
     });
 
     it('handles metadata and payload', async () => {
@@ -180,9 +194,11 @@ describe('Schedule Use Cases', () => {
 
       const result = await useCase.execute(request);
 
-      expect(result.metadata).toBeDefined();
-      // Payload should be stored in metadata
-      expect(result).toHaveProperty('metadata');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.metadata).toBeDefined();
+        expect(result.data).toHaveProperty('metadata');
+      }
     });
   });
 
@@ -202,8 +218,8 @@ describe('Schedule Use Cases', () => {
       const useCase = new CreateScheduleTaskUseCase(repository);
       const request = createValidCreateRequest();
 
-      const task1 = await useCase.execute(request);
-      const task2 = await useCase.execute({
+      await useCase.execute(request);
+      await useCase.execute({
         ...request,
         name: 'Another Task',
       });

@@ -4,7 +4,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { Goal, GoalRecord } from '@/domain-server';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import type { IGoalRecordRepository } from '@/domain-server/repositories/i-goal-record-repository';
-import { CreateGoalRecord } from '../create-goal-record';
+import { CreateGoalRecordUseCase } from '../create-goal-record.use-case';
 
 function createTestGoal() {
   return Goal.create({
@@ -25,10 +25,10 @@ function createTestGoal() {
   });
 }
 
-describe('CreateGoalRecord', () => {
+describe('CreateGoalRecordUseCase', () => {
   let goalRepository: ReturnType<typeof createMockRepo<IGoalRepository>>;
   let goalRecordRepository: ReturnType<typeof createMockRepo<IGoalRecordRepository>>;
-  let useCase: CreateGoalRecord;
+  let useCase: CreateGoalRecordUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -45,7 +45,7 @@ describe('CreateGoalRecord', () => {
       delete: vi.fn().mockResolvedValue(undefined),
       deleteMany: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new CreateGoalRecord(goalRepository, goalRecordRepository);
+    useCase = new CreateGoalRecordUseCase(goalRepository, goalRecordRepository);
   });
 
   it('preserves manual current progress as the base when creating a Sum record', async () => {

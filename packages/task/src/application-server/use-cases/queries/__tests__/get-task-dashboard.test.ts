@@ -5,11 +5,11 @@ import { aOneTimeTask, aLoadedTaskTemplate, anIdentityId } from '@dailyuse/task/
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
-import { GetTaskDashboard } from '../get-task-dashboard';
+import { GetTaskDashboardUseCaseUseCase } from '../get-task-dashboard.use-case';
 
-describe('GetTaskDashboard', () => {
+describe('GetTaskDashboardUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
-  let useCase: GetTaskDashboard;
+  let useCase: GetTaskDashboardUseCase;
   const testIdentityId = anIdentityId();
 
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe('GetTaskDashboard', () => {
       findOneTimeTasks: vi.fn().mockResolvedValue([]),
       countTasks: vi.fn().mockResolvedValue(0),
     });
-    useCase = new GetTaskDashboard(templateRepo);
+    useCase = new GetTaskDashboardUseCase(templateRepo);
   });
 
   it('should return empty dashboard when no tasks exist', async () => {

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { UpdateReminderTemplate } from './update-reminder-template';
+import { UpdateReminderTemplateUseCase } from './update-reminder-template.use-case';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
-describe('UpdateReminderTemplate', () => {
+describe('UpdateReminderTemplateUseCase', () => {
   const templateRepository = {
     findById: vi.fn(),
     save: vi.fn(),
@@ -16,16 +16,19 @@ describe('UpdateReminderTemplate', () => {
     vi.clearAllMocks();
   });
 
-  it('throws when template does not exist', async () => {
+  it('returns NOT_FOUND when template does not exist', async () => {
     templateRepository.findById.mockResolvedValue(null);
-    const useCase = new UpdateReminderTemplate(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
 
-    await expect(useCase.execute('tpl-1', {} as any)).rejects.toThrow(
-      'Reminder Template tpl-1 not found',
-    );
+    const result = await useCase.execute('tpl-1', {} as any);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
-  it('throws when group id is provided but group not found', async () => {
+  it('returns NOT_FOUND when group id is provided but group not found', async () => {
     templateRepository.findById.mockResolvedValue({
       identityId: 'identity-1',
       update: vi.fn(),
@@ -33,13 +36,16 @@ describe('UpdateReminderTemplate', () => {
       toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
     });
     groupRepository.findById.mockResolvedValue(null);
-    const useCase = new UpdateReminderTemplate(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
 
-    await expect(
-      useCase.execute('tpl-1', {
-        groupId: 'group-1',
-      } as any),
-    ).rejects.toThrow('Invalid groupId: group-1');
+    const result = await useCase.execute('tpl-1', {
+      groupId: 'group-1',
+    } as any);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
   it('updates template without group reassignment', async () => {
@@ -55,7 +61,7 @@ describe('UpdateReminderTemplate', () => {
       toClientDTO,
     });
     templateRepository.save.mockResolvedValue(undefined);
-    const useCase = new UpdateReminderTemplate(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
 
     const result = await useCase.execute('tpl-1', {
       title: 'updated',
@@ -82,7 +88,10 @@ describe('UpdateReminderTemplate', () => {
     );
     expect(setEffectiveEnabled).not.toHaveBeenCalled();
     expect(templateRepository.save).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({ id: 'tpl-1', name: 'updated' });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ id: 'tpl-1', name: 'updated' });
+    }
   });
 
   it('recalculates effective enabled when group reassigned', async () => {
@@ -104,7 +113,7 @@ describe('UpdateReminderTemplate', () => {
       status: ReminderStatus.Active,
     });
 
-    const useCase = new UpdateReminderTemplate(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
     await useCase.execute('tpl-1', { groupId: 'group-1' } as any);
 
     expect(groupRepository.findById).toHaveBeenCalledWith('group-1');

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
-import { UpdateGoalKeyResultProgress } from '../update-goal-key-result-progress';
+import { UpdateGoalKeyResultProgressUseCase } from '../update-goal-key-result-progress.use-case';
 
 // ============================================================
 // Helpers
@@ -33,7 +33,7 @@ function createGoalFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('UpdateGoalKeyResultProgress', () => {
+describe('UpdateGoalKeyResultProgressUseCase', () => {
   it('should update key result progress successfully', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
@@ -41,7 +41,7 @@ describe('UpdateGoalKeyResultProgress', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResultProgress(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('goal-id-1', 'kr-1', 50);
 
@@ -61,7 +61,7 @@ describe('UpdateGoalKeyResultProgress', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResultProgress(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1', 75, 'Good progress this week');
 
@@ -78,7 +78,7 @@ describe('UpdateGoalKeyResultProgress', () => {
       findById: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResultProgress(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('non-existent', 'kr-1', 50);
 
@@ -100,7 +100,7 @@ describe('UpdateGoalKeyResultProgress', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResultProgress(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
     await expect(useCase.execute('goal-id-1', 'kr-1', 50)).rejects.toThrow(
       'Goal cannot be modified',
@@ -116,7 +116,7 @@ describe('UpdateGoalKeyResultProgress', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResultProgress(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1', 50);
 
@@ -130,7 +130,7 @@ describe('UpdateGoalKeyResultProgress', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResultProgress(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1', 50);
 

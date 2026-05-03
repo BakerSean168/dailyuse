@@ -4,10 +4,10 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
+import type { CreateTaskTemplateUseCaseReq } from '@dailyuse/contracts/task';
 import { TaskGoalBindingTrigger, TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { CreateTaskTemplate } from '../create-task-template';
+import { CreateTaskTemplateUseCaseUseCase } from '../create-task-template.use-case';
 
 vi.mock('@dailyuse/utils', async () => {
   const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
@@ -36,12 +36,12 @@ vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
     },
   };
 });
-describe('CreateTaskTemplate', () => {
+describe('CreateTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: CreateTaskTemplate;
+  let useCase: CreateTaskTemplateUseCase;
 
-  function aCreateRequest(overrides: Partial<CreateTaskTemplateReq> = {}): CreateTaskTemplateReq {
+  function aCreateRequest(overrides: Partial<CreateTaskTemplateUseCaseReq> = {}): CreateTaskTemplateUseCaseReq {
     return {
       identityId: anIdentityId(),
       name: 'Test Task',
@@ -55,7 +55,7 @@ describe('CreateTaskTemplate', () => {
       importance: ImportanceLevel.Moderate,
       tags: [],
       ...overrides,
-    } as CreateTaskTemplateReq;
+    } as CreateTaskTemplateUseCaseReq;
   }
 
   beforeEach(() => {
@@ -70,7 +70,7 @@ describe('CreateTaskTemplate', () => {
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
 
-    useCase = new CreateTaskTemplate(templateRepo, instanceRepo);
+    useCase = new CreateTaskTemplateUseCase(templateRepo, instanceRepo);
   });
 
   afterEach(() => {

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
-import { PermanentlyDeleteGoal } from '../permanently-delete-goal';
+import { PermanentlyDeleteGoalUseCase } from '../permanently-delete-goal.use-case';
 
 // ============================================================
 // Helpers
@@ -19,7 +19,7 @@ function createGoalFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('PermanentlyDeleteGoal', () => {
+describe('PermanentlyDeleteGoalUseCase', () => {
   it('should permanently delete an archived goal', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBePermanentlyDeleted: vi.fn() } as any;
@@ -27,7 +27,7 @@ describe('PermanentlyDeleteGoal', () => {
       findById: vi.fn().mockResolvedValue(goal),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new PermanentlyDeleteGoal(goalRepo, goalPolicy);
+    const useCase = new PermanentlyDeleteGoalUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('goal-id-1');
 
@@ -45,7 +45,7 @@ describe('PermanentlyDeleteGoal', () => {
       findById: vi.fn().mockResolvedValue(null),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new PermanentlyDeleteGoal(goalRepo, goalPolicy);
+    const useCase = new PermanentlyDeleteGoalUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('non-existent');
 
@@ -68,7 +68,7 @@ describe('PermanentlyDeleteGoal', () => {
       findById: vi.fn().mockResolvedValue(goal),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new PermanentlyDeleteGoal(goalRepo, goalPolicy);
+    const useCase = new PermanentlyDeleteGoalUseCase(goalRepo, goalPolicy);
 
     await expect(useCase.execute('goal-id-1')).rejects.toThrow(
       'Goal must be archived before permanent deletion',
@@ -83,7 +83,7 @@ describe('PermanentlyDeleteGoal', () => {
       findById: vi.fn().mockResolvedValue(goal),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new PermanentlyDeleteGoal(goalRepo, goalPolicy);
+    const useCase = new PermanentlyDeleteGoalUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1');
 
@@ -101,7 +101,7 @@ describe('PermanentlyDeleteGoal', () => {
       findById: vi.fn().mockResolvedValue(goal),
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new PermanentlyDeleteGoal(goalRepo, goalPolicy);
+    const useCase = new PermanentlyDeleteGoalUseCase(goalRepo, goalPolicy);
 
     await expect(useCase.execute('goal-id-1')).rejects.toThrow('Cannot delete');
     expect(goalRepo.delete).not.toHaveBeenCalled();

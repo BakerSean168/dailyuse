@@ -3,18 +3,18 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { SkipTaskInstance } from '../skip-task-instance';
+import { SkipTaskInstanceUseCaseUseCase } from '../skip-task-instance.use-case';
 
-describe('SkipTaskInstance', () => {
+describe('SkipTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: SkipTaskInstance;
+  let useCase: SkipTaskInstanceUseCase;
 
   beforeEach(() => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new SkipTaskInstance(instanceRepo);
+    useCase = new SkipTaskInstanceUseCase(instanceRepo);
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {

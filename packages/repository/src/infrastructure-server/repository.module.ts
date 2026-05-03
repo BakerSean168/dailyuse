@@ -23,27 +23,27 @@ import type { IFolderRepository } from '../domain-server/repositories/IFolderRep
 import type { IResourceBookmarkRepository } from '../domain-server/repositories/IResourceBookmarkRepository';
 import type { IStoragePort } from '../application-server/ports/IStoragePort';
 import {
-  CreateRepository,
-  UpdateRepositoryStats,
-  GetResource,
-  ListResources,
-  CreateResource,
-  UpdateResourceContent,
-  UploadResources,
-  CreateFolder,
-  GetFolder,
-  GetFolderTree,
-  RenameFolder,
-  MoveFolder,
-  DeleteFolder,
-  CreateResourceBookmark,
-  UpdateResourceBookmark,
-  ReorderResourceBookmarks,
-  DeleteResourceBookmark,
-  ListResourceBookmarks,
-  DeleteResource,
+  CreateRepositoryUseCase,
+  UpdateRepositoryStatsUseCase,
+  GetResourceUseCase,
+  ListResourcesUseCase,
+  CreateResourceUseCase,
+  UpdateResourceContentUseCase,
+  UploadResourcesUseCase,
+  CreateFolderUseCase,
+  GetFolderUseCase,
+  GetFolderTreeUseCase,
+  RenameFolderUseCase,
+  MoveFolderUseCase,
+  DeleteFolderUseCase,
+  CreateResourceBookmarkUseCase,
+  UpdateResourceBookmarkUseCase,
+  ReorderResourceBookmarksUseCase,
+  DeleteResourceBookmarkUseCase,
+  ListResourceBookmarksUseCase,
+  DeleteResourceUseCase,
 } from '../application-server';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
@@ -123,25 +123,25 @@ export interface RepositoryModuleRuntimeContribution {
  * 保留此类型供测试和低层组装使用；传输层应优先使用 RepositoryApplicationPort。
  */
 export interface RepositoryModuleUseCases {
-  readonly createRepository: CreateRepository;
-  readonly updateRepositoryStats: UpdateRepositoryStats;
-  readonly getResource: GetResource;
-  readonly listResources: ListResources;
-  readonly createResource: CreateResource;
-  readonly updateResourceContent: UpdateResourceContent;
-  readonly uploadResources: UploadResources;
-  readonly deleteResource: DeleteResource;
-  readonly createFolder: CreateFolder;
-  readonly getFolder: GetFolder;
-  readonly getFolderTree: GetFolderTree;
-  readonly renameFolder: RenameFolder;
-  readonly moveFolder: MoveFolder;
-  readonly deleteFolder: DeleteFolder;
-  readonly createResourceBookmark: CreateResourceBookmark;
-  readonly updateResourceBookmark: UpdateResourceBookmark;
-  readonly reorderResourceBookmarks: ReorderResourceBookmarks;
-  readonly deleteResourceBookmark: DeleteResourceBookmark;
-  readonly listResourceBookmarks: ListResourceBookmarks;
+  readonly createRepository: CreateRepositoryUseCase;
+  readonly updateRepositoryStats: UpdateRepositoryStatsUseCase;
+  readonly getResource: GetResourceUseCase;
+  readonly listResources: ListResourcesUseCase;
+  readonly createResource: CreateResourceUseCase;
+  readonly updateResourceContent: UpdateResourceContentUseCase;
+  readonly uploadResources: UploadResourcesUseCase;
+  readonly deleteResource: DeleteResourceUseCase;
+  readonly createFolder: CreateFolderUseCase;
+  readonly getFolder: GetFolderUseCase;
+  readonly getFolderTree: GetFolderTreeUseCase;
+  readonly renameFolder: RenameFolderUseCase;
+  readonly moveFolder: MoveFolderUseCase;
+  readonly deleteFolder: DeleteFolderUseCase;
+  readonly createResourceBookmark: CreateResourceBookmarkUseCase;
+  readonly updateResourceBookmark: UpdateResourceBookmarkUseCase;
+  readonly reorderResourceBookmarks: ReorderResourceBookmarksUseCase;
+  readonly deleteResourceBookmark: DeleteResourceBookmarkUseCase;
+  readonly listResourceBookmarks: ListResourceBookmarksUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -312,22 +312,22 @@ export function createRepositoryUseCases(
     storagePort,
   } = deps;
 
-  const createResource = new CreateResource(resourceRepository, repositoryRepository, storagePort);
-  const deleteResource = new DeleteResource(resourceRepository, repositoryRepository, storagePort);
-  const updateResourceContent = new UpdateResourceContent(
+  const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storagePort);
+  const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storagePort);
+  const updateResourceContent = new UpdateResourceContentUseCase(
     resourceRepository,
     repositoryRepository,
     storagePort,
   );
 
   return {
-    createRepository: new CreateRepository(repositoryRepository),
-    updateRepositoryStats: new UpdateRepositoryStats(repositoryRepository),
-    getResource: new GetResource(resourceRepository),
-    listResources: new ListResources(resourceRepository),
+    createRepository: new CreateRepositoryUseCase(repositoryRepository),
+    updateRepositoryStats: new UpdateRepositoryStatsUseCase(repositoryRepository),
+    getResource: new GetResourceUseCase(resourceRepository),
+    listResources: new ListResourcesUseCase(resourceRepository),
     createResource,
     updateResourceContent,
-    uploadResources: new UploadResources(
+    uploadResources: new UploadResourcesUseCase(
       createResource,
       deleteResource,
       resourceRepository,
@@ -335,41 +335,41 @@ export function createRepositoryUseCases(
       folderRepository,
     ),
     deleteResource,
-    createFolder: new CreateFolder(folderRepository, repositoryRepository, storagePort),
-    getFolder: new GetFolder(folderRepository),
-    getFolderTree: new GetFolderTree(folderRepository),
-    renameFolder: new RenameFolder(
+    createFolder: new CreateFolderUseCase(folderRepository, repositoryRepository, storagePort),
+    getFolder: new GetFolderUseCase(folderRepository),
+    getFolderTree: new GetFolderTreeUseCase(folderRepository),
+    renameFolder: new RenameFolderUseCase(
       folderRepository,
       resourceRepository,
       repositoryRepository,
       storagePort,
     ),
-    moveFolder: new MoveFolder(
+    moveFolder: new MoveFolderUseCase(
       folderRepository,
       resourceRepository,
       repositoryRepository,
       storagePort,
     ),
-    deleteFolder: new DeleteFolder(
+    deleteFolder: new DeleteFolderUseCase(
       folderRepository,
       resourceRepository,
       repositoryRepository,
       storagePort,
     ),
-    createResourceBookmark: new CreateResourceBookmark(
+    createResourceBookmark: new CreateResourceBookmarkUseCase(
       resourceBookmarkRepository,
       resourceRepository,
     ),
-    updateResourceBookmark: new UpdateResourceBookmark(
+    updateResourceBookmark: new UpdateResourceBookmarkUseCase(
       resourceBookmarkRepository,
       resourceRepository,
     ),
-    reorderResourceBookmarks: new ReorderResourceBookmarks(
+    reorderResourceBookmarks: new ReorderResourceBookmarksUseCase(
       resourceBookmarkRepository,
       resourceRepository,
     ),
-    deleteResourceBookmark: new DeleteResourceBookmark(resourceBookmarkRepository),
-    listResourceBookmarks: new ListResourceBookmarks(
+    deleteResourceBookmark: new DeleteResourceBookmarkUseCase(resourceBookmarkRepository),
+    listResourceBookmarks: new ListResourceBookmarksUseCase(
       resourceBookmarkRepository,
       resourceRepository,
     ),
@@ -400,12 +400,12 @@ function normalizeRuntimeContributions(
  * Builds the transport-neutral application port from assembled use cases.
  * 从已组装的 use case 构建传输层无关的应用层门面。
  *
- * This is where use-case `.execute()` calls are mapped to the `RepositoryApplicationPort`
- * signatures. All business logic wiring (ok/fail wrapping, DTO transforms) lives here
- * so that transports remain thin boring mapping.
+ * Use cases now return Result<T>. The api is a thin passthrough —
+ * failed Results propagate directly, successful Results may be
+ * unwrapped and re-wrapped when the api produces different data.
  *
- * 所有业务逻辑接线（ok/fail 包装、DTO 转换）都在这里完成，
- * 以确保传输层保持简单无聊的映射。
+ * 用例现在返回 Result<T>。api 层是薄透传——
+ * 失败的 Result 直接传播，成功的 Result 在 api 产出不同数据时解包再包装。
  */
 function buildApplicationPort(
   useCases: RepositoryModuleUseCases,
@@ -439,28 +439,29 @@ function buildApplicationPort(
     };
   }
 
-  async function resolveParentPath(folderId?: string | null): Promise<string | null> {
+  async function resolveParentPath(folderId?: string | null): Promise<Result<string | null>> {
     if (!folderId) {
-      return null;
+      return ok(null);
     }
 
     const folder = await folderRepository.findById(folderId);
     if (!folder) {
-      throw new Error(`Folder not found: ${folderId}`);
+      return error('NOT_FOUND', `Folder not found: ${folderId}`);
     }
 
-    return folder.path;
+    return ok(folder.path);
   }
 
   async function ensureResourcePathAvailable(
     repositoryId: string,
     path: string,
     currentResourceId: string,
-  ): Promise<void> {
+  ): Promise<Result<void>> {
     const existing = await resourceRepository.findByRepositoryIdAndPath(repositoryId, path);
     if (existing && String(existing.id) !== currentResourceId) {
-      throw new Error(`Resource already exists at path: ${path}`);
+      return error('CONFLICT', `Resource already exists at path: ${path}`);
     }
+    return ok(undefined);
   }
 
   async function moveResourceInStorage(
@@ -470,28 +471,31 @@ function buildApplicationPort(
   ) {
     const resource = await resourceRepository.findById(resourceId);
     if (!resource) {
-      throw new Error(`Resource not found: ${resourceId}`);
+      return error('NOT_FOUND', `Resource not found: ${resourceId}`);
     }
 
     const repository = await repositoryRepository.findById(String(resource.repositoryId));
     if (!repository) {
-      throw new Error(`Repository not found: ${resource.repositoryId}`);
+      return error('NOT_FOUND', `Repository not found: ${resource.repositoryId}`);
     }
 
     const targetFolderId = nextFolderId === undefined ? resource.folderId : nextFolderId;
     const targetName = nextName ?? resource.name;
-    const parentPath = await resolveParentPath(targetFolderId);
+    const parentPathResult = await resolveParentPath(targetFolderId);
+    if (!parentPathResult.ok) return parentPathResult;
+    const parentPath = parentPathResult.data;
     const targetPath = PathCalculator.buildPath(parentPath, targetName);
 
     if (targetPath === resource.path) {
-      return resource;
+      return ok(resource);
     }
 
-    await ensureResourcePathAvailable(
+    const pathAvailableResult = await ensureResourcePathAvailable(
       String(resource.repositoryId),
       targetPath,
       String(resource.id),
     );
+    if (!pathAvailableResult.ok) return pathAvailableResult;
 
     await storagePort.move({
       repositoryId: String(repository.id),
@@ -510,7 +514,7 @@ function buildApplicationPort(
     }
 
     await resourceRepository.save(resource);
-    return resource;
+    return ok(resource);
   }
 
   async function resolveCanonicalRepository(identityId: string) {
@@ -522,10 +526,7 @@ function buildApplicationPort(
       activeRepos[0] ?? (await repositoryRepository.findByIdentityId(identityId))[0];
 
     if (!repository) {
-      return fail({
-        code: 'NOT_FOUND',
-        message: `No repository available for identity: ${identityId}`,
-      });
+      return error('NOT_FOUND', `No repository available for identity: ${identityId}`);
     }
 
     return ok(repository.toClientDTO());
@@ -545,14 +546,15 @@ function buildApplicationPort(
       return existing;
     }
 
-    const created = await useCases.createRepository.execute({
+    const result = await useCases.createRepository.execute({
       identityId,
       name: 'Knowledge Base',
       type: 'Markdown' as any,
       path: 'knowledge-base',
     });
 
-    return ok(created.repository);
+    if (!result.ok) return result;
+    return ok(result.data.repository);
   }
 
   function emitResourceMutationEvent(
@@ -580,7 +582,9 @@ function buildApplicationPort(
         path: data.path ?? `/${data.name}`,
         content: data.content,
       });
-      const createdResource = await resourceRepository.findById(String(result.resource.id));
+      if (!result.ok) return result;
+
+      const createdResource = await resourceRepository.findById(String(result.data.resource.id));
       if (createdResource) {
         emitResourceMutationEvent({
           identityId: createdResource.identityId,
@@ -590,25 +594,27 @@ function buildApplicationPort(
           mutation: RepositoryResourceMutationType.Created,
         });
       }
-      return ok(result.resource);
+      return ok(result.data.resource);
     },
     listResources: async (repositoryId) => {
-      const result = await useCases.listResources.execute({ repositoryId });
-      return ok(result.resources);
+      return useCases.listResources.execute({ repositoryId });
     },
     getResource: async (id) => {
       const result = await useCases.getResource.execute({ id });
-      return ok(await hydrateStoredResourceContent(result.resource));
+      if (!result.ok) return result;
+      return ok(await hydrateStoredResourceContent(result.data.resource));
     },
     updateResource: async (id, data) => {
       let currentResource = await resourceRepository.findById(id);
       if (!currentResource) {
-        throw new Error(`Resource not found: ${id}`);
+        return error('NOT_FOUND', `Resource not found: ${id}`);
       }
       const pathChanged = data.name !== undefined;
 
       if (pathChanged) {
-        currentResource = await moveResourceInStorage(id, data.name);
+        const moveResult = await moveResourceInStorage(id, data.name);
+        if (!moveResult.ok) return moveResult;
+        currentResource = moveResult.data;
       }
 
       if (data.metadata !== undefined) {
@@ -622,6 +628,8 @@ function buildApplicationPort(
           id,
           content: data.content,
         });
+        if (!result.ok) return result;
+
         const updatedResource = await resourceRepository.findById(id);
         if (updatedResource) {
           emitResourceMutationEvent({
@@ -632,7 +640,7 @@ function buildApplicationPort(
             mutation: RepositoryResourceMutationType.ContentUpdated,
           });
         }
-        return ok(result.resource);
+        return ok(result.data.resource);
       }
 
       if (pathChanged) {
@@ -648,19 +656,23 @@ function buildApplicationPort(
       return ok(currentResource.toClientDTO());
     },
     moveResource: async (id, targetFolderId) => {
-      const resource = await moveResourceInStorage(id, undefined, targetFolderId);
+      const result = await moveResourceInStorage(id, undefined, targetFolderId);
+      if (!result.ok) return result;
+
       emitResourceMutationEvent({
-        identityId: resource.identityId,
-        repositoryId: String(resource.repositoryId),
-        resourceId: String(resource.id),
-        resourcePath: resource.path,
+        identityId: result.data.identityId,
+        repositoryId: String(result.data.repositoryId),
+        resourceId: String(result.data.id),
+        resourcePath: result.data.path,
         mutation: RepositoryResourceMutationType.Moved,
       });
-      return ok(resource.toClientDTO());
+      return ok(result.data.toClientDTO());
     },
     deleteResource: async (id) => {
       const resource = await resourceRepository.findById(id);
-      await useCases.deleteResource.execute({ id });
+      const result = await useCases.deleteResource.execute({ id });
+      if (!result.ok) return result;
+
       if (resource) {
         emitResourceMutationEvent({
           identityId: resource.identityId,
@@ -673,64 +685,54 @@ function buildApplicationPort(
       return ok(undefined);
     },
     uploadResources: async (data, ctx) => {
-      const result = await useCases.uploadResources.execute({
+      return useCases.uploadResources.execute({
         repositoryId: data.repositoryId,
         identityId: ctx.identityId,
         files: data.files as any,
         metadata: data.metadata as any,
       });
-      return ok(result);
     },
 
     // ---- Repository stats — 仓库统计 ----
     updateRepositoryStats: async (id, data) => {
-      const result = await useCases.updateRepositoryStats.execute({ id, stats: data as any });
-      return ok(result.repository);
+      return useCases.updateRepositoryStats.execute({ id, stats: data as any });
     },
 
     // ---- Folder CRUD — 文件夹增删改查 ----
     createFolder: async (data, ctx) => {
-      const result = await useCases.createFolder.execute({
+      return useCases.createFolder.execute({
         repositoryId: data.repositoryId,
         identityId: ctx.identityId,
         name: data.name,
         parentId: data.parentId,
         order: data.order,
       });
-      return ok(result.folder);
     },
     getFolderTree: async (repositoryId) => {
-      const result = await useCases.getFolderTree.execute({ repositoryId });
-      return ok(result.folders);
+      return useCases.getFolderTree.execute({ repositoryId });
     },
     getFolder: async (id) => {
-      const result = await useCases.getFolder.execute({ id });
-      if (!result.folder) return fail({ code: 'NOT_FOUND', message: `Folder not found: ${id}` });
-      return ok(result.folder);
+      return useCases.getFolder.execute({ id });
     },
     renameFolder: async (id, newName) => {
-      const result = await useCases.renameFolder.execute({ id, newName });
-      return ok(result.folder);
+      return useCases.renameFolder.execute({ id, newName });
     },
     moveFolder: async (id, newParentId) => {
-      const result = await useCases.moveFolder.execute({ id, newParentId });
-      return ok(result.folder);
+      return useCases.moveFolder.execute({ id, newParentId });
     },
     deleteFolder: async (id) => {
-      await useCases.deleteFolder.execute({ id });
-      return ok(undefined);
+      return useCases.deleteFolder.execute({ id });
     },
 
     // ---- Bookmark CRUD — 书签增删改查 ----
     listResourceBookmarks: async (repositoryId, ctx) => {
-      const result = await useCases.listResourceBookmarks.execute({
+      return useCases.listResourceBookmarks.execute({
         repositoryId,
         identityId: ctx.identityId,
       });
-      return ok(result.bookmarks);
     },
     createResourceBookmark: async (repositoryId, data, ctx) => {
-      const result = await useCases.createResourceBookmark.execute({
+      return useCases.createResourceBookmark.execute({
         repositoryId,
         identityId: ctx.identityId,
         resourceId: data.resourceId,
@@ -738,10 +740,9 @@ function buildApplicationPort(
         icon: data.icon,
         color: data.color,
       });
-      return ok(result.bookmark);
     },
     updateResourceBookmark: async (repositoryId, bookmarkId, data, ctx) => {
-      const result = await useCases.updateResourceBookmark.execute({
+      return useCases.updateResourceBookmark.execute({
         repositoryId,
         identityId: ctx.identityId,
         bookmarkId,
@@ -749,23 +750,20 @@ function buildApplicationPort(
         icon: data.icon,
         color: data.color,
       });
-      return ok(result.bookmark);
     },
     reorderResourceBookmarks: async (repositoryId, data, ctx) => {
-      const result = await useCases.reorderResourceBookmarks.execute({
+      return useCases.reorderResourceBookmarks.execute({
         repositoryId,
         identityId: ctx.identityId,
         bookmarkIds: data.bookmarkIds,
       });
-      return ok(result.bookmarks);
     },
     deleteResourceBookmark: async (repositoryId, bookmarkId, ctx) => {
-      await useCases.deleteResourceBookmark.execute({
+      return useCases.deleteResourceBookmark.execute({
         repositoryId,
         identityId: ctx.identityId,
         bookmarkId,
       });
-      return ok({ ok: true });
     },
 
     // ---- Repository resolution — 仓库解析 ----

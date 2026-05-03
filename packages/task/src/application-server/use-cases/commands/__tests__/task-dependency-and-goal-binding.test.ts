@@ -3,11 +3,11 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { CreateTaskDependency } from '../create-task-dependency';
-import { DeleteTaskDependency } from '../delete-task-dependency';
-import { UpdateTaskDependency } from '../update-task-dependency';
-import { BindTaskToGoal } from '../bind-task-to-goal';
-import { UnbindTaskFromGoal } from '../unbind-task-from-goal';
+import { CreateTaskDependencyUseCaseUseCase } from '../create-task-dependency.use-case';
+import { DeleteTaskDependencyUseCaseUseCase } from '../delete-task-dependency.use-case';
+import { UpdateTaskDependencyUseCaseUseCase } from '../update-task-dependency.use-case';
+import { BindTaskToGoalUseCaseUseCase } from '../bind-task-to-goal.use-case';
+import { UnbindTaskFromGoalUseCaseUseCase } from '../unbind-task-from-goal.use-case';
 
 describe('Task dependency and goal binding use-cases', () => {
   let dependencyRepo: ReturnType<typeof createMockRepo<ITaskDependencyRepository>>;
@@ -28,9 +28,9 @@ describe('Task dependency and goal binding use-cases', () => {
     });
   });
 
-  describe('CreateTaskDependency', () => {
+  describe('CreateTaskDependencyUseCase', () => {
     it('returns validation error for self-dependency', async () => {
-      const useCase = new CreateTaskDependency(dependencyRepo);
+      const useCase = new CreateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute({
         predecessorTaskId: 'task-1',
@@ -48,7 +48,7 @@ describe('Task dependency and goal binding use-cases', () => {
       vi.mocked(dependencyRepo.findByPredecessorAndSuccessorId).mockResolvedValue({
         id: 'dep-1',
       } as any);
-      const useCase = new CreateTaskDependency(dependencyRepo);
+      const useCase = new CreateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute({
         predecessorTaskId: 'task-1',
@@ -70,7 +70,7 @@ describe('Task dependency and goal binding use-cases', () => {
         dependencyType: 'FS',
         lagDays: 0,
       } as any);
-      const useCase = new CreateTaskDependency(dependencyRepo);
+      const useCase = new CreateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute({
         predecessorTaskId: 'task-1',
@@ -91,10 +91,10 @@ describe('Task dependency and goal binding use-cases', () => {
     });
   });
 
-  describe('DeleteTaskDependency', () => {
+  describe('DeleteTaskDependencyUseCase', () => {
     it('returns NOT_FOUND when dependency is missing', async () => {
       vi.mocked(dependencyRepo.findById).mockResolvedValue(null);
-      const useCase = new DeleteTaskDependency(dependencyRepo);
+      const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-404');
 
@@ -104,7 +104,7 @@ describe('Task dependency and goal binding use-cases', () => {
 
     it('deletes dependency and returns ok', async () => {
       vi.mocked(dependencyRepo.findById).mockResolvedValue({ id: 'dep-1' } as any);
-      const useCase = new DeleteTaskDependency(dependencyRepo);
+      const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-1');
 
@@ -113,10 +113,10 @@ describe('Task dependency and goal binding use-cases', () => {
     });
   });
 
-  describe('UpdateTaskDependency', () => {
+  describe('UpdateTaskDependencyUseCase', () => {
     it('returns NOT_FOUND when dependency is missing', async () => {
       vi.mocked(dependencyRepo.findById).mockResolvedValue(null);
-      const useCase = new UpdateTaskDependency(dependencyRepo);
+      const useCase = new UpdateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-404', { dependencyType: 'FS' as any });
 
@@ -133,7 +133,7 @@ describe('Task dependency and goal binding use-cases', () => {
         dependencyType: 'SS',
         lagDays: 2,
       } as any);
-      const useCase = new UpdateTaskDependency(dependencyRepo);
+      const useCase = new UpdateTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-1', { dependencyType: 'SS' as any, lagDays: 2 });
 
@@ -149,10 +149,10 @@ describe('Task dependency and goal binding use-cases', () => {
     });
   });
 
-  describe('BindTaskToGoal', () => {
+  describe('BindTaskToGoalUseCase', () => {
     it('returns NOT_FOUND when template is missing', async () => {
       vi.mocked(templateRepo.findById).mockResolvedValue(null);
-      const useCase = new BindTaskToGoal(templateRepo);
+      const useCase = new BindTaskToGoalUseCase(templateRepo);
 
       const result = await useCase.execute('tpl-404', {
         goalId: 'goal-1',
@@ -170,7 +170,7 @@ describe('Task dependency and goal binding use-cases', () => {
         toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
       };
       vi.mocked(templateRepo.findById).mockResolvedValue(template as any);
-      const useCase = new BindTaskToGoal(templateRepo);
+      const useCase = new BindTaskToGoalUseCase(templateRepo);
 
       const result = await useCase.execute('tpl-1', {
         goalId: 'goal-1',
@@ -184,10 +184,10 @@ describe('Task dependency and goal binding use-cases', () => {
     });
   });
 
-  describe('UnbindTaskFromGoal', () => {
+  describe('UnbindTaskFromGoalUseCase', () => {
     it('returns NOT_FOUND when template is missing', async () => {
       vi.mocked(templateRepo.findById).mockResolvedValue(null);
-      const useCase = new UnbindTaskFromGoal(templateRepo);
+      const useCase = new UnbindTaskFromGoalUseCase(templateRepo);
 
       const result = await useCase.execute('tpl-404');
 
@@ -201,7 +201,7 @@ describe('Task dependency and goal binding use-cases', () => {
         toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
       };
       vi.mocked(templateRepo.findById).mockResolvedValue(template as any);
-      const useCase = new UnbindTaskFromGoal(templateRepo);
+      const useCase = new UnbindTaskFromGoalUseCase(templateRepo);
 
       const result = await useCase.execute('tpl-1');
 

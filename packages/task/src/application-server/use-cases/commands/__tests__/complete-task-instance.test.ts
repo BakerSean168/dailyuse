@@ -3,11 +3,11 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { CompleteTaskInstance } from '../complete-task-instance';
+import { CompleteTaskInstanceUseCaseUseCase } from '../complete-task-instance.use-case';
 
-describe('CompleteTaskInstance', () => {
+describe('CompleteTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: CompleteTaskInstance;
+  let useCase: CompleteTaskInstanceUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -17,7 +17,7 @@ describe('CompleteTaskInstance', () => {
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new CompleteTaskInstance(instanceRepo);
+    useCase = new CompleteTaskInstanceUseCase(instanceRepo);
   });
 
   afterEach(() => {

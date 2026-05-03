@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { INotificationRepository } from '@/domain-server/repositories/INotificationRepository';
-import { GetUserNotifications } from '../get-user-notifications';
+import { GetUserNotificationsUseCase } from '../get-user-notifications.use-case';
 import { Notification } from '@/domain-server/aggregates/notification';
 import { NotificationType, NotificationCategory } from '@dailyuse/contracts/notification';
 
-describe('GetUserNotifications', () => {
+describe('GetUserNotificationsUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;
-  let useCase: GetUserNotifications;
+  let useCase: GetUserNotificationsUseCase;
 
   function aNotification(identityId: string) {
     return Notification.create({
@@ -27,13 +27,15 @@ describe('GetUserNotifications', () => {
       findByIdentityId: vi.fn().mockResolvedValue([]),
     });
 
-    useCase = new GetUserNotifications(notificationRepo);
+    useCase = new GetUserNotificationsUseCase(notificationRepo);
   });
 
   it('should return an empty array when no notifications exist', async () => {
     const result = await useCase.execute(anIdentityId());
 
-    expect(result).toEqual([]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data).toEqual([]);
   });
 
   it('should return client DTOs for found notifications', async () => {
@@ -43,9 +45,11 @@ describe('GetUserNotifications', () => {
 
     const result = await useCase.execute(identityId);
 
-    expect(result).toHaveLength(2);
-    expect(result[0].title).toBe('Test');
-    expect(result[0].id).toBeTruthy();
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected ok');
+    expect(result.data).toHaveLength(2);
+    expect(result.data[0].title).toBe('Test');
+    expect(result.data[0].id).toBeTruthy();
   });
 
   it('should pass includeRead=true by default', async () => {

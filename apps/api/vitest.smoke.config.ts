@@ -16,17 +16,17 @@ export default defineConfig({
         replacement: path.resolve(__dirname, '../../packages/task/src/$1'),
       },
       {
-        find: '@dailyuse/task/api/controllers/task-template.controller',
+        find: '@dailyuse/task/controllers/task-template.controller',
         replacement: path.resolve(
           __dirname,
-          '../../packages/task/src/api/controllers/task-template.controller.ts',
+          '../../packages/task/src/controllers/task-template.controller.ts',
         ),
       },
       {
-        find: '@dailyuse/task/api/controllers/task-instance.controller',
+        find: '@dailyuse/task/controllers/task-instance.controller',
         replacement: path.resolve(
           __dirname,
-          '../../packages/task/src/api/controllers/task-instance.controller.ts',
+          '../../packages/task/src/controllers/task-instance.controller.ts',
         ),
       },
       {

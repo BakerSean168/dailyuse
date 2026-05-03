@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -12,7 +13,7 @@ import {
   ReindexKnowledgeResultItemSchema,
   ReindexKnowledgeSchema,
 } from '@dailyuse/contracts/ai';
-import type { AIKnowledgeQueryController } from '../controllers/ai-knowledge-query.controller';
+import type { AIKnowledgeQueryController } from '../../controllers/ai-knowledge-query.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -45,7 +46,7 @@ export function registerAIKnowledgeQueryRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.expand(req.body, ctx.identityId),
+    (req, ctx) => controller.expand(req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   r.route(
@@ -60,7 +61,7 @@ export function registerAIKnowledgeQueryRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.query(req.body, ctx.identityId),
+    (req, ctx) => controller.query(req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   r.route(
@@ -83,7 +84,7 @@ export function registerAIKnowledgeQueryRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.reindex(req.body, ctx.identityId),
+    (req, ctx) => controller.reindex(req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   return router;

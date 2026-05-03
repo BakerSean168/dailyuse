@@ -4,12 +4,12 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { GetTaskTemplate } from '../get-task-template';
+import { GetTaskTemplateUseCaseUseCase } from '../get-task-template.use-case';
 
-describe('GetTaskTemplate', () => {
+describe('GetTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: GetTaskTemplate;
+  let useCase: GetTaskTemplateUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -21,7 +21,7 @@ describe('GetTaskTemplate', () => {
       findByTemplateId: vi.fn(),
     });
     vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([]);
-    useCase = new GetTaskTemplate(templateRepo, instanceRepo);
+    useCase = new GetTaskTemplateUseCase(templateRepo, instanceRepo);
   });
 
   it('should return null when template does not exist', async () => {

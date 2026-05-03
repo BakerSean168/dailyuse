@@ -42,8 +42,8 @@ import {
 
 // Controllers and routes are NOT exported from the api barrel,
 // so we import them via deep paths (resolved by the taskDeepImportResolver plugin)
-import { TaskTemplateController } from '@dailyuse/task/api/controllers/task-template.controller';
-import { TaskInstanceController } from '@dailyuse/task/api/controllers/task-instance.controller';
+import { TaskTemplateController } from '@dailyuse/task/controllers/task-template.controller';
+import { TaskInstanceController } from '@dailyuse/task/controllers/task-instance.controller';
 import { registerTaskRoutes } from '@dailyuse/task/api/routes';
 
 // ============================================================================

@@ -10,7 +10,7 @@ import {
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ListTaskTemplates } from '../list-task-templates';
+import { ListTaskTemplatesUseCaseUseCase } from '../list-task-templates.use-case';
 
 // Mock eventBus — preserve all real exports
 vi.mock('@dailyuse/utils', async () => {
@@ -34,10 +34,10 @@ vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
   };
 });
 
-describe('ListTaskTemplates', () => {
+describe('ListTaskTemplatesUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: ListTaskTemplates;
+  let useCase: ListTaskTemplatesUseCase;
   const testIdentityId = anIdentityId();
 
   beforeEach(() => {
@@ -57,7 +57,7 @@ describe('ListTaskTemplates', () => {
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
 
-    useCase = new ListTaskTemplates(templateRepo, instanceRepo);
+    useCase = new ListTaskTemplatesUseCase(templateRepo, instanceRepo);
   });
 
   describe('filtering', () => {

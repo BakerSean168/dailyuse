@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IAccountRepository } from '@/domain-server/repositories/i-account-repository';
-import { CheckAvailabilityUseCase } from '../check-availability';
+import { CheckAvailabilityUseCase } from '../check-availability.use-case';
 
 describe('CheckAvailabilityUseCase', () => {
   let repo: ReturnType<typeof createMockRepo<IAccountRepository>>;
@@ -19,7 +19,10 @@ describe('CheckAvailabilityUseCase', () => {
 
       const result = await useCase.execute({ type: 'email', value: 'new@example.com' });
 
-      expect(result.available).toBe(true);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.available).toBe(true);
+      }
       expect(repo.existsByEmail).toHaveBeenCalledWith('new@example.com');
     });
 
@@ -28,7 +31,10 @@ describe('CheckAvailabilityUseCase', () => {
 
       const result = await useCase.execute({ type: 'email', value: 'taken@example.com' });
 
-      expect(result.available).toBe(false);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.available).toBe(false);
+      }
     });
   });
 
@@ -38,7 +44,10 @@ describe('CheckAvailabilityUseCase', () => {
 
       const result = await useCase.execute({ type: 'nickname', value: 'newuser' });
 
-      expect(result.available).toBe(true);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.available).toBe(true);
+      }
       expect(repo.existsByNickname).toHaveBeenCalledWith('newuser');
     });
 
@@ -47,7 +56,10 @@ describe('CheckAvailabilityUseCase', () => {
 
       const result = await useCase.execute({ type: 'nickname', value: 'takenuser' });
 
-      expect(result.available).toBe(false);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.available).toBe(false);
+      }
     });
   });
 
@@ -55,7 +67,10 @@ describe('CheckAvailabilityUseCase', () => {
     it('should return available=false for unrecognized type', async () => {
       const result = await useCase.execute({ type: 'PHONE' as any, value: '12345' });
 
-      expect(result.available).toBe(false);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.available).toBe(false);
+      }
     });
   });
 });

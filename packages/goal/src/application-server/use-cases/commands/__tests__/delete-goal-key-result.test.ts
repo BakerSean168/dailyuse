@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
-import { DeleteGoalKeyResult } from '../delete-goal-key-result';
+import { DeleteGoalKeyResultUseCase } from '../delete-goal-key-result.use-case';
 
 // ============================================================
 // Helpers
@@ -22,7 +22,7 @@ function createGoalFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('DeleteGoalKeyResult', () => {
+describe('DeleteGoalKeyResultUseCase', () => {
   it('should delete a key result from the goal', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
@@ -30,7 +30,7 @@ describe('DeleteGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new DeleteGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('goal-id-1', 'kr-1');
 
@@ -46,7 +46,7 @@ describe('DeleteGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new DeleteGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('non-existent', 'kr-1');
 
@@ -68,7 +68,7 @@ describe('DeleteGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new DeleteGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     await expect(useCase.execute('goal-id-1', 'kr-1')).rejects.toThrow('Goal cannot be modified');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe('DeleteGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new DeleteGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1');
 

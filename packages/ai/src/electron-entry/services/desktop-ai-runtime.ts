@@ -10,7 +10,7 @@
  */
 
 import { AIKnowledgeNotePathResolver } from '../../infrastructure-server/services/ai-knowledge-note-path-resolver';
-import { AIKnowledgeNoteService } from '../../application-server/use-cases/commands/ai-knowledge-note.service';
+import { ManageAIKnowledgeNoteUseCase } from '../../application-server/use-cases/commands/manage-ai-knowledge-note.use-case';
 import type { IKnowledgeNotePersistencePort } from '../../application-server/ports';
 import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
 import { DirectProviderKnowledgeNoteGenerationAdapter } from '../../infrastructure-server/chat-execution';
@@ -20,14 +20,14 @@ import { DirectProviderKnowledgeNoteGenerationAdapter } from '../../infrastructu
  * @deprecated 请使用 `createAIPowerSyncModule()` 并传入 `knowledgeNotePersistence` 选项替代。
  */
 export class DesktopAIRuntime {
-  public readonly knowledgeNoteService: AIKnowledgeNoteService;
+  public readonly knowledgeNoteService: ManageAIKnowledgeNoteUseCase;
 
   constructor(
     providerConfigRepository: IAIProviderConfigRepository,
     persistencePort: IKnowledgeNotePersistencePort,
     getKnowledgeNoteSubpath: (identityId: string) => Promise<string>,
   ) {
-    this.knowledgeNoteService = new AIKnowledgeNoteService(
+    this.knowledgeNoteService = new ManageAIKnowledgeNoteUseCase(
       providerConfigRepository,
       new DirectProviderKnowledgeNoteGenerationAdapter(),
       persistencePort,

@@ -15,7 +15,7 @@ import {
 } from '@dailyuse/utils/result';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId, TaskDependencyId } from '@dailyuse/contracts/primitives';
-import type { TaskDependencyController } from '../controllers/task-dependency.controller';
+import type { TaskDependencyController } from '../../controllers/task-dependency.controller';
 
 // ============ Schemas ============
 

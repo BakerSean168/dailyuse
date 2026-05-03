@@ -25,7 +25,7 @@ import { createGoalRuntimeContribution } from '../api/runtime';
 import { createGoalScheduleRuntimeContribution } from '../api/schedule-runtime';
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRecordRepository, IGoalRepository } from '../domain-server';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { GoalModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
@@ -128,7 +128,7 @@ export const GoalElectronModule: IElectronModule = {
     // 3. IPC Handlers — all mutating channels go through auth + controller validation.
     // IPC 处理器 — 所有变更通道都经过认证 + 控制器校验。
     ipcMain.handle(Ch.LIST, async (_event, params) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         // Pass filters only - identityId is injected from requestContext inside controller
         goalController.list(params ?? {}, requestContext),
       ),
@@ -137,8 +137,8 @@ export const GoalElectronModule: IElectronModule = {
       goalController.get(id, includeChildren),
     );
     ipcMain.handle(Ch.CREATE, async (_event, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.create(dto, requestContext as Context),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.create(dto, requestContext as ExecutionContext),
       ),
     );
     // Issue #4 fix: route update through auth + controller validation
@@ -152,7 +152,7 @@ export const GoalElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => goalController.delete(id)),
     );
     ipcMain.handle(Ch.ARCHIVE_EXPIRED, async () =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         goalController.archiveExpired(requestContext),
       ),
     );
@@ -168,7 +168,7 @@ export const GoalElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => goalController.complete(id)),
     );
     ipcMain.handle(Ch.SEARCH, async (_event, params) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         goalController.search(
           String(params?.query ?? ''),
           requestContext,
@@ -179,7 +179,7 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.AGGREGATE, (_, id) => goalController.getAggregate(id));
     ipcMain.handle(Ch.PROGRESS_BREAKDOWN, (_, id) => goalController.getProgressBreakdown(id));
     ipcMain.handle(Ch.FOCUS_MODE_GET, async (_event) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
         logger.info('IPC 获取专注模式处理器', {
           identityId: requestContext.identityId,
         });
@@ -187,7 +187,7 @@ export const GoalElectronModule: IElectronModule = {
       }),
     );
     ipcMain.handle(Ch.FOCUS_MODE_ACTIVATE, async (_event, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
         logger.info('IPC 启用专注模式处理器', {
           identityId: requestContext.identityId,
           dto,
@@ -196,7 +196,7 @@ export const GoalElectronModule: IElectronModule = {
       }),
     );
     ipcMain.handle(Ch.FOCUS_MODE_DEACTIVATE, async (_event) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
         logger.info('IPC 停用专注模式处理器', {
           identityId: requestContext.identityId,
         });
@@ -204,7 +204,7 @@ export const GoalElectronModule: IElectronModule = {
       }),
     );
     ipcMain.handle(Ch.FOCUS_MODE_EXTEND, async (_event, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) => {
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
         logger.info('IPC 延长专注模式处理器', {
           identityId: requestContext.identityId,
           dto,
@@ -213,7 +213,7 @@ export const GoalElectronModule: IElectronModule = {
       }),
     );
     ipcMain.handle(Ch.CLONE, async (_event, goalId, params) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         goalController.cloneGoal(goalId, params ?? {}, requestContext),
       ),
     );
@@ -245,7 +245,7 @@ export const GoalElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => goalController.deleteReview(goalId, reviewId)),
     );
     ipcMain.handle(Ch.RECORD_CREATE, async (_, goalId, keyResultId, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         goalController.createRecord(goalId, keyResultId, dto, requestContext),
       ),
     );
@@ -259,25 +259,25 @@ export const GoalElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => goalController.deleteRecord(recordId)),
     );
     ipcMain.handle(Ch.FOLDER_LIST, async (_event, params) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         // Pass filters only - identityId is injected from requestContext inside controller
         goalFolderController.list(params ?? {}, requestContext),
       ),
     );
     ipcMain.handle(Ch.FOLDER_GET, (_event, id) => goalFolderController.get(id));
     ipcMain.handle(Ch.FOLDER_CREATE, async (_event, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalFolderController.create(dto, requestContext as Context),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalFolderController.create(dto, requestContext as ExecutionContext),
       ),
     );
     ipcMain.handle(Ch.FOLDER_UPDATE, async (_event, id, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalFolderController.update(id, dto, requestContext as Context),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalFolderController.update(id, dto, requestContext as ExecutionContext),
       ),
     );
     ipcMain.handle(Ch.FOLDER_DELETE, async (_event, id) =>
-      withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalFolderController.delete(id, requestContext as Context),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalFolderController.delete(id, requestContext as ExecutionContext),
       ),
     );
 

@@ -1,17 +1,19 @@
 /**
  * Create Schedule Task Use Case
  * 创建调度任务用例
- * 
+ *
  * 【应用服务职责】
  * - 协调领域服务创建任务
  * - DTO 转换
  * - 事务协调
- * 
+ *
  * 【不包含】
  * - 业务规则（由领域服务和聚合根处理）
  * - 持久化细节（由仓储处理）
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 import {
   type IScheduleTaskRepository,
   ScheduleTask,
@@ -43,7 +45,7 @@ export interface CreateScheduleTaskReq {
 
 /**
  * Create Schedule Task Use Case
- * 
+ *
  * 【执行流程】
  * 1. 调用领域服务创建调度任务聚合根
  * 2. 持久化到仓储
@@ -54,7 +56,7 @@ export class CreateScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(req: CreateScheduleTaskReq): Promise<ScheduleTaskClientDTO> {
+  async execute(req: CreateScheduleTaskReq): Promise<Result<ScheduleTaskClientDTO>> {
     const schedule = ScheduleConfig.fromDTO({
       ...req.scheduleConfig,
       startDate: req.scheduleConfig.startDate
@@ -88,7 +90,6 @@ export class CreateScheduleTaskUseCase {
 
     await this.scheduleTaskRepository.save(task);
 
-    // 2. 转换为 Client DTO 并返回
-    return task.toClientDTO();
+    return ok(task.toClientDTO());
   }
 }

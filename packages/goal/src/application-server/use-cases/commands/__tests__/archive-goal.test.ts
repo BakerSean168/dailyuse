@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '@/domain-server';
-import { ArchiveGoal } from '../archive-goal';
+import { ArchiveGoalUseCase } from '../archive-goal.use-case';
 
 // ============================================================
 // Helpers
@@ -34,9 +34,9 @@ function createCompletedGoal(name = 'Completed Goal'): Goal {
   return goal;
 }
 
-describe('ArchiveGoal', () => {
+describe('ArchiveGoalUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
-  let useCase: ArchiveGoal;
+  let useCase: ArchiveGoalUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,7 +44,7 @@ describe('ArchiveGoal', () => {
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new ArchiveGoal(goalRepo, new GoalPolicy());
+    useCase = new ArchiveGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalRepository } from '@/domain-server';
-import { SearchGoals } from '../search-goals';
+import { SearchGoalsUseCase } from '../search-goals.use-case';
 
 // ============================================================
 // Helpers
@@ -31,14 +31,14 @@ function createGoalFixture(overrides?: Record<string, any>) {
 // Tests
 // ============================================================
 
-describe('SearchGoals', () => {
+describe('SearchGoalsUseCase', () => {
   it('should return goals matching the query by name', async () => {
     const goal1 = createGoalFixture({ id: 'goal-1', name: 'Learn TypeScript' });
     const goal2 = createGoalFixture({ id: 'goal-2', name: 'Read Books' });
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([goal1, goal2]),
     });
-    const useCase = new SearchGoals(goalRepo);
+    const useCase = new SearchGoalsUseCase(goalRepo);
 
     const result = await useCase.execute('identity-1', 'TypeScript');
 
@@ -60,7 +60,7 @@ describe('SearchGoals', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([goal1, goal2]),
     });
-    const useCase = new SearchGoals(goalRepo);
+    const useCase = new SearchGoalsUseCase(goalRepo);
 
     const result = await useCase.execute('identity-1', 'fitness');
 
@@ -75,7 +75,7 @@ describe('SearchGoals', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([goal1]),
     });
-    const useCase = new SearchGoals(goalRepo);
+    const useCase = new SearchGoalsUseCase(goalRepo);
 
     const result = await useCase.execute('identity-1', 'nonexistent');
 
@@ -92,7 +92,7 @@ describe('SearchGoals', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([goal]),
     });
-    const useCase = new SearchGoals(goalRepo);
+    const useCase = new SearchGoalsUseCase(goalRepo);
 
     const result = await useCase.execute('identity-1', 'typescript');
 
@@ -106,7 +106,7 @@ describe('SearchGoals', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([goal]),
     });
-    const useCase = new SearchGoals(goalRepo);
+    const useCase = new SearchGoalsUseCase(goalRepo);
 
     const result = await useCase.execute('identity-1', 'something');
 
@@ -122,7 +122,7 @@ describe('SearchGoals', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findByIdentityId: vi.fn().mockResolvedValue(goals),
     });
-    const useCase = new SearchGoals(goalRepo);
+    const useCase = new SearchGoalsUseCase(goalRepo);
 
     const result = await useCase.execute('identity-1', 'Match');
 

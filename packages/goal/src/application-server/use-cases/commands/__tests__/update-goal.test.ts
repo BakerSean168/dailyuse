@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '@/domain-server';
-import { UpdateGoal } from '../update-goal';
+import { UpdateGoalUseCase } from '../update-goal.use-case';
 
 // ============================================================
 // Helpers
@@ -28,9 +28,9 @@ function createTestGoal(name = 'Original Goal'): Goal {
   });
 }
 
-describe('UpdateGoal', () => {
+describe('UpdateGoalUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
-  let useCase: UpdateGoal;
+  let useCase: UpdateGoalUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -38,7 +38,7 @@ describe('UpdateGoal', () => {
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new UpdateGoal(goalRepo, new GoalPolicy());
+    useCase = new UpdateGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {

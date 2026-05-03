@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Router, type Request, type RequestHandler } from 'express';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -13,7 +14,7 @@ import {
   SendMessageSchema,
   ListMessagesSchema,
 } from '@dailyuse/contracts/ai';
-import type { AIChatController } from '../controllers/ai-chat.controller';
+import type { AIChatController } from '../../controllers/ai-chat.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -47,7 +48,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.createConversation(req.body, ctx.identityId),
+    (req, ctx) => controller.createConversation(req.body, { identityId: ctx.identityId } as ExecutionContext),
     { successStatus: 201 },
   );
 
@@ -70,7 +71,7 @@ export function registerAIChatRoutes(
     [auth],
     (req, ctx) =>
       controller.listConversations(
-        ctx.identityId,
+        { identityId: ctx.identityId } as ExecutionContext,
         Number(req.query?.page ?? 1),
         Number(req.query?.pageSize ?? 20),
       ),
@@ -145,7 +146,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.sendMessage(req.body, ctx.identityId),
+    (req, ctx) => controller.sendMessage(req.body, { identityId: ctx.identityId } as ExecutionContext),
     { successStatus: 201 },
   );
 
@@ -215,7 +216,7 @@ export function registerAIChatRoutes(
     try {
       const result = await controller.streamMessage(
         req.body,
-        identityId,
+        { identityId } as ExecutionContext,
         (chunk) => {
           writeSseEvent('message', {
             role: chunk.role,

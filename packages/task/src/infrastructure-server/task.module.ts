@@ -36,35 +36,35 @@ import type {
   DependencyType,
   QueryTaskTemplateGraphRes,
 } from '@dailyuse/contracts/task';
-import { CreateTaskTemplate } from '../application-server/use-cases/commands/create-task-template';
-import { GetTaskTemplate } from '../application-server/use-cases/queries/get-task-template';
-import { ListTaskTemplates } from '../application-server/use-cases/queries/list-task-templates';
-import { UpdateTaskTemplate } from '../application-server/use-cases/commands/update-task-template';
-import { ActivateTaskTemplate } from '../application-server/use-cases/commands/activate-task-template';
-import { PauseTaskTemplate } from '../application-server/use-cases/commands/pause-task-template';
-import { ArchiveTaskTemplate } from '../application-server/use-cases/commands/archive-task-template';
-import { DeleteTaskTemplate } from '../application-server/use-cases/commands/delete-task-template';
-import { CompleteTaskInstance } from '../application-server/use-cases/commands/complete-task-instance';
-import { SkipTaskInstance } from '../application-server/use-cases/commands/skip-task-instance';
-import { GetTaskInstancesByDateRange } from '../application-server/use-cases/queries/get-task-instances-by-date-range';
-import { GetTaskInstance } from '../application-server/use-cases/queries/get-task-instance';
-import { ListTaskInstancesByAccount } from '../application-server/use-cases/queries/list-task-instances-by-account';
-import { ListTaskInstancesByTemplate } from '../application-server/use-cases/queries/list-task-instances-by-template';
-import { ListTaskInstancesByStatus } from '../application-server/use-cases/queries/list-task-instances-by-status';
-import { StartTaskInstance } from '../application-server/use-cases/commands/start-task-instance';
-import { DeleteTaskInstance } from '../application-server/use-cases/commands/delete-task-instance';
-import { GenerateTaskInstances } from '../application-server/use-cases/commands/generate-task-instances';
-import { BindTaskToGoal } from '../application-server/use-cases/commands/bind-task-to-goal';
-import { UnbindTaskFromGoal } from '../application-server/use-cases/commands/unbind-task-from-goal';
-import { CheckExpiredInstances } from '../application-server/use-cases/commands/check-expired-instances';
-import { CreateTaskDependency } from '../application-server/use-cases/commands/create-task-dependency';
-import { DeleteTaskDependency } from '../application-server/use-cases/commands/delete-task-dependency';
-import { UpdateTaskDependency } from '../application-server/use-cases/commands/update-task-dependency';
-import { ListTaskTemplatesByPriority } from '../application-server/use-cases/queries/list-task-templates-by-priority';
-import { ListTaskDependencies } from '../application-server/use-cases/queries/list-task-dependencies';
-import { GetDependencyChain } from '../application-server/use-cases/queries/get-dependency-chain';
-import { ValidateTaskDependency } from '../application-server/use-cases/queries/validate-task-dependency';
-import { GetTaskTemplateGraph } from '../application-server/use-cases/queries/get-task-template-graph';
+import { CreateTaskTemplateUseCase } from '../application-server/use-cases/commands/create-task-template.use-case';
+import { GetTaskTemplateUseCase } from '../application-server/use-cases/queries/get-task-template.use-case';
+import { ListTaskTemplatesUseCase } from '../application-server/use-cases/queries/list-task-templates.use-case';
+import { UpdateTaskTemplateUseCase } from '../application-server/use-cases/commands/update-task-template.use-case';
+import { ActivateTaskTemplateUseCase } from '../application-server/use-cases/commands/activate-task-template.use-case';
+import { PauseTaskTemplateUseCase } from '../application-server/use-cases/commands/pause-task-template.use-case';
+import { ArchiveTaskTemplateUseCase } from '../application-server/use-cases/commands/archive-task-template.use-case';
+import { DeleteTaskTemplateUseCase } from '../application-server/use-cases/commands/delete-task-template.use-case';
+import { CompleteTaskInstanceUseCase } from '../application-server/use-cases/commands/complete-task-instance.use-case';
+import { SkipTaskInstanceUseCase } from '../application-server/use-cases/commands/skip-task-instance.use-case';
+import { GetTaskInstancesByDateRangeUseCase } from '../application-server/use-cases/queries/get-task-instances-by-date-range.use-case';
+import { GetTaskInstanceUseCase } from '../application-server/use-cases/queries/get-task-instance.use-case';
+import { ListTaskInstancesByAccountUseCase } from '../application-server/use-cases/queries/list-task-instances-by-account.use-case';
+import { ListTaskInstancesByTemplateUseCase } from '../application-server/use-cases/queries/list-task-instances-by-template.use-case';
+import { ListTaskInstancesByStatusUseCase } from '../application-server/use-cases/queries/list-task-instances-by-status.use-case';
+import { StartTaskInstanceUseCase } from '../application-server/use-cases/commands/start-task-instance.use-case';
+import { DeleteTaskInstanceUseCase } from '../application-server/use-cases/commands/delete-task-instance.use-case';
+import { GenerateTaskInstancesUseCase } from '../application-server/use-cases/commands/generate-task-instances.use-case';
+import { BindTaskToGoalUseCase } from '../application-server/use-cases/commands/bind-task-to-goal.use-case';
+import { UnbindTaskFromGoalUseCase } from '../application-server/use-cases/commands/unbind-task-from-goal.use-case';
+import { CheckExpiredInstancesUseCase } from '../application-server/use-cases/commands/check-expired-instances.use-case';
+import { CreateTaskDependencyUseCase } from '../application-server/use-cases/commands/create-task-dependency.use-case';
+import { DeleteTaskDependencyUseCase } from '../application-server/use-cases/commands/delete-task-dependency.use-case';
+import { UpdateTaskDependencyUseCase } from '../application-server/use-cases/commands/update-task-dependency.use-case';
+import { ListTaskTemplatesByPriorityUseCase } from '../application-server/use-cases/queries/list-task-templates-by-priority.use-case';
+import { ListTaskDependenciesUseCase } from '../application-server/use-cases/queries/list-task-dependencies.use-case';
+import { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
+import { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
+import { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';
 
 // ---------------------------------------------------------------------------
 // 1. Dependencies — everything the task server runtime needs from the outside.
@@ -118,45 +118,45 @@ export interface TaskModuleDependencies {
  */
 export interface TaskModuleUseCases {
   // Template commands
-  readonly createTaskTemplate: CreateTaskTemplate;
-  readonly updateTaskTemplate: UpdateTaskTemplate;
-  readonly activateTaskTemplate: ActivateTaskTemplate;
-  readonly pauseTaskTemplate: PauseTaskTemplate;
-  readonly archiveTaskTemplate: ArchiveTaskTemplate;
-  readonly deleteTaskTemplate: DeleteTaskTemplate;
-  readonly generateTaskInstances: GenerateTaskInstances;
-  readonly bindTaskToGoal: BindTaskToGoal;
-  readonly unbindTaskFromGoal: UnbindTaskFromGoal;
+  readonly createTaskTemplate: CreateTaskTemplateUseCase;
+  readonly updateTaskTemplate: UpdateTaskTemplateUseCase;
+  readonly activateTaskTemplate: ActivateTaskTemplateUseCase;
+  readonly pauseTaskTemplate: PauseTaskTemplateUseCase;
+  readonly archiveTaskTemplate: ArchiveTaskTemplateUseCase;
+  readonly deleteTaskTemplate: DeleteTaskTemplateUseCase;
+  readonly generateTaskInstances: GenerateTaskInstancesUseCase;
+  readonly bindTaskToGoal: BindTaskToGoalUseCase;
+  readonly unbindTaskFromGoal: UnbindTaskFromGoalUseCase;
 
   // Template queries
-  readonly getTaskTemplate: GetTaskTemplate;
-  readonly listTaskTemplates: ListTaskTemplates;
-  readonly getTaskTemplateGraph: GetTaskTemplateGraph;
-  readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
+  readonly getTaskTemplate: GetTaskTemplateUseCase;
+  readonly listTaskTemplates: ListTaskTemplatesUseCase;
+  readonly getTaskTemplateGraph: GetTaskTemplateGraphUseCase;
+  readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriorityUseCase;
 
   // Instance commands
-  readonly completeTaskInstance: CompleteTaskInstance;
-  readonly skipTaskInstance: SkipTaskInstance;
-  readonly startTaskInstance: StartTaskInstance;
-  readonly deleteTaskInstance: DeleteTaskInstance;
-  readonly checkExpiredInstances: CheckExpiredInstances;
+  readonly completeTaskInstance: CompleteTaskInstanceUseCase;
+  readonly skipTaskInstance: SkipTaskInstanceUseCase;
+  readonly startTaskInstance: StartTaskInstanceUseCase;
+  readonly deleteTaskInstance: DeleteTaskInstanceUseCase;
+  readonly checkExpiredInstances: CheckExpiredInstancesUseCase;
 
   // Instance queries
-  readonly getTaskInstance: GetTaskInstance;
-  readonly listTaskInstancesByAccount: ListTaskInstancesByAccount;
-  readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
-  readonly listTaskInstancesByStatus: ListTaskInstancesByStatus;
-  readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRange;
+  readonly getTaskInstance: GetTaskInstanceUseCase;
+  readonly listTaskInstancesByAccount: ListTaskInstancesByAccountUseCase;
+  readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplateUseCase;
+  readonly listTaskInstancesByStatus: ListTaskInstancesByStatusUseCase;
+  readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRangeUseCase;
 
   // Dependency commands
-  readonly createTaskDependency: CreateTaskDependency;
-  readonly deleteTaskDependency: DeleteTaskDependency;
-  readonly updateTaskDependency: UpdateTaskDependency;
+  readonly createTaskDependency: CreateTaskDependencyUseCase;
+  readonly deleteTaskDependency: DeleteTaskDependencyUseCase;
+  readonly updateTaskDependency: UpdateTaskDependencyUseCase;
 
   // Dependency queries
-  readonly listTaskDependencies: ListTaskDependencies;
-  readonly getDependencyChain: GetDependencyChain;
-  readonly validateTaskDependency: ValidateTaskDependency;
+  readonly listTaskDependencies: ListTaskDependenciesUseCase;
+  readonly getDependencyChain: GetDependencyChainUseCase;
+  readonly validateTaskDependency: ValidateTaskDependencyUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -167,45 +167,45 @@ export interface TaskModuleUseCases {
 /** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
 export interface TaskApplicationPort {
   // Template commands
-  createTaskTemplate: CreateTaskTemplate;
-  updateTaskTemplate: UpdateTaskTemplate;
-  activateTaskTemplate: ActivateTaskTemplate;
-  pauseTaskTemplate: PauseTaskTemplate;
-  archiveTaskTemplate: ArchiveTaskTemplate;
-  deleteTaskTemplate: DeleteTaskTemplate;
-  generateTaskInstances: GenerateTaskInstances;
-  bindTaskToGoal: BindTaskToGoal;
-  unbindTaskFromGoal: UnbindTaskFromGoal;
+  createTaskTemplate: CreateTaskTemplateUseCase;
+  updateTaskTemplate: UpdateTaskTemplateUseCase;
+  activateTaskTemplate: ActivateTaskTemplateUseCase;
+  pauseTaskTemplate: PauseTaskTemplateUseCase;
+  archiveTaskTemplate: ArchiveTaskTemplateUseCase;
+  deleteTaskTemplate: DeleteTaskTemplateUseCase;
+  generateTaskInstances: GenerateTaskInstancesUseCase;
+  bindTaskToGoal: BindTaskToGoalUseCase;
+  unbindTaskFromGoal: UnbindTaskFromGoalUseCase;
 
   // Template queries
-  getTaskTemplate: GetTaskTemplate;
-  listTaskTemplates: ListTaskTemplates;
-  getTaskTemplateGraph: GetTaskTemplateGraph;
-  listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
+  getTaskTemplate: GetTaskTemplateUseCase;
+  listTaskTemplates: ListTaskTemplatesUseCase;
+  getTaskTemplateGraph: GetTaskTemplateGraphUseCase;
+  listTaskTemplatesByPriority: ListTaskTemplatesByPriorityUseCase;
 
   // Instance commands
-  completeTaskInstance: CompleteTaskInstance;
-  skipTaskInstance: SkipTaskInstance;
-  startTaskInstance: StartTaskInstance;
-  deleteTaskInstance: DeleteTaskInstance;
-  checkExpiredInstances: CheckExpiredInstances;
+  completeTaskInstance: CompleteTaskInstanceUseCase;
+  skipTaskInstance: SkipTaskInstanceUseCase;
+  startTaskInstance: StartTaskInstanceUseCase;
+  deleteTaskInstance: DeleteTaskInstanceUseCase;
+  checkExpiredInstances: CheckExpiredInstancesUseCase;
 
   // Instance queries
-  getTaskInstance: GetTaskInstance;
-  listTaskInstancesByAccount: ListTaskInstancesByAccount;
-  listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
-  listTaskInstancesByStatus: ListTaskInstancesByStatus;
-  getTaskInstancesByDateRange: GetTaskInstancesByDateRange;
+  getTaskInstance: GetTaskInstanceUseCase;
+  listTaskInstancesByAccount: ListTaskInstancesByAccountUseCase;
+  listTaskInstancesByTemplate: ListTaskInstancesByTemplateUseCase;
+  listTaskInstancesByStatus: ListTaskInstancesByStatusUseCase;
+  getTaskInstancesByDateRange: GetTaskInstancesByDateRangeUseCase;
 
   // Dependency commands
-  createTaskDependency: CreateTaskDependency;
-  deleteTaskDependency: DeleteTaskDependency;
-  updateTaskDependency: UpdateTaskDependency;
+  createTaskDependency: CreateTaskDependencyUseCase;
+  deleteTaskDependency: DeleteTaskDependencyUseCase;
+  updateTaskDependency: UpdateTaskDependencyUseCase;
 
   // Dependency queries
-  listTaskDependencies: ListTaskDependencies;
-  getDependencyChain: GetDependencyChain;
-  validateTaskDependency: ValidateTaskDependency;
+  listTaskDependencies: ListTaskDependenciesUseCase;
+  getDependencyChain: GetDependencyChainUseCase;
+  validateTaskDependency: ValidateTaskDependencyUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -257,52 +257,52 @@ function normalizeRuntimeContributions(
  */
 export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskModuleUseCases {
   const { taskTemplateRepository, taskInstanceRepository, taskDependencyRepository } = dependencies;
-  const listTaskTemplates = new ListTaskTemplates(taskTemplateRepository, taskInstanceRepository);
+  const listTaskTemplates = new ListTaskTemplatesUseCase(taskTemplateRepository, taskInstanceRepository);
 
   return {
     // Template commands
-    createTaskTemplate: new CreateTaskTemplate(taskTemplateRepository, taskInstanceRepository),
-    updateTaskTemplate: new UpdateTaskTemplate(taskTemplateRepository),
-    activateTaskTemplate: new ActivateTaskTemplate(taskTemplateRepository, taskInstanceRepository),
-    pauseTaskTemplate: new PauseTaskTemplate(taskTemplateRepository, taskInstanceRepository),
-    archiveTaskTemplate: new ArchiveTaskTemplate(taskTemplateRepository),
-    deleteTaskTemplate: new DeleteTaskTemplate(taskTemplateRepository, taskInstanceRepository),
-    generateTaskInstances: new GenerateTaskInstances(
+    createTaskTemplate: new CreateTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    updateTaskTemplate: new UpdateTaskTemplateUseCase(taskTemplateRepository),
+    activateTaskTemplate: new ActivateTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    pauseTaskTemplate: new PauseTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    archiveTaskTemplate: new ArchiveTaskTemplateUseCase(taskTemplateRepository),
+    deleteTaskTemplate: new DeleteTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    generateTaskInstances: new GenerateTaskInstancesUseCase(
       taskTemplateRepository,
       taskInstanceRepository,
     ),
-    bindTaskToGoal: new BindTaskToGoal(taskTemplateRepository),
-    unbindTaskFromGoal: new UnbindTaskFromGoal(taskTemplateRepository),
+    bindTaskToGoal: new BindTaskToGoalUseCase(taskTemplateRepository),
+    unbindTaskFromGoal: new UnbindTaskFromGoalUseCase(taskTemplateRepository),
 
     // Template queries
-    getTaskTemplate: new GetTaskTemplate(taskTemplateRepository, taskInstanceRepository),
+    getTaskTemplate: new GetTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
     listTaskTemplates,
-    getTaskTemplateGraph: new GetTaskTemplateGraph(listTaskTemplates, taskDependencyRepository),
-    listTaskTemplatesByPriority: new ListTaskTemplatesByPriority(taskTemplateRepository),
+    getTaskTemplateGraph: new GetTaskTemplateGraphUseCase(listTaskTemplates, taskDependencyRepository),
+    listTaskTemplatesByPriority: new ListTaskTemplatesByPriorityUseCase(taskTemplateRepository),
 
     // Instance commands
-    completeTaskInstance: new CompleteTaskInstance(taskInstanceRepository),
-    skipTaskInstance: new SkipTaskInstance(taskInstanceRepository),
-    startTaskInstance: new StartTaskInstance(taskInstanceRepository),
-    deleteTaskInstance: new DeleteTaskInstance(taskInstanceRepository),
-    checkExpiredInstances: new CheckExpiredInstances(taskInstanceRepository),
+    completeTaskInstance: new CompleteTaskInstanceUseCase(taskInstanceRepository),
+    skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
+    startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
+    deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),
+    checkExpiredInstances: new CheckExpiredInstancesUseCase(taskInstanceRepository),
 
     // Instance queries
-    getTaskInstance: new GetTaskInstance(taskInstanceRepository),
-    listTaskInstancesByAccount: new ListTaskInstancesByAccount(taskInstanceRepository),
-    listTaskInstancesByTemplate: new ListTaskInstancesByTemplate(taskInstanceRepository),
-    listTaskInstancesByStatus: new ListTaskInstancesByStatus(taskInstanceRepository),
-    getTaskInstancesByDateRange: new GetTaskInstancesByDateRange(taskInstanceRepository),
+    getTaskInstance: new GetTaskInstanceUseCase(taskInstanceRepository),
+    listTaskInstancesByAccount: new ListTaskInstancesByAccountUseCase(taskInstanceRepository),
+    listTaskInstancesByTemplate: new ListTaskInstancesByTemplateUseCase(taskInstanceRepository),
+    listTaskInstancesByStatus: new ListTaskInstancesByStatusUseCase(taskInstanceRepository),
+    getTaskInstancesByDateRange: new GetTaskInstancesByDateRangeUseCase(taskInstanceRepository),
 
     // Dependency commands
-    createTaskDependency: new CreateTaskDependency(taskDependencyRepository),
-    deleteTaskDependency: new DeleteTaskDependency(taskDependencyRepository),
-    updateTaskDependency: new UpdateTaskDependency(taskDependencyRepository),
+    createTaskDependency: new CreateTaskDependencyUseCase(taskDependencyRepository),
+    deleteTaskDependency: new DeleteTaskDependencyUseCase(taskDependencyRepository),
+    updateTaskDependency: new UpdateTaskDependencyUseCase(taskDependencyRepository),
 
     // Dependency queries
-    listTaskDependencies: new ListTaskDependencies(taskDependencyRepository),
-    getDependencyChain: new GetDependencyChain(taskDependencyRepository),
-    validateTaskDependency: new ValidateTaskDependency(taskDependencyRepository),
+    listTaskDependencies: new ListTaskDependenciesUseCase(taskDependencyRepository),
+    getDependencyChain: new GetDependencyChainUseCase(taskDependencyRepository),
+    validateTaskDependency: new ValidateTaskDependencyUseCase(taskDependencyRepository),
   };
 }
 

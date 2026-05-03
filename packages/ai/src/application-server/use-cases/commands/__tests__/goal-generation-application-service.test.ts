@@ -18,7 +18,7 @@ import type {
   KnowledgeSourceResource,
 } from '../../../ports';
 import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
-import { GoalGenerationApplicationService } from '../goal-generation-application-service';
+import { GenerateAIGoalUseCase } from '../generate-ai-goal.use-case';
 
 class StubProviderConfigRepository {
   constructor(
@@ -173,7 +173,7 @@ describe('GoalGenerationApplicationService', () => {
   it('generates a structured goal through the shared execution port', async () => {
     const executionPort = new StubGoalPlanningPort();
     const executionLogPort = new StubExecutionLogPort();
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-foreign',
@@ -229,14 +229,16 @@ describe('GoalGenerationApplicationService', () => {
       requestId: expect.any(String),
     });
 
-    expect(result.state).toBe('draft');
-    if (result.state !== 'draft') {
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.state).toBe('draft');
+    if (result.data.state !== 'draft') {
       throw new Error('expected draft state');
     }
-    expect(result.goal.title).toBe('Build a Python AI service');
-    expect(result.goal.category).toBe('learning');
-    expect(result.goal.importance).toBe('Important');
-    expect(result.keyResults).toEqual([
+    expect(result.data.goal.title).toBe('Build a Python AI service');
+    expect(result.data.goal.category).toBe('learning');
+    expect(result.data.goal.importance).toBe('Important');
+    expect(result.data.keyResults).toEqual([
       {
         title: 'Finish provider abstraction',
         description: 'Route AI calls through a shared execution port.',
@@ -249,8 +251,8 @@ describe('GoalGenerationApplicationService', () => {
         weight: 1,
       },
     ]);
-    expect(result.providerId).toBe('provider-1');
-    expect(result.tokenUsage.totalTokens).toBe(65);
+    expect(result.data.providerId).toBe('provider-1');
+    expect(result.data.tokenUsage.totalTokens).toBe(65);
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
         taskType: 'GOAL_GENERATION',
@@ -271,7 +273,7 @@ describe('GoalGenerationApplicationService', () => {
     const executionPort = new StubGoalPlanningPort();
     const executionLogPort = new StubExecutionLogPort();
     vi.mocked(executionPort.plan).mockRejectedValueOnce(new Error('planning exploded'));
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -291,14 +293,17 @@ describe('GoalGenerationApplicationService', () => {
       executionLogPort,
     );
 
-    await expect(
-      service.generateGoal({
-        identityId: 'identity-1',
-        idea: 'Use Python engineering best practices to improve the internal ai-service module.',
-        timeframe: 'three weeks',
-        includeKeyResults: true,
-      }),
-    ).rejects.toThrow('planning exploded');
+    const result = await service.generateGoal({
+      identityId: 'identity-1',
+      idea: 'Use Python engineering best practices to improve the internal ai-service module.',
+      timeframe: 'three weeks',
+      includeKeyResults: true,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('planning exploded');
+    }
 
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -338,7 +343,7 @@ describe('GoalGenerationApplicationService', () => {
         totalTokens: 27,
       },
     });
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -369,7 +374,9 @@ describe('GoalGenerationApplicationService', () => {
         clarificationAnswers: ['Python backend', 'within 3 months'],
       }),
     );
-    expect(result).toEqual(
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data).toEqual(
       expect.objectContaining({
         state: 'clarification',
         clarification: expect.objectContaining({
@@ -393,7 +400,7 @@ describe('GoalGenerationApplicationService', () => {
     const automationExecutorPort = new StubAutomationToolExecutorPort();
     const knowledgeSourcePort = new StubKnowledgeSourcePort();
     const analyticsReadPort = new StubAnalyticsReadPort();
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -472,12 +479,14 @@ describe('GoalGenerationApplicationService', () => {
       'identity-1',
       expect.stringContaining('Goal title: Ship AI automation'),
     );
-    expect(result.state).toBe('confirm');
-    if (result.state !== 'confirm') {
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.state).toBe('confirm');
+    if (result.data.state !== 'confirm') {
       throw new Error('expected confirm state');
     }
-    expect(result.summary).toBe('Drafted a practical execution plan.');
-    expect(result.actions).toHaveLength(1);
+    expect(result.data.summary).toBe('Drafted a practical execution plan.');
+    expect(result.data.actions).toHaveLength(1);
     expect(automationExecutorPort.executeGoalAutomation).not.toHaveBeenCalled();
   });
 
@@ -485,7 +494,7 @@ describe('GoalGenerationApplicationService', () => {
     const executionLogPort = new StubExecutionLogPort();
     const automationPlanningPort = new StubGoalAutomationPlanningPort();
     const automationExecutorPort = new StubAutomationToolExecutorPort();
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -531,19 +540,21 @@ describe('GoalGenerationApplicationService', () => {
 
     expect(automationPlanningPort.plan).not.toHaveBeenCalled();
     expect(automationExecutorPort.executeGoalAutomation).toHaveBeenCalledTimes(1);
-    expect(result.state).toBe('result');
-    if (result.state !== 'result') {
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.state).toBe('result');
+    if (result.data.state !== 'result') {
       throw new Error('expected result state');
     }
-    expect(result.executedActions[0]?.entityId).toBe('goal-123');
-    expect(result.summary).toBe('Approved plan from review.');
-    expect(result.executionSummary).toEqual({
+    expect(result.data.executedActions[0]?.entityId).toBe('goal-123');
+    expect(result.data.summary).toBe('Approved plan from review.');
+    expect(result.data.executionSummary).toEqual({
       status: 'success',
       executedCount: 1,
       skippedCount: 0,
       failedCount: 0,
     });
-    expect(result.recovery).toEqual({
+    expect(result.data.recovery).toEqual({
       canRetry: false,
       failedActions: [],
       suggestions: [],
@@ -566,7 +577,7 @@ describe('GoalGenerationApplicationService', () => {
         message: 'Missing key result draft for index 0',
       },
     ]);
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',
@@ -613,24 +624,26 @@ describe('GoalGenerationApplicationService', () => {
       ],
     });
 
-    expect(result.state).toBe('result');
-    if (result.state !== 'result') {
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.state).toBe('result');
+    if (result.data.state !== 'result') {
       throw new Error('expected result state');
     }
-    expect(result.executionSummary).toEqual({
+    expect(result.data.executionSummary).toEqual({
       status: 'partial',
       executedCount: 1,
       skippedCount: 0,
       failedCount: 1,
     });
-    expect(result.recovery.canRetry).toBe(true);
-    expect(result.recovery.failedActions).toEqual([
+    expect(result.data.recovery.canRetry).toBe(true);
+    expect(result.data.recovery.failedActions).toEqual([
       expect.objectContaining({
         tool: 'create_key_result',
         status: 'failed',
       }),
     ]);
-    expect(result.recovery.suggestions).toContain(
+    expect(result.data.recovery.suggestions).toContain(
       'Confirm the goal exists and the key result drafts are complete before retrying execution.',
     );
   });
@@ -638,7 +651,7 @@ describe('GoalGenerationApplicationService', () => {
   it('reuses a caller-provided request id for downstream goal planning calls', async () => {
     const executionPort = new StubGoalPlanningPort();
     const executionLogPort = new StubExecutionLogPort();
-    const service = new GoalGenerationApplicationService(
+    const service = new GenerateAIGoalUseCase(
       new StubProviderConfigRepository([
         {
           id: 'provider-1',

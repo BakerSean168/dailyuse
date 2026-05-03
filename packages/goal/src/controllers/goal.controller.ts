@@ -41,66 +41,66 @@ import type {
   UpdateKeyResultProgressReq,
   CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import { createLogger } from '@dailyuse/utils';
 import type {
-  CreateGoal,
-  GetGoal,
-  ListGoals,
-  UpdateGoal,
-  DeleteGoal,
-  ArchiveGoal,
-  ActivateGoal,
-  SearchGoals,
-  AddGoalKeyResult,
-  UpdateGoalKeyResult,
-  UpdateGoalKeyResultProgress,
-  DeleteGoalKeyResult,
-  AddGoalReview,
-  ListGoalReviews,
-  UpdateGoalReview,
-  DeleteGoalReview,
-  CreateGoalRecord,
-  ListGoalRecords,
-  DeleteGoalRecord,
-  CompleteGoal,
-  ArchiveExpiredGoals,
-  ActivateFocusMode,
-  DeactivateFocusMode,
-  ExtendFocusMode,
-  GetCurrentFocusMode,
+  CreateGoalUseCase,
+  GetGoalUseCase,
+  ListGoalsUseCase,
+  UpdateGoalUseCase,
+  DeleteGoalUseCase,
+  ArchiveGoalUseCase,
+  ActivateGoalUseCase,
+  SearchGoalsUseCase,
+  AddGoalKeyResultUseCase,
+  UpdateGoalKeyResultUseCase,
+  UpdateGoalKeyResultProgressUseCase,
+  DeleteGoalKeyResultUseCase,
+  AddGoalReviewUseCase,
+  ListGoalReviewsUseCase,
+  UpdateGoalReviewUseCase,
+  DeleteGoalReviewUseCase,
+  CreateGoalRecordUseCase,
+  ListGoalRecordsUseCase,
+  DeleteGoalRecordUseCase,
+  CompleteGoalUseCase,
+  ArchiveExpiredGoalsUseCase,
+  ActivateFocusModeUseCase,
+  DeactivateFocusModeUseCase,
+  ExtendFocusModeUseCase,
+  GetCurrentFocusModeUseCase,
 } from '../application-server';
 
 // ============ Use Case Port ============
 
 export interface GoalUseCases {
-  createGoal: CreateGoal;
-  getGoal: GetGoal;
-  listGoals: ListGoals;
-  updateGoal: UpdateGoal;
-  deleteGoal: DeleteGoal;
-  archiveExpiredGoals: ArchiveExpiredGoals;
-  archiveGoal: ArchiveGoal;
-  activateGoal: ActivateGoal;
-  completeGoal: CompleteGoal;
-  searchGoals: SearchGoals;
-  addKeyResult: AddGoalKeyResult;
-  updateKeyResult: UpdateGoalKeyResult;
-  updateKeyResultProgress: UpdateGoalKeyResultProgress;
-  deleteKeyResult: DeleteGoalKeyResult;
-  addReview: AddGoalReview;
-  listReviews: ListGoalReviews;
-  updateReview: UpdateGoalReview;
-  deleteReview: DeleteGoalReview;
-  createRecord: CreateGoalRecord;
-  listRecords: ListGoalRecords;
-  deleteRecord: DeleteGoalRecord;
-  activateFocusMode: ActivateFocusMode;
-  deactivateFocusMode: DeactivateFocusMode;
-  extendFocusMode: ExtendFocusMode;
-  getCurrentFocusMode: GetCurrentFocusMode;
+  createGoal: CreateGoalUseCase;
+  getGoal: GetGoalUseCase;
+  listGoals: ListGoalsUseCase;
+  updateGoal: UpdateGoalUseCase;
+  deleteGoal: DeleteGoalUseCase;
+  archiveExpiredGoals: ArchiveExpiredGoalsUseCase;
+  archiveGoal: ArchiveGoalUseCase;
+  activateGoal: ActivateGoalUseCase;
+  completeGoal: CompleteGoalUseCase;
+  searchGoals: SearchGoalsUseCase;
+  addKeyResult: AddGoalKeyResultUseCase;
+  updateKeyResult: UpdateGoalKeyResultUseCase;
+  updateKeyResultProgress: UpdateGoalKeyResultProgressUseCase;
+  deleteKeyResult: DeleteGoalKeyResultUseCase;
+  addReview: AddGoalReviewUseCase;
+  listReviews: ListGoalReviewsUseCase;
+  updateReview: UpdateGoalReviewUseCase;
+  deleteReview: DeleteGoalReviewUseCase;
+  createRecord: CreateGoalRecordUseCase;
+  listRecords: ListGoalRecordsUseCase;
+  deleteRecord: DeleteGoalRecordUseCase;
+  activateFocusMode: ActivateFocusModeUseCase;
+  deactivateFocusMode: DeactivateFocusModeUseCase;
+  extendFocusMode: ExtendFocusModeUseCase;
+  getCurrentFocusMode: GetCurrentFocusModeUseCase;
 }
 
 /**
@@ -120,7 +120,7 @@ export class GoalController {
 
   // ==================== Goal CRUD ====================
 
-  async create(input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async create(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = CreateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -129,10 +129,10 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createGoal.execute(parsed.data, ctx);
+    return this.useCases.createGoal.execute(parsed.data, cx);
   }
 
-  async list(filters: unknown, ctx: Context): Promise<Result<unknown>> {
+  async list(filters: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = ListGoalFiltersSchema.safeParse(filters);
     if (!parsed.success) {
       return fail({
@@ -144,19 +144,19 @@ export class GoalController {
     // Construct internal query with identityId from context
     const query: ListGoalsQuery = {
       ...parsed.data,
-      identityId: ctx.identityId as IdentityId,
+      identityId: cx.identityId as IdentityId,
     };
     return this.useCases.listGoals.execute(query);
   }
 
-  async search(query: string, ctx: Context, systemView?: string): Promise<Result<unknown>> {
+  async search(query: string, cx: ExecutionContext, systemView?: string): Promise<Result<unknown>> {
     if (!query.trim()) {
       return fail({
         code: 'VALIDATION_ERROR',
         message: 'Search query (query) is required',
       });
     }
-    return this.useCases.searchGoals.execute(ctx.identityId, query, systemView as any);
+    return this.useCases.searchGoals.execute(cx.identityId, query, systemView as any);
   }
 
   async get(id: string, includeChildren = true): Promise<Result<unknown>> {
@@ -179,8 +179,8 @@ export class GoalController {
     return this.useCases.deleteGoal.execute(id);
   }
 
-  async archiveExpired(ctx: Context): Promise<Result<unknown>> {
-    return this.useCases.archiveExpiredGoals.execute(ctx.identityId);
+  async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.archiveExpiredGoals.execute(cx.identityId);
   }
 
   // ==================== Goal Status Operations ====================
@@ -194,12 +194,9 @@ export class GoalController {
   }
 
   async complete(id: string): Promise<Result<unknown>> {
-    try {
-      const result = await this.useCases.completeGoal.execute(id);
-      return ok(result.goal);
-    } catch (e: any) {
-      return fail({ code: 'INTERNAL_ERROR', message: e.message ?? 'Failed to complete goal' });
-    }
+    const result = await this.useCases.completeGoal.execute(id);
+    if (!result.ok) return result;
+    return ok(result.data.goal);
   }
 
   async getAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>> {
@@ -286,7 +283,7 @@ export class GoalController {
     });
   }
 
-  async cloneGoal(goalId: string, params: unknown, ctx: Context): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(goalId: string, params: unknown, cx: ExecutionContext): Promise<Result<GoalClientDTO>> {
     const parsedParams = CloneGoalSchema.safeParse(params ?? {});
     if (!parsedParams.success) {
       return fail({
@@ -303,7 +300,7 @@ export class GoalController {
     const original = this.toGoalClientDTO(goalResult.data);
     const createData = toCreateGoalReqFromCloneSource(original, parsedParams.data);
 
-    return this.useCases.createGoal.execute(createData, ctx);
+    return this.useCases.createGoal.execute(createData, cx);
   }
 
   async batchUpdateKeyResultWeights(
@@ -464,7 +461,7 @@ export class GoalController {
     goalId: string,
     keyResultId: string,
     input: unknown,
-    ctx: Context,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     const parsed = CreateGoalRecordSchema.safeParse({
       ...(input as Record<string, unknown>),
@@ -484,7 +481,7 @@ export class GoalController {
         value: parsed.data.value,
         note: parsed.data.note,
       },
-      ctx.identityId,
+      cx.identityId,
     );
   }
 
@@ -518,22 +515,22 @@ export class GoalController {
 
   // ==================== Focus Mode ====================
 
-  async getCurrentFocusMode(ctx: Context): Promise<Result<unknown>> {
+  async getCurrentFocusMode(cx: ExecutionContext): Promise<Result<unknown>> {
     this.logger.info('获取当前专注模式开始', {
-      identityId: ctx.identityId,
+      identityId: cx.identityId,
     });
-    return this.useCases.getCurrentFocusMode.execute(ctx.identityId);
+    return this.useCases.getCurrentFocusMode.execute(cx.identityId);
   }
 
-  async activateFocusMode(input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async activateFocusMode(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     this.logger.info('启用专注模式开始', {
-      identityId: ctx.identityId,
+      identityId: cx.identityId,
       input,
     });
     const parsed = ActivateFocusModeSchema.safeParse(input);
     if (!parsed.success) {
       this.logger.info('启用专注模式参数校验失败', {
-        identityId: ctx.identityId,
+        identityId: cx.identityId,
         issues: parsed.error.issues,
       });
       return fail({
@@ -543,29 +540,29 @@ export class GoalController {
       });
     }
     this.logger.info('启用专注模式参数校验通过', {
-      identityId: ctx.identityId,
+      identityId: cx.identityId,
       focusedGoalIds: parsed.data.focusedGoalIds,
       hiddenGoalsMode: parsed.data.hiddenGoalsMode,
     });
-    return this.useCases.activateFocusMode.execute(ctx.identityId, parsed.data);
+    return this.useCases.activateFocusMode.execute(cx.identityId, parsed.data);
   }
 
-  async deactivateFocusMode(ctx: Context): Promise<Result<unknown>> {
+  async deactivateFocusMode(cx: ExecutionContext): Promise<Result<unknown>> {
     this.logger.info('停用专注模式开始', {
-      identityId: ctx.identityId,
+      identityId: cx.identityId,
     });
-    return this.useCases.deactivateFocusMode.execute(ctx.identityId);
+    return this.useCases.deactivateFocusMode.execute(cx.identityId);
   }
 
-  async extendFocusMode(input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async extendFocusMode(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     this.logger.info('延长专注模式开始', {
-      identityId: ctx.identityId,
+      identityId: cx.identityId,
       input,
     });
     const parsed = ExtendFocusModeSchema.safeParse(input);
     if (!parsed.success) {
       this.logger.info('延长专注模式参数校验失败', {
-        identityId: ctx.identityId,
+        identityId: cx.identityId,
         issues: parsed.error.issues,
       });
       return fail({
@@ -575,10 +572,10 @@ export class GoalController {
       });
     }
     this.logger.info('延长专注模式参数校验通过', {
-      identityId: ctx.identityId,
+      identityId: cx.identityId,
       newEndTime: parsed.data.newEndTime,
     });
-    return this.useCases.extendFocusMode.execute(ctx.identityId, parsed.data.newEndTime);
+    return this.useCases.extendFocusMode.execute(cx.identityId, parsed.data.newEndTime);
   }
 }
 

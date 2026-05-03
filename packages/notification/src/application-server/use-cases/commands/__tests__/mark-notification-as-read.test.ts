@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { INotificationRepository } from '@/domain-server/repositories/INotificationRepository';
-import { MarkNotificationAsRead } from '../mark-notification-as-read';
+import { MarkNotificationAsReadUseCase } from '../mark-notification-as-read.use-case';
 import { Notification } from '@/domain-server/aggregates/notification';
 import {
   NotificationType,
@@ -10,9 +10,9 @@ import {
   NotificationStatus,
 } from '@dailyuse/contracts/notification';
 
-describe('MarkNotificationAsRead', () => {
+describe('MarkNotificationAsReadUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;
-  let useCase: MarkNotificationAsRead;
+  let useCase: MarkNotificationAsReadUseCase;
 
   function aDeliveredNotification() {
     const notification = Notification.create({
@@ -38,25 +38,31 @@ describe('MarkNotificationAsRead', () => {
       findUnread: vi.fn().mockResolvedValue([]),
     });
 
-    useCase = new MarkNotificationAsRead(notificationRepo);
+    useCase = new MarkNotificationAsReadUseCase(notificationRepo);
   });
 
   describe('execute()', () => {
-    it('should mark a notification as read and save it', async () => {
+    it('should mark a notification as read and return a client DTO', async () => {
       const notification = aDeliveredNotification();
       vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
 
-      await useCase.execute(String(notification.id));
+      const result = await useCase.execute(String(notification.id));
 
-      expect(notification.isRead).toBe(true);
-      expect(notification.status).toBe(NotificationStatus.Read);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data.isRead).toBe(true);
+      expect(result.data.status).toBe(NotificationStatus.Read);
       expect(notificationRepo.save).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw when notification is not found', async () => {
+    it('should return error when notification is not found', async () => {
       vi.mocked(notificationRepo.findById).mockResolvedValue(null);
 
-      await expect(useCase.execute('non-existent')).rejects.toThrow('Notification not found');
+      const result = await useCase.execute('non-existent');
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected error');
+      expect(result.error.code).toBe('NOT_FOUND');
     });
 
     it('should call findById with the provided id', async () => {
@@ -73,15 +79,17 @@ describe('MarkNotificationAsRead', () => {
       notification.markAsRead();
       vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
 
-      await useCase.execute(String(notification.id));
+      const result = await useCase.execute(String(notification.id));
 
-      expect(notification.isRead).toBe(true);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data.isRead).toBe(true);
       expect(notificationRepo.save).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('executeMany()', () => {
-    it('should mark found notifications as read and save them', async () => {
+    it('should mark found notifications as read and return count', async () => {
       const notifications = [
         aDeliveredNotification(),
         aDeliveredNotification(),
@@ -93,27 +101,36 @@ describe('MarkNotificationAsRead', () => {
         .mockResolvedValueOnce(notifications[1])
         .mockResolvedValueOnce(notifications[2]);
 
-      await useCase.executeMany(ids);
+      const result = await useCase.executeMany(ids);
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toBe(3);
       expect(notificationRepo.saveMany).toHaveBeenCalledTimes(1);
       expect(notifications.every((notification) => notification.isRead)).toBe(true);
     });
 
-    it('should handle empty array', async () => {
-      await useCase.executeMany([]);
+    it('should return 0 for empty array', async () => {
+      const result = await useCase.executeMany([]);
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toBe(0);
       expect(notificationRepo.saveMany).toHaveBeenCalledWith([]);
     });
   });
 
   describe('executeAll()', () => {
-    it('should mark unread notifications from the identity and save them', async () => {
+    it('should mark unread notifications from the identity and return count', async () => {
       const identityId = anIdentityId();
       const notifications = [aDeliveredNotification(), aDeliveredNotification()];
       vi.mocked(notificationRepo.findUnread).mockResolvedValue(notifications);
 
-      await useCase.executeAll(identityId);
+      const result = await useCase.executeAll(identityId);
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toBe(2);
       expect(notificationRepo.findUnread).toHaveBeenCalledWith(identityId);
       expect(notificationRepo.saveMany).toHaveBeenCalledWith(notifications);
       expect(notifications.every((notification) => notification.isRead)).toBe(true);

@@ -187,12 +187,12 @@ export function createAIElectronModule(options: {
       );
       ipcMain.handle(Ch.PROVIDER_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.createProvider(requestContext.identityId, dto),
+          aiModule.api.createProvider(dto, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.PROVIDER_LIST, async () =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.listProviders(requestContext.identityId),
+          aiModule.api.listProviders({ identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.PROVIDER_GET, async (_, id) =>
@@ -208,17 +208,17 @@ export function createAIElectronModule(options: {
       );
       ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.testConnection(requestContext.identityId, dto),
+          aiModule.api.testConnection(dto, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.setDefaultProvider(dto.providerId, requestContext.identityId),
+          aiModule.api.setDefaultProvider(dto.providerId, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.PROVIDER_REFRESH_MODELS, async (_, id) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.refreshProviderModels(requestContext.identityId, String(id)),
+          aiModule.api.refreshProviderModels(String(id), { identityId: requestContext.identityId }),
         ),
       );
 
@@ -235,7 +235,7 @@ export function createAIElectronModule(options: {
       // -- Conversations --
       ipcMain.handle(Ch.CONVERSATION_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.createConversation(requestContext.identityId, dto.name),
+          aiModule.api.createConversation({ identityId: requestContext.identityId }, dto.name),
         ),
       );
       ipcMain.handle(Ch.CONVERSATION_UPDATE, async (_, dto) =>
@@ -248,7 +248,7 @@ export function createAIElectronModule(options: {
       ipcMain.handle(Ch.CONVERSATION_LIST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.listConversations(
-            requestContext.identityId,
+            { identityId: requestContext.identityId },
             Number(dto?.page ?? 1),
             Number(dto?.pageSize ?? 20),
           ),
@@ -256,8 +256,9 @@ export function createAIElectronModule(options: {
       );
       ipcMain.handle(Ch.CONVERSATION_GET, async (_, id) =>
         withAuthenticatedValue(ctx, async () => {
-          const conversation = await aiModule.api.getConversation(String(id), true);
-          return conversation?.toClientDTO() ?? null;
+          const result = await aiModule.api.getConversation(String(id), true);
+          if (!result.ok) return result;
+          return result.data ?? null;
         }),
       );
       ipcMain.handle(Ch.CONVERSATION_DELETE, async (_, id) =>
@@ -268,9 +269,9 @@ export function createAIElectronModule(options: {
       ipcMain.handle(Ch.MESSAGE_SEND, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.sendMessage(
-            requestContext.identityId,
             String(dto.conversationId),
             String(dto.content),
+            { identityId: requestContext.identityId },
             dto.providerId,
             dto.model,
           ),
@@ -299,7 +300,6 @@ export function createAIElectronModule(options: {
           void (async () => {
             try {
               const result = await aiModule.api.streamMessage(
-                requestContext.identityId,
                 String(payload.conversationId ?? ''),
                 String(payload.content ?? ''),
                 (chunk) => {
@@ -310,6 +310,7 @@ export function createAIElectronModule(options: {
                     });
                   }
                 },
+                { identityId: requestContext.identityId },
                 typeof payload.providerId === 'string' ? payload.providerId : undefined,
                 typeof payload.model === 'string' ? payload.model : undefined,
                 abortController.signal,
@@ -354,42 +355,45 @@ export function createAIElectronModule(options: {
       );
       ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) =>
         withAuthenticatedValue(ctx, async () => {
-          const conversation = await aiModule.api.getConversation(String(dto.conversationId), true);
-          const messages =
-            conversation?.getAllMessages().map((message) => message.toClientDTO()) ?? [];
-          return {
+          const result = await aiModule.api.getConversation(String(dto.conversationId), true);
+          if (!result.ok) return result;
+          if (!result.data) {
+            return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
+          }
+          const messages = result.data.messages ?? [];
+          return ok({
             data: messages,
             total: messages.length,
             page: Number(dto?.page ?? 1),
             pageSize: Number(dto?.pageSize ?? 50),
-          };
+          });
         }),
       );
 
       // -- Knowledge Notes --
       ipcMain.handle(Ch.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.createKnowledgeNote(requestContext.identityId, dto),
+          aiModule.api.createKnowledgeNote(dto, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.KNOWLEDGE_QUERY, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.queryKnowledge(requestContext.identityId, dto),
+          aiModule.api.queryKnowledge(dto, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.KNOWLEDGE_EXPAND, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.expandKnowledge(requestContext.identityId, dto),
+          aiModule.api.expandKnowledge(dto, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.KNOWLEDGE_REINDEX, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.reindexKnowledge(requestContext.identityId, dto ?? {}),
+          aiModule.api.reindexKnowledge(dto ?? {}, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.ANALYTICS_QUERY, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.queryAnalytics(requestContext.identityId, dto),
+          aiModule.api.queryAnalytics(dto, { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.EVALUATION_OVERVIEW_GET, async (_, dto) =>

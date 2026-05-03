@@ -3,7 +3,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IAccountRepository } from '@/domain-server/repositories/i-account-repository';
 import { Account } from '@/domain-server/aggregates/account';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { UpdateAccountSettingsUseCase } from '../update-account-settings';
+import { UpdateAccountSettingsUseCase } from '../update-account-settings.use-case';
 
 describe('UpdateAccountSettingsUseCase', () => {
   let repo: ReturnType<typeof createMockRepo<IAccountRepository>>;
@@ -25,87 +25,100 @@ describe('UpdateAccountSettingsUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { theme: 'Dark' });
+    const result = await useCase.execute({ theme: 'Dark' }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    // Bug fix verification: settings written back to aggregate
+    expect(result.ok).toBe(true);
     expect(account.settings.isDarkTheme()).toBe(true);
-    expect(result.settings.theme).toBe('Dark');
+    if (result.ok) {
+      expect(result.data.theme).toBe('Dark');
+    }
   });
 
   it('should update language', async () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { language: 'en-US' });
+    const result = await useCase.execute({ language: 'en-US' }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    expect(result.settings.language).toBe('en-US');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.language).toBe('en-US');
+    }
   });
 
   it('should update timezone', async () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { timezone: 'America/New_York' });
+    const result = await useCase.execute({ timezone: 'America/New_York' }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    expect(result.settings.timezone).toBe('America/New_York');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.timezone).toBe('America/New_York');
+    }
   });
 
   it('should disable notification', async () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { notificationEnabled: false });
+    const result = await useCase.execute({ notificationEnabled: false }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    expect(result.settings.notificationEnabled).toBe(false);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.notificationEnabled).toBe(false);
+    }
   });
 
   it('should enable notification', async () => {
     const account = anAccount();
-    // First disable
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
-    await useCase.execute(account.id.toString(), { notificationEnabled: false });
-    // Then re-enable
-    const result = await useCase.execute(account.id.toString(), { notificationEnabled: true });
+    await useCase.execute({ notificationEnabled: false }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    expect(result.settings.notificationEnabled).toBe(true);
+    const result = await useCase.execute({ notificationEnabled: true }, { identityId: account.id.toString() });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.notificationEnabled).toBe(true);
+    }
   });
 
   it('should apply multiple settings updates at once', async () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), {
+    const result = await useCase.execute({
       theme: 'Light',
       language: 'ja-JP',
       timezone: 'Asia/Tokyo',
       notificationEnabled: false,
-    });
+    }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    expect(result.settings.theme).toBe('Light');
-    expect(result.settings.language).toBe('ja-JP');
-    expect(result.settings.timezone).toBe('Asia/Tokyo');
-    expect(result.settings.notificationEnabled).toBe(false);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.theme).toBe('Light');
+      expect(result.data.language).toBe('ja-JP');
+      expect(result.data.timezone).toBe('Asia/Tokyo');
+      expect(result.data.notificationEnabled).toBe(false);
+    }
   });
 
-  it('should throw when account not found', async () => {
+  it('should return NOT_FOUND when account not found', async () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    await expect(useCase.execute('missing', { theme: 'Dark' })).rejects.toThrow(
-      'Account not found',
-    );
+    const result = await useCase.execute({ theme: 'Dark' }, { identityId: 'missing' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
   it('should save the account after updating settings', async () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    await useCase.execute(account.id.toString(), { theme: 'Dark' });
+    await useCase.execute({ theme: 'Dark' }, { identityId: account.id.toString() });
 
     expect(repo.save).toHaveBeenCalledWith(account);
   });

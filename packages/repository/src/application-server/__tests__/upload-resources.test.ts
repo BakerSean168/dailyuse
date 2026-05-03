@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { UploadResources } from '../use-cases/commands/upload-resources';
-import { CreateResource } from '../use-cases/commands/create-resource';
-import { DeleteResource } from '../use-cases/commands/delete-resource';
+import { UploadResourcesUseCase } from '../use-cases/commands/upload-resources.use-case';
+import { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
+import { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
 import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
 import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
 import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
@@ -27,9 +27,9 @@ describe('UploadResources', () => {
       });
       await repositoryRepository.save(repository);
 
-      const createResource = new CreateResource(resourceRepository, repositoryRepository, storage);
-      const deleteResource = new DeleteResource(resourceRepository, repositoryRepository, storage);
-      const uploadResources = new UploadResources(
+      const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
+      const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
+      const uploadResources = new UploadResourcesUseCase(
         createResource,
         deleteResource,
         resourceRepository,
@@ -63,8 +63,11 @@ describe('UploadResources', () => {
         metadata: { tags: ['imported'] },
       });
 
-      expect(result.failures).toHaveLength(0);
-      expect(result.successes).toHaveLength(3);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected upload success');
+
+      expect(result.data.failures).toHaveLength(0);
+      expect(result.data.successes).toHaveLength(3);
       expect(
         await fs.promises.readFile(path.join(tempDir, String(repository.id), 'note.md'), 'utf8'),
       ).toBe('# Hello\nworld');
@@ -80,7 +83,7 @@ describe('UploadResources', () => {
           await fs.promises.readFile(path.join(tempDir, String(repository.id), 'doc.pdf')),
         ),
       ).toEqual(pdfBytes);
-      expect(result.successes[1]?.resource.path).toBe('/images/image.png');
+      expect(result.data.successes[1]?.resource.path).toBe('/images/image.png');
     } finally {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
@@ -101,9 +104,9 @@ describe('UploadResources', () => {
       });
       await repositoryRepository.save(repository);
 
-      const createResource = new CreateResource(resourceRepository, repositoryRepository, storage);
-      const deleteResource = new DeleteResource(resourceRepository, repositoryRepository, storage);
-      const uploadResources = new UploadResources(
+      const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
+      const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
+      const uploadResources = new UploadResourcesUseCase(
         createResource,
         deleteResource,
         resourceRepository,
@@ -111,7 +114,7 @@ describe('UploadResources', () => {
         folderRepository,
       );
 
-      await createResource.execute({
+      const created = await createResource.execute({
         repositoryId: String(repository.id),
         identityId: 'user-1',
         name: 'note.md',
@@ -119,6 +122,7 @@ describe('UploadResources', () => {
         path: '/note.md',
         content: 'old',
       });
+      expect(created.ok).toBe(true);
 
       const result = await uploadResources.execute({
         repositoryId: String(repository.id),
@@ -133,8 +137,11 @@ describe('UploadResources', () => {
         metadata: { overwritePolicy: 'replace' } as any,
       });
 
-      expect(result.failures).toHaveLength(0);
-      expect(result.successes).toHaveLength(1);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected upload success');
+
+      expect(result.data.failures).toHaveLength(0);
+      expect(result.data.successes).toHaveLength(1);
       expect(
         await fs.promises.readFile(path.join(tempDir, String(repository.id), 'note.md'), 'utf8'),
       ).toBe('new content');

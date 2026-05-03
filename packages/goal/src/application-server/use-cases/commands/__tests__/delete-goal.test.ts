@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '@/domain-server';
-import { DeleteGoal } from '../delete-goal';
+import { DeleteGoalUseCase } from '../delete-goal.use-case';
 
 // ============================================================
 // Helpers
@@ -34,9 +34,9 @@ function createCompletedGoal(name = 'Completed Goal'): Goal {
   return goal;
 }
 
-describe('DeleteGoal', () => {
+describe('DeleteGoalUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
-  let useCase: DeleteGoal;
+  let useCase: DeleteGoalUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,7 +44,7 @@ describe('DeleteGoal', () => {
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new DeleteGoal(goalRepo, new GoalPolicy());
+    useCase = new DeleteGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   describe('execute()', () => {

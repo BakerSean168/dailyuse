@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '@/domain-server';
-import { CompleteGoal } from '../complete-goal';
+import { CompleteGoalUseCase } from '../complete-goal.use-case';
 
 // ============================================================
 // Helpers
@@ -27,9 +27,9 @@ function createTestGoal(name = 'Test Goal'): Goal {
   });
 }
 
-describe('CompleteGoal', () => {
+describe('CompleteGoalUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
-  let useCase: CompleteGoal;
+  let useCase: CompleteGoalUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,13 +37,19 @@ describe('CompleteGoal', () => {
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new CompleteGoal(goalRepo, new GoalPolicy());
+    useCase = new CompleteGoalUseCase(goalRepo, new GoalPolicy());
   });
 
-  it('should throw when goal does not exist', async () => {
+  it('should return error when goal does not exist', async () => {
     vi.mocked(goalRepo.findById).mockResolvedValue(null);
 
-    await expect(useCase.execute('non-existent')).rejects.toThrow('Goal not found');
+    const result = await useCase.execute('non-existent');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('Goal not found');
+    }
   });
 
   it('should complete an active goal', async () => {
@@ -52,12 +58,15 @@ describe('CompleteGoal', () => {
 
     const result = await useCase.execute(goal.id);
 
+    expect(result.ok).toBe(true);
     expect(goal.status).toBe('Archived');
     expect(goal.completedAt).not.toBeNull();
     expect(goal.archivedAt).not.toBeNull();
     expect(goalRepo.save).toHaveBeenCalledWith(goal);
-    expect(result.goal).toBeDefined();
-    expect(result.goal.name).toBe('Test Goal');
+    if (result.ok) {
+      expect(result.data.goal).toBeDefined();
+      expect(result.data.goal.name).toBe('Test Goal');
+    }
   });
 
   it('should be idempotent for already completed goals', async () => {
@@ -67,11 +76,14 @@ describe('CompleteGoal', () => {
 
     const result = await useCase.execute(goal.id);
 
+    expect(result.ok).toBe(true);
     expect(goal.status).toBe('Archived');
-    expect(result.goal).toBeDefined();
+    if (result.ok) {
+      expect(result.data.goal).toBeDefined();
+    }
   });
 
-  it('should throw when goal is archived', async () => {
+  it('should return ok when goal is archived', async () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     goal.archive();
@@ -79,7 +91,10 @@ describe('CompleteGoal', () => {
 
     const result = await useCase.execute(goal.id);
 
-    expect(result.goal.status).toBe('Archived');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.goal.status).toBe('Archived');
+    }
   });
 
   it('should return the server DTO with includeChildren', async () => {
@@ -94,7 +109,10 @@ describe('CompleteGoal', () => {
 
     const result = await useCase.execute(goal.id);
 
-    expect(result.goal.name).toBe('Complete Me');
-    expect(result.goal.status).toBe('Archived');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.goal.name).toBe('Complete Me');
+      expect(result.data.goal.status).toBe('Archived');
+    }
   });
 });

@@ -5,12 +5,12 @@ import { aLoadedTaskTemplate, aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { PauseTaskTemplate } from '../pause-task-template';
+import { PauseTaskTemplateUseCaseUseCase } from '../pause-task-template.use-case';
 
-describe('PauseTaskTemplate', () => {
+describe('PauseTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: PauseTaskTemplate;
+  let useCase: PauseTaskTemplateUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,7 +22,7 @@ describe('PauseTaskTemplate', () => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
     });
-    useCase = new PauseTaskTemplate(templateRepo, instanceRepo);
+    useCase = new PauseTaskTemplateUseCase(templateRepo, instanceRepo);
   });
 
   afterEach(() => {

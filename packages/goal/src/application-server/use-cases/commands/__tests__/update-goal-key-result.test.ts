@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
-import { UpdateGoalKeyResult } from '../update-goal-key-result';
+import { UpdateGoalKeyResultUseCase } from '../update-goal-key-result.use-case';
 
 // ============================================================
 // Helpers
@@ -32,7 +32,7 @@ function createGoalFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('UpdateGoalKeyResult', () => {
+describe('UpdateGoalKeyResultUseCase', () => {
   it('should update a key result successfully', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
@@ -40,7 +40,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('goal-id-1', 'kr-1', {
       title: 'Updated KR',
@@ -69,7 +69,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('non-existent', 'kr-1', { title: 'New' });
 
@@ -87,7 +87,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     const result = await useCase.execute('goal-id-1', 'kr-non-existent', { title: 'New' });
 
@@ -111,7 +111,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     await expect(useCase.execute('goal-id-1', 'kr-1', { title: 'New' })).rejects.toThrow(
       'Goal cannot be modified',
@@ -126,7 +126,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1', { description: 'New desc', unit: 'books' });
 
@@ -148,7 +148,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1', { currentValue: 11, startValue: 5 });
 
@@ -170,7 +170,7 @@ describe('UpdateGoalKeyResult', () => {
       findById: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+    const useCase = new UpdateGoalKeyResultUseCase(goalRepo, goalPolicy);
 
     await useCase.execute('goal-id-1', 'kr-1', { title: 'Updated' });
 

@@ -3,18 +3,18 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance, anIdentityId } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { ListTaskInstancesByAccount } from '../list-task-instances-by-account';
+import { ListTaskInstancesByAccountUseCaseUseCase } from '../list-task-instances-by-account.use-case';
 
-describe('ListTaskInstancesByAccount', () => {
+describe('ListTaskInstancesByAccountUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: ListTaskInstancesByAccount;
+  let useCase: ListTaskInstancesByAccountUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([]),
     });
-    useCase = new ListTaskInstancesByAccount(instanceRepo);
+    useCase = new ListTaskInstancesByAccountUseCase(instanceRepo);
   });
 
   it('should return empty array when no instances exist', async () => {

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AdjustReminderFrequency } from './adjust-reminder-frequency';
+import { AdjustReminderFrequencyUseCase } from './adjust-reminder-frequency.use-case';
 import { eventBus } from '@dailyuse/utils';
 
-describe('AdjustReminderFrequency', () => {
+describe('AdjustReminderFrequencyUseCase', () => {
   const repo = {
     findById: vi.fn(),
     save: vi.fn(),
@@ -12,21 +12,24 @@ describe('AdjustReminderFrequency', () => {
     vi.clearAllMocks();
   });
 
-  it('throws when template is not found', async () => {
+  it('returns NOT_FOUND when template is not found', async () => {
     repo.findById.mockResolvedValue(null);
-    const useCase = new AdjustReminderFrequency(repo);
+    const useCase = new AdjustReminderFrequencyUseCase(repo);
 
-    await expect(
-      useCase.execute({
-        templateId: 'tpl-1',
-        newInterval: 30,
-        reason: 'manual tune',
-        identityId: 'identity-1',
-      }),
-    ).rejects.toThrow('Template tpl-1 not found');
+    const result = await useCase.execute({
+      templateId: 'tpl-1',
+      newInterval: 30,
+      reason: 'manual tune',
+      identityId: 'identity-1',
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
-  it('throws when template trigger is not interval-based', async () => {
+  it('returns BAD_REQUEST when template trigger is not interval-based', async () => {
     repo.findById.mockResolvedValue({
       trigger: {
         type: 'EventBased',
@@ -35,16 +38,19 @@ describe('AdjustReminderFrequency', () => {
       },
       update: vi.fn(),
     });
-    const useCase = new AdjustReminderFrequency(repo);
+    const useCase = new AdjustReminderFrequencyUseCase(repo);
 
-    await expect(
-      useCase.execute({
-        templateId: 'tpl-1',
-        newInterval: 45,
-        reason: 'manual tune',
-        identityId: 'identity-1',
-      }),
-    ).rejects.toThrow('Template tpl-1 does not use interval trigger');
+    const result = await useCase.execute({
+      templateId: 'tpl-1',
+      newInterval: 45,
+      reason: 'manual tune',
+      identityId: 'identity-1',
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('BAD_REQUEST');
+    }
   });
 
   it('updates interval and persists template', async () => {
@@ -62,7 +68,7 @@ describe('AdjustReminderFrequency', () => {
     repo.findById.mockResolvedValue(template);
     repo.save.mockResolvedValue(undefined);
     const eventSpy = vi.spyOn(eventBus, 'send');
-    const useCase = new AdjustReminderFrequency(repo);
+    const useCase = new AdjustReminderFrequencyUseCase(repo);
 
     const result = await useCase.execute({
       templateId: 'tpl-1',
@@ -90,32 +96,39 @@ describe('AdjustReminderFrequency', () => {
         reason: 'engagement drop',
       }),
     );
-    expect(result).toEqual(
-      expect.objectContaining({
-        templateId: 'tpl-1',
-        success: true,
-        originalInterval: 60,
-        adjustedInterval: 30,
-      }),
-    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          templateId: 'tpl-1',
+          success: true,
+          originalInterval: 60,
+          adjustedInterval: 30,
+        }),
+      );
+    }
   });
 
-  it('reject throws when template is not found', async () => {
+  it('reject returns NOT_FOUND when template is not found', async () => {
     repo.findById.mockResolvedValue(null);
-    const useCase = new AdjustReminderFrequency(repo);
+    const useCase = new AdjustReminderFrequencyUseCase(repo);
 
-    await expect(useCase.reject('tpl-1', 'identity-1')).rejects.toThrow(
-      'Template tpl-1 not found',
-    );
+    const result = await useCase.reject('tpl-1', 'identity-1');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
   it('reject emits adjustment-rejected event', async () => {
     repo.findById.mockResolvedValue({ id: 'tpl-1' });
     const eventSpy = vi.spyOn(eventBus, 'send');
-    const useCase = new AdjustReminderFrequency(repo);
+    const useCase = new AdjustReminderFrequencyUseCase(repo);
 
-    await useCase.reject('tpl-1', 'identity-1');
+    const result = await useCase.reject('tpl-1', 'identity-1');
 
+    expect(result.ok).toBe(true);
     expect(eventSpy).toHaveBeenCalledWith(
       'reminder:frequency:adjustment-rejected',
       expect.objectContaining({

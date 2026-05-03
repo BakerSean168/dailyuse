@@ -8,7 +8,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Context, ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   ChangePasswordSchema,
   ForgotPasswordSchema,
@@ -45,9 +45,9 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 // ============ Use Case Port ============
 
 export interface AuthenticationUseCases {
-  register(data: RegisterByEmailReq, cx: Context): Promise<Result<RegisterByEmailRes>>;
+  register(data: RegisterByEmailReq, cx: Context, deviceId: string): Promise<Result<RegisterByEmailRes>>;
   registerByPhone(data: RegisterByPhoneReq, cx: Context): Promise<Result<RegisterByPhoneRes>>;
-  login(data: LoginByEmailReq, cx: Context): Promise<Result<LoginByEmailRes>>;
+  login(data: LoginByEmailReq, cx: Context, deviceId: string): Promise<Result<LoginByEmailRes>>;
   loginByPhone(data: LoginByPhoneReq, cx: Context): Promise<Result<LoginByPhoneRes>>;
   sendSmsCode(data: SendSmsCodeReq): Promise<Result<void>>;
   logout(cx: Context): Promise<Result<void>>;
@@ -74,7 +74,7 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.register(parsed.data, cx);
+    return this.useCases.register(parsed.data, cx, cx.deviceId);
   }
 
   async registerByPhone(input: unknown, cx: Context): Promise<Result<RegisterByPhoneRes>> {
@@ -98,7 +98,7 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.login(parsed.data, cx);
+    return this.useCases.login(parsed.data, cx, cx.deviceId);
   }
 
   async loginByPhone(input: unknown, cx: Context): Promise<Result<LoginByPhoneRes>> {

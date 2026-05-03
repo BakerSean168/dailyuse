@@ -8,12 +8,12 @@
  * - Response DTO assembly
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Register } from '../register';
+import { RegisterUseCase } from '../register.use-case';
 import type { IAuthIdentityRepository } from '@/domain-server/repositories/i-auth-identity.repository';
 import type { IAuthSessionRepository } from '@/domain-server/repositories/i-auth-session.repository';
 import type { IPasswordHasher } from '@/domain-shared';
 import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 
 // ---------------------------------------------------------------------------
 // Shared mock helpers
@@ -65,9 +65,11 @@ const createMockTokenProvider = (): ITokenProvider => ({
   hash: vi.fn().mockReturnValue('mock-token-hash'),
 });
 
-function createContext(): Context {
-  return { identityId: 'test-identity-id', deviceId: 'test-device-001' };
+function createContext(): ExecutionContext {
+  return { identityId: 'test-identity-id' };
 }
+
+const MOCK_DEVICE_ID = 'test-device-001';
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -78,38 +80,40 @@ describe('Register (Application Command)', () => {
   let sessionRepo: IAuthSessionRepository;
   let passwordHasher: IPasswordHasher;
   let tokenProvider: ITokenProvider;
-  let useCase: Register;
+  let useCase: RegisterUseCase;
 
   beforeEach(() => {
     passwordHasher = createMockHasher();
     identityRepo = createMockIdentityRepo();
     sessionRepo = createMockSessionRepo();
     tokenProvider = createMockTokenProvider();
-    useCase = new Register(identityRepo, sessionRepo, passwordHasher, tokenProvider);
+    useCase = new RegisterUseCase(identityRepo, sessionRepo, passwordHasher, tokenProvider);
   });
 
   describe('execute', () => {
-    it('should return auth response on successful registration', async () => {
+    it('should return ok with auth response on successful registration', async () => {
       const result = await useCase.execute(
         { email: 'new@example.com', password: 'StrongP@ss1' },
         createContext(),
+        MOCK_DEVICE_ID,
       );
 
-      expect(result).toBeDefined();
-      expect(result.accessToken).toBe('mock-access-token');
-      expect(result.refreshToken).toBe('mock-refresh-token');
-      expect(result.identity).toBeDefined();
-      expect(result.session).toBeDefined();
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok result');
+      expect(result.data.accessToken).toBe('mock-access-token');
+      expect(result.data.refreshToken).toBe('mock-refresh-token');
+      expect(result.data.identity).toBeDefined();
+      expect(result.data.session).toBeDefined();
     });
 
     it('should persist the new identity', async () => {
-      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext());
+      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext(), MOCK_DEVICE_ID);
 
       expect(identityRepo.save).toHaveBeenCalledTimes(1);
     });
 
     it('should create and save a new session', async () => {
-      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext());
+      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext(), MOCK_DEVICE_ID);
 
       expect(sessionRepo.save).toHaveBeenCalledTimes(1);
       const savedSession = (sessionRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0];
@@ -117,13 +121,13 @@ describe('Register (Application Command)', () => {
     });
 
     it('should check email uniqueness', async () => {
-      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext());
+      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext(), MOCK_DEVICE_ID);
 
       expect(identityRepo.existsByEmail).toHaveBeenCalledWith('new@example.com');
     });
 
-    it('should throw when email already exists', async () => {
-      const uc = new Register(
+    it('should return CONFLICT error when email already exists', async () => {
+      const uc = new RegisterUseCase(
         createMockIdentityRepo({
           existsByEmail: vi.fn().mockResolvedValue(true),
         }),
@@ -132,19 +136,25 @@ describe('Register (Application Command)', () => {
         tokenProvider,
       );
 
-      await expect(
-        uc.execute({ email: 'taken@example.com', password: 'StrongP@ss1' }, createContext()),
-      ).rejects.toThrow('already exists');
+      const result = await uc.execute(
+        { email: 'taken@example.com', password: 'StrongP@ss1' },
+        createContext(),
+        MOCK_DEVICE_ID,
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('CONFLICT');
     });
 
     it('should use token provider for auth tokens', async () => {
-      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext());
+      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext(), MOCK_DEVICE_ID);
 
       expect(tokenProvider.generateAuthTokens).toHaveBeenCalled();
     });
 
     it('should hash the password during registration', async () => {
-      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext());
+      await useCase.execute({ email: 'new@example.com', password: 'StrongP@ss1' }, createContext(), MOCK_DEVICE_ID);
 
       expect(passwordHasher.hash).toHaveBeenCalled();
     });
@@ -153,23 +163,29 @@ describe('Register (Application Command)', () => {
       const result = await useCase.execute(
         { email: 'new@example.com', password: 'StrongP@ss1' },
         createContext(),
+        MOCK_DEVICE_ID,
       );
 
-      expect(result.identity.identifiers).toHaveLength(1);
-      expect(result.identity.identifiers[0].type).toBe('Email');
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok result');
+      expect(result.data.identity.identifiers).toHaveLength(1);
+      expect(result.data.identity.identifiers[0].type).toBe('Email');
     });
 
     it('should return session marked as current', async () => {
       const result = await useCase.execute(
         { email: 'new@example.com', password: 'StrongP@ss1' },
         createContext(),
+        MOCK_DEVICE_ID,
       );
 
-      expect(result.session.isCurrentSession).toBe(true);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok result');
+      expect(result.data.session.isCurrentSession).toBe(true);
     });
 
     it('should not save session when identity creation fails', async () => {
-      const uc = new Register(
+      const uc = new RegisterUseCase(
         createMockIdentityRepo({
           existsByEmail: vi.fn().mockResolvedValue(true),
         }),
@@ -178,10 +194,13 @@ describe('Register (Application Command)', () => {
         tokenProvider,
       );
 
-      await expect(
-        uc.execute({ email: 'taken@example.com', password: 'StrongP@ss1' }, createContext()),
-      ).rejects.toThrow();
+      const result = await uc.execute(
+        { email: 'taken@example.com', password: 'StrongP@ss1' },
+        createContext(),
+        MOCK_DEVICE_ID,
+      );
 
+      expect(result.ok).toBe(false);
       expect(sessionRepo.save).not.toHaveBeenCalled();
     });
   });

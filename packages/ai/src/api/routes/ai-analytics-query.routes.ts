@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
@@ -7,7 +8,7 @@ import {
   successResponse,
 } from '@dailyuse/utils/result';
 import { QueryAnalyticsSchema } from '@dailyuse/contracts/ai';
-import type { AIAnalyticsQueryController } from '../controllers/ai-analytics-query.controller';
+import type { AIAnalyticsQueryController } from '../../controllers/ai-analytics-query.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -40,7 +41,7 @@ export function registerAIAnalyticsQueryRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.query(req.body, ctx.identityId),
+    (req, ctx) => controller.query(req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   return router;

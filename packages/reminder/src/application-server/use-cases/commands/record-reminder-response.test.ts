@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { RecordReminderResponse } from './record-reminder-response';
+import { RecordReminderResponseUseCase } from './record-reminder-response.use-case';
 import { eventBus } from '@dailyuse/utils';
 
-describe('RecordReminderResponse', () => {
+describe('RecordReminderResponseUseCase', () => {
   const repo = {
     save: vi.fn(),
     findByTemplateId: vi.fn(),
@@ -17,7 +17,7 @@ describe('RecordReminderResponse', () => {
   it('records a response and emits event', async () => {
     repo.save.mockResolvedValue(undefined);
     const eventSpy = vi.spyOn(eventBus, 'send');
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
     const result = await useCase.execute({
       templateId: 'template-1',
@@ -35,14 +35,17 @@ describe('RecordReminderResponse', () => {
         responseTime: 12,
       }),
     );
-    expect(result.templateId).toBe('template-1');
-    expect(result.action).toBe('Dismiss');
-    expect(result.responseTime).toBe(12);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.templateId).toBe('template-1');
+      expect(result.data.action).toBe('Dismiss');
+      expect(result.data.responseTime).toBe(12);
+    }
   });
 
-  it('rethrows when save fails', async () => {
+  it('propagates when save fails', async () => {
     repo.save.mockRejectedValue(new Error('db down'));
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
     await expect(
       useCase.execute({
@@ -55,34 +58,40 @@ describe('RecordReminderResponse', () => {
 
   it('loads responses by template with custom limit', async () => {
     repo.findByTemplateId.mockResolvedValue([{ id: 'r1' }]);
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
     const result = await useCase.getResponsesByTemplate('template-1', 5);
 
     expect(repo.findByTemplateId).toHaveBeenCalledWith('template-1', 5);
-    expect(result).toEqual([{ id: 'r1' }]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([{ id: 'r1' }]);
+    }
   });
 
-  it('rethrows when loading responses fails', async () => {
+  it('propagates when loading responses fails', async () => {
     repo.findByTemplateId.mockRejectedValue(new Error('read error'));
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
     await expect(useCase.getResponsesByTemplate('template-1')).rejects.toThrow('read error');
   });
 
   it('deletes responses by template', async () => {
     repo.deleteByTemplateId.mockResolvedValue(3);
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
-    const count = await useCase.deleteResponsesByTemplate('template-1');
+    const result = await useCase.deleteResponsesByTemplate('template-1');
 
     expect(repo.deleteByTemplateId).toHaveBeenCalledWith('template-1');
-    expect(count).toBe(3);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toBe(3);
+    }
   });
 
-  it('rethrows when deleting responses fails', async () => {
+  it('propagates when deleting responses fails', async () => {
     repo.deleteByTemplateId.mockRejectedValue(new Error('delete error'));
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
     await expect(useCase.deleteResponsesByTemplate('template-1')).rejects.toThrow('delete error');
   });
@@ -97,18 +106,21 @@ describe('RecordReminderResponse', () => {
       completed: 1,
       avgResponseTime: 15,
     });
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
-    const stats = await useCase.getResponseStats('template-1', 14);
+    const result = await useCase.getResponseStats('template-1', 14);
 
     expect(repo.getResponseStats).toHaveBeenCalledWith('template-1', 14);
-    expect(stats.total).toBe(10);
-    expect(stats.avgResponseTime).toBe(15);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.total).toBe(10);
+      expect(result.data.avgResponseTime).toBe(15);
+    }
   });
 
-  it('rethrows when loading stats fails', async () => {
+  it('propagates when loading stats fails', async () => {
     repo.getResponseStats.mockRejectedValue(new Error('stats error'));
-    const useCase = new RecordReminderResponse(repo);
+    const useCase = new RecordReminderResponseUseCase(repo);
 
     await expect(useCase.getResponseStats('template-1')).rejects.toThrow('stats error');
   });

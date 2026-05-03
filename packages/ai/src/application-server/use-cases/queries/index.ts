@@ -1,2 +1,2 @@
-export * from './get-conversation';
-export * from './list-conversations';
+export * from './get-conversation.use-case';
+export * from './list-conversations.use-case';

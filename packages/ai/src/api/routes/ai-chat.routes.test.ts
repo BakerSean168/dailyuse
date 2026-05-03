@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { Router } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import type { AIChatController } from '../controllers/ai-chat.controller';
+import type { AIChatController } from '../../controllers/ai-chat.controller';
 import { registerAIChatRoutes } from './ai-chat.routes';
 
 type LayerWithRoute = {

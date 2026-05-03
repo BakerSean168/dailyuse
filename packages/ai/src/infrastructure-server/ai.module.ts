@@ -17,6 +17,8 @@
  * @see {@link createGovernanceModule} in @dailyuse/governance for the canonical example.
  */
 
+import { ok, error } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain-server';
 import type {
   IAIExecutionLogPort,
@@ -36,19 +38,45 @@ import type {
 } from '../application-server/ports';
 
 import {
-  AIAnalyticsQueryService,
-  CreateConversation,
-  DeleteConversation,
-  AIConversationService,
-  AIEvaluationReportService,
-  AIProviderConfigService,
-  AIChatApplicationService,
-  AIKnowledgeIndexService,
-  GoalGenerationApplicationService,
-  AIKnowledgeQueryService,
-  AIKnowledgeNoteService,
+  QueryAIAnalyticsUseCase,
+  CreateConversationUseCase,
+  DeleteConversationUseCase,
+  ManageAIEvaluationReportUseCase,
+  GenerateAIGoalUseCase,
+  ManageAIKnowledgeNoteUseCase,
+  // Provider config decomposed use cases
+  CreateAIProviderUseCase,
+  UpdateAIProviderUseCase,
+  DeleteAIProviderUseCase,
+  GetAIProviderUseCase,
+  ListAIProvidersUseCase,
+  TestAIProviderConnectionUseCase,
+  SetDefaultAIProviderUseCase,
+  GetDefaultAIProviderUseCase,
+  RefreshAIProviderModelsUseCase,
+  // Chat decomposed use cases
+  SendAIMessageUseCase,
+  StreamAIMessageUseCase,
+  // Conversation decomposed use cases
+  CreateConversationV2UseCase,
+  GetConversationV2UseCase,
+  ListConversationsV2UseCase,
+  DeleteConversationV2UseCase,
+  UpdateConversationUseCase,
+  AddConversationMessageUseCase,
+  GetConversationsByStatusUseCase,
+  UpdateConversationStatusUseCase,
+  // Knowledge index decomposed use cases
+  SyncKnowledgeResourcesUseCase,
+  ReindexAllKnowledgeUseCase,
+  SyncRelevantKnowledgeUseCase,
+  SyncResourceByIdUseCase,
+  // Knowledge query decomposed use cases
+  QueryKnowledgeUseCase,
+  ExpandKnowledgeUseCase,
+  ReindexKnowledgeUseCase,
 } from '../application-server/use-cases';
-import { ListConversations, GetConversation } from '../application-server/use-cases';
+import { ListConversationsUseCase, GetConversationUseCase } from '../application-server/use-cases';
 import { AIKnowledgeNotePathResolver } from './services/ai-knowledge-note-path-resolver';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import {
@@ -58,6 +86,7 @@ import {
 } from './chat-execution';
 import { OpenAICompatibleModelCatalogGateway } from './gateways/openai-compatible-model-catalog.gateway';
 
+import type { Result } from '@dailyuse/contracts/result';
 import type {
   AICapabilities,
   AIConversationClientDTO,
@@ -172,10 +201,66 @@ export interface AIModuleRuntimeContribution {
  * access to use-case objects, but transports should prefer `AIApplicationPort`.
  */
 export interface AIModuleUseCases {
-  readonly createConversation: CreateConversation;
-  readonly deleteConversation: DeleteConversation;
-  readonly listConversations: ListConversations;
-  readonly getConversation: GetConversation;
+  readonly createConversation: CreateConversationUseCase;
+  readonly deleteConversation: DeleteConversationUseCase;
+  readonly listConversations: ListConversationsUseCase;
+  readonly getConversation: GetConversationUseCase;
+}
+
+/**
+ * Provider config decomposed use cases.
+ */
+export interface AIProviderServices {
+  readonly create: CreateAIProviderUseCase;
+  readonly update: UpdateAIProviderUseCase;
+  readonly delete: DeleteAIProviderUseCase;
+  readonly get: GetAIProviderUseCase;
+  readonly list: ListAIProvidersUseCase;
+  readonly testConnection: TestAIProviderConnectionUseCase;
+  readonly setDefault: SetDefaultAIProviderUseCase;
+  readonly getDefault: GetDefaultAIProviderUseCase;
+  readonly refreshModels: RefreshAIProviderModelsUseCase;
+}
+
+/**
+ * Conversation decomposed use cases (from ManageAIConversationUseCase).
+ */
+export interface AIConversationServices {
+  readonly createConversationV2: CreateConversationV2UseCase;
+  readonly getConversationV2: GetConversationV2UseCase;
+  readonly listConversationsV2: ListConversationsV2UseCase;
+  readonly deleteConversationV2: DeleteConversationV2UseCase;
+  readonly updateConversation: UpdateConversationUseCase;
+  readonly addMessage: AddConversationMessageUseCase;
+  readonly getByStatus: GetConversationsByStatusUseCase;
+  readonly updateStatus: UpdateConversationStatusUseCase;
+}
+
+/**
+ * Chat decomposed use cases.
+ */
+export interface AIChatServices {
+  readonly send: SendAIMessageUseCase;
+  readonly stream: StreamAIMessageUseCase;
+}
+
+/**
+ * Knowledge index decomposed use cases.
+ */
+export interface AIKnowledgeIndexServices {
+  readonly syncResources: SyncKnowledgeResourcesUseCase;
+  readonly reindexAll: ReindexAllKnowledgeUseCase;
+  readonly syncRelevant: SyncRelevantKnowledgeUseCase;
+  readonly syncById: SyncResourceByIdUseCase;
+}
+
+/**
+ * Knowledge query decomposed use cases.
+ */
+export interface AIKnowledgeQueryServices {
+  readonly query: QueryKnowledgeUseCase;
+  readonly expand: ExpandKnowledgeUseCase;
+  readonly reindex: ReindexKnowledgeUseCase;
 }
 
 /**
@@ -186,15 +271,15 @@ export interface AIModuleUseCases {
  * event emission, provider resolution, etc.).
  */
 export interface AIModuleServices {
-  readonly conversationService: AIConversationService;
-  readonly providerConfigService: AIProviderConfigService;
-  readonly chatService: AIChatApplicationService;
-  readonly goalGenerationService: GoalGenerationApplicationService;
-  readonly knowledgeIndexService: AIKnowledgeIndexService | null;
-  readonly knowledgeNoteService: AIKnowledgeNoteService | null;
-  readonly knowledgeQueryService: AIKnowledgeQueryService | null;
-  readonly analyticsQueryService: AIAnalyticsQueryService | null;
-  readonly evaluationReportService: AIEvaluationReportService | null;
+  readonly providerServices: AIProviderServices;
+  readonly conversationServices: AIConversationServices;
+  readonly chatServices: AIChatServices;
+  readonly goalGenerationService: GenerateAIGoalUseCase;
+  readonly knowledgeIndexServices: AIKnowledgeIndexServices | null;
+  readonly knowledgeNoteService: ManageAIKnowledgeNoteUseCase | null;
+  readonly knowledgeQueryServices: AIKnowledgeQueryServices | null;
+  readonly analyticsQueryService: QueryAIAnalyticsUseCase | null;
+  readonly evaluationReportService: ManageAIEvaluationReportUseCase | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -203,72 +288,72 @@ export interface AIModuleServices {
 
 /** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
 export interface AIApplicationPort {
-  getCapabilities(): Promise<AICapabilities>;
+  getCapabilities(): Promise<Result<AICapabilities>>;
 
   // -- Provider Config --
   createProvider(
-    identityId: string,
     req: CreateAIProviderConfigReq,
-  ): Promise<CreateAIProviderConfigRes>;
-  updateProvider(id: string, req: UpdateAIProviderConfigReq): Promise<UpdateAIProviderConfigRes>;
-  deleteProvider(id: string): Promise<void>;
-  getProvider(id: string): Promise<AIProviderConfigClientDTO>;
-  listProviders(identityId: string): Promise<AIProviderConfigClientDTO[]>;
-  testConnection(identityId: string, req: TestAIProviderReq): Promise<TestAIProviderRes>;
-  setDefaultProvider(id: string, identityId: string): Promise<void>;
-  refreshProviderModels(identityId: string, providerId: string): Promise<AIProviderConfigClientDTO>;
+    cx: ExecutionContext,
+  ): Promise<Result<CreateAIProviderConfigRes>>;
+  updateProvider(id: string, req: UpdateAIProviderConfigReq): Promise<Result<UpdateAIProviderConfigRes>>;
+  deleteProvider(id: string): Promise<Result<void>>;
+  getProvider(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  listProviders(cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO[]>>;
+  testConnection(req: TestAIProviderReq, cx: ExecutionContext): Promise<Result<TestAIProviderRes>>;
+  setDefaultProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
+  refreshProviderModels(providerId: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>>;
 
   // -- Conversations --
-  createConversation(identityId: string, name?: string): Promise<AIConversationClientDTO>;
-  updateConversation(id: string, req: UpdateConversationReq): Promise<UpdateConversationRes>;
+  createConversation(cx: ExecutionContext, name?: string): Promise<Result<AIConversationClientDTO>>;
+  updateConversation(id: string, req: UpdateConversationReq): Promise<Result<UpdateConversationRes>>;
   listConversations(
-    identityId: string,
+    cx: ExecutionContext,
     page?: number,
     pageSize?: number,
-  ): Promise<ConversationListRes>;
+  ): Promise<Result<ConversationListRes>>;
   getConversation(
     id: string,
     includeMessages?: boolean,
-  ): ReturnType<AIConversationService['getConversation']>;
-  deleteConversation(id: string): Promise<void>;
+  ): Promise<Result<AIConversationClientDTO | null>>;
+  deleteConversation(id: string): Promise<Result<void>>;
 
   // -- Chat --
   sendMessage(
-    identityId: string,
     conversationId: string,
     content: string,
+    cx: ExecutionContext,
     providerId?: string,
     model?: string,
-  ): Promise<SendMessageRes>;
+  ): Promise<Result<SendMessageRes>>;
   streamMessage(
-    identityId: string,
     conversationId: string,
     content: string,
     onChunk: (chunk: { content: string; role: 'assistant' }) => void,
+    cx: ExecutionContext,
     providerId?: string,
     model?: string,
     signal?: AbortSignal,
-  ): Promise<{
+  ): Promise<Result<{
     userMessage: SendMessageRes['userMessage'];
     assistantMessage: SendMessageRes['assistantMessage'];
     tokenUsage: SendMessageRes['tokenUsage'];
     providerId: SendMessageRes['providerId'];
     processingTimeMs: number;
-  }>;
+  }>>;
 
   // -- Goal Generation --
-  generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<GenerateGoalsRes>;
+  generateGoal(params: GenerateGoalsReq & { identityId: string }): Promise<Result<GenerateGoalsRes>>;
 
   // -- Knowledge Notes --
   createKnowledgeNote(
-    identityId: string,
     req: CreateKnowledgeNoteReq,
-  ): Promise<CreateKnowledgeNoteRes>;
-  expandKnowledge(identityId: string, req: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes>;
-  queryKnowledge(identityId: string, req: QueryKnowledgeReq): Promise<QueryKnowledgeRes>;
-  reindexKnowledge(identityId: string, req: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes>;
-  queryAnalytics(identityId: string, req: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
-  getEvaluationOverview(req?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
+    cx: ExecutionContext,
+  ): Promise<Result<CreateKnowledgeNoteRes>>;
+  expandKnowledge(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>>;
+  queryKnowledge(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>>;
+  reindexKnowledge(req: ReindexKnowledgeReq, cx: ExecutionContext): Promise<Result<ReindexKnowledgeRes>>;
+  queryAnalytics(req: QueryAnalyticsReq, cx: ExecutionContext): Promise<Result<QueryAnalyticsRes>>;
+  getEvaluationOverview(req?: GetAIEvaluationOverviewReq): Promise<Result<GetAIEvaluationOverviewRes>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -356,15 +441,15 @@ async function getKnowledgeIndexDiagnostics(
   }
 }
 
-function buildCapabilityUnavailableError(
+function buildCapabilityUnavailableMessage(
   capabilityLabel: string,
   capabilities: AICapabilities,
-): Error {
+): string {
   if (capabilities.advancedFeaturesReason) {
-    return new Error(`${capabilityLabel} is unavailable. ${capabilities.advancedFeaturesReason}`);
+    return `${capabilityLabel} is unavailable. ${capabilities.advancedFeaturesReason}`;
   }
 
-  return new Error(`${capabilityLabel} is unavailable in the current AI runtime.`);
+  return `${capabilityLabel} is unavailable in the current AI runtime.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -399,10 +484,10 @@ export function createAIUseCases(
   const { conversationRepository } = dependencies;
 
   return {
-    createConversation: new CreateConversation(conversationRepository),
-    deleteConversation: new DeleteConversation(conversationRepository),
-    listConversations: new ListConversations(conversationRepository),
-    getConversation: new GetConversation(conversationRepository),
+    createConversation: new CreateConversationUseCase(conversationRepository),
+    deleteConversation: new DeleteConversationUseCase(conversationRepository),
+    listConversations: new ListConversationsUseCase(conversationRepository),
+    getConversation: new GetConversationUseCase(conversationRepository),
   };
 }
 
@@ -417,20 +502,50 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
   const goalPlanningPort = dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
   const knowledgeNoteGenerationPort =
     dependencies.knowledgeNoteGenerationPort ?? new DirectProviderKnowledgeNoteGenerationAdapter();
+  const modelCatalogPort = new OpenAICompatibleModelCatalogGateway();
 
-  const conversationService = new AIConversationService(conversationRepository);
-  const providerConfigService = new AIProviderConfigService(
-    providerConfigRepository,
-    chatExecutionPort,
-    new OpenAICompatibleModelCatalogGateway(),
-  );
-  const chatService = new AIChatApplicationService(
-    conversationRepository,
-    providerConfigRepository,
-    chatExecutionPort,
-    dependencies.executionLogPort,
-  );
-  const goalGenerationService = new GoalGenerationApplicationService(
+  // Provider config services
+  const providerServices: AIProviderServices = {
+    create: new CreateAIProviderUseCase(providerConfigRepository),
+    update: new UpdateAIProviderUseCase(providerConfigRepository),
+    delete: new DeleteAIProviderUseCase(providerConfigRepository),
+    get: new GetAIProviderUseCase(providerConfigRepository),
+    list: new ListAIProvidersUseCase(providerConfigRepository),
+    testConnection: new TestAIProviderConnectionUseCase(providerConfigRepository, chatExecutionPort),
+    setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
+    getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
+    refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
+  };
+
+  // Conversation services (decomposed from ManageAIConversationUseCase)
+  const conversationServices: AIConversationServices = {
+    createConversationV2: new CreateConversationV2UseCase(conversationRepository),
+    getConversationV2: new GetConversationV2UseCase(conversationRepository),
+    listConversationsV2: new ListConversationsV2UseCase(conversationRepository),
+    deleteConversationV2: new DeleteConversationV2UseCase(conversationRepository),
+    updateConversation: new UpdateConversationUseCase(conversationRepository),
+    addMessage: new AddConversationMessageUseCase(conversationRepository),
+    getByStatus: new GetConversationsByStatusUseCase(conversationRepository),
+    updateStatus: new UpdateConversationStatusUseCase(conversationRepository),
+  };
+
+  // Chat services
+  const chatServices: AIChatServices = {
+    send: new SendAIMessageUseCase(
+      conversationRepository,
+      providerConfigRepository,
+      chatExecutionPort,
+      dependencies.executionLogPort,
+    ),
+    stream: new StreamAIMessageUseCase(
+      conversationRepository,
+      providerConfigRepository,
+      chatExecutionPort,
+      dependencies.executionLogPort,
+    ),
+  };
+
+  const goalGenerationService = new GenerateAIGoalUseCase(
     providerConfigRepository,
     goalPlanningPort,
     dependencies.goalAutomationPlanningPort,
@@ -440,11 +555,11 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
     dependencies.analyticsReadPort,
   );
 
-  let knowledgeIndexService: AIKnowledgeIndexService | null = null;
+  let knowledgeIndexServices: AIKnowledgeIndexServices | null = null;
 
   const knowledgeNoteService =
     dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath
-      ? new AIKnowledgeNoteService(
+      ? new ManageAIKnowledgeNoteUseCase(
           providerConfigRepository,
           knowledgeNoteGenerationPort,
           dependencies.knowledgeNotePersistence,
@@ -453,30 +568,61 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
           dependencies.executionLogPort,
         )
       : null;
-  const knowledgeQueryService =
+  const knowledgeQueryServices =
     dependencies.knowledgeSourcePort &&
     dependencies.knowledgeIndexRepository &&
     dependencies.knowledgeIngestionPort &&
     dependencies.knowledgeQueryPort
       ? (() => {
-          knowledgeIndexService = new AIKnowledgeIndexService(
-            dependencies.knowledgeSourcePort,
-            dependencies.knowledgeIndexRepository,
-            dependencies.knowledgeIngestionPort,
-            dependencies.executionLogPort,
-          );
+          knowledgeIndexServices = {
+            syncResources: new SyncKnowledgeResourcesUseCase(
+              dependencies.knowledgeIndexRepository,
+              dependencies.knowledgeIngestionPort,
+              dependencies.executionLogPort,
+            ),
+            reindexAll: new ReindexAllKnowledgeUseCase(
+              dependencies.knowledgeSourcePort,
+              dependencies.knowledgeIndexRepository,
+              dependencies.knowledgeIngestionPort,
+              dependencies.executionLogPort,
+            ),
+            syncRelevant: new SyncRelevantKnowledgeUseCase(
+              dependencies.knowledgeSourcePort,
+              dependencies.knowledgeIndexRepository,
+              dependencies.knowledgeIngestionPort,
+              dependencies.executionLogPort,
+            ),
+            syncById: new SyncResourceByIdUseCase(
+              dependencies.knowledgeSourcePort,
+              dependencies.knowledgeIndexRepository,
+              dependencies.knowledgeIngestionPort,
+              dependencies.executionLogPort,
+            ),
+          };
 
-          return new AIKnowledgeQueryService(
-            providerConfigRepository,
-            knowledgeIndexService,
-            dependencies.knowledgeQueryPort,
-            dependencies.executionLogPort,
-          );
+          return {
+            query: new QueryKnowledgeUseCase(
+              providerConfigRepository,
+              knowledgeIndexServices!.syncRelevant,
+              dependencies.knowledgeQueryPort,
+              dependencies.executionLogPort,
+            ),
+            expand: new ExpandKnowledgeUseCase(
+              providerConfigRepository,
+              knowledgeIndexServices!.syncRelevant,
+              dependencies.knowledgeQueryPort,
+              dependencies.executionLogPort,
+            ),
+            reindex: new ReindexKnowledgeUseCase(
+              providerConfigRepository,
+              knowledgeIndexServices!.reindexAll,
+            ),
+          };
         })()
       : null;
   const analyticsQueryService =
     dependencies.analyticsReadPort && dependencies.analyticsQueryPort
-      ? new AIAnalyticsQueryService(
+      ? new QueryAIAnalyticsUseCase(
           providerConfigRepository,
           dependencies.analyticsReadPort,
           dependencies.analyticsQueryPort,
@@ -484,17 +630,17 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
         )
       : null;
   const evaluationReportService = dependencies.evaluationReportPort
-    ? new AIEvaluationReportService(dependencies.evaluationReportPort)
+    ? new ManageAIEvaluationReportUseCase(dependencies.evaluationReportPort)
     : null;
 
   return {
-    conversationService,
-    providerConfigService,
-    chatService,
+    providerServices,
+    conversationServices,
+    chatServices,
     goalGenerationService,
-    knowledgeIndexService,
+    knowledgeIndexServices,
     knowledgeNoteService,
-    knowledgeQueryService,
+    knowledgeQueryServices,
     analyticsQueryService,
     evaluationReportService,
   };
@@ -520,10 +666,10 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   const useCases = createAIUseCases({ conversationRepository });
   const services = createAIServices(dependencies);
   const runtimeContributions = [
-    ...(services.knowledgeIndexService
+    ...(services.knowledgeIndexServices
       ? [
           createKnowledgeAutoIndexRuntimeContribution(
-            services.knowledgeIndexService,
+            services.knowledgeIndexServices,
             providerConfigRepository,
           ),
         ]
@@ -534,47 +680,59 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   let started = false;
 
   const api: AIApplicationPort = {
-    getCapabilities: async () => ({
-      ...baseCapabilities,
-      knowledgeIndexDiagnostics: await getKnowledgeIndexDiagnostics(
-        dependencies,
-        baseCapabilities.supportsKnowledgeQuery,
-      ),
-    }),
+    getCapabilities: async () =>
+      ok({
+        ...baseCapabilities,
+        knowledgeIndexDiagnostics: await getKnowledgeIndexDiagnostics(
+          dependencies,
+          baseCapabilities.supportsKnowledgeQuery,
+        ),
+      }),
 
     // -- Provider Config --
-    createProvider: (identityId, req) =>
-      services.providerConfigService.createProvider(identityId, req),
-    updateProvider: (id, req) => services.providerConfigService.updateProvider(id, req),
-    deleteProvider: (id) => services.providerConfigService.deleteProvider(id),
-    getProvider: (id) => services.providerConfigService.getProvider(id),
-    listProviders: (identityId) => services.providerConfigService.listProviders(identityId),
-    testConnection: (identityId, req) =>
-      services.providerConfigService.testConnection(identityId, req),
-    setDefaultProvider: (id, identityId) =>
-      services.providerConfigService.setDefaultProvider(id, identityId),
-    refreshProviderModels: (identityId, providerId) =>
-      services.providerConfigService.refreshProviderModels(identityId, providerId),
+    createProvider: (req, cx) =>
+      services.providerServices.create.execute(req, cx),
+    updateProvider: (id, req) => services.providerServices.update.execute(id, req),
+    deleteProvider: (id) => services.providerServices.delete.execute(id),
+    getProvider: (id) => services.providerServices.get.execute(id),
+    listProviders: (cx) => services.providerServices.list.execute(cx),
+    testConnection: (req, cx) =>
+      services.providerServices.testConnection.execute(req, cx),
+    setDefaultProvider: (id, cx) =>
+      services.providerServices.setDefault.execute(id, cx),
+    refreshProviderModels: (providerId, cx) =>
+      services.providerServices.refreshModels.execute(providerId, cx),
 
     // -- Conversations --
-    createConversation: (identityId, name) =>
-      services.conversationService.createConversation(identityId, name),
-    updateConversation: (id, req) => services.conversationService.updateConversation(id, req),
-    listConversations: (identityId, page, pageSize) =>
-      services.conversationService.listConversations(identityId, page, pageSize),
-    getConversation: (id, includeMessages) =>
-      services.conversationService.getConversation(id, includeMessages),
-    deleteConversation: (id) => services.conversationService.deleteConversation(id),
+    createConversation: (cx, name) =>
+      services.conversationServices.createConversationV2.execute(cx, name),
+    updateConversation: (id, req) =>
+      services.conversationServices.updateConversation.execute(id, req),
+    listConversations: (cx, page, pageSize) =>
+      services.conversationServices.listConversationsV2.execute(cx, page, pageSize),
+    getConversation: async (id, includeMessages) => {
+      const result = await services.conversationServices.getConversationV2.execute(
+        id,
+        includeMessages,
+      );
+      if (!result.ok) return result;
+      if (result.data === null) {
+        return error('NOT_FOUND', 'Conversation not found');
+      }
+      return ok(result.data.toClientDTO());
+    },
+    deleteConversation: (id) =>
+      services.conversationServices.deleteConversationV2.execute(id),
 
     // -- Chat --
-    sendMessage: (identityId, conversationId, content, providerId, model) =>
-      services.chatService.sendMessage(identityId, conversationId, content, providerId, model),
-    streamMessage: (identityId, conversationId, content, onChunk, providerId, model, signal) =>
-      services.chatService.sendMessageStream(
-        identityId,
+    sendMessage: (conversationId, content, cx, providerId, model) =>
+      services.chatServices.send.execute(conversationId, content, cx, providerId, model),
+    streamMessage: (conversationId, content, onChunk, cx, providerId, model, signal) =>
+      services.chatServices.stream.execute(
         conversationId,
         content,
         onChunk,
+        cx,
         providerId,
         model,
         signal,
@@ -584,50 +742,55 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     generateGoal: (params) => services.goalGenerationService.generateGoal(params),
 
     // -- Knowledge Notes --
-    createKnowledgeNote: (identityId, req) => {
+    createKnowledgeNote: (req, cx) => {
       if (!services.knowledgeNoteService) {
-        return Promise.reject(
-          new Error(
+        return Promise.resolve(
+          error(
+            'SERVICE_UNAVAILABLE',
             'Knowledge-note persistence was not provided to createAIModule. ' +
               '知识笔记持久化端口未注入到 createAIModule。',
           ),
         );
       }
-      return services.knowledgeNoteService.createKnowledgeNote(identityId, req);
+      return services.knowledgeNoteService.createKnowledgeNote(req, cx);
     },
-    expandKnowledge: (identityId, req) => {
-      if (!services.knowledgeQueryService) {
-        return Promise.reject(
-          buildCapabilityUnavailableError('Knowledge expansion', baseCapabilities),
+    expandKnowledge: (req, cx) => {
+      if (!services.knowledgeQueryServices) {
+        return Promise.resolve(
+          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Knowledge expansion', baseCapabilities)),
         );
       }
-      return services.knowledgeQueryService.expandKnowledge(identityId, req);
+      return services.knowledgeQueryServices.expand.execute(req, cx);
     },
-    queryKnowledge: (identityId, req) => {
-      if (!services.knowledgeQueryService) {
-        return Promise.reject(
-          buildCapabilityUnavailableError('Knowledge retrieval', baseCapabilities),
+    queryKnowledge: (req, cx) => {
+      if (!services.knowledgeQueryServices) {
+        return Promise.resolve(
+          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Knowledge retrieval', baseCapabilities)),
         );
       }
-      return services.knowledgeQueryService.queryKnowledge(identityId, req);
+      return services.knowledgeQueryServices.query.execute(req, cx);
     },
-    reindexKnowledge: (identityId, req) => {
-      if (!services.knowledgeQueryService) {
-        return Promise.reject(
-          buildCapabilityUnavailableError('Knowledge reindexing', baseCapabilities),
+    reindexKnowledge: (req, cx) => {
+      if (!services.knowledgeQueryServices) {
+        return Promise.resolve(
+          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Knowledge reindexing', baseCapabilities)),
         );
       }
-      return services.knowledgeQueryService.reindexKnowledge(identityId, req);
+      return services.knowledgeQueryServices.reindex.execute(req, cx);
     },
-    queryAnalytics: (identityId, req) => {
+    queryAnalytics: (req, cx) => {
       if (!services.analyticsQueryService) {
-        return Promise.reject(buildCapabilityUnavailableError('Analytics query', baseCapabilities));
+        return Promise.resolve(
+          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Analytics query', baseCapabilities)),
+        );
       }
-      return services.analyticsQueryService.queryAnalytics(identityId, req);
+      return services.analyticsQueryService.queryAnalytics(req, cx);
     },
     getEvaluationOverview: (req = {}) => {
       if (!services.evaluationReportService) {
-        return Promise.reject(new Error('AI evaluation report access is unavailable.'));
+        return Promise.resolve(
+          error('SERVICE_UNAVAILABLE', 'AI evaluation report access is unavailable.'),
+        );
       }
       return services.evaluationReportService.getOverview(req);
     },

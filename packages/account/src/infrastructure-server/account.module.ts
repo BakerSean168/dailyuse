@@ -1,3 +1,5 @@
+import type { Result } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAccountRepository } from '../domain-server';
 import {
   GetAccountProfileUseCase,
@@ -6,15 +8,14 @@ import {
   CloseAccountUseCase,
   CheckAvailabilityUseCase,
 } from '../application-server';
-import type { UpdateProfileResult, CloseAccountResult } from '../application-server';
 import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
-  GetAccountRes,
+  AccountClientDTO,
+  AccountSettingsDTO,
   UpdateAccountReq,
   UpdateAccountSettingsReq,
-  UpdateAccountSettingsRes,
 } from '@dailyuse/contracts/account';
 
 /** Explicit dependencies required by the account runtime. */
@@ -42,14 +43,14 @@ export interface AccountModuleUseCases {
 
 /** Transport-neutral application surface consumed by HTTP and Electron. */
 export interface AccountApplicationPort {
-  getProfile(identityId: string): Promise<GetAccountRes | null>;
-  updateProfile(identityId: string, data: UpdateAccountReq): Promise<UpdateProfileResult>;
+  getProfile(cx: ExecutionContext): Promise<Result<AccountClientDTO | null>>;
+  updateProfile(data: UpdateAccountReq, cx: ExecutionContext): Promise<Result<AccountClientDTO>>;
   updateSettings(
-    identityId: string,
     data: UpdateAccountSettingsReq,
-  ): Promise<UpdateAccountSettingsRes>;
-  checkAvailability(data: CheckAvailabilityReq): Promise<CheckAvailabilityRes>;
-  closeAccount(identityId: string, data: CloseAccountReq): Promise<CloseAccountResult>;
+    cx: ExecutionContext,
+  ): Promise<Result<AccountSettingsDTO>>;
+  checkAvailability(data: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>>;
+  closeAccount(data: CloseAccountReq, cx: ExecutionContext): Promise<Result<void>>;
 }
 
 export interface AccountModuleInstance {
@@ -62,7 +63,6 @@ export interface AccountModuleInstance {
 
 /**
  * Pure assembly helper.
- * 给定仓储端口，返回已经接好线的 account use case 集合。
  */
 export function createAccountUseCases(
   dependencies: AccountModuleDependencies,
@@ -96,7 +96,6 @@ function normalizeRuntimeContributions(
 
 /**
  * Canonical account composition root.
- * Account 模块新的标准组合根。
  */
 export function createAccountModule(
   dependencies: AccountModuleDependencies,
@@ -110,14 +109,11 @@ export function createAccountModule(
     accountRepository,
     useCases,
     api: {
-      getProfile: (identityId) => useCases.getProfile.execute(identityId),
-      updateProfile: (identityId, data) => useCases.updateProfile.execute(identityId, data),
-      updateSettings: async (identityId, data) => {
-        const result = await useCases.updateSettings.execute(identityId, data);
-        return result.settings;
-      },
+      getProfile: (cx) => useCases.getProfile.execute(cx),
+      updateProfile: (data, cx) => useCases.updateProfile.execute(data, cx),
+      updateSettings: (data, cx) => useCases.updateSettings.execute(data, cx),
       checkAvailability: (data) => useCases.checkAvailability.execute(data),
-      closeAccount: (identityId, data) => useCases.closeAccount.execute(identityId, data),
+      closeAccount: (data, cx) => useCases.closeAccount.execute(data, cx),
     },
     start(): void {
       if (started) return;

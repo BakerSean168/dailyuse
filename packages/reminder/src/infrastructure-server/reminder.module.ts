@@ -19,16 +19,16 @@ import type { IReminderGroupRepository } from '../domain-server/repositories/IRe
 import type { IReminderResponseRepository } from '../domain-server/repositories/IReminderResponseRepository';
 import type { IUserReminderPreferenceRepository } from '../domain-server/repositories/IUserReminderPreferenceRepository';
 import type { Result } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { ok, fail } from '@dailyuse/contracts/result';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
 import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
 import { ReminderDomainService } from '../domain-server/services/ReminderDomainService';
 import { UpcomingReminderCalculationService } from '../domain-server/services/UpcomingReminderCalculationService';
-import { RecordReminderResponse } from '../application-server/use-cases/commands/record-reminder-response';
-import { AnalyzeReminderFrequency } from '../application-server/use-cases/queries/analyze-reminder-frequency';
-import { AdjustReminderFrequency } from '../application-server/use-cases/commands/adjust-reminder-frequency';
+import { RecordReminderResponseUseCase } from '../application-server/use-cases/commands/record-reminder-response.use-case';
+import { AnalyzeReminderFrequencyUseCase } from '../application-server/use-cases/queries/analyze-reminder-frequency.use-case';
+import { AdjustReminderFrequencyUseCase } from '../application-server/use-cases/commands/adjust-reminder-frequency.use-case';
 import { UserReminderPreferences } from '../domain-server/aggregates/user-reminder-preferences';
 import type { ITemplateEffectiveStatus } from '../domain-server/services/ReminderTemplateControlService';
 import type {
@@ -74,66 +74,66 @@ export interface ReminderModuleRuntimeContribution {
 
 export interface ReminderApplicationPort {
   // Template CRUD / 模板 CRUD
-  createTemplate(data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
-  listTemplates(ctx: Context): Promise<Result<ReminderTemplateListRes>>;
+  createTemplate(data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  listTemplates(ctx: ExecutionContext): Promise<Result<ReminderTemplateListRes>>;
   getUpcomingReminders(
     params: GetUpcomingRemindersReq,
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<GetUpcomingRemindersRes>>;
   getTodaySchedule(
     params: GetReminderTodayScheduleReq,
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<GetReminderTodayScheduleRes>>;
-  getTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
-  updateTemplate(id: string, data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
-  deleteTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
+  getTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  updateTemplate(id: string, data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  deleteTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Template Actions / 模板操作
-  enableTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
-  pauseTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
-  toggleTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
-  moveTemplate(id: string, groupId: string | null, ctx: Context): Promise<Result<unknown>>;
-  getTemplateHistory(id: string, ctx: Context): Promise<Result<unknown>>;
+  enableTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  pauseTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  toggleTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  moveTemplate(id: string, groupId: string | null, ctx: ExecutionContext): Promise<Result<unknown>>;
+  getTemplateHistory(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Response Operations / 响应操作
   recordResponse(
     templateId: string,
     data: { action: string; note?: string },
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<unknown>>;
-  getTemplateResponses(templateId: string, ctx: Context): Promise<Result<unknown>>;
-  getResponseStats(templateId: string, ctx: Context): Promise<Result<unknown>>;
+  getTemplateResponses(templateId: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  getResponseStats(templateId: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Frequency Analysis / 频率分析
-  analyzeFrequency(templateId: string, ctx: Context): Promise<Result<unknown>>;
+  analyzeFrequency(templateId: string, ctx: ExecutionContext): Promise<Result<unknown>>;
   adjustFrequency(
     templateId: string,
     data: { action: string; customInterval?: number },
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<unknown>>;
-  rejectFrequencyAdjustment(templateId: string, ctx: Context): Promise<Result<unknown>>;
+  rejectFrequencyAdjustment(templateId: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Group CRUD / 分组 CRUD
-  createGroup(data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
-  listGroups(ctx: Context): Promise<Result<ReminderGroupListRes>>;
-  getGroup(id: string, ctx: Context): Promise<Result<unknown>>;
-  updateGroup(id: string, data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
-  deleteGroup(id: string, ctx: Context): Promise<Result<unknown>>;
+  createGroup(data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  listGroups(ctx: ExecutionContext): Promise<Result<ReminderGroupListRes>>;
+  getGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
+  updateGroup(id: string, data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  deleteGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
   switchGroupControlMode(
     id: string,
     data: { mode: string },
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<unknown>>;
   batchGroupTemplates(
     groupId: string,
     data: { action: string },
-    ctx: Context,
+    ctx: ExecutionContext,
   ): Promise<Result<unknown>>;
-  toggleGroup(id: string, ctx: Context): Promise<Result<unknown>>;
+  toggleGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Preferences / 偏好设置
-  getPreferences(ctx: Context): Promise<Result<unknown>>;
-  updatePreferences(data: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
+  getPreferences(ctx: ExecutionContext): Promise<Result<unknown>>;
+  updatePreferences(data: Record<string, unknown>, ctx: ExecutionContext): Promise<Result<unknown>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ function normalizeRuntimeContributions(
 async function getOwnedTemplateOrFail(
   reminderTemplateRepository: IReminderTemplateRepository,
   templateId: string,
-  ctx: Context,
+  ctx: ExecutionContext,
   options?: Parameters<IReminderTemplateRepository['findById']>[1],
 ): Promise<ReminderTemplate | null> {
   const template = await reminderTemplateRepository.findById(templateId, options);
@@ -180,7 +180,7 @@ async function getOwnedTemplateOrFail(
 async function getOwnedGroupOrFail(
   reminderGroupRepository: IReminderGroupRepository,
   groupId: string,
-  ctx: Context,
+  ctx: ExecutionContext,
 ): Promise<ReminderGroup | null> {
   const group = await reminderGroupRepository.findById(groupId);
   if (!group || String((group as { identityId?: unknown }).identityId) !== ctx.identityId) {
@@ -282,12 +282,12 @@ export function createReminderModule(
     reminderGroupRepository,
     userReminderPreferenceRepository,
   );
-  const recordReminderResponse = new RecordReminderResponse(reminderResponseRepository);
-  const analyzeReminderFrequency = new AnalyzeReminderFrequency(
+  const recordReminderResponse = new RecordReminderResponseUseCase(reminderResponseRepository);
+  const analyzeReminderFrequency = new AnalyzeReminderFrequencyUseCase(
     reminderTemplateRepository,
     reminderResponseRepository,
   );
-  const adjustReminderFrequency = new AdjustReminderFrequency(reminderTemplateRepository);
+  const adjustReminderFrequency = new AdjustReminderFrequencyUseCase(reminderTemplateRepository);
 
   // ---------------------------------------------------------------------------
   // ApplicationPort — extracted from the old api/module.ts inline handlers.
@@ -633,12 +633,11 @@ export function createReminderModule(
     // Identity propagated from transport context.
     // 身份信息从传输层上下文传递。
     async recordResponse(templateId, data, ctx) {
-      const result = await recordReminderResponse.execute({
+      return recordReminderResponse.execute({
         templateId,
         action: data.action as any,
         identityId: ctx.identityId,
       });
-      return ok(result);
     },
 
     async getTemplateResponses(templateId, ctx) {
@@ -646,8 +645,7 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      const responses = await recordReminderResponse.getResponsesByTemplate(templateId);
-      return ok(responses);
+      return recordReminderResponse.getResponsesByTemplate(templateId);
     },
 
     async getResponseStats(templateId, ctx) {
@@ -655,8 +653,7 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      const stats = await recordReminderResponse.getResponseStats(templateId);
-      return ok(stats);
+      return recordReminderResponse.getResponseStats(templateId);
     },
 
     // ==================== Frequency Analysis / 频率分析 ====================
@@ -666,25 +663,22 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      const result = await analyzeReminderFrequency.execute(templateId);
-      return ok(result);
+      return analyzeReminderFrequency.execute(templateId);
     },
 
     // Identity propagated from transport context.
     // 身份信息从传输层上下文传递。
     async adjustFrequency(templateId, data, ctx) {
-      const result = await adjustReminderFrequency.execute({
+      return adjustReminderFrequency.execute({
         templateId,
         newInterval: data.customInterval ?? 0,
         reason: data.action,
         identityId: ctx.identityId,
       });
-      return ok(result);
     },
 
     async rejectFrequencyAdjustment(templateId, ctx) {
-      await adjustReminderFrequency.reject(templateId, ctx.identityId);
-      return ok({ success: true });
+      return adjustReminderFrequency.reject(templateId, ctx.identityId);
     },
 
     // ==================== Group Actions / 分组操作 ====================

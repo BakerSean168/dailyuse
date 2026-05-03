@@ -16,10 +16,9 @@
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '../domain-server';
 import type { ITokenProvider } from '../domain-server/services/token-provider.interface';
 import type { IPasswordHasher } from '../domain-shared';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
-import { ResultCode } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
@@ -33,32 +32,24 @@ import type {
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
-  ChangePasswordRes,
   ForgotPasswordReq,
-  ForgotPasswordRes,
   ResetPasswordReq,
-  ResetPasswordRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
-  RevokeSessionRes,
 } from '@dailyuse/contracts/authentication';
 import {
-  ChangePassword,
-  ForgotPassword,
-  ResetPassword,
-  GetCurrentUser,
-  Login,
-  ListSessions,
-  Logout,
-  Register,
-  RefreshToken,
-  RevokeSession,
-  InvalidResetCodeError,
+  ChangePasswordUseCase,
+  ForgotPasswordUseCase,
+  ResetPasswordUseCase,
+  GetCurrentUserUseCase,
+  LoginUseCase,
+  ListSessionsUseCase,
+  LogoutUseCase,
+  RegisterUseCase,
+  RefreshTokenUseCase,
+  RevokeSessionUseCase,
 } from '../application-server';
-import { UserAlreadyExistsError } from '../domain-server/services/registration';
-import { UserNotFoundError, InvalidPasswordError } from '../domain-server/services/login';
-import { UserNotFoundError as ResetPasswordUserNotFoundError } from '../application-server/use-cases/commands/reset-password';
 import { InMemoryPasswordResetCodeStore } from './services/in-memory-password-reset-code-store';
 import { ConsoleEmailSender } from './services/console-email-sender';
 
@@ -115,16 +106,16 @@ export interface AuthenticationModuleRuntimeContribution {
  * access to use-case objects, but transports should prefer `AuthenticationApplicationPort`.
  */
 export interface AuthenticationModuleUseCases {
-  readonly login: Login;
-  readonly logout: Logout;
-  readonly register: Register;
-  readonly refreshToken: RefreshToken;
-  readonly getCurrentUser: GetCurrentUser;
-  readonly listSessions: ListSessions;
-  readonly revokeSession: RevokeSession;
-  readonly changePassword: ChangePassword;
-  readonly forgotPassword: ForgotPassword;
-  readonly resetPassword: ResetPassword;
+  readonly login: LoginUseCase;
+  readonly logout: LogoutUseCase;
+  readonly register: RegisterUseCase;
+  readonly refreshToken: RefreshTokenUseCase;
+  readonly getCurrentUser: GetCurrentUserUseCase;
+  readonly listSessions: ListSessionsUseCase;
+  readonly revokeSession: RevokeSessionUseCase;
+  readonly changePassword: ChangePasswordUseCase;
+  readonly forgotPassword: ForgotPasswordUseCase;
+  readonly resetPassword: ResetPasswordUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -139,17 +130,17 @@ export interface AuthenticationModuleUseCases {
  * 每个方法返回 `Promise<Result<T>>`，传输层无需捕获领域异常。
  */
 export interface AuthenticationApplicationPort {
-  register(data: RegisterByEmailReq, cx: Context): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(data: RegisterByPhoneReq, cx: Context): Promise<Result<RegisterByPhoneRes>>;
-  login(data: LoginByEmailReq, cx: Context): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(data: LoginByPhoneReq, cx: Context): Promise<Result<LoginByPhoneRes>>;
+  register(data: RegisterByEmailReq, cx: ExecutionContext, deviceId: string): Promise<Result<RegisterByEmailRes>>;
+  registerByPhone(data: RegisterByPhoneReq, cx: ExecutionContext): Promise<Result<RegisterByPhoneRes>>;
+  login(data: LoginByEmailReq, cx: ExecutionContext, deviceId: string): Promise<Result<LoginByEmailRes>>;
+  loginByPhone(data: LoginByPhoneReq, cx: ExecutionContext): Promise<Result<LoginByPhoneRes>>;
   sendSmsCode(data: SendSmsCodeReq): Promise<Result<void>>;
-  logout(cx: Context): Promise<Result<void>>;
-  refreshToken(data: RefreshTokenReq, cx: Context): Promise<Result<RefreshTokenRes>>;
-  getCurrentUser(cx: Context, sessionId?: string): Promise<Result<GetCurrentUserRes>>;
-  listSessions(cx: Context, sessionId?: string): Promise<Result<ListSessionsRes>>;
-  revokeSession(data: RevokeSessionReq, cx: Context): Promise<Result<void>>;
-  changePassword(data: ChangePasswordReq, cx: Context): Promise<Result<void>>;
+  logout(cx: ExecutionContext): Promise<Result<void>>;
+  refreshToken(data: RefreshTokenReq, cx: ExecutionContext): Promise<Result<RefreshTokenRes>>;
+  getCurrentUser(cx: ExecutionContext, sessionId?: string): Promise<Result<GetCurrentUserRes>>;
+  listSessions(cx: ExecutionContext, sessionId?: string): Promise<Result<ListSessionsRes>>;
+  revokeSession(data: RevokeSessionReq, cx: ExecutionContext): Promise<Result<void>>;
+  changePassword(data: ChangePasswordReq, cx: ExecutionContext): Promise<Result<void>>;
   forgotPassword(data: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(data: ResetPasswordReq): Promise<Result<void>>;
 }
@@ -192,16 +183,16 @@ export function createAuthenticationUseCases(
   const emailSender = new ConsoleEmailSender();
 
   return {
-    login: new Login(identityRepository, sessionRepository, passwordHasher, tokenProvider),
-    logout: new Logout(sessionRepository),
-    register: new Register(identityRepository, sessionRepository, passwordHasher, tokenProvider),
-    refreshToken: new RefreshToken(sessionRepository, identityRepository, tokenProvider),
-    getCurrentUser: new GetCurrentUser(identityRepository, sessionRepository),
-    listSessions: new ListSessions(sessionRepository),
-    revokeSession: new RevokeSession(sessionRepository),
-    changePassword: new ChangePassword(identityRepository, sessionRepository, passwordHasher),
-    forgotPassword: new ForgotPassword(identityRepository, codeStore, emailSender),
-    resetPassword: new ResetPassword(
+    login: new LoginUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider),
+    logout: new LogoutUseCase(sessionRepository),
+    register: new RegisterUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider),
+    refreshToken: new RefreshTokenUseCase(sessionRepository, identityRepository, tokenProvider),
+    getCurrentUser: new GetCurrentUserUseCase(identityRepository, sessionRepository),
+    listSessions: new ListSessionsUseCase(sessionRepository),
+    revokeSession: new RevokeSessionUseCase(sessionRepository),
+    changePassword: new ChangePasswordUseCase(identityRepository, sessionRepository, passwordHasher),
+    forgotPassword: new ForgotPasswordUseCase(identityRepository, codeStore, emailSender),
+    resetPassword: new ResetPasswordUseCase(
       identityRepository,
       sessionRepository,
       codeStore,
@@ -254,27 +245,10 @@ export function createAuthenticationModule(
   const useCases = createAuthenticationUseCases(dependencies);
   let started = false;
 
-  // Build the transport-neutral facade
-  // 构建传输层无关的门面：将领域异常映射为 Result 错误码
+  // Build the transport-neutral facade — thin passthrough, no try/catch shim.
+  // Use cases own error-to-Result conversion; unexpected errors propagate as throws.
   const api: AuthenticationApplicationPort = {
-    register: async (data, cx) => {
-      try {
-        return ok(await useCases.register.execute(data, cx));
-      } catch (err) {
-        if (err instanceof UserAlreadyExistsError) {
-          return fail({
-            code: ResultCode.CONFLICT,
-            message: err.message,
-            context: {
-              ...(err.context ?? {}),
-              domainCode:
-                typeof err.context?.domainCode === 'string' ? err.context.domainCode : err.code,
-            },
-          });
-        }
-        throw err;
-      }
-    },
+    register: (data, cx, deviceId) => useCases.register.execute(data, cx, deviceId),
 
     registerByPhone: async (_data, _cx) =>
       fail({
@@ -282,18 +256,7 @@ export function createAuthenticationModule(
         message: 'Phone registration is not implemented on the server yet',
       }),
 
-    login: async (data, cx) => {
-      try {
-        return ok(await useCases.login.execute(data, cx));
-      } catch (err) {
-        // Security: don't distinguish "user not found" vs "wrong password"
-        // 安全：不区分"用户不存在"和"密码错误"
-        if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError) {
-          return fail({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
-        }
-        throw err;
-      }
-    },
+    login: (data, cx, deviceId) => useCases.login.execute(data, cx, deviceId),
 
     loginByPhone: async (_data, _cx) =>
       fail({
@@ -307,52 +270,23 @@ export function createAuthenticationModule(
         message: 'SMS verification is not implemented on the server yet',
       }),
 
-    logout: async (cx) => {
-      await useCases.logout.execute(undefined as void, cx);
-      return ok(undefined as void);
-    },
+    logout: (cx) => useCases.logout.execute(undefined as void, cx),
 
-    refreshToken: async (data, cx) => ok(await useCases.refreshToken.execute(data, cx)),
+    refreshToken: (data, cx) => useCases.refreshToken.execute(data, cx),
 
-    getCurrentUser: async (cx, sessionId) =>
-      ok(await useCases.getCurrentUser.execute(cx.identityId, sessionId)),
+    getCurrentUser: (cx, sessionId) =>
+      useCases.getCurrentUser.execute(cx, sessionId),
 
-    listSessions: async (cx, sessionId) =>
-      ok(await useCases.listSessions.execute(cx.identityId, sessionId)),
+    listSessions: (cx, sessionId) =>
+      useCases.listSessions.execute(cx, sessionId),
 
-    revokeSession: async (data, cx) => {
-      await useCases.revokeSession.execute(data, cx);
-      return ok(undefined as void);
-    },
+    revokeSession: (data, cx) => useCases.revokeSession.execute(data, cx),
 
-    changePassword: async (data, cx) => {
-      await useCases.changePassword.execute(data, cx);
-      return ok(undefined as void);
-    },
+    changePassword: (data, cx) => useCases.changePassword.execute(data, cx),
 
-    forgotPassword: async (data) => {
-      try {
-        await useCases.forgotPassword.execute(data);
-        return ok(undefined as void);
-      } catch (error) {
-        return fail({ code: 'INTERNAL_ERROR', message: String(error) });
-      }
-    },
+    forgotPassword: (data) => useCases.forgotPassword.execute(data),
 
-    resetPassword: async (data) => {
-      try {
-        await useCases.resetPassword.execute(data);
-        return ok(undefined as void);
-      } catch (error) {
-        if (error instanceof InvalidResetCodeError) {
-          return fail({ code: 'VALIDATION_ERROR', message: error.message });
-        }
-        if (error instanceof ResetPasswordUserNotFoundError) {
-          return fail({ code: 'NOT_FOUND', message: error.message });
-        }
-        return fail({ code: 'INTERNAL_ERROR', message: String(error) });
-      }
-    },
+    resetPassword: (data) => useCases.resetPassword.execute(data),
   };
 
   return {

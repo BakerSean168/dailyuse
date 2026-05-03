@@ -7,10 +7,10 @@
  * - Persisting revoked sessions
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Logout } from '../logout';
+import { LogoutUseCase } from '../logout.use-case';
 import { AuthSession } from '@/domain-server/aggregates/auth-session';
 import type { IAuthSessionRepository } from '@/domain-server/repositories/i-auth-session.repository';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { AuthSessionId, SessionStatus, DeviceInfo } from '@/domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { REFRESH_TOKEN_DURATION_MS } from '@/domain-server/aggregates/auth-session';
@@ -55,8 +55,8 @@ function buildExpiredSession(identityId: IdentityId): AuthSession {
   });
 }
 
-function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440001'): Context {
-  return { identityId, deviceId: 'test-device-001' };
+function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440001'): ExecutionContext {
+  return { identityId };
 }
 
 // ---------------------------------------------------------------------------
@@ -65,11 +65,11 @@ function createContext(identityId = 'IdentityId_550e8400-e29b-41d4-a716-44665544
 
 describe('Logout (Application Command)', () => {
   let sessionRepo: IAuthSessionRepository;
-  let useCase: Logout;
+  let useCase: LogoutUseCase;
 
   beforeEach(() => {
     sessionRepo = createMockSessionRepo();
-    useCase = new Logout(sessionRepo);
+    useCase = new LogoutUseCase(sessionRepo);
   });
 
   describe('execute', () => {
@@ -83,8 +83,9 @@ describe('Logout (Application Command)', () => {
         session2,
       ]);
 
-      await useCase.execute(undefined as any, createContext(identityId));
+      const result = await useCase.execute(undefined, createContext(identityId));
 
+      expect(result.ok).toBe(true);
       expect(session1.isRevoked).toBe(true);
       expect(session2.isRevoked).toBe(true);
       expect(sessionRepo.save).toHaveBeenCalledTimes(2);
@@ -96,8 +97,9 @@ describe('Logout (Application Command)', () => {
 
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
 
-      await useCase.execute(undefined as any, createContext(identityId));
+      const result = await useCase.execute(undefined, createContext(identityId));
 
+      expect(result.ok).toBe(true);
       expect(sessionRepo.save).toHaveBeenCalledWith(session);
     });
 
@@ -111,8 +113,9 @@ describe('Logout (Application Command)', () => {
         expiredSession,
       ]);
 
-      await useCase.execute(undefined as any, createContext(identityId));
+      const result = await useCase.execute(undefined, createContext(identityId));
 
+      expect(result.ok).toBe(true);
       // Only the active session should be saved
       expect(sessionRepo.save).toHaveBeenCalledTimes(1);
       expect(sessionRepo.save).toHaveBeenCalledWith(activeSession);
@@ -122,12 +125,12 @@ describe('Logout (Application Command)', () => {
     it('should handle no sessions gracefully', async () => {
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
-      // Should not throw
-      await useCase.execute(
-        undefined as any,
+      const result = await useCase.execute(
+        undefined,
         createContext('IdentityId_550e8400-e29b-41d4-a716-446655440001'),
       );
 
+      expect(result.ok).toBe(true);
       expect(sessionRepo.save).not.toHaveBeenCalled();
     });
 
@@ -135,7 +138,7 @@ describe('Logout (Application Command)', () => {
       const identityId = 'IdentityId_550e8400-e29b-41d4-a716-446655440002';
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
-      await useCase.execute(undefined as any, createContext(identityId));
+      await useCase.execute(undefined, createContext(identityId));
 
       expect(sessionRepo.findByIdentityId).toHaveBeenCalledWith(IdentityId.of(identityId));
     });
@@ -147,8 +150,9 @@ describe('Logout (Application Command)', () => {
 
       (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
 
-      await useCase.execute(undefined as any, createContext(identityId));
+      const result = await useCase.execute(undefined, createContext(identityId));
 
+      expect(result.ok).toBe(true);
       // isValid() returns false for revoked sessions, so save should not be called
       expect(sessionRepo.save).not.toHaveBeenCalled();
     });

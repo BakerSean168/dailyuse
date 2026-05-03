@@ -2,14 +2,14 @@ import { describe, it, expect, vi } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { DeleteTaskInstance } from '../delete-task-instance';
+import { DeleteTaskInstanceUseCaseUseCase } from '../delete-task-instance.use-case';
 
-describe('DeleteTaskInstance', () => {
+describe('DeleteTaskInstanceUseCase', () => {
   function setup() {
     const instanceRepo = createMockRepo<ITaskInstanceRepository>({
       delete: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new DeleteTaskInstance(instanceRepo);
+    const useCase = new DeleteTaskInstanceUseCase(instanceRepo);
     return { useCase, instanceRepo };
   }
 

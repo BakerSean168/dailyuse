@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { ok, fail, isOk } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateScheduleTaskRequestSchema,
@@ -145,23 +145,19 @@ export class ScheduleController {
     const results = { success: [] as string[], failed: [] as { taskId: string; error: string }[] };
 
     for (const taskId of taskIds) {
-      try {
-        switch (operation) {
-          case 'pause':
-            await this.useCases.pauseTask(taskId);
-            break;
-          case 'resume':
-            await this.useCases.resumeTask(taskId);
-            break;
-          default:
-            throw new Error(`Unsupported batch operation: ${operation}`);
-        }
+      if (operation !== 'pause' && operation !== 'resume') {
+        results.failed.push({ taskId, error: `Unsupported batch operation: ${operation}` });
+        continue;
+      }
+
+      const result = operation === 'pause'
+        ? await this.useCases.pauseTask(taskId)
+        : await this.useCases.resumeTask(taskId);
+
+      if (isOk(result)) {
         results.success.push(taskId);
-      } catch (err) {
-        results.failed.push({
-          taskId,
-          error: err instanceof Error ? err.message : 'Unknown error',
-        });
+      } else {
+        results.failed.push({ taskId, error: result.error.message });
       }
     }
 

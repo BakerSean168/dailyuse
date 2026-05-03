@@ -7,7 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   UpdateAccountSchema,
   UpdateAccountSettingsSchema,
@@ -30,24 +30,24 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 // ============ Use Case Port ============
 
 export interface AccountUseCases {
-  getProfile(ctx: Context): Promise<Result<GetAccountRes>>;
-  updateProfile(data: UpdateAccountReq, ctx: Context): Promise<Result<UpdateAccountRes>>;
+  getProfile(cx: ExecutionContext): Promise<Result<GetAccountRes>>;
+  updateProfile(data: UpdateAccountReq, cx: ExecutionContext): Promise<Result<UpdateAccountRes>>;
   updateSettings(
     data: UpdateAccountSettingsReq,
-    ctx: Context,
+    cx: ExecutionContext,
   ): Promise<Result<UpdateAccountSettingsRes>>;
   checkAvailability(data: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>>;
-  closeAccount(data: CloseAccountReq, ctx: Context): Promise<Result<CloseAccountRes>>;
+  closeAccount(data: CloseAccountReq, cx: ExecutionContext): Promise<Result<CloseAccountRes>>;
 }
 
 export class AccountController {
   constructor(private readonly useCases: AccountUseCases) {}
 
-  async getProfile(ctx: Context): Promise<Result<GetAccountRes>> {
-    return this.useCases.getProfile(ctx);
+  async getProfile(cx: ExecutionContext): Promise<Result<GetAccountRes>> {
+    return this.useCases.getProfile(cx);
   }
 
-  async updateProfile(input: unknown, ctx: Context): Promise<Result<UpdateAccountRes>> {
+  async updateProfile(input: unknown, cx: ExecutionContext): Promise<Result<UpdateAccountRes>> {
     const parsed = UpdateAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -56,7 +56,7 @@ export class AccountController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateProfile(parsed.data, ctx);
+    return this.useCases.updateProfile(parsed.data, cx);
   }
 
   async checkAvailability(input: unknown): Promise<Result<CheckAvailabilityRes>> {
@@ -71,7 +71,7 @@ export class AccountController {
     return this.useCases.checkAvailability(parsed.data);
   }
 
-  async updateSettings(input: unknown, ctx: Context): Promise<Result<UpdateAccountSettingsRes>> {
+  async updateSettings(input: unknown, cx: ExecutionContext): Promise<Result<UpdateAccountSettingsRes>> {
     const parsed = UpdateAccountSettingsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -80,10 +80,10 @@ export class AccountController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateSettings(parsed.data, ctx);
+    return this.useCases.updateSettings(parsed.data, cx);
   }
 
-  async closeAccount(input: unknown, ctx: Context): Promise<Result<CloseAccountRes>> {
+  async closeAccount(input: unknown, cx: ExecutionContext): Promise<Result<CloseAccountRes>> {
     const parsed = CloseAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -92,6 +92,6 @@ export class AccountController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.closeAccount(parsed.data, ctx);
+    return this.useCases.closeAccount(parsed.data, cx);
   }
 }

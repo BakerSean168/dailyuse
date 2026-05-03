@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalRepository } from '@/domain-server';
-import { GetGoal } from '../get-goal';
+import { GetGoalUseCase } from '../get-goal.use-case';
 
 // ============================================================
 // Helpers
@@ -31,13 +31,13 @@ function createGoalFixture(overrides?: Record<string, any>) {
 // Tests
 // ============================================================
 
-describe('GetGoal', () => {
+describe('GetGoalUseCase', () => {
   it('should return a goal by ID', async () => {
     const goal = createGoalFixture();
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn().mockResolvedValue(goal),
     });
-    const useCase = new GetGoal(goalRepo);
+    const useCase = new GetGoalUseCase(goalRepo);
 
     const result = await useCase.execute('goal-id-1');
 
@@ -56,7 +56,7 @@ describe('GetGoal', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn().mockResolvedValue(null),
     });
-    const useCase = new GetGoal(goalRepo);
+    const useCase = new GetGoalUseCase(goalRepo);
 
     const result = await useCase.execute('non-existent');
 
@@ -72,7 +72,7 @@ describe('GetGoal', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById,
     });
-    const useCase = new GetGoal(goalRepo);
+    const useCase = new GetGoalUseCase(goalRepo);
 
     await useCase.execute('goal-id-1', true);
 
@@ -85,7 +85,7 @@ describe('GetGoal', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById,
     });
-    const useCase = new GetGoal(goalRepo);
+    const useCase = new GetGoalUseCase(goalRepo);
 
     await useCase.execute('goal-id-1');
 
@@ -105,7 +105,7 @@ describe('GetGoal', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn().mockResolvedValue(goal),
     });
-    const useCase = new GetGoal(goalRepo);
+    const useCase = new GetGoalUseCase(goalRepo);
 
     const result = await useCase.execute('custom-id');
 

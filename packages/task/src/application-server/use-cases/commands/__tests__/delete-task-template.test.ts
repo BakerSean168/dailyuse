@@ -4,12 +4,12 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { DeleteTaskTemplate } from '../delete-task-template';
+import { DeleteTaskTemplateUseCaseUseCase } from '../delete-task-template.use-case';
 
-describe('DeleteTaskTemplate', () => {
+describe('DeleteTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: DeleteTaskTemplate;
+  let useCase: DeleteTaskTemplateUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,7 +22,7 @@ describe('DeleteTaskTemplate', () => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new DeleteTaskTemplate(templateRepo, instanceRepo);
+    useCase = new DeleteTaskTemplateUseCase(templateRepo, instanceRepo);
   });
 
   afterEach(() => {

@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { INotificationPreferenceRepository } from '@/domain-server/repositories/INotificationPreferenceRepository';
-import { GetNotificationPreference } from '../get-notification-preference';
+import { GetNotificationPreferenceUseCase } from '../get-notification-preference.use-case';
 import { NotificationPreference } from '@/domain-server/aggregates/notification-preference';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
 
-describe('GetNotificationPreference', () => {
+describe('GetNotificationPreferenceUseCase', () => {
   let preferenceRepo: ReturnType<typeof createMockRepo<INotificationPreferenceRepository>>;
-  let useCase: GetNotificationPreference;
+  let useCase: GetNotificationPreferenceUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -18,7 +18,7 @@ describe('GetNotificationPreference', () => {
       getOrCreate: vi.fn(),
     });
 
-    useCase = new GetNotificationPreference(preferenceRepo);
+    useCase = new GetNotificationPreferenceUseCase(preferenceRepo);
   });
 
   describe('execute()', () => {
@@ -27,7 +27,9 @@ describe('GetNotificationPreference', () => {
 
       const result = await useCase.execute(anIdentityId());
 
-      expect(result).toBeNull();
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toBeNull();
     });
 
     it('should return a client DTO when preference exists', async () => {
@@ -40,10 +42,12 @@ describe('GetNotificationPreference', () => {
 
       const result = await useCase.execute(identityId);
 
-      expect(result).toBeDefined();
-      expect(result!.identityId).toBe(identityId);
-      expect(result!.settings).toBeDefined();
-      expect(result!.settings['task']).toEqual([NotificationChannelType.InApp]);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toBeDefined();
+      expect(result.data!.identityId).toBe(identityId);
+      expect(result.data!.settings).toBeDefined();
+      expect(result.data!.settings['task']).toEqual([NotificationChannelType.InApp]);
     });
 
     it('should call findByIdentityId on repository', async () => {
@@ -66,10 +70,12 @@ describe('GetNotificationPreference', () => {
 
       const result = await useCase.executeOrCreate(identityId);
 
-      expect(result).toBeDefined();
-      expect(result.identityId).toBe(identityId);
-      expect(result.settings['task']).toContain(NotificationChannelType.InApp);
-      expect(result.settings['task']).toContain(NotificationChannelType.Email);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toBeDefined();
+      expect(result.data.identityId).toBe(identityId);
+      expect(result.data.settings['task']).toContain(NotificationChannelType.InApp);
+      expect(result.data.settings['task']).toContain(NotificationChannelType.Email);
     });
 
     it('should call getOrCreate on repository', async () => {
@@ -89,9 +95,11 @@ describe('GetNotificationPreference', () => {
 
       const result = await useCase.executeOrCreate(identityId);
 
-      expect(result).not.toBeNull();
-      expect(result.id).toBeTruthy();
-      expect(typeof result.createdAt).toBe('number');
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).not.toBeNull();
+      expect(result.data.id).toBeTruthy();
+      expect(typeof result.data.createdAt).toBe('number');
     });
   });
 });

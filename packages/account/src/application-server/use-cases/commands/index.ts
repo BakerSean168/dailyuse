@@ -3,6 +3,6 @@
  * Write operations that modify account state
  */
 
-export { CloseAccountUseCase, type CloseAccountResult } from './close-account';
-export { UpdateAccountProfileUseCase, type UpdateProfileResult } from './update-account-profile';
-export { UpdateAccountSettingsUseCase } from './update-account-settings';
+export { CloseAccountUseCase } from './close-account.use-case';
+export { UpdateAccountProfileUseCase } from './update-account-profile.use-case';
+export { UpdateAccountSettingsUseCase } from './update-account-settings.use-case';

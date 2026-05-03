@@ -1,5 +1,5 @@
 import type { Context } from '@dailyuse/contracts/shared';
-import { ok, type Result } from '@dailyuse/contracts/result';
+import { ok, isOk, type Result } from '@dailyuse/contracts/result';
 import type {
   SearchRequest,
   CreateEditorWorkspaceReq,
@@ -17,8 +17,25 @@ import type { IEditorGroupRepository } from '../domain-server/repositories/IEdit
 import type { IEditorTabRepository } from '../domain-server/repositories/IEditorTabRepository';
 import type { IRepositoryContentPort, IRepositorySearchPort } from '../application-server';
 import {
-  EditorWorkspaceApplicationService,
-  EditorSessionApplicationService,
+  CreateEditorWorkspaceUseCase,
+  GetEditorWorkspaceUseCase,
+  ListEditorWorkspacesUseCase,
+  UpdateEditorWorkspaceUseCase,
+  DeleteEditorWorkspaceUseCase,
+  GetWorkspaceSessionsUseCase,
+  GetWorkspaceSessionUseCase,
+  UpdateWorkspaceSessionUseCase,
+  RemoveWorkspaceSessionUseCase,
+  AddWorkspaceGroupUseCase,
+  UpdateWorkspaceGroupUseCase,
+  RemoveWorkspaceGroupUseCase,
+  AddWorkspaceTabUseCase,
+  UpdateWorkspaceTabUseCase,
+  RemoveWorkspaceTabUseCase,
+  ActivateWorkspaceSessionUseCase,
+  ActivateWorkspaceTabUseCase,
+  CreateEditorSessionUseCase,
+  SaveEditorContentUseCase,
 } from '../application-server';
 
 export type EditorRuntimeContributionsInput =
@@ -132,164 +149,211 @@ export function createEditorModule(dependencies: EditorModuleDependencies): Edit
     repositorySearchPort,
   } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
-  const workspaceService = new EditorWorkspaceApplicationService(
-    workspaceRepository,
+
+  // Workspace use cases
+  const createWorkspaceUC = new CreateEditorWorkspaceUseCase(workspaceRepository);
+  const getWorkspaceUC = new GetEditorWorkspaceUseCase(workspaceRepository);
+  const listWorkspacesUC = new ListEditorWorkspacesUseCase(workspaceRepository);
+  const updateWorkspaceUC = new UpdateEditorWorkspaceUseCase(workspaceRepository);
+  const deleteWorkspaceUC = new DeleteEditorWorkspaceUseCase(workspaceRepository);
+
+  // Workspace session use cases
+  const getSessionsUC = new GetWorkspaceSessionsUseCase(
     sessionRepository,
     groupRepository,
     tabRepository,
   );
-  const sessionService = new EditorSessionApplicationService(
+  const getSessionUC = new GetWorkspaceSessionUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+  const updateSessionUC = new UpdateWorkspaceSessionUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+  const removeSessionUC = new RemoveWorkspaceSessionUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+
+  // Workspace group use cases
+  const addGroupUC = new AddWorkspaceGroupUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+  const updateGroupUC = new UpdateWorkspaceGroupUseCase(groupRepository);
+  const removeGroupUC = new RemoveWorkspaceGroupUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+
+  // Workspace tab use cases
+  const addTabUC = new AddWorkspaceTabUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+  const updateTabUC = new UpdateWorkspaceTabUseCase(tabRepository);
+  const removeTabUC = new RemoveWorkspaceTabUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+
+  // Activation use cases
+  const activateSessionUC = new ActivateWorkspaceSessionUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+  const activateTabUC = new ActivateWorkspaceTabUseCase(
+    sessionRepository,
+    groupRepository,
+    tabRepository,
+  );
+
+  // Session lifecycle use cases
+  const createSessionUseCase = new CreateEditorSessionUseCase(
     sessionRepository,
     workspaceRepository,
     groupRepository,
     tabRepository,
-    repositoryContentPort,
   );
+  const saveEditorContentUseCase = new SaveEditorContentUseCase(repositoryContentPort);
   let started = false;
 
   const api: EditorApplicationPort = {
-    createWorkspace: async (data, ctx) =>
-      ok(
-        await workspaceService.createWorkspace({
-          identityId: ctx.identityId,
-          name: data.name,
-          description: data.description ?? undefined,
-          projectPath: data.projectPath,
-          projectType: data.projectType,
-          layout: data.layout ?? undefined,
-          settings: data.settings ?? undefined,
-        }),
-      ),
+    createWorkspace: (data, ctx) =>
+      createWorkspaceUC.execute({
+        identityId: ctx.identityId,
+        name: data.name,
+        description: data.description ?? undefined,
+        projectPath: data.projectPath,
+        projectType: data.projectType,
+        layout: data.layout ?? undefined,
+        settings: data.settings ?? undefined,
+      }),
 
-    listWorkspaces: async (ctx) =>
-      ok(await workspaceService.getWorkspacesByAccount(ctx.identityId)),
+    listWorkspaces: (ctx) => listWorkspacesUC.execute(ctx.identityId),
 
-    getWorkspace: async (id) => ok(await workspaceService.getWorkspace(id)),
+    getWorkspace: (id) => getWorkspaceUC.execute(id),
 
-    updateWorkspace: async (id, data) =>
-      ok(
-        await workspaceService.updateWorkspace({
-          id,
-          name: data.name,
-          description: data.description ?? undefined,
-        }),
-      ),
+    updateWorkspace: (id, data) =>
+      updateWorkspaceUC.execute({
+        id,
+        name: data.name,
+        description: data.description ?? undefined,
+      }),
 
-    deleteWorkspace: async (id) => {
-      await workspaceService.deleteWorkspace(id);
-      return ok(null);
-    },
+    deleteWorkspace: (id) => deleteWorkspaceUC.execute(id) as Promise<Result<unknown>>,
 
-    createSession: async (data, ctx) =>
-      ok(await sessionService.createSession(ctx.identityId, data)),
+    createSession: (data, ctx) => createSessionUseCase.execute(ctx.identityId, data),
 
-    listSessions: async (workspaceId) => ok(await workspaceService.getSessions(workspaceId)),
+    listSessions: (workspaceId) => getSessionsUC.execute(workspaceId),
 
-    getSession: async (id) => ok(await workspaceService.getSession(id)),
+    getSession: (id) => getSessionUC.execute(id),
 
     updateSession: async (id, data) => {
-      const session = await workspaceService.getSession(id);
-      if (!session) {
-        return ok(null);
+      const sessionResult = await getSessionUC.execute(id);
+      if (!isOk(sessionResult) || !sessionResult.data) {
+        return sessionResult;
       }
 
-      return ok(
-        await workspaceService.updateSession({
-          workspaceId: session.workspaceId,
-          sessionId: id,
-          name: data.name,
-          layout: data.layout ?? undefined,
-          isActive: undefined,
-        }),
-      );
+      return updateSessionUC.execute({
+        workspaceId: sessionResult.data.workspaceId,
+        sessionId: id,
+        name: data.name,
+        layout: data.layout ?? undefined,
+        isActive: undefined,
+      });
     },
 
     activateSession: async (workspaceId, sessionId) => {
-      await workspaceService.activateSession(workspaceId, sessionId);
-      return ok(await workspaceService.getSession(sessionId));
+      const activateResult = await activateSessionUC.execute(workspaceId, sessionId);
+      if (!isOk(activateResult)) {
+        return activateResult;
+      }
+      return getSessionUC.execute(sessionId);
     },
 
     deleteSession: async (id) => {
-      const session = await workspaceService.getSession(id);
-      if (session) {
-        await workspaceService.removeSession(session.workspaceId, id);
+      const sessionResult = await getSessionUC.execute(id);
+      if (isOk(sessionResult) && sessionResult.data) {
+        await removeSessionUC.execute(sessionResult.data.workspaceId, id);
       }
       return ok(null);
     },
 
-    createGroup: async (data) =>
-      ok(
-        await workspaceService.addGroup({
-          workspaceId: data.workspaceId,
-          sessionId: data.sessionId,
-          groupIndex: data.groupIndex,
-          name: data.name ?? undefined,
-        }),
-      ),
+    createGroup: (data) =>
+      addGroupUC.execute({
+        workspaceId: data.workspaceId,
+        sessionId: data.sessionId,
+        groupIndex: data.groupIndex,
+        name: data.name ?? undefined,
+      }),
 
-    updateGroup: async (id, data) =>
-      ok(
-        await workspaceService.updateGroup({
-          workspaceId: data.workspaceId,
-          sessionId: data.sessionId,
-          groupId: id,
-          name: data.name ?? undefined,
-          activeTabIndex: data.activeTabIndex,
-        }),
-      ),
+    updateGroup: (id, data) =>
+      updateGroupUC.execute({
+        workspaceId: data.workspaceId,
+        sessionId: data.sessionId,
+        groupId: id,
+        name: data.name ?? undefined,
+        activeTabIndex: data.activeTabIndex,
+      }),
 
     deleteGroup: async (workspaceId, sessionId, groupId) => {
-      await workspaceService.removeGroup(workspaceId, sessionId, groupId);
+      await removeGroupUC.execute(workspaceId, sessionId, groupId);
       return ok(null);
     },
 
-    createTab: async (data) =>
-      ok(
-        await workspaceService.addTab({
-          workspaceId: data.workspaceId,
-          sessionId: data.sessionId,
-          groupId: data.groupId,
-          resourceId: data.resourceId ?? undefined,
-          tabIndex: data.tabIndex,
-          tabType: data.tabType,
-          title: data.title,
-          viewState: data.viewState ?? undefined,
-        }),
-      ),
+    createTab: (data) =>
+      addTabUC.execute({
+        workspaceId: data.workspaceId,
+        sessionId: data.sessionId,
+        groupId: data.groupId,
+        resourceId: data.resourceId ?? undefined,
+        tabIndex: data.tabIndex,
+        tabType: data.tabType,
+        title: data.title,
+        viewState: data.viewState ?? undefined,
+      }),
 
-    updateTab: async (id, data) =>
-      ok(
-        await workspaceService.updateTab({
-          workspaceId: data.workspaceId,
-          sessionId: data.sessionId,
-          groupId: data.groupId,
-          tabId: id,
-          title: data.title,
-          viewState: data.viewState ?? undefined,
-          isPinned: data.isPinned,
-          isDirty: data.isDirty,
-        }),
-      ),
+    updateTab: (id, data) =>
+      updateTabUC.execute({
+        workspaceId: data.workspaceId,
+        sessionId: data.sessionId,
+        groupId: data.groupId,
+        tabId: id,
+        title: data.title,
+        viewState: data.viewState ?? undefined,
+        isPinned: data.isPinned,
+        isDirty: data.isDirty,
+      }),
 
     activateTab: async (workspaceId, sessionId, groupId, tabId) => {
-      await workspaceService.activateTab(workspaceId, sessionId, groupId, tabId);
+      await activateTabUC.execute(workspaceId, sessionId, groupId, tabId);
       return ok(null);
     },
 
     deleteTab: async (workspaceId, sessionId, groupId, tabId) => {
-      await workspaceService.removeTab(workspaceId, sessionId, groupId, tabId);
+      await removeTabUC.execute(workspaceId, sessionId, groupId, tabId);
       return ok(null);
     },
 
     getContent: async (resourceId) => ok(await repositoryContentPort.getContent(resourceId)),
 
     saveContent: async (resourceId, content) => {
-      await sessionService.saveContent(resourceId, content);
+      await saveEditorContentUseCase.execute(resourceId, content);
       return ok(null);
     },
 
     autoSaveContent: async (resourceId, content) => {
-      await sessionService.saveContent(resourceId, content);
+      await saveEditorContentUseCase.execute(resourceId, content);
       return ok(null);
     },
 

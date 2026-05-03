@@ -1,0 +1,45 @@
+/**
+ * Update Account Settings Use Case
+ */
+
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { IAccountRepository } from '@/domain-server';
+import type { UpdateAccountSettingsReq, AccountSettingsDTO } from '@dailyuse/contracts/account';
+
+export class UpdateAccountSettingsUseCase {
+  constructor(private readonly accountRepository: IAccountRepository) {}
+
+  async execute(
+    request: UpdateAccountSettingsReq,
+    cx: ExecutionContext,
+  ): Promise<Result<AccountSettingsDTO>> {
+    const account = await this.accountRepository.findById(cx.identityId);
+    if (!account) {
+      return error('NOT_FOUND', `Account not found: ${cx.identityId}`);
+    }
+
+    let settings = account.settings;
+
+    if (request.theme) {
+      settings = settings.switchTheme(request.theme as any);
+    }
+    if (request.language) {
+      settings = settings.switchLanguage(request.language as any);
+    }
+    if (request.timezone) {
+      settings = settings.setTimezone(request.timezone);
+    }
+    if (request.notificationEnabled !== undefined) {
+      settings = request.notificationEnabled
+        ? settings.enableNotification()
+        : settings.disableNotification();
+    }
+
+    account.updateSettings(settings);
+    await this.accountRepository.save(account);
+
+    return ok(settings.toDTO());
+  }
+}

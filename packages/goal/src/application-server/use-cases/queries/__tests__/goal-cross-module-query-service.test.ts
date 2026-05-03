@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalRepository } from '@/domain-server';
-import { GoalCrossModuleQueryService } from '../goal-cross-module-query-service';
+import { GoalCrossModuleQueryServiceUseCase } from '../goal-cross-module-query-service.use-case';
 
 vi.mock('@dailyuse/utils', async () => {
   const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
@@ -59,21 +59,24 @@ function createKeyResultFixture(overrides?: Record<string, any>) {
 // Tests — getGoalsForTaskBinding
 // ============================================================
 
-describe('GoalCrossModuleQueryService', () => {
+describe('GoalCrossModuleQueryServiceUseCase', () => {
   describe('getGoalsForTaskBinding', () => {
-    it('should return goals filtered by default statuses', async () => {
+    it('should return ok with goals filtered by default statuses', async () => {
       const goal1 = createGoalFixture({ id: 'g1', status: 'IN_PROGRESS', title: 'Active Goal' });
       const goal2 = createGoalFixture({ id: 'g2', status: 'COMPLETED', title: 'Done Goal' });
       const goal3 = createGoalFixture({ id: 'g3', status: 'NOT_STARTED', title: 'New Goal' });
       const goalRepo = createMockRepo<IGoalRepository>({
         findByIdentityId: vi.fn().mockResolvedValue([goal1, goal2, goal3]),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getGoalsForTaskBinding({ identityId: 'identity-1' });
 
-      expect(result).toHaveLength(2);
-      expect(result.map((g) => g.id)).toEqual(['g1', 'g3']);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data).toHaveLength(2);
+        expect(result.data.map((g) => g.id)).toEqual(['g1', 'g3']);
+      }
     });
 
     it('should filter by custom status list', async () => {
@@ -82,27 +85,33 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findByIdentityId: vi.fn().mockResolvedValue([goal1, goal2]),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getGoalsForTaskBinding({
         identityId: 'identity-1',
         status: ['COMPLETED'],
       });
 
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('g1');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe('g1');
+      }
     });
 
-    it('should return empty array when no goals match status filter', async () => {
+    it('should return ok with empty array when no goals match status filter', async () => {
       const goal = createGoalFixture({ id: 'g1', status: 'ARCHIVED' });
       const goalRepo = createMockRepo<IGoalRepository>({
         findByIdentityId: vi.fn().mockResolvedValue([goal]),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getGoalsForTaskBinding({ identityId: 'identity-1' });
 
-      expect(result).toHaveLength(0);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data).toHaveLength(0);
+      }
     });
 
     it('should map goal fields including progress', async () => {
@@ -117,18 +126,21 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findByIdentityId: vi.fn().mockResolvedValue([goal]),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getGoalsForTaskBinding({ identityId: 'identity-1' });
 
-      expect(result[0]).toEqual({
-        id: 'g1',
-        title: 'My Goal',
-        description: 'Desc',
-        status: 'IN_PROGRESS',
-        targetDate: 1700000000,
-        progress: 75,
-      });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data[0]).toEqual({
+          id: 'g1',
+          title: 'My Goal',
+          description: 'Desc',
+          status: 'IN_PROGRESS',
+          targetDate: 1700000000,
+          progress: 75,
+        });
+      }
       expect(goal.getOverallProgress).toHaveBeenCalled();
     });
   });
@@ -138,32 +150,39 @@ describe('GoalCrossModuleQueryService', () => {
   // ============================================================
 
   describe('getKeyResultsForTaskBinding', () => {
-    it('should return key results for a goal', async () => {
+    it('should return ok with key results for a goal', async () => {
       const kr1 = createKeyResultFixture({ id: 'kr-1', title: 'KR One' });
       const kr2 = createKeyResultFixture({ id: 'kr-2', title: 'KR Two' });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr1, kr2] });
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(goal),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getKeyResultsForTaskBinding('goal-1');
 
-      expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('kr-1');
-      expect(result[0].goalId).toBe('goal-1');
-      expect(result[1].id).toBe('kr-2');
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data).toHaveLength(2);
+        expect(result.data[0].id).toBe('kr-1');
+        expect(result.data[0].goalId).toBe('goal-1');
+        expect(result.data[1].id).toBe('kr-2');
+      }
     });
 
-    it('should throw when goal is not found', async () => {
+    it('should return NOT_FOUND error when goal is not found', async () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(null),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      await expect(service.getKeyResultsForTaskBinding('non-existent')).rejects.toThrow(
-        'Goal not found: non-existent',
-      );
+      const result = await service.getKeyResultsForTaskBinding('non-existent');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('NOT_FOUND');
+        expect(result.error.message).toContain('Goal not found');
+      }
     });
 
     it('should map key result progress fields correctly', async () => {
@@ -178,30 +197,36 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(goal),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getKeyResultsForTaskBinding('goal-1');
 
-      expect(result[0]).toEqual({
-        id: 'kr-1',
-        title: 'KR Title',
-        description: 'KR Desc',
-        goalId: 'goal-1',
-        progress: { current: 50, target: 200, percentage: 25 },
-        weight: 2,
-      });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data[0]).toEqual({
+          id: 'kr-1',
+          title: 'KR Title',
+          description: 'KR Desc',
+          goalId: 'goal-1',
+          progress: { current: 50, target: 200, percentage: 25 },
+          weight: 2,
+        });
+      }
     });
 
-    it('should return empty array when goal has no key results', async () => {
+    it('should return ok with empty array when goal has no key results', async () => {
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [] });
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(goal),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.getKeyResultsForTaskBinding('goal-1');
 
-      expect(result).toHaveLength(0);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data).toHaveLength(0);
+      }
     });
   });
 
@@ -216,7 +241,7 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(goal),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.validateGoalBinding('goal-1', 'kr-1');
 
@@ -227,7 +252,7 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(null),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.validateGoalBinding('non-existent', 'kr-1');
 
@@ -241,7 +266,7 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockResolvedValue(goal),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.validateGoalBinding('goal-1', 'kr-unknown');
 
@@ -253,7 +278,7 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockRejectedValue(new Error('DB connection failed')),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.validateGoalBinding('goal-1', 'kr-1');
 
@@ -265,7 +290,7 @@ describe('GoalCrossModuleQueryService', () => {
       const goalRepo = createMockRepo<IGoalRepository>({
         findById: vi.fn().mockRejectedValue('string error'),
       });
-      const service = new GoalCrossModuleQueryService(goalRepo);
+      const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
       const result = await service.validateGoalBinding('goal-1', 'kr-1');
 

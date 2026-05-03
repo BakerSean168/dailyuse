@@ -22,9 +22,9 @@ import { TaskTemplatePrismaRepository } from '../infrastructure-server/adapters/
 import { TaskInstancePrismaRepository } from '../infrastructure-server/adapters/prisma/task-instance-prisma.repository';
 import { TaskDependencyPrismaRepository } from '../infrastructure-server/adapters/prisma/task-dependency-prisma.repository';
 import { TaskFolderPrismaRepository } from '../infrastructure-server/adapters/prisma/task-folder-prisma.repository';
-import { TaskTemplateController } from './controllers/task-template.controller';
-import { TaskInstanceController } from './controllers/task-instance.controller';
-import { TaskDependencyController } from './controllers/task-dependency.controller';
+import { TaskTemplateController } from '../controllers/task-template.controller';
+import { TaskInstanceController } from '../controllers/task-instance.controller';
+import { TaskDependencyController } from '../controllers/task-dependency.controller';
 import { registerTaskRoutes } from './routes';
 import { createTaskTransportHandlers } from './transport-handlers';
 import { createTaskRuntimeContribution } from './runtime';

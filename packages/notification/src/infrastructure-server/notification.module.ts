@@ -22,11 +22,11 @@ import type {
 } from '../domain-server/repositories';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import {
-  CreateNotification,
-  MarkNotificationAsRead,
-  GetUserNotifications,
-  GetUnreadNotifications,
-  GetNotificationPreference,
+  CreateNotificationUseCase,
+  MarkNotificationAsReadUseCase,
+  GetUserNotificationsUseCase,
+  GetUnreadNotificationsUseCase,
+  GetNotificationPreferenceUseCase,
 } from '../application-server';
 import {
   toNotificationClientDTO,
@@ -95,11 +95,11 @@ export interface NotificationModuleDependencies {
  * 但传输层应该优先使用 `NotificationApplicationPort`。
  */
 export interface NotificationModuleUseCases {
-  readonly createNotification: CreateNotification;
-  readonly markAsRead: MarkNotificationAsRead;
-  readonly getUserNotifications: GetUserNotifications;
-  readonly getUnreadNotifications: GetUnreadNotifications;
-  readonly getNotificationPreference: GetNotificationPreference;
+  readonly createNotification: CreateNotificationUseCase;
+  readonly markAsRead: MarkNotificationAsReadUseCase;
+  readonly getUserNotifications: GetUserNotificationsUseCase;
+  readonly getUnreadNotifications: GetUnreadNotificationsUseCase;
+  readonly getNotificationPreference: GetNotificationPreferenceUseCase;
 }
 
 // ============ Application Port ============
@@ -167,15 +167,15 @@ export function createNotificationUseCases(
   const { notificationRepository, preferenceRepository, templateRepository } = deps;
 
   return {
-    createNotification: new CreateNotification(
+    createNotification: new CreateNotificationUseCase(
       notificationRepository,
       templateRepository,
       preferenceRepository,
     ),
-    markAsRead: new MarkNotificationAsRead(notificationRepository),
-    getUserNotifications: new GetUserNotifications(notificationRepository),
-    getUnreadNotifications: new GetUnreadNotifications(notificationRepository),
-    getNotificationPreference: new GetNotificationPreference(preferenceRepository),
+    markAsRead: new MarkNotificationAsReadUseCase(notificationRepository),
+    getUserNotifications: new GetUserNotificationsUseCase(notificationRepository),
+    getUnreadNotifications: new GetUnreadNotificationsUseCase(notificationRepository),
+    getNotificationPreference: new GetNotificationPreferenceUseCase(preferenceRepository),
   };
 }
 
@@ -235,8 +235,7 @@ export function createNotificationModule(
     // Delegate to CreateNotification use case.
     // 委托给 CreateNotification 用例。
     createNotification: async (data) => {
-      const result = await useCases.createNotification.execute(data as any);
-      return ok(result);
+      return useCases.createNotification.execute(data as any);
     },
 
     // Delegate to GetUserNotifications use case.
@@ -257,20 +256,22 @@ export function createNotificationModule(
       }
       const limit = q.limit ?? 20;
       const offset = q.offset ?? Math.max(((q.page ?? 1) - 1) * limit, 0);
-      const allNotifications = await useCases.getUserNotifications.execute(q.identityId, {
+      const allResult = await useCases.getUserNotifications.execute(q.identityId, {
         includeRead: q.includeRead,
       });
-      const notifications = await useCases.getUserNotifications.execute(q.identityId, {
+      const pageResult = await useCases.getUserNotifications.execute(q.identityId, {
         includeRead: q.includeRead,
         limit,
         offset,
       });
+      if (!allResult.ok) return allResult;
+      if (!pageResult.ok) return pageResult;
       return ok({
-        notifications,
-        total: allNotifications.length,
+        notifications: pageResult.data,
+        total: allResult.data.length,
         page: q.page ?? 1,
         pageSize: limit,
-        hasMore: offset + notifications.length < allNotifications.length,
+        hasMore: offset + pageResult.data.length < allResult.data.length,
       });
     },
 
@@ -344,27 +345,19 @@ export function createNotificationModule(
     },
 
     markAsRead: async (id) => {
-      await useCases.markAsRead.execute(id);
-      const notification = await notificationRepository.findById(id);
-      if (!notification) {
-        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
-      }
-      return ok(toNotificationClientDTO(notification.toServerDTO()));
+      return useCases.markAsRead.execute(id);
     },
     markAllAsRead: async (identityId) => {
-      const count = await useCases.getUnreadNotifications.getCount(identityId);
-      await useCases.markAsRead.executeAll(identityId);
-      return ok({ count });
+      return useCases.markAsRead.executeAll(identityId);
     },
     getUnreadCount: async (identityId) => {
-      const count = await useCases.getUnreadNotifications.getCount(identityId);
-      return ok({ count });
+      return useCases.getUnreadNotifications.getCount(identityId);
     },
     batchMarkAsRead: async (data) => {
       if (data.notificationIds?.length) {
-        await useCases.markAsRead.executeMany(data.notificationIds);
+        return useCases.markAsRead.executeMany(data.notificationIds);
       }
-      return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
+      return ok(0);
     },
     batchDelete: async (data) => {
       if (data.notificationIds?.length) {
@@ -391,8 +384,7 @@ export function createNotificationModule(
     // Delegate to GetNotificationPreference use case.
     // 委托给 GetNotificationPreference 用例。
     getPreferences: async (identityId) => {
-      const pref = await useCases.getNotificationPreference.execute(identityId);
-      return ok(pref);
+      return useCases.getNotificationPreference.execute(identityId);
     },
 
     // Persist preference updates directly until a dedicated use case exists.

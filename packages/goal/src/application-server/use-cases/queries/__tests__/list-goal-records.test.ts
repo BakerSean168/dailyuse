@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalRecordRepository, IGoalRepository } from '@/domain-server';
-import { ListGoalRecords } from '../list-goal-records';
+import { ListGoalRecordsUseCase } from '../list-goal-records.use-case';
 
 function createRecordFixture(overrides?: Record<string, any>) {
   const id = overrides?.id ?? 'record-1';
@@ -24,7 +24,7 @@ function createGoalFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('ListGoalRecords', () => {
+describe('ListGoalRecordsUseCase', () => {
   it('should return empty list when no goalId and no keyResultId', async () => {
     const goalRecordRepo = createMockRepo<IGoalRecordRepository>({
       findByKeyResultId: vi.fn(),
@@ -33,7 +33,7 @@ describe('ListGoalRecords', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn(),
     });
-    const useCase = new ListGoalRecords(goalRecordRepo, goalRepo);
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
     const result = await useCase.execute({});
 
@@ -59,7 +59,7 @@ describe('ListGoalRecords', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn(),
     });
-    const useCase = new ListGoalRecords(goalRecordRepo, goalRepo);
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
     const result = await useCase.execute({ keyResultId: 'kr-1', offset: 1, limit: 1 });
 
@@ -85,7 +85,7 @@ describe('ListGoalRecords', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById,
     });
-    const useCase = new ListGoalRecords(goalRecordRepo, goalRepo);
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
     const result = await useCase.execute({ goalId: 'goal-1' });
 
@@ -120,7 +120,7 @@ describe('ListGoalRecords', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn().mockResolvedValue(goal),
     });
-    const useCase = new ListGoalRecords(goalRecordRepo, goalRepo);
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
     const result = await useCase.execute({ goalId: 'goal-1' });
 
@@ -166,7 +166,7 @@ describe('ListGoalRecords', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn().mockResolvedValue(goal),
     });
-    const useCase = new ListGoalRecords(goalRecordRepo, goalRepo);
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
     const result = await useCase.execute({ goalId: 'goal-1' });
 
@@ -213,7 +213,7 @@ describe('ListGoalRecords', () => {
     const goalRepo = createMockRepo<IGoalRepository>({
       findById: vi.fn().mockResolvedValue(goal),
     });
-    const useCase = new ListGoalRecords(goalRecordRepo, goalRepo);
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
     const result = await useCase.execute({ goalId: 'goal-1' });
 

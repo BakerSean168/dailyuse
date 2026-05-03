@@ -6,32 +6,32 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import {
   CreateGoalFolderSchema,
   UpdateGoalFolderSchema,
   ListGoalFolderFiltersSchema,
 } from '@dailyuse/contracts/goal';
 import type { ListGoalFolderFilters, ListGoalFoldersQuery } from '@dailyuse/contracts/goal';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type {
-  CreateGoalFolder,
-  GetGoalFolder,
-  ListGoalFolders,
-  UpdateGoalFolder,
-  DeleteGoalFolder,
+  CreateGoalFolderUseCase,
+  GetGoalFolderUseCase,
+  ListGoalFoldersUseCase,
+  UpdateGoalFolderUseCase,
+  DeleteGoalFolderUseCase,
 } from '../application-server';
 
 // ============ Use Case Port ============
 
 export interface GoalFolderUseCases {
-  createGoalFolder: CreateGoalFolder;
-  getGoalFolder: GetGoalFolder;
-  listGoalFolders: ListGoalFolders;
-  updateGoalFolder: UpdateGoalFolder;
-  deleteGoalFolder: DeleteGoalFolder;
+  createGoalFolder: CreateGoalFolderUseCase;
+  getGoalFolder: GetGoalFolderUseCase;
+  listGoalFolders: ListGoalFoldersUseCase;
+  updateGoalFolder: UpdateGoalFolderUseCase;
+  deleteGoalFolder: DeleteGoalFolderUseCase;
 }
 
 /**
@@ -44,7 +44,7 @@ export class GoalFolderController {
 
   // ==================== Folder CRUD ====================
 
-  async create(input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async create(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = CreateGoalFolderSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -53,14 +53,13 @@ export class GoalFolderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const folder = await this.useCases.createGoalFolder.execute(
-      ctx.identityId as unknown as IdentityId,
+    return this.useCases.createGoalFolder.execute(
+      cx.identityId as unknown as IdentityId,
       parsed.data,
     );
-    return ok(folder);
   }
 
-  async list(filters: unknown, ctx: Context): Promise<Result<unknown>> {
+  async list(filters: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = ListGoalFolderFiltersSchema.safeParse(filters);
     if (!parsed.success) {
       return fail({
@@ -72,21 +71,16 @@ export class GoalFolderController {
     // Construct internal query with identityId from context
     const query: ListGoalFoldersQuery = {
       ...parsed.data,
-      identityId: ctx.identityId as unknown as IdentityId,
+      identityId: cx.identityId as unknown as IdentityId,
     };
-    const result = await this.useCases.listGoalFolders.execute(query);
-    return ok(result);
+    return this.useCases.listGoalFolders.execute(query);
   }
 
   async get(id: string): Promise<Result<unknown>> {
-    const folder = await this.useCases.getGoalFolder.execute(id);
-    if (!folder) {
-      return fail({ code: 'NOT_FOUND', message: '文件夹不存在' });
-    }
-    return ok(folder);
+    return this.useCases.getGoalFolder.execute(id);
   }
 
-  async update(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = UpdateGoalFolderSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -95,12 +89,10 @@ export class GoalFolderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const folder = await this.useCases.updateGoalFolder.execute(id, ctx.identityId, parsed.data);
-    return ok(folder);
+    return this.useCases.updateGoalFolder.execute(id, cx.identityId, parsed.data);
   }
 
-  async delete(id: string, ctx: Context): Promise<Result<unknown>> {
-    await this.useCases.deleteGoalFolder.execute(id, ctx.identityId);
-    return ok(null);
+  async delete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.deleteGoalFolder.execute(id, cx.identityId);
   }
 }

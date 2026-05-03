@@ -21,6 +21,7 @@ export type { Equatable } from './equatable';
 export type { AppEventRegistry, AppRpcRegistry } from './protocol';
 export type { IDomainEvent } from './domain-event.interface';
 export type { Context } from './context';
+export type { ExecutionContext } from './execution-context';
 
 
 export * from './value-objects'

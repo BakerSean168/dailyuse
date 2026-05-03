@@ -3,8 +3,8 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { CheckExpiredInstances } from '../check-expired-instances';
-import { GenerateTaskInstances } from '../generate-task-instances';
+import { CheckExpiredInstancesUseCaseUseCase } from '../check-expired-instances.use-case';
+import { GenerateTaskInstancesUseCaseUseCase } from '../generate-task-instances.use-case';
 
 const mockMarkExpiredInstances = vi.fn();
 vi.mock('@/domain-server/services/TaskExpirationService', () => {
@@ -44,14 +44,14 @@ describe('Instance maintenance use-cases', () => {
     });
   });
 
-  describe('CheckExpiredInstances', () => {
+  describe('CheckExpiredInstancesUseCase', () => {
     it('returns expired DTO list and saves when there are expired instances', async () => {
       const sourceInstances = [{ id: 'i-source' } as any];
       const expired = [{ toClientDTO: vi.fn().mockReturnValue({ id: 'i-expired' }) } as any];
       vi.mocked(instanceRepo.findByIdentityId).mockResolvedValue(sourceInstances as any);
       mockMarkExpiredInstances.mockReturnValue(expired);
 
-      const useCase = new CheckExpiredInstances(instanceRepo);
+      const useCase = new CheckExpiredInstancesUseCase(instanceRepo);
       const result = await useCase.execute('identity-1');
 
       expect(result).toBeOk();
@@ -65,7 +65,7 @@ describe('Instance maintenance use-cases', () => {
       vi.mocked(instanceRepo.findByIdentityId).mockResolvedValue([{ id: 'i1' } as any]);
       mockMarkExpiredInstances.mockReturnValue([]);
 
-      const useCase = new CheckExpiredInstances(instanceRepo);
+      const useCase = new CheckExpiredInstancesUseCase(instanceRepo);
       const result = await useCase.execute('identity-1');
 
       expect(result).toBeOkWith([] as any);
@@ -73,10 +73,10 @@ describe('Instance maintenance use-cases', () => {
     });
   });
 
-  describe('GenerateTaskInstances', () => {
+  describe('GenerateTaskInstancesUseCase', () => {
     it('returns NOT_FOUND when template does not exist', async () => {
       vi.mocked(templateRepo.findById).mockResolvedValue(null);
-      const useCase = new GenerateTaskInstances(templateRepo, instanceRepo);
+      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
       const result = await useCase.execute('tpl-404', {
         fromDate: 0,
@@ -93,7 +93,7 @@ describe('Instance maintenance use-cases', () => {
       const template = { id: 'tpl-1' } as any;
       vi.mocked(templateRepo.findById).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue([]);
-      const useCase = new GenerateTaskInstances(templateRepo, instanceRepo);
+      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
       const result = await useCase.execute('tpl-1', {
         fromDate: 1,
@@ -117,7 +117,7 @@ describe('Instance maintenance use-cases', () => {
       ];
       vi.mocked(templateRepo.findById).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue(generated as any);
-      const useCase = new GenerateTaskInstances(templateRepo, instanceRepo);
+      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
       const result = await useCase.execute('tpl-1', {
         fromDate: 10,

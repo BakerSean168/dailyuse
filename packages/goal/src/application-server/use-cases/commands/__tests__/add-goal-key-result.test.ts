@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalRepository } from '@/domain-server/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '@/domain-server';
-import { AddGoalKeyResult } from '../add-goal-key-result';
+import { AddGoalKeyResultUseCase } from '../add-goal-key-result.use-case';
 
 // ============================================================
 // Helpers
@@ -39,9 +39,9 @@ function aKeyResultInput(overrides: Record<string, any> = {}) {
   };
 }
 
-describe('AddGoalKeyResult', () => {
+describe('AddGoalKeyResultUseCase', () => {
   let goalRepo: ReturnType<typeof createMockRepo<IGoalRepository>>;
-  let useCase: AddGoalKeyResult;
+  let useCase: AddGoalKeyResultUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,7 +49,7 @@ describe('AddGoalKeyResult', () => {
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new AddGoalKeyResult(goalRepo, new GoalPolicy());
+    useCase = new AddGoalKeyResultUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import type { IFocusModeRepository } from '@/domain-server';
-import { GetCurrentFocusMode } from '../get-current-focus-mode';
+import { GetCurrentFocusModeUseCase } from '../get-current-focus-mode.use-case';
 
 function createFocusModeFixture(overrides?: Record<string, any>) {
   const dto = {
@@ -22,14 +22,14 @@ function createFocusModeFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('GetCurrentFocusMode', () => {
+describe('GetCurrentFocusModeUseCase', () => {
   it('should return active focus mode dto', async () => {
     const focusMode = createFocusModeFixture({ id: 'focus-1', remainingDays: 5 });
     const findActiveByIdentityId = vi.fn().mockResolvedValue(focusMode);
     const focusModeRepo = createMockRepo<IFocusModeRepository>({
       findActiveByIdentityId,
     });
-    const useCase = new GetCurrentFocusMode(focusModeRepo);
+    const useCase = new GetCurrentFocusModeUseCase(focusModeRepo);
 
     const result = await useCase.execute('identity-1');
 
@@ -44,7 +44,7 @@ describe('GetCurrentFocusMode', () => {
     const focusModeRepo = createMockRepo<IFocusModeRepository>({
       findActiveByIdentityId: vi.fn().mockResolvedValue(null),
     });
-    const useCase = new GetCurrentFocusMode(focusModeRepo);
+    const useCase = new GetCurrentFocusModeUseCase(focusModeRepo);
 
     const result = await useCase.execute('identity-1');
 

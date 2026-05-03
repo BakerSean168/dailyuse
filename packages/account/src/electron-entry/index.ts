@@ -15,7 +15,6 @@ import {
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
-import { ok, fail } from '@dailyuse/contracts/result';
 import {
   PowerSyncAccountRepository,
   createAccountModule,
@@ -58,47 +57,33 @@ export const AccountElectronModule: IElectronModule = {
     ipcMain.handle(Ch.LIST, (_event, params) => accountModule.accountRepository.findAll(params));
 
     ipcMain.handle(Ch.GET, async () => {
-      return withAuthenticatedIdentity(ctx, async (identityId) => {
-        const profile = await accountModule.api.getProfile(identityId);
-        if (!profile) {
-          return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
-        }
-        return ok(profile);
-      });
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        accountModule.api.getProfile({ identityId }),
+      );
     });
 
     ipcMain.handle(Ch.GET_CURRENT, async () => {
-      return withAuthenticatedIdentity(ctx, async (identityId) => {
-        const profile = await accountModule.api.getProfile(identityId);
-        if (!profile) {
-          return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
-        }
-        return ok(profile);
-      });
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        accountModule.api.getProfile({ identityId }),
+      );
     });
 
     ipcMain.handle(Ch.GET_CURRENT_ALIAS, async () => {
-      return withAuthenticatedIdentity(ctx, async (identityId) => {
-        const profile = await accountModule.api.getProfile(identityId);
-        if (!profile) {
-          return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
-        }
-        return ok(profile);
-      });
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        accountModule.api.getProfile({ identityId }),
+      );
     });
 
     ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
-      return withAuthenticatedIdentity(ctx, async (identityId) => {
-        const result = await accountModule.api.updateProfile(identityId, payload);
-        return ok(result.account);
-      });
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        accountModule.api.updateProfile(payload, { identityId }),
+      );
     });
 
     ipcMain.handle(Ch.UPDATE_SETTINGS, async (_event, payload: any) => {
-      return withAuthenticatedIdentity(ctx, async (identityId) => {
-        const result = await accountModule.api.updateSettings(identityId, payload);
-        return ok(result);
-      });
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        accountModule.api.updateSettings(payload, { identityId }),
+      );
     });
 
     ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: any) =>
@@ -106,10 +91,9 @@ export const AccountElectronModule: IElectronModule = {
     );
 
     ipcMain.handle(Ch.CLOSE, async (_event, payload: any) => {
-      return withAuthenticatedIdentity(ctx, async (identityId) => {
-        const result = await accountModule.api.closeAccount(identityId, payload ?? {});
-        return ok(result);
-      });
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        accountModule.api.closeAccount(payload ?? {}, { identityId }),
+      );
     });
 
     logger.info('Account module registered');

@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { INotificationRepository } from '@/domain-server/repositories/INotificationRepository';
-import { GetUnreadNotifications } from '../get-unread-notifications';
+import { GetUnreadNotificationsUseCase } from '../get-unread-notifications.use-case';
 import { Notification } from '@/domain-server/aggregates/notification';
 import { NotificationType, NotificationCategory } from '@dailyuse/contracts/notification';
 
-describe('GetUnreadNotifications', () => {
+describe('GetUnreadNotificationsUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;
-  let useCase: GetUnreadNotifications;
+  let useCase: GetUnreadNotificationsUseCase;
 
   function aNotification(identityId: string) {
     return Notification.create({
@@ -28,14 +28,16 @@ describe('GetUnreadNotifications', () => {
       countUnread: vi.fn().mockResolvedValue(0),
     });
 
-    useCase = new GetUnreadNotifications(notificationRepo);
+    useCase = new GetUnreadNotificationsUseCase(notificationRepo);
   });
 
   describe('execute()', () => {
     it('should return empty array when no unread notifications', async () => {
       const result = await useCase.execute(anIdentityId());
 
-      expect(result).toEqual([]);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toEqual([]);
     });
 
     it('should return client DTOs for unread notifications', async () => {
@@ -45,9 +47,11 @@ describe('GetUnreadNotifications', () => {
 
       const result = await useCase.execute(identityId);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].title).toBe('Unread notification');
-      expect(result[0].isRead).toBe(false);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].title).toBe('Unread notification');
+      expect(result.data[0].isRead).toBe(false);
     });
 
     it('should pass options to repository', async () => {
@@ -69,17 +73,21 @@ describe('GetUnreadNotifications', () => {
 
   describe('getCount()', () => {
     it('should return 0 when no unread notifications', async () => {
-      const count = await useCase.getCount(anIdentityId());
+      const result = await useCase.getCount(anIdentityId());
 
-      expect(count).toBe(0);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data.count).toBe(0);
     });
 
     it('should return the count from repository', async () => {
       vi.mocked(notificationRepo.countUnread).mockResolvedValue(42);
 
-      const count = await useCase.getCount(anIdentityId());
+      const result = await useCase.getCount(anIdentityId());
 
-      expect(count).toBe(42);
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error('Expected ok');
+      expect(result.data.count).toBe(42);
     });
 
     it('should call countUnread with the identity id', async () => {

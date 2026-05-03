@@ -3,8 +3,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IAccountRepository } from '@/domain-server/repositories/i-account-repository';
 import { Account } from '@/domain-server/aggregates/account';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import type { UpdateAccountReq } from '@dailyuse/contracts/account';
-import { UpdateAccountProfileUseCase } from '../update-account-profile';
+import { UpdateAccountProfileUseCase } from '../update-account-profile.use-case';
 
 describe('UpdateAccountProfileUseCase', () => {
   let repo: ReturnType<typeof createMockRepo<IAccountRepository>>;
@@ -26,10 +25,9 @@ describe('UpdateAccountProfileUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { nickname: 'NewNick' });
+    const result = await useCase.execute({ nickname: 'NewNick' }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
-    // Bug fix verification: the saved account should have the updated profile
+    expect(result.ok).toBe(true);
     expect(account.profile.nickname).toBe('NewNick');
     expect(repo.save).toHaveBeenCalledWith(account);
   });
@@ -38,11 +36,11 @@ describe('UpdateAccountProfileUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), {
+    const result = await useCase.execute({
       avatar: 'https://example.com/new-avatar.png',
-    });
+    }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
+    expect(result.ok).toBe(true);
     expect(account.profile.avatarUrl).toBe('https://example.com/new-avatar.png');
   });
 
@@ -50,9 +48,9 @@ describe('UpdateAccountProfileUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { bio: 'Hello world' });
+    const result = await useCase.execute({ bio: 'Hello world' }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
+    expect(result.ok).toBe(true);
     expect(account.profile.bio).toBe('Hello world');
   });
 
@@ -60,13 +58,13 @@ describe('UpdateAccountProfileUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), {
+    const result = await useCase.execute({
       nickname: 'Multi',
       avatar: 'https://example.com/a.png',
       bio: 'Multi update',
-    });
+    }, { identityId: account.id.toString() });
 
-    expect(result.success).toBe(true);
+    expect(result.ok).toBe(true);
     expect(account.profile.nickname).toBe('Multi');
     expect(account.profile.avatarUrl).toBe('https://example.com/a.png');
     expect(account.profile.bio).toBe('Multi update');
@@ -76,29 +74,32 @@ describe('UpdateAccountProfileUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { nickname: 'WithDTO' });
+    const result = await useCase.execute({ nickname: 'WithDTO' }, { identityId: account.id.toString() });
 
-    expect(result.account).toBeDefined();
-    expect(result.account.profile.nickname).toBe('WithDTO');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.profile.nickname).toBe('WithDTO');
+    }
   });
 
-  it('should throw when account not found', async () => {
+  it('should return NOT_FOUND when account not found', async () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    await expect(useCase.execute('missing-id', { nickname: 'X' })).rejects.toThrow(
-      'Account not found',
-    );
+    const result = await useCase.execute({ nickname: 'X' }, { identityId: 'missing-id' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
   });
 
   it('should not change profile when no fields provided', async () => {
     const account = anAccount('nochange@example.com');
-    const originalNickname = account.profile.nickname;
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), {});
+    const result = await useCase.execute({}, { identityId: account.id.toString() });
 
-    // Profile is still written back (updateProfile called) but unchanged values
-    expect(result.success).toBe(true);
+    expect(result.ok).toBe(true);
     expect(repo.save).toHaveBeenCalled();
   });
 });

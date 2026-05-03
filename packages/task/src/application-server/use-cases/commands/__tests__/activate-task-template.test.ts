@@ -5,7 +5,7 @@ import { aLoadedTaskTemplate, aRecurringTask } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ActivateTaskTemplate } from '../activate-task-template';
+import { ActivateTaskTemplateUseCaseUseCase } from '../activate-task-template.use-case';
 
 // Mock TaskInstanceGenerationService — provide a constructor mock
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
@@ -19,10 +19,10 @@ vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
   };
 });
 
-describe('ActivateTaskTemplate', () => {
+describe('ActivateTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
-  let useCase: ActivateTaskTemplate;
+  let useCase: ActivateTaskTemplateUseCase;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,7 +37,7 @@ describe('ActivateTaskTemplate', () => {
       saveMany: vi.fn().mockResolvedValue(undefined),
     });
 
-    useCase = new ActivateTaskTemplate(templateRepo, instanceRepo);
+    useCase = new ActivateTaskTemplateUseCase(templateRepo, instanceRepo);
   });
 
   afterEach(() => {

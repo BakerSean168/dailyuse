@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IGoalFolderRepository } from '@/domain-server';
-import { UpdateGoalFolder } from '../update-goal-folder';
+import { UpdateGoalFolderUseCase } from '../update-goal-folder.use-case';
 
 // ============================================================
 // Helpers
@@ -31,50 +31,59 @@ function createFolderFixture(overrides?: Record<string, any>) {
   } as any;
 }
 
-describe('UpdateGoalFolder', () => {
-  it('should update folder name and return the client DTO', async () => {
+describe('UpdateGoalFolderUseCase', () => {
+  it('should update folder name and return ok with the client DTO', async () => {
     const folder = createFolderFixture();
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalFolder(folderRepo);
+    const useCase = new UpdateGoalFolderUseCase(folderRepo);
 
     const result = await useCase.execute('folder-id-1', 'identity-123', {
       name: 'Updated Folder',
     });
 
+    expect(result.ok).toBe(true);
     expect(folder.rename).toHaveBeenCalledWith('Updated Folder');
     expect(folderRepo.save).toHaveBeenCalledWith(folder);
-    expect(result).toEqual(folder.toClientDTO());
+    if (result.ok) {
+      expect(result.data).toEqual(folder.toClientDTO());
+    }
   });
 
-  it('should throw when folder is not found', async () => {
+  it('should return NOT_FOUND error when folder is not found', async () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalFolder(folderRepo);
+    const useCase = new UpdateGoalFolderUseCase(folderRepo);
 
-    await expect(
-      useCase.execute('non-existent', 'identity-123', { name: 'Updated' }),
-    ).rejects.toThrow('Goal folder not found: non-existent');
+    const result = await useCase.execute('non-existent', 'identity-123', { name: 'Updated' });
 
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('Goal folder not found');
+    }
     expect(folderRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should throw when identity does not own the folder', async () => {
+  it('should return FORBIDDEN error when identity does not own the folder', async () => {
     const folder = createFolderFixture({ identityId: 'other-identity' });
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalFolder(folderRepo);
+    const useCase = new UpdateGoalFolderUseCase(folderRepo);
 
-    await expect(
-      useCase.execute('folder-id-1', 'identity-123', { name: 'Hijacked' }),
-    ).rejects.toThrow('Unauthorized access to goal folder');
+    const result = await useCase.execute('folder-id-1', 'identity-123', { name: 'Hijacked' });
 
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+      expect(result.error.message).toContain('Unauthorized access');
+    }
     expect(folder.rename).not.toHaveBeenCalled();
     expect(folderRepo.save).not.toHaveBeenCalled();
   });
@@ -85,7 +94,7 @@ describe('UpdateGoalFolder', () => {
       findById: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalFolder(folderRepo);
+    const useCase = new UpdateGoalFolderUseCase(folderRepo);
 
     await useCase.execute('folder-id-1', 'identity-123', {
       name: 'New Name',
@@ -107,7 +116,7 @@ describe('UpdateGoalFolder', () => {
       findById: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalFolder(folderRepo);
+    const useCase = new UpdateGoalFolderUseCase(folderRepo);
 
     await useCase.execute('folder-id-1', 'identity-123', {
       color: '#0000FF',
@@ -125,7 +134,7 @@ describe('UpdateGoalFolder', () => {
       findById: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    const useCase = new UpdateGoalFolder(folderRepo);
+    const useCase = new UpdateGoalFolderUseCase(folderRepo);
 
     await useCase.execute('folder-id-1', 'identity-123', {
       description: null,

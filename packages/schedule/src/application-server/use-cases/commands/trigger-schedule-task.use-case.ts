@@ -1,18 +1,20 @@
 /**
  * Trigger Schedule Task Use Case
  * 手动触发调度任务用例
- * 
+ *
  * 【应用服务职责】
  * - 查询任务
  * - 触发任务执行
  * - 重新计算下次运行时间
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain-server';
 
 /**
  * Trigger Schedule Task Use Case
- * 
+ *
  * 【执行流程】
  * 1. 查询任务
  * 2. 触发执行（连接到执行引擎）
@@ -24,11 +26,11 @@ export class TriggerScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(id: string): Promise<Result<void>> {
     // 1. 查询任务
     const task = await this.scheduleTaskRepository.findById(id);
     if (!task) {
-      throw new Error(`Schedule task ${id} not found`);
+      return error('NOT_FOUND', `Schedule task ${id} not found`);
     }
 
     // 2. 触发执行
@@ -38,5 +40,7 @@ export class TriggerScheduleTaskUseCase {
 
     // 3. 持久化
     await this.scheduleTaskRepository.save(task);
+
+    return ok(undefined);
   }
 }

@@ -1,0 +1,165 @@
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type {
+  ExpandKnowledgeReq,
+  ExpandKnowledgeRes,
+} from '@dailyuse/contracts/ai';
+import { createLogger } from '@dailyuse/utils';
+
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type {
+  KnowledgeExpansionResult,
+  IAIExecutionLogPort,
+  IKnowledgeQueryPort,
+} from '../../ports';
+import type { SyncRelevantKnowledgeUseCase } from './sync-relevant-knowledge.use-case';
+import {
+  attachRequestIdToError,
+  classifyAIExecutionError,
+  createAIRequestId,
+  withAICostEstimate,
+} from './ai-observability';
+import {
+  resolveActiveProviderConfig,
+  toChatExecutionProviderConfig,
+} from './ai-provider-resolution';
+
+const logger = createLogger('ExpandKnowledgeUseCase');
+
+/**
+ * 扩展知识内容
+ */
+export class ExpandKnowledgeUseCase {
+  constructor(
+    private readonly providerConfigRepository: IAIProviderConfigRepository,
+    private readonly knowledgeIndexService: SyncRelevantKnowledgeUseCase,
+    private readonly knowledgeQueryPort: IKnowledgeQueryPort,
+    private readonly executionLogPort?: IAIExecutionLogPort,
+  ) {}
+
+  async execute(
+    request: ExpandKnowledgeReq,
+    cx: ExecutionContext,
+  ): Promise<Result<ExpandKnowledgeRes>> {
+    const startedAt = Date.now();
+    const requestId = createAIRequestId();
+    let providerMetadata: {
+      providerId?: string;
+      providerName?: string;
+      model?: string;
+    } = {};
+
+    try {
+      const provider = await resolveActiveProviderConfig(
+        this.providerConfigRepository,
+        cx.identityId,
+        request.providerId,
+      );
+      const executionProviderConfig = toChatExecutionProviderConfig(provider, {
+        temperature: 0.2,
+      });
+      providerMetadata = {
+        providerId: provider.id,
+        providerName: provider.name,
+        model: executionProviderConfig.model,
+      };
+      const retrievalQuery = [request.instruction, request.currentContent]
+        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+        .join('\n\n');
+      const sync = await this.knowledgeIndexService.execute(
+        retrievalQuery,
+        request.maxResources ?? 8,
+        cx,
+        {
+          requestId,
+          providerConfig: executionProviderConfig,
+        },
+      );
+
+      const result: KnowledgeExpansionResult = await this.knowledgeQueryPort.expand({
+        identityId: cx.identityId,
+        providerConfig: executionProviderConfig,
+        instruction: request.instruction,
+        currentContent: request.currentContent,
+        indexedResources: sync.sync.indexedResources,
+        maxCitations: request.maxCitations ?? 4,
+        requestId,
+      });
+
+      const response: ExpandKnowledgeRes = {
+        expandedContent: result.expandedContent,
+        citations: result.citations,
+        providerId: provider.id,
+        tokenUsage: result.usage,
+        processingTimeMs: Date.now() - startedAt,
+        matchedResourceCount: sync.resources.length,
+      };
+
+      await this.recordExecution({
+        identityId: cx.identityId,
+        taskType: 'KNOWLEDGE_QUERY',
+        status: 'COMPLETED',
+        requestId,
+        ...providerMetadata,
+        input: {
+          instruction: request.instruction,
+          currentContent: request.currentContent,
+          maxResources: request.maxResources,
+          maxCitations: request.maxCitations,
+          mode: 'expand',
+        },
+        result: {
+          matchedResourceCount: response.matchedResourceCount,
+          citationCount: response.citations.length,
+          expandedContent: response.expandedContent,
+        },
+        tokenUsage: response.tokenUsage,
+        processingMs: response.processingTimeMs,
+      });
+      return ok(response);
+    } catch (err) {
+      await this.recordExecution({
+        identityId: cx.identityId,
+        taskType: 'KNOWLEDGE_QUERY',
+        status: 'FAILED',
+        requestId,
+        ...providerMetadata,
+        errorCategory: classifyAIExecutionError(err),
+        input: {
+          instruction: request.instruction,
+          currentContent: request.currentContent,
+          maxResources: request.maxResources,
+          maxCitations: request.maxCitations,
+          mode: 'expand',
+        },
+        error: err instanceof Error ? err.message : 'Knowledge expansion failed',
+        processingMs: Date.now() - startedAt,
+      });
+      logger.error('Knowledge expansion failed', {
+        error: err,
+        identityId: cx.identityId,
+        requestId,
+      });
+      const enriched = attachRequestIdToError(err, requestId);
+      return error('INTERNAL_ERROR', enriched.message);
+    }
+  }
+
+  private async recordExecution(
+    input: Parameters<NonNullable<IAIExecutionLogPort['record']>>[0],
+  ): Promise<void> {
+    if (!this.executionLogPort) {
+      return;
+    }
+
+    try {
+      await this.executionLogPort.record(withAICostEstimate(input));
+    } catch (err) {
+      logger.warn('Failed to record knowledge query execution log', {
+        error: err,
+        identityId: input.identityId,
+      });
+    }
+  }
+}

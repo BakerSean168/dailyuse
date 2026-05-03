@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ReminderQueryApplicationService } from './reminder-query-application-service';
+import { ReminderQueryApplicationServiceUseCase } from './reminder-query-application-service.use-case';
 
-describe('ReminderQueryApplicationService', () => {
+describe('ReminderQueryApplicationServiceUseCase', () => {
   it('returns upcoming reminders as client dto list', async () => {
     const repository = {
       findByIdentityId: vi.fn().mockResolvedValue([
@@ -10,10 +10,13 @@ describe('ReminderQueryApplicationService', () => {
       ]),
     } as any;
 
-    const service = new ReminderQueryApplicationService(repository);
-    const result = await service.getUpcomingReminders('identity-1');
+    const useCase = new ReminderQueryApplicationServiceUseCase(repository);
+    const result = await useCase.getUpcomingReminders({ identityId: 'identity-1' });
 
     expect(repository.findByIdentityId).toHaveBeenCalledWith('identity-1');
-    expect(result).toEqual([{ id: 't1' }, { id: 't2' }]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([{ id: 't1' }, { id: 't2' }]);
+    }
   });
 });

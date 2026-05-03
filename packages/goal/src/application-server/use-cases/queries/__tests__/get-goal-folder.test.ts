@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalFolderRepository } from '@/domain-server';
-import { GetGoalFolder } from '../get-goal-folder';
+import { GetGoalFolderUseCase } from '../get-goal-folder.use-case';
 
 // ============================================================
 // Helpers
@@ -25,34 +25,41 @@ function createFolderFixture(overrides?: Record<string, any>) {
 // Tests
 // ============================================================
 
-describe('GetGoalFolder', () => {
-  it('should return a folder by ID', async () => {
+describe('GetGoalFolderUseCase', () => {
+  it('should return ok with folder DTO by ID', async () => {
     const folder = createFolderFixture();
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById: vi.fn().mockResolvedValue(folder),
     });
-    const useCase = new GetGoalFolder(folderRepo);
+    const useCase = new GetGoalFolderUseCase(folderRepo);
 
     const result = await useCase.execute('folder-id-1');
 
-    expect(result).toEqual({
-      id: 'folder-id-1',
-      name: 'Test Folder',
-      identityId: 'identity-1',
-      parentFolderId: null,
-    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({
+        id: 'folder-id-1',
+        name: 'Test Folder',
+        identityId: 'identity-1',
+        parentFolderId: null,
+      });
+    }
     expect(folder.toClientDTO).toHaveBeenCalled();
   });
 
-  it('should return null when folder does not exist', async () => {
+  it('should return NOT_FOUND error when folder does not exist', async () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById: vi.fn().mockResolvedValue(null),
     });
-    const useCase = new GetGoalFolder(folderRepo);
+    const useCase = new GetGoalFolderUseCase(folderRepo);
 
     const result = await useCase.execute('non-existent');
 
-    expect(result).toBeNull();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('Goal folder not found');
+    }
   });
 
   it('should call findById with the correct ID', async () => {
@@ -61,7 +68,7 @@ describe('GetGoalFolder', () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById,
     });
-    const useCase = new GetGoalFolder(folderRepo);
+    const useCase = new GetGoalFolderUseCase(folderRepo);
 
     await useCase.execute('specific-id');
 
@@ -81,10 +88,13 @@ describe('GetGoalFolder', () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
       findById: vi.fn().mockResolvedValue(folder),
     });
-    const useCase = new GetGoalFolder(folderRepo);
+    const useCase = new GetGoalFolderUseCase(folderRepo);
 
     const result = await useCase.execute('custom-folder');
 
-    expect(result).toEqual(customDTO);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual(customDTO);
+    }
   });
 });

@@ -17,11 +17,17 @@ describe('Schedule command use-cases', () => {
     vi.clearAllMocks();
   });
 
-  it('delete throws when task is missing', async () => {
+  it('delete returns error when task is missing', async () => {
     repository.findById.mockResolvedValue(null);
     const useCase = new DeleteScheduleTaskUseCase(repository);
 
-    await expect(useCase.execute('task-1')).rejects.toThrow('Schedule task task-1 not found');
+    const result = await useCase.execute('task-1');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('task-1');
+    }
   });
 
   it('delete removes task and sends event', async () => {
@@ -30,17 +36,24 @@ describe('Schedule command use-cases', () => {
     const eventSpy = vi.spyOn(eventBus as any, 'send');
     const useCase = new DeleteScheduleTaskUseCase(repository);
 
-    await useCase.execute('task-1');
+    const result = await useCase.execute('task-1');
 
+    expect(result.ok).toBe(true);
     expect(repository.deleteById).toHaveBeenCalledWith('task-1');
     expect(eventSpy).toHaveBeenCalledWith('schedule:task:deleted', { taskId: 'task-1' });
   });
 
-  it('pause throws when task is missing', async () => {
+  it('pause returns error when task is missing', async () => {
     repository.findById.mockResolvedValue(null);
     const useCase = new PauseScheduleTaskUseCase(repository);
 
-    await expect(useCase.execute('task-1')).rejects.toThrow('Schedule task task-1 not found');
+    const result = await useCase.execute('task-1');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('task-1');
+    }
   });
 
   it('pause updates task and returns dto', async () => {
@@ -52,16 +65,25 @@ describe('Schedule command use-cases', () => {
 
     const result = await useCase.execute('task-1');
 
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ id: 'task-1', status: 'Paused' });
+    }
     expect(pause).toHaveBeenCalledTimes(1);
     expect(repository.save).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({ id: 'task-1', status: 'Paused' });
   });
 
-  it('resume throws when task is missing', async () => {
+  it('resume returns error when task is missing', async () => {
     repository.findById.mockResolvedValue(null);
     const useCase = new ResumeScheduleTaskUseCase(repository);
 
-    await expect(useCase.execute('task-1')).rejects.toThrow('Schedule task task-1 not found');
+    const result = await useCase.execute('task-1');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('task-1');
+    }
   });
 
   it('resume updates task and returns dto', async () => {
@@ -73,16 +95,25 @@ describe('Schedule command use-cases', () => {
 
     const result = await useCase.execute('task-1');
 
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ id: 'task-1', status: 'Active' });
+    }
     expect(resume).toHaveBeenCalledTimes(1);
     expect(repository.save).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({ id: 'task-1', status: 'Active' });
   });
 
-  it('trigger throws when task is missing', async () => {
+  it('trigger returns error when task is missing', async () => {
     repository.findById.mockResolvedValue(null);
     const useCase = new TriggerScheduleTaskUseCase(repository);
 
-    await expect(useCase.execute('task-1')).rejects.toThrow('Schedule task task-1 not found');
+    const result = await useCase.execute('task-1');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('task-1');
+    }
   });
 
   it('trigger recalculates next run and saves task', async () => {
@@ -91,19 +122,24 @@ describe('Schedule command use-cases', () => {
     repository.save.mockResolvedValue(undefined);
     const useCase = new TriggerScheduleTaskUseCase(repository);
 
-    await useCase.execute('task-1');
+    const result = await useCase.execute('task-1');
 
+    expect(result.ok).toBe(true);
     expect(calculateNextRun).toHaveBeenCalledTimes(1);
     expect(repository.save).toHaveBeenCalledTimes(1);
   });
 
-  it('update throws when task is missing', async () => {
+  it('update returns error when task is missing', async () => {
     repository.findById.mockResolvedValue(null);
     const useCase = new UpdateScheduleTaskUseCase(repository);
 
-    await expect(useCase.execute({ id: 'task-1' } as any)).rejects.toThrow(
-      'Schedule task task-1 not found',
-    );
+    const result = await useCase.execute({ id: 'task-1' } as any);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+      expect(result.error.message).toContain('task-1');
+    }
   });
 
   it('update applies all supported mutations and saves task', async () => {
@@ -129,6 +165,10 @@ describe('Schedule command use-cases', () => {
       handlerPayload: { foo: 'bar' },
     } as any);
 
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ id: 'task-1' });
+    }
     expect(task.updateMetadata).toHaveBeenCalledWith({ description: 'updated desc' });
     expect(task.enable).toHaveBeenCalledTimes(1);
     expect(task.disable).not.toHaveBeenCalled();
@@ -136,7 +176,6 @@ describe('Schedule command use-cases', () => {
     expect(task.updateRetryPolicy).toHaveBeenCalledWith({ maxRetries: 3 });
     expect(task.updatePayload).toHaveBeenCalledWith({ foo: 'bar' });
     expect(repository.save).toHaveBeenCalledWith(task);
-    expect(result).toEqual({ id: 'task-1' });
   });
 
   it('update disables task when enabled flag is false', async () => {
@@ -153,11 +192,12 @@ describe('Schedule command use-cases', () => {
     repository.save.mockResolvedValue(undefined);
     const useCase = new UpdateScheduleTaskUseCase(repository);
 
-    await useCase.execute({
+    const result = await useCase.execute({
       id: 'task-1',
       enabled: false,
     } as any);
 
+    expect(result.ok).toBe(true);
     expect(task.disable).toHaveBeenCalledTimes(1);
     expect(task.enable).not.toHaveBeenCalled();
   });

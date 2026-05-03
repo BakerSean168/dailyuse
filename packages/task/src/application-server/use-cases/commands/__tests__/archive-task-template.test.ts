@@ -3,19 +3,19 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { ArchiveTaskTemplate } from '../archive-task-template';
+import { ArchiveTaskTemplateUseCaseUseCase } from '../archive-task-template.use-case';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 
-describe('ArchiveTaskTemplate', () => {
+describe('ArchiveTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
-  let useCase: ArchiveTaskTemplate;
+  let useCase: ArchiveTaskTemplateUseCase;
 
   beforeEach(() => {
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new ArchiveTaskTemplate(templateRepo);
+    useCase = new ArchiveTaskTemplateUseCase(templateRepo);
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {

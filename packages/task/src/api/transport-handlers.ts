@@ -10,9 +10,9 @@
  * HTTP 和 Electron 共用这一层，避免重复定义同样的 handler 映射。
  */
 
-import type { TaskTemplateUseCases } from './controllers/task-template.controller';
-import type { TaskInstanceUseCases } from './controllers/task-instance.controller';
-import type { TaskDependencyUseCases } from './controllers/task-dependency.controller';
+import type { TaskTemplateUseCases } from '../controllers/task-template.controller';
+import type { TaskInstanceUseCases } from '../controllers/task-instance.controller';
+import type { TaskDependencyUseCases } from '../controllers/task-dependency.controller';
 import type { TaskApplicationPort } from '../infrastructure-server/task.module';
 
 /**
