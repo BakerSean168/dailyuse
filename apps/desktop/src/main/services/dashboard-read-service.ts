@@ -1,4 +1,8 @@
-import { getDashboardData, type DashboardData } from '@dailyuse/dashboard';
+import {
+  getDashboardData,
+  type DashboardData,
+  type DashboardTaskInstanceRecord,
+} from '@dailyuse/dashboard';
 import { createLogger } from '@dailyuse/utils';
 import { getGoalRepository } from '@dailyuse/goal/electron-entry';
 import {
@@ -10,6 +14,21 @@ import { getReminderTemplateRepository } from '@dailyuse/reminder/electron-entry
 import { getNotificationRepository } from '@dailyuse/notification/electron-entry';
 
 const logger = createLogger('DashboardReadService');
+
+function toDashboardTaskInstanceRecord(
+  instance: Awaited<ReturnType<ReturnType<typeof getTaskInstanceRepository>['findByIdentityId']>>[number],
+): DashboardTaskInstanceRecord {
+  return {
+    id: String(instance.id),
+    templateId: String(instance.templateId),
+    status: instance.status,
+    instanceDate: instance.instanceDate,
+    actualEndTime: instance.actualEndTime,
+    updatedAt: instance.updatedAt.getTime(),
+    deletedAt: instance.deletedAt,
+    isOverdue: () => instance.isOverdue(),
+  };
+}
 
 export async function getDesktopDashboardData(identityId: string): Promise<DashboardData> {
   const goalRepository = getGoalRepository();
@@ -26,7 +45,8 @@ export async function getDesktopDashboardData(identityId: string): Promise<Dashb
         systemView: 'active',
       }),
     listTaskTemplates: (id) => taskTemplateRepository.findByIdentityId(id),
-    listTaskInstances: (id) => taskInstanceRepository.findByIdentityId(id),
+    listTaskInstances: async (id) =>
+      (await taskInstanceRepository.findByIdentityId(id)).map(toDashboardTaskInstanceRecord),
     listSchedules: (id) => scheduleRepository.findByIdentityId(id),
     listUpcomingReminders: (id, beforeTime) =>
       reminderTemplateRepository.findByNextTriggerBefore(beforeTime, id),

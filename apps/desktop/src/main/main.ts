@@ -55,7 +55,7 @@ import {
   PowerSyncNotificationRepository,
   PowerSyncNotificationTemplateRepository,
 } from '@dailyuse/notification/infrastructure-server';
-import { CreateNotification } from '@dailyuse/notification/application-server';
+import { CreateNotificationUseCase } from '@dailyuse/notification/application-server';
 import { ReminderTemplatePowerSyncRepository } from '@dailyuse/reminder/infrastructure-server';
 import {
   NotificationCategory,
@@ -139,7 +139,7 @@ async function initializeApp(): Promise<void> {
     },
     sourceExecutor: {
       async execute(task) {
-        const createNotification = new CreateNotification(
+        const createNotification = new CreateNotificationUseCase(
           new PowerSyncNotificationRepository(db),
           new PowerSyncNotificationTemplateRepository(db),
           new PowerSyncNotificationPreferenceRepository(db),

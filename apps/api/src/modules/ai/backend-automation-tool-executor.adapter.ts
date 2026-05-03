@@ -113,7 +113,6 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             },
             {
               identityId: input.identityId as IdentityId,
-              deviceId: 'ai-automation',
             },
           );
 

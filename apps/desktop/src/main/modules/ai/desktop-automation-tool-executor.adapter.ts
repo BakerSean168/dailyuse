@@ -81,7 +81,6 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
             },
             {
               identityId: input.identityId as IdentityId,
-              deviceId: 'ai-automation',
             },
           );
 

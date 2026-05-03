@@ -33,7 +33,7 @@ import {
   NotificationPrismaRepository,
   NotificationTemplatePrismaRepository,
 } from '@dailyuse/notification/infrastructure-server';
-import { CreateNotification } from '@dailyuse/notification/application-server';
+import { CreateNotificationUseCase } from '@dailyuse/notification/application-server';
 import { ReminderApiModule } from '@dailyuse/reminder/api';
 import { ReminderTemplatePrismaRepository } from '@dailyuse/reminder/infrastructure-server';
 import { RepositoryApiModule } from '@dailyuse/repository/api';
@@ -151,7 +151,7 @@ async function bootstrap(): Promise<void> {
   const scheduleApiModule = createScheduleApiModule({
     sourceExecutor: {
       async execute(task) {
-        const createNotification = new CreateNotification(
+        const createNotification = new CreateNotificationUseCase(
           new NotificationPrismaRepository(prisma),
           new NotificationTemplatePrismaRepository(prisma),
           new NotificationPreferencePrismaRepository(prisma),

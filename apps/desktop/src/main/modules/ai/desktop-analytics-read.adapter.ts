@@ -1,7 +1,7 @@
 import type { IAnalyticsReadPort } from '@dailyuse/ai/application-server';
-import { SearchGoals } from '@dailyuse/goal';
+import { SearchGoalsUseCase } from '@dailyuse/goal';
 import { getGoalRepository } from '@dailyuse/goal/electron-entry';
-import { GetTaskDashboard } from '@dailyuse/task';
+import { GetTaskDashboardUseCase } from '@dailyuse/task';
 import { getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
 
 import { getDesktopDashboardData } from '../../services/dashboard-read-service';
@@ -11,14 +11,14 @@ export class DesktopAnalyticsReadAdapter implements IAnalyticsReadPort {
     const goalRepository = getGoalRepository();
     const taskTemplateRepository = getTaskTemplateRepository();
     const dashboard = await getDesktopDashboardData(identityId);
-    const taskDashboard = await new GetTaskDashboard(taskTemplateRepository).execute(
+    const taskDashboard = await new GetTaskDashboardUseCase(taskTemplateRepository).execute(
       identityId,
     );
     const activeGoals = await goalRepository.findByIdentityId(identityId, {
       includeChildren: true,
       systemView: 'active',
     });
-    const goalSearch = await new SearchGoals(goalRepository).execute(
+    const goalSearch = await new SearchGoalsUseCase(goalRepository).execute(
       identityId,
       question,
       'active',

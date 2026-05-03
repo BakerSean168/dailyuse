@@ -1,10 +1,29 @@
 import type { PrismaClient } from '@dailyuse/database';
-import { getDashboardData, type DashboardData } from '@dailyuse/dashboard';
+import {
+  getDashboardData,
+  type DashboardData,
+  type DashboardTaskInstanceRecord,
+} from '@dailyuse/dashboard';
 import { GoalPrismaRepository } from '@dailyuse/goal';
 import { TaskInstancePrismaRepository, TaskTemplatePrismaRepository } from '@dailyuse/task';
 import { SchedulePrismaRepository } from '@dailyuse/schedule';
 import { ReminderTemplatePrismaRepository } from '@dailyuse/reminder';
 import { NotificationPrismaRepository } from '@dailyuse/notification';
+
+function toDashboardTaskInstanceRecord(
+  instance: Awaited<ReturnType<TaskInstancePrismaRepository['findByIdentityId']>>[number],
+): DashboardTaskInstanceRecord {
+  return {
+    id: String(instance.id),
+    templateId: String(instance.templateId),
+    status: instance.status,
+    instanceDate: instance.instanceDate,
+    actualEndTime: instance.actualEndTime,
+    updatedAt: instance.updatedAt.getTime(),
+    deletedAt: instance.deletedAt,
+    isOverdue: () => instance.isOverdue(),
+  };
+}
 
 export async function getApiDashboardData(
   db: PrismaClient,
@@ -24,7 +43,8 @@ export async function getApiDashboardData(
         systemView: 'active',
       }),
     listTaskTemplates: (id) => taskTemplateRepository.findByIdentityId(id),
-    listTaskInstances: (id) => taskInstanceRepository.findByIdentityId(id),
+    listTaskInstances: async (id) =>
+      (await taskInstanceRepository.findByIdentityId(id)).map(toDashboardTaskInstanceRecord),
     listSchedules: (id) => scheduleRepository.findByIdentityId(id),
     listUpcomingReminders: (id, beforeTime) =>
       reminderTemplateRepository.findByNextTriggerBefore(beforeTime, id),
