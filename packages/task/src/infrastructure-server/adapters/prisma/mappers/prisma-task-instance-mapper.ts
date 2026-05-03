@@ -8,7 +8,6 @@
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
 import { toDateOrNull } from '@dailyuse/database';
 import { TaskInstance } from '@/domain-server/aggregates/task-instance';
-import type { TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { TaskInstanceId } from '@/domain-shared/value-objects/task-instance-id';
 import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
@@ -43,9 +42,10 @@ export class PrismaTaskInstanceMapper {
   }
 
   /**
-   * TaskInstance ServerDTO → Prisma write data
+   * TaskInstance 聚合根 → Prisma write data
    */
-  static toPersistence(dto: TaskInstanceServerDTO) {
+  static toPersistence(instance: TaskInstance) {
+    const dto = instance.toServerDTO();
     return {
       templateId: dto.templateId,
       identityId: dto.identityId,

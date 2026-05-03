@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PrismaTaskTemplateMapper } from './prisma-task-template-mapper';
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 
 describe('PrismaTaskTemplateMapper', () => {
   const createMinimalRow = (): PrismaTaskTemplate => ({
@@ -97,6 +98,12 @@ describe('PrismaTaskTemplateMapper', () => {
     isBlocked: true,
     blockingReason: 'Waiting for approval',
   });
+
+  /** Creates a TaskTemplate aggregate from a Prisma row for use with toPersistence */
+  const createTestAggregate = (rowOverrides?: Partial<PrismaTaskTemplate>): TaskTemplate => {
+    const row = { ...createMinimalRow(), ...rowOverrides };
+    return PrismaTaskTemplateMapper.toDomain(row);
+  };
 
   describe('toDomain', () => {
     it('maps minimal Prisma row to domain aggregate', () => {
@@ -229,32 +236,15 @@ describe('PrismaTaskTemplateMapper', () => {
   });
 
   describe('toPersistence', () => {
-    it('converts minimal domain DTO to persistence format', () => {
-      const dto = {
+    it('converts minimal aggregate to persistence format', () => {
+      const aggregate = createTestAggregate({
         id: 'template-3',
         identityId: 'identity-3',
         name: 'New Task',
-        description: null,
         importance: 'Minor',
-        color: null,
-        tags: [],
-        folderId: null,
-        parentTaskId: null,
-        status: 'Active',
-        version: 1,
-        timeConfig: null,
-        recurrenceRule: null,
-        reminderConfig: null,
-        goalBinding: null,
-        checklist: [],
-        lastGeneratedDate: null,
-        generateAheadDays: null,
-        isBlocked: false,
-        blockingReason: null,
-        dependencyStatus: 'NONE',
-      } as any;
+      });
 
-      const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(persistence.name).toBe('New Task');
       expect(persistence.description).toBeNull();
@@ -267,138 +257,63 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.checklist).toBeNull();
     });
 
-    it('converts full domain DTO with all fields to persistence', () => {
-      const dto = {
-        id: 'template-4',
-        identityId: 'identity-4',
-        name: 'Full Task',
-        description: 'Complete description',
-        importance: 'Important',
-        color: '#FF5733',
-        tags: ['important', 'urgent'],
-        folderId: 'folder-2',
-        parentTaskId: 'template-2',
-        status: 'Active',
-        version: 3,
-        timeConfig: {
-          timeType: 'FixedTime',
-          startDate: new Date('2024-03-15T00:00:00Z').getTime(),
-          timePoint: '10:00',
-          timeRange: { start: 10, end: 18 },
-        },
-        recurrenceRule: {
-          frequency: 'WEEKLY',
-          interval: 2,
-          daysOfWeek: ['MON', 'THU'],
-          endDate: new Date('2024-12-31T00:00:00Z').getTime(),
-          occurrences: null,
-        },
-        reminderConfig: {
-          enabled: true,
-          triggers: [{ type: 'Relative' as const, relativeValue: 30, relativeUnit: 'minutes' }],
-        },
-        goalBinding: { type: 'KeyResult', id: 'kr-2' },
-        checklist: [{ title: 'Item 1', order: 1 }, { title: 'Item 2', order: 2 }],
-        lastGeneratedDate: new Date('2024-02-28T00:00:00Z').getTime(),
-        generateAheadDays: 7,
-        isBlocked: true,
-        blockingReason: 'Pending decision',
-        dependencyStatus: 'BLOCKED',
-      } as any;
+    it('converts full aggregate with all fields to persistence', () => {
+      const aggregate = createTestAggregate(createFullRow());
 
-      const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
-      expect(persistence.name).toBe('Full Task');
+      expect(persistence.name).toBe('Complex Recurring Task');
       expect(persistence.importance).toBe('Important');
       expect(persistence.color).toBe('#FF5733');
-      expect(persistence.folderId).toBe('folder-2');
-      expect(persistence.parentTaskId).toBe('template-2');
+      expect(persistence.folderId).toBe('folder-1');
+      expect(persistence.parentTaskId).toBe('template-1');
       expect(persistence.timeConfigType).toBe('FixedTime');
-      expect(persistence.timeConfigTimePoint).toBe('10:00');
-      expect(persistence.recurrenceRuleType).toBe('WEEKLY');
-      expect(persistence.recurrenceRuleInterval).toBe(2);
+      expect(persistence.timeConfigTimePoint).toBe('09:00');
+      expect(persistence.recurrenceRuleType).toBe('DAILY');
+      expect(persistence.recurrenceRuleInterval).toBe(1);
       expect(persistence.reminderConfigEnabled).toBe(true);
-      expect(persistence.reminderConfigTimeOffsetMinutes).toBe(30);
+      expect(persistence.reminderConfigTimeOffsetMinutes).toBe(15);
       expect(persistence.generateAheadDays).toBe(7);
       expect(persistence.isBlocked).toBe(true);
-      expect(persistence.blockingReason).toBe('Pending decision');
+      expect(persistence.blockingReason).toBe('Waiting for approval');
     });
 
     it('stringifies complex objects (tags, goalBinding, checklist)', () => {
-      const dto = {
-        identityId: 'identity-5',
-        name: 'Task',
-        tags: ['tag1', 'tag2'],
-        goalBinding: { type: 'Goal', id: 'goal-1' },
-        checklist: [{ title: 'Check', order: 1 }],
-        status: 'Active',
-        version: 1,
-      } as any;
+      const aggregate = createTestAggregate(createFullRow());
 
-      const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(typeof persistence.tags).toBe('string');
-      expect(JSON.parse(persistence.tags!)).toEqual(['tag1', 'tag2']);
+      expect(JSON.parse(persistence.tags!)).toEqual(['urgent', 'work']);
       expect(typeof persistence.goalBinding).toBe('string');
       expect(typeof persistence.checklist).toBe('string');
     });
 
     it('stringifies JSON for recurrence days of week', () => {
-      const dto = {
-        identityId: 'identity-6',
-        name: 'Weekly Task',
-        recurrenceRule: {
-          frequency: 'WEEKLY',
-          interval: 1,
-          daysOfWeek: ['MON', 'WED', 'FRI'],
-          endDate: null,
-          occurrences: null,
-        },
-        status: 'Active',
-        version: 1,
-      } as any;
+      const aggregate = createTestAggregate({
+        recurrenceRuleType: 'DAILY',
+        recurrenceRuleInterval: 1,
+        recurrenceRuleDaysOfWeek: JSON.stringify(['MON', 'WED', 'FRI']),
+      });
 
-      const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(typeof persistence.recurrenceRuleDaysOfWeek).toBe('string');
       expect(JSON.parse(persistence.recurrenceRuleDaysOfWeek!)).toEqual(['MON', 'WED', 'FRI']);
     });
 
     it('handles empty checklist correctly', () => {
-      const dto = {
-        identityId: 'identity-7',
-        name: 'Task without checklist',
-        checklist: [],
-        status: 'Active',
-        version: 1,
-      } as any;
+      const aggregate = createTestAggregate({ checklist: null });
 
-      const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(persistence.checklist).toBeNull();
     });
 
     it('handles null fields correctly', () => {
-      const dto = {
-        identityId: 'identity-8',
-        name: 'Minimal Task',
-        description: null,
-        color: null,
-        folderId: null,
-        parentTaskId: null,
-        timeConfig: null,
-        recurrenceRule: null,
-        reminderConfig: null,
-        goalBinding: null,
-        checklist: null,
-        lastGeneratedDate: null,
-        generateAheadDays: null,
-        blockingReason: null,
-        status: 'Active',
-        version: 1,
-      } as any;
+      const aggregate = createTestAggregate();
 
-      const persistence = PrismaTaskTemplateMapper.toPersistence(dto);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(persistence.description).toBeNull();
       expect(persistence.color).toBeNull();
@@ -411,32 +326,8 @@ describe('PrismaTaskTemplateMapper', () => {
   describe('Round-trip: toDomain -> toPersistence', () => {
     it('preserves task template data integrity', () => {
       const originalRow = createFullRow();
-      const domain = PrismaTaskTemplateMapper.toDomain(originalRow);
-
-      // Create a DTO from domain for persistence
-      const persistence = PrismaTaskTemplateMapper.toPersistence({
-        id: domain.id.value,
-        identityId: domain.identityId.value,
-        name: domain.title,
-        description: domain.description,
-        importance: domain.importance,
-        color: domain.color,
-        tags: domain.tags,
-        folderId: domain.folderId?.value ?? null,
-        parentTaskId: domain.parentTaskId?.value ?? null,
-        status: domain.status,
-        version: domain.version,
-        timeConfig: domain.timeConfig,
-        recurrenceRule: domain.recurrenceRule,
-        reminderConfig: domain.reminderConfig,
-        goalBinding: domain.goalBinding,
-        checklist: domain.checklist,
-        lastGeneratedDate: domain.lastGeneratedDate,
-        generateAheadDays: domain.generateAheadDays,
-        isBlocked: domain.isBlocked,
-        blockingReason: domain.blockingReason,
-        dependencyStatus: domain.dependencyStatus,
-      } as any);
+      const aggregate = PrismaTaskTemplateMapper.toDomain(originalRow);
+      const persistence = PrismaTaskTemplateMapper.toPersistence(aggregate);
 
       expect(persistence.name).toBe(originalRow.name);
       expect(persistence.description).toBe(originalRow.description);

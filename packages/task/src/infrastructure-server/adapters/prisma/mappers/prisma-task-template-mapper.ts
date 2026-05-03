@@ -8,7 +8,6 @@
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
 import { toDateOrNull } from '@dailyuse/database';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
-import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -122,9 +121,10 @@ export class PrismaTaskTemplateMapper {
   }
 
   /**
-   * TaskTemplate ServerDTO → Prisma write data
+   * TaskTemplate 聚合根 → Prisma write data
    */
-  static toPersistence(dto: TaskTemplateServerDTO) {
+  static toPersistence(template: TaskTemplate) {
+    const dto = template.toServerDTO();
     // Flatten nested timeConfig
     const timeConfigType = dto.timeConfig?.timeType ?? null;
     const timeConfigStartTime = toDateOrNull(dto.timeConfig?.startDate);

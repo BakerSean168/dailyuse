@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PrismaTaskInstanceMapper } from './prisma-task-instance-mapper';
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
+import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 
 describe('PrismaTaskInstanceMapper', () => {
   const createMinimalRow = (): PrismaTaskInstance => ({
@@ -42,6 +43,12 @@ describe('PrismaTaskInstanceMapper', () => {
     updatedAt: new Date('2024-04-10T10:30:00Z'),
     deletedAt: null,
   });
+
+  /** Creates a TaskInstance aggregate from a Prisma row for use with toPersistence */
+  const createTestAggregate = (rowOverrides?: Partial<PrismaTaskInstance>): TaskInstance => {
+    const row = { ...createMinimalRow(), ...rowOverrides };
+    return PrismaTaskInstanceMapper.toDomain(row);
+  };
 
   describe('toDomain', () => {
     it('maps minimal Prisma row to domain aggregate', () => {
@@ -137,19 +144,18 @@ describe('PrismaTaskInstanceMapper', () => {
   });
 
   describe('toPersistence', () => {
-    it('converts domain DTO to persistence format with minimal fields', () => {
-      const dto = {
+    it('converts minimal aggregate to persistence format', () => {
+      const aggregate = createTestAggregate({
         id: 'instance-3',
         templateId: 'template-3',
         identityId: 'identity-3',
         instanceDate: new Date('2024-05-01T00:00:00Z').getTime(),
-        timeConfig: { timeType: 'Flexible' },
-        status: 'Pending' as const,
-        importance: 'Minor' as const,
+        importance: 'Minor',
+        status: 'Pending',
         version: 1,
-      } as any;
+      });
 
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
       expect(persistence.templateId).toBe('template-3');
       expect(persistence.identityId).toBe('identity-3');
@@ -162,109 +168,53 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(persistence.version).toBe(1);
     });
 
-    it('converts domain DTO with all fields to persistence', () => {
-      const dto = {
-        id: 'instance-4',
-        templateId: 'template-4',
-        identityId: 'identity-4',
-        instanceDate: new Date('2024-05-15T08:00:00Z').getTime(),
-        timeConfig: { timeType: 'FixedTime', timePoint: '08:00' },
-        status: 'Completed' as const,
-        importance: 'Important' as const,
-        priority: 2,
-        actualStartTime: new Date('2024-05-15T08:00:00Z').getTime(),
-        actualEndTime: new Date('2024-05-15T09:30:00Z').getTime(),
-        comment: 'Successfully completed',
-        version: 2,
-      } as any;
+    it('converts full aggregate with all fields to persistence', () => {
+      const aggregate = createTestAggregate(createFullRow());
 
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
-      expect(persistence.templateId).toBe('template-4');
+      expect(persistence.templateId).toBe('template-2');
       expect(persistence.importance).toBe('Important');
-      expect(persistence.priority).toBe(2);
+      expect(persistence.priority).toBe(1);
       expect(persistence.status).toBe('Completed');
-      expect(persistence.comment).toBe('Successfully completed');
-      expect(persistence.version).toBe(2);
+      expect(persistence.comment).toBe('Task completed on time');
+      expect(persistence.version).toBe(3);
     });
 
-    it('stringifies timeConfig if it is an object', () => {
-      const dto = {
-        templateId: 'template-5',
-        identityId: 'identity-5',
-        instanceDate: Date.now(),
-        timeConfig: { timeType: 'Flexible', startDate: 1710000000000 },
-        status: 'Pending' as const,
-        version: 1,
-      } as any;
+    it('stringifies timeConfig as JSON', () => {
+      const aggregate = createTestAggregate(createFullRow());
 
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
       expect(typeof persistence.timeConfig).toBe('string');
-      expect(JSON.parse(persistence.timeConfig)).toEqual(dto.timeConfig);
+      const parsed = JSON.parse(persistence.timeConfig);
+      expect(parsed.timeType).toBe('FixedTime');
     });
 
-    it('keeps timeConfig as-is if already a string', () => {
-      const timeConfigStr = JSON.stringify({ timeType: 'Flexible' });
-      const dto = {
-        templateId: 'template-6',
-        identityId: 'identity-6',
-        instanceDate: Date.now(),
-        timeConfig: timeConfigStr,
-        status: 'Pending' as const,
-        version: 1,
-      } as any;
+    it('defaults timeConfig to empty JSON object for minimal aggregate', () => {
+      const aggregate = createTestAggregate();
 
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
-      expect(persistence.timeConfig).toBe(timeConfigStr);
-    });
-
-    it('defaults timeConfig to empty JSON object', () => {
-      const dto = {
-        templateId: 'template-7',
-        identityId: 'identity-7',
-        instanceDate: Date.now(),
-        timeConfig: undefined,
-        status: 'Pending' as const,
-        version: 1,
-      } as any;
-
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
-
-      expect(persistence.timeConfig).toBe('{}');
+      expect(typeof persistence.timeConfig).toBe('string');
+      expect(JSON.parse(persistence.timeConfig)).toEqual({ timeType: 'Flexible', startDate: null, timePoint: null, timeRange: null });
     });
 
     it('converts timestamp numbers to Date objects for time fields', () => {
-      const startTime = new Date('2024-05-20T10:00:00Z').getTime();
-      const endTime = new Date('2024-05-20T11:00:00Z').getTime();
+      const aggregate = createTestAggregate(createFullRow());
 
-      const dto = {
-        templateId: 'template-8',
-        identityId: 'identity-8',
-        instanceDate: Date.now(),
-        status: 'Completed' as const,
-        actualStartTime: startTime,
-        actualEndTime: endTime,
-        version: 1,
-      } as any;
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
-
-      expect(persistence.actualStartTime).toEqual(new Date(startTime));
-      expect(persistence.actualEndTime).toEqual(new Date(endTime));
+      expect(persistence.actualStartTime).toEqual(new Date('2024-04-10T09:00:00Z'));
+      expect(persistence.actualEndTime).toEqual(new Date('2024-04-10T10:30:00Z'));
     });
 
     it('defaults importance to "Moderate" when missing', () => {
-      const dto = {
-        templateId: 'template-9',
-        identityId: 'identity-9',
-        instanceDate: Date.now(),
-        status: 'Pending' as const,
-        version: 1,
-      } as any;
+      const aggregate = createTestAggregate({
+        importance: null as any,
+      });
 
-      const persistence = PrismaTaskInstanceMapper.toPersistence(dto);
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
       expect(persistence.importance).toBe('Moderate');
     });
@@ -273,23 +223,8 @@ describe('PrismaTaskInstanceMapper', () => {
   describe('Round-trip: toDomain -> toPersistence', () => {
     it('preserves task instance data after toDomain then toPersistence', () => {
       const originalRow = createFullRow();
-      const domain = PrismaTaskInstanceMapper.toDomain(originalRow);
-      
-      // Create a simplified DTO from domain for persistence
-      const persistence = PrismaTaskInstanceMapper.toPersistence({
-        id: domain.id,
-        templateId: domain.templateId,
-        identityId: domain.identityId,
-        instanceDate: domain.instanceDate,
-        timeConfig: domain.timeConfig,
-        status: domain.status,
-        importance: domain.importance,
-        priority: domain.priority,
-        actualStartTime: domain.actualStartTime,
-        actualEndTime: domain.actualEndTime,
-        comment: domain.note,
-        version: domain.version,
-      } as any);
+      const aggregate = PrismaTaskInstanceMapper.toDomain(originalRow);
+      const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
       expect(persistence.templateId).toBe(originalRow.templateId);
       expect(persistence.identityId).toBe(originalRow.identityId);
