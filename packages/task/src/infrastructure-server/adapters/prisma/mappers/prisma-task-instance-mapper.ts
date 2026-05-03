@@ -6,6 +6,7 @@
  */
 
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
+import { toDateOrNull } from '@dailyuse/database';
 import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 import type { TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
@@ -14,15 +15,6 @@ import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { TaskTimeConfig } from '@/domain-server/value-objects';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-
-/**
- * Safely convert a Date, number (timestamp), or string to a Date object.
- * Returns null if the input is falsy.
- */
-function toDate(value: Date | number | string | null | undefined): Date | null {
-  if (!value) return null;
-  return value instanceof Date ? value : new Date(value);
-}
 
 export class PrismaTaskInstanceMapper {
   /**
@@ -57,13 +49,13 @@ export class PrismaTaskInstanceMapper {
     return {
       templateId: dto.templateId,
       identityId: dto.identityId,
-      instanceDate: toDate(dto.instanceDate) ?? new Date(),
+      instanceDate: toDateOrNull(dto.instanceDate) ?? new Date(),
       timeConfig: typeof dto.timeConfig === 'string' ? dto.timeConfig : JSON.stringify(dto.timeConfig) || '{}',
       importance: dto.importance || 'Moderate',
       priority: dto.priority ?? null,
       status: dto.status,
-      actualStartTime: toDate(dto.actualStartTime),
-      actualEndTime: toDate(dto.actualEndTime),
+      actualStartTime: toDateOrNull(dto.actualStartTime),
+      actualEndTime: toDateOrNull(dto.actualEndTime),
       comment: dto.comment ?? null,
       version: dto.version,
     };

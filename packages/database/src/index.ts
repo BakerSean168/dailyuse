@@ -25,3 +25,16 @@ export { prisma, connectDatabase, disconnectDatabase } from './client.js';
 
 // PowerSync 客户端 Schema（Desktop 和 Web 共用）
 export { PowerSyncAppSchema } from './powersync-schema.js';
+
+// Mapper 辅助函数（日期解析、JSON 解析、SQL 转义）
+export {
+  extractErrorMessage,
+  withCause,
+  fromDbDate,
+  toDate,
+  toDateOrNull,
+  parseJson,
+  parseStringArray,
+  parseRecord,
+  escapeSqlLike,
+} from './mapper-helpers.js';

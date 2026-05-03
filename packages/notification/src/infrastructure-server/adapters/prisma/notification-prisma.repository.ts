@@ -1,14 +1,9 @@
 /**
- * Notification Prisma Repository
+ * Notification Prisma Repository.
+ * 通知 Prisma 仓储。
  *
  * Prisma implementation of INotificationRepository.
- * Supports both PostgreSQL (API) and SQLite (Desktop).
- *
- * Mapping notes:
- * - Domain Notification.notificationChannels → Prisma channels relation
- * - Domain NotificationChannel.sendAttempts → Prisma retryCount
- * - Domain uses typed IDs (branded strings) → Prisma uses plain String
- * - Prisma has `urgency` field mapped to importance for compatibility
+ * INotificationRepository 的 Prisma 实现。
  */
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
@@ -17,144 +12,13 @@ import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import type {
   NotificationCategory,
   NotificationStatus,
-  NotificationChannelType,
-  ChannelStatus,
-  NotificationActionDTO,
-  NotificationMetadataDTO,
 } from '@dailyuse/contracts/notification';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { Notification } from '../../../domain-server/aggregates/notification';
-import { NotificationChannel } from '../../../domain-server/entities/notification-channel';
-import { NotificationHistory } from '../../../domain-server/entities/notification-history';
-import {
-  NotificationId,
-  NotificationChannelId,
-  NotificationAction,
-  NotificationMetadata,
-  ChannelError,
-  ChannelResponse,
-} from '../../../domain-shared/value-objects';
 import { eventBus } from '@dailyuse/utils';
-
-// ============================================================
-// Type definitions for Prisma query results
-// ============================================================
-
-type PrismaNotification = {
-  id: string;
-  identityId: string;
-  title: string;
-  content: string;
-  type: string;
-  category: string;
-  importance: string;
-  urgency: string;
-  status: string;
-  isRead: boolean;
-  readAt: Date | null;
-  sentAt: Date | null;
-  expiresAt: Date | null;
-  relatedEntityType: string | null;
-  relatedEntityId: string | null;
-  metadata: string | null;
-  actions: string | null;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
-
-type PrismaNotificationChannel = {
-  id: string;
-  identityId: string;
-  notificationId: string;
-  channelType: string;
-  status: string;
-  recipient: string | null;
-  maxRetries: number;
-  retryCount: number;
-  error: string | null;
-  response: string | null;
-};
-
-type PrismaNotificationHistory = {
-  id: string;
-  identityId: string;
-  notificationId: string;
-  action: string;
-  details: string | null;
-  actorId: string | null;
-  createdAt: Date;
-};
-
-type PrismaNotificationWithRelations = PrismaNotification & {
-  channels?: PrismaNotificationChannel[];
-  history?: PrismaNotificationHistory[];
-};
-
-// ============================================================
-// Mappers: Prisma → Domain
-// ============================================================
-
-function parseJsonSafe<T>(value: string | null | undefined): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
-}
-
-function mapPrismaChannelToDomain(row: PrismaNotificationChannel): NotificationChannel {
-  return NotificationChannel.load({
-    id: NotificationChannelId.of(row.id),
-    notificationId: NotificationId.of(row.notificationId),
-    channelType: row.channelType as NotificationChannelType,
-    status: row.status as ChannelStatus,
-    recipient: row.recipient,
-    sendAttempts: row.retryCount,
-    maxRetries: row.maxRetries,
-    error: row.error ? ChannelError.fromDTO(parseJsonSafe(row.error)!) : null,
-    response: row.response ? ChannelResponse.fromDTO(parseJsonSafe(row.response)!) : null,
-    sentAt: null,
-    failedAt: null,
-  });
-}
-
-function mapPrismaHistoryToDomain(row: PrismaNotificationHistory): NotificationHistory {
-  return NotificationHistory.load({
-    id: row.id as any,
-    notificationId: row.notificationId as any,
-    action: row.action,
-    details: parseJsonSafe(row.details),
-    createdAt: row.createdAt,
-  });
-}
-
-function mapPrismaNotificationToDomain(row: PrismaNotificationWithRelations): Notification {
-  const actions = parseJsonSafe<NotificationActionDTO[]>(row.actions);
-  const metadata = parseJsonSafe<NotificationMetadataDTO>(row.metadata);
-
-  return Notification.load({
-    id: NotificationId.of(row.id),
-    identityId: row.identityId as any,
-    title: row.title,
-    content: row.content,
-    type: row.type as any,
-    category: row.category as NotificationCategory,
-    importance: (row.importance || 'Moderate') as ImportanceLevel,
-    status: row.status as NotificationStatus,
-    isRead: row.isRead,
-    readAt: row.readAt ? row.readAt.getTime() : null,
-    actions: actions ? actions.map((a) => NotificationAction.fromDTO(a)) : null,
-    metadata: metadata ? NotificationMetadata.fromDTO(metadata) : null,
-    version: row.version,
-    deletedAt: row.deletedAt,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    notificationChannels: row.channels ? row.channels.map(mapPrismaChannelToDomain) : [],
-  });
-}
+import {
+  NotificationPrismaMapper,
+  type PrismaNotificationWithRelations,
+} from './mappers/notification-prisma.mapper';
 
 // ============================================================
 // Include presets
@@ -280,7 +144,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       include: options?.includeChildren ? INCLUDE_CHILDREN : INCLUDE_CHANNELS,
     });
     if (!row) return null;
-    return mapPrismaNotificationToDomain(row as PrismaNotificationWithRelations);
+    return NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations);
   }
 
   async findByIdentityId(
@@ -310,7 +174,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       skip: options?.offset,
     });
 
-    return rows.map((row) => mapPrismaNotificationToDomain(row as PrismaNotificationWithRelations));
+    return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
   }
 
   async findByStatus(
@@ -330,7 +194,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       skip: options?.offset,
     });
 
-    return rows.map((row) => mapPrismaNotificationToDomain(row as PrismaNotificationWithRelations));
+    return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
   }
 
   async findByCategory(
@@ -350,7 +214,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       skip: options?.offset,
     });
 
-    return rows.map((row) => mapPrismaNotificationToDomain(row as PrismaNotificationWithRelations));
+    return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
   }
 
   async findUnread(identityId: string, options?: { limit?: number }): Promise<Notification[]> {
@@ -365,7 +229,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       take: options?.limit,
     });
 
-    return rows.map((row) => mapPrismaNotificationToDomain(row as PrismaNotificationWithRelations));
+    return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
   }
 
   async findByRelatedEntity(
@@ -382,7 +246,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row) => mapPrismaNotificationToDomain(row as PrismaNotificationWithRelations));
+    return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
   }
 
   async delete(id: string): Promise<void> {

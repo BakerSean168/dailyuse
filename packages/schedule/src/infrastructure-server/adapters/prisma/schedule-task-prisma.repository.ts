@@ -71,38 +71,42 @@ export class ScheduleTaskPrismaRepository
   // ===== Core CRUD =====
 
   /**
-   * Protected persistence method - called by base class before event publishing
+   * Protected persistence method — called by base class before event publishing.
+   * Persists the ScheduleTask root and all ScheduleExecution child entities
+   * atomically within a single transaction.
    */
   protected async persist(task: ScheduleTask): Promise<void> {
     const data = this.toPrisma(task);
 
-    await this.prisma.scheduleTask.upsert({
-      where: { id: data.id },
-      create: data,
-      update: data,
-    });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.scheduleTask.upsert({
+        where: { id: data.id },
+        create: data,
+        update: data,
+      });
 
-    // Save execution records
-    const executions = task.executions;
-    if (executions && executions.length > 0) {
-      for (const execution of executions) {
-        const execData = PrismaScheduleExecutionMapper.toCreateInput(execution);
-        await this.prisma.scheduleExecution.upsert({
-          where: { id: execData.id },
-          create: {
-            ...execData,
-            identityId: task.identityId,
-          },
-          update: {
-            status: execData.status,
-            duration: execData.duration ?? null,
-            result: execData.result ?? null,
-            error: execData.error ?? null,
-            retryCount: execData.retryCount ?? 0,
-          },
-        });
+      // Save execution records
+      const executions = task.executions;
+      if (executions && executions.length > 0) {
+        for (const execution of executions) {
+          const execData = PrismaScheduleExecutionMapper.toCreateInput(execution);
+          await tx.scheduleExecution.upsert({
+            where: { id: execData.id },
+            create: {
+              ...execData,
+              identityId: task.identityId,
+            },
+            update: {
+              status: execData.status,
+              duration: execData.duration ?? null,
+              result: execData.result ?? null,
+              error: execData.error ?? null,
+              retryCount: execData.retryCount ?? 0,
+            },
+          });
+        }
       }
-    }
+    });
   }
 
   async findById(id: string): Promise<ScheduleTask | null> {

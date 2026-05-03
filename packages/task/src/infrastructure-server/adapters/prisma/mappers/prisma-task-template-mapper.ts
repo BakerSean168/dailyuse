@@ -6,6 +6,7 @@
  */
 
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
+import { toDateOrNull } from '@dailyuse/database';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
@@ -22,15 +23,6 @@ import {
   TaskGoalBinding,
   ChecklistItemDefinition,
 } from '@/domain-server/value-objects';
-
-/**
- * Safely convert a Date, number (timestamp), or string to a Date object.
- * Returns null if the input is falsy.
- */
-function toDate(value: Date | number | string | null | undefined): Date | null {
-  if (!value) return null;
-  return value instanceof Date ? value : new Date(value);
-}
 
 export class PrismaTaskTemplateMapper {
   /**
@@ -135,7 +127,7 @@ export class PrismaTaskTemplateMapper {
   static toPersistence(dto: TaskTemplateServerDTO) {
     // Flatten nested timeConfig
     const timeConfigType = dto.timeConfig?.timeType ?? null;
-    const timeConfigStartTime = toDate(dto.timeConfig?.startDate);
+    const timeConfigStartTime = toDateOrNull(dto.timeConfig?.startDate);
     const timeConfigEndTime = null;
     const timeConfigTimePoint = dto.timeConfig?.timePoint ?? null;
     const timeConfigTimeRangeStart = dto.timeConfig?.timeRange?.start ?? null;
@@ -151,7 +143,7 @@ export class PrismaTaskTemplateMapper {
     const recurrenceRuleDaysOfWeek = dto.recurrenceRule?.daysOfWeek
       ? JSON.stringify(dto.recurrenceRule.daysOfWeek)
       : null;
-    const recurrenceRuleEndDate = toDate(dto.recurrenceRule?.endDate);
+    const recurrenceRuleEndDate = toDateOrNull(dto.recurrenceRule?.endDate);
     const recurrenceRuleCount = dto.recurrenceRule?.occurrences ?? null;
 
     // Flatten nested reminderConfig
@@ -189,7 +181,7 @@ export class PrismaTaskTemplateMapper {
       reminderConfigTimeOffsetMinutes,
       reminderConfigUnit,
       reminderConfigChannel,
-      lastGeneratedDate: toDate(dto.lastGeneratedDate),
+      lastGeneratedDate: toDateOrNull(dto.lastGeneratedDate),
       generateAheadDays: dto.generateAheadDays,
       goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
       checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
@@ -197,7 +189,7 @@ export class PrismaTaskTemplateMapper {
       isBlocked: dto.isBlocked ?? false,
       blockingReason: dto.blockingReason,
       version: dto.version,
-      deletedAt: toDate(dto.deletedAt),
+      deletedAt: toDateOrNull(dto.deletedAt),
     };
   }
 
