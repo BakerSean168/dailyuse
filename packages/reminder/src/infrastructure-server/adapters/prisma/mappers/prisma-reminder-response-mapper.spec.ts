@@ -15,12 +15,19 @@ import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 
+const TEST_IDENTITY_1 = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
+const TEST_IDENTITY_2 = 'IdentityId_550e8400-e29b-41d4-a716-446655440002';
+const TEST_TEMPLATE_1 = 'IReminderTemplateId_550e8400-e29b-41d4-a716-446655440011';
+const TEST_TEMPLATE_2 = 'IReminderTemplateId_550e8400-e29b-41d4-a716-446655440012';
+const TEST_RESPONSE_1 = 'IReminderResponseId_550e8400-e29b-41d4-a716-446655440021';
+const TEST_RESPONSE_2 = 'IReminderResponseId_550e8400-e29b-41d4-a716-446655440022';
+
 function createMinimalRow(): PrismaReminderResponse {
   const now = new Date();
   return {
-    id: 'response-1',
-    templateId: 'template-1',
-    identityId: 'identity-1',
+    id: TEST_RESPONSE_1,
+    templateId: TEST_TEMPLATE_1,
+    identityId: TEST_IDENTITY_1,
     action: 'Dismiss' as unknown as ReminderResponseAction,
     responseTime: null,
     timestamp: now,
@@ -32,9 +39,9 @@ function createFullRow(): PrismaReminderResponse {
   const responseSeconds = Math.floor(now.getTime() / 1000);
   
   return {
-    id: 'response-2',
-    templateId: 'template-2',
-    identityId: 'identity-2',
+    id: TEST_RESPONSE_2,
+    templateId: TEST_TEMPLATE_2,
+    identityId: TEST_IDENTITY_2,
     action: 'Snooze' as unknown as ReminderResponseAction,
     responseTime: responseSeconds,
     timestamp: now,
@@ -49,9 +56,9 @@ describe('PrismaReminderResponseMapper', () => {
       const row = createMinimalRow();
       const domain = PrismaReminderResponseMapper.toDomain(row);
 
-      expect(domain.id).toBe('response-1');
-      expect(domain.reminderTemplateId).toBe('template-1');
-      expect(domain.identityId).toBe('identity-1');
+      expect(domain.id).toBe(TEST_RESPONSE_1);
+      expect(domain.reminderTemplateId).toBe(TEST_TEMPLATE_1);
+      expect(domain.identityId).toBe(TEST_IDENTITY_1);
       expect(domain.action).toBe('Dismiss');
       expect(domain.responseTime).toBeNull();
     });
@@ -60,9 +67,9 @@ describe('PrismaReminderResponseMapper', () => {
       const row = createFullRow();
       const domain = PrismaReminderResponseMapper.toDomain(row);
 
-      expect(domain.id).toBe('response-2');
-      expect(domain.reminderTemplateId).toBe('template-2');
-      expect(domain.identityId).toBe('identity-2');
+      expect(domain.id).toBe(TEST_RESPONSE_2);
+      expect(domain.reminderTemplateId).toBe(TEST_TEMPLATE_2);
+      expect(domain.identityId).toBe(TEST_IDENTITY_2);
       expect(domain.action).toBe('Snooze');
       expect(domain.responseTime).toBeInstanceOf(Date);
     });
@@ -118,9 +125,9 @@ describe('PrismaReminderResponseMapper', () => {
       const domains = PrismaReminderResponseMapper.toDomainList(rows);
 
       expect(domains).toHaveLength(3);
-      expect(domains[0].id).toBe('response-1');
-      expect(domains[1].id).toBe('response-2');
-      expect(domains[2].id).toBe('response-1');
+      expect(domains[0].id).toBe(TEST_RESPONSE_1);
+      expect(domains[1].id).toBe(TEST_RESPONSE_2);
+      expect(domains[2].id).toBe(TEST_RESPONSE_1);
     });
 
     it('preserves all properties in batch conversion', () => {

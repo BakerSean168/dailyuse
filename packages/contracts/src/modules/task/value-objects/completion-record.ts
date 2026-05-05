@@ -3,7 +3,7 @@
  * 完成记录值对象 - 接口
  */
 
-import type { TaskInstanceId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
+import type { DomainDate, TransferDate } from '../../../primitives';
 
 
 // ============ 接口定义 ============
@@ -25,11 +25,3 @@ export interface CompletionRecordDTO {
   rating: number | null;
 }
 
-export interface CompletionRecordPersistenceDTO {
-  taskId: string;
-  completedAt: PersistenceDate;
-  completionStatus: string;
-  actualDuration: number | null;
-  note: string | null;
-  rating: number | null;
-}

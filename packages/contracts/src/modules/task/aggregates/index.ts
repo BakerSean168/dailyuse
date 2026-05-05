@@ -5,7 +5,6 @@
 // TaskInstance
 export type {
   TaskInstanceServerDTO,
-  TaskInstancePersistenceDTO,
 } from './task-instance-server';
 
 export type { TaskInstanceClientDTO } from './task-instance-client';
@@ -13,11 +12,10 @@ export type { TaskInstanceClientDTO } from './task-instance-client';
 // TaskTemplate
 export type {
   TaskTemplateServerDTO,
-  TaskTemplatePersistenceDTO,
 } from './task-template-server';
 
-export type { 
-  TaskTemplateClientDTO, 
+export type {
+  TaskTemplateClientDTO,
 } from './task-template-client';
 
 export type {
@@ -26,7 +24,6 @@ export type {
 
 export type {
   TaskFolderServerDTO,
-  TaskFolderPersistenceDTO,
 } from './task-folder-server';
 
 // TaskDependency

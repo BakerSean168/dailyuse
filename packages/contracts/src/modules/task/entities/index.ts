@@ -3,7 +3,6 @@
  */
 export type {
   SubtaskServerDTO,
-  SubtaskPersistenceDTO,
 } from './subtask-server';
 
 export type {

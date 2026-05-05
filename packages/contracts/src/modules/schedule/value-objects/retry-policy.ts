@@ -4,8 +4,8 @@
 
 // ============ Interface Definitions ============
 
-/** Retry policy - Server interface. */
-export interface IRetryPolicyServer {
+/** Retry policy interface. */
+export interface IRetryPolicy {
   /** Whether retry is enabled */
   enabled: boolean;
 
@@ -25,52 +25,15 @@ export interface IRetryPolicyServer {
   with(
     updates: Partial<
       Omit<
-        IRetryPolicyServer,
+        IRetryPolicy,
         | 'equals'
         | 'with'
         | 'shouldRetry'
         | 'calculateNextRetryDelay'
-        | 'toServerDTO'
-        | 'toClientDTO'
-        | 'toPersistenceDTO'
+        | 'toDTO'
       >
     >,
-  ): IRetryPolicyServer;
-
-  // DTO conversion methods
-}
-
-/** Retry policy - Client interface. */
-export interface IRetryPolicyClient {
-  /** Whether retry is enabled */
-  enabled: boolean;
-
-  /** Maximum retry count */
-  maxRetries: number;
-
-  /** Initial retry delay */
-  retryDelay: number;
-
-  /** Backoff multiplier */
-  backoffMultiplier: number;
-
-  /** Maximum retry delay */
-  maxRetryDelay: number;
-
-  // UI helper properties
-  /** Retry policy description */
-  policyDescription: string; // "Retry up to 3 times, delay 5s ~ 60s"
-
-  /** Enabled status display */
-  enabledDisplay: string; // "Enabled" | "Disabled"
-
-  /** Formatted retry delay */
-  retryDelayFormatted: string; // "5s"
-
-  /** Formatted max retry delay */
-  maxRetryDelayFormatted: string; // "60s"
-
-  // Value object methods
+  ): IRetryPolicy;
 
   // DTO conversion methods
 }
@@ -78,43 +41,12 @@ export interface IRetryPolicyClient {
 // ============ DTO Definitions ============
 
 /**
- * Retry Policy Server DTO
+ * Retry Policy DTO
  */
-export interface RetryPolicyServerDTO {
+export interface RetryPolicyDTO {
   enabled: boolean;
   maxRetries: number;
   retryDelay: number;
   backoffMultiplier: number;
   maxRetryDelay: number;
 }
-
-/**
- * Retry Policy Client DTO
- */
-export interface RetryPolicyClientDTO {
-  enabled: boolean;
-  maxRetries: number;
-  retryDelay: number;
-  backoffMultiplier: number;
-  maxRetryDelay: number;
-  policyDescription: string;
-  enabledDisplay: string;
-  retryDelayFormatted: string;
-  maxRetryDelayFormatted: string;
-}
-
-/**
- * Retry Policy Persistence DTO
- */
-export interface RetryPolicyPersistenceDTO {
-  enabled: boolean;
-  maxRetries: number;
-  retry_delay: number;
-  backoff_multiplier: number;
-  max_retry_delay: number;
-}
-
-// ============ Type Exports ============
-
-export type RetryPolicyServer = IRetryPolicyServer;
-export type RetryPolicyClient = IRetryPolicyClient;

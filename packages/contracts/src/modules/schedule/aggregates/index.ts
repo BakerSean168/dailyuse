@@ -6,7 +6,6 @@
 // ============ CalendarEntry Aggregate ============
 export type {
   CalendarEntryServerDTO,
-  CalendarEntryPersistenceDTO,
 } from './calendar-entry-server';
 
 export type {
@@ -16,7 +15,6 @@ export type {
 // ============ Backward Compatibility (Deprecated) ============
 export type {
   ScheduleJobServerDTO,
-  SchedulePersistenceDTO,
 } from './schedule-job-server';
 
 export type {
@@ -26,7 +24,6 @@ export type {
 // ============ ScheduleTask Aggregate ============
 export type {
   ScheduleTaskServerDTO,
-  ScheduleTaskPersistenceDTO,
 } from './schedule-task-server';
 
 export type {

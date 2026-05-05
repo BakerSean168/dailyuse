@@ -1,15 +1,12 @@
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
-import type {
-  KeyResultPersistenceDTO,
-  GoalReviewPersistenceDTO,
-  KeyResultWeightSnapshotDTO,
-} from '@dailyuse/contracts/goal';
+import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import type { GoalPowerSyncDatabase, PowerSyncLockContext } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalMapper } from './mappers/powersync-goal.mapper';
+import type { RawKeyResultData, RawGoalReviewData } from './mappers/powersync-goal.mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -316,7 +313,7 @@ export class GoalPowerSyncRepository
     return PowerSyncGoalMapper.toDomain(row, children);
   }
 
-  private async loadKeyResults(goalId: string): Promise<KeyResultPersistenceDTO[]> {
+  private async loadKeyResults(goalId: string): Promise<RawKeyResultData[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
        FROM key_results
@@ -329,7 +326,7 @@ export class GoalPowerSyncRepository
     return rows.map((row) => PowerSyncGoalMapper.mapKeyResultRow(row));
   }
 
-  private async loadGoalReviews(goalId: string): Promise<GoalReviewPersistenceDTO[]> {
+  private async loadGoalReviews(goalId: string): Promise<RawGoalReviewData[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
        FROM goal_reviews

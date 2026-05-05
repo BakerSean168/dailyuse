@@ -1,12 +1,12 @@
-import type { SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
+import type { SessionLayoutDTO } from '@dailyuse/contracts/editor';
 import { SessionLayout } from '../../../domain-shared/value-objects/session-layout';
 
-function isSessionLayoutDTO(value: unknown): value is SessionLayoutServerDTO {
+function isSessionLayoutDTO(value: unknown): value is SessionLayoutDTO {
   if (!value || typeof value !== 'object') {
     return false;
   }
 
-  const candidate = value as Partial<SessionLayoutServerDTO>;
+  const candidate = value as Partial<SessionLayoutDTO>;
   const splitType = candidate.splitType;
 
   return (

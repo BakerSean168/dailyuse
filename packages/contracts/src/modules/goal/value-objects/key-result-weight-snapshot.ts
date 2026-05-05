@@ -9,7 +9,6 @@
 import type {
   DomainDate,
   TransferDate,
-  PersistenceDate,
   KeyResultWeightSnapshotId,
   GoalId,
   KeyResultId,
@@ -72,23 +71,3 @@ export interface KeyResultWeightSnapshotDTO {
   createdAt: TransferDate;
 }
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Key Result Weight Snapshot Persistence DTO
- * 数据库存储用
- */
-export interface KeyResultWeightSnapshotPersistenceDTO {
-  id: KeyResultWeightSnapshotId;
-  goalId: GoalId;
-  keyResultId: KeyResultId;
-  identityId: IdentityId;
-  oldWeight: number;
-  newWeight: number;
-  weightDelta: number;
-  snapshotTime: PersistenceDate;
-  trigger: string;
-  reason: string | null;
-  operatorId: IdentityId;
-  createdAt: PersistenceDate;
-}

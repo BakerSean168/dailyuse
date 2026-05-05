@@ -7,7 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IGoalFocusApiClient, IResultIpcClient } from '../types';
-import type { FocusModeClientDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
@@ -26,34 +26,34 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
 
   // ===== Session Management =====
 
-  async getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+  async getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>> {
     const channel = `${this.channel}:get`;
     this.logger.info('获取当前专注模式开始', { channel });
-    const result = await this.ipcClient.invoke<FocusModeClientDTO | null>(channel);
+    const result = await this.ipcClient.invoke<FocusModeDTO | null>(channel);
     this.logger.info(`获取当前专注模式结果 ${this.stringify({ ok: result.ok })}`);
     return result;
   }
 
-  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>> {
+  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>> {
     const channel = `${this.channel}:activate`;
     this.logger.info(`启用专注模式开始 ${this.stringify({ channel, request })}`);
-    const result = await this.ipcClient.invoke<FocusModeClientDTO>(channel, request);
+    const result = await this.ipcClient.invoke<FocusModeDTO>(channel, request);
     this.logger.info(`启用专注模式结果 ${this.stringify({ ok: result.ok })}`);
     return result;
   }
 
-  async deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+  async deactivateFocusMode(): Promise<Result<FocusModeDTO | null>> {
     const channel = `${this.channel}:deactivate`;
     this.logger.info('停用专注模式开始', { channel });
-    const result = await this.ipcClient.invoke<FocusModeClientDTO | null>(channel);
+    const result = await this.ipcClient.invoke<FocusModeDTO | null>(channel);
     this.logger.info(`停用专注模式结果 ${this.stringify({ ok: result.ok })}`);
     return result;
   }
 
-  async extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeClientDTO>> {
+  async extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeDTO>> {
     const channel = `${this.channel}:extend`;
     this.logger.info(`延长专注模式开始 ${this.stringify({ channel, request })}`);
-    const result = await this.ipcClient.invoke<FocusModeClientDTO>(channel, request);
+    const result = await this.ipcClient.invoke<FocusModeDTO>(channel, request);
     this.logger.info(`延长专注模式结果 ${this.stringify({ ok: result.ok })}`);
     return result;
   }

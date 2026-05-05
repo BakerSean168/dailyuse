@@ -6,7 +6,6 @@
 // ===== Notification Server =====
 export type {
   NotificationServerDTO,
-  NotificationPersistenceDTO,
 } from './notification-server';
 
 // ===== Notification Client =====
@@ -17,7 +16,6 @@ export type {
 // ===== NotificationPreference Server =====
 export type {
   NotificationPreferenceServerDTO,
-  NotificationPreferencePersistenceDTO,
 } from './notification-preference-server';
 
 // ===== NotificationPreference Client =====

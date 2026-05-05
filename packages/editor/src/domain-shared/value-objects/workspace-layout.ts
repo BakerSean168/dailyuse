@@ -7,9 +7,8 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IWorkspaceLayoutServer,
-  WorkspaceLayoutServerDTO,
-  WorkspaceLayoutPersistenceDTO,
+  IWorkspaceLayout,
+  WorkspaceLayoutDTO,
 } from '@dailyuse/contracts/editor';
 
 type SidebarPosition = 'Left' | 'Right';
@@ -19,16 +18,16 @@ type PanelPosition = 'Bottom' | 'Right';
  * WorkspaceLayout 值对象实现
  */
 export class WorkspaceLayout
-  extends ValueObject<WorkspaceLayoutServerDTO>
-  implements IWorkspaceLayoutServer
+  extends ValueObject<WorkspaceLayoutDTO>
+  implements IWorkspaceLayout
 {
-  private constructor(props: WorkspaceLayoutServerDTO) {
+  private constructor(props: WorkspaceLayoutDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
 
-  public static create(props: WorkspaceLayoutServerDTO): WorkspaceLayout {
+  public static create(props: WorkspaceLayoutDTO): WorkspaceLayout {
     return new WorkspaceLayout(props);
   }
 
@@ -43,19 +42,8 @@ export class WorkspaceLayout
     });
   }
 
-  public static fromDTO(dto: WorkspaceLayoutServerDTO): WorkspaceLayout {
+  public static fromDTO(dto: WorkspaceLayoutDTO): WorkspaceLayout {
     return new WorkspaceLayout(dto);
-  }
-
-  public static fromPersistenceDTO(dto: WorkspaceLayoutPersistenceDTO): WorkspaceLayout {
-    return new WorkspaceLayout({
-      sidebarPosition: dto.sidebar_position,
-      sidebarWidth: dto.sidebar_width,
-      panelPosition: dto.panel_position,
-      panelHeight: dto.panel_height,
-      isSidebarVisible: dto.is_sidebar_visible,
-      isPanelVisible: dto.is_panel_visible,
-    });
   }
 
   // ================= Getters =================
@@ -86,7 +74,7 @@ export class WorkspaceLayout
 
   // ================= 行为方法 =================
 
-  public with(updates: Partial<WorkspaceLayoutServerDTO>): WorkspaceLayout {
+  public with(updates: Partial<WorkspaceLayoutDTO>): WorkspaceLayout {
     return new WorkspaceLayout({ ...this.props, ...updates });
   }
 
@@ -126,18 +114,7 @@ export class WorkspaceLayout
 
   // ================= 序列化 =================
 
-  public toServerDTO(): WorkspaceLayoutServerDTO {
+  public toDTO(): WorkspaceLayoutDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): WorkspaceLayoutPersistenceDTO {
-    return {
-      sidebar_position: this.props.sidebarPosition,
-      sidebar_width: this.props.sidebarWidth,
-      panel_position: this.props.panelPosition,
-      panel_height: this.props.panelHeight,
-      is_sidebar_visible: this.props.isSidebarVisible,
-      is_panel_visible: this.props.isPanelVisible,
-    };
   }
 }

@@ -17,54 +17,29 @@ export { SidebarActiveTab } from './sidebar-active-tab';
 
 // ============ Complex Value Objects ============
 export type {
-  IWorkspaceLayoutServer,
-  IWorkspaceLayoutClient,
-  WorkspaceLayoutServerDTO,
-  WorkspaceLayoutClientDTO,
-  WorkspaceLayoutPersistenceDTO,
-  WorkspaceLayoutServer,
-  WorkspaceLayoutClient,
+  IWorkspaceLayout,
+  WorkspaceLayoutDTO,
 } from './workspace-layout';
 export { DEFAULT_WORKSPACE_LAYOUT } from './workspace-layout';
 
 export type {
-  IWorkspaceSettingsServer,
-  IWorkspaceSettingsClient,
-  WorkspaceSettingsServerDTO,
-  WorkspaceSettingsClientDTO,
-  WorkspaceSettingsPersistenceDTO,
-  WorkspaceSettingsServer,
-  WorkspaceSettingsClient,
+  IWorkspaceSettings,
+  WorkspaceSettingsDTO,
 } from './workspace-settings';
 export { DEFAULT_WORKSPACE_SETTINGS } from './workspace-settings';
 
 export type {
-  ISessionLayoutServer,
-  ISessionLayoutClient,
-  SessionLayoutServerDTO,
-  SessionLayoutClientDTO,
-  SessionLayoutPersistenceDTO,
-  SessionLayoutServer,
-  SessionLayoutClient,
+  ISessionLayout,
+  SessionLayoutDTO,
 } from './session-layout';
 export { DEFAULT_SESSION_LAYOUT } from './session-layout';
 
 export type {
-  ITabViewStateServer,
-  ITabViewStateClient,
-  TabViewStateServerDTO,
-  TabViewStateClientDTO,
-  TabViewStatePersistenceDTO,
-  TabViewStateServer,
-  TabViewStateClient,
+  ITabViewState,
+  TabViewStateDTO,
 } from './tab-view-state';
 
 export type {
-  IResourceMetadataServer,
-  IResourceMetadataClient,
-  ResourceMetadataServerDTO,
-  ResourceMetadataClientDTO,
-  ResourceMetadataPersistenceDTO,
-  ResourceMetadataServer,
-  ResourceMetadataClient,
+  IResourceMetadata,
+  ResourceMetadataDTO,
 } from './resource-metadata';

@@ -69,9 +69,8 @@ describe('goal server value objects', () => {
     expect(focusMode.hiddenGoalsMode).toBe(HiddenGoalsMode.Dim);
     expect(focusMode.isActive).toBe(true);
     expect(focusMode.getRemainingDays()).toBe(2);
-    expect(focusMode.toClientDTO()).toMatchObject({
+    expect(focusMode.toDTO()).toMatchObject({
       isActive: true,
-      remainingDays: 2,
       hiddenGoalsMode: HiddenGoalsMode.Dim,
     });
 
@@ -81,17 +80,8 @@ describe('goal server value objects', () => {
     const deactivated = extended.deactivate();
     expect(deactivated.isActive).toBe(false);
     expect(deactivated.actualEndTime).not.toBeNull();
-    expect(deactivated.toPersistenceDTO()).toMatchObject({
-      id: 'IFocusModeId_550e8400-e29b-41d4-a716-446655440001',
-      identityId: 'IdentityId_1',
-      hiddenGoalsMode: HiddenGoalsMode.Dim,
-      isActive: false,
-    });
 
     expect(FocusMode.fromDTO(focusMode.toDTO()).toDTO()).toEqual(focusMode.toDTO());
-    expect(FocusMode.fromPersistenceDTO(deactivated.toPersistenceDTO()).toDTO()).toEqual(
-      deactivated.toDTO(),
-    );
 
     expect(() =>
       FocusMode.create(

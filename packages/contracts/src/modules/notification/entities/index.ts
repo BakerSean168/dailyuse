@@ -6,7 +6,6 @@
 // ===== NotificationChannel Server =====
 export type {
   NotificationChannelServerDTO,
-  NotificationChannelPersistenceDTO,
 } from './notification-channel-server';
 
 // ===== NotificationChannel Client =====

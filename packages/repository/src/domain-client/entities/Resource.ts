@@ -128,50 +128,6 @@ export class Resource extends Entity<ResourceId> {
     return this._props.status === 'Draft';
   }
 
-  get statusText(): string {
-    const statusTextMap: Record<ResourceStatus, string> = {
-      Active: '活跃',
-      Archived: '已归档',
-      Deleted: '已删除',
-      Draft: '草稿',
-    };
-    return statusTextMap[this._props.status] ?? this._props.status;
-  }
-
-  get typeText(): string {
-    const typeTextMap: Record<ResourceType, string> = {
-      File: '文件',
-      Folder: '文件夹',
-    };
-    return typeTextMap[this._props.type] ?? this._props.type;
-  }
-
-  get displayName(): string {
-    // Remove extension from filename for display
-    const lastDotIndex = this._props.name.lastIndexOf('.');
-    if (lastDotIndex > 0 && this._props.type === 'File') {
-      return this._props.name.substring(0, lastDotIndex);
-    }
-    return this._props.name;
-  }
-
-  get formattedSize(): string {
-    const bytes = this._props.size;
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  }
-
-  get createdAtText(): string {
-    return isNaN(this._props.createdAt.getTime()) ? '-' : this._props.createdAt.toLocaleString();
-  }
-
-  get updatedAtText(): string {
-    return isNaN(this._props.updatedAt.getTime()) ? '-' : this._props.updatedAt.toLocaleString();
-  }
-
   get extension(): string {
     const lastDotIndex = this._props.name.lastIndexOf('.');
     if (lastDotIndex > 0) {
@@ -243,12 +199,6 @@ export class Resource extends Entity<ResourceId> {
       isArchived: this.isArchived,
       isActive: this.isActive,
       isDraft: this.isDraft,
-      statusText: this.statusText,
-      typeText: this.typeText,
-      displayName: this.displayName,
-      formattedSize: this.formattedSize,
-      createdAtText: this.createdAtText,
-      updatedAtText: this.updatedAtText,
       extension: this.extension,
       icon: this.icon,
     };

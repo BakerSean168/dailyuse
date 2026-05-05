@@ -3,19 +3,19 @@
  */
 
 import type {
-  ActiveHoursConfigServer,
-  ActiveHoursConfigServerDTO,
-  ActiveTimeConfigServer,
-  ActiveTimeConfigServerDTO,
+  IActiveHoursConfig,
+  ActiveHoursConfigDTO,
+  IActiveTimeConfig,
+  ActiveTimeConfigDTO,
   FrequencyAdjustmentDTO,
-  NotificationConfigServer,
-  NotificationConfigServerDTO,
+  INotificationConfig,
+  NotificationConfigDTO,
   ReminderEventMap,
   ReminderTemplateClientDTO,
   ReminderTemplateServerDTO,
   ResponseMetricsDTO,
-  TriggerConfigServer,
-  TriggerConfigServerDTO,
+  ITriggerConfig,
+  TriggerConfigDTO,
 } from '@dailyuse/contracts/reminder';
 import {
   NotificationChannel,
@@ -106,16 +106,16 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   public get type(): ReminderType {
     return this._props.type;
   }
-  public get trigger(): TriggerConfigServer {
+  public get trigger(): ITriggerConfig {
     return this._props.trigger;
   }
-  public get activeTime(): ActiveTimeConfigServer {
+  public get activeTime(): IActiveTimeConfig {
     return this._props.activeTime;
   }
-  public get activeHours(): ActiveHoursConfigServer | null {
+  public get activeHours(): IActiveHoursConfig | null {
     return this._props.activeHours;
   }
-  public get notificationConfig(): NotificationConfigServer {
+  public get notificationConfig(): INotificationConfig {
     return this._props.notificationConfig;
   }
   public get selfEnabled(): boolean {
@@ -190,11 +190,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     identityId: IdentityId;
     title: string;
     type: ReminderType;
-    trigger: TriggerConfigServerDTO;
-    activeTime: ActiveTimeConfigServerDTO;
-    notificationConfig: NotificationConfigServerDTO;
+    trigger: TriggerConfigDTO;
+    activeTime: ActiveTimeConfigDTO;
+    notificationConfig: NotificationConfigDTO;
     description?: string;
-    activeHours?: ActiveHoursConfigServerDTO;
+    activeHours?: ActiveHoursConfigDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string;
@@ -305,10 +305,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   public update(updates: {
     title?: string;
     description?: string;
-    trigger?: TriggerConfigServerDTO;
-    activeTime?: ActiveTimeConfigServerDTO;
-    notificationConfig?: NotificationConfigServerDTO;
-    activeHours?: ActiveHoursConfigServerDTO | null;
+    trigger?: TriggerConfigDTO;
+    activeTime?: ActiveTimeConfigDTO;
+    notificationConfig?: NotificationConfigDTO;
+    activeHours?: ActiveHoursConfigDTO | null;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string | null;
@@ -772,10 +772,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       name: this._props.title,
       description: this._props.description,
       type: this._props.type,
-      trigger: this._props.trigger.toServerDTO(),
-      activeTime: this._props.activeTime.toServerDTO(),
-      activeHours: this._props.activeHours?.toServerDTO() ?? null,
-      notificationConfig: this._props.notificationConfig.toServerDTO(),
+      trigger: this._props.trigger.toDTO(),
+      activeTime: this._props.activeTime.toDTO(),
+      activeHours: this._props.activeHours?.toDTO() ?? null,
+      notificationConfig: this._props.notificationConfig.toDTO(),
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
       groupId: this._props.groupId,
@@ -801,73 +801,16 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     const effectiveEnabled = this._props.effectiveEnabled;
     const controlledByGroup = !!this._props.groupId;
 
-    const typeText = this._props.type === ReminderType.OneTime ? '一次性' : '循环';
-    const statusText = this._props.status === ReminderStatus.Active ? '活跃' : '暂停';
-    const importanceMap: Record<ImportanceLevel, string> = {
-      Vital: '关键',
-      Important: '重要',
-      Moderate: '中等',
-      Minor: '次要',
-      Trivial: '琐碎',
-    };
-    const importanceText = importanceMap[this._props.importanceLevel];
-
-    // 简单的相对时间文本
-    const formatRelativeTime = (timestamp: number | null): string | null => {
-      if (!timestamp) return null;
-      const diff = timestamp - Date.now();
-      if (diff < 0) return `${Math.round(-diff / 3600000)} 小时前`;
-      return `${Math.round(diff / 3600000)} 小时后`;
-    };
-
-    // Build trigger client DTO manually
-    const triggerServerDTO = this._props.trigger.toServerDTO();
-    const triggerClientDTO = {
-      ...triggerServerDTO,
-      displayText: this._props.trigger.displayText,
-    };
-
-    // Build activeTime client DTO manually - format display text
-    const activeTimeServerDTO = this._props.activeTime.toServerDTO();
-    const activeTimeClientDTO = {
-      ...activeTimeServerDTO,
-      displayText: new Date(activeTimeServerDTO.activatedAt).toLocaleString(),
-    };
-
-    // Build activeHours client DTO manually
-    const activeHoursClientDTO = this._props.activeHours
-      ? {
-          ...this._props.activeHours.toServerDTO(),
-          displayText: this._props.activeHours.enabled
-            ? `${this._props.activeHours.startHour}:00 - ${this._props.activeHours.endHour}:00`
-            : '全天',
-        }
-      : null;
-
-    // Build notificationConfig client DTO manually
-    const notificationServerDTO = this._props.notificationConfig.toServerDTO();
-    const notificationConfigClientDTO = {
-      ...notificationServerDTO,
-      channelsText: notificationServerDTO.channels.join(', ') || '无',
-      hasSoundEnabled: notificationServerDTO.sound !== null,
-      hasVibrationEnabled: notificationServerDTO.vibration !== null,
-    };
-
-    const lastTriggeredAt =
-      this._props.history.length > 0
-        ? (this._props.history[this._props.history.length - 1]?.triggeredAt ?? null)
-        : null;
-
     const clientDTO: ReminderTemplateClientDTO = {
       id: this.id,
       identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description,
       type: this._props.type,
-      trigger: triggerClientDTO,
-      activeTime: activeTimeClientDTO,
-      activeHours: activeHoursClientDTO,
-      notificationConfig: notificationConfigClientDTO,
+      trigger: this._props.trigger.toDTO(),
+      activeTime: this._props.activeTime.toDTO(),
+      activeHours: this._props.activeHours ? this._props.activeHours.toDTO() : null,
+      notificationConfig: this._props.notificationConfig.toDTO(),
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
       effectiveEnabled: effectiveEnabled,
@@ -886,15 +829,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       history: null,
 
       // UI 扩展
-      displayTitle: this._props.title,
-      typeText,
-      triggerText: this._props.trigger.displayText,
-      statusText,
-      importanceText,
-      nextTriggerText: formatRelativeTime(this._props.nextTriggerAt),
       isActive: this._props.status === ReminderStatus.Active,
       isPaused: this._props.status === ReminderStatus.Paused,
-      lastTriggeredText: formatRelativeTime(lastTriggeredAt),
       controlledByGroup: controlledByGroup,
       lifecycleSource: controlledByGroup ? 'group' : 'template',
       effectiveEnabledReason: controlledByGroup

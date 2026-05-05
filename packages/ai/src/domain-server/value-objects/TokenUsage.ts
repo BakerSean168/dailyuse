@@ -4,8 +4,7 @@
  */
 
 import type {
-  TokenUsageServerDTO,
-  TokenUsagePersistenceDTO,
+  TokenUsageDTO,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -42,32 +41,14 @@ export class TokenUsage {
   /**
    * 从 Server DTO 创建
    */
-  public static fromDTO(dto: TokenUsageServerDTO): TokenUsage {
-    return new TokenUsage(dto.promptTokens, dto.completionTokens, dto.totalTokens);
-  }
-
-  /**
-   * 从持久化 DTO 创建
-   */
-  public static fromPersistence(dto: TokenUsagePersistenceDTO): TokenUsage {
+  public static fromDTO(dto: TokenUsageDTO): TokenUsage {
     return new TokenUsage(dto.promptTokens, dto.completionTokens, dto.totalTokens);
   }
 
   /**
    * 转换为 Server DTO
    */
-  public toDTO(): TokenUsageServerDTO {
-    return {
-      promptTokens: this.promptTokens,
-      completionTokens: this.completionTokens,
-      totalTokens: this.totalTokens,
-    };
-  }
-
-  /**
-   * 转换为持久化 DTO
-   */
-  public toPersistence(): TokenUsagePersistenceDTO {
+  public toDTO(): TokenUsageDTO {
     return {
       promptTokens: this.promptTokens,
       completionTokens: this.completionTokens,

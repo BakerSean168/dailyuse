@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   ResourceStats as IResourceStats,
   ResourceStatsDTO,
-  ResourceStatsPersistenceDTO,
 } from '@dailyuse/contracts/repository';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 
@@ -39,10 +38,6 @@ export class ResourceStats extends ValueObject<ResourceStatsDTO> implements IRes
   }
 
   public static fromDTO(dto: ResourceStatsDTO): ResourceStats {
-    return new ResourceStats(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ResourceStatsPersistenceDTO): ResourceStats {
     return new ResourceStats(dto);
   }
 
@@ -131,10 +126,6 @@ export class ResourceStats extends ValueObject<ResourceStatsDTO> implements IRes
   // ================= 序列化 =================
 
   public toDTO(): ResourceStatsDTO {
-    return { ...this.props };
-  }
-
-  public toPersistenceDTO(): ResourceStatsPersistenceDTO {
     return { ...this.props };
   }
 }

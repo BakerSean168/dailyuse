@@ -9,13 +9,12 @@ import type {
   EditorWorkspaceId,
   IdentityId,
   TransferDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabClientDTO } from './editor-tab-client';
 
 // Value object imports
-import type { TabViewStateServerDTO } from '../value-objects';
+import type { TabViewStateDTO } from '../value-objects';
 
 /**
  * Editor Tab Server DTO
@@ -30,7 +29,7 @@ export interface EditorTabServerDTO {
   tabIndex: number; // Tab index (position within group)
   tabType: TabType;
   name: string;
-  viewState: TabViewStateServerDTO;
+  viewState: TabViewStateDTO;
   isPinned: boolean;
   isActive: boolean;
   isDirty: boolean; // Whether there are unsaved changes
@@ -39,24 +38,3 @@ export interface EditorTabServerDTO {
   updatedAt: TransferDate;
 }
 
-/**
- * Editor Tab Persistence DTO (database fields, snake_case).
- */
-export interface EditorTabPersistenceDTO {
-  id: EditorTabId;
-  group_id: EditorGroupId;
-  session_id: EditorSessionId;
-  workspace_id: EditorWorkspaceId;
-  identityId: IdentityId;
-  resource_id: string | null;
-  tab_index: number;
-  tab_type: TabType;
-  name: string;
-  view_state: string; // JSON string
-  is_pinned: boolean;
-  is_active: boolean;
-  is_dirty: boolean;
-  lastAccessedAt: PersistenceDate | null;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-}

@@ -50,16 +50,3 @@ export interface UserReminderPreferencesClientDTO {
   summaryText?: string;
 }
 
-/**
- * User Reminder Preferences Persistence DTO
- */
-export interface UserReminderPreferencesPersistenceDTO {
-  id: string;
-  identityId: string;
-  bestTimeSlots: string; // JSON string
-  worstTimeSlots: string; // JSON string
-  globalReminderEnabled: boolean;
-  globalSmartFrequency: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}

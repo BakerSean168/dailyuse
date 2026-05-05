@@ -310,7 +310,7 @@ describe('ReminderGroup aggregate', () => {
   });
 
   describe('toClientDTO()', () => {
-    it('should return a client DTO with display fields', () => {
+    it('should return a client DTO with data fields', () => {
       const group = ReminderGroup.load(
         makeGroupState({
           name: 'Client DTO',
@@ -319,9 +319,9 @@ describe('ReminderGroup aggregate', () => {
         }),
       );
       const dto = group.toClientDTO();
-      expect(dto.displayName).toBe('Client DTO');
-      expect(dto.controlModeText).toBe('组控制');
-      expect(dto.statusText).toBe('活跃');
+      expect(dto.name).toBe('Client DTO');
+      expect(dto.controlMode).toBe('Group');
+      expect(dto.status).toBe('Active');
     });
   });
 });

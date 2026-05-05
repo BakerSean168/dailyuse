@@ -1,26 +1,22 @@
-import type {
-  GoalPersistenceDTO,
-  GoalReviewPersistenceDTO,
-  KeyResultPersistenceDTO,
-  KeyResultWeightSnapshotDTO,
-} from '@dailyuse/contracts/goal';
-import type { ReviewType } from '@dailyuse/contracts/goal';
+import type { ReviewType, KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 import { Goal } from '@/domain-server';
-import { persistenceDtoToGoalState } from '../../prisma/mappers/goal-state-mapper';
-import { asJsonString, fromDbDateTime, parseJsonArray } from '../shared';
+import { rawDataToGoalState } from '../../prisma/mappers/goal-state-mapper';
+import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../prisma/mappers/goal-state-mapper';
+export type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../prisma/mappers/goal-state-mapper';
+import { fromDbDateTime, parseJsonArray } from '../shared';
 
 export class PowerSyncGoalMapper {
   static toDomain(
     row: Record<string, unknown>,
     children?: {
-      keyResults?: KeyResultPersistenceDTO[] | null;
-      goalReviews?: GoalReviewPersistenceDTO[] | null;
+      keyResults?: RawKeyResultData[] | null;
+      goalReviews?: RawGoalReviewData[] | null;
       weightSnapshots?: KeyResultWeightSnapshotDTO[] | null;
     },
   ): Goal {
-    const dto: GoalPersistenceDTO = {
-      id: String(row.id) as GoalPersistenceDTO['id'],
-      identityId: String(row.identity_id) as GoalPersistenceDTO['identityId'],
+    const raw: RawGoalData = {
+      id: String(row.id),
+      identityId: String(row.identity_id),
       name: String(row.name),
       description: row.description ? String(row.description) : null,
       color: row.color ? String(row.color) : '#3B82F6',
@@ -39,7 +35,7 @@ export class PowerSyncGoalMapper {
       parentGoalId: row.parent_goal_id ? String(row.parent_goal_id) : null,
       sortOrder: Number(row.sort_order ?? 0),
       reminderConfig: row.reminder_config
-        ? (JSON.parse(String(row.reminder_config)) as GoalPersistenceDTO['reminderConfig'])
+        ? JSON.parse(String(row.reminder_config))
         : null,
       version: Number(row.version ?? 1),
       createdAt: fromDbDateTime(String(row.created_at)) ?? new Date(),
@@ -58,26 +54,23 @@ export class PowerSyncGoalMapper {
           : Number(row.completed_key_results),
     };
 
-    return Goal.load(persistenceDtoToGoalState(dto));
+    return Goal.load(rawDataToGoalState(raw));
   }
 
-  static mapKeyResultRow(row: Record<string, unknown>): KeyResultPersistenceDTO {
+  static mapKeyResultRow(row: Record<string, unknown>): RawKeyResultData {
     return {
-      id: String(row.id) as KeyResultPersistenceDTO['id'],
-      goalId: String(row.goal_id) as KeyResultPersistenceDTO['goalId'],
+      id: String(row.id),
+      goalId: String(row.goal_id),
       title: String(row.title),
       description: row.description ? String(row.description) : null,
-      progress: asJsonString(
-        {
-          initialValue: Number(row.initial_value ?? 0),
-          currentValue: Number(row.current_value ?? 0),
-          targetValue: Number(row.target_value ?? 100),
-          valueType: row.value_type ? String(row.value_type) : 'Incremental',
-          aggregationMethod: row.aggregation_method ? String(row.aggregation_method) : 'Last',
-          unit: row.unit ? String(row.unit) : null,
-        },
-        '{"initialValue":0,"currentValue":0,"targetValue":100,"valueType":"Incremental","aggregationMethod":"Last","unit":null}',
-      ),
+      progress: {
+        initialValue: Number(row.initial_value ?? 0),
+        currentValue: Number(row.current_value ?? 0),
+        targetValue: Number(row.target_value ?? 100),
+        valueType: row.value_type ? String(row.value_type) : 'Incremental',
+        aggregationMethod: row.aggregation_method ? String(row.aggregation_method) : 'Last',
+        unit: row.unit ? String(row.unit) : null,
+      },
       weight: Number(row.weight ?? 1),
       sortOrder: Number(row.order ?? 0),
       version: Number(row.version ?? 1),
@@ -87,17 +80,17 @@ export class PowerSyncGoalMapper {
     };
   }
 
-  static mapGoalReviewRow(row: Record<string, unknown>): GoalReviewPersistenceDTO {
+  static mapGoalReviewRow(row: Record<string, unknown>): RawGoalReviewData {
     return {
-      id: String(row.id) as GoalReviewPersistenceDTO['id'],
-      goalId: String(row.goal_id) as GoalReviewPersistenceDTO['goalId'],
+      id: String(row.id),
+      goalId: String(row.goal_id),
       type: String(row.review_type) as ReviewType,
       rating: Number(row.rating ?? 3),
       summary: row.content ? String(row.content) : '',
       achievements: row.achievements ? String(row.achievements) : null,
       challenges: row.challenges ? String(row.challenges) : null,
       improvements: row.lessons_learned ? String(row.lessons_learned) : null,
-      keyResultSnapshots: '[]',
+      keyResultSnapshots: [],
       reviewedAt:
         fromDbDateTime(row.updated_at ? String(row.updated_at) : null) ??
         fromDbDateTime(row.created_at ? String(row.created_at) : null) ??

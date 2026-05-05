@@ -58,20 +58,6 @@ describe('TokenUsage Value Object', () => {
       expect(usage.totalTokens).toBe(75);
     });
 
-    it('从持久化 DTO 创建', () => {
-      const dto = {
-        promptTokens: 60,
-        completionTokens: 40,
-        totalTokens: 100,
-      };
-
-      const usage = TokenUsage.fromPersistence(dto);
-
-      expect(usage.promptTokens).toBe(60);
-      expect(usage.completionTokens).toBe(40);
-      expect(usage.totalTokens).toBe(100);
-    });
-
     it('转换为 Server DTO', () => {
       const usage = TokenUsage.create({
         promptTokens: 80,
@@ -83,21 +69,6 @@ describe('TokenUsage Value Object', () => {
       expect(dto).toEqual({
         promptTokens: 80,
         completionTokens: 20,
-        totalTokens: 100,
-      });
-    });
-
-    it('转换为持久化 DTO', () => {
-      const usage = TokenUsage.create({
-        promptTokens: 75,
-        completionTokens: 25,
-      });
-
-      const dto = usage.toPersistence();
-
-      expect(dto).toEqual({
-        promptTokens: 75,
-        completionTokens: 25,
         totalTokens: 100,
       });
     });

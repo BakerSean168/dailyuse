@@ -126,46 +126,6 @@ describe('ContactPhone', () => {
     });
   });
 
-  describe('toPersistenceDTO', () => {
-    it('should convert verifiedAt timestamp to Date', () => {
-      const ts = Date.now();
-      const phone = ContactPhone.create(aPhoneDTO({ isVerified: true, verifiedAt: ts }));
-      const pDto = phone.toPersistenceDTO();
-      expect(pDto.verifiedAt).toBeInstanceOf(Date);
-    });
-
-    it('should keep verifiedAt null when not verified', () => {
-      const phone = ContactPhone.create(aPhoneDTO());
-      const pDto = phone.toPersistenceDTO();
-      expect(pDto.verifiedAt).toBeNull();
-    });
-  });
-
-  describe('fromPersistenceDTO', () => {
-    it('should reconstruct from persistence DTO', () => {
-      const phone = ContactPhone.fromPersistenceDTO({
-        countryCode: '+86',
-        number: '15900159000',
-        fullNumber: '+8615900159000',
-        isVerified: true,
-        verifiedAt: new Date('2024-01-01'),
-      });
-      expect(phone.number).toBe('15900159000');
-      expect(phone.isVerified).toBe(true);
-    });
-
-    it('should handle null verifiedAt', () => {
-      const phone = ContactPhone.fromPersistenceDTO({
-        countryCode: '+86',
-        number: '15900159000',
-        fullNumber: '+8615900159000',
-        isVerified: false,
-        verifiedAt: null,
-      });
-      expect(phone.verifiedAt).toBeNull();
-    });
-  });
-
   // =========================================================================
   // value object equality
   // =========================================================================

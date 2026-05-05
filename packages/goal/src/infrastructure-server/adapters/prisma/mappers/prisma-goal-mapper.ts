@@ -2,8 +2,7 @@
  * Prisma Goal Mapper
  *
  * Maps between Goal domain aggregate (with relations) and Prisma model.
- * Handles the conversion of Prisma query results (including keyResults,
- * reviews, weightSnapshots) to GoalPersistenceDTO for domain reconstruction.
+ * Returns RawGoalData for domain reconstruction via rawDataToGoalState().
  */
 
 import type {
@@ -12,12 +11,8 @@ import type {
   GoalReview as PrismaGoalReview,
   KeyResultWeightSnapshot as PrismaKeyResultWeightSnapshot,
 } from '@dailyuse/database';
-import type {
-  GoalPersistenceDTO,
-  KeyResultPersistenceDTO,
-  GoalReviewPersistenceDTO,
-  KeyResultWeightSnapshotDTO,
-} from '@dailyuse/contracts/goal';
+import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
+import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from './goal-state-mapper';
 
 /**
  * Prisma Goal with eagerly loaded relations
@@ -31,13 +26,13 @@ export type PrismaGoalWithRelations = PrismaGoal & {
 /**
  * PrismaGoalMapper
  *
- * Static utility class for mapping between Prisma Goal models and domain DTOs.
+ * Static utility class for mapping between Prisma Goal models and raw domain data.
  */
 export class PrismaGoalMapper {
   /**
-   * Map a Prisma Goal result (with includes) to GoalPersistenceDTO
+   * Map a Prisma Goal result (with includes) to RawGoalData
    */
-  static toDomainDTO(row: PrismaGoalWithRelations): GoalPersistenceDTO {
+  static toDomainDTO(row: PrismaGoalWithRelations): RawGoalData {
     return {
       id: row.id,
       identityId: row.identityId,
@@ -72,25 +67,23 @@ export class PrismaGoalMapper {
   }
 
   /**
-   * Map a Prisma KeyResult row to KeyResultPersistenceDTO.
-   * Prisma stores progress as individual columns; DTO stores as JSON string.
+   * Map a Prisma KeyResult row to raw key result data.
+   * Progress is built as a structured object (no JSON round-trip).
    */
-  static mapKeyResult(row: PrismaKeyResult): KeyResultPersistenceDTO {
-    const progress = JSON.stringify({
-      initialValue: row.initialValue ?? 0,
-      currentValue: row.currentValue ?? 0,
-      targetValue: row.targetValue ?? 100,
-      valueType: row.valueType ?? 'Incremental',
-      aggregationMethod: row.aggregationMethod ?? 'Last',
-      unit: row.unit ?? null,
-    });
-
+  static mapKeyResult(row: PrismaKeyResult): RawKeyResultData {
     return {
-      id: row.id as KeyResultPersistenceDTO['id'],
+      id: row.id,
       goalId: row.goalId,
       title: row.title,
       description: row.description ?? null,
-      progress,
+      progress: {
+        initialValue: row.initialValue ?? 0,
+        currentValue: row.currentValue ?? 0,
+        targetValue: row.targetValue ?? 100,
+        valueType: row.valueType ?? 'Incremental',
+        aggregationMethod: row.aggregationMethod ?? 'Last',
+        unit: row.unit ?? null,
+      },
       weight: row.weight ?? 1,
       sortOrder: row.order ?? 0,
       version: row.version ?? 1,
@@ -101,19 +94,19 @@ export class PrismaGoalMapper {
   }
 
   /**
-   * Map a Prisma GoalReview row to GoalReviewPersistenceDTO
+   * Map a Prisma GoalReview row to raw goal review data
    */
-  static mapGoalReview(row: PrismaGoalReview): GoalReviewPersistenceDTO {
+  static mapGoalReview(row: PrismaGoalReview): RawGoalReviewData {
     return {
-      id: row.id as GoalReviewPersistenceDTO['id'],
-      goalId: row.goalId as GoalReviewPersistenceDTO['goalId'],
+      id: row.id,
+      goalId: row.goalId,
       type: row.reviewType,
       rating: row.rating ?? 3,
       summary: row.content,
       achievements: row.achievements ?? null,
       challenges: row.challenges ?? null,
       improvements: row.lessonsLearned ?? null,
-      keyResultSnapshots: '[]',
+      keyResultSnapshots: [],
       reviewedAt: row.createdAt,
       version: row.version ?? 1,
       createdAt: row.createdAt,
@@ -144,17 +137,16 @@ export class PrismaGoalMapper {
   }
 
   /**
-   * Parse KeyResultPersistenceDTO.progress JSON → Prisma columns
+   * Parse raw key result progress back to Prisma columns (for write operations)
    */
-  static parseKeyResultProgress(kr: KeyResultPersistenceDTO) {
-    const progress = typeof kr.progress === 'string' ? JSON.parse(kr.progress) : kr.progress;
+  static parseKeyResultProgress(kr: RawKeyResultData) {
     return {
-      valueType: progress.valueType ?? 'Incremental',
-      aggregationMethod: progress.aggregationMethod ?? 'Last',
-      initialValue: progress.initialValue ?? 0,
-      targetValue: progress.targetValue ?? 100,
-      currentValue: progress.currentValue ?? 0,
-      unit: progress.unit ?? null,
+      valueType: kr.progress.valueType ?? 'Incremental',
+      aggregationMethod: kr.progress.aggregationMethod ?? 'Last',
+      initialValue: kr.progress.initialValue ?? 0,
+      targetValue: kr.progress.targetValue ?? 100,
+      currentValue: kr.progress.currentValue ?? 0,
+      unit: kr.progress.unit ?? null,
     };
   }
 }

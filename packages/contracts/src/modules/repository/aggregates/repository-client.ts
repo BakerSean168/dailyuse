@@ -36,12 +36,7 @@ export interface RepositoryClientDTO {
   isDeleted: boolean;
   isArchived: boolean;
   isActive: boolean;
-  statusText: string;
-  typeText: string;
   folderCount: number;
   resourceCount: number;
   totalSize: number;
-  formattedSize: string;
-  createdAtText: string;
-  updatedAtText: string;
 }

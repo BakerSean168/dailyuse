@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type {
-  FocusModeClientDTO,
+  FocusModeDTO,
   GoalClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
@@ -96,7 +96,7 @@ describe('useGoalStore', () => {
     const focusMode = {
       id: 'focus-1',
       isActive: true,
-    } as FocusModeClientDTO;
+    } as FocusModeDTO;
 
     store.setCurrentGoal(goal);
     store.setKeyResults([keyResult]);

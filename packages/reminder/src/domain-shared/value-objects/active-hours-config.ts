@@ -7,23 +7,22 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IActiveHoursConfigServer,
-  ActiveHoursConfigServerDTO,
-  ActiveHoursConfigPersistenceDTO,
+  IActiveHoursConfig,
+  ActiveHoursConfigDTO,
 } from '@dailyuse/contracts/reminder';
 
 /**
  * ActiveHoursConfig 值对象实现
  */
-export class ActiveHoursConfig extends ValueObject<ActiveHoursConfigServerDTO> implements IActiveHoursConfigServer {
+export class ActiveHoursConfig extends ValueObject<ActiveHoursConfigDTO> implements IActiveHoursConfig {
 
-  private constructor(props: ActiveHoursConfigServerDTO) {
+  private constructor(props: ActiveHoursConfigDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: ActiveHoursConfigServerDTO): ActiveHoursConfig {
+  public static create(props: ActiveHoursConfigDTO): ActiveHoursConfig {
     this.validate(props);
     return new ActiveHoursConfig(props);
   }
@@ -44,21 +43,13 @@ export class ActiveHoursConfig extends ValueObject<ActiveHoursConfigServerDTO> i
     });
   }
 
-  public static fromDTO(dto: ActiveHoursConfigServerDTO): ActiveHoursConfig {
+  public static fromDTO(dto: ActiveHoursConfigDTO): ActiveHoursConfig {
     return new ActiveHoursConfig(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ActiveHoursConfigPersistenceDTO): ActiveHoursConfig {
-    return new ActiveHoursConfig({
-      enabled: dto.enabled,
-      startHour: dto.start_hour,
-      endHour: dto.end_hour,
-    });
   }
 
   // ================= 校验 =================
   
-  private static validate(props: ActiveHoursConfigServerDTO): void {
+  private static validate(props: ActiveHoursConfigDTO): void {
     if (props.startHour < 0 || props.startHour > 23) {
       throw new Error('startHour must be between 0 and 23');
     }
@@ -84,7 +75,7 @@ export class ActiveHoursConfig extends ValueObject<ActiveHoursConfigServerDTO> i
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<ActiveHoursConfigServerDTO>,
+    updates: Partial<ActiveHoursConfigDTO>,
   ): ActiveHoursConfig {
     const newProps = { ...this.props, ...updates };
     ActiveHoursConfig.validate(newProps);
@@ -122,13 +113,6 @@ export class ActiveHoursConfig extends ValueObject<ActiveHoursConfigServerDTO> i
     return !this.props.enabled || (this.props.startHour === 0 && this.props.endHour === 24);
   }
 
-  public get displayText(): string {
-    if (!this.props.enabled) return '全天';
-    const start = String(this.props.startHour).padStart(2, '0') + ':00';
-    const end = String(this.props.endHour).padStart(2, '0') + ':00';
-    return `${start} - ${end}`;
-  }
-
   public get durationHours(): number {
     if (this.props.startHour <= this.props.endHour) {
       return this.props.endHour - this.props.startHour;
@@ -139,15 +123,8 @@ export class ActiveHoursConfig extends ValueObject<ActiveHoursConfigServerDTO> i
 
   // ================= 序列化 =================
 
-  public toServerDTO(): ActiveHoursConfigServerDTO {
+  public toDTO(): ActiveHoursConfigDTO {
     return { ...this.props };
   }
 
-  public toPersistenceDTO(): ActiveHoursConfigPersistenceDTO {
-    return {
-      enabled: this.props.enabled,
-      start_hour: this.props.startHour,
-      end_hour: this.props.endHour,
-    };
-  }
 }

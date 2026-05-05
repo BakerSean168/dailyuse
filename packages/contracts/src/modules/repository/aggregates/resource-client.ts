@@ -48,12 +48,6 @@ export interface ResourceClientDTO {
   isArchived: boolean;
   isActive: boolean;
   isDraft: boolean;
-  statusText: string;
-  typeText: string;
-  displayName: string;
-  formattedSize: string;
-  createdAtText: string;
-  updatedAtText: string;
   extension: string; // ".md"
   icon: string; // Material Design icon name
 }

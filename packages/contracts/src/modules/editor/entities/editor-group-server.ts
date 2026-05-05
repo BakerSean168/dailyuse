@@ -9,12 +9,11 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { EditorGroupClientDTO } from './editor-group-client';
 
 // Entity imports
-import type { EditorTabServerDTO, EditorTabPersistenceDTO } from './editor-tab-server';
+import type { EditorTabServerDTO } from './editor-tab-server';
 
 /**
  * Editor Group Server DTO
@@ -35,21 +34,3 @@ export interface EditorGroupServerDTO {
   updatedAt: TransferDate;
 }
 
-/**
- * Editor Group Persistence DTO (database fields, snake_case).
- */
-export interface EditorGroupPersistenceDTO {
-  id: EditorGroupId;
-  session_id: EditorSessionId;
-  workspace_id: EditorWorkspaceId;
-  identityId: IdentityId;
-  group_index: number;
-  active_tab_index: number;
-  name: string | null;
-
-  // Child entities: tab list (JSON storage)
-  tabs?: EditorTabPersistenceDTO[]; // Uses PersistenceDTO type
-
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-}

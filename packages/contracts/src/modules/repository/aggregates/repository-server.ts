@@ -13,7 +13,6 @@ import type {
   IdentityId,
   DomainDate,
   TransferDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { RepositoryType } from '../value-objects/repository-type';
 import type { RepositoryStatus } from '../value-objects/repository-status';
@@ -45,24 +44,3 @@ export interface RepositoryServerDTO {
   deletedAt: TransferDate | null;
 }
 
-/**
- * Repository Persistence DTO (数据库映射)
- * 扁平化结构，直接映射数据库字段
- */
-export interface RepositoryPersistenceDTO {
-  id: string;
-  identityId: string;
-  name: string;
-  type: RepositoryType;
-  path: string | null;
-  description: string | null;
-  config: string; // JSON string
-  stats: string; // JSON string
-  status: RepositoryStatus;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-
-  // 注意：子实体（folders）在数据库中是独立表，通过外键关联
-}

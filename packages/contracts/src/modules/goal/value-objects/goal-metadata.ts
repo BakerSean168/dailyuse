@@ -31,14 +31,3 @@ export interface GoalMetadataDTO {
   tags: string[];
 }
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Goal Metadata Persistence DTO
- * 数据库存储用
- */
-export interface GoalMetadataPersistenceDTO {
-  importance: ImportanceLevel;
-  category: string | null;
-  tags: string; // JSON string: JSON.stringify(string[])
-}

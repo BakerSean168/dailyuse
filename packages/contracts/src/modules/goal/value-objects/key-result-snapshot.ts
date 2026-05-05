@@ -35,16 +35,3 @@ export interface KeyResultSnapshotDTO {
   progressPercentage: number;
 }
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Key Result Snapshot Persistence DTO
- * 数据库存储用
- */
-export interface KeyResultSnapshotPersistenceDTO {
-  keyResultId: KeyResultId;
-  title: string;
-  targetValue: number;
-  currentValue: number;
-  progressPercentage: number;
-}

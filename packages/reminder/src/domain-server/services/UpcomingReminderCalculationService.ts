@@ -22,7 +22,7 @@ import type {
   FixedTimeTrigger,
   IntervalTrigger,
   ReminderTemplateServerDTO,
-  TriggerConfigServerDTO,
+  TriggerConfigDTO,
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
@@ -244,7 +244,7 @@ export class UpcomingReminderCalculationService {
     reminder: ReminderTemplateServerDTO,
     afterTime: number,
   ): number | null {
-    const trigger = reminder.trigger as TriggerConfigServerDTO;
+    const trigger = reminder.trigger as TriggerConfigDTO;
 
     if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       // 一次性固定时间提醒
@@ -269,7 +269,7 @@ export class UpcomingReminderCalculationService {
     reminder: ReminderTemplateServerDTO,
     afterTime: number,
   ): number | null {
-    const trigger = reminder.trigger as TriggerConfigServerDTO;
+    const trigger = reminder.trigger as TriggerConfigDTO;
 
     if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       return this.calculateNextFixedTimeTrigger(reminder, trigger.fixedTime, afterTime);
@@ -499,7 +499,7 @@ export class UpcomingReminderCalculationService {
     maxItems: number,
   ): UpcomingReminderDTO[] {
     const result: UpcomingReminderDTO[] = [];
-    const trigger = reminder.trigger as TriggerConfigServerDTO;
+    const trigger = reminder.trigger as TriggerConfigDTO;
 
     if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       // 固定时间触发：在今天的特定时间触发

@@ -12,16 +12,8 @@ export type ScheduleTaskSummary = {
   description: string | null;
   status: ScheduleTaskStatus;
   sourceModule: SourceModule;
-  sourceModuleDisplay: string;
-  nextRunAtFormatted: string;
-  lastRunAtFormatted: string;
-  executionSummary: string;
-  healthStatus: string;
-  isOverdue: boolean;
   enabled: boolean;
-  enabledDisplay: string;
   priority: TaskPriority;
-  priorityDisplay: string;
   tags: string[];
   nextRunAt: number | null;
   lastRunAt: number | null;
@@ -38,16 +30,8 @@ function mapScheduleTask(task: ScheduleTask): ScheduleTaskSummary {
     description: task.description,
     status: task.status,
     sourceModule: task.sourceModule,
-    sourceModuleDisplay: task.sourceModuleDisplay,
-    nextRunAtFormatted: task.nextRunAtFormatted,
-    lastRunAtFormatted: task.lastRunAtFormatted,
-    executionSummary: task.executionSummary,
-    healthStatus: task.healthStatus,
-    isOverdue: task.isOverdue,
     enabled: task.enabled,
-    enabledDisplay: task.enabledDisplay,
     priority: task.metadata.priority,
-    priorityDisplay: task.metadata.priorityDisplay,
     tags: task.metadata.tags,
     nextRunAt: task.execution.nextRunAt?.getTime() ?? null,
     lastRunAt: task.execution.lastRunAt?.getTime() ?? null,
@@ -132,7 +116,7 @@ export function useScheduleTasks() {
       return true;
     }
 
-    const text = [task.name, task.description ?? '', task.sourceModuleDisplay, task.tags.join(' ')].join(' ').toLowerCase();
+    const text = [task.name, task.description ?? '', task.sourceModule, task.tags.join(' ')].join(' ').toLowerCase();
     return text.includes(normalizedQuery);
   });
 

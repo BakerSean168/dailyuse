@@ -54,8 +54,8 @@ function toIso(value: number | null | undefined): string | null {
 
 export class PowerSyncEditorWorkspaceMapper {
   static toDomain(row: PowerSyncEditorWorkspaceRow): EditorWorkspace {
-    const layoutData = parseJson(row.layout, WorkspaceLayout.createDefault().toServerDTO());
-    const settingData = parseJson(row.setting, WorkspaceSettings.createDefault().toServerDTO());
+    const layoutData = parseJson(row.layout, WorkspaceLayout.createDefault().toDTO());
+    const settingData = parseJson(row.setting, WorkspaceSettings.createDefault().toDTO());
 
     return EditorWorkspace.load({
       id: EditorWorkspaceId.of(row.id),

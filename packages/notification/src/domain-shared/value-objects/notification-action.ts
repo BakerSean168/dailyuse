@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   NotificationAction as INotificationAction,
   NotificationActionDTO,
-  NotificationActionPersistenceDTO,
   NotificationActionType,
 } from '@dailyuse/contracts/notification';
 
@@ -40,15 +39,6 @@ export class NotificationAction extends ValueObject<NotificationActionDTO> imple
 
   public static fromDTO(dto: NotificationActionDTO): NotificationAction {
     return new NotificationAction(dto);
-  }
-
-  public static fromPersistenceDTO(dto: NotificationActionPersistenceDTO): NotificationAction {
-    return new NotificationAction({
-      id: dto.id,
-      label: dto.label,
-      type: dto.type,
-      payload: dto.payload ? JSON.parse(dto.payload) : undefined,
-    });
   }
 
   // ================= 校验 =================
@@ -84,14 +74,5 @@ export class NotificationAction extends ValueObject<NotificationActionDTO> imple
 
   public toDTO(): NotificationActionDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): NotificationActionPersistenceDTO {
-    return {
-      id: this.props.id,
-      label: this.props.label,
-      type: this.props.type,
-      payload: this.props.payload ? JSON.stringify(this.props.payload) : null,
-    };
   }
 }

@@ -4,7 +4,7 @@ import { FocusModeId } from '@/domain-shared';
 import { createLogger } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { ActivateFocusModeRequest, FocusModeClientDTO } from '@dailyuse/contracts/goal';
+import type { ActivateFocusModeRequest, FocusModeDTO } from '@dailyuse/contracts/goal';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -21,7 +21,7 @@ export class ActivateFocusModeUseCase {
   async execute(
     identityId: string,
     input: ActivateFocusModeRequest,
-  ): Promise<Result<FocusModeClientDTO>> {
+  ): Promise<Result<FocusModeDTO>> {
     this.logger.info('开始启用专注模式', {
       identityId,
       focusedGoalIds: input.focusedGoalIds,
@@ -78,6 +78,6 @@ export class ActivateFocusModeUseCase {
       isActive: focusMode.isActive,
       remainingDays: focusMode.getRemainingDays(),
     });
-    return ok(focusMode.toClientDTO());
+    return ok(focusMode.toDTO());
   }
 }

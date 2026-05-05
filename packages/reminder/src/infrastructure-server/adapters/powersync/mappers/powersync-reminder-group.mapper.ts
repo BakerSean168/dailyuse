@@ -1,7 +1,7 @@
 import type {
   ControlMode,
   ReminderStatus,
-  GroupStatsServerDTO,
+  GroupStatsDTO,
 } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../../domain-server/aggregates/reminder-group';
 import { GroupStats } from '../../../../domain-server/value-objects';
@@ -28,7 +28,7 @@ export type PowerSyncReminderGroupRow = {
 export class PowerSyncReminderGroupMapper {
   static toDomain(data: PowerSyncReminderGroupRow): ReminderGroup {
     const stats = data.stats
-      ? GroupStats.fromDTO(JSON.parse(data.stats) as GroupStatsServerDTO)
+      ? GroupStats.fromDTO(JSON.parse(data.stats) as GroupStatsDTO)
       : GroupStats.createEmpty();
 
     return ReminderGroup.load({

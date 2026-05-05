@@ -7,7 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IGoalFocusApiClient, IResultHttpClient } from '../types';
-import type { FocusModeClientDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
 
 export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
   private readonly baseUrl = '/goals/focus-mode';
@@ -16,19 +16,19 @@ export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
 
   // ===== Session Management =====
 
-  async getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+  async getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>> {
     return this.httpClient.get(this.baseUrl);
   }
 
-  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>> {
+  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>> {
     return this.httpClient.post(`${this.baseUrl}/activate`, request);
   }
 
-  async deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+  async deactivateFocusMode(): Promise<Result<FocusModeDTO | null>> {
     return this.httpClient.post(`${this.baseUrl}/deactivate`);
   }
 
-  async extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeClientDTO>> {
+  async extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeDTO>> {
     return this.httpClient.post(`${this.baseUrl}/extend`, request);
   }
 }

@@ -16,17 +16,6 @@ export interface ResourceMetadataDTO {
   [key: string]: unknown; // 可扩展字段
 }
 
-/**
- * Resource Metadata Persistence DTO (数据库映射)
- */
-export interface ResourceMetadataPersistenceDTO {
-  tags: string[]; // 资源标签
-  wordCount: number | null;
-  readingTime: number | null;
-  thumbnail: string | null;
-  [key: string]: unknown;
-}
-
 // ============ 实体接口 ============
 
 /**

@@ -7,8 +7,8 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  INotificationConfigServer,
-  NotificationConfigServerDTO,
+  INotificationConfig,
+  NotificationConfigDTO,
   NotificationChannel,
   SoundConfig,
   VibrationConfig,
@@ -18,15 +18,15 @@ import type {
 /**
  * ReminderNotificationConfig 值对象实现
  */
-export class ReminderNotificationConfig extends ValueObject<NotificationConfigServerDTO> implements INotificationConfigServer {
+export class ReminderNotificationConfig extends ValueObject<NotificationConfigDTO> implements INotificationConfig {
 
-  private constructor(props: NotificationConfigServerDTO) {
+  private constructor(props: NotificationConfigDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: NotificationConfigServerDTO): ReminderNotificationConfig {
+  public static create(props: NotificationConfigDTO): ReminderNotificationConfig {
     return new ReminderNotificationConfig(props);
   }
 
@@ -41,7 +41,7 @@ export class ReminderNotificationConfig extends ValueObject<NotificationConfigSe
     });
   }
 
-  public static fromDTO(dto: NotificationConfigServerDTO): ReminderNotificationConfig {
+  public static fromDTO(dto: NotificationConfigDTO): ReminderNotificationConfig {
     return new ReminderNotificationConfig(dto);
   }
 
@@ -74,7 +74,7 @@ export class ReminderNotificationConfig extends ValueObject<NotificationConfigSe
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<NotificationConfigServerDTO>,
+    updates: Partial<NotificationConfigDTO>,
   ): ReminderNotificationConfig {
     return new ReminderNotificationConfig({ ...this.props, ...updates });
   }
@@ -122,19 +122,9 @@ export class ReminderNotificationConfig extends ValueObject<NotificationConfigSe
     return this.props.actions !== null && this.props.actions.length > 0;
   }
 
-  public get channelsText(): string {
-    const channelNames: Record<NotificationChannel, string> = {
-      InApp: '应用内',
-      Push: '推送',
-      Email: '邮件',
-      Sms: '短信',
-    };
-    return this.props.channels.map(c => channelNames[c] || c).join(' + ') || '无';
-  }
-
   // ================= 序列化 =================
 
-  public toServerDTO(): NotificationConfigServerDTO {
+  public toDTO(): NotificationConfigDTO {
     return {
       channels: [...this.props.channels],
       title: this.props.title,

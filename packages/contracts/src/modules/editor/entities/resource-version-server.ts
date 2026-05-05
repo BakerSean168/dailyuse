@@ -9,7 +9,6 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { VersionChangeType } from '../value-objects/version-change-type';
 import type { ResourceVersionClientDTO } from './resource-version-client';
@@ -32,20 +31,3 @@ export interface ResourceVersionServerDTO {
   createdAt: TransferDate;
 }
 
-/**
- * Resource Version Persistence DTO (database fields, snake_case).
- */
-export interface ResourceVersionPersistenceDTO {
-  id: ResourceVersionId;
-  resource_id: ResourceId;
-  workspace_id: EditorWorkspaceId;
-  identityId: IdentityId;
-  version_number: number;
-  change_type: VersionChangeType;
-  content_hash: string;
-  content_diff: string | null;
-  change_description: string | null;
-  previous_version_id: ResourceVersionId | null;
-  created_by: string | null;
-  createdAt: PersistenceDate;
-}

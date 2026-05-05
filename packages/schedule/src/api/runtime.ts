@@ -37,7 +37,7 @@ function toScheduledItem(task: ScheduleTask): ScheduledItem | null {
     cronExpression: task.schedule.cronExpression,
     timezone: task.schedule.timezone,
     nextRunAt,
-    metadata: task.metadata.toServerDTO().payload,
+    metadata: task.metadata.toDTO().payload,
   };
 }
 

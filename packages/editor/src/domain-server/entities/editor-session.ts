@@ -17,8 +17,8 @@ import { Entity, generateUUID } from '@dailyuse/utils';
 import type {
   EditorSessionClientDTO,
   EditorSessionServerDTO,
-  SessionLayoutServerDTO,
-  TabViewStateServerDTO,
+  SessionLayoutDTO,
+  TabViewStateDTO,
 } from '@dailyuse/contracts/editor';
 import { TabType } from '@dailyuse/contracts/editor';
 import type {
@@ -149,7 +149,7 @@ export class EditorSession extends Entity<EditorSessionId> {
     identityId: IdentityId;
     name: string;
     description?: string;
-    layout?: Partial<SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutDTO>;
     createDefaultGroup?: boolean;
   }): EditorSession {
     const id = EditorSessionIdType.of(EditorSessionIdType.generate());
@@ -157,7 +157,7 @@ export class EditorSession extends Entity<EditorSessionId> {
 
     const layout = params.layout
       ? SessionLayout.fromDTO({
-          ...SessionLayout.createDefault().toServerDTO(),
+          ...SessionLayout.createDefault().toDTO(),
           ...params.layout,
         })
       : SessionLayout.createDefault();
@@ -252,7 +252,7 @@ export class EditorSession extends Entity<EditorSessionId> {
       groupId?: string;
       tabType?: TabType;
       name?: string;
-      viewState?: Partial<TabViewStateServerDTO>;
+      viewState?: Partial<TabViewStateDTO>;
       isPinned?: boolean;
     },
   ): EditorTab {
@@ -335,7 +335,7 @@ export class EditorSession extends Entity<EditorSessionId> {
   /**
    * 更新布局配置
    */
-  public updateLayout(layout: Partial<SessionLayoutServerDTO>): void {
+  public updateLayout(layout: Partial<SessionLayoutDTO>): void {
     this._props.layout = this._props.layout.with(layout);
     this.updateTimestamp();
   }
@@ -420,7 +420,7 @@ export class EditorSession extends Entity<EditorSessionId> {
       groups: this._groups.map((group) => group.toServerDTO()),
       isActive: this._props.isActive,
       activeGroupIndex: this._props.activeGroupIndex,
-      layout: this._props.layout.toServerDTO(),
+      layout: this._props.layout.toDTO(),
       lastAccessedAt: this._props.lastAccessedAt,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
@@ -440,7 +440,7 @@ export class EditorSession extends Entity<EditorSessionId> {
       groups: this._groups.map((group) => group.toClientDTO()),
       isActive: this._props.isActive,
       activeGroupIndex: this._props.activeGroupIndex,
-      layout: this._props.layout.toServerDTO(),
+      layout: this._props.layout.toDTO(),
       groupCount: this._groups.length,
       lastAccessedAt: this._props.lastAccessedAt,
       createdAt: this._props.createdAt.getTime(),

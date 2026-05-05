@@ -6,7 +6,6 @@
 // ============ ScheduleExecution Entity ============
 export type {
   ScheduleExecutionServerDTO,
-  ScheduleExecutionPersistenceDTO,
 } from './schedule-execution-server';
 
 export type {

@@ -27,14 +27,5 @@ export interface SyncConfigDTO {
 }
 
 
-/**
- * SyncConfig Persistence DTO
- */
-export interface SyncConfigPersistenceDTO {
-  enabled: boolean;
-  syncToCloud: boolean;
-  syncToDevices: boolean;
-}
-
 
 

@@ -93,7 +93,7 @@ describe('PrismaGoalMapper additional coverage', () => {
     expect(dto.keyResults?.[0].sortOrder).toBe(0);
     expect(dto.goalReviews?.[0].rating).toBe(3);
     expect(dto.goalReviews?.[0].improvements).toBe('learned');
-    expect(dto.goalReviews?.[0].keyResultSnapshots).toBe('[]');
+    expect(dto.goalReviews?.[0].keyResultSnapshots).toEqual([]);
     expect(dto.weightSnapshots?.[0].snapshotTime).toBe(1_500);
     expect(dto.weightSnapshots?.[0].createdAt).toBe(1_600);
     expect(dto.version).toBe(1);
@@ -160,11 +160,11 @@ describe('PrismaGoalMapper additional coverage', () => {
     expect(dto.trigger).toBe('Auto');
   });
 
-  it('parses key result progress from string and object with defaults', () => {
-    const fromString = PrismaGoalMapper.parseKeyResultProgress({
-      progress: JSON.stringify({ currentValue: 8 }),
+  it('parses key result progress from object with defaults', () => {
+    const fromPartial = PrismaGoalMapper.parseKeyResultProgress({
+      progress: { currentValue: 8 },
     } as any);
-    const fromObject = PrismaGoalMapper.parseKeyResultProgress({
+    const fromFull = PrismaGoalMapper.parseKeyResultProgress({
       progress: {
         valueType: 'Absolute',
         aggregationMethod: 'Max',
@@ -175,7 +175,7 @@ describe('PrismaGoalMapper additional coverage', () => {
       },
     } as any);
 
-    expect(fromString).toEqual({
+    expect(fromPartial).toEqual({
       valueType: 'Incremental',
       aggregationMethod: 'Last',
       initialValue: 0,
@@ -183,7 +183,7 @@ describe('PrismaGoalMapper additional coverage', () => {
       currentValue: 8,
       unit: null,
     });
-    expect(fromObject).toEqual({
+    expect(fromFull).toEqual({
       valueType: 'Absolute',
       aggregationMethod: 'Max',
       initialValue: 2,

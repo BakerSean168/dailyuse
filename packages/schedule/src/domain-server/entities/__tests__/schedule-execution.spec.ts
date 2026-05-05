@@ -155,32 +155,6 @@ describe('ScheduleExecution Entity', () => {
       expect(dto.status).toBe(ExecutionStatus.Success);
       expect(dto.duration).toBe(250);
       expect(dto.result).toEqual({ output: 'done' });
-      expect(dto.statusDisplay).toBeDefined();
-      expect(dto.statusColor).toBeDefined();
-    });
-
-    it('should expose retrying and timeout client presentation fields', () => {
-      execution.incrementRetry();
-      expect(execution.toClientDTO().statusDisplay).toBe('重试中');
-      expect(execution.toClientDTO().statusColor).toBe('blue');
-
-      execution.markTimeout(1500);
-      const dto = execution.toClientDTO();
-      expect(dto.statusDisplay).toBe('执行超时');
-      expect(dto.durationFormatted).toBe('1.50 秒');
-    });
-
-    it('should format null durations and empty results for skipped executions', () => {
-      const fresh = ScheduleExecution.create({
-        taskId,
-        executionTime,
-      });
-      expect(fresh.toClientDTO().durationFormatted).toBe('-');
-
-      execution.markSkipped('nothing to do');
-      const dto = execution.toClientDTO();
-      expect(dto.resultSummary).toBe('空');
-      expect(dto.statusColor).toBe('gray');
     });
   });
 

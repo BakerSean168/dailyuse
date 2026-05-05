@@ -154,45 +154,6 @@ describe('ContactEmail', () => {
     });
   });
 
-  describe('toPersistenceDTO', () => {
-    it('should convert verifiedAt timestamp to Date', () => {
-      const ts = Date.now();
-      const email = ContactEmail.create(anEmailDTO({ isVerified: true, verifiedAt: ts }));
-      const pDto = email.toPersistenceDTO();
-      expect(pDto.verifiedAt).toBeInstanceOf(Date);
-    });
-
-    it('should keep verifiedAt null when not verified', () => {
-      const email = ContactEmail.create(anEmailDTO());
-      const pDto = email.toPersistenceDTO();
-      expect(pDto.verifiedAt).toBeNull();
-    });
-  });
-
-  describe('fromPersistenceDTO', () => {
-    it('should reconstruct from persistence DTO', () => {
-      const email = ContactEmail.fromPersistenceDTO({
-        address: 'restored@test.com',
-        isVerified: true,
-        verifiedAt: new Date('2024-01-01'),
-        isPrimary: false,
-      });
-      expect(email.address).toBe('restored@test.com');
-      expect(email.isVerified).toBe(true);
-      expect(email.isPrimary).toBe(false);
-    });
-
-    it('should handle null verifiedAt', () => {
-      const email = ContactEmail.fromPersistenceDTO({
-        address: 'no-verify@test.com',
-        isVerified: false,
-        verifiedAt: null,
-        isPrimary: true,
-      });
-      expect(email.verifiedAt).toBeNull();
-    });
-  });
-
   // =========================================================================
   // value object equality
   // =========================================================================

@@ -2,7 +2,7 @@
  * 账户模块的电话
  */
 
-import type { DomainDate, PersistenceDate, TransferDate } from '../../../primitives';
+import type { DomainDate, TransferDate } from '../../../primitives';
 
 export interface ContactPhone {
   countryCode: string;
@@ -18,12 +18,4 @@ export interface ContactPhoneDTO {
   fullNumber: string;
   isVerified: boolean;
   verifiedAt: TransferDate | null;
-}
-
-export interface ContactPhonePersistenceDTO {
-  countryCode: string;
-  number: string;
-  fullNumber: string;
-  isVerified: boolean;
-  verifiedAt: PersistenceDate | null;
 }

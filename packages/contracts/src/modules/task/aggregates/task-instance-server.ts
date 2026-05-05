@@ -1,7 +1,7 @@
 /**
  * TaskInstance Aggregate Root - Server Interface
  * 任务实例聚合根
- * 
+ *
  * 【同步支持】
  * - deletedAt: 软删除时间戳
  * - version: 乐观锁版本号
@@ -12,16 +12,12 @@ import type {
   TaskInstanceId,
   TaskTemplateId,
   IdentityId,
-  DomainDate,
   TransferDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
-  TaskTimeConfig,
   TaskTimeConfigDTO,
-  CompletionRecord,
   CompletionRecordDTO,
 } from '../value-objects';
 
@@ -44,39 +40,12 @@ export interface TaskInstanceServerDTO {
 
   instanceDate: TransferDate;
   timeConfig: TaskTimeConfigDTO;
-  
+
   comment: string | null;
-  
+
   // 同步字段
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * TaskInstance Persistence DTO
- */
-export interface TaskInstancePersistenceDTO {
-  id: string;
-  templateId: string;
-  identityId: string;
-
-  importance: string;
-  priority?: number;
-
-  instanceDate: PersistenceDate;
-  timeConfig: string; // JSON
-  
-  status: string;
-  actualStartTime: PersistenceDate | null;
-  actualEndTime: PersistenceDate | null;
-  
-  comment: string | null;
-  
-  // 同步字段
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

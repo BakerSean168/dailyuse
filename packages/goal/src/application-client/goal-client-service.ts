@@ -32,7 +32,7 @@ import type {
   GetGoalReviewsRes,
   GetGoalAggregateRes,
   ProgressBreakdown,
-  FocusModeClientDTO,
+  FocusModeDTO,
   ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
 import type { IGoalApiClient } from './ports/goal-api-client.port';
@@ -226,10 +226,10 @@ export interface GoalClientPort {
   getGoalFolder(id: string): Promise<Result<GoalFolder>>;
   updateGoalFolder(id: string, request: UpdateGoalFolderReq): Promise<Result<GoalFolder>>;
   deleteGoalFolder(id: string): Promise<Result<void>>;
-  getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
-  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>>;
-  deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
-  extendFocusMode(newEndTime: number): Promise<Result<FocusModeClientDTO>>;
+  getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>>;
+  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>>;
+  deactivateFocusMode(): Promise<Result<FocusModeDTO | null>>;
+  extendFocusMode(newEndTime: number): Promise<Result<FocusModeDTO>>;
 }
 
 export class GoalClientService implements GoalClientPort {
@@ -537,19 +537,19 @@ export class GoalClientService implements GoalClientPort {
     return this.focusApi;
   }
 
-  async getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+  async getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>> {
     return this.requireFocusApi().getCurrentFocusMode();
   }
 
-  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>> {
+  async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>> {
     return this.requireFocusApi().activateFocusMode(request);
   }
 
-  async deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>> {
+  async deactivateFocusMode(): Promise<Result<FocusModeDTO | null>> {
     return this.requireFocusApi().deactivateFocusMode();
   }
 
-  async extendFocusMode(newEndTime: number): Promise<Result<FocusModeClientDTO>> {
+  async extendFocusMode(newEndTime: number): Promise<Result<FocusModeDTO>> {
     return this.requireFocusApi().extendFocusMode({ newEndTime });
   }
 }

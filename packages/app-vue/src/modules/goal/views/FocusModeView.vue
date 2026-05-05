@@ -96,7 +96,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { createLogger } from '@dailyuse/utils';
 import { useGoal } from '../composables/useGoal';
-import type { FocusModeClientDTO } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO } from '@dailyuse/contracts/goal';
 import {
   Button,
   Card,
@@ -131,7 +131,7 @@ const selectedGoalIds = ref<string[]>([]);
 const activeGoals = computed(() =>
   goal.goals.value.filter((item) => !item.archivedAt && !item.deletedAt && !!item.targetDate),
 );
-const currentFocusMode = ref<FocusModeClientDTO | null>(null);
+const currentFocusMode = ref<FocusModeDTO | null>(null);
 
 const refresh = async () => {
   logger.info(
@@ -161,8 +161,8 @@ const formatTime = (value: number) =>
     minute: '2-digit',
   });
 
-const formatHiddenMode = (mode: FocusModeClientDTO['hiddenGoalsMode']) => {
-  const labels: Record<FocusModeClientDTO['hiddenGoalsMode'], string> = {
+const formatHiddenMode = (mode: FocusModeDTO['hiddenGoalsMode']) => {
+  const labels: Record<FocusModeDTO['hiddenGoalsMode'], string> = {
     Hide: t('goal.focusMode.activateDialog.modeHide'),
     Dim: t('goal.focusMode.activateDialog.modeDim'),
     Collapse: t('goal.focusMode.activateDialog.modeFold'),

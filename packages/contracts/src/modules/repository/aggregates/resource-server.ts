@@ -7,7 +7,6 @@ import type {
   FolderId,
   DomainDate,
   TransferDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { ResourceType } from '../value-objects/resource-type';
 import type { ResourceStatus } from '../value-objects/resource-status';
@@ -56,24 +55,3 @@ export interface ResourceServerDTO {
   deletedAt: TransferDate | null;
 }
 
-/**
- * Resource Persistence DTO
- */
-export interface ResourcePersistenceDTO {
-  id: string;
-  repositoryId: string;
-  folderId: string | null;
-  name: string;
-  type: ResourceType;
-  mimeType: string | null;
-  path: string;
-  size: number | null;
-  content: string | null;
-  metadata: string; // JSON string
-  stats: string; // JSON string
-  status: ResourceStatus;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-}

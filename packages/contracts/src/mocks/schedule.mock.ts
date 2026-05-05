@@ -28,56 +28,57 @@ export function createMockScheduleTask(
     identityId: faker.string.uuid() as IdentityId,
     name: faker.lorem.words({ min: 2, max: 4 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    sourceModule: faker.helpers.arrayElement(['reminder', 'task', 'goal']),
+    sourceModule: faker.helpers.arrayElement(['Reminder', 'Task', 'Goal', 'Notification', 'System', 'Custom']),
     sourceEntityId: faker.string.uuid(),
     status: faker.helpers.arrayElement(['Active', 'Paused', 'Completed', 'Cancelled', 'Failed']),
     enabled: faker.datatype.boolean(),
     schedule: {
-      type: faker.helpers.arrayElement(['Cron', 'Interval', 'Once']),
       cronExpression: faker.datatype.boolean() ? '0 9 * * *' : null,
-      intervalMinutes: faker.datatype.boolean() ? faker.number.int({ min: 5, max: 1440 }) : null,
-      nextRunAt: now + faker.number.int({ min: 60000, max: 86400000 }),
-      lastRunAt: faker.datatype.boolean()
-        ? now - faker.number.int({ min: 60000, max: 86400000 })
+      timezone: 'UTC',
+      startDate: faker.datatype.boolean()
+        ? new Date(now - faker.number.int({ min: 86400000, max: 30 * 86400000 })).toISOString()
         : null,
+      endDate: faker.datatype.boolean()
+        ? new Date(now + faker.number.int({ min: 86400000, max: 90 * 86400000 })).toISOString()
+        : null,
+      maxExecutions: faker.datatype.boolean() ? faker.number.int({ min: 10, max: 1000 }) : null,
     },
     execution: {
-      totalRuns: faker.number.int({ min: 0, max: 100 }),
-      successfulRuns: faker.number.int({ min: 0, max: 50 }),
-      failedRuns: faker.number.int({ min: 0, max: 10 }),
-      lastSuccessAt: faker.datatype.boolean()
-        ? now - faker.number.int({ min: 0, max: 86400000 })
+      nextRunAt: faker.datatype.boolean()
+        ? new Date(now + faker.number.int({ min: 60000, max: 86400000 })).toISOString()
         : null,
-      lastFailureAt: faker.datatype.boolean()
-        ? now - faker.number.int({ min: 0, max: 86400000 })
+      lastRunAt: faker.datatype.boolean()
+        ? new Date(now - faker.number.int({ min: 60000, max: 86400000 })).toISOString()
         : null,
+      executionCount: faker.number.int({ min: 0, max: 100 }),
+      lastExecutionStatus: faker.helpers.arrayElement([
+        'Success', 'Failed', 'Timeout', 'Skipped', 'Retrying', null,
+      ]),
+      lastExecutionDuration: faker.datatype.boolean()
+        ? faker.number.int({ min: 100, max: 30000 })
+        : null,
+      consecutiveFailures: faker.number.int({ min: 0, max: 5 }),
     },
     retryPolicy: {
+      enabled: faker.datatype.boolean(),
       maxRetries: faker.number.int({ min: 0, max: 5 }),
-      retryDelayMs: faker.helpers.arrayElement([1000, 5000, 10000, 30000]),
+      retryDelay: faker.helpers.arrayElement([1000, 5000, 10000, 30000]),
       backoffMultiplier: faker.number.float({ min: 1, max: 3, fractionDigits: 1 }),
+      maxRetryDelay: faker.helpers.arrayElement([60000, 300000, 600000]),
     },
     metadata: {
-      createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
-      updatedAt: now,
+      payload: {},
       tags: faker.helpers.arrayElements(
         ['important', 'routine', 'cleanup', 'sync'],
         faker.number.int({ min: 0, max: 2 }),
       ),
+      priority: faker.helpers.arrayElement(['low', 'medium', 'high', 'critical']),
+      timeout: faker.datatype.boolean() ? faker.number.int({ min: 5000, max: 120000 }) : null,
     },
     version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
     deletedAt: null,
-    statusDisplay: faker.helpers.arrayElement(['活跃', '暂停', '完成', '取消', '失败']),
-    statusColor: faker.helpers.arrayElement(['green', 'gray', 'blue', 'red', 'orange']),
-    sourceModuleDisplay: faker.helpers.arrayElement(['提醒模块', '任务模块', '目标模块']),
-    enabledDisplay: faker.datatype.boolean() ? '启用' : '禁用',
-    nextRunAtFormatted: faker.date.future().toISOString(),
-    lastRunAtFormatted: faker.datatype.boolean() ? faker.date.recent().toISOString() : '从未执行',
-    executionSummary: `已执行 ${faker.number.int({ min: 0, max: 50 })} 次，成功 ${faker.number.int({ min: 0, max: 40 })} 次`,
-    healthStatus: faker.helpers.arrayElement(['healthy', 'warning', 'critical']),
-    isOverdue: faker.datatype.boolean(),
     executions: null,
     ...overrides,
   } as ScheduleTaskClientDTO;
@@ -95,7 +96,7 @@ export function createMockScheduleExecution(
 ): ScheduleExecutionClientDTO {
   const now = Date.now();
   const id = faker.string.uuid();
-  const status = faker.helpers.arrayElement(['Success', 'Failed', 'Timeout', 'Skipped', 'Retry']);
+  const status = faker.helpers.arrayElement(['Success', 'Failed', 'Timeout', 'Skipped', 'Retrying']);
 
   return {
     id,
@@ -110,13 +111,6 @@ export function createMockScheduleExecution(
     createdAt: now - faker.number.int({ min: 0, max: 86400000 }),
     updatedAt: now,
     deletedAt: null,
-    executionTimeFormatted: faker.date.recent().toISOString(),
-    statusDisplay: faker.helpers.arrayElement(['成功', '失败', '超时', '跳过', '重试中']),
-    statusColor: faker.helpers.arrayElement(['green', 'red', 'orange', 'gray', 'yellow']),
-    durationFormatted: `${faker.number.int({ min: 100, max: 5000 })}ms`,
-    hasError: status === 'Failed',
-    hasResult: faker.datatype.boolean(),
-    resultSummary: faker.datatype.boolean() ? '执行成功' : '无结果',
     ...overrides,
   } as ScheduleExecutionClientDTO;
 }

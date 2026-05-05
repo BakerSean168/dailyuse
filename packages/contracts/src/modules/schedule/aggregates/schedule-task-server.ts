@@ -9,14 +9,14 @@ import type {
   ScheduleTaskStatus,
   SourceModule,
   ExecutionStatus,
-  ScheduleConfigServer,
-  ScheduleConfigServerDTO,
-  ExecutionInfoServer,
-  ExecutionInfoServerDTO,
-  RetryPolicyServer,
-  RetryPolicyServerDTO,
-  TaskMetadataServer,
-  TaskMetadataServerDTO,
+  IScheduleConfig,
+  ScheduleConfigDTO,
+  IExecutionInfo,
+  ExecutionInfoDTO,
+  IRetryPolicy,
+  RetryPolicyDTO,
+  ITaskMetadata,
+  TaskMetadataDTO,
 } from '../value-objects';
 
 // ============ DTO 定义 ============
@@ -35,10 +35,10 @@ export interface ScheduleTaskServerDTO {
   enabled: boolean;
 
   // 值对象
-  schedule: ScheduleConfigServerDTO;
-  execution: ExecutionInfoServerDTO;
-  retryPolicy: RetryPolicyServerDTO;
-  metadata: TaskMetadataServerDTO;
+  schedule: ScheduleConfigDTO;
+  execution: ExecutionInfoDTO;
+  retryPolicy: RetryPolicyDTO;
+  metadata: TaskMetadataDTO;
 
   // 时间戳
   version: number;
@@ -48,56 +48,6 @@ export interface ScheduleTaskServerDTO {
 
   // ===== 子实体 DTO (聚合根包含子实体) =====
   executions?: ScheduleExecutionServerDTO[] | null; // 执行记录列表（可选加载）
-}
-
-/**
- * ScheduleTask Persistence DTO (数据库映射)
- */
-export interface ScheduleTaskPersistenceDTO {
-  id: string;
-  identityId: string;
-  name: string;
-  description: string | null;
-  sourceModule: SourceModule;
-  sourceEntityId: string;
-  status: ScheduleTaskStatus;
-  enabled: boolean;
-
-  // ========== ScheduleConfig 值对象（展开字段）==========
-  cronExpression: string | null;
-  timezone: string;
-  startDate: Date | null;
-  endDate: Date | null;
-  maxExecutions: number | null;
-
-  // ========== ExecutionInfo 值对象（展开字段）==========
-  nextRunAt: Date | null;
-  lastRunAt: Date | null;
-  executionCount: number;
-  lastExecutionStatus: string | null;
-  lastExecutionDuration: number | null; // ms
-  consecutiveFailures: number;
-
-  // ========== RetryPolicy 值对象（展开字段）==========
-  maxRetries: number;
-  initialDelayMs: number;
-  maxDelayMs: number;
-  backoffMultiplier: number;
-  retryableStatuses: string; // JSON array string
-
-  // ========== TaskMetadata 值对象（展开字段）==========
-  payload: unknown; // JSON (复杂数据保留)
-  tags: string; // JSON array string
-  priority: string;
-  timeout: number | null;
-
-  // 时间戳
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-
-  // 注意：子实体在数据库中是独立表，通过外键关联
 }
 
 // ============ 领域事件 ============
@@ -119,10 +69,10 @@ export interface ScheduleTaskServerStatic {
     name: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
-    schedule: ScheduleConfigServerDTO;
+    schedule: ScheduleConfigDTO;
     description?: string;
-    metadata?: Partial<TaskMetadataServerDTO>;
-    retryPolicy?: Partial<RetryPolicyServerDTO>;
+    metadata?: Partial<TaskMetadataDTO>;
+    retryPolicy?: Partial<RetryPolicyDTO>;
   }): ScheduleTaskServerDTO;
 
   /**

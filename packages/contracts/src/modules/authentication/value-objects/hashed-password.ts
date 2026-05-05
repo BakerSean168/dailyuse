@@ -45,14 +45,3 @@ export interface HashedPasswordDTO {
   createdAt: number;
 }
 
-// ============ Persistence DTO ============
-
-/**
- * 持久化 DTO（数据库存储）
- */
-export interface HashedPasswordPersistenceDTO {
-  hash: string;
-  salt: string;
-  algorithm: PasswordAlgorithm;
-  createdAt: Date;
-}

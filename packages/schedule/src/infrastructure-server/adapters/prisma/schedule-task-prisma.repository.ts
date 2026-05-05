@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  * - Implements IScheduleTaskRepository interface
- * - Uses toPersistenceDTO/fromPersistenceDTO for data mapping
+ * - Uses mapper for data mapping
  * - Manages ScheduleExecution child entity persistence
  * - Publishes domain events after successful persistence
  *

@@ -53,7 +53,7 @@ export {
 // ============================================================
 // Mappers
 // ============================================================
-export { GoalMapper, type GoalPersistenceDTO } from './mappers';
+export { GoalMapper } from './mappers';
 
 // ============================================================
 // Event Handlers

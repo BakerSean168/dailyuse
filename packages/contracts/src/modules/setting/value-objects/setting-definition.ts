@@ -38,10 +38,3 @@ export interface SettingDefinitionDTO {
   description?: string;
 }
 
-export interface SettingDefinitionPersistenceDTO {
-  key: string;
-  category: SettingCategory;
-  defaultValue: string; // JSON string
-  isSyncable: boolean;
-  description?: string;
-}

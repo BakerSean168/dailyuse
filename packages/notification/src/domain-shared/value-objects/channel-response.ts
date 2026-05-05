@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   ChannelResponse as IChannelResponse,
   ChannelResponseDTO,
-  ChannelResponsePersistenceDTO,
 } from '@dailyuse/contracts/notification';
 
 /**
@@ -47,14 +46,6 @@ export class ChannelResponse extends ValueObject<ChannelResponseDTO> implements 
     return new ChannelResponse(dto);
   }
 
-  public static fromPersistenceDTO(dto: ChannelResponsePersistenceDTO): ChannelResponse {
-    return new ChannelResponse({
-      messageId: dto.messageId,
-      statusCode: dto.statusCode,
-      data: dto.data ? JSON.parse(dto.data) : undefined,
-    });
-  }
-
   // ================= Getters =================
 
   public get messageId(): string | null {
@@ -89,13 +80,5 @@ export class ChannelResponse extends ValueObject<ChannelResponseDTO> implements 
 
   public toDTO(): ChannelResponseDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): ChannelResponsePersistenceDTO {
-    return {
-      messageId: this.props.messageId,
-      statusCode: this.props.statusCode,
-      data: this.props.data ? JSON.stringify(this.props.data) : null,
-    };
   }
 }

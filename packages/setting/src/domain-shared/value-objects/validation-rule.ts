@@ -8,7 +8,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   ValidationRuleDTO,
-  ValidationRulePersistenceDTO,
   ValidationRule as IValidationRule,
 } from '@dailyuse/contracts/setting';
 
@@ -51,17 +50,6 @@ export class ValidationRule extends ValueObject<ValidationRuleDTO> implements IV
 
   public static fromDTO(dto: ValidationRuleDTO): ValidationRule {
     return new ValidationRule(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ValidationRulePersistenceDTO): ValidationRule {
-    return new ValidationRule({
-      required: dto.required,
-      min: dto.min,
-      max: dto.max,
-      pattern: dto.pattern,
-      enum: dto.enum !== null ? JSON.parse(dto.enum) : null,
-      custom: dto.custom,
-    });
   }
 
   // ================= Getters =================
@@ -155,14 +143,4 @@ export class ValidationRule extends ValueObject<ValidationRuleDTO> implements IV
     };
   }
 
-  public toPersistenceDTO(): ValidationRulePersistenceDTO {
-    return {
-      required: this.props.required,
-      min: this.props.min,
-      max: this.props.max,
-      pattern: this.props.pattern,
-      enum: this.props.enum !== null ? JSON.stringify(this.props.enum) : null,
-      custom: this.props.custom,
-    };
-  }
 }

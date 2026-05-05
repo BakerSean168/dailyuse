@@ -7,7 +7,7 @@
 
 import type { EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { EditorGroupClientDTO } from './editor-group-client';
-import type { SessionLayoutClientDTO } from '../value-objects/session-layout';
+import type { SessionLayoutDTO } from '../value-objects/session-layout';
 
 export interface EditorSessionClientDTO {
   // ===== 基础属性 =====
@@ -25,7 +25,7 @@ export interface EditorSessionClientDTO {
   activeGroupIndex: number;
 
   // ===== 布局配置 =====
-  layout: SessionLayoutClientDTO;
+  layout: SessionLayoutDTO;
 
   // ===== UI 辅助字段 =====
   groupCount: number;

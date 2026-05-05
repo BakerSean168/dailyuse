@@ -25,11 +25,3 @@ export interface ChannelResponseDTO {
   data?: unknown;
 }
 
-/**
- * ChannelResponse Persistence DTO (持久层)
- */
-export interface ChannelResponsePersistenceDTO {
-  messageId: string | null;
-  statusCode: number | null;
-  data: string | null; // JSON string
-}

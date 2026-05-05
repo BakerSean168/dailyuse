@@ -695,14 +695,14 @@ describe('ReminderTemplate aggregate', () => {
   });
 
   describe('toClientDTO()', () => {
-    it('should return a client DTO with display fields', () => {
+    it('should return a client DTO with data fields', () => {
       const template = ReminderTemplate.load(makeState({ title: 'Client DTO' }));
       const dto = template.toClientDTO();
 
-      expect(dto.displayTitle).toBe('Client DTO');
-      expect(dto.typeText).toBeDefined();
-      expect(dto.statusText).toBeDefined();
-      expect(dto.importanceText).toBeDefined();
+      expect(dto.name).toBe('Client DTO');
+      expect(dto.type).toBeDefined();
+      expect(dto.status).toBeDefined();
+      expect(dto.importanceLevel).toBeDefined();
     });
   });
 });

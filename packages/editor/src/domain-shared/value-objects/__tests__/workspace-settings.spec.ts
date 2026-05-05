@@ -47,9 +47,9 @@ describe('WorkspaceSettings', () => {
     expect(settings.autoSaveFormatted).toBe('每 60 秒');
   });
 
-  it('converts to/from Server DTO', () => {
+  it('converts to/from DTO', () => {
     const settings = WorkspaceSettings.createDefault();
-    const dto = settings.toServerDTO();
+    const dto = settings.toDTO();
     expect(dto.theme).toBe('default');
 
     const settingsFromDto = WorkspaceSettings.fromDTO(dto);
@@ -57,15 +57,6 @@ describe('WorkspaceSettings', () => {
 
     const settingsCreated = WorkspaceSettings.create(dto);
     expect(settingsCreated.theme).toBe('default');
-  });
-
-  it('converts to/from Persistence DTO', () => {
-    const settings = WorkspaceSettings.createDefault();
-    const dto = settings.toPersistenceDTO();
-    expect(dto.theme).toBe('default');
-
-    const parsedSettings = WorkspaceSettings.fromPersistenceDTO(dto);
-    expect(parsedSettings.theme).toBe('default');
   });
 
   it('handles null values in DTOs', () => {
@@ -83,11 +74,5 @@ describe('WorkspaceSettings', () => {
     expect(settings.theme).toBeNull();
     expect(settings.autoSave).toBeNull();
     expect(settings.hasCustomTheme).toBe(false);
-
-    const pdto = settings.toPersistenceDTO();
-    expect(pdto.auto_save).toBeNull();
-
-    const settingsFromPdto = WorkspaceSettings.fromPersistenceDTO(pdto);
-    expect(settingsFromPdto.autoSave).toBeNull();
   });
 });

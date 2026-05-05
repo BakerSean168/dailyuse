@@ -29,13 +29,3 @@ export interface NotificationActionDTO {
   payload?: unknown;
 }
 
-/**
- * NotificationAction Persistence DTO (持久层)
- */
-export interface NotificationActionPersistenceDTO {
-  id: string;
-  label: string;
-  type: NotificationActionType;
-  payload: string | null; // JSON string
-}
-

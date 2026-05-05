@@ -8,7 +8,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   UIConfigDTO,
-  UIConfigPersistenceDTO,
   UIConfig as IUIConfig,
 } from '@dailyuse/contracts/setting';
 
@@ -87,23 +86,6 @@ export class UIConfig extends ValueObject<UIConfigDTO> implements IUIConfig {
 
   public static fromDTO(dto: UIConfigDTO): UIConfig {
     return new UIConfig(dto);
-  }
-
-  public static fromPersistenceDTO(dto: UIConfigPersistenceDTO): UIConfig {
-    return new UIConfig({
-      inputType: dto.inputType as UIInputType,
-      label: dto.label,
-      placeholder: dto.placeholder,
-      helpText: dto.helpText,
-      icon: dto.icon,
-      order: dto.order,
-      visible: dto.visible,
-      disabled: dto.disabled,
-      options: dto.options !== null ? JSON.parse(dto.options) : null,
-      min: dto.min,
-      max: dto.max,
-      step: dto.step,
-    });
   }
 
   // ================= Getters =================
@@ -226,20 +208,4 @@ export class UIConfig extends ValueObject<UIConfigDTO> implements IUIConfig {
     };
   }
 
-  public toPersistenceDTO(): UIConfigPersistenceDTO {
-    return {
-      inputType: this.props.inputType,
-      label: this.props.label,
-      placeholder: this.props.placeholder,
-      helpText: this.props.helpText,
-      icon: this.props.icon,
-      order: this.props.order,
-      visible: this.props.visible,
-      disabled: this.props.disabled,
-      options: this.props.options !== null ? JSON.stringify(this.props.options) : null,
-      min: this.props.min,
-      max: this.props.max,
-      step: this.props.step,
-    };
-  }
 }

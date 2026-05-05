@@ -1,8 +1,8 @@
 import type {
-  ActiveHoursConfigServerDTO,
-  ActiveTimeConfigServerDTO,
-  NotificationConfigServerDTO,
-  TriggerConfigServerDTO,
+  ActiveHoursConfigDTO,
+  ActiveTimeConfigDTO,
+  NotificationConfigDTO,
+  TriggerConfigDTO,
 } from '@dailyuse/contracts/reminder';
 import { ControlMode, ReminderType } from '@dailyuse/contracts/reminder';
 import type { IReminderGroupRepository, IReminderTemplateRepository } from '../repositories';
@@ -90,11 +90,11 @@ export class ReminderDomainService {
     identityId: string;
     title: string;
     type: ReminderType;
-    trigger: TriggerConfigServerDTO;
-    activeTime: ActiveTimeConfigServerDTO;
-    notificationConfig: NotificationConfigServerDTO;
+    trigger: TriggerConfigDTO;
+    activeTime: ActiveTimeConfigDTO;
+    notificationConfig: NotificationConfigDTO;
     description?: string;
-    activeHours?: ActiveHoursConfigServerDTO;
+    activeHours?: ActiveHoursConfigDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string;

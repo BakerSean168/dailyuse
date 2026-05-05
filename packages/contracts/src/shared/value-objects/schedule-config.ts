@@ -1,4 +1,4 @@
-import type { TransferDate, DomainDate, PersistenceDate } from '../../primitives';
+import type { TransferDate, DomainDate } from '../../primitives';
 
 /**
  * 通用的任务队列配置接口
@@ -23,18 +23,6 @@ export interface ScheduleConfigDTO {
 
   // 具体的触发值
   datetime?: TransferDate; // ISO String (for FIXED)
-  cronExpression?: string; // (for CRON)
-
-  // 时区 (非常重要)
-  timezone?: string;
-}
-
-export interface ScheduleConfigPersistenceDTO {
-  // 模式：固定时间点 vs Cron 周期
-  mode: ScheduleMode;
-
-  // 具体的触发值
-  datetime?: PersistenceDate; // ISO String (for FIXED)
   cronExpression?: string; // (for CRON)
 
   // 时区 (非常重要)

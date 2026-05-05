@@ -1772,7 +1772,29 @@ export default {
         task: '任务模块',
         goal: '目标模块',
         notification: '通知模块',
+        system: '系统模块',
+        custom: '自定义模块',
       },
+    },
+
+    presentation: {
+      executionSummary: '已执行 {total} 次，成功 {success} 次',
+      healthHealthy: '健康',
+      healthWarning: '警告',
+      healthCritical: '严重',
+      durationMs: '{ms} 毫秒',
+      durationSec: '{sec} 秒',
+    },
+
+    dev: {
+      title: '调度调试',
+      subtitle: '开发环境调度任务调试面板',
+      noTasks: '暂无调度任务',
+      source: '来源',
+      enabled: '启用',
+      nextRun: '下次执行',
+      executions: '执行情况',
+      health: '健康状态',
     },
 
     error: {
@@ -3687,6 +3709,14 @@ export default {
       labelIcon: '图标（可选）',
       btnCancel: '取消',
       btnCreate: '创建',
+    },
+    presentation: {
+      statusActive: '活跃',
+      statusArchived: '已归档',
+      statusDeleted: '已删除',
+      typeMarkdown: 'Markdown',
+      typeCode: '代码',
+      typeMixed: '混合',
     },
     aiKnowledge: {
       title: 'AI 知识笔记生成',

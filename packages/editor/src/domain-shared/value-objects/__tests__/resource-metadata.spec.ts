@@ -56,9 +56,9 @@ describe('ResourceMetadata', () => {
     expect(metadata.customFields).toEqual({ author: 'John', status: 'draft' });
   });
 
-  it('converts to/from Server DTO', () => {
+  it('converts to/from DTO', () => {
     const metadata = ResourceMetadata.createEmpty();
-    const dto = metadata.toServerDTO();
+    const dto = metadata.toDTO();
     expect(dto.tags).toEqual([]);
 
     const metadataFromDto = ResourceMetadata.fromDTO(dto);
@@ -69,24 +69,8 @@ describe('ResourceMetadata', () => {
 
     // With custom fields
     const metadataWithCustom = ResourceMetadata.createEmpty().setCustomField('key', 'value');
-    const dto2 = metadataWithCustom.toServerDTO();
+    const dto2 = metadataWithCustom.toDTO();
     expect(dto2.customFields).toEqual({ key: 'value' });
   });
 
-  it('converts to/from Persistence DTO', () => {
-    const metadata = ResourceMetadata.createEmpty();
-    const pdto = metadata.toPersistenceDTO();
-    expect(pdto.tags).toBe('[]');
-    expect(pdto.custom_fields).toBeNull();
-
-    const metadataFromPdto = ResourceMetadata.fromPersistenceDTO(pdto);
-    expect(metadataFromPdto.tags).toEqual([]);
-
-    const metadataWithCustom = ResourceMetadata.createEmpty().setCustomField('key', 'value');
-    const pdto2 = metadataWithCustom.toPersistenceDTO();
-    expect(pdto2.custom_fields).toBe('{"key":"value"}');
-
-    const metadataFromPdto2 = ResourceMetadata.fromPersistenceDTO(pdto2);
-    expect(metadataFromPdto2.customFields).toEqual({ key: 'value' });
-  });
 });

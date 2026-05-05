@@ -7,23 +7,22 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IRetryPolicyServer,
-  RetryPolicyServerDTO,
-  RetryPolicyPersistenceDTO,
+  IRetryPolicy,
+  RetryPolicyDTO,
 } from '@dailyuse/contracts/schedule';
 
 /**
  * RetryPolicy 值对象实现
  */
-export class RetryPolicy extends ValueObject<RetryPolicyServerDTO> implements IRetryPolicyServer {
+export class RetryPolicy extends ValueObject<RetryPolicyDTO> implements IRetryPolicy {
 
-  private constructor(props: RetryPolicyServerDTO) {
+  private constructor(props: RetryPolicyDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: RetryPolicyServerDTO): RetryPolicy {
+  public static create(props: RetryPolicyDTO): RetryPolicy {
     this.validate(props);
     return new RetryPolicy(props);
   }
@@ -48,23 +47,13 @@ export class RetryPolicy extends ValueObject<RetryPolicyServerDTO> implements IR
     });
   }
 
-  public static fromDTO(dto: RetryPolicyServerDTO): RetryPolicy {
+  public static fromDTO(dto: RetryPolicyDTO): RetryPolicy {
     return new RetryPolicy(dto);
-  }
-
-  public static fromPersistenceDTO(dto: RetryPolicyPersistenceDTO): RetryPolicy {
-    return new RetryPolicy({
-      enabled: dto.enabled,
-      maxRetries: dto.maxRetries,
-      retryDelay: dto.retry_delay,
-      backoffMultiplier: dto.backoff_multiplier,
-      maxRetryDelay: dto.max_retry_delay,
-    });
   }
 
   // ================= 校验 =================
   
-  private static validate(props: RetryPolicyServerDTO): void {
+  private static validate(props: RetryPolicyDTO): void {
     if (props.enabled) {
       if (props.maxRetries < 1) {
         throw new Error('maxRetries must be at least 1 when enabled');
@@ -103,7 +92,7 @@ export class RetryPolicy extends ValueObject<RetryPolicyServerDTO> implements IR
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<RetryPolicyServerDTO>,
+    updates: Partial<RetryPolicyDTO>,
   ): RetryPolicy {
     const newProps = { ...this.props, ...updates };
     RetryPolicy.validate(newProps);
@@ -152,17 +141,7 @@ export class RetryPolicy extends ValueObject<RetryPolicyServerDTO> implements IR
 
   // ================= 序列化 =================
 
-  public toServerDTO(): RetryPolicyServerDTO {
+  public toDTO(): RetryPolicyDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): RetryPolicyPersistenceDTO {
-    return {
-      enabled: this.props.enabled,
-      maxRetries: this.props.maxRetries,
-      retry_delay: this.props.retryDelay,
-      backoff_multiplier: this.props.backoffMultiplier,
-      max_retry_delay: this.props.maxRetryDelay,
-    };
   }
 }

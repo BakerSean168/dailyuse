@@ -10,7 +10,6 @@ import { brandedId } from '../../../primitives';
 import type {
   DomainDate,
   TransferDate,
-  PersistenceDate,
   IdentityId,
   FocusModeId,
   GoalId,
@@ -65,44 +64,6 @@ export interface FocusModeDTO {
   actualEndTime: TransferDate | null;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-}
-
-/**
- * FocusMode Client DTO
- * 包含 UI 显示用的计算属性
- */
-export interface FocusModeClientDTO {
-  id: FocusModeId;
-  identityId: IdentityId;
-  focusedGoalIds: GoalId[];
-  startTime: TransferDate;
-  endTime: TransferDate;
-  hiddenGoalsMode: HiddenGoalsMode;
-  isActive: boolean;
-  actualEndTime: TransferDate | null;
-  // UI 计算属性
-  remainingDays: number;
-}
-
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * FocusMode Persistence DTO
- * 数据库存储用
- */
-export interface FocusModePersistenceDTO {
-  id: FocusModeId;
-  identityId: IdentityId;
-  focusedGoalIds: GoalId[];
-  startTime: PersistenceDate;
-  endTime: PersistenceDate;
-  hiddenGoalsMode: string;
-  isActive: boolean;
-  actualEndTime: PersistenceDate | null;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }
 
 // ============ API Request DTOs ============

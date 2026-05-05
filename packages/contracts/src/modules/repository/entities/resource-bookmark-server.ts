@@ -9,7 +9,7 @@
  * - version: 乐观锁版本号
  * - updatedAt: 最后更新时间（增量同步）
  */
-import type { DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
+import type { DomainDate, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -32,21 +32,3 @@ export interface ResourceBookmarkServerDTO {
   deletedAt: TransferDate | null;
 }
 
-/**
- * Resource Bookmark Persistence DTO
- */
-export interface ResourceBookmarkPersistenceDTO {
-  id: string;
-  resourceId: string;
-  identityId: string;
-
-  aliasName: string | null;
-  icon: string | null;
-  color: string | null;
-
-  sortOrder: number;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-}

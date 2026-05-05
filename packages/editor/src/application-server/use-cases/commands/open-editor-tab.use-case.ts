@@ -1,7 +1,7 @@
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
 import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
-import type { EditorSessionClientDTO, TabViewStateServerDTO, TabType } from '@dailyuse/contracts/editor';
+import type { EditorSessionClientDTO, TabViewStateDTO, TabType } from '@dailyuse/contracts/editor';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { EditorPolicy } from '../../../domain-server/services/EditorPolicy';
@@ -13,7 +13,7 @@ export interface OpenEditorTabParams {
   sessionId: string;
   resourceId: string;
   tabType?: TabType;
-  viewState?: Partial<TabViewStateServerDTO>;
+  viewState?: Partial<TabViewStateDTO>;
   maxOpenTabs?: number;
   allowedExtensions?: string[];
 }

@@ -8,7 +8,7 @@
  */
 import type { ReviewType } from '../value-objects/review-type';
 import type { KeyResultSnapshotDTO } from '../value-objects';
-import type { DomainDate, PersistenceDate, TransferDate, GoalReviewId, GoalId } from '../../../primitives';
+import type { DomainDate, TransferDate, GoalReviewId, GoalId } from '../../../primitives';
 
 export interface GoalReviewServerDTO {
   id: GoalReviewId;
@@ -25,25 +25,4 @@ export interface GoalReviewServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * GoalReview Persistence DTO
- * 数据库存储格式
- */
-export interface GoalReviewPersistenceDTO {
-  id: GoalReviewId;
-  goalId: GoalId;
-  type: string; // ReviewType as string
-  rating: number;
-  summary: string;
-  achievements: string | null;
-  challenges: string | null;
-  improvements: string | null;
-  keyResultSnapshots: string; // JSON string (KeyResultSnapshotDTO[])
-  reviewedAt: PersistenceDate;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

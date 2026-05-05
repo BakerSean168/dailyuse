@@ -22,14 +22,12 @@ export type { ExternalLink, ExternalLinkDTO } from './external-link';
 // Resource Metadata Value Objects
 export type {
   ResourceMetadataDTO,
-  ResourceMetadataPersistenceDTO,
   ResourceMetadata,
 } from './resource-metadata';
 
 // Resource Stats Value Objects
 export type {
   ResourceStatsDTO,
-  ResourceStatsPersistenceDTO,
   ResourceStats,
 } from './resource-stats';
 

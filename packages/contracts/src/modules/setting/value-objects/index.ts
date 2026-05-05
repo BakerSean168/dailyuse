@@ -23,24 +23,17 @@ export { ProfileVisibility } from './profile-visibility';
 // ============ Value Objects ============
 export type {
   ValidationRuleDTO,
-  ValidationRuleClientDTO,
-  ValidationRulePersistenceDTO,
   ValidationRule,
-  ValidationRuleClient,
 } from './validation-rule';
 
 export type {
   UIConfigDTO,
-  UIConfigClientDTO,
-  UIConfigPersistenceDTO,
   UIConfig,
-  UIConfigClient,
 } from './ui-config';
 
 export type {
   SyncConfigDTO,
-  SyncConfigPersistenceDTO,
   SyncConfig,
 } from './sync-config';
 
-export type { SettingDefinition, SettingDefinitionDTO, SettingDefinitionPersistenceDTO } from './setting-definition';
+export type { SettingDefinition, SettingDefinitionDTO } from './setting-definition';

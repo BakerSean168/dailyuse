@@ -10,7 +10,7 @@
 
 import type { NotificationChannelType } from '../value-objects/notification-channel-type';
 
-import type { IdentityId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
+import type { IdentityId, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -25,17 +25,4 @@ export interface NotificationPreferenceServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * NotificationPreference Persistence DTO (数据库映射)
- */
-export interface NotificationPreferencePersistenceDTO {
-  id: string;
-  identityId: string;
-  settings: string; // JSON string - Record<string, NotificationChannelType[]>
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

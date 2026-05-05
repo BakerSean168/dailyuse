@@ -4,7 +4,7 @@
 
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import type {
-  GroupStatsServer,
+  IGroupStats,
   ReminderEventMap,
   ReminderGroupClientDTO,
   ReminderGroupServerDTO,
@@ -95,7 +95,7 @@ export class ReminderGroup extends AggregateRoot<string> {
   public get icon(): string | null {
     return this._icon;
   }
-  public get stats(): GroupStatsServer {
+  public get stats(): IGroupStats {
     return this._stats;
   }
   public get createdAt(): Date {
@@ -287,7 +287,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       order: this.order,
       color: this.color,
       icon: this.icon,
-      stats: this._stats.toServerDTO(),
+      stats: this._stats.toDTO(),
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
@@ -296,19 +296,6 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public toClientDTO(): ReminderGroupClientDTO {
-    const controlModeText = this.controlMode === ControlMode.Group ? '组控制' : '个体控制';
-    const statusText = this.status === ReminderStatus.Active ? '活跃' : '暂停';
-    const controlDescription =
-      this.controlMode === ControlMode.Group ? '所有提醒统一启用' : '提醒独立控制';
-    const effectiveTemplatePolicyText =
-      this.controlMode === ControlMode.Group
-        ? this.enabled
-          ? '组内提醒当前由分组统一启用'
-          : '组内提醒当前由分组统一暂停'
-        : '组内提醒当前保持各自独立控制';
-
-    const statsDTO = this._stats.toServerDTO();
-
     return {
       id: this.id as ReminderGroupClientDTO['id'],
       identityId: this.identityId as ReminderGroupClientDTO['identityId'],
@@ -321,23 +308,12 @@ export class ReminderGroup extends AggregateRoot<string> {
       color: this.color,
       icon: this.icon,
       stats: {
-        ...statsDTO,
-        templateCountText: `${statsDTO.totalTemplates} 个提醒`,
-        activeStatusText: `${statsDTO.activeTemplates} 个活跃`,
+        ...this._stats.toDTO(),
       },
       version: this.version,
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
-
-      // UI 扩展
-      displayName: this.name,
-      controlModeText,
-      statusText,
-      templateCountText: `${this._stats.totalTemplates} 个提醒`,
-      activeStatusText: `${this._stats.activeTemplates} 个活跃`,
-      controlDescription,
-      effectiveTemplatePolicyText,
     };
   }
 }

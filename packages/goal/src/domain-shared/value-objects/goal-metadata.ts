@@ -12,7 +12,6 @@ import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type {
   GoalMetadata as IGoalMetadata,
   GoalMetadataDTO,
-  GoalMetadataPersistenceDTO,
 } from '@dailyuse/contracts/goal';
 
 /**
@@ -61,20 +60,6 @@ export class GoalMetadata extends ValueObject<GoalMetadataDTO> implements IGoalM
    */
   public static fromDTO(dto: GoalMetadataDTO): GoalMetadata {
     return new GoalMetadata(dto);
-  }
-
-  // ================= 工厂方法 4: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   * 将 JSON 字符串解析回数组
-   */
-  public static fromPersistenceDTO(dto: GoalMetadataPersistenceDTO): GoalMetadata {
-    const tags = typeof dto.tags === 'string' ? JSON.parse(dto.tags) : [];
-    return new GoalMetadata({
-      importance: dto.importance,
-      category: dto.category,
-      tags: Array.isArray(tags) ? tags : [],
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -189,15 +174,4 @@ export class GoalMetadata extends ValueObject<GoalMetadataDTO> implements IGoalM
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   * 将标签数组转为 JSON 字符串
-   */
-  public toPersistenceDTO(): GoalMetadataPersistenceDTO {
-    return {
-      importance: this.props.importance,
-      category: this.props.category,
-      tags: JSON.stringify(this.props.tags),
-    };
-  }
 }

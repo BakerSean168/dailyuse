@@ -27,11 +27,18 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 
+const TEST_IDENTITY_1 = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
+const TEST_IDENTITY_2 = 'IdentityId_550e8400-e29b-41d4-a716-446655440002';
+const TEST_TEMPLATE_1 = 'IReminderTemplateId_550e8400-e29b-41d4-a716-446655440011';
+const TEST_TEMPLATE_2 = 'IReminderTemplateId_550e8400-e29b-41d4-a716-446655440012';
+const TEST_HISTORY_1 = 'IReminderHistoryId_550e8400-e29b-41d4-a716-446655440031';
+const TEST_HISTORY_2 = 'IReminderHistoryId_550e8400-e29b-41d4-a716-446655440032';
+
 function createMinimalRow(): PrismaReminderTemplate {
   const now = new Date();
   return {
-    id: 'template-1',
-    identityId: 'identity-1',
+    id: TEST_TEMPLATE_1,
+    identityId: TEST_IDENTITY_1,
     name: 'Simple Reminder',
     description: null,
     type: ReminderType.EventBased,
@@ -91,8 +98,8 @@ function createFullRow(): PrismaReminderTemplate {
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   
   return {
-    id: 'template-2',
-    identityId: 'identity-2',
+    id: TEST_TEMPLATE_2,
+    identityId: TEST_IDENTITY_2,
     name: 'Complex Reminder',
     description: 'A reminder with full configuration',
     type: ReminderType.TimeBased,
@@ -170,9 +177,9 @@ function createHistoryRow(
 ): PrismaReminderHistory {
   const now = new Date();
   return {
-    id: 'history-1',
-    templateId: 'template-2',
-    identityId: 'identity-2',
+    id: TEST_HISTORY_1,
+    templateId: TEST_TEMPLATE_2,
+    identityId: TEST_IDENTITY_2,
     triggeredAt: now,
     result: TriggerResult.Success,
     error: null,
@@ -194,8 +201,8 @@ describe('PrismaReminderTemplateMapper', () => {
       const row = createMinimalRow();
       const domain = PrismaReminderTemplateMapper.toDomain(row);
 
-      expect(domain.id).toBe('template-1');
-      expect(domain.identityId).toBe('identity-1');
+      expect(domain.id).toBe(TEST_TEMPLATE_1);
+      expect(domain.identityId).toBe(TEST_IDENTITY_1);
       expect(domain.title).toBe('Simple Reminder');
       expect(domain.description).toBeNull();
       expect(domain.type).toBe(ReminderType.EventBased);
@@ -213,8 +220,8 @@ describe('PrismaReminderTemplateMapper', () => {
       const row = createFullRow();
       const domain = PrismaReminderTemplateMapper.toDomain(row);
 
-      expect(domain.id).toBe('template-2');
-      expect(domain.identityId).toBe('identity-2');
+      expect(domain.id).toBe(TEST_TEMPLATE_2);
+      expect(domain.identityId).toBe(TEST_IDENTITY_2);
       expect(domain.title).toBe('Complex Reminder');
       expect(domain.description).toBe('A reminder with full configuration');
       expect(domain.type).toBe(ReminderType.TimeBased);
@@ -355,7 +362,7 @@ describe('PrismaReminderTemplateMapper', () => {
       const row = createFullRow();
       const historyRecords = [
         createHistoryRow({
-          id: 'history-2',
+          id: TEST_HISTORY_2,
           notificationChannel: null,
           notificationSent: false,
         }),
@@ -373,7 +380,7 @@ describe('PrismaReminderTemplateMapper', () => {
       const domain = PrismaReminderTemplateMapper.toDomain(createFullRow());
       const persistence = PrismaReminderTemplateMapper.toPersistence(domain);
 
-      expect(persistence.identityId).toBe('identity-2');
+      expect(persistence.identityId).toBe(TEST_IDENTITY_2);
       expect(persistence.name).toBe('Complex Reminder');
       expect(persistence.description).toBe('A reminder with full configuration');
       expect(persistence.type).toBe(ReminderType.TimeBased);
@@ -401,7 +408,7 @@ describe('PrismaReminderTemplateMapper', () => {
       const domain = PrismaReminderTemplateMapper.toDomain(createMinimalRow());
       const persistence = PrismaReminderTemplateMapper.toPersistence(domain);
 
-      expect(persistence.identityId).toBe('identity-1');
+      expect(persistence.identityId).toBe(TEST_IDENTITY_1);
       expect(persistence.activeHours).toBeNull();
       expect(persistence.nextTriggerAt).toBeNull();
       expect(persistence.clickRate).toBeNull();

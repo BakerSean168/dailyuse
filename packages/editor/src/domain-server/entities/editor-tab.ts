@@ -7,7 +7,7 @@ import { TabType } from '@dailyuse/contracts/editor';
 import type {
   EditorTabClientDTO,
   EditorTabServerDTO,
-  TabViewStateServerDTO,
+  TabViewStateDTO,
 } from '@dailyuse/contracts/editor';
 import type {
   EditorGroupId,
@@ -30,7 +30,7 @@ export interface EditorTabState {
   tabIndex: number;
   tabType: TabType;
   name: string;
-  viewState: TabViewStateServerDTO;
+  viewState: TabViewStateDTO;
   isPinned: boolean;
   isActive: boolean;
   isDirty: boolean;
@@ -85,7 +85,7 @@ export class EditorTab extends Entity<EditorTabId> {
     return this._props.name;
   }
 
-  public get viewState(): TabViewStateServerDTO {
+  public get viewState(): TabViewStateDTO {
     return this._props.viewState;
   }
 
@@ -134,13 +134,13 @@ export class EditorTab extends Entity<EditorTabId> {
     tabIndex: number;
     type?: TabType;
     name?: string;
-    viewState?: Partial<TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateDTO>;
     isPinned?: boolean;
   }): EditorTab {
     const id = generateUUID() as EditorTabId;
     const now = new Date();
 
-    const defaultViewState: TabViewStateServerDTO = {
+    const defaultViewState: TabViewStateDTO = {
       scrollTop: 0,
       scrollLeft: 0,
       cursorPosition: { line: 0, column: 0 },
@@ -181,7 +181,7 @@ export class EditorTab extends Entity<EditorTabId> {
   /**
    * 更新视图状态
    */
-  public updateViewState(viewState: Partial<TabViewStateServerDTO>): void {
+  public updateViewState(viewState: Partial<TabViewStateDTO>): void {
     this._props.viewState = { ...this._props.viewState, ...viewState };
     this.updateTimestamp();
   }

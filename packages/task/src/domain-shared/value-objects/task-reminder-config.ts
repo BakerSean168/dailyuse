@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   TaskReminderConfig as ITaskReminderConfig,
   TaskReminderConfigDTO,
-  TaskReminderConfigPersistenceDTO,
   TaskReminderType,
   ReminderTimeUnit,
 } from '@dailyuse/contracts/task';
@@ -84,20 +83,6 @@ export class TaskReminderConfig extends ValueObject<TaskReminderConfigDTO> imple
    */
   public static fromDTO(dto: TaskReminderConfigDTO): TaskReminderConfig {
     return new TaskReminderConfig(dto);
-  }
-
-  // ================= 工厂方法 5: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: TaskReminderConfigPersistenceDTO): TaskReminderConfig {
-    const triggers = typeof dto.triggers === 'string' 
-      ? JSON.parse(dto.triggers) 
-      : [];
-    return new TaskReminderConfig({
-      enabled: dto.enabled,
-      triggers: Array.isArray(triggers) ? triggers : [],
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -222,13 +207,4 @@ export class TaskReminderConfig extends ValueObject<TaskReminderConfigDTO> imple
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): TaskReminderConfigPersistenceDTO {
-    return {
-      enabled: this.props.enabled,
-      triggers: JSON.stringify(this.props.triggers),
-    };
-  }
 }

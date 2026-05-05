@@ -128,35 +128,6 @@ export class FrequencyAdjustment extends ValueObject<FrequencyAdjustmentDTO> imp
     return Math.round(change);
   }
 
-  public get changeRateText(): string {
-    const rate = this.changeRate;
-    if (rate > 0) return `频率降低 ${rate}%`;
-    if (rate < 0) return `频率提高 ${Math.abs(rate)}%`;
-    return '频率不变';
-  }
-
-  public get statusText(): string {
-    if (this.isConfirmed) return '已确认';
-    if (this.isRejected) return '已拒绝';
-    return '待确认';
-  }
-
-  public get displayText(): string {
-    const fromText = this.formatInterval(this.props.originalInterval);
-    const toText = this.formatInterval(this.props.adjustedInterval);
-    return `从 ${fromText} 调整为 ${toText}`;
-  }
-
-  private formatInterval(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(seconds / 3600);
-    const days = Math.floor(seconds / 86400);
-    
-    if (days >= 1) return `每 ${days} 天`;
-    if (hours >= 1) return `每 ${hours} 小时`;
-    return `每 ${minutes} 分钟`;
-  }
-
   // ================= 序列化 =================
 
   public toDTO(): FrequencyAdjustmentDTO {

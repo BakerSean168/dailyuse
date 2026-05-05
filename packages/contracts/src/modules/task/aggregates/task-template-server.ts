@@ -6,22 +6,15 @@ import type {
   TaskTemplateId,
   IdentityId,
   TaskFolderId,
-  DomainDate,
   TransferDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import type { TaskInstanceServerDTO } from './task-instance-server';
 import type {
-  TaskTimeConfig,
   TaskTimeConfigDTO,
-  RecurrenceRule,
   RecurrenceRuleDTO,
-  TaskReminderConfig,
   TaskReminderConfigDTO,
-  TaskGoalBinding,
   TaskGoalBindingDTO,
-  ChecklistItemDefinition,
   ChecklistItemDefinitionDTO,
 } from '../value-objects';
 
@@ -67,58 +60,4 @@ export interface TaskTemplateServerDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
   instances?: TaskInstanceServerDTO[];
-}
-
-/**
- * TaskTemplate Persistence DTO
- */
-export interface TaskTemplatePersistenceDTO {
-  id: string;
-  identityId: string;
-  name: string;
-  description: string | null;
-
-  // Flattened timeConfig
-  timeConfigType: string | null;
-  timeConfigStartTime: Date | null;
-  timeConfigEndTime: Date | null;
-  timeConfigDurationMinutes: number | null;
-
-  // Flattened recurrence_rule
-  recurrenceRuleType: string | null;
-  recurrenceRuleInterval: number | null;
-  recurrenceRuleDaysOfWeek: string | null; // JSON array
-  recurrenceRuleDayOfMonth: number | null;
-  recurrenceRuleMonthOfYear: number | null;
-  recurrenceRuleEndDate: Date | null;
-  recurrenceRuleCount: number | null;
-
-  // Flattened reminderConfig
-  reminderConfigEnabled: boolean | null;
-  reminderConfigTimeOffsetMinutes: number | null;
-  reminderConfigUnit: string | null;
-  reminderConfigChannel: string | null;
-
-  lastGeneratedDate: Date | null;
-  generateAheadDays: number | null;
-
-  importance: string; // 'vital' | 'important' | 'moderate' | 'minor' | 'trivial'
-  tags: string; // JSON array
-  color: string | null;
-  status: string;
-
-  goalBinding: TaskGoalBindingDTO | null;
-
-  parentTaskId: string | null;
-
-  dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
-  isBlocked?: boolean;
-  blockingReason: string | null;
-
-  // === Other ===
-  folderId: string | null;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

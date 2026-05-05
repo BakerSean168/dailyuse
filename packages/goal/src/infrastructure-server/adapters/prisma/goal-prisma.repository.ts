@@ -5,9 +5,9 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  *
  * Mapping:
- * - Domain Goal → GoalPersistenceDTO → Prisma result
+ * - Domain Goal → RawGoalData → Prisma result
  * - KeyResult progress is stored as individual columns in Prisma,
- *   but as a JSON string in the domain DTO
+ *   mapped through PrismaGoalMapper
  * - GoalReview maps reviewType→type, content→summary, lessonsLearned→improvements
  */
 
@@ -15,14 +15,13 @@ import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type {
-  KeyResultPersistenceDTO,
   GoalServerDTO,
   KeyResultServerDTO,
 } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
-import { persistenceDtoToGoalState } from './mappers/goal-state-mapper';
+import { rawDataToGoalState, type RawKeyResultData } from './mappers/goal-state-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -31,10 +30,10 @@ const eventBusAdapter = createEventBusAdapter(eventBus);
 // ============================================================
 
 /**
- * Parses KeyResultPersistenceDTO progress JSON into Prisma columns.
+ * Parses KeyResult progress into Prisma columns.
  */
-function parseKeyResultProgressForPrisma(kr: KeyResultPersistenceDTO | KeyResultServerDTO) {
-  return PrismaGoalMapper.parseKeyResultProgress(kr as KeyResultPersistenceDTO);
+function parseKeyResultProgressForPrisma(kr: RawKeyResultData | KeyResultServerDTO) {
+  return PrismaGoalMapper.parseKeyResultProgress(kr as RawKeyResultData);
 }
 
 // Include preset for Prisma queries
@@ -66,7 +65,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     if (!row) return null;
 
     const dto = PrismaGoalMapper.toDomainDTO(row);
-    return Goal.load(persistenceDtoToGoalState(dto));
+    return Goal.load(rawDataToGoalState(dto));
   }
 
   async findByIdentityId(
@@ -113,7 +112,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       });
 
       return rows.map((row: PrismaGoalWithRelations) =>
-        Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+        Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
       );
     }
 
@@ -158,7 +157,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       const dto = PrismaGoalMapper.toDomainDTO(row as unknown as PrismaGoalWithRelations);
       dto.totalKeyResults = row._count?.keyResults ?? 0;
       dto.completedKeyResults = completedMap.get(row.id) ?? 0;
-      return Goal.load(persistenceDtoToGoalState(dto));
+      return Goal.load(rawDataToGoalState(dto));
     });
   }
 
@@ -168,7 +167,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       orderBy: { createdAt: 'desc' },
     });
     return rows.map((row: PrismaGoalWithRelations) =>
-      Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+      Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
     );
   }
 
@@ -409,7 +408,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       orderBy: { sortOrder: 'asc' },
     });
     return rows.map((row: PrismaGoalWithRelations) =>
-      Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+      Goal.load(rawDataToGoalState(PrismaGoalMapper.toDomainDTO(row))),
     );
   }
 }

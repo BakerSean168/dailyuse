@@ -342,7 +342,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
     // 2. Publish domain event (notify other modules that the task was triggered)
     // Fully serialize metadata DTO to ensure correct propagation
-    const metadataDTO = this._props.metadata.toServerDTO();
+    const metadataDTO = this._props.metadata.toDTO();
     this.addDomainEvent<ScheduleEventMap['schedule:task:triggered']>('schedule:task:triggered', {
       taskId: this.id,
       taskName: this._props.name,
@@ -426,7 +426,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       sourceEntityId: this._props.sourceEntityId,
       status,
       duration,
-      payload: this._props.metadata.toServerDTO().payload,
+      payload: this._props.metadata.toDTO().payload,
       identityId: this._props.identityId,
     });
 
@@ -552,99 +552,6 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return this._props.schedule.isExpired;
   }
 
-  // ===== UI Helper Methods =====
-
-  /** Returns the display text for the current status. */
-  public getStatusDisplay(): string {
-    const statusMap: Record<ScheduleTaskStatus, string> = {
-      [ScheduleTaskStatus.Active]: '活跃',
-      [ScheduleTaskStatus.Paused]: '暂停',
-      [ScheduleTaskStatus.Completed]: '完成',
-      [ScheduleTaskStatus.Cancelled]: '取消',
-      [ScheduleTaskStatus.Failed]: '失败',
-    };
-    return statusMap[this._props.status] || this._props.status;
-  }
-
-  /** Returns the color for the current status. */
-  public getStatusColor(): string {
-    const colorMap: Record<ScheduleTaskStatus, string> = {
-      [ScheduleTaskStatus.Active]: 'green',
-      [ScheduleTaskStatus.Paused]: 'gray',
-      [ScheduleTaskStatus.Completed]: 'blue',
-      [ScheduleTaskStatus.Cancelled]: 'red',
-      [ScheduleTaskStatus.Failed]: 'orange',
-    };
-    return colorMap[this._props.status] || 'gray';
-  }
-
-  /** Returns the display text for the source module. */
-  public getSourceModuleDisplay(): string {
-    const moduleMap: Record<SourceModule, string> = {
-      [SourceModule.Reminder]: '提醒模块',
-      [SourceModule.Task]: '任务模块',
-      [SourceModule.Goal]: '目标模块',
-      [SourceModule.Notification]: '通知模块',
-      [SourceModule.System]: '系统模块',
-      [SourceModule.Custom]: '自定义模块',
-    };
-    return moduleMap[this._props.sourceModule] || this._props.sourceModule;
-  }
-
-  /** Formats the next run time as a localized string. */
-  public getNextRunAtFormatted(): string {
-    if (!this._props.execution.nextRunAt) return '-';
-    const date = new Date(this._props.execution.nextRunAt);
-    if (isNaN(date.getTime())) return '-';
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-  }
-
-  /** Formats the last run time as a localized string. */
-  public getLastRunAtFormatted(): string {
-    if (!this._props.execution.lastRunAt) return '-';
-    const date = new Date(this._props.execution.lastRunAt);
-    if (isNaN(date.getTime())) return '-';
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-  }
-
-  /** Returns an execution summary string. */
-  public getExecutionSummary(): string {
-    const count = this._props.execution.executionCount;
-    const failures = this._props.execution.consecutiveFailures;
-    const successCount = count - failures;
-    return `已执行 ${count} 次，成功 ${successCount} 次`;
-  }
-
-  /** Returns the health status based on consecutive failures. */
-  public getHealthStatus(): string {
-    const failures = this._props.execution.consecutiveFailures;
-    if (failures === 0) return 'healthy';
-    if (failures < 3) return 'warning';
-    return 'critical';
-  }
-
-  /** Checks whether the task is overdue. */
-  public isOverdue(): boolean {
-    if (!this._props.execution.nextRunAt) return false;
-    return this._props.execution.nextRunAt < Date.now();
-  }
-
   // ===== Conversion Methods =====
 
   /** Converts to a Server DTO. */
@@ -658,10 +565,10 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       sourceEntityId: this._props.sourceEntityId,
       status: this._props.status,
       enabled: this._props.enabled,
-      schedule: this._props.schedule.toServerDTO(),
-      execution: this._props.execution.toServerDTO(),
-      retryPolicy: this._props.retryPolicy.toServerDTO(),
-      metadata: this._props.metadata.toServerDTO(),
+      schedule: this._props.schedule.toDTO(),
+      execution: this._props.execution.toDTO(),
+      retryPolicy: this._props.retryPolicy.toDTO(),
+      metadata: this._props.metadata.toDTO(),
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       version: this._props.version,
@@ -681,25 +588,15 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       sourceEntityId: this._props.sourceEntityId,
       status: this._props.status,
       enabled: this._props.enabled,
-      schedule: this._props.schedule.toServerDTO() as any,
-      execution: this._props.execution.toServerDTO() as any,
-      retryPolicy: this._props.retryPolicy.toServerDTO() as any,
-      metadata: this._props.metadata.toServerDTO() as any,
+      schedule: this._props.schedule.toDTO() as any,
+      execution: this._props.execution.toDTO() as any,
+      retryPolicy: this._props.retryPolicy.toDTO() as any,
+      metadata: this._props.metadata.toDTO() as any,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
       executions: includeChildren ? this._executions.map((e) => e.toClientDTO()) : null,
-      // UI helper properties
-      statusDisplay: this.getStatusDisplay(),
-      statusColor: this.getStatusColor(),
-      sourceModuleDisplay: this.getSourceModuleDisplay(),
-      enabledDisplay: this.enabled ? '启用' : '禁用',
-      nextRunAtFormatted: this.getNextRunAtFormatted(),
-      lastRunAtFormatted: this.getLastRunAtFormatted(),
-      executionSummary: this.getExecutionSummary(),
-      healthStatus: this.getHealthStatus(),
-      isOverdue: this.isOverdue(),
     };
   }
 
@@ -753,7 +650,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       name: params.name,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
-      cronExpression: params.schedule.toServerDTO().cronExpression ?? '',
+      cronExpression: params.schedule.toDTO().cronExpression ?? '',
       nextRunAt: nextRunAt ?? Date.now(),
     });
 

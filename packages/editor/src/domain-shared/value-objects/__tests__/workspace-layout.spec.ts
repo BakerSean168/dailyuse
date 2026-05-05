@@ -48,9 +48,9 @@ describe('WorkspaceLayout', () => {
     expect(layout.isPanelOnBottom).toBe(true);
   });
 
-  it('converts to Server DTO', () => {
+  it('converts to DTO', () => {
     const layout = WorkspaceLayout.createDefault();
-    const dto = layout.toServerDTO();
+    const dto = layout.toDTO();
     expect(dto.sidebarPosition).toBe('Left');
 
     const layout2 = WorkspaceLayout.create(dto);
@@ -60,12 +60,4 @@ describe('WorkspaceLayout', () => {
     expect(layout3.sidebarPosition).toBe('Left');
   });
 
-  it('converts to/from Persistence DTO', () => {
-    const layout = WorkspaceLayout.createDefault();
-    const dto = layout.toPersistenceDTO();
-    expect(dto.sidebar_position).toBe('Left');
-
-    const layout2 = WorkspaceLayout.fromPersistenceDTO(dto);
-    expect(layout2.sidebarPosition).toBe('Left');
-  });
 });

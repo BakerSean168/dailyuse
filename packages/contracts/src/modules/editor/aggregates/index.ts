@@ -8,10 +8,7 @@
 
 // Editor Workspace Aggregate (唯一的聚合根)
 export type {
-  WorkspaceLayout,
-  WorkspaceSettings,
   EditorWorkspaceServerDTO,
-  EditorWorkspacePersistenceDTO,
   EditorWorkspaceCreatedEvent,
   EditorWorkspaceUpdatedEvent,
   EditorWorkspaceDeletedEvent,

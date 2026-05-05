@@ -38,20 +38,12 @@ describe('setting rich value objects', () => {
     });
     expect(enabledWithoutTargets.syncDescription).toBe('同步已启用');
 
-    const fromPersistence = SyncConfig.fromPersistenceDTO({
-      enabled: false,
-      syncToCloud: true,
-      syncToDevices: false,
-    });
-    expect(fromPersistence.enabled).toBe(false);
-
     const updated = disabled.enable().setSyncToCloud(true).setSyncToDevices(true);
     expect(updated.toDTO()).toEqual({
       enabled: true,
       syncToCloud: true,
       syncToDevices: true,
     });
-    expect(updated.toPersistenceDTO()).toEqual(updated.toDTO());
     expect(updated.disable().toDTO()).toEqual({
       enabled: false,
       syncToCloud: false,
@@ -137,51 +129,6 @@ describe('setting rich value objects', () => {
     });
     expect(fromDTO.isNumeric).toBe(true);
 
-    const fromPersistence = UIConfig.fromPersistenceDTO({
-      inputType: 'RADIO',
-      label: 'Choice',
-      placeholder: null,
-      helpText: 'Select one',
-      icon: null,
-      order: 4,
-      visible: true,
-      disabled: false,
-      options: JSON.stringify([{ label: 'A', value: 'a' }]),
-      min: null,
-      max: null,
-      step: null,
-    });
-    expect(fromPersistence.options).toEqual([{ label: 'A', value: 'a' }]);
-
-    expect(fromPersistence.with({ inputType: 'CHECKBOX' }).inputType).toBe('CHECKBOX');
-    expect(fromPersistence.toDTO()).toEqual({
-      inputType: 'RADIO',
-      label: 'Choice',
-      placeholder: null,
-      helpText: 'Select one',
-      icon: null,
-      order: 4,
-      visible: true,
-      disabled: false,
-      options: [{ label: 'A', value: 'a' }],
-      min: null,
-      max: null,
-      step: null,
-    });
-    expect(fromPersistence.toPersistenceDTO()).toEqual({
-      inputType: 'RADIO',
-      label: 'Choice',
-      placeholder: null,
-      helpText: 'Select one',
-      icon: null,
-      order: 4,
-      visible: true,
-      disabled: false,
-      options: JSON.stringify([{ label: 'A', value: 'a' }]),
-      min: null,
-      max: null,
-      step: null,
-    });
   });
 
   it('covers validation rule factories, flags, and serialization', () => {
@@ -221,16 +168,6 @@ describe('setting rich value objects', () => {
     clonedEnum?.push('extra');
     expect(fromDTO.enum).toEqual(['memo', 'note']);
 
-    const fromPersistence = ValidationRule.fromPersistenceDTO({
-      required: false,
-      min: 2,
-      max: 8,
-      pattern: '\\d+',
-      enum: JSON.stringify([1, 2]),
-      custom: null,
-    });
-    expect(fromPersistence.enum).toEqual([1, 2]);
-
     const updated = emptyRule
       .setRequired(true)
       .setRange(3, 12)
@@ -249,14 +186,6 @@ describe('setting rich value objects', () => {
       max: 12,
       pattern: '^abc',
       enum: ['abc', 'def'],
-      custom: null,
-    });
-    expect(updated.toPersistenceDTO()).toEqual({
-      required: true,
-      min: 3,
-      max: 12,
-      pattern: '^abc',
-      enum: JSON.stringify(['abc', 'def']),
       custom: null,
     });
   });

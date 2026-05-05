@@ -9,7 +9,6 @@ import type {
   ResourceId,
   TransferDate,
   DomainDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { LinkedSourceType } from '../value-objects/linked-source-type';
 import type { LinkedTargetType } from '../value-objects/linked-target-type';
@@ -36,23 +35,3 @@ export interface LinkedResourceServerDTO {
   updatedAt: TransferDate;
 }
 
-/**
- * Linked Resource Persistence DTO (database fields, snake_case).
- */
-export interface LinkedResourcePersistenceDTO {
-  id: LinkedResourceId;
-  workspace_id: EditorWorkspaceId;
-  identityId: IdentityId;
-  source_resource_id: ResourceId;
-  source_type: LinkedSourceType;
-  source_line: number | null;
-  source_column: number | null;
-  target_path: string;
-  target_type: LinkedTargetType;
-  target_resource_id: ResourceId | null;
-  target_anchor: string | null;
-  is_valid: boolean;
-  last_validated_at: PersistenceDate | null;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-}

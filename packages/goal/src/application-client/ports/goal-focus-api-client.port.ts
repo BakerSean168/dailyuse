@@ -7,13 +7,13 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type {
-  FocusModeClientDTO,
+  FocusModeDTO,
   ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
 
 export interface IGoalFocusApiClient {
-  getCurrentFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
-  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeClientDTO>>;
-  deactivateFocusMode(): Promise<Result<FocusModeClientDTO | null>>;
-  extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeClientDTO>>;
+  getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>>;
+  activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>>;
+  deactivateFocusMode(): Promise<Result<FocusModeDTO | null>>;
+  extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeDTO>>;
 }

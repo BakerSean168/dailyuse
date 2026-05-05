@@ -9,8 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   FocusMode as IFocusMode,
   FocusModeDTO,
-  FocusModeClientDTO,
-  FocusModePersistenceDTO,
   HiddenGoalsMode,
 } from '@dailyuse/contracts/goal';
 import { FocusModeId, GoalId } from '@/domain-shared';
@@ -104,24 +102,6 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     return new FocusMode(dto);
   }
 
-  /**
-   * 从 Persistence DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: FocusModePersistenceDTO): FocusMode {
-    return new FocusMode({
-      id: FocusModeId.of(dto.id),
-      identityId: dto.identityId,
-      focusedGoalIds: (dto.focusedGoalIds ?? []) as GoalId[],
-      startTime: new Date(dto.startTime).getTime(),
-      endTime: new Date(dto.endTime).getTime(),
-      hiddenGoalsMode: dto.hiddenGoalsMode as HiddenGoalsMode,
-      isActive: dto.isActive,
-      actualEndTime: dto.actualEndTime ? new Date(dto.actualEndTime).getTime() : null,
-      createdAt: new Date(dto.createdAt).getTime(),
-      updatedAt: new Date(dto.updatedAt).getTime(),
-    });
-  }
-
   // ================= Business Methods =================
 
   /**
@@ -172,40 +152,4 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     return { ...this.props };
   }
 
-  /**
-   * 转换为 Client DTO
-   */
-  public toClientDTO(): FocusModeClientDTO {
-    return {
-      id: this.props.id,
-      identityId: this.props.identityId,
-      focusedGoalIds: [...this.props.focusedGoalIds],
-      startTime: this.props.startTime,
-      endTime: this.props.endTime,
-      hiddenGoalsMode: this.props.hiddenGoalsMode,
-      isActive: this.props.isActive,
-      actualEndTime: this.props.actualEndTime,
-      remainingDays: this.getRemainingDays(),
-    };
-  }
-
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): FocusModePersistenceDTO {
-    return {
-      id: this.props.id,
-      identityId: this.props.identityId,
-      focusedGoalIds: [...this.props.focusedGoalIds],
-      startTime: new Date(this.props.startTime),
-      endTime: new Date(this.props.endTime),
-      hiddenGoalsMode: this.props.hiddenGoalsMode,
-      isActive: this.props.isActive,
-      actualEndTime: this.props.actualEndTime ? new Date(this.props.actualEndTime) : null,
-      version: 1,
-      createdAt: new Date(this.props.createdAt),
-      updatedAt: new Date(this.props.updatedAt),
-      deletedAt: null,
-    };
-  }
 }

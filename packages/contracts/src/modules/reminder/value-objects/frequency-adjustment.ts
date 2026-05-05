@@ -6,7 +6,7 @@
 // ============ DTO 定义 ============
 
 /**
- * Frequency Adjustment DTO (Server)
+ * Frequency Adjustment DTO
  * 提醒频率调整记录
  */
 export interface FrequencyAdjustmentDTO {
@@ -17,24 +17,6 @@ export interface FrequencyAdjustmentDTO {
   readonly isAutoAdjusted: boolean; // 是否自动调整
   readonly userConfirmed: boolean; // 用户是否确认
   readonly rejectionReason?: string | null; // 拒绝原因（如果用户拒绝）
-}
-
-/**
- * Frequency Adjustment Client DTO
- * 包含 UI 显示字段
- */
-export interface FrequencyAdjustmentClientDTO {
-  readonly originalInterval: number;
-  readonly adjustedInterval: number;
-  readonly adjustmentReason: string;
-  readonly adjustmentTime: number;
-  readonly isAutoAdjusted: boolean;
-  readonly userConfirmed: boolean;
-  readonly rejectionReason?: string | null;
-  // UI 显示文本
-  readonly displayText: string; // "从每天1次调整为每2天1次"
-  readonly changeRateText: string; // "频率降低50%"
-  readonly statusText: string; // "已确认" | "待确认" | "已拒绝"
 }
 
 // ============ 实体接口 ============
@@ -51,23 +33,3 @@ export interface FrequencyAdjustment {
   readonly userConfirmed: boolean;
   readonly rejectionReason?: string | null;
 }
-
-/**
- * Frequency Adjustment Client 值对象接口
- * 包含 UI 显示字段
- */
-export interface FrequencyAdjustmentClient {
-  readonly originalInterval: number;
-  readonly adjustedInterval: number;
-  readonly adjustmentReason: string;
-  readonly adjustmentTime: number;
-  readonly isAutoAdjusted: boolean;
-  readonly userConfirmed: boolean;
-  readonly rejectionReason?: string | null;
-  // UI 显示文本
-  readonly displayText: string;
-  readonly changeRateText: string;
-  readonly statusText: string;
-}
-
-

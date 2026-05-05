@@ -49,33 +49,21 @@ describe('ReminderResponse entity', () => {
     }
   });
 
-  it('formats client DTO response times across seconds, minutes, and hours', () => {
-    expect(
-      ReminderResponse.create({
-        reminderTemplateId: 'template-1',
-        identityId: 'identity-1',
-        action: 'CLICKED',
-        responseTime: 30_000,
-      }).toClientDTO().responseTimeText,
-    ).toBe('30秒后响应');
+  it('returns client DTOs with semantic fields only', () => {
+    const dto = ReminderResponse.create({
+      reminderTemplateId: 'template-1',
+      identityId: 'identity-1',
+      action: 'CLICKED',
+      responseTime: 30_000,
+    }).toClientDTO();
 
-    expect(
-      ReminderResponse.create({
-        reminderTemplateId: 'template-1',
-        identityId: 'identity-1',
-        action: 'SNOOZED',
-        responseTime: 5 * 60_000,
-      }).toClientDTO().responseTimeText,
-    ).toBe('5分钟后响应');
-
-    expect(
-      ReminderResponse.create({
-        reminderTemplateId: 'template-1',
-        identityId: 'identity-1',
-        action: 'COMPLETED',
-        responseTime: 2 * 60 * 60_000,
-      }).toClientDTO().responseTimeText,
-    ).toBe('2小时后响应');
+    expect(dto).toEqual({
+      id: dto.id,
+      reminderTemplateId: 'template-1',
+      action: 'CLICKED',
+      responseTime: 30_000,
+      timestamp: dto.timestamp,
+    });
   });
 
   it('loads persisted state and preserves null response times', () => {
@@ -89,7 +77,12 @@ describe('ReminderResponse entity', () => {
     });
 
     expect(loaded.responseTime).toBeNull();
-    expect(loaded.toClientDTO().actionText).toBe('关闭');
-    expect(loaded.toClientDTO().responseTimeText).toBeUndefined();
+    expect(loaded.toClientDTO()).toEqual({
+      id: loaded.id,
+      reminderTemplateId: 'template-2',
+      action: 'DISMISSED',
+      responseTime: null,
+      timestamp: 2_000,
+    });
   });
 });

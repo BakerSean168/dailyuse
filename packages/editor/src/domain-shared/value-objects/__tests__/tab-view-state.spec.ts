@@ -59,9 +59,9 @@ describe('TabViewState', () => {
     expect(state.selectionCount).toBe(0);
   });
 
-  it('converts to/from Server DTO', () => {
+  it('converts to/from DTO', () => {
     const state = TabViewState.createDefault();
-    const dto = state.toServerDTO();
+    const dto = state.toDTO();
     expect(dto.scrollTop).toBe(0);
 
     const stateFromDto = TabViewState.fromDTO(dto);
@@ -69,24 +69,8 @@ describe('TabViewState', () => {
 
     // test with selections
     const stateWithSelections = state.setSelections([{ start: { line: 1, column: 1 }, end: { line: 1, column: 10 } }]);
-    const dto2 = stateWithSelections.toServerDTO();
+    const dto2 = stateWithSelections.toDTO();
     expect(dto2.selections).not.toBeNull();
   });
 
-  it('converts to/from Persistence DTO', () => {
-    const state = TabViewState.createDefault();
-    const pdto = state.toPersistenceDTO();
-    expect(pdto.scroll_top).toBe(0);
-    expect(pdto.selections).toBeNull();
-
-    const stateFromPdto = TabViewState.fromPersistenceDTO(pdto);
-    expect(stateFromPdto.scrollTop).toBe(0);
-
-    const stateWithSelections = state.setSelections([{ start: { line: 1, column: 1 }, end: { line: 1, column: 10 } }]);
-    const pdto2 = stateWithSelections.toPersistenceDTO();
-    expect(pdto2.selections).not.toBeNull();
-
-    const stateFromPdto2 = TabViewState.fromPersistenceDTO(pdto2);
-    expect(stateFromPdto2.selections).toHaveLength(1);
-  });
 });

@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   KeyResultProgress as IKeyResultProgress,
   KeyResultProgressDTO,
-  KeyResultProgressPersistenceDTO,
   KeyResultValueType,
   KeyResultCalculationMethod,
 } from '@dailyuse/contracts/goal';
@@ -64,21 +63,6 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
    */
   public static fromDTO(dto: KeyResultProgressDTO): KeyResultProgress {
     return new KeyResultProgress(dto);
-  }
-
-  // ================= 工厂方法 4: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: KeyResultProgressPersistenceDTO): KeyResultProgress {
-    return new KeyResultProgress({
-      valueType: dto.valueType as KeyResultValueType,
-      aggregationMethod: dto.aggregationMethod as KeyResultCalculationMethod,
-      initialValue: dto.initialValue,
-      targetValue: dto.targetValue,
-      currentValue: dto.currentValue,
-      unit: dto.unit,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -340,17 +324,4 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): KeyResultProgressPersistenceDTO {
-    return {
-      valueType: this.props.valueType,
-      aggregationMethod: this.props.aggregationMethod,
-      initialValue: this.props.initialValue,
-      targetValue: this.props.targetValue,
-      currentValue: this.props.currentValue,
-      unit: this.props.unit,
-    };
-  }
 }

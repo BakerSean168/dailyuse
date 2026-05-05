@@ -1817,7 +1817,29 @@ export default {
         task: 'Task Module',
         goal: 'Goal Module',
         notification: 'Notification Module',
+        system: 'System Module',
+        custom: 'Custom Module',
       },
+    },
+
+    presentation: {
+      executionSummary: 'Executed {total} times, {success} successful',
+      healthHealthy: 'Healthy',
+      healthWarning: 'Warning',
+      healthCritical: 'Critical',
+      durationMs: '{ms} ms',
+      durationSec: '{sec} sec',
+    },
+
+    dev: {
+      title: 'Schedule Debug',
+      subtitle: 'Development schedule task debug panel',
+      noTasks: 'No schedule tasks',
+      source: 'Source',
+      enabled: 'Enabled',
+      nextRun: 'Next Run',
+      executions: 'Executions',
+      health: 'Health',
     },
 
     error: {
@@ -3747,6 +3769,14 @@ export default {
       labelIcon: 'Icon (optional)',
       btnCancel: 'Cancel',
       btnCreate: 'Create',
+    },
+    presentation: {
+      statusActive: 'Active',
+      statusArchived: 'Archived',
+      statusDeleted: 'Deleted',
+      typeMarkdown: 'Markdown',
+      typeCode: 'Code',
+      typeMixed: 'Mixed',
     },
     aiKnowledge: {
       title: 'AI Knowledge Generator',

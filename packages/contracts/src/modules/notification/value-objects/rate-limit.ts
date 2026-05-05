@@ -25,11 +25,3 @@ export interface RateLimitDTO {
   maxPerDay: number;
 }
 
-/**
- * RateLimit Persistence DTO (持久层)
- */
-export interface RateLimitPersistenceDTO {
-  enabled: boolean;
-  maxPerHour: number;
-  maxPerDay: number;
-}

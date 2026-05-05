@@ -1,11 +1,11 @@
 /**
  * Goal State Mapper
  *
- * Converts GoalPersistenceDTO → GoalState for domain reconstruction.
- * Shared by Prisma and SQLite mappers.
+ * Converts raw persistence data → GoalState for domain reconstruction.
+ * Shared by Prisma and PowerSync mappers.
  */
 
-import type { GoalPersistenceDTO, ReviewType } from '@dailyuse/contracts/goal';
+import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -19,31 +19,100 @@ import {
 import type { GoalState } from '@/domain-server';
 
 /**
- * Convert a GoalPersistenceDTO to GoalState for Goal.load()
+ * Raw goal data from infrastructure mappers.
+ * Fields are already parsed (not JSON strings) — the mapper provides
+ * structured objects directly, eliminating JSON.stringify/parse round-trips.
  */
-export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
-  const tags = typeof dto.tags === 'string' ? JSON.parse(dto.tags) : dto.tags;
-  const reminderConfig = dto.reminderConfig
-    ? GoalReminderConfig.fromPersistenceDTO(
-        typeof dto.reminderConfig === 'string'
-          ? JSON.parse(dto.reminderConfig)
-          : dto.reminderConfig,
-      )
+export interface RawGoalData {
+  id: string;
+  identityId: string;
+  name: string;
+  description: string | null;
+  color: string;
+  feasibilityAnalysis: string | null;
+  motivation: string | null;
+  status: string;
+  importance: string;
+  priority: number;
+  category: string | null;
+  tags: string[];
+  startDate: Date | null;
+  targetDate: Date | null;
+  completedAt: Date | null;
+  archivedAt: Date | null;
+  folderId: string | null;
+  parentGoalId: string | null;
+  sortOrder: number;
+  reminderConfig: { enabled: boolean; triggers: any[] } | null;
+  keyResults: RawKeyResultData[] | null;
+  goalReviews: RawGoalReviewData[] | null;
+  weightSnapshots: KeyResultWeightSnapshotDTO[] | null;
+  totalKeyResults?: number;
+  completedKeyResults?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  version: number;
+}
+
+export interface RawKeyResultData {
+  id: string;
+  goalId: string;
+  title: string;
+  description: string | null;
+  progress: {
+    initialValue: number;
+    currentValue: number;
+    targetValue: number;
+    valueType: string;
+    aggregationMethod: string;
+    unit: string | null;
+  };
+  weight: number;
+  sortOrder: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface RawGoalReviewData {
+  id: string;
+  goalId: string;
+  type: string;
+  rating: number;
+  summary: string;
+  achievements: string | null;
+  challenges: string | null;
+  improvements: string | null;
+  keyResultSnapshots: any[];
+  reviewedAt: Date;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+/**
+ * Convert raw persistence data to GoalState for Goal.load()
+ */
+export function rawDataToGoalState(raw: RawGoalData): GoalState {
+  const reminderConfig = raw.reminderConfig
+    ? GoalReminderConfig.fromDTO(raw.reminderConfig)
     : null;
 
-  const keyResults = (dto.keyResults || []).map((kr) => {
-    const progress = typeof kr.progress === 'string' ? JSON.parse(kr.progress) : kr.progress;
-    return KeyResult.load({
+  const keyResults = (raw.keyResults || []).map((kr) =>
+    KeyResult.load({
       id: KeyResultId.of(kr.id),
       title: kr.title,
       description: kr.description ?? null,
       progress: {
-        initialValue: progress.initialValue ?? 0,
-        currentValue: progress.currentValue ?? 0,
-        targetValue: progress.targetValue ?? 100,
-        valueType: progress.valueType ?? 'Incremental',
-        aggregationMethod: progress.aggregationMethod ?? 'Last',
-        unit: progress.unit ?? null,
+        initialValue: kr.progress.initialValue ?? 0,
+        currentValue: kr.progress.currentValue ?? 0,
+        targetValue: kr.progress.targetValue ?? 100,
+        valueType: (kr.progress.valueType ?? 'Incremental') as KeyResultValueType,
+        aggregationMethod: (kr.progress.aggregationMethod ?? 'Last') as KeyResultCalculationMethod,
+        unit: kr.progress.unit ?? null,
       },
       weight: kr.weight,
       sortOrder: kr.sortOrder,
@@ -51,15 +120,11 @@ export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
       createdAt: new Date(kr.createdAt),
       updatedAt: new Date(kr.updatedAt),
       deletedAt: kr.deletedAt ? new Date(kr.deletedAt) : null,
-    });
-  });
+    }),
+  );
 
-  const goalReviews = (dto.goalReviews || []).map((r) => {
-    const keyResultSnapshots =
-      typeof r.keyResultSnapshots === 'string'
-        ? JSON.parse(r.keyResultSnapshots)
-        : (r.keyResultSnapshots ?? []);
-    return GoalReview.load({
+  const goalReviews = (raw.goalReviews || []).map((r) =>
+    GoalReview.load({
       id: GoalReviewId.of(r.id),
       goalId: GoalId.of(r.goalId),
       type: r.type as ReviewType,
@@ -68,48 +133,48 @@ export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
       achievements: r.achievements ?? null,
       challenges: r.challenges ?? null,
       improvements: r.improvements ?? null,
-      keyResultSnapshots,
+      keyResultSnapshots: r.keyResultSnapshots,
       reviewedAt: new Date(r.reviewedAt),
       version: r.version ?? 1,
       createdAt: new Date(r.createdAt),
       updatedAt: new Date(r.updatedAt),
       deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
-    });
-  });
+    }),
+  );
 
-  const weightSnapshots = (dto.weightSnapshots || []).map((ws) =>
+  const weightSnapshots = (raw.weightSnapshots || []).map((ws) =>
     KeyResultWeightSnapshot.fromDTO(ws),
   );
 
   return {
-    id: GoalId.of(dto.id),
-    identityId: IdentityId.of(dto.identityId),
-    name: dto.name,
-    description: dto.description ?? null,
-    color: dto.color,
-    feasibilityAnalysis: dto.feasibilityAnalysis ?? null,
-    motivation: dto.motivation ?? null,
-    status: dto.status as GoalStatus,
-    importance: dto.importance as ImportanceLevel,
-    priority: dto.priority ?? 0,
-    category: dto.category ?? null,
-    tags: Array.isArray(tags) ? tags : [],
-    startDate: dto.startDate ? new Date(dto.startDate) : null,
-    targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
-    completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-    archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
-    folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
-    parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
-    sortOrder: dto.sortOrder,
+    id: GoalId.of(raw.id),
+    identityId: IdentityId.of(raw.identityId),
+    name: raw.name,
+    description: raw.description ?? null,
+    color: raw.color,
+    feasibilityAnalysis: raw.feasibilityAnalysis ?? null,
+    motivation: raw.motivation ?? null,
+    status: raw.status as GoalStatus,
+    importance: raw.importance as ImportanceLevel,
+    priority: raw.priority ?? 0,
+    category: raw.category ?? null,
+    tags: Array.isArray(raw.tags) ? raw.tags : [],
+    startDate: raw.startDate ? new Date(raw.startDate) : null,
+    targetDate: raw.targetDate ? new Date(raw.targetDate) : null,
+    completedAt: raw.completedAt ? new Date(raw.completedAt) : null,
+    archivedAt: raw.archivedAt ? new Date(raw.archivedAt) : null,
+    folderId: raw.folderId ? GoalFolderId.of(raw.folderId) : null,
+    parentGoalId: raw.parentGoalId ? GoalId.of(raw.parentGoalId) : null,
+    sortOrder: raw.sortOrder,
     reminderConfig,
-    version: dto.version ?? 1,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    version: raw.version ?? 1,
+    createdAt: new Date(raw.createdAt),
+    updatedAt: new Date(raw.updatedAt),
+    deletedAt: raw.deletedAt ? new Date(raw.deletedAt) : null,
     keyResults,
     goalReviews,
     weightSnapshots,
-    totalKeyResults: dto.totalKeyResults,
-    completedKeyResults: dto.completedKeyResults,
+    totalKeyResults: raw.totalKeyResults,
+    completedKeyResults: raw.completedKeyResults,
   };
 }

@@ -33,16 +33,3 @@ export interface NotificationMetadataDTO {
   data?: unknown;
 }
 
-/**
- * NotificationMetadata Persistence DTO
- */
-export interface NotificationMetadataPersistenceDTO {
-  icon: string | null;
-  image: string | null;
-  color: string | null;
-  sound: string | null;
-  badge: number | null;
-  data: string | null; // JSON string
-}
-
-

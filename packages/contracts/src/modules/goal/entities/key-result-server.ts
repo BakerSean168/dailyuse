@@ -8,7 +8,7 @@
  */
 
 import type { KeyResultProgressDTO } from '../value-objects';
-import type { TransferDate, PersistenceDate, DomainDate, KeyResultId } from '../../../primitives';
+import type { TransferDate, DomainDate, KeyResultId } from '../../../primitives';
 
 export interface KeyResultServerDTO {
   id: KeyResultId;
@@ -21,22 +21,4 @@ export interface KeyResultServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * KeyResult Persistence DTO
- * 数据库存储格式
- */
-export interface KeyResultPersistenceDTO {
-  id: KeyResultId;
-  goalId: string; // 所属目标 ID
-  title: string;
-  description: string | null;
-  progress: string; // JSON string (KeyResultProgressDTO)
-  weight: number; // 权重 (1-5)
-  sortOrder: number;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

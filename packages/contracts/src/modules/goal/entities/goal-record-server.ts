@@ -10,7 +10,6 @@
 
 import type {
   TransferDate,
-  PersistenceDate,
   DomainDate,
   GoalRecordId,
   KeyResultId,
@@ -34,20 +33,4 @@ export interface GoalRecordServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * GoalRecord Persistence DTO
- * 数据库存储格式
- */
-export interface GoalRecordPersistenceDTO {
-  id: GoalRecordId;
-  keyResultId: KeyResultId;
-  value: number; // 本次记录的值（独立值）
-  note: string | null;
-  recordedAt: PersistenceDate;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

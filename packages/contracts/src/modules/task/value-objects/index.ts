@@ -6,14 +6,12 @@
 export type {
   RecurrenceRule,
   RecurrenceRuleDTO,
-  RecurrenceRulePersistenceDTO,
 } from './recurrence-rule';
 
 // TaskReminderConfig
 export type {
   TaskReminderConfig,
   TaskReminderConfigDTO,
-  TaskReminderConfigPersistenceDTO,
 } from './task-reminder-config';
 
 
@@ -21,7 +19,6 @@ export type {
 export type {
   TaskGoalBinding,
   TaskGoalBindingDTO,
-  TaskGoalBindingPersistenceDTO,
 } from './task-goal-binding';
 export { TaskGoalBindingTrigger } from './task-goal-binding-trigger';
 export type { TaskGoalBindingTrigger as TaskGoalBindingTriggerValue } from './task-goal-binding-trigger';
@@ -30,14 +27,12 @@ export type { TaskGoalBindingTrigger as TaskGoalBindingTriggerValue } from './ta
 export type {
   TaskTimeConfig,
   TaskTimeConfigDTO,
-  TaskTimeConfigPersistenceDTO,
 } from './task-time-config';
 
 // CompletionRecord
 export type {
   CompletionRecord,
   CompletionRecordDTO,
-  CompletionRecordPersistenceDTO,
 } from './completion-record';
 
 // Enums

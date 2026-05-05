@@ -56,9 +56,9 @@ describe('SessionLayout', () => {
     expect(layout.activeGroupIndex).toBe(1);
   });
 
-  it('converts to/from Server DTO', () => {
+  it('converts to/from DTO', () => {
     const layout = SessionLayout.createDefault();
-    const dto = layout.toServerDTO();
+    const dto = layout.toDTO();
     expect(dto.splitType).toBe('Horizontal');
 
     const layoutFromDto = SessionLayout.fromDTO(dto);
@@ -68,12 +68,4 @@ describe('SessionLayout', () => {
     expect(layoutCreated.splitType).toBe('Horizontal');
   });
 
-  it('converts to/from Persistence DTO', () => {
-    const layout = SessionLayout.createDefault();
-    const pdto = layout.toPersistenceDTO();
-    expect(pdto.split_type).toBe('Horizontal');
-
-    const layoutFromPdto = SessionLayout.fromPersistenceDTO(pdto);
-    expect(layoutFromPdto.splitType).toBe('Horizontal');
-  });
 });

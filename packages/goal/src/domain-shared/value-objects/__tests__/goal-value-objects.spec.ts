@@ -103,9 +103,6 @@ describe('goal shared value objects', () => {
     expect(metadata.hasTags).toBe(true);
     expect(metadata.removeTag('launch').tags).toEqual(['q2']);
     expect(GoalMetadata.fromDTO(metadata.toDTO()).toDTO()).toEqual(metadata.toDTO());
-    expect(GoalMetadata.fromPersistenceDTO(metadata.toPersistenceDTO()).toDTO()).toEqual(
-      metadata.toDTO(),
-    );
     expect(() =>
       GoalMetadata.create({
         importance: 'Moderate',
@@ -145,9 +142,6 @@ describe('goal shared value objects', () => {
     expect(reminder.removeTrigger('RemainingDays', 3).triggers).toHaveLength(1);
     expect(reminder.clearTriggers().triggers).toEqual([]);
     expect(GoalReminderConfig.fromDTO(reminder.toDTO()).toDTO()).toEqual(reminder.toDTO());
-    expect(
-      GoalReminderConfig.fromPersistenceDTO(reminder.toPersistenceDTO()).toDTO(),
-    ).toEqual(reminder.toDTO());
     expect(() => GoalReminderConfig.create({ enabled: true, triggers: 'bad' as never })).toThrow(
       'Triggers must be an array',
     );
@@ -203,9 +197,6 @@ describe('goal shared value objects', () => {
     expect(archivedRange.isArchived).toBe(true);
     expect(archivedRange.unmarkAsArchived().archivedAt).toBeNull();
     expect(GoalTimeRange.fromDTO(range.toDTO()).toDTO()).toEqual(range.toDTO());
-    expect(GoalTimeRange.fromPersistenceDTO(range.toPersistenceDTO()).toDTO()).toEqual(
-      range.toDTO(),
-    );
     expect(() =>
       GoalTimeRange.create({
         startDate: target.getTime(),
@@ -235,9 +226,6 @@ describe('goal shared value objects', () => {
     expect(snapshot.getProgressLevel()).toBe('in-progress');
     expect(snapshot.getDisplayText()).toContain('Launch: 60/100');
     expect(KeyResultSnapshot.fromDTO(snapshot.toDTO()).toDTO()).toEqual(snapshot.toDTO());
-    expect(
-      KeyResultSnapshot.fromPersistenceDTO(snapshot.toPersistenceDTO()).toDTO(),
-    ).toEqual(snapshot.toDTO());
     expect(
       KeyResultSnapshot.create({
         keyResultId: 'KeyResultId_1' as never,
@@ -380,9 +368,6 @@ describe('goal shared value objects', () => {
       }).isCompleted,
     ).toBe(true);
     expect(KeyResultProgress.fromDTO(progress.toDTO()).toDTO()).toEqual(progress.toDTO());
-    expect(KeyResultProgress.fromPersistenceDTO(progress.toPersistenceDTO()).toDTO()).toEqual(
-      progress.toDTO(),
-    );
     expect(() =>
       KeyResultProgress.create({
         valueType: 'Incremental',
@@ -461,9 +446,6 @@ describe('goal shared value objects', () => {
     expect(snapshot.getDisplayText()).toContain('2 → 4');
     expect(snapshot.getAgeInSeconds()).toBe(86100);
     expect(KeyResultWeightSnapshot.fromDTO(snapshot.toDTO()).toDTO()).toEqual(snapshot.toDTO());
-    expect(
-      KeyResultWeightSnapshot.fromPersistenceDTO(snapshot.toPersistenceDTO()).toDTO(),
-    ).toEqual(snapshot.toDTO());
 
     const constructed = new KeyResultWeightSnapshot(
       'KeyResultWeightSnapshotId_2' as never,

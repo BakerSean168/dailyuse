@@ -40,18 +40,4 @@ export interface ReminderResponseClientDTO {
   action: ReminderResponseAction;
   responseTime?: number | null;
   timestamp: number;
-  // UI 显示文本
-  actionText: string; // "点击" | "忽略" | "延迟" | "关闭" | "完成"
-  responseTimeText?: string; // "30秒后响应" | "2分钟后响应"
-}
-
-/**
- * Reminder Response Persistence DTO
- */
-export interface ReminderResponsePersistenceDTO {
-  id: string;
-  reminderTemplateId: string;
-  action: ReminderResponseAction;
-  responseTime?: Date | null;
-  timestamp: Date;
 }

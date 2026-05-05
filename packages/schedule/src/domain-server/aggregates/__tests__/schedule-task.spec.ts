@@ -935,55 +935,6 @@ describe('ScheduleTask Aggregate', () => {
     });
   });
 
-  // ===== UI Helper Methods =====
-
-  describe('UI helpers', () => {
-    it('should return status display text', () => {
-      const task = createTestTask();
-      expect(task.getStatusDisplay()).toBe('活跃');
-    });
-
-    it('should return status color', () => {
-      const task = createTestTask();
-      expect(task.getStatusColor()).toBe('green');
-
-      task.pause();
-      expect(task.getStatusColor()).toBe('gray');
-    });
-
-    it('should return source module display text', () => {
-      const taskFromGoal = createTestTask({ sourceModule: SourceModule.Goal });
-      expect(taskFromGoal.getSourceModuleDisplay()).toBe('目标模块');
-
-      const taskFromReminder = createTestTask({ sourceModule: SourceModule.Reminder });
-      expect(taskFromReminder.getSourceModuleDisplay()).toBe('提醒模块');
-    });
-
-    it('should return execution summary', () => {
-      const task = createTestTask();
-      expect(task.getExecutionSummary()).toContain('已执行 0 次');
-    });
-
-    it('should return health status', () => {
-      const healthy = createLoadedActiveTask({ consecutiveFailures: 0 });
-      expect(healthy.getHealthStatus()).toBe('healthy');
-
-      const warning = createLoadedActiveTask({ consecutiveFailures: 2 });
-      expect(warning.getHealthStatus()).toBe('warning');
-
-      const critical = createLoadedActiveTask({ consecutiveFailures: 5 });
-      expect(critical.getHealthStatus()).toBe('critical');
-    });
-
-    it('should detect overdue task', () => {
-      const pastTask = createLoadedActiveTask({ nextRunAt: Date.now() - 60000 });
-      expect(pastTask.isOverdue()).toBe(true);
-
-      const futureTask = createLoadedActiveTask({ nextRunAt: Date.now() + 60000 });
-      expect(futureTask.isOverdue()).toBe(false);
-    });
-  });
-
   // ===== Serialization =====
 
   describe('toServerDTO()', () => {
@@ -1025,20 +976,15 @@ describe('ScheduleTask Aggregate', () => {
   });
 
   describe('toClientDTO()', () => {
-    it('should convert to client DTO with UI helper fields', () => {
+    it('should convert to client DTO with data fields', () => {
       const task = createTestTask({ name: 'Client DTO Task' });
 
       const dto = task.toClientDTO();
 
       expect(dto.id).toBe(task.id);
       expect(dto.name).toBe('Client DTO Task');
-      expect(dto.statusDisplay).toBe('活跃');
-      expect(dto.statusColor).toBe('green');
-      expect(dto.enabledDisplay).toBe('启用');
-      expect(dto.healthStatus).toBe('healthy');
-      expect(dto.executionSummary).toContain('已执行');
-      expect(dto.nextRunAtFormatted).toBeDefined();
-      expect(dto.lastRunAtFormatted).toBeDefined();
+      expect(dto.status).toBe('Active');
+      expect(dto.enabled).toBe(true);
     });
 
     it('should include executions when includeChildren is true', () => {

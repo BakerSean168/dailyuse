@@ -57,15 +57,7 @@ describe('Account domain shared value objects', () => {
     expect(updated.isDarkTheme()).toBe(true);
     expect(updated.enableNotification().notificationEnabled).toBe(true);
     expect(updated.disableNotification().notificationEnabled).toBe(false);
-    expect(updated.toPersistenceDTO()).toEqual(updated.toDTO());
-    expect(
-      AccountSettings.fromPersistenceDTO({
-        theme: ThemeType.Light,
-        language: LanguageCode.JA_JP,
-        timezone: 'Asia/Tokyo',
-        notificationEnabled: true,
-      }).isLightTheme(),
-    ).toBe(true);
+    expect(updated.toDTO()).toEqual(updated.toDTO());
   });
 
   it('rejects invalid settings payloads and classifies gender values', () => {

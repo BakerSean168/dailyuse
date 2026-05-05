@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   KeyResultSnapshot as IKeyResultSnapshot,
   KeyResultSnapshotDTO,
-  KeyResultSnapshotPersistenceDTO,
 } from '@dailyuse/contracts/goal';
 import type { KeyResultId } from '@dailyuse/contracts/primitives';
 
@@ -46,20 +45,6 @@ export class KeyResultSnapshot extends ValueObject<KeyResultSnapshotDTO> impleme
    */
   public static fromDTO(dto: KeyResultSnapshotDTO): KeyResultSnapshot {
     return new KeyResultSnapshot(dto);
-  }
-
-  // ================= 工厂方法 3: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: KeyResultSnapshotPersistenceDTO): KeyResultSnapshot {
-    return new KeyResultSnapshot({
-      keyResultId: dto.keyResultId,
-      title: dto.title,
-      targetValue: dto.targetValue,
-      currentValue: dto.currentValue,
-      progressPercentage: dto.progressPercentage,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -164,16 +149,4 @@ export class KeyResultSnapshot extends ValueObject<KeyResultSnapshotDTO> impleme
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): KeyResultSnapshotPersistenceDTO {
-    return {
-      keyResultId: this.props.keyResultId,
-      title: this.props.title,
-      targetValue: this.props.targetValue,
-      currentValue: this.props.currentValue,
-      progressPercentage: this.props.progressPercentage,
-    };
-  }
 }

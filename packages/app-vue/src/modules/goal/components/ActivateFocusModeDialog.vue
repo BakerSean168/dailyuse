@@ -89,7 +89,7 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
-import type { FocusModeClientDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
 import { GoalId, HiddenGoalsMode } from '@dailyuse/goal/domain-shared';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
@@ -113,7 +113,7 @@ const props = withDefaults(
   defineProps<{
     modelValue?: boolean;
     goals?: Array<{ id: GoalId; name: string }>;
-    onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeClientDTO>;
+    onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeDTO>;
   }>(),
   {
     modelValue: false,
@@ -123,7 +123,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
-  activated: [focusMode: FocusModeClientDTO];
+  activated: [focusMode: FocusModeDTO];
 }>();
 
 const { t } = useI18n();

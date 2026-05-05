@@ -15,7 +15,7 @@
 
 import type {
   EditorSessionClientDTO,
-  SessionLayoutClient,
+  ISessionLayout,
 } from '@dailyuse/contracts/editor';
 import type { EditorSessionId as IEditorSessionId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
@@ -33,7 +33,7 @@ export interface EditorSessionState {
   groups: EditorGroup[];
   isActive: boolean;
   activeGroupIndex: number;
-  layout: SessionLayoutClient;
+  layout: ISessionLayout;
   lastAccessedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -78,7 +78,7 @@ export class EditorSession extends Entity<IEditorSessionId> {
     return this._props.activeGroupIndex;
   }
 
-  get layout(): SessionLayoutClient {
+  get layout(): ISessionLayout {
     return this._props.layout;
   }
 

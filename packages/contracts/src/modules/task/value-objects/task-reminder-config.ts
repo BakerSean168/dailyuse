@@ -27,7 +27,3 @@ export interface TaskReminderConfigDTO {
   triggers: ReminderTrigger[];
 }
 
-export interface TaskReminderConfigPersistenceDTO {
-  enabled: boolean;
-  triggers: string; // JSON
-}

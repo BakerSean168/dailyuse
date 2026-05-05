@@ -2,7 +2,7 @@
  * TaskTimeConfig Value Object - Server Interface
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
+import type { DomainDate, TransferDate } from '../../../primitives';
 import type { TaskTimeType } from './task-time-type';
 
 // ============ Interface Definitions ============
@@ -24,10 +24,3 @@ export interface TaskTimeConfigDTO {
   timeRange?: { start: number; end: number } | null;
 }
 
-export interface TaskTimeConfigPersistenceDTO {
-  timeType: string;
-  startDate: PersistenceDate | null;
-
-  timePoint: number | null;
-  timeRange: string | null; // JSON
-}

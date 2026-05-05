@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   ChannelError as IChannelError,
   ChannelErrorDTO,
-  ChannelErrorPersistenceDTO,
 } from '@dailyuse/contracts/notification';
 
 /**
@@ -34,14 +33,6 @@ export class ChannelError extends ValueObject<ChannelErrorDTO> implements IChann
 
   public static fromDTO(dto: ChannelErrorDTO): ChannelError {
     return new ChannelError(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ChannelErrorPersistenceDTO): ChannelError {
-    return new ChannelError({
-      code: dto.code,
-      message: dto.message,
-      details: dto.details ? JSON.parse(dto.details) : undefined,
-    });
   }
 
   // ================= 校验 =================
@@ -85,13 +76,5 @@ export class ChannelError extends ValueObject<ChannelErrorDTO> implements IChann
 
   public toDTO(): ChannelErrorDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): ChannelErrorPersistenceDTO {
-    return {
-      code: this.props.code,
-      message: this.props.message,
-      details: this.props.details ? JSON.stringify(this.props.details) : null,
-    };
   }
 }

@@ -12,7 +12,7 @@ import type {
 import type { ProjectType } from '../value-objects/project-type';
 
 // Value object imports
-import type { WorkspaceLayoutClientDTO, WorkspaceSettingsClientDTO } from '../value-objects';
+import type { WorkspaceLayoutDTO, WorkspaceSettingsDTO } from '../value-objects';
 import type { EditorWorkspaceServerDTO } from './editor-workspace-server';
 
 // Entity imports
@@ -32,8 +32,8 @@ export interface EditorWorkspaceClientDTO {
   projectPath: string;
   projectType: ProjectType;
 
-  layout: WorkspaceLayoutClientDTO;
-  settings: WorkspaceSettingsClientDTO;
+  layout: WorkspaceLayoutDTO;
+  settings: WorkspaceSettingsDTO;
 
   // Child entities: session list
   sessions: EditorSessionClientDTO[];

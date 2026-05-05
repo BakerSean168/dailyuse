@@ -18,6 +18,8 @@ import type { IReminderTemplateRepository } from '../../../domain-server';
 import type { IReminderResponseRepository } from '../../../domain-server';
 import type { IReminderGroupRepository } from '../../../domain-server';
 
+const TEST_IDENTITY = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
+
 // ─── Mock Repositories ───────────────────────────────────────────────────
 
 class MockReminderTemplateRepository implements IReminderTemplateRepository {
@@ -205,7 +207,7 @@ describe('Reminder Use Cases', () => {
       const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
       const request = createValidCreateRequest();
 
-      const result = await useCase.execute(request, { identityId: 'identity-1' });
+      const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -218,7 +220,7 @@ describe('Reminder Use Cases', () => {
       const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
       const request = createValidCreateRequest();
 
-      const result = await useCase.execute(request, { identityId: 'identity-1' });
+      const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
       expect(result.ok).toBe(true);
       if (result.ok) {
         const persisted = await templateRepository.findById(result.data.id);
@@ -235,8 +237,8 @@ describe('Reminder Use Cases', () => {
         title: 'Another Reminder',
       };
 
-      const result1 = await useCase.execute(request1, { identityId: 'identity-1' });
-      const result2 = await useCase.execute(request2, { identityId: 'identity-1' });
+      const result1 = await useCase.execute(request1, { identityId: TEST_IDENTITY });
+      const result2 = await useCase.execute(request2, { identityId: TEST_IDENTITY });
 
       expect(result1.ok).toBe(true);
       expect(result2.ok).toBe(true);
@@ -252,7 +254,7 @@ describe('Reminder Use Cases', () => {
         groupId: 'invalid-group-id',
       };
 
-      const result = await useCase.execute(request, { identityId: 'identity-1' });
+      const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -265,12 +267,12 @@ describe('Reminder Use Cases', () => {
     it('deletes an existing reminder template', async () => {
       const createUseCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
       const request = createValidCreateRequest();
-      const created = await createUseCase.execute(request, { identityId: 'identity-1' });
+      const created = await createUseCase.execute(request, { identityId: TEST_IDENTITY });
       expect(created.ok).toBe(true);
 
       if (created.ok) {
         const deleteUseCase = new DeleteReminderTemplateUseCase(templateRepository);
-        const result = await deleteUseCase.execute(created.data.id, { identityId: 'identity-1' });
+        const result = await deleteUseCase.execute(created.data.id, { identityId: TEST_IDENTITY });
 
         expect(result.ok).toBe(true);
 
@@ -285,9 +287,9 @@ describe('Reminder Use Cases', () => {
     it('supports finding templates by identity', async () => {
       const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
       const request = createValidCreateRequest();
-      await useCase.execute(request, { identityId: 'identity-1' });
+      await useCase.execute(request, { identityId: TEST_IDENTITY });
 
-      const templates = await templateRepository.findByIdentityId('identity-1');
+      const templates = await templateRepository.findByIdentityId(TEST_IDENTITY);
 
       expect(templates.length).toBeGreaterThan(0);
       expect(templates[0].title).toBe(request.title);
@@ -297,11 +299,11 @@ describe('Reminder Use Cases', () => {
       const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
       const request = createValidCreateRequest();
 
-      const template1 = await useCase.execute(request, { identityId: 'identity-1' });
+      const template1 = await useCase.execute(request, { identityId: TEST_IDENTITY });
       const template2 = await useCase.execute({
         ...request,
         title: 'Another Reminder',
-      }, { identityId: 'identity-1' });
+      }, { identityId: TEST_IDENTITY });
 
       expect(template1.ok).toBe(true);
       expect(template2.ok).toBe(true);
@@ -317,10 +319,10 @@ describe('Reminder Use Cases', () => {
     it('supports finding active templates', async () => {
       const useCase = new CreateReminderTemplateUseCase(templateRepository, groupRepository);
       const request = createValidCreateRequest();
-      const created = await useCase.execute(request, { identityId: 'identity-1' });
+      const created = await useCase.execute(request, { identityId: TEST_IDENTITY });
       expect(created.ok).toBe(true);
 
-      const active = await templateRepository.findActive('identity-1');
+      const active = await templateRepository.findActive(TEST_IDENTITY);
       expect(active.length).toBeGreaterThan(0);
     });
   });

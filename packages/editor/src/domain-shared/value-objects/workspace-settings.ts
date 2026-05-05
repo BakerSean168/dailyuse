@@ -7,9 +7,8 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IWorkspaceSettingsServer,
-  WorkspaceSettingsServerDTO,
-  WorkspaceSettingsPersistenceDTO,
+  IWorkspaceSettings,
+  WorkspaceSettingsDTO,
 } from '@dailyuse/contracts/editor';
 
 interface AutoSaveConfig {
@@ -20,15 +19,15 @@ interface AutoSaveConfig {
 /**
  * WorkspaceSettings 值对象实现
  */
-export class WorkspaceSettings extends ValueObject<WorkspaceSettingsServerDTO> implements IWorkspaceSettingsServer {
+export class WorkspaceSettings extends ValueObject<WorkspaceSettingsDTO> implements IWorkspaceSettings {
 
-  private constructor(props: WorkspaceSettingsServerDTO) {
+  private constructor(props: WorkspaceSettingsDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: WorkspaceSettingsServerDTO): WorkspaceSettings {
+  public static create(props: WorkspaceSettingsDTO): WorkspaceSettings {
     return new WorkspaceSettings(props);
   }
 
@@ -49,22 +48,8 @@ export class WorkspaceSettings extends ValueObject<WorkspaceSettingsServerDTO> i
     });
   }
 
-  public static fromDTO(dto: WorkspaceSettingsServerDTO): WorkspaceSettings {
+  public static fromDTO(dto: WorkspaceSettingsDTO): WorkspaceSettings {
     return new WorkspaceSettings(dto);
-  }
-
-  public static fromPersistenceDTO(dto: WorkspaceSettingsPersistenceDTO): WorkspaceSettings {
-    return new WorkspaceSettings({
-      theme: dto.theme,
-      fontSize: dto.font_size,
-      fontFamily: dto.font_family,
-      lineHeight: dto.line_height,
-      tabSize: dto.tab_size,
-      wordWrap: dto.word_wrap,
-      lineNumbers: dto.line_numbers,
-      minimap: dto.minimap,
-      autoSave: dto.auto_save !== null ? JSON.parse(dto.auto_save) : null,
-    });
   }
 
   // ================= Getters =================
@@ -108,7 +93,7 @@ export class WorkspaceSettings extends ValueObject<WorkspaceSettingsServerDTO> i
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<WorkspaceSettingsServerDTO>,
+    updates: Partial<WorkspaceSettingsDTO>,
   ): WorkspaceSettings {
     return new WorkspaceSettings({ ...this.props, ...updates });
   }
@@ -154,7 +139,7 @@ export class WorkspaceSettings extends ValueObject<WorkspaceSettingsServerDTO> i
 
   // ================= 序列化 =================
 
-  public toServerDTO(): WorkspaceSettingsServerDTO {
+  public toDTO(): WorkspaceSettingsDTO {
     return {
       theme: this.props.theme,
       fontSize: this.props.fontSize,
@@ -165,20 +150,6 @@ export class WorkspaceSettings extends ValueObject<WorkspaceSettingsServerDTO> i
       lineNumbers: this.props.lineNumbers,
       minimap: this.props.minimap,
       autoSave: this.props.autoSave !== null ? { ...this.props.autoSave } : null,
-    };
-  }
-
-  public toPersistenceDTO(): WorkspaceSettingsPersistenceDTO {
-    return {
-      theme: this.props.theme,
-      font_size: this.props.fontSize,
-      font_family: this.props.fontFamily,
-      line_height: this.props.lineHeight,
-      tab_size: this.props.tabSize,
-      word_wrap: this.props.wordWrap,
-      line_numbers: this.props.lineNumbers,
-      minimap: this.props.minimap,
-      auto_save: this.props.autoSave !== null ? JSON.stringify(this.props.autoSave) : null,
     };
   }
 }

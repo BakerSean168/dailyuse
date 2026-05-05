@@ -5,8 +5,9 @@
  */
 
 import { Goal } from '@/domain-server';
-import type { GoalClientDTO, GoalPersistenceDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
-import { persistenceDtoToGoalState } from '@/infrastructure-server/adapters/prisma/mappers/goal-state-mapper';
+import type { GoalClientDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
+import { rawDataToGoalState } from '@/infrastructure-server/adapters/prisma/mappers/goal-state-mapper';
+import type { RawGoalData } from '@/infrastructure-server/adapters/prisma/mappers/goal-state-mapper';
 
 /**
  * Goal Mapper
@@ -20,10 +21,10 @@ export class GoalMapper {
   }
 
   /**
-   * 将持久化 DTO 转换为领域对象
+   * 将原始持久化数据转换为领域对象
    */
-  static toDomain(dto: GoalPersistenceDTO): Goal {
-    return Goal.load(persistenceDtoToGoalState(dto));
+  static toDomain(raw: RawGoalData): Goal {
+    return Goal.load(rawDataToGoalState(raw));
   }
 
   /**
@@ -40,6 +41,3 @@ export class GoalMapper {
     return goals.map((goal) => this.toClientDTO(goal, includeChildren));
   }
 }
-
-// Re-export GoalPersistenceDTO type from contracts
-export type { GoalPersistenceDTO } from '@dailyuse/contracts/goal';

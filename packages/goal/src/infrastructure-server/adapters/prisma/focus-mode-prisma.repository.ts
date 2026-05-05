@@ -17,7 +17,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   async save(focusMode: FocusMode): Promise<void> {
-    const dto = focusMode.toPersistenceDTO();
+    const dto = focusMode.toDTO();
     this.logger.info('保存专注模式', {
       id: dto.id,
       identityId: dto.identityId,
@@ -28,27 +28,26 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
     });
 
     await this.prisma.focusMode.upsert({
-      where: { id: dto.id as string },
+      where: { id: dto.id },
       create: {
-        id: dto.id as string,
-        identityId: dto.identityId as string,
-        focusedGoalIds: dto.focusedGoalIds as string[],
+        id: dto.id,
+        identityId: dto.identityId,
+        focusedGoalIds: dto.focusedGoalIds,
         startTime: new Date(dto.startTime),
         endTime: new Date(dto.endTime),
         hiddenGoalsMode: dto.hiddenGoalsMode,
         isActive: dto.isActive,
         actualEndTime: dto.actualEndTime ? new Date(dto.actualEndTime) : null,
-        version: dto.version,
+        version: 1,
         createdAt: new Date(dto.createdAt),
         updatedAt: new Date(dto.updatedAt),
       },
       update: {
-        focusedGoalIds: dto.focusedGoalIds as string[],
+        focusedGoalIds: dto.focusedGoalIds,
         endTime: new Date(dto.endTime),
         hiddenGoalsMode: dto.hiddenGoalsMode,
         isActive: dto.isActive,
         actualEndTime: dto.actualEndTime ? new Date(dto.actualEndTime) : null,
-        version: dto.version,
         updatedAt: new Date(dto.updatedAt),
       },
     });

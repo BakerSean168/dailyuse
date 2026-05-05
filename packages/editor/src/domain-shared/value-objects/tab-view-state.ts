@@ -7,9 +7,8 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  ITabViewStateServer,
-  TabViewStateServerDTO,
-  TabViewStatePersistenceDTO,
+  ITabViewState,
+  TabViewStateDTO,
 } from '@dailyuse/contracts/editor';
 
 interface CursorPosition {
@@ -25,15 +24,15 @@ interface Selection {
 /**
  * TabViewState 值对象实现
  */
-export class TabViewState extends ValueObject<TabViewStateServerDTO> implements ITabViewStateServer {
+export class TabViewState extends ValueObject<TabViewStateDTO> implements ITabViewState {
 
-  private constructor(props: TabViewStateServerDTO) {
+  private constructor(props: TabViewStateDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: TabViewStateServerDTO): TabViewState {
+  public static create(props: TabViewStateDTO): TabViewState {
     return new TabViewState(props);
   }
 
@@ -46,17 +45,8 @@ export class TabViewState extends ValueObject<TabViewStateServerDTO> implements 
     });
   }
 
-  public static fromDTO(dto: TabViewStateServerDTO): TabViewState {
+  public static fromDTO(dto: TabViewStateDTO): TabViewState {
     return new TabViewState(dto);
-  }
-
-  public static fromPersistenceDTO(dto: TabViewStatePersistenceDTO): TabViewState {
-    return new TabViewState({
-      scrollTop: dto.scroll_top,
-      scrollLeft: dto.scroll_left,
-      cursorPosition: JSON.parse(dto.cursor_position),
-      selections: dto.selections !== null ? JSON.parse(dto.selections) : null,
-    });
   }
 
   // ================= Getters =================
@@ -85,7 +75,7 @@ export class TabViewState extends ValueObject<TabViewStateServerDTO> implements 
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<TabViewStateServerDTO>,
+    updates: Partial<TabViewStateDTO>,
   ): TabViewState {
     return new TabViewState({ ...this.props, ...updates });
   }
@@ -132,7 +122,7 @@ export class TabViewState extends ValueObject<TabViewStateServerDTO> implements 
 
   // ================= 序列化 =================
 
-  public toServerDTO(): TabViewStateServerDTO {
+  public toDTO(): TabViewStateDTO {
     return {
       scrollTop: this.props.scrollTop,
       scrollLeft: this.props.scrollLeft,
@@ -142,17 +132,6 @@ export class TabViewState extends ValueObject<TabViewStateServerDTO> implements 
             start: { ...s.start },
             end: { ...s.end },
           }))
-        : null,
-    };
-  }
-
-  public toPersistenceDTO(): TabViewStatePersistenceDTO {
-    return {
-      scroll_top: this.props.scrollTop,
-      scroll_left: this.props.scrollLeft,
-      cursor_position: JSON.stringify(this.props.cursorPosition),
-      selections: this.props.selections !== undefined && this.props.selections !== null
-        ? JSON.stringify(this.props.selections)
         : null,
     };
   }

@@ -40,12 +40,10 @@ describe('ReminderHistory entity', () => {
 
     expect(failed.isFailed).toBe(true);
     expect(failed.hasError).toBe(true);
-    expect(failed.resultDescription).toBe('失败');
     expect(skipped.isSkipped).toBe(true);
-    expect(skipped.resultDescription).toBe('跳过');
   });
 
-  it('formats client DTO channel text and timestamps', () => {
+  it('returns client DTOs with semantic fields only', () => {
     const withChannels = ReminderHistory.create({
       templateId: 'template-1',
       identityId: 'identity-1',
@@ -59,9 +57,20 @@ describe('ReminderHistory entity', () => {
       result: TriggerResult.Success,
     });
 
-    expect(withChannels.toClientDTO().channelsText).toBe('Email + Sms');
-    expect(withChannels.toClientDTO().resultText).toBe('成功');
-    expect(withoutChannels.toClientDTO().channelsText).toBeNull();
+    expect(withChannels.toClientDTO()).toEqual({
+      id: withChannels.id,
+      templateId: 'template-1',
+      triggeredAt: withChannels.triggeredAt,
+      result: TriggerResult.Success,
+      error: null,
+      notificationSent: true,
+      notificationChannels: [NotificationChannel.Email, NotificationChannel.Sms],
+      version: 1,
+      createdAt: withChannels.createdAt.getTime(),
+      updatedAt: withChannels.createdAt.getTime(),
+      deletedAt: null,
+    });
+    expect(withoutChannels.toClientDTO().notificationChannels).toBeNull();
     expect(withoutChannels.toClientDTO().deletedAt).toBeNull();
   });
 
@@ -79,7 +88,6 @@ describe('ReminderHistory entity', () => {
     });
 
     expect(loaded.createdAt.getTime()).toBe(9_500);
-    expect(loaded.triggeredAtFormatted).toBeTruthy();
-    expect(loaded.createdAtFormatted).toBeTruthy();
+    expect(loaded.toClientDTO().createdAt).toBe(9_500);
   });
 });

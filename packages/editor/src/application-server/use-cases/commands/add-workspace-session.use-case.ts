@@ -5,7 +5,7 @@ import type { IEditorTabRepository } from '../../../domain-server/repositories/I
 import { EditorSession } from '../../../domain-server/entities/editor-session';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { EditorSessionServerDTO, SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
+import type { EditorSessionServerDTO, SessionLayoutDTO } from '@dailyuse/contracts/editor';
 import { persistWorkspaceSessionState } from './workspace-helpers';
 
 export class AddWorkspaceSessionUseCase {
@@ -19,7 +19,7 @@ export class AddWorkspaceSessionUseCase {
   async execute(params: {
     workspaceId: string;
     name: string;
-    layout?: Partial<SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutDTO>;
   }): Promise<Result<EditorSessionServerDTO>> {
     const workspace = await this.workspaceRepository.findById(params.workspaceId);
     if (!workspace) {

@@ -1,7 +1,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   EmailAddressDTO,
-  EmailAddressPersistenceDTO,
   EmailAddress as IEmailAddress,
 } from '@dailyuse/contracts/authentication';
 
@@ -138,13 +137,4 @@ export class EmailAddress extends ValueObject<EmailAddressDTO> implements IEmail
     return { ...this.props };
   }
 
-  // ================= Serialization: Persistence =================
-  /**
-   * Converts to persistence format for database storage.
-   */
-  public toPersistence(): EmailAddressPersistenceDTO {
-    return {
-      value: this.props.value,
-    };
-  }
 }

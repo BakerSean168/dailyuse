@@ -5,7 +5,6 @@
 
 export type {
   ReminderTemplateServerDTO,
-  ReminderTemplatePersistenceDTO,
 } from './reminder-template-server';
 
 export type {
@@ -14,7 +13,6 @@ export type {
 
 export type {
   ReminderGroupServerDTO,
-  ReminderGroupPersistenceDTO,
 } from './reminder-group-server';
 
 export type {
@@ -25,5 +23,4 @@ export type {
   TimeSlotDTO,
   UserReminderPreferencesServerDTO,
   UserReminderPreferencesClientDTO,
-  UserReminderPreferencesPersistenceDTO,
 } from './user-reminder-preferences-server';

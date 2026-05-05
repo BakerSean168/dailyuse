@@ -1,7 +1,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   HashedPasswordDTO,
-  HashedPasswordPersistenceDTO,
   HashedPassword as IHashedPassword,
 } from '@dailyuse/contracts/authentication';
 import { PasswordAlgorithm } from './password-algorithm';
@@ -56,15 +55,6 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
    */
   public static fromDTO(dto: HashedPasswordDTO): HashedPassword {
     return new HashedPassword(dto);
-  }
-
-  public static fromPersistence(dto: HashedPasswordPersistenceDTO): HashedPassword {
-    return new HashedPassword({
-      hash: dto.hash,
-      salt: dto.salt,
-      algorithm: dto.algorithm,
-      createdAt: dto.createdAt.getTime(),
-    });
   }
 
   // ================= Factory Method 3: Create Default =================
@@ -215,17 +205,4 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
     return { ...this.props };
   }
 
-  // ================= Serialization: Persistence =================
-  /**
-   * Converts to persistence format for database storage.
-   * Converts the number timestamp in the DTO to a Date object for ORM mapping.
-   */
-  public toPersistence(): HashedPasswordPersistenceDTO {
-    return {
-      hash: this.props.hash,
-      salt: this.props.salt,
-      algorithm: this.props.algorithm,
-      createdAt: new Date(this.props.createdAt),
-    };
-  }
 }

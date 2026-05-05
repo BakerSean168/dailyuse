@@ -8,10 +8,6 @@ import {
   AccountStatus,
   ContactPhone,
 } from '../../../../domain-shared';
-import type {
-  AccountProfilePersistenceDTO,
-  AccountSettingsPersistenceDTO,
-} from '@dailyuse/contracts/account';
 
 export type PowerSyncAccountRow = {
   id: string;
@@ -35,28 +31,40 @@ export type PowerSyncAccountRow = {
 
 export class AccountPowerSyncMapper {
   static toDomain(row: PowerSyncAccountRow): Account {
-    const profile = this.parseJson<AccountProfilePersistenceDTO>(row.profile);
-    const settings = this.parseJson<AccountSettingsPersistenceDTO>(row.settings);
+    const profile = this.parseJson<any>(row.profile);
+    const settings = this.parseJson<any>(row.settings);
 
     const state: AccountState = {
       id: IdentityId.of(row.id),
       status: AccountStatus.of(row.status),
-      profile: AccountProfile.fromPersistenceDTO(profile),
-      settings: AccountSettings.fromPersistenceDTO(settings),
-      email: ContactEmail.fromPersistenceDTO({
+      profile: AccountProfile.fromDTO({
+        nickname: profile.nickname,
+        realName: profile.realName,
+        avatarUrl: profile.avatarUrl,
+        bio: profile.bio,
+        gender: profile.gender,
+        birthday: profile.birthday ? new Date(profile.birthday).getTime() : null,
+      }),
+      settings: AccountSettings.fromDTO({
+        theme: settings.theme,
+        language: settings.language,
+        timezone: settings.timezone,
+        notificationEnabled: settings.notificationEnabled,
+      }),
+      email: ContactEmail.fromDTO({
         address: row.email_address,
         isVerified: this.toBoolean(row.email_is_verified),
-        verifiedAt: row.email_verified_at ? new Date(row.email_verified_at) : null,
+        verifiedAt: row.email_verified_at ? new Date(row.email_verified_at).getTime() : null,
         isPrimary: this.toBoolean(row.email_is_primary),
       }),
       phone:
         row.phone_number && row.phone_country_code && row.phone_full_number
-          ? ContactPhone.fromPersistenceDTO({
+          ? ContactPhone.fromDTO({
               countryCode: row.phone_country_code,
               number: row.phone_number,
               fullNumber: row.phone_full_number,
               isVerified: this.toBoolean(row.phone_is_verified),
-              verifiedAt: row.phone_verified_at ? new Date(row.phone_verified_at) : null,
+              verifiedAt: row.phone_verified_at ? new Date(row.phone_verified_at).getTime() : null,
             })
           : null,
       version: Number(row.version),
@@ -69,14 +77,16 @@ export class AccountPowerSyncMapper {
   }
 
   static toRow(account: Account): PowerSyncAccountRow {
-    const email = account.email.toPersistenceDTO();
-    const phone = account.phone?.toPersistenceDTO() ?? null;
+    const email = account.email.toDTO();
+    const phone = account.phone?.toDTO() ?? null;
+    const profile = account.profile.toDTO();
+    const settings = account.settings.toDTO();
 
     return {
       id: account.id.toString(),
       status: account.status.toString(),
-      profile: JSON.stringify(account.profile.toPersistenceDTO()),
-      settings: JSON.stringify(account.settings.toPersistenceDTO()),
+      profile: JSON.stringify(profile),
+      settings: JSON.stringify(settings),
       email_address: email.address,
       email_is_verified: this.toInteger(email.isVerified),
       email_verified_at: email.verifiedAt ? new Date(email.verifiedAt).toISOString() : null,

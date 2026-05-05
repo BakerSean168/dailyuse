@@ -1,4 +1,3 @@
-import type { GoalFolderPersistenceDTO } from '@dailyuse/contracts/goal';
 import type { FolderType } from '@dailyuse/contracts/goal';
 import { GoalFolder } from '@/domain-server';
 import { GoalFolderId } from '@/domain-shared';
@@ -27,7 +26,7 @@ export class PowerSyncGoalFolderMapper {
     });
   }
 
-  static toPersistence(folder: GoalFolder): GoalFolderPersistenceDTO {
+  static toPersistence(folder: GoalFolder) {
     return {
       id: folder.id,
       identityId: folder.identityId,

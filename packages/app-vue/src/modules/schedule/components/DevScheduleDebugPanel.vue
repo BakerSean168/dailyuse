@@ -31,31 +31,33 @@
               <span class="font-medium text-foreground">{{ task.name }}</span>
               <span
                 class="shrink-0 rounded px-1.5 py-0.5 font-medium"
-                :class="statusClass(task.statusColor)"
+                :class="statusClass(getStatusColor(task.status))"
               >
-                {{ task.statusDisplay }}
+                {{ getStatusLabel(t, task.status) }}
               </span>
             </div>
             <div class="mt-1.5 space-y-0.5 text-muted-foreground">
               <div>
                 <span class="text-foreground/60">{{ t('schedule.dev.source') }}:</span>
-                {{ task.sourceModuleDisplay }}
+                {{ getSourceModuleLabel(t, task.sourceModule) }}
               </div>
               <div>
                 <span class="text-foreground/60">{{ t('schedule.dev.enabled') }}:</span>
-                {{ task.enabledDisplay }}
+                {{ getEnabledLabel(t, task.enabled) }}
               </div>
               <div>
                 <span class="text-foreground/60">{{ t('schedule.dev.nextRun') }}:</span>
-                {{ task.nextRunAtFormatted || '—' }}
+                {{ formatNextRun(task.execution.nextRunAt) }}
               </div>
               <div>
                 <span class="text-foreground/60">{{ t('schedule.dev.executions') }}:</span>
-                {{ task.executionSummary }}
+                {{ getExecutionSummary(t, task.execution.executionCount, task.execution.consecutiveFailures) }}
               </div>
               <div>
                 <span class="text-foreground/60">{{ t('schedule.dev.health') }}:</span>
-                <span :class="healthClass(task.healthStatus)">{{ task.healthStatus }}</span>
+                <span :class="healthClass(computeHealthStatus(task.execution.consecutiveFailures))">
+                  {{ getHealthStatusLabel(t, computeHealthStatus(task.execution.consecutiveFailures)) }}
+                </span>
               </div>
             </div>
           </div>
@@ -78,6 +80,15 @@ import {
   SheetTitle,
 } from '@dailyuse/ui-vue-shadcn';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import {
+  getStatusLabel,
+  getStatusColor,
+  getSourceModuleLabel,
+  getEnabledLabel,
+  getExecutionSummary,
+  getHealthStatusLabel,
+  computeHealthStatus,
+} from '../utils/schedulePresentation';
 
 interface Props {
   tasks: ScheduleTaskClientDTO[];
@@ -89,6 +100,13 @@ const { t } = useI18n();
 
 const isDev = import.meta.env.DEV;
 const open = ref(false);
+
+function formatNextRun(nextRunAt: string | null): string {
+  if (!nextRunAt) return '-';
+  const date = new Date(nextRunAt);
+  if (isNaN(date.getTime())) return '-';
+  return date.toLocaleString();
+}
 
 function statusClass(color: string): string {
   const map: Record<string, string> = {

@@ -99,25 +99,9 @@ export class ResponseMetrics extends ValueObject<ResponseMetricsDTO> implements 
     return 'low';
   }
 
-  public get effectivenessLabelText(): string {
-    const labels = { high: '高效', medium: '中效', low: '低效' };
-    return labels[this.effectivenessLabel];
-  }
-
   public get effectivenessColor(): string {
     const colors = { high: 'success', medium: 'warning', low: 'error' };
     return colors[this.effectivenessLabel];
-  }
-
-  public get displayText(): string {
-    if (!this.hasSamples) return '暂无数据';
-    return `点击率 ${this.props.clickRate}%，${this.effectivenessLabelText}`;
-  }
-
-  public get avgResponseTimeFormatted(): string {
-    const seconds = Math.round(this.props.avgResponseTime);
-    if (seconds < 60) return `${seconds} 秒`;
-    return `${Math.round(seconds / 60)} 分钟`;
   }
 
   // ================= 序列化 =================

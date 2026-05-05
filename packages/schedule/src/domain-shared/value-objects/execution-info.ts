@@ -7,24 +7,23 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IExecutionInfoServer,
-  ExecutionInfoServerDTO,
-  ExecutionInfoPersistenceDTO,
+  IExecutionInfo,
+  ExecutionInfoDTO,
   ExecutionStatus,
 } from '@dailyuse/contracts/schedule';
 
 /**
  * ExecutionInfo 值对象实现
  */
-export class ExecutionInfo extends ValueObject<ExecutionInfoServerDTO> implements IExecutionInfoServer {
+export class ExecutionInfo extends ValueObject<ExecutionInfoDTO> implements IExecutionInfo {
 
-  private constructor(props: ExecutionInfoServerDTO) {
+  private constructor(props: ExecutionInfoDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: ExecutionInfoServerDTO): ExecutionInfo {
+  public static create(props: ExecutionInfoDTO): ExecutionInfo {
     return new ExecutionInfo(props);
   }
 
@@ -39,19 +38,8 @@ export class ExecutionInfo extends ValueObject<ExecutionInfoServerDTO> implement
     });
   }
 
-  public static fromDTO(dto: ExecutionInfoServerDTO): ExecutionInfo {
+  public static fromDTO(dto: ExecutionInfoDTO): ExecutionInfo {
     return new ExecutionInfo(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ExecutionInfoPersistenceDTO): ExecutionInfo {
-    return new ExecutionInfo({
-      nextRunAt: dto.nextRunAt,
-      lastRunAt: dto.lastRunAt,
-      executionCount: dto.executionCount,
-      lastExecutionStatus: dto.lastExecutionStatus as ExecutionStatus | null,
-      lastExecutionDuration: dto.last_execution_duration,
-      consecutiveFailures: dto.consecutive_failures,
-    });
   }
 
   // ================= Getters =================
@@ -83,10 +71,10 @@ export class ExecutionInfo extends ValueObject<ExecutionInfoServerDTO> implement
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<Omit<IExecutionInfoServer, 'equals' | 'with' | 'updateAfterExecution' | 'resetFailures' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'>>,
+    updates: Partial<Omit<IExecutionInfo, 'equals' | 'with' | 'updateAfterExecution' | 'resetFailures' | 'toDTO'>>,
   ): ExecutionInfo {
     // 将 number 时间戳转换为 ISO string
-    const convertedUpdates: Partial<ExecutionInfoServerDTO> = {};
+    const convertedUpdates: Partial<ExecutionInfoDTO> = {};
     
     if (updates.nextRunAt !== undefined) {
       convertedUpdates.nextRunAt = updates.nextRunAt !== null 
@@ -161,18 +149,7 @@ export class ExecutionInfo extends ValueObject<ExecutionInfoServerDTO> implement
 
   // ================= 序列化 =================
 
-  public toServerDTO(): ExecutionInfoServerDTO {
+  public toDTO(): ExecutionInfoDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): ExecutionInfoPersistenceDTO {
-    return {
-      nextRunAt: this.props.nextRunAt,
-      lastRunAt: this.props.lastRunAt,
-      executionCount: this.props.executionCount,
-      lastExecutionStatus: this.props.lastExecutionStatus,
-      last_execution_duration: this.props.lastExecutionDuration,
-      consecutive_failures: this.props.consecutiveFailures,
-    };
   }
 }

@@ -6,33 +6,10 @@
 import type {
   AiProviderConfigId,
   IdentityId,
-  PersistenceDate,
   TransferDate,
 } from '../../../primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 import type { AIModelInfo } from './ai-provider-config-client';
-
-export interface AIProviderConfigPersistenceDTO {
-  id: string;
-  identityId: string;
-
-  name: string;
-
-  providerType: AIProviderType;
-  baseUrl: string;
-  apiKey: string;
-  defaultModel: string | null;
-  availableModels: AIModelInfo[];
-  isActive: boolean;
-
-  isDefault: boolean;
-  priority: number;
-  version: number;
-
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-}
 
 /**
  * AI Provider 配置 - 服务端 DTO

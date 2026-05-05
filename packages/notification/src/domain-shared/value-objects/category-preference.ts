@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   CategoryPreference as ICategoryPreference,
   CategoryPreferenceDTO,
-  CategoryPreferencePersistenceDTO,
   ChannelPreference,
 } from '@dailyuse/contracts/notification';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -45,14 +44,6 @@ export class CategoryPreference extends ValueObject<CategoryPreferenceDTO> imple
 
   public static fromDTO(dto: CategoryPreferenceDTO): CategoryPreference {
     return new CategoryPreference(dto);
-  }
-
-  public static fromPersistenceDTO(dto: CategoryPreferencePersistenceDTO): CategoryPreference {
-    return new CategoryPreference({
-      enabled: dto.enabled,
-      channels: JSON.parse(dto.channels),
-      importance: JSON.parse(dto.importance),
-    });
   }
 
   // ================= 校验 =================
@@ -112,14 +103,6 @@ export class CategoryPreference extends ValueObject<CategoryPreferenceDTO> imple
       enabled: this.props.enabled,
       channels: { ...this.props.channels },
       importance: [...this.props.importance],
-    };
-  }
-
-  public toPersistenceDTO(): CategoryPreferencePersistenceDTO {
-    return {
-      enabled: this.props.enabled,
-      channels: JSON.stringify(this.props.channels),
-      importance: JSON.stringify(this.props.importance),
     };
   }
 }

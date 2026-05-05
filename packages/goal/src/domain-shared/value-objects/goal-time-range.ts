@@ -17,7 +17,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   GoalTimeRange as IGoalTimeRange,
   GoalTimeRangeDTO,
-  GoalTimeRangePersistenceDTO,
 } from '@dailyuse/contracts/goal';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 
@@ -80,20 +79,6 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
    */
   public static fromDTO(dto: GoalTimeRangeDTO): GoalTimeRange {
     return new GoalTimeRange(dto);
-  }
-
-  // ================= 工厂方法 4: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   * 将 Date 对象转为时间戳
-   */
-  public static fromPersistenceDTO(dto: GoalTimeRangePersistenceDTO): GoalTimeRange {
-    return new GoalTimeRange({
-      startDate: dto.startDate ? dto.startDate.getTime() : null,
-      targetDate: dto.targetDate ? dto.targetDate.getTime() : null,
-      completedAt: dto.completedAt ? dto.completedAt.getTime() : null,
-      archivedAt: dto.archivedAt ? dto.archivedAt.getTime() : null,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -289,16 +274,4 @@ export class GoalTimeRange extends ValueObject<GoalTimeRangeDTO> implements IGoa
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   * 将时间戳转为 Date 对象
-   */
-  public toPersistenceDTO(): GoalTimeRangePersistenceDTO {
-    return {
-      startDate: this.props.startDate !== null ? new Date(this.props.startDate) : null,
-      targetDate: this.props.targetDate !== null ? new Date(this.props.targetDate) : null,
-      completedAt: this.props.completedAt !== null ? new Date(this.props.completedAt) : null,
-      archivedAt: this.props.archivedAt !== null ? new Date(this.props.archivedAt) : null,
-    };
-  }
 }

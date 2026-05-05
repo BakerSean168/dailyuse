@@ -108,13 +108,13 @@ describe('schedule shared value object coverage helpers', () => {
   });
 
   it('covers additional execution info, retry policy, and schedule config branches', () => {
-    const execution = ExecutionInfo.fromPersistenceDTO({
+    const execution = ExecutionInfo.fromDTO({
       nextRunAt: '2026-04-27T10:00:00.000Z',
       lastRunAt: '2026-04-27T09:00:00.000Z',
       executionCount: 2,
       lastExecutionStatus: 'Failed',
-      last_execution_duration: 1500,
-      consecutive_failures: 2,
+      lastExecutionDuration: 1500,
+      consecutiveFailures: 2,
     });
     expect(execution.hasExecuted).toBe(true);
     expect(execution.isHealthy).toBe(false);
@@ -159,6 +159,6 @@ describe('schedule shared value object coverage helpers', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(invalidCron.calculateNextRun()).toBeNull();
     consoleErrorSpy.mockRestore();
-    expect(ScheduleConfig.createDefault(Timezone.UTC).setDateRange(null, null).toPersistenceDTO().endDate).toBeNull();
+    expect(ScheduleConfig.createDefault(Timezone.UTC).setDateRange(null, null).toDTO().endDate).toBeNull();
   });
 });

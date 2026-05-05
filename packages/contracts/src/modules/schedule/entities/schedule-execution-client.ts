@@ -26,14 +26,6 @@ export interface ScheduleExecutionClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 
-  // UI 辅助属?
-  executionTimeFormatted: string;
-  statusDisplay: string;
-  statusColor: string;
-  durationFormatted: string;
-  hasError: boolean;
-  hasResult: boolean;
-  resultSummary: string;
 }
 
 /**

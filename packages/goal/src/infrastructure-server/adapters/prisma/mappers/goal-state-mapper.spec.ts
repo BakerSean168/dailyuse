@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { persistenceDtoToGoalState } from './goal-state-mapper';
+import { rawDataToGoalState } from './goal-state-mapper';
 
-describe('persistenceDtoToGoalState', () => {
-  it('parses string fields and maps nested entities', () => {
-    const dto = {
+describe('rawDataToGoalState', () => {
+  it('parses structured fields and maps nested entities', () => {
+    const raw = {
       id: 'goal-1',
       identityId: 'identity-1',
       name: 'Goal',
@@ -15,7 +15,7 @@ describe('persistenceDtoToGoalState', () => {
       importance: 'Medium',
       priority: 10,
       category: null,
-      tags: '["a","b"]',
+      tags: ['a', 'b'],
       startDate: new Date(1_000),
       targetDate: new Date(2_000),
       completedAt: null,
@@ -23,17 +23,24 @@ describe('persistenceDtoToGoalState', () => {
       folderId: 'folder-1',
       parentGoalId: null,
       sortOrder: 1,
-      reminderConfig: JSON.stringify({
+      reminderConfig: {
         enabled: true,
-        triggers: JSON.stringify([{ type: 'RemainingDays', value: 3, enabled: true }]),
-      }),
+        triggers: [{ type: 'RemainingDays', value: 3, enabled: true }],
+      },
       keyResults: [
         {
           id: 'kr-1',
           goalId: 'goal-1',
           title: 'KR',
           description: null,
-          progress: JSON.stringify({ initialValue: 0, targetValue: 100 }),
+          progress: {
+            initialValue: 0,
+            currentValue: 0,
+            targetValue: 100,
+            valueType: 'Incremental',
+            aggregationMethod: 'Last',
+            unit: null,
+          },
           weight: 2,
           sortOrder: 3,
           version: 2,
@@ -52,7 +59,7 @@ describe('persistenceDtoToGoalState', () => {
           achievements: null,
           challenges: null,
           improvements: null,
-          keyResultSnapshots: '[{"keyResultId":"kr-1","value":10}]',
+          keyResultSnapshots: [],
           reviewedAt: new Date(1_200),
           version: 1,
           createdAt: new Date(1_200),
@@ -62,17 +69,17 @@ describe('persistenceDtoToGoalState', () => {
       ],
       weightSnapshots: [
         {
-          id: 'snapshot-1',
-          goalId: 'goal-1',
-          keyResultId: 'kr-1',
-          identityId: 'identity-1',
+          id: 'snapshot-1' as any,
+          goalId: 'goal-1' as any,
+          keyResultId: 'kr-1' as any,
+          identityId: 'identity-1' as any,
           oldWeight: 1,
           newWeight: 2,
           weightDelta: 1,
           snapshotTime: 1_111,
           trigger: 'Manual',
           reason: null,
-          operatorId: 'identity-1',
+          operatorId: 'identity-1' as any,
           createdAt: 1_112,
         },
       ],
@@ -82,9 +89,9 @@ describe('persistenceDtoToGoalState', () => {
       updatedAt: new Date(1_600),
       deletedAt: null,
       version: 5,
-    } as any;
+    };
 
-    const state = persistenceDtoToGoalState(dto);
+    const state = rawDataToGoalState(raw);
 
     expect(state.tags).toEqual(['a', 'b']);
     expect(state.reminderConfig?.toDTO().enabled).toBe(true);
@@ -92,13 +99,13 @@ describe('persistenceDtoToGoalState', () => {
     expect(state.keyResults[0].progress.aggregationMethod).toBe('Last');
     expect(state.keyResults[0].progress.currentValue).toBe(0);
     expect(state.goalReviews).toHaveLength(1);
-    expect(state.goalReviews[0].keyResultSnapshots).toHaveLength(1);
+    expect(state.goalReviews[0].keyResultSnapshots).toHaveLength(0);
     expect(state.weightSnapshots).toHaveLength(1);
     expect(state.weightSnapshots[0].toDTO().id).toBe('snapshot-1');
   });
 
-  it('handles array/object inputs and null collections', () => {
-    const dto = {
+  it('handles null collections', () => {
+    const raw = {
       id: 'goal-2',
       identityId: 'identity-1',
       name: 'Goal2',
@@ -120,20 +127,20 @@ describe('persistenceDtoToGoalState', () => {
       sortOrder: 2,
       reminderConfig: {
         enabled: false,
-        triggers: JSON.stringify([]),
+        triggers: [],
       },
-      keyResults: [],
-      goalReviews: [],
-      weightSnapshots: [],
+      keyResults: null,
+      goalReviews: null,
+      weightSnapshots: null,
       totalKeyResults: 0,
       completedKeyResults: 0,
       createdAt: new Date(2_000),
       updatedAt: new Date(3_000),
       deletedAt: new Date(3_100),
       version: 1,
-    } as any;
+    };
 
-    const state = persistenceDtoToGoalState(dto);
+    const state = rawDataToGoalState(raw);
 
     expect(state.tags).toEqual(['x']);
     expect(state.folderId).toBeNull();

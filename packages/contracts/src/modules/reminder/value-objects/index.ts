@@ -16,67 +16,38 @@ export type {
   SoundConfig,
   VibrationConfig,
   NotificationActionConfig,
-  INotificationConfigServer,
-  INotificationConfigClient,
-  NotificationConfigServerDTO,
-  NotificationConfigClientDTO,
-  NotificationConfigPersistenceDTO,
-  NotificationConfigServer,
-  NotificationConfigClient,
+  INotificationConfig,
+  NotificationConfigDTO,
 } from './notification-config';
 
 export type {
   FixedTimeTrigger,
   IntervalTrigger,
-  ITriggerConfigServer,
-  ITriggerConfigClient,
-  TriggerConfigServerDTO,
-  TriggerConfigClientDTO,
-  TriggerConfigPersistenceDTO,
-  TriggerConfigServer,
-  TriggerConfigClient,
+  ITriggerConfig,
+  TriggerConfigDTO,
 } from './trigger-config';
 
 export type {
-  IActiveTimeConfigServer,
-  IActiveTimeConfigClient,
-  ActiveTimeConfigServerDTO,
-  ActiveTimeConfigClientDTO,
-  ActiveTimeConfigPersistenceDTO,
-  ActiveTimeConfigServer,
-  ActiveTimeConfigClient,
+  IActiveTimeConfig,
+  ActiveTimeConfigDTO,
 } from './active-time-config';
 
 export type {
-  IActiveHoursConfigServer,
-  IActiveHoursConfigClient,
-  ActiveHoursConfigServerDTO,
-  ActiveHoursConfigClientDTO,
-  ActiveHoursConfigPersistenceDTO,
-  ActiveHoursConfigServer,
-  ActiveHoursConfigClient,
+  IActiveHoursConfig,
+  ActiveHoursConfigDTO,
 } from './active-hours-config';
 
 export type {
-  IGroupStatsServer,
-  IGroupStatsClient,
-  GroupStatsServerDTO,
-  GroupStatsClientDTO,
-  GroupStatsPersistenceDTO,
-  GroupStatsServer,
-  GroupStatsClient,
+  IGroupStats,
+  GroupStatsDTO,
 } from './group-stats';
 
 export type {
   ResponseMetricsDTO,
-  ResponseMetricsClientDTO,
   ResponseMetrics,
-  ResponseMetricsClient,
 } from './response-metrics';
 
 export type {
   FrequencyAdjustmentDTO,
-  FrequencyAdjustmentClientDTO,
   FrequencyAdjustment,
-  FrequencyAdjustmentClient,
 } from './frequency-adjustment';

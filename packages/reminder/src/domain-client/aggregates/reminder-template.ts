@@ -11,14 +11,14 @@
 
 import type {
   ReminderTemplateClientDTO,
-  TriggerConfigClientDTO,
-  TriggerConfigClient,
-  ActiveTimeConfigClientDTO,
-  ActiveTimeConfigClient,
-  ActiveHoursConfigClientDTO,
-  ActiveHoursConfigClient,
-  NotificationConfigClientDTO,
-  NotificationConfigClient,
+  TriggerConfigDTO,
+  ITriggerConfig,
+  ActiveTimeConfigDTO,
+  IActiveTimeConfig,
+  ActiveHoursConfigDTO,
+  IActiveHoursConfig,
+  NotificationConfigDTO,
+  INotificationConfig,
   ReminderType,
   ReminderStatus,
 } from '@dailyuse/contracts/reminder';
@@ -35,10 +35,10 @@ export interface ReminderTemplateState {
   name: string;
   description: string | null;
   type: ReminderType;
-  trigger: TriggerConfigClient;
-  activeTime: ActiveTimeConfigClient;
-  activeHours: ActiveHoursConfigClient | null;
-  notificationConfig: NotificationConfigClient;
+  trigger: ITriggerConfig;
+  activeTime: IActiveTimeConfig;
+  activeHours: IActiveHoursConfig | null;
+  notificationConfig: INotificationConfig;
   selfEnabled: boolean;
   status: ReminderStatus;
   effectiveEnabled: boolean;
@@ -53,15 +53,8 @@ export interface ReminderTemplateState {
   updatedAt: Date;
   deletedAt: Date | null;
   history: ReminderHistory[] | null;
-  displayTitle: string;
-  typeText: string;
-  triggerText: string;
-  statusText: string;
-  importanceText: string;
-  nextTriggerText: string | null;
   isActive: boolean;
   isPaused: boolean;
-  lastTriggeredText: string | null;
   controlledByGroup: boolean;
   lifecycleSource: 'global' | 'group' | 'template';
   effectiveEnabledReason: string;
@@ -96,19 +89,19 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     return this._props.type;
   }
 
-  get trigger(): TriggerConfigClient {
+  get trigger(): ITriggerConfig {
     return this._props.trigger;
   }
 
-  get activeTime(): ActiveTimeConfigClient {
+  get activeTime(): IActiveTimeConfig {
     return this._props.activeTime;
   }
 
-  get activeHours(): ActiveHoursConfigClient | null {
+  get activeHours(): IActiveHoursConfig | null {
     return this._props.activeHours;
   }
 
-  get notificationConfig(): NotificationConfigClient {
+  get notificationConfig(): INotificationConfig {
     return this._props.notificationConfig;
   }
 
@@ -169,40 +162,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   }
 
   // UI 扩展属性
-  get displayTitle(): string {
-    return this._props.displayTitle;
-  }
-
-  get typeText(): string {
-    return this._props.typeText;
-  }
-
-  get triggerText(): string {
-    return this._props.triggerText;
-  }
-
-  get statusText(): string {
-    return this._props.statusText;
-  }
-
-  get importanceText(): string {
-    return this._props.importanceText;
-  }
-
-  get nextTriggerText(): string | null {
-    return this._props.nextTriggerText;
-  }
-
   get isActive(): boolean {
     return this._props.isActive;
   }
 
   get isPaused(): boolean {
     return this._props.isPaused;
-  }
-
-  get lastTriggeredText(): string | null {
-    return this._props.lastTriggeredText;
   }
 
   get controlledByGroup(): boolean {
@@ -227,10 +192,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       name: this._props.name,
       description: this._props.description,
       type: this._props.type,
-      trigger: this._props.trigger as TriggerConfigClientDTO,
-      activeTime: this._props.activeTime as ActiveTimeConfigClientDTO,
-      activeHours: this._props.activeHours as ActiveHoursConfigClientDTO | null,
-      notificationConfig: this._props.notificationConfig as NotificationConfigClientDTO,
+      trigger: this._props.trigger as TriggerConfigDTO,
+      activeTime: this._props.activeTime as ActiveTimeConfigDTO,
+      activeHours: this._props.activeHours as ActiveHoursConfigDTO | null,
+      notificationConfig: this._props.notificationConfig as NotificationConfigDTO,
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
       effectiveEnabled: this._props.effectiveEnabled,
@@ -247,15 +212,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
       history: this._props.history ? this._props.history.map((h) => h.toDTO()) : null,
-      displayTitle: this._props.displayTitle,
-      typeText: this._props.typeText,
-      triggerText: this._props.triggerText,
-      statusText: this._props.statusText,
-      importanceText: this._props.importanceText,
-      nextTriggerText: this._props.nextTriggerText,
       isActive: this._props.isActive,
       isPaused: this._props.isPaused,
-      lastTriggeredText: this._props.lastTriggeredText,
       controlledByGroup: this._props.controlledByGroup,
       lifecycleSource: this._props.lifecycleSource,
       effectiveEnabledReason: this._props.effectiveEnabledReason,

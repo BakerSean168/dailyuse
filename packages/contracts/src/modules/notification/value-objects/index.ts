@@ -7,14 +7,12 @@
 export type {
   NotificationAction,
   NotificationActionDTO,
-  NotificationActionPersistenceDTO,
 } from './notification-action';
 
 // ============ NotificationMetadata ============
 export type {
   NotificationMetadata,
   NotificationMetadataDTO,
-  NotificationMetadataPersistenceDTO,
 } from './notification-metadata';
 
 // ============ CategoryPreference ============
@@ -22,35 +20,30 @@ export type {
   ChannelPreference,
   CategoryPreference,
   CategoryPreferenceDTO,
-  CategoryPreferencePersistenceDTO,
 } from './category-preference';
 
 // ============ DoNotDisturbConfig ============
 export type {
   DoNotDisturbConfig,
   DoNotDisturbConfigDTO,
-  DoNotDisturbConfigPersistenceDTO,
 } from './do-not-disturb-config';
 
 // ============ RateLimit ============
 export type {
   RateLimit,
   RateLimitDTO,
-  RateLimitPersistenceDTO,
 } from './rate-limit';
 
 // ============ ChannelError ============
 export type {
   ChannelError,
   ChannelErrorDTO,
-  ChannelErrorPersistenceDTO,
 } from './channel-error';
 
 // ============ ChannelResponse ============
 export type {
   ChannelResponse,
   ChannelResponseDTO,
-  ChannelResponsePersistenceDTO,
 } from './channel-response';
 
 // ============ Enum Value Objects ============

@@ -4,7 +4,6 @@
  */
 
 import type { TriggerResult, NotificationChannel } from '../value-objects';
-import type { ReminderHistoryClientDTO } from './reminder-history-client';
 
 // ============ DTO 定义 ============
 
@@ -21,19 +20,4 @@ export interface ReminderHistoryServerDTO {
   notificationSent: boolean;
   notificationChannels?: NotificationChannel[] | null;
   createdAt: number; // epoch ms
-}
-
-/**
- * Reminder History Persistence DTO (数据库映射)
- */
-export interface ReminderHistoryPersistenceDTO {
-  id: string;
-  templateId: string;
-  identityId: string;
-  triggeredAt: number;
-  result: TriggerResult;
-  error?: string | null;
-  notificationSent: boolean;
-  notificationChannels?: string | null; // JSON string
-  createdAt: Date;
 }

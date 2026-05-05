@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   GoalReminderConfig as IGoalReminderConfig,
   GoalReminderConfigDTO,
-  GoalReminderConfigPersistenceDTO,
   ReminderTrigger,
   ReminderTriggerType,
 } from '@dailyuse/contracts/goal';
@@ -56,24 +55,6 @@ export class GoalReminderConfig extends ValueObject<GoalReminderConfigDTO> imple
    */
   public static fromDTO(dto: GoalReminderConfigDTO): GoalReminderConfig {
     return new GoalReminderConfig(dto);
-  }
-
-  // ================= 工厂方法 4: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   * 将 JSON 字符串解析回触发器数组
-   */
-  public static fromPersistenceDTO(dto: GoalReminderConfigPersistenceDTO): GoalReminderConfig {
-    const triggers =
-      typeof dto.triggers === 'string'
-        ? JSON.parse(dto.triggers)
-        : Array.isArray(dto.triggers)
-          ? dto.triggers
-          : [];
-    return new GoalReminderConfig({
-      enabled: dto.enabled,
-      triggers: Array.isArray(triggers) ? triggers : [],
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -204,14 +185,4 @@ export class GoalReminderConfig extends ValueObject<GoalReminderConfigDTO> imple
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   * 将触发器数组转为 JSON 字符串
-   */
-  public toPersistenceDTO(): GoalReminderConfigPersistenceDTO {
-    return {
-      enabled: this.props.enabled,
-      triggers: JSON.stringify(this.props.triggers),
-    };
-  }
 }

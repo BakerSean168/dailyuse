@@ -11,8 +11,8 @@ export const SessionSplitType = {
 
 export type SessionSplitType = (typeof SessionSplitType)[keyof typeof SessionSplitType];
 
-/** Session Layout - Server interface. */
-export interface ISessionLayoutServer {
+/** Session Layout interface. */
+export interface ISessionLayout {
   splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
@@ -20,23 +20,9 @@ export interface ISessionLayoutServer {
   // Value object methods
   with(
     updates: Partial<
-      Omit<
-        ISessionLayoutServer,
-        'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
-      >
+      Omit<ISessionLayout, 'equals' | 'with' | 'toDTO'>
     >,
-  ): ISessionLayoutServer;
-
-  // DTO conversion methods
-}
-
-/** Session Layout - Client interface. */
-export interface ISessionLayoutClient {
-  splitType: SessionSplitType;
-  groupCount: number;
-  activeGroupIndex: number;
-
-  // Value object methods
+  ): ISessionLayout;
 
   // DTO conversion methods
 }
@@ -44,40 +30,17 @@ export interface ISessionLayoutClient {
 // ============ DTO Definitions ============
 
 /**
- * Session Layout Server DTO
+ * Session Layout DTO
  */
-export interface SessionLayoutServerDTO {
+export interface SessionLayoutDTO {
   splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 }
-
-/**
- * Session Layout Client DTO
- */
-export interface SessionLayoutClientDTO {
-  splitType: SessionSplitType;
-  groupCount: number;
-  activeGroupIndex: number;
-}
-
-/**
- * Session Layout Persistence DTO
- */
-export interface SessionLayoutPersistenceDTO {
-  split_type: SessionSplitType;
-  group_count: number;
-  active_group_index: number;
-}
-
-// ============ Type Exports ============
-
-export type SessionLayoutServer = ISessionLayoutServer;
-export type SessionLayoutClient = ISessionLayoutClient;
 
 // ============ Defaults ============
 
-export const DEFAULT_SESSION_LAYOUT: SessionLayoutServerDTO = {
+export const DEFAULT_SESSION_LAYOUT: SessionLayoutDTO = {
   splitType: 'Horizontal',
   groupCount: 1,
   activeGroupIndex: 0,

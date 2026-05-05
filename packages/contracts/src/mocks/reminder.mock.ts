@@ -100,18 +100,8 @@ export function createMockReminderTemplate(
     updatedAt: now,
     deletedAt: null,
     history: null,
-    displayTitle: faker.lorem.words({ min: 2, max: 4 }),
-    typeText: faker.helpers.arrayElement(['一次性', '循环']),
-    triggerText: `每天 ${faker.number.int({ min: 8, max: 18 })}:${faker.number.int({ min: 0, max: 59 }).toString().padStart(2, '0')}`,
-    recurrenceText: faker.datatype.boolean() ? '每周一、三、五' : null,
-    statusText: faker.helpers.arrayElement(['活跃', '暂停', '已完成', '已取消']),
-    importanceText: faker.helpers.arrayElement(['至关重要', '重要', '一般', '次要', '微不足道']),
-    nextTriggerText: `${faker.number.int({ min: 1, max: 60 })} 分钟后`,
     isActive: faker.datatype.boolean(),
     isPaused: faker.datatype.boolean(),
-    lastTriggeredText: faker.datatype.boolean()
-      ? `${faker.number.int({ min: 1, max: 24 })} 小时前`
-      : null,
     controlledByGroup: faker.datatype.boolean(),
     lifecycleSource: faker.helpers.arrayElement(['global', 'group', 'template']),
     effectiveEnabledReason: faker.helpers.arrayElement([
@@ -161,24 +151,11 @@ export function createMockReminderGroup(
       pausedTemplates,
       selfEnabledTemplates: faker.number.int({ min: 0, max: totalTemplates }),
       selfPausedTemplates: faker.number.int({ min: 0, max: Math.max(pausedTemplates, 0) }),
-      templateCountText: `${totalTemplates} 个提醒`,
-      activeStatusText: `${activeTemplates} 个活跃`,
     },
     version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
     deletedAt: null,
-    displayName: faker.lorem.words({ min: 1, max: 3 }),
-    controlModeText: faker.helpers.arrayElement(['组控制', '个体控制']),
-    statusText: faker.helpers.arrayElement(['活跃', '暂停']),
-    templateCountText: `${totalTemplates} 个提醒`,
-    activeStatusText: `${activeTemplates} 个活跃`,
-    controlDescription: faker.helpers.arrayElement(['所有提醒统一启用', '提醒独立控制']),
-    effectiveTemplatePolicyText: faker.helpers.arrayElement([
-      '组内提醒当前由分组统一启用',
-      '组内提醒当前由分组统一暂停',
-      '组内提醒当前保持各自独立控制',
-    ]),
     ...overrides,
   };
 }

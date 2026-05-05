@@ -11,8 +11,8 @@
 
 import type {
   EditorWorkspaceClientDTO,
-  WorkspaceLayoutClient,
-  WorkspaceSettingsClient,
+  IWorkspaceLayout,
+  IWorkspaceSettings,
   ProjectType,
 } from '@dailyuse/contracts/editor';
 import { AggregateRoot } from '@dailyuse/utils';
@@ -28,8 +28,8 @@ export interface EditorWorkspaceState {
   description: string | null;
   projectPath: string;
   projectType: ProjectType;
-  layout: WorkspaceLayoutClient;
-  settings: WorkspaceSettingsClient;
+  layout: IWorkspaceLayout;
+  settings: IWorkspaceSettings;
   sessions: EditorSession[];
   isActive: boolean;
   lastActiveSessionId: EditorSessionId | null;
@@ -69,11 +69,11 @@ export class EditorWorkspace extends AggregateRoot<EditorWorkspaceId> {
     return this._props.projectType;
   }
 
-  get layout(): WorkspaceLayoutClient {
+  get layout(): IWorkspaceLayout {
     return this._props.layout;
   }
 
-  get settings(): WorkspaceSettingsClient {
+  get settings(): IWorkspaceSettings {
     return this._props.settings;
   }
 

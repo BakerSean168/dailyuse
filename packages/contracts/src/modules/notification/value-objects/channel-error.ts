@@ -25,11 +25,3 @@ export interface ChannelErrorDTO {
   details?: unknown;
 }
 
-/**
- * ChannelError Persistence DTO (持久层)
- */
-export interface ChannelErrorPersistenceDTO {
-  code: string;
-  message: string;
-  details: string | null; // JSON string
-}

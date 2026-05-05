@@ -7,23 +7,22 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IActiveTimeConfigServer,
-  ActiveTimeConfigServerDTO,
-  ActiveTimeConfigPersistenceDTO,
+  IActiveTimeConfig,
+  ActiveTimeConfigDTO,
 } from '@dailyuse/contracts/reminder';
 
 /**
  * ActiveTimeConfig 值对象实现
  */
-export class ActiveTimeConfig extends ValueObject<ActiveTimeConfigServerDTO> implements IActiveTimeConfigServer {
+export class ActiveTimeConfig extends ValueObject<ActiveTimeConfigDTO> implements IActiveTimeConfig {
 
-  private constructor(props: ActiveTimeConfigServerDTO) {
+  private constructor(props: ActiveTimeConfigDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: ActiveTimeConfigServerDTO): ActiveTimeConfig {
+  public static create(props: ActiveTimeConfigDTO): ActiveTimeConfig {
     return new ActiveTimeConfig(props);
   }
 
@@ -39,14 +38,8 @@ export class ActiveTimeConfig extends ValueObject<ActiveTimeConfigServerDTO> imp
     });
   }
 
-  public static fromDTO(dto: ActiveTimeConfigServerDTO): ActiveTimeConfig {
+  public static fromDTO(dto: ActiveTimeConfigDTO): ActiveTimeConfig {
     return new ActiveTimeConfig(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ActiveTimeConfigPersistenceDTO): ActiveTimeConfig {
-    return new ActiveTimeConfig({
-      activatedAt: dto.activatedAt,
-    });
   }
 
   // ================= Getters =================
@@ -58,7 +51,7 @@ export class ActiveTimeConfig extends ValueObject<ActiveTimeConfigServerDTO> imp
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<ActiveTimeConfigServerDTO>,
+    updates: Partial<ActiveTimeConfigDTO>,
   ): ActiveTimeConfig {
     return new ActiveTimeConfig({ ...this.props, ...updates });
   }
@@ -83,23 +76,10 @@ export class ActiveTimeConfig extends ValueObject<ActiveTimeConfigServerDTO> imp
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 
-  public get displayText(): string {
-    const date = new Date(this.props.activatedAt);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `启动于 ${year}-${month}-${day} ${hours}:${minutes}`;
-  }
-
   // ================= 序列化 =================
 
-  public toServerDTO(): ActiveTimeConfigServerDTO {
+  public toDTO(): ActiveTimeConfigDTO {
     return { ...this.props };
   }
 
-  public toPersistenceDTO(): ActiveTimeConfigPersistenceDTO {
-    return { ...this.props };
-  }
 }

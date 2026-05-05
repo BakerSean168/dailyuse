@@ -21,10 +21,10 @@ describe('ScheduleTaskMetadata', () => {
     expect(updated.tagsDisplay).toBe('b');
   });
 
-  it('updates payload, timeout, and persistence DTOs', () => {
-    const metadata = ScheduleTaskMetadata.fromPersistenceDTO({
-      payload: JSON.stringify({ goalId: 'goal-1' }),
-      tags: JSON.stringify(['goal']),
+  it('updates payload, timeout, and DTO round-trip', () => {
+    const metadata = ScheduleTaskMetadata.fromDTO({
+      payload: { goalId: 'goal-1' },
+      tags: ['goal'],
       priority: 'High',
       timeout: 120000,
     });
@@ -38,9 +38,9 @@ describe('ScheduleTaskMetadata', () => {
     expect(updated.timeoutFormatted).toBe('45 秒');
     expect(updated.priorityColor).toBe('red');
     expect(updated.payloadSummary).toBe('1 个字段');
-    expect(updated.toPersistenceDTO()).toEqual({
-      payload: JSON.stringify({ reminderId: 'reminder-1' }),
-      tags: JSON.stringify(['goal']),
+    expect(updated.toDTO()).toEqual({
+      payload: { reminderId: 'reminder-1' },
+      tags: ['goal'],
       priority: 'Urgent',
       timeout: 45000,
     });

@@ -53,13 +53,11 @@ export {
 export type {
   EmailAddress,
   EmailAddressDTO,
-  EmailAddressPersistenceDTO,
 } from './email-address';
 
 export type {
   HashedPassword,
   HashedPasswordDTO,
-  HashedPasswordPersistenceDTO,
 } from './hashed-password';
 
 export type {
@@ -70,13 +68,11 @@ export type {
 export type {
   PhoneNumber,
   PhoneNumberDTO,
-  PhoneNumberPersistenceDTO,
 } from './phone-number';
 
 export type {
   DeviceInfo,
   DeviceInfoDTO,
-  DeviceInfoPersistenceDTO,
 } from './device-info';
 
 // ============ Identifier Value Objects ============

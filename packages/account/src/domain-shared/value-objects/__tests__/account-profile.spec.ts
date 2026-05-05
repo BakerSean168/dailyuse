@@ -210,49 +210,6 @@ describe('AccountProfile', () => {
     });
   });
 
-  describe('toPersistenceDTO', () => {
-    it('should convert birthday timestamp to Date', () => {
-      const ts = new Date('2000-06-15').getTime();
-      const profile = AccountProfile.create(aProfileDTO({ birthday: ts }));
-      const pDto = profile.toPersistenceDTO();
-      expect(pDto.birthday).toBeInstanceOf(Date);
-    });
-
-    it('should keep birthday null when not set', () => {
-      const profile = AccountProfile.create(aProfileDTO());
-      const pDto = profile.toPersistenceDTO();
-      expect(pDto.birthday).toBeNull();
-    });
-  });
-
-  describe('fromPersistenceDTO', () => {
-    it('should reconstruct from persistence DTO', () => {
-      const profile = AccountProfile.fromPersistenceDTO({
-        nickname: 'Restored',
-        realName: null,
-        avatarUrl: null,
-        bio: null,
-        gender: 'Male',
-        birthday: null,
-      });
-      expect(profile.nickname).toBe('Restored');
-      expect(profile.gender).toBe(GenderType.Male);
-    });
-
-    it('should convert Date birthday to timestamp', () => {
-      const date = new Date('2000-01-01');
-      const profile = AccountProfile.fromPersistenceDTO({
-        nickname: 'WithBday',
-        realName: null,
-        avatarUrl: null,
-        bio: null,
-        gender: 'Female',
-        birthday: date,
-      });
-      expect(profile.birthday).toEqual(date);
-    });
-  });
-
   // =========================================================================
   // value object equality
   // =========================================================================

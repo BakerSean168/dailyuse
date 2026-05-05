@@ -8,27 +8,12 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-  PersistenceDate,
 } from '../../../primitives';
 import type { ProjectType } from '../value-objects/project-type';
 
-import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '../value-objects';
+import type { WorkspaceLayoutDTO, WorkspaceSettingsDTO } from '../value-objects';
 
 import type { EditorSessionServerDTO } from '../entities/editor-session-server';
-
-// ============ Type Aliases (backward compatibility) ============
-
-/**
- * Workspace layout type alias.
- * @deprecated Use WorkspaceLayoutServerDTO instead.
- */
-export type WorkspaceLayout = WorkspaceLayoutServerDTO;
-
-/**
- * Workspace settings type alias.
- * @deprecated Use WorkspaceSettingsServerDTO instead.
- */
-export type WorkspaceSettings = WorkspaceSettingsServerDTO;
 
 // ============ DTO Definitions ============
 
@@ -46,8 +31,8 @@ export interface EditorWorkspaceServerDTO {
   projectType: ProjectType;
 
   // Workspace configuration
-  layout: WorkspaceLayoutServerDTO;
-  settings: WorkspaceSettingsServerDTO;
+  layout: WorkspaceLayoutDTO;
+  settings: WorkspaceSettingsDTO;
 
   // Child entities: session list
   sessions: EditorSessionServerDTO[];
@@ -60,29 +45,6 @@ export interface EditorWorkspaceServerDTO {
   lastAccessedAt: TransferDate | null;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-}
-
-/**
- * Editor Workspace Persistence DTO (database mapping).
- */
-export interface EditorWorkspacePersistenceDTO {
-  id: EditorWorkspaceId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-
-  project_path: string;
-  project_type: ProjectType;
-
-  layout: string; // JSON string
-  settings: string; // JSON string
-
-  is_active: boolean;
-  last_active_session_id: EditorSessionId | null;
-
-  lastAccessedAt: PersistenceDate | null;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
 }
 
 // ============ Domain Events ============

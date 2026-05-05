@@ -2,4 +2,4 @@
  * Goal Mappers
  */
 
-export { GoalMapper, type GoalPersistenceDTO } from './goal.mapper';
+export { GoalMapper } from './goal.mapper';

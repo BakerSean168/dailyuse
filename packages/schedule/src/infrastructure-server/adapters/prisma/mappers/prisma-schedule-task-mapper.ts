@@ -19,6 +19,8 @@ import {
   RetryPolicy,
   ScheduleConfig,
   ScheduleTaskMetadata,
+  TaskPriority,
+  Timezone,
 } from '../../../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../../../domain-shared/value-objects/schedule-task-id';
 import type { IdentityId } from '@dailyuse/domain-shared';
@@ -42,37 +44,39 @@ export class PrismaScheduleTaskMapper {
       sourceEntityId: data.sourceEntityId,
       status: data.status as ScheduleTaskStatus,
       enabled: data.enabled,
-      schedule: ScheduleConfig.fromPersistenceDTO({
+      schedule: ScheduleConfig.fromDTO({
         cronExpression: data.cronExpression ?? '',
-        timezone: data.timezone,
+        timezone: Timezone.of(data.timezone),
         startDate: data.startDate ? data.startDate.toISOString() : null,
         endDate: data.endDate ? data.endDate.toISOString() : null,
         maxExecutions: data.maxExecutions ?? null,
       }),
-      execution: ExecutionInfo.fromPersistenceDTO({
+      execution: ExecutionInfo.fromDTO({
         nextRunAt: data.nextRunAt ? data.nextRunAt.toISOString() : null,
         lastRunAt: data.lastRunAt ? data.lastRunAt.toISOString() : null,
         executionCount: data.executionCount,
         lastExecutionStatus: (data.lastExecutionStatus as ExecutionStatus) ?? null,
-        last_execution_duration: data.lastExecutionDuration ?? null,
-        consecutive_failures: data.consecutiveFailures ?? 0,
+        lastExecutionDuration: data.lastExecutionDuration ?? null,
+        consecutiveFailures: data.consecutiveFailures ?? 0,
       }),
-      retryPolicy: RetryPolicy.fromPersistenceDTO({
+      retryPolicy: RetryPolicy.fromDTO({
         enabled: data.enabled,
         maxRetries: data.maxRetries,
-        retry_delay: data.initialDelayMs ?? 0,
-        backoff_multiplier: data.backoffMultiplier ?? 1,
-        max_retry_delay: data.maxDelayMs ?? 0,
+        retryDelay: data.initialDelayMs ?? 0,
+        backoffMultiplier: data.backoffMultiplier ?? 1,
+        maxRetryDelay: data.maxDelayMs ?? 0,
       }),
-      metadata: ScheduleTaskMetadata.fromPersistenceDTO({
+      metadata: ScheduleTaskMetadata.fromDTO({
         payload:
-          typeof data.payload === 'string' ? data.payload : JSON.stringify(data.payload ?? {}),
+          typeof data.payload === 'string'
+            ? JSON.parse(data.payload)
+            : (data.payload ?? {}),
         tags: data.tags
           ? typeof data.tags === 'string'
-            ? data.tags
-            : JSON.stringify(data.tags)
-          : '[]',
-        priority: data.priority,
+            ? JSON.parse(data.tags)
+            : data.tags
+          : [],
+        priority: data.priority ? TaskPriority.of(data.priority) : TaskPriority.Normal,
         timeout: data.timeout,
       }),
       createdAt: data.createdAt,
@@ -110,7 +114,7 @@ export class PrismaScheduleTaskMapper {
 
   /** Converts a ScheduleTask aggregate to Prisma write data. */
   static toPersistence(task: ScheduleTask) {
-    const metadataDTO = task.metadata.toServerDTO();
+    const metadataDTO = task.metadata.toDTO();
 
     return {
       id: task.id,

@@ -35,27 +35,27 @@ describe('ExecutionInfo', () => {
     expect(updated.healthStatus).toBe('healthy');
   });
 
-  it('tracks failure health and persistence mapping', () => {
-    const info = ExecutionInfo.fromPersistenceDTO({
+  it('tracks failure health and DTO round-trip', () => {
+    const info = ExecutionInfo.fromDTO({
       nextRunAt: '2026-01-03T00:00:00.000Z',
       lastRunAt: '2026-01-02T00:00:00.000Z',
       executionCount: 4,
       lastExecutionStatus: ExecutionStatus.Failed,
-      last_execution_duration: 500,
-      consecutive_failures: 4,
+      lastExecutionDuration: 500,
+      consecutiveFailures: 4,
     });
 
     const reset = info.resetFailures().setNextRunAt(new Date('2026-01-04T00:00:00.000Z').getTime());
 
     expect(info.healthStatus).toBe('critical');
     expect(reset.consecutiveFailures).toBe(0);
-    expect(reset.toPersistenceDTO()).toEqual({
+    expect(reset.toDTO()).toEqual({
       nextRunAt: '2026-01-04T00:00:00.000Z',
       lastRunAt: '2026-01-02T00:00:00.000Z',
       executionCount: 4,
       lastExecutionStatus: ExecutionStatus.Failed,
-      last_execution_duration: 500,
-      consecutive_failures: 0,
+      lastExecutionDuration: 500,
+      consecutiveFailures: 0,
     });
   });
 });

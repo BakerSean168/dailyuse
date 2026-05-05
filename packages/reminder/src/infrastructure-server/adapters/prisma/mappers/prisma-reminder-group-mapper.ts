@@ -6,7 +6,7 @@
  */
 
 import type { ReminderGroup as PrismaReminderGroup } from '@dailyuse/database';
-import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
+import type { ControlMode, ReminderStatus, GroupStatsDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@/domain-server/aggregates/reminder-group';
 import { GroupStats } from '@/domain-server/value-objects';
 import type { IdentityId } from '@dailyuse/domain-shared';
@@ -17,7 +17,7 @@ export class PrismaReminderGroupMapper {
    */
   static toDomain(data: PrismaReminderGroup): ReminderGroup {
     const stats = data.stats
-      ? GroupStats.fromDTO(JSON.parse(data.stats) as GroupStatsServerDTO)
+      ? GroupStats.fromDTO(JSON.parse(data.stats) as GroupStatsDTO)
       : GroupStats.createEmpty();
 
     return ReminderGroup.load({

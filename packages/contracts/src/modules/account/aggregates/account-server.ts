@@ -5,12 +5,12 @@
 
 import type { IdentityId } from '../../../primitives';
 import type { AccountStatus } from '../value-objects/account-status';
-import type { AccountProfile, AccountProfileDTO, AccountProfilePersistenceDTO } from '../value-objects/account-profile';
-import type { AccountSettings, AccountSettingsDTO, AccountSettingsPersistenceDTO } from '../value-objects/account-settings';
-import type { ContactEmail, ContactEmailDTO, ContactEmailPersistenceDTO } from '../value-objects/contact-email';
-import type { ContactPhone, ContactPhoneDTO, ContactPhonePersistenceDTO } from '../value-objects/contact-phone';
+import type { AccountProfileDTO } from '../value-objects/account-profile';
+import type { AccountSettingsDTO } from '../value-objects/account-settings';
+import type { ContactEmailDTO } from '../value-objects/contact-email';
+import type { ContactPhoneDTO } from '../value-objects/contact-phone';
 
-import type { DomainDate, PersistenceDate, TransferDate } from '../../../primitives';
+import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -28,20 +28,4 @@ export interface AccountServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * Account Persistence DTO
- */
-export interface AccountPersistenceDTO {
-  id: IdentityId;
-  status: AccountStatus;
-  profile: AccountProfilePersistenceDTO;
-  settings: AccountSettingsPersistenceDTO;
-  email: ContactEmailPersistenceDTO;
-  phone: ContactPhonePersistenceDTO | null;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

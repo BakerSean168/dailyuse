@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   TaskGoalBinding as ITaskGoalBinding,
   TaskGoalBindingDTO,
-  TaskGoalBindingPersistenceDTO,
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@dailyuse/contracts/task';
 import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
@@ -65,19 +64,6 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
    */
   public static fromDTO(dto: TaskGoalBindingDTO): TaskGoalBinding {
     return new TaskGoalBinding(TaskGoalBinding.normalize(dto));
-  }
-
-  // ================= 工厂方法 4: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: TaskGoalBindingPersistenceDTO): TaskGoalBinding {
-    return new TaskGoalBinding(TaskGoalBinding.normalize({
-      goalId: dto.goalId as GoalId,
-      keyResultId: dto.keyResultId as KeyResultId,
-      goalRecordValue: dto.goalRecordValue,
-      progressTrigger: dto.progressTrigger,
-    }));
   }
 
   // ================= 内部校验逻辑 =================
@@ -178,15 +164,4 @@ export class TaskGoalBinding extends ValueObject<TaskGoalBindingDTO> implements 
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): TaskGoalBindingPersistenceDTO {
-    return {
-      goalId: this.props.goalId,
-      keyResultId: this.props.keyResultId,
-      goalRecordValue: this.props.goalRecordValue,
-      progressTrigger: this.props.progressTrigger,
-    };
-  }
 }

@@ -8,18 +8,15 @@ import type { NotificationCategory } from '../value-objects/notification-categor
 import type { NotificationStatus } from '../value-objects/notification-status';
 import type {
   NotificationMetadataDTO,
-  NotificationMetadataPersistenceDTO,
 } from '../value-objects/notification-metadata';
 import type {
   NotificationActionDTO,
-  NotificationActionPersistenceDTO,
 } from '../value-objects/notification-action';
 import type { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';
 import type {
   IdentityId,
   NotificationId,
-  PersistenceDate,
   TransferDate,
 } from '../../../primitives';
 
@@ -53,33 +50,4 @@ export interface NotificationServerDTO {
 
   // ===== 子实体 DTO =====
   notificationChannels?: NotificationChannelServerDTO[] | null; // 渠道列表（可选加载）
-}
-
-/**
- * Notification Persistence DTO
- */
-export interface NotificationPersistenceDTO {
-  id: NotificationId;
-  identityId: IdentityId;
-
-  title: string;
-  content: string;
-  type: NotificationType;
-
-  category: NotificationCategory;
-  importance: ImportanceLevel;
-
-  status: NotificationStatus;
-  isRead: boolean;
-  readAt?: PersistenceDate | null;
-
-  actions?: NotificationActionPersistenceDTO[] | null;
-  metadata?: NotificationMetadataPersistenceDTO | null;
-
-  notificationChannels?: string | null;
-
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

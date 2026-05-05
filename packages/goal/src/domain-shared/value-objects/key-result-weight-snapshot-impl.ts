@@ -6,7 +6,6 @@
  */
 
 import type {
-  KeyResultWeightSnapshotPersistenceDTO,
   KeyResultWeightSnapshotDTO,
   SnapshotTrigger,
 } from '@dailyuse/contracts/goal';
@@ -91,44 +90,4 @@ export class KeyResultWeightSnapshot {
     );
   }
 
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): KeyResultWeightSnapshotPersistenceDTO {
-    return {
-      id: this.id as KeyResultWeightSnapshotPersistenceDTO['id'],
-      goalId: this.goalId as KeyResultWeightSnapshotPersistenceDTO['goalId'],
-      keyResultId: this.keyResultId as KeyResultWeightSnapshotPersistenceDTO['keyResultId'],
-      identityId: this.identityId as KeyResultWeightSnapshotPersistenceDTO['identityId'],
-      oldWeight: this.oldWeight,
-      newWeight: this.newWeight,
-      weightDelta: this.weightDelta,
-      snapshotTime: new Date(this.snapshotTime),
-      trigger: this.trigger,
-      reason: this.reason ?? null,
-      operatorId: this.operatorId as KeyResultWeightSnapshotPersistenceDTO['operatorId'],
-      createdAt: new Date(this.createdAt ?? Date.now()),
-    };
-  }
-
-  /**
-   * 从 Persistence DTO 创建实例
-   */
-  public static fromPersistenceDTO(
-    dto: KeyResultWeightSnapshotPersistenceDTO,
-  ): KeyResultWeightSnapshot {
-    return new KeyResultWeightSnapshot(
-      dto.id,
-      dto.goalId,
-      dto.keyResultId,
-      dto.identityId,
-      dto.oldWeight,
-      dto.newWeight,
-      dto.snapshotTime instanceof Date ? dto.snapshotTime.getTime() : dto.snapshotTime,
-      dto.trigger as SnapshotTrigger,
-      dto.operatorId,
-      dto.reason ?? undefined,
-      dto.createdAt instanceof Date ? dto.createdAt.getTime() : dto.createdAt,
-    );
-  }
 }

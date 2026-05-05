@@ -6,7 +6,6 @@
 // Goal 聚合根
 export type {
   GoalServerDTO,
-  GoalPersistenceDTO,
 } from './goal-server';
 
 export type {
@@ -17,7 +16,6 @@ export type {
 // GoalFolder 聚合根
 export type {
   GoalFolderServerDTO,
-  GoalFolderPersistenceDTO,
 } from './goal-folder-server';
 
 export type {
@@ -27,7 +25,6 @@ export type {
 // FocusSession 聚合根
 export type {
   FocusSessionServerDTO,
-  FocusSessionPersistenceDTO,
 } from './focus-session-server';
 
 export type {

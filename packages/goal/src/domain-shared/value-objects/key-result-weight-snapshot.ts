@@ -16,7 +16,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   KeyResultWeightSnapshotDTO,
-  KeyResultWeightSnapshotPersistenceDTO,
   SnapshotTrigger,
 } from '@dailyuse/contracts/goal';
 import type {
@@ -105,36 +104,6 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
    */
   public static fromDTO(dto: KeyResultWeightSnapshotDTO): KeyResultWeightSnapshot {
     return new KeyResultWeightSnapshot(dto);
-  }
-
-  // ================= 工厂方法 3: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   * 将 Date 对象转为时间戳
-   */
-  public static fromPersistenceDTO(
-    dto: KeyResultWeightSnapshotPersistenceDTO,
-  ): KeyResultWeightSnapshot {
-    const snapshotTimeNum =
-      typeof dto.snapshotTime === 'bigint'
-        ? Number(dto.snapshotTime)
-        : new Date(dto.snapshotTime).getTime();
-    const createdAtNum =
-      typeof dto.createdAt === 'bigint' ? Number(dto.createdAt) : new Date(dto.createdAt).getTime();
-    return new KeyResultWeightSnapshot({
-      id: dto.id,
-      goalId: dto.goalId,
-      keyResultId: dto.keyResultId,
-      identityId: dto.identityId,
-      oldWeight: dto.oldWeight,
-      newWeight: dto.newWeight,
-      weightDelta: dto.weightDelta,
-      snapshotTime: snapshotTimeNum,
-      trigger: dto.trigger as SnapshotTrigger,
-      reason: dto.reason,
-      operatorId: dto.operatorId,
-      createdAt: createdAtNum,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -350,24 +319,4 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   * 将时间戳转为 Date 对象
-   */
-  public toPersistenceDTO(): KeyResultWeightSnapshotPersistenceDTO {
-    return {
-      id: this.props.id,
-      goalId: this.props.goalId,
-      keyResultId: this.props.keyResultId,
-      identityId: this.props.identityId,
-      oldWeight: this.props.oldWeight,
-      newWeight: this.props.newWeight,
-      weightDelta: this.props.weightDelta,
-      snapshotTime: new Date(this.props.snapshotTime),
-      trigger: this.props.trigger,
-      reason: this.props.reason,
-      operatorId: this.props.operatorId,
-      createdAt: new Date(this.props.createdAt),
-    };
-  }
 }

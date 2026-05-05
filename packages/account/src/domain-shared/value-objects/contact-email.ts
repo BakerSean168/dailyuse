@@ -1,5 +1,5 @@
 import { ValueObject } from '@dailyuse/utils';
-import type { ContactEmailDTO, ContactEmailPersistenceDTO, ContactEmail as IContactEmail } from '@dailyuse/contracts/account';
+import type { ContactEmailDTO, ContactEmail as IContactEmail } from '@dailyuse/contracts/account';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 
 export class ContactEmail extends ValueObject<ContactEmailDTO> implements IContactEmail {
@@ -69,22 +69,6 @@ export class ContactEmail extends ValueObject<ContactEmailDTO> implements IConta
   get isVerified(): boolean { return this.props.isVerified; }
   get isPrimary(): boolean { return this.props.isPrimary; }
   get address(): string { return this.props.address; }
-
-  public static fromPersistenceDTO(dto: ContactEmailPersistenceDTO): ContactEmail {
-    return new ContactEmail({
-      address: dto.address,
-      isVerified: dto.isVerified,
-      verifiedAt: dto.verifiedAt ? new Date(dto.verifiedAt).getTime() : null,
-      isPrimary: dto.isPrimary,
-    });
-  }
-
-  public toPersistenceDTO(): ContactEmailPersistenceDTO {
-    return {
-      ...this.props,
-      verifiedAt: this.props.verifiedAt ? new Date(this.props.verifiedAt) : null,
-    };
-  }
 
   public toDTO(): ContactEmailDTO {
     return { ...this.props };

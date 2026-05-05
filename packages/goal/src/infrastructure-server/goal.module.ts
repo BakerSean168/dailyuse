@@ -297,17 +297,17 @@ export interface GoalApplicationPort {
   activateFocusMode(
     identityId: string,
     input: import('@dailyuse/contracts/goal').ActivateFocusModeRequest,
-  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO>>;
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeDTO>>;
   deactivateFocusMode(
     identityId: string,
-  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO | null>>;
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeDTO | null>>;
   extendFocusMode(
     identityId: string,
     newEndTime: number,
-  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO>>;
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeDTO>>;
   getCurrentFocusMode(
     identityId: string,
-  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeClientDTO | null>>;
+  ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeDTO | null>>;
 }
 
 /**

@@ -7,9 +7,8 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  ISessionLayoutServer,
-  SessionLayoutServerDTO,
-  SessionLayoutPersistenceDTO,
+  ISessionLayout,
+  SessionLayoutDTO,
 } from '@dailyuse/contracts/editor';
 
 type SplitType = 'Horizontal' | 'Vertical' | 'Grid';
@@ -18,16 +17,16 @@ type SplitType = 'Horizontal' | 'Vertical' | 'Grid';
  * SessionLayout 值对象实现
  */
 export class SessionLayout
-  extends ValueObject<SessionLayoutServerDTO>
-  implements ISessionLayoutServer
+  extends ValueObject<SessionLayoutDTO>
+  implements ISessionLayout
 {
-  private constructor(props: SessionLayoutServerDTO) {
+  private constructor(props: SessionLayoutDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
 
-  public static create(props: SessionLayoutServerDTO): SessionLayout {
+  public static create(props: SessionLayoutDTO): SessionLayout {
     return new SessionLayout(props);
   }
 
@@ -47,16 +46,8 @@ export class SessionLayout
     });
   }
 
-  public static fromDTO(dto: SessionLayoutServerDTO): SessionLayout {
+  public static fromDTO(dto: SessionLayoutDTO): SessionLayout {
     return new SessionLayout(dto);
-  }
-
-  public static fromPersistenceDTO(dto: SessionLayoutPersistenceDTO): SessionLayout {
-    return new SessionLayout({
-      splitType: dto.split_type,
-      groupCount: dto.group_count,
-      activeGroupIndex: dto.active_group_index,
-    });
   }
 
   // ================= Getters =================
@@ -75,7 +66,7 @@ export class SessionLayout
 
   // ================= 行为方法 =================
 
-  public with(updates: Partial<SessionLayoutServerDTO>): SessionLayout {
+  public with(updates: Partial<SessionLayoutDTO>): SessionLayout {
     return new SessionLayout({ ...this.props, ...updates });
   }
 
@@ -119,15 +110,7 @@ export class SessionLayout
 
   // ================= 序列化 =================
 
-  public toServerDTO(): SessionLayoutServerDTO {
+  public toDTO(): SessionLayoutDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): SessionLayoutPersistenceDTO {
-    return {
-      split_type: this.props.splitType,
-      group_count: this.props.groupCount,
-      active_group_index: this.props.activeGroupIndex,
-    };
   }
 }

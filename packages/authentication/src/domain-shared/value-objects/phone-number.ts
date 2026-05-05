@@ -1,7 +1,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   PhoneNumberDTO,
-  PhoneNumberPersistenceDTO,
   PhoneNumber as IPhoneNumber,
 } from '@dailyuse/contracts/authentication';
 
@@ -178,13 +177,4 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
     return { ...this.props };
   }
 
-  // ================= Serialization: Persistence =================
-  /**
-   * Converts to persistence format for database storage.
-   */
-  public toPersistence(): PhoneNumberPersistenceDTO {
-    return {
-      value: this.props.value,
-    };
-  }
 }

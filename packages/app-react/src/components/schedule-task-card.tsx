@@ -20,16 +20,29 @@ function statusTone(status: ScheduleTaskSummary['status']) {
   return 'textSecondary' as const;
 }
 
-function healthTone(healthStatus: ScheduleTaskSummary['healthStatus']) {
-  if (healthStatus === 'healthy') {
+function computeHealth(consecutiveFailures: number): 'healthy' | 'warning' | 'critical' {
+  if (consecutiveFailures === 0) return 'healthy';
+  if (consecutiveFailures < 3) return 'warning';
+  return 'critical';
+}
+
+function healthTone(health: 'healthy' | 'warning' | 'critical') {
+  if (health === 'healthy') {
     return 'success' as const;
   }
 
-  if (healthStatus === 'warning') {
+  if (health === 'warning') {
     return 'warning' as const;
   }
 
   return 'textSecondary' as const;
+}
+
+function formatTimestamp(timestamp: number | null): string {
+  if (!timestamp) return '-';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return '-';
+  return date.toLocaleString();
 }
 
 export function ScheduleTaskCard({
@@ -45,21 +58,23 @@ export function ScheduleTaskCard({
   onComplete?: () => void;
   onCancel?: () => void;
 }) {
+  const health = computeHealth(task.consecutiveFailures);
+  const successCount = task.executionCount - task.consecutiveFailures;
+
   return (
     <SectionCard title={task.name} description={task.description ?? 'No description yet.'}>
       <View style={styles.pillRow}>
         <StatusPill label={task.status} tone={statusTone(task.status)} />
-        <StatusPill label={task.sourceModuleDisplay} tone="tint" />
-        <StatusPill label={task.priorityDisplay} tone="textSecondary" />
-        <StatusPill label={task.healthStatus} tone={healthTone(task.healthStatus)} />
-        {task.isOverdue ? <StatusPill label="Overdue" tone="warning" /> : null}
+        <StatusPill label={task.sourceModule} tone="tint" />
+        <StatusPill label={task.priority} tone="textSecondary" />
+        <StatusPill label={health} tone={healthTone(health)} />
       </View>
 
       <View style={styles.metaColumn}>
-        <Meta label="Next run" value={task.nextRunAtFormatted || 'Not scheduled'} />
-        <Meta label="Last run" value={task.lastRunAtFormatted || 'Never'} />
-        <Meta label="Execution" value={task.executionSummary} />
-        <Meta label="Enabled" value={task.enabledDisplay} />
+        <Meta label="Next run" value={formatTimestamp(task.nextRunAt)} />
+        <Meta label="Last run" value={formatTimestamp(task.lastRunAt)} />
+        <Meta label="Execution" value={`${task.executionCount} total, ${successCount} successful`} />
+        <Meta label="Enabled" value={task.enabled ? 'Enabled' : 'Disabled'} />
       </View>
 
       <View style={styles.tagRow}>

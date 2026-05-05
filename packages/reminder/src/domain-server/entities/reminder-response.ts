@@ -182,40 +182,12 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
    * 转换为 Client DTO
    */
   public toClientDTO(): ReminderResponseClientDTO {
-    // 动作文本映射
-    const actionTextMap: Record<ReminderResponseAction, string> = {
-      CLICKED: '点击',
-      IGNORED: '忽略',
-      SNOOZED: '延迟',
-      DISMISSED: '关闭',
-      COMPLETED: '完成',
-    };
-
-    const actionText = actionTextMap[this._props.action];
-
-    // 响应时间文本
-    let responseTimeText: string | undefined = undefined;
-    const responseTimeSec = this._props.responseTime
-      ? Math.floor(this._props.responseTime.getTime() / 1000)
-      : null;
-    if (responseTimeSec !== null) {
-      if (responseTimeSec < 60) {
-        responseTimeText = `${responseTimeSec}秒后响应`;
-      } else if (responseTimeSec < 3600) {
-        responseTimeText = `${Math.round(responseTimeSec / 60)}分钟后响应`;
-      } else {
-        responseTimeText = `${Math.round(responseTimeSec / 3600)}小时后响应`;
-      }
-    }
-
     return {
       id: this.id,
       reminderTemplateId: this._props.reminderTemplateId,
       action: this._props.action,
       responseTime: this._props.responseTime?.getTime() ?? null,
       timestamp: this._props.timestamp.getTime(),
-      actionText,
-      responseTimeText,
     };
   }
 }

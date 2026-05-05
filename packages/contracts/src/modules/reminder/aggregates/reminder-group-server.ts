@@ -3,8 +3,8 @@
  * 提醒分组聚合根 - 服务端接口
  */
 
-import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '../value-objects';
-import type { DomainDate, IdentityId, PersistenceDate, TransferDate } from '../../../primitives';
+import type { ControlMode, ReminderStatus, GroupStatsDTO } from '../value-objects';
+import type { TransferDate } from '../../../primitives';
 
 export interface ReminderGroupServerDTO {
   // 基础属性
@@ -18,7 +18,7 @@ export interface ReminderGroupServerDTO {
   enabled: boolean;
   status: ReminderStatus;
   order: number;
-  stats: GroupStatsServerDTO;
+  stats: GroupStatsDTO;
 
   version: number;
   createdAt: TransferDate;
@@ -26,21 +26,3 @@ export interface ReminderGroupServerDTO {
   deletedAt?: TransferDate | null;
 }
 
-export interface ReminderGroupPersistenceDTO {
-  // 基础属性
-  id: string;
-  identityId: string;
-  name: string;
-  description?: string | null;
-  color?: string | null;
-  icon?: string | null;
-  controlMode: ControlMode;
-  enabled: boolean;
-  status: ReminderStatus;
-  order: number;
-  stats: GroupStatsServerDTO;
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt?: PersistenceDate | null;
-}

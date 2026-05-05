@@ -17,10 +17,3 @@ export interface AccountSettingsDTO {
   timezone: string;
   notificationEnabled: boolean;
 }
-
-export interface AccountSettingsPersistenceDTO {
-  theme: ThemeType;
-  language: LanguageCode;
-  timezone: string;
-  notificationEnabled: boolean;
-}

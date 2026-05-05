@@ -1,6 +1,5 @@
 export type {
   ResourceBookmarkServerDTO,
-  ResourceBookmarkPersistenceDTO,
 } from './resource-bookmark-server';
 
 export type {

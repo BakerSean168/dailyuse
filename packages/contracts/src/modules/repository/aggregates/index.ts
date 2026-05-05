@@ -1,6 +1,5 @@
 export type {
   RepositoryServerDTO,
-  RepositoryPersistenceDTO,
 } from './repository-server';
 
 export type {
@@ -9,7 +8,6 @@ export type {
 
 export type {
   ResourceServerDTO,
-  ResourcePersistenceDTO,
 } from './resource-server';
 
 export type {

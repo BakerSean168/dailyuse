@@ -7,24 +7,23 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  ITaskMetadataServer,
-  TaskMetadataServerDTO,
-  TaskMetadataPersistenceDTO,
+  ITaskMetadata,
+  TaskMetadataDTO,
   TaskPriority,
 } from '@dailyuse/contracts/schedule';
 
 /**
  * TaskMetadata 值对象实现（Schedule模块专用）
  */
-export class ScheduleTaskMetadata extends ValueObject<TaskMetadataServerDTO> implements ITaskMetadataServer {
+export class ScheduleTaskMetadata extends ValueObject<TaskMetadataDTO> implements ITaskMetadata {
 
-  private constructor(props: TaskMetadataServerDTO) {
+  private constructor(props: TaskMetadataDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: TaskMetadataServerDTO): ScheduleTaskMetadata {
+  public static create(props: TaskMetadataDTO): ScheduleTaskMetadata {
     return new ScheduleTaskMetadata(props);
   }
 
@@ -37,17 +36,8 @@ export class ScheduleTaskMetadata extends ValueObject<TaskMetadataServerDTO> imp
     });
   }
 
-  public static fromDTO(dto: TaskMetadataServerDTO): ScheduleTaskMetadata {
+  public static fromDTO(dto: TaskMetadataDTO): ScheduleTaskMetadata {
     return new ScheduleTaskMetadata(dto);
-  }
-
-  public static fromPersistenceDTO(dto: TaskMetadataPersistenceDTO): ScheduleTaskMetadata {
-    return new ScheduleTaskMetadata({
-      payload: JSON.parse(dto.payload),
-      tags: JSON.parse(dto.tags),
-      priority: dto.priority as TaskPriority,
-      timeout: dto.timeout,
-    });
   }
 
   // ================= Getters =================
@@ -71,7 +61,7 @@ export class ScheduleTaskMetadata extends ValueObject<TaskMetadataServerDTO> imp
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<TaskMetadataServerDTO>,
+    updates: Partial<TaskMetadataDTO>,
   ): ScheduleTaskMetadata {
     return new ScheduleTaskMetadata({ ...this.props, ...updates });
   }
@@ -149,19 +139,10 @@ export class ScheduleTaskMetadata extends ValueObject<TaskMetadataServerDTO> imp
 
   // ================= 序列化 =================
 
-  public toServerDTO(): TaskMetadataServerDTO {
+  public toDTO(): TaskMetadataDTO {
     return {
       payload: { ...this.props.payload },
       tags: [...this.props.tags],
-      priority: this.props.priority,
-      timeout: this.props.timeout,
-    };
-  }
-
-  public toPersistenceDTO(): TaskMetadataPersistenceDTO {
-    return {
-      payload: JSON.stringify(this.props.payload),
-      tags: JSON.stringify(this.props.tags),
       priority: this.props.priority,
       timeout: this.props.timeout,
     };

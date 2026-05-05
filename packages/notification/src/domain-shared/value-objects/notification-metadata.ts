@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   NotificationMetadata as INotificationMetadata,
   NotificationMetadataDTO,
-  NotificationMetadataPersistenceDTO,
 } from '@dailyuse/contracts/notification';
 
 /**
@@ -39,17 +38,6 @@ export class NotificationMetadata extends ValueObject<NotificationMetadataDTO> i
 
   public static fromDTO(dto: NotificationMetadataDTO): NotificationMetadata {
     return new NotificationMetadata(dto);
-  }
-
-  public static fromPersistenceDTO(dto: NotificationMetadataPersistenceDTO): NotificationMetadata {
-    return new NotificationMetadata({
-      icon: dto.icon,
-      image: dto.image,
-      color: dto.color,
-      sound: dto.sound,
-      badge: dto.badge,
-      data: dto.data ? JSON.parse(dto.data) : undefined,
-    });
   }
 
   // ================= Getters =================
@@ -110,16 +98,5 @@ export class NotificationMetadata extends ValueObject<NotificationMetadataDTO> i
 
   public toDTO(): NotificationMetadataDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): NotificationMetadataPersistenceDTO {
-    return {
-      icon: this.props.icon,
-      image: this.props.image,
-      color: this.props.color,
-      sound: this.props.sound,
-      badge: this.props.badge,
-      data: this.props.data ? JSON.stringify(this.props.data) : null,
-    };
   }
 }

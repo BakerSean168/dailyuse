@@ -24,9 +24,3 @@ export interface TaskGoalBindingDTO {
   progressTrigger: TaskGoalBindingTrigger;
 }
 
-export interface TaskGoalBindingPersistenceDTO {
-  goalId: string;
-  keyResultId: string;
-  goalRecordValue: number;
-  progressTrigger: TaskGoalBindingTrigger;
-}

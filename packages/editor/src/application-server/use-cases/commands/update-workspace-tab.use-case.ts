@@ -1,7 +1,7 @@
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { EditorTabServerDTO, TabViewStateServerDTO } from '@dailyuse/contracts/editor';
+import type { EditorTabServerDTO, TabViewStateDTO } from '@dailyuse/contracts/editor';
 
 export class UpdateWorkspaceTabUseCase {
   constructor(private readonly tabRepository: IEditorTabRepository) {}
@@ -13,7 +13,7 @@ export class UpdateWorkspaceTabUseCase {
     tabId: string;
     tabIndex?: number;
     title?: string;
-    viewState?: Partial<TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateDTO>;
     isPinned?: boolean;
     isDirty?: boolean;
   }): Promise<Result<EditorTabServerDTO>> {

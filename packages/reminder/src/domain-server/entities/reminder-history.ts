@@ -124,23 +124,6 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
     return this._props.error !== null;
   }
 
-  public get resultDescription(): string {
-    const descriptions: Record<TriggerResult, string> = {
-      [TriggerResult.Success]: '成功',
-      [TriggerResult.Failed]: '失败',
-      [TriggerResult.Skipped]: '跳过',
-    };
-    return descriptions[this._props.result];
-  }
-
-  public get triggeredAtFormatted(): string {
-    return this._props.triggeredAt.toLocaleString();
-  }
-
-  public get createdAtFormatted(): string {
-    return this._props.createdAt.toLocaleString();
-  }
-
   public get notificationChannelCount(): number {
     return this._props.notificationChannels?.length ?? 0;
   }
@@ -161,11 +144,6 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
   }
 
   public toClientDTO(): ReminderHistoryClientDTO {
-    // 生成通知渠道文本
-    const channelsText = this._props.notificationChannels?.length
-      ? this._props.notificationChannels.join(' + ')
-      : null;
-
     return {
       id: this.id,
       templateId: this._props.templateId,
@@ -178,10 +156,6 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.createdAt.getTime(),
       deletedAt: null,
-      // Client 专属计算字段
-      resultText: this.resultDescription,
-      timeAgo: this.triggeredAtFormatted,
-      channelsText,
     };
   }
 }

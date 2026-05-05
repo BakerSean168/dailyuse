@@ -2,25 +2,19 @@
  * Prisma Weight Snapshot Mapper
  *
  * Maps between KeyResultWeightSnapshot domain objects and Prisma model.
- * Since Prisma now uses the same field names as PersistenceDTO (id, goalId,
- * keyResultId, operatorId) with DateTime fields, the mapping is straightforward.
  */
 
 import { KeyResultWeightSnapshot } from '@/domain-server';
-import type { KeyResultWeightSnapshotPersistenceDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 
 /**
  * Weight Snapshot Mapper
  *
  * Converts between domain value objects and Prisma model data.
- * Prisma DateTime fields map directly to PersistenceDate (= Date).
  */
 export class PrismaWeightSnapshotMapper {
   /**
    * Domain -> Prisma create input
-   *
-   * Uses toPersistenceDTO() which returns Date objects for time fields,
-   * matching Prisma DateTime columns directly.
    */
   static toPrisma(snapshot: KeyResultWeightSnapshot) {
     const dto = snapshot.toDTO();
@@ -42,11 +36,15 @@ export class PrismaWeightSnapshotMapper {
 
   /**
    * Prisma row -> Domain value object
-   *
-   * Prisma row fields now match PersistenceDTO field names directly.
    */
   static toDomain(prismaSnapshot: any): KeyResultWeightSnapshot {
-    const dto: KeyResultWeightSnapshotPersistenceDTO = {
+    const toDateNumber = (value: unknown): number => {
+      if (value instanceof Date) return value.getTime();
+      if (typeof value === 'bigint') return Number(value);
+      return value as number;
+    };
+
+    const dto: KeyResultWeightSnapshotDTO = {
       id: prismaSnapshot.id,
       goalId: prismaSnapshot.goalId,
       keyResultId: prismaSnapshot.keyResultId,
@@ -54,13 +52,13 @@ export class PrismaWeightSnapshotMapper {
       oldWeight: prismaSnapshot.oldWeight,
       newWeight: prismaSnapshot.newWeight,
       weightDelta: prismaSnapshot.weightDelta,
-      snapshotTime: prismaSnapshot.snapshotTime,
+      snapshotTime: toDateNumber(prismaSnapshot.snapshotTime),
       trigger: prismaSnapshot.trigger,
-      reason: prismaSnapshot.reason,
+      reason: prismaSnapshot.reason ?? null,
       operatorId: prismaSnapshot.operatorId,
-      createdAt: prismaSnapshot.createdAt,
+      createdAt: toDateNumber(prismaSnapshot.createdAt),
     };
-    return KeyResultWeightSnapshot.fromPersistenceDTO(dto);
+    return KeyResultWeightSnapshot.fromDTO(dto);
   }
 
   /**

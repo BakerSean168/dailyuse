@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   RecurrenceRule as IRecurrenceRule,
   RecurrenceRuleDTO,
-  RecurrenceRulePersistenceDTO,
   RecurrenceFrequency,
   DayOfWeek,
 } from '@dailyuse/contracts/task';
@@ -75,21 +74,6 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
    */
   public static fromDTO(dto: RecurrenceRuleDTO): RecurrenceRule {
     return new RecurrenceRule(dto);
-  }
-
-  // ================= 工厂方法 5: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: RecurrenceRulePersistenceDTO): RecurrenceRule {
-    const daysOfWeek = typeof dto.daysOfWeek === 'string' ? JSON.parse(dto.daysOfWeek) : [];
-    return new RecurrenceRule({
-      frequency: dto.frequency as RecurrenceFrequency,
-      interval: dto.interval,
-      daysOfWeek: Array.isArray(daysOfWeek) ? daysOfWeek : [],
-      endDate: dto.endDate ? new Date(dto.endDate).getTime() : null,
-      occurrences: dto.occurrences,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -268,16 +252,4 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): RecurrenceRulePersistenceDTO {
-    return {
-      frequency: this.props.frequency,
-      interval: this.props.interval,
-      daysOfWeek: JSON.stringify(this.props.daysOfWeek),
-      endDate: this.props.endDate !== null ? new Date(this.props.endDate) : null,
-      occurrences: this.props.occurrences,
-    };
-  }
 }

@@ -16,17 +16,6 @@ export interface ResourceStatsDTO {
   lastEditedAt: number | null; // epoch ms
 }
 
-/**
- * Resource Stats Persistence DTO (数据库映射)
- */
-export interface ResourceStatsPersistenceDTO {
-  viewCount: number;
-  editCount: number;
-  linkCount: number;
-  lastViewedAt: number | null;
-  lastEditedAt: number | null;
-}
-
 // ============ 实体接口 ============
 
 /**

@@ -14,8 +14,8 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain-server';
 import type {
   ScheduleTaskClientDTO,
-  ScheduleConfigServerDTO,
-  RetryPolicyServerDTO,
+  ScheduleConfigDTO,
+  RetryPolicyDTO,
 } from '@dailyuse/contracts/schedule';
 
 /**
@@ -23,8 +23,8 @@ import type {
  */
 export interface UpdateScheduleTaskReq {
   id: string;
-  scheduleConfig?: ScheduleConfigServerDTO;
-  retryPolicy?: RetryPolicyServerDTO;
+  scheduleConfig?: ScheduleConfigDTO;
+  retryPolicy?: RetryPolicyDTO;
   enabled?: boolean;
   description?: string;
   handlerPayload?: any;

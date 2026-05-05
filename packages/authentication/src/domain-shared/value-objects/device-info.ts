@@ -1,6 +1,5 @@
 import type {
   DeviceInfoDTO,
-  DeviceInfoPersistenceDTO,
   DeviceInfo as IDeviceInfo,
 } from '@dailyuse/contracts/authentication';
 import { ValueObject } from '@dailyuse/utils';
@@ -290,15 +289,4 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     return { ...this.props };
   }
 
-  // ================= Serialization: Persistence =================
-  /**
-   * Converts to persistence format (for database storage).
-   */
-  public toPersistence(): DeviceInfoPersistenceDTO {
-    return {
-      ...this.props,
-      firstSeenAt: new Date(this.props.firstSeenAt),
-      lastSeenAt: new Date(this.props.lastSeenAt),
-    };
-  }
 }

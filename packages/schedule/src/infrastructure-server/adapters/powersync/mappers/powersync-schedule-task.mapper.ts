@@ -10,6 +10,8 @@ import {
   RetryPolicy,
   ScheduleConfig,
   ScheduleTaskMetadata,
+  TaskPriority,
+  Timezone,
 } from '../../../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../../../domain-shared/value-objects/schedule-task-id';
 import type { IdentityId } from '@dailyuse/domain-shared';
@@ -67,32 +69,32 @@ export class PowerSyncScheduleTaskMapper {
       sourceEntityId: data.source_entity_id,
       status: data.status as ScheduleTaskStatus,
       enabled: data.enabled === true || data.enabled === 1,
-      schedule: ScheduleConfig.fromPersistenceDTO({
+      schedule: ScheduleConfig.fromDTO({
         cronExpression: data.cron_expression ?? '',
-        timezone: data.timezone,
+        timezone: Timezone.of(data.timezone),
         startDate: data.start_date,
         endDate: data.end_date,
         maxExecutions: data.max_executions ?? null,
       }),
-      execution: ExecutionInfo.fromPersistenceDTO({
+      execution: ExecutionInfo.fromDTO({
         nextRunAt: data.next_run_at,
         lastRunAt: data.last_run_at,
         executionCount: Number(data.execution_count ?? 0),
         lastExecutionStatus: (data.last_execution_status as ExecutionStatus) ?? null,
-        last_execution_duration: data.last_execution_duration ?? null,
-        consecutive_failures: Number(data.consecutive_failures ?? 0),
+        lastExecutionDuration: data.last_execution_duration ?? null,
+        consecutiveFailures: Number(data.consecutive_failures ?? 0),
       }),
-      retryPolicy: RetryPolicy.fromPersistenceDTO({
+      retryPolicy: RetryPolicy.fromDTO({
         enabled: data.enabled === true || data.enabled === 1,
         maxRetries: data.max_retries,
-        retry_delay: data.initial_delay_ms ?? 0,
-        backoff_multiplier: data.backoff_multiplier ?? 1,
-        max_retry_delay: data.max_delay_ms ?? 0,
+        retryDelay: data.initial_delay_ms ?? 0,
+        backoffMultiplier: data.backoff_multiplier ?? 1,
+        maxRetryDelay: data.max_delay_ms ?? 0,
       }),
-      metadata: ScheduleTaskMetadata.fromPersistenceDTO({
-        payload: data.payload ?? '{}',
-        tags: data.tags ?? '[]',
-        priority: data.priority ?? 'Normal',
+      metadata: ScheduleTaskMetadata.fromDTO({
+        payload: data.payload ? JSON.parse(data.payload) : {},
+        tags: data.tags ? JSON.parse(data.tags) : [],
+        priority: data.priority ? TaskPriority.of(data.priority) : TaskPriority.Normal,
         timeout: data.timeout,
       }),
       createdAt: new Date(data.created_at),
@@ -109,7 +111,7 @@ export class PowerSyncScheduleTaskMapper {
   }
 
   static toPersistence(task: ScheduleTask) {
-    const metadataDTO = task.metadata.toServerDTO();
+    const metadataDTO = task.metadata.toDTO();
     return {
       id: String(task.id),
       identityId: task.identityId,

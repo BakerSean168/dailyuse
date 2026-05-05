@@ -104,24 +104,6 @@ export class Repository extends AggregateRoot<RepositoryId> {
     return this._props.status === 'Active';
   }
 
-  get statusText(): string {
-    const statusTextMap: Record<RepositoryStatus, string> = {
-      Active: '活跃',
-      Archived: '已归档',
-      Deleted: '已删除',
-    };
-    return statusTextMap[this._props.status] ?? this._props.status;
-  }
-
-  get typeText(): string {
-    const typeTextMap: Record<RepositoryType, string> = {
-      Markdown: 'Markdown',
-      Code: '代码',
-      Mixed: '混合',
-    };
-    return typeTextMap[this._props.type] ?? this._props.type;
-  }
-
   get folderCount(): number {
     return this._props.stats.folderCount;
   }
@@ -132,18 +114,6 @@ export class Repository extends AggregateRoot<RepositoryId> {
 
   get totalSize(): number {
     return this._props.stats.totalSize;
-  }
-
-  get formattedSize(): string {
-    return this._props.stats.formattedSize;
-  }
-
-  get createdAtText(): string {
-    return isNaN(this._props.createdAt.getTime()) ? '-' : this._props.createdAt.toLocaleString();
-  }
-
-  get updatedAtText(): string {
-    return isNaN(this._props.updatedAt.getTime()) ? '-' : this._props.updatedAt.toLocaleString();
   }
 
   // ================= Factory Methods =================
@@ -171,14 +141,9 @@ export class Repository extends AggregateRoot<RepositoryId> {
       isDeleted: this.isDeleted,
       isArchived: this.isArchived,
       isActive: this.isActive,
-      statusText: this.statusText,
-      typeText: this.typeText,
       folderCount: this.folderCount,
       resourceCount: this.resourceCount,
       totalSize: this.totalSize,
-      formattedSize: this.formattedSize,
-      createdAtText: this.createdAtText,
-      updatedAtText: this.updatedAtText,
     };
   }
 }

@@ -24,8 +24,8 @@ export interface IntervalTrigger {
 
 // ============ Interface Definitions ============
 
-/** Trigger config - Server interface. */
-export interface ITriggerConfigServer {
+/** Trigger config interface. */
+export interface ITriggerConfig {
   type: TriggerType;
   fixedTime: FixedTimeTrigger | null;
   interval: IntervalTrigger | null;
@@ -33,26 +33,9 @@ export interface ITriggerConfigServer {
   // Value object methods
   with(
     updates: Partial<
-      Omit<
-        ITriggerConfigServer,
-        'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
-      >
+      Omit<ITriggerConfig, 'equals' | 'with' | 'toDTO'>
     >,
-  ): ITriggerConfigServer;
-
-  // DTO conversion methods
-}
-
-/** Trigger config - Client interface. */
-export interface ITriggerConfigClient {
-  type: TriggerType;
-  fixedTime: FixedTimeTrigger | null;
-  interval: IntervalTrigger | null;
-
-  // UI helper properties
-  displayText: string; // "Daily at 09:00" | "Every 30 minutes"
-
-  // Value object methods
+  ): ITriggerConfig;
 
   // DTO conversion methods
 }
@@ -60,34 +43,10 @@ export interface ITriggerConfigClient {
 // ============ DTO Definitions ============
 
 /**
- * Trigger Config Server DTO
+ * Trigger Config DTO
  */
-export interface TriggerConfigServerDTO {
+export interface TriggerConfigDTO {
   type: TriggerType;
   fixedTime: FixedTimeTrigger | null;
   interval: IntervalTrigger | null;
 }
-
-/**
- * Trigger Config Client DTO
- */
-export interface TriggerConfigClientDTO {
-  type: TriggerType;
-  fixedTime: FixedTimeTrigger | null;
-  interval: IntervalTrigger | null;
-  displayText: string;
-}
-
-/**
- * Trigger Config Persistence DTO
- */
-export interface TriggerConfigPersistenceDTO {
-  type: TriggerType;
-  fixed_time: string | null; // JSON string
-  interval: string | null; // JSON string
-}
-
-// ============ Type Exports ============
-
-export type TriggerConfigServer = ITriggerConfigServer;
-export type TriggerConfigClient = ITriggerConfigClient;

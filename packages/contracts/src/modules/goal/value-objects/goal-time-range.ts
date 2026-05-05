@@ -5,7 +5,7 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
+import type { DomainDate, TransferDate } from '../../../primitives';
 
 // ============ Domain Shape (领域层) ============
 
@@ -33,15 +33,3 @@ export interface GoalTimeRangeDTO {
   archivedAt: TransferDate | null; 
 }
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Goal Time Range Persistence DTO
- * 数据库存储用
- */
-export interface GoalTimeRangePersistenceDTO {
-  startDate: PersistenceDate | null;
-  targetDate: PersistenceDate | null;
-  completedAt: PersistenceDate | null;
-  archivedAt: PersistenceDate | null;
-}

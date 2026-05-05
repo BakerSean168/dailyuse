@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   RateLimit as IRateLimit,
   RateLimitDTO,
-  RateLimitPersistenceDTO,
 } from '@dailyuse/contracts/notification';
 
 /**
@@ -45,10 +44,6 @@ export class RateLimit extends ValueObject<RateLimitDTO> implements IRateLimit {
   }
 
   public static fromDTO(dto: RateLimitDTO): RateLimit {
-    return new RateLimit(dto);
-  }
-
-  public static fromPersistenceDTO(dto: RateLimitPersistenceDTO): RateLimit {
     return new RateLimit(dto);
   }
 
@@ -109,10 +104,6 @@ export class RateLimit extends ValueObject<RateLimitDTO> implements IRateLimit {
   // ================= 序列化 =================
 
   public toDTO(): RateLimitDTO {
-    return { ...this.props };
-  }
-
-  public toPersistenceDTO(): RateLimitPersistenceDTO {
     return { ...this.props };
   }
 }

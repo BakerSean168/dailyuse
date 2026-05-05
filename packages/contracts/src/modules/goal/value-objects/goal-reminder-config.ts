@@ -40,13 +40,3 @@ export interface GoalReminderConfigDTO {
   triggers: ReminderTrigger[];
 }
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Goal Reminder Config Persistence DTO
- * 数据库存储用
- */
-export interface GoalReminderConfigPersistenceDTO {
-  enabled: boolean;
-  triggers: string; // JSON.stringify(ReminderTrigger[])
-}

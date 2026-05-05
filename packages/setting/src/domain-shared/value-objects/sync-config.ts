@@ -8,7 +8,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   SyncConfigDTO,
-  SyncConfigPersistenceDTO,
   SyncConfig as ISyncConfig,
 } from '@dailyuse/contracts/setting';
 
@@ -53,14 +52,6 @@ export class SyncConfig extends ValueObject<SyncConfigDTO> implements ISyncConfi
 
   public static fromDTO(dto: SyncConfigDTO): SyncConfig {
     return new SyncConfig(dto);
-  }
-
-  public static fromPersistenceDTO(dto: SyncConfigPersistenceDTO): SyncConfig {
-    return new SyncConfig({
-      enabled: dto.enabled,
-      syncToCloud: dto.syncToCloud,
-      syncToDevices: dto.syncToDevices,
-    });
   }
 
   // ================= Getters =================
@@ -137,7 +128,4 @@ export class SyncConfig extends ValueObject<SyncConfigDTO> implements ISyncConfi
     return { ...this.props };
   }
 
-  public toPersistenceDTO(): SyncConfigPersistenceDTO {
-    return { ...this.props };
-  }
 }

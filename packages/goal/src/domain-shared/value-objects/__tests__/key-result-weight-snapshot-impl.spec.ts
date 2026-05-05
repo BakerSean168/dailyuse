@@ -35,9 +35,6 @@ describe('key-result-weight-snapshot-impl', () => {
       reason: 'raise priority',
     });
     expect(KeyResultWeightSnapshot.fromDTO(snapshot.toDTO()).toDTO()).toEqual(snapshot.toDTO());
-    expect(
-      KeyResultWeightSnapshot.fromPersistenceDTO(snapshot.toPersistenceDTO()).toDTO(),
-    ).toEqual(snapshot.toDTO());
   });
 
   it('validates weight boundaries', () => {

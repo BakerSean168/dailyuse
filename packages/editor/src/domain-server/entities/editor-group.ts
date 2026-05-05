@@ -7,7 +7,7 @@ import type {
   EditorGroupClientDTO,
   EditorGroupServerDTO,
   TabType,
-  TabViewStateServerDTO,
+  TabViewStateDTO,
 } from '@dailyuse/contracts/editor';
 import type {
   EditorGroupId,
@@ -128,7 +128,7 @@ export class EditorGroup extends Entity<EditorGroupId> {
   public addTab(params: {
     resourceId?: string | null;
     type?: TabType;
-    viewState?: Partial<TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateDTO>;
     name?: string;
     isPinned?: boolean;
   }): EditorTab {

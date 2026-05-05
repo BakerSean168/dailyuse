@@ -28,13 +28,6 @@ export interface ScheduleExecutionState {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  executionTimeFormatted: string;
-  statusDisplay: string;
-  statusColor: string;
-  durationFormatted: string;
-  hasError: boolean;
-  hasResult: boolean;
-  resultSummary: string;
 }
 
 export class ScheduleExecution extends Entity<ScheduleExecutionId> {
@@ -90,35 +83,6 @@ export class ScheduleExecution extends Entity<ScheduleExecutionId> {
     return this._props.deletedAt;
   }
 
-  // UI 辅助属性
-  get executionTimeFormatted(): string {
-    return this._props.executionTimeFormatted;
-  }
-
-  get statusDisplay(): string {
-    return this._props.statusDisplay;
-  }
-
-  get statusColor(): string {
-    return this._props.statusColor;
-  }
-
-  get durationFormatted(): string {
-    return this._props.durationFormatted;
-  }
-
-  get hasError(): boolean {
-    return this._props.hasError;
-  }
-
-  get hasResult(): boolean {
-    return this._props.hasResult;
-  }
-
-  get resultSummary(): string {
-    return this._props.resultSummary;
-  }
-
   // UI 计算属性
   get isDeleted(): boolean {
     return this._props.deletedAt !== null;
@@ -166,13 +130,6 @@ export class ScheduleExecution extends Entity<ScheduleExecutionId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      executionTimeFormatted: this._props.executionTimeFormatted,
-      statusDisplay: this._props.statusDisplay,
-      statusColor: this._props.statusColor,
-      durationFormatted: this._props.durationFormatted,
-      hasError: this._props.hasError,
-      hasResult: this._props.hasResult,
-      resultSummary: this._props.resultSummary,
     };
   }
 }

@@ -268,31 +268,6 @@ export class Resource extends Entity<ResourceId> {
     const isActive = this._props.status === ResourceStatus.Active;
     const isDraft = this._props.status === ResourceStatus.Draft;
 
-    const statusTextMap: Record<ResourceStatus, string> = {
-      Active: '活跃',
-      Archived: '已归档',
-      Deleted: '已删除',
-      Draft: '草稿',
-    };
-
-    const typeTextMap: Record<ResourceType, string> = {
-      File: '文件',
-      Folder: '文件夹',
-    };
-
-    const displayName =
-      this._props.type === ResourceType.File && extension
-        ? this._props.name.slice(0, -extension.length)
-        : this._props.name;
-
-    const sizeBytes = this._props.size ?? 0;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const sizeIndex = sizeBytes > 0 ? Math.floor(Math.log(sizeBytes) / Math.log(1024)) : 0;
-    const formattedSize =
-      sizeBytes > 0
-        ? `${parseFloat((sizeBytes / Math.pow(1024, sizeIndex)).toFixed(2))} ${sizes[sizeIndex]}`
-        : '0 B';
-
     const iconMap: Record<string, string> = {
       '.md': 'mdi-language-markdown',
       '.txt': 'mdi-file-document',
@@ -345,16 +320,6 @@ export class Resource extends Entity<ResourceId> {
       isArchived,
       isActive,
       isDraft,
-      statusText: statusTextMap[this._props.status] ?? this._props.status,
-      typeText: typeTextMap[this._props.type] ?? this._props.type,
-      displayName,
-      formattedSize,
-      createdAtText: isNaN(this._props.createdAt.getTime())
-        ? '-'
-        : this._props.createdAt.toLocaleString(),
-      updatedAtText: isNaN(this._props.updatedAt.getTime())
-        ? '-'
-        : this._props.updatedAt.toLocaleString(),
       extension,
       icon,
     };

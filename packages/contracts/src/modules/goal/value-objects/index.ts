@@ -3,7 +3,7 @@
  * 目标值对象导出
  */
 
-export type { GoalMetadata, GoalMetadataDTO, GoalMetadataPersistenceDTO } from './goal-metadata';
+export type { GoalMetadata, GoalMetadataDTO } from './goal-metadata';
 
 export type { GoalId } from './goal-id';
 export type { GoalFolderId } from './goal-folder-id';
@@ -13,33 +13,28 @@ export type { FocusSessionId } from './focus-session-id';
 export type {
   GoalTimeRange,
   GoalTimeRangeDTO,
-  GoalTimeRangePersistenceDTO,
 } from './goal-time-range';
 
 export type {
   KeyResultProgress,
   KeyResultProgressDTO,
-  KeyResultProgressPersistenceDTO,
 } from './key-result-progress';
 
 export type {
   KeyResultSnapshot,
   KeyResultSnapshotDTO,
-  KeyResultSnapshotPersistenceDTO,
 } from './key-result-snapshot';
 
 export type {
   ReminderTrigger,
   GoalReminderConfig,
   GoalReminderConfigDTO,
-  GoalReminderConfigPersistenceDTO,
 } from './goal-reminder-config';
 
 export { SnapshotTrigger } from './key-result-weight-snapshot';
 export type {
   KeyResultWeightSnapshot,
   KeyResultWeightSnapshotDTO,
-  KeyResultWeightSnapshotPersistenceDTO,
 } from './key-result-weight-snapshot';
 
 export type { ProgressBreakdown, ProgressBreakdownResponse } from './progress-breakdown';
@@ -48,8 +43,6 @@ export { HiddenGoalsMode } from './focus-mode';
 export type {
   FocusMode,
   FocusModeDTO,
-  FocusModeClientDTO,
-  FocusModePersistenceDTO,
   ActivateFocusModeRequest,
   ActivateFocusModeReq,
   ExtendFocusModeRequest,

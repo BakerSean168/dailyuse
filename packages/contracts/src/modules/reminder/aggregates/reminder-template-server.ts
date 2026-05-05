@@ -3,7 +3,7 @@
  * 提醒模板聚合根 - 服务端接口
  */
 
-import type { DomainDate, IdentityId, ReminderTemplateId } from '../../../primitives';
+import type { ReminderTemplateId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { ReminderHistoryServerDTO } from '../entities/reminder-history-server';
 
@@ -11,14 +11,14 @@ import type { ReminderHistoryServerDTO } from '../entities/reminder-history-serv
 import type {
   ReminderType,
   ReminderStatus,
-  NotificationConfigServer,
-  NotificationConfigServerDTO,
-  TriggerConfigServer,
-  TriggerConfigServerDTO,
-  ActiveTimeConfigServer,
-  ActiveTimeConfigServerDTO,
-  ActiveHoursConfigServer,
-  ActiveHoursConfigServerDTO,
+  INotificationConfig,
+  NotificationConfigDTO,
+  ITriggerConfig,
+  TriggerConfigDTO,
+  IActiveTimeConfig,
+  ActiveTimeConfigDTO,
+  IActiveHoursConfig,
+  ActiveHoursConfigDTO,
 } from '../value-objects';
 
 // ============ DTO 定义 ============
@@ -32,10 +32,10 @@ export interface ReminderTemplateServerDTO {
   name: string;
   description?: string | null;
   type: ReminderType;
-  trigger: TriggerConfigServerDTO;
-  activeTime: ActiveTimeConfigServerDTO;
-  activeHours?: ActiveHoursConfigServerDTO | null;
-  notificationConfig: NotificationConfigServerDTO;
+  trigger: TriggerConfigDTO;
+  activeTime: ActiveTimeConfigDTO;
+  activeHours?: ActiveHoursConfigDTO | null;
+  notificationConfig: NotificationConfigDTO;
   selfEnabled: boolean;
   status: ReminderStatus;
   groupId?: string | null;
@@ -53,49 +53,3 @@ export interface ReminderTemplateServerDTO {
   history?: ReminderHistoryServerDTO[] | null; // 提醒历史列表（可选加载）
 }
 
-/**
- * Reminder Template Persistence DTO (数据库映射)
- */
-export interface ReminderTemplatePersistenceDTO {
-  id: ReminderTemplateId;
-  identityId: IdentityId;
-  name: string;
-  description?: string | null;
-  type: ReminderType;
-  trigger: string; // JSON string
-  activeTime: string; // JSON string
-  activeHours?: string | null; // JSON string
-  notificationConfig: string; // JSON string
-  selfEnabled: boolean;
-  status: ReminderStatus;
-  groupId?: string | null;
-  importanceLevel: ImportanceLevel;
-  tags: string; // JSON string
-  color?: string | null;
-  icon?: string | null;
-  nextTriggerAt?: Date | null;
-
-  // Smart Frequency: Response Metrics（扁平化字段）
-  clickRate?: number | null;
-  ignoreRate?: number | null;
-  avgResponseTime?: number | null;
-  snoozeCount?: number;
-  effectivenessScore?: number | null;
-  sampleSize?: number;
-  lastAnalysisTime?: Date | null;
-
-  // Smart Frequency: Frequency Adjustment（扁平化字段）
-  originalInterval?: number | null;
-  adjustedInterval?: number | null;
-  adjustmentReason?: string | null;
-  adjustmentTime?: Date | null;
-  isAutoAdjusted?: boolean;
-  userConfirmed?: boolean;
-
-  smartFrequencyEnabled?: boolean;
-
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt?: DomainDate | null;
-}

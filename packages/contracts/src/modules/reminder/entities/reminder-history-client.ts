@@ -29,11 +29,6 @@ export interface ReminderHistoryClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-
-  // UI extensions
-  resultText: string; // "Success" | "Failed" | "Skipped"
-  timeAgo: string; // "3 hours ago"
-  channelsText: string | null; // "In-app + Push"
 }
 
 /** Static factory method interface for Reminder History Client. */

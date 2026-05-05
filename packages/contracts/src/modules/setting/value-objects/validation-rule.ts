@@ -6,7 +6,7 @@
 // ============ DTO 定义 ============
 
 /**
- * ValidationRule DTO (Server)
+ * ValidationRule DTO
  */
 export interface ValidationRuleDTO {
   required: boolean;
@@ -14,30 +14,6 @@ export interface ValidationRuleDTO {
   max: number | null;
   pattern: string | null;
   enum: unknown[] | null;
-  custom: string | null;
-}
-
-/**
- * ValidationRule Client DTO
- */
-export interface ValidationRuleClientDTO {
-  required: boolean;
-  min: number | null;
-  max: number | null;
-  pattern: string | null;
-  enum: unknown[] | null;
-  custom: string | null;
-}
-
-/**
- * ValidationRule Persistence DTO
- */
-export interface ValidationRulePersistenceDTO {
-  required: boolean;
-  min: number | null;
-  max: number | null;
-  pattern: string | null;
-  enum: string | null; // JSON string
   custom: string | null;
 }
 
@@ -54,17 +30,3 @@ export interface ValidationRule {
   enum: unknown[] | null;
   custom: string | null;
 }
-
-/**
- * ValidationRule Client 值对象接口
- */
-export interface ValidationRuleClient {
-  required: boolean;
-  min: number | null;
-  max: number | null;
-  pattern: string | null;
-  enum: unknown[] | null;
-  custom: string | null;
-}
-
-

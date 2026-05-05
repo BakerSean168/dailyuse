@@ -24,21 +24,6 @@ export interface ScheduleExecutionServerDTO {
 }
 
 /**
- * ScheduleExecution Persistence DTO (数据库映射)
- */
-export interface ScheduleExecutionPersistenceDTO {
-  id: string;
-  taskId: string;
-  executionTime: number;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: string | null; // JSON string
-  error: string | null;
-  retryCount: number;
-  createdAt: Date;
-}
-
-/**
  * ScheduleExecution 静态工厂方法接口
  */
 export interface ScheduleExecutionServerStatic {

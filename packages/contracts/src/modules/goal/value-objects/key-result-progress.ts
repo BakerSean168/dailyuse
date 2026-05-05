@@ -42,17 +42,3 @@ export interface KeyResultProgressDTO {
   unit: string | null;
 }
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Key Result Progress Persistence DTO
- * 数据库存储用
- */
-export interface KeyResultProgressPersistenceDTO {
-  valueType: string;
-  aggregationMethod: string;
-  initialValue: number;
-  targetValue: number;
-  currentValue: number;
-  unit: string | null;
-}

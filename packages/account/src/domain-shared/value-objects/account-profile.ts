@@ -1,7 +1,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   AccountProfileDTO,
-  AccountProfilePersistenceDTO,
   AccountProfile as IAccountProfile,
 } from '@dailyuse/contracts/account';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
@@ -101,28 +100,6 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
   }
   get birthday(): DomainDate | null {
     return this.props.birthday ? new Date(this.props.birthday) : null;
-  }
-
-  public static fromPersistenceDTO(dto: AccountProfilePersistenceDTO): AccountProfile {
-    return new AccountProfile({
-      nickname: dto.nickname,
-      realName: dto.realName,
-      avatarUrl: dto.avatarUrl,
-      bio: dto.bio,
-      gender: GenderType.of(dto.gender),
-      birthday: dto.birthday ? new Date(dto.birthday).getTime() : null,
-    });
-  }
-
-  public toPersistenceDTO(): AccountProfilePersistenceDTO {
-    return {
-      nickname: this.props.nickname,
-      realName: this.props.realName,
-      avatarUrl: this.props.avatarUrl,
-      bio: this.props.bio,
-      gender: this.props.gender,
-      birthday: this.props.birthday ? new Date(this.props.birthday) : null,
-    };
   }
 
   public toDTO(): AccountProfileDTO {

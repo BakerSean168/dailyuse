@@ -26,7 +26,7 @@
               <div class="text-xs text-muted-foreground">
                 {{ t('goal.focusMode.panel.remainingDays') }}
               </div>
-              <div class="text-2xl font-semibold">{{ currentFocusMode.remainingDays }} d</div>
+              <div class="text-2xl font-semibold">{{ remainingDays }} d</div>
             </div>
             <div>
               <div class="text-xs text-muted-foreground">
@@ -88,7 +88,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import type { FocusModeClientDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import {
@@ -118,6 +118,12 @@ const progressValue = computed(() => {
   return Math.max(0, Math.min(100, Math.round((elapsed / total) * 100)));
 });
 
+const remainingDays = computed(() => {
+  const mode = currentFocusMode.value;
+  if (!mode) return 0;
+  return Math.max(0, Math.ceil((mode.endTime - Date.now()) / (1000 * 60 * 60 * 24)));
+});
+
 function formatTime(value: number): string {
   return new Date(value).toLocaleString(locale.value, {
     year: 'numeric',
@@ -128,7 +134,7 @@ function formatTime(value: number): string {
   });
 }
 
-function formatHiddenMode(mode: FocusModeClientDTO['hiddenGoalsMode'] | string): string {
+function formatHiddenMode(mode: FocusModeDTO['hiddenGoalsMode'] | string): string {
   const labels: Record<string, string> = {
     Hide: t('goal.focusMode.activateDialog.modeHide'),
     Dim: t('goal.focusMode.activateDialog.modeDim'),

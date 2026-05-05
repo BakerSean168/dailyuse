@@ -3,7 +3,7 @@ import type { IEditorGroupRepository } from '../../../domain-server/repositories
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { EditorSessionServerDTO, SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
+import type { EditorSessionServerDTO, SessionLayoutDTO } from '@dailyuse/contracts/editor';
 import { loadWorkspaceSessionWithGroups, persistWorkspaceSessionState } from './workspace-helpers';
 
 export class UpdateWorkspaceSessionUseCase {
@@ -17,7 +17,7 @@ export class UpdateWorkspaceSessionUseCase {
     workspaceId: string;
     sessionId: string;
     name?: string;
-    layout?: Partial<SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutDTO>;
     isActive?: boolean;
   }): Promise<Result<EditorSessionServerDTO>> {
     const session = await loadWorkspaceSessionWithGroups(

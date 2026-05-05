@@ -29,8 +29,8 @@ export interface NotificationActionConfig {
 
 // ============ Interface Definitions ============
 
-/** Notification config - Server interface. */
-export interface INotificationConfigServer {
+/** Notification config interface. */
+export interface INotificationConfig {
   channels: NotificationChannel[];
   title: string | null;
   body: string | null;
@@ -41,31 +41,9 @@ export interface INotificationConfigServer {
   // Value object methods
   with(
     updates: Partial<
-      Omit<
-        INotificationConfigServer,
-        'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
-      >
+      Omit<INotificationConfig, 'equals' | 'with' | 'toDTO'>
     >,
-  ): INotificationConfigServer;
-
-  // DTO conversion methods
-}
-
-/** Notification config - Client interface. */
-export interface INotificationConfigClient {
-  channels: NotificationChannel[];
-  title: string | null;
-  body: string | null;
-  sound: SoundConfig | null;
-  vibration: VibrationConfig | null;
-  actions: NotificationActionConfig[] | null;
-
-  // UI helper properties
-  channelsText: string; // "In-app + Push"
-  hasSoundEnabled: boolean;
-  hasVibrationEnabled: boolean;
-
-  // Value object methods
+  ): INotificationConfig;
 
   // DTO conversion methods
 }
@@ -73,9 +51,9 @@ export interface INotificationConfigClient {
 // ============ DTO Definitions ============
 
 /**
- * Notification Config Server DTO
+ * Notification Config DTO
  */
-export interface NotificationConfigServerDTO {
+export interface NotificationConfigDTO {
   channels: NotificationChannel[];
   title: string | null;
   body: string | null;
@@ -83,35 +61,3 @@ export interface NotificationConfigServerDTO {
   vibration: VibrationConfig | null;
   actions: NotificationActionConfig[] | null;
 }
-
-/**
- * Notification Config Client DTO
- */
-export interface NotificationConfigClientDTO {
-  channels: NotificationChannel[];
-  title: string | null;
-  body: string | null;
-  sound: SoundConfig | null;
-  vibration: VibrationConfig | null;
-  actions: NotificationActionConfig[] | null;
-  channelsText: string;
-  hasSoundEnabled: boolean;
-  hasVibrationEnabled: boolean;
-}
-
-/**
- * Notification Config Persistence DTO
- */
-export interface NotificationConfigPersistenceDTO {
-  channels: string; // JSON string
-  title: string | null;
-  body: string | null;
-  sound: string | null; // JSON string
-  vibration: string | null; // JSON string
-  actions: string | null; // JSON string
-}
-
-// ============ Type Exports ============
-
-export type NotificationConfigServer = INotificationConfigServer;
-export type NotificationConfigClient = INotificationConfigClient;

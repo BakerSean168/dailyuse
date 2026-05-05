@@ -7,9 +7,8 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IScheduleConfigServer,
-  ScheduleConfigServerDTO,
-  ScheduleConfigPersistenceDTO,
+  IScheduleConfig,
+  ScheduleConfigDTO,
   Timezone,
 } from '@dailyuse/contracts/schedule';
 import { CronExpressionParser } from 'cron-parser';
@@ -17,15 +16,15 @@ import { CronExpressionParser } from 'cron-parser';
 /**
  * ScheduleConfig 值对象实现
  */
-export class ScheduleConfig extends ValueObject<ScheduleConfigServerDTO> implements IScheduleConfigServer {
+export class ScheduleConfig extends ValueObject<ScheduleConfigDTO> implements IScheduleConfig {
 
-  private constructor(props: ScheduleConfigServerDTO) {
+  private constructor(props: ScheduleConfigDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: ScheduleConfigServerDTO): ScheduleConfig {
+  public static create(props: ScheduleConfigDTO): ScheduleConfig {
     this.validate(props);
     return new ScheduleConfig(props);
   }
@@ -40,23 +39,13 @@ export class ScheduleConfig extends ValueObject<ScheduleConfigServerDTO> impleme
     });
   }
 
-  public static fromDTO(dto: ScheduleConfigServerDTO): ScheduleConfig {
+  public static fromDTO(dto: ScheduleConfigDTO): ScheduleConfig {
     return new ScheduleConfig(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ScheduleConfigPersistenceDTO): ScheduleConfig {
-    return new ScheduleConfig({
-      cronExpression: dto.cronExpression,
-      timezone: dto.timezone as Timezone,
-      startDate: dto.startDate,
-      endDate: dto.endDate,
-      maxExecutions: dto.maxExecutions,
-    });
   }
 
   // ================= 校验 =================
   
-  private static validate(props: ScheduleConfigServerDTO): void {
+  private static validate(props: ScheduleConfigDTO): void {
     if (!props.timezone || props.timezone.trim().length === 0) {
       throw new Error('Timezone is required');
     }
@@ -126,10 +115,10 @@ export class ScheduleConfig extends ValueObject<ScheduleConfigServerDTO> impleme
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<Omit<IScheduleConfigServer, 'equals' | 'with' | 'calculateNextRun' | 'isExpired' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'>>,
+    updates: Partial<Omit<IScheduleConfig, 'equals' | 'with' | 'calculateNextRun' | 'isExpired' | 'toDTO'>>,
   ): ScheduleConfig {
     // 将 number 时间戳转换为 ISO string
-    const convertedUpdates: Partial<ScheduleConfigServerDTO> = {};
+    const convertedUpdates: Partial<ScheduleConfigDTO> = {};
     
     if (updates.cronExpression !== undefined) {
       convertedUpdates.cronExpression = updates.cronExpression;
@@ -189,17 +178,7 @@ export class ScheduleConfig extends ValueObject<ScheduleConfigServerDTO> impleme
 
   // ================= 序列化 =================
 
-  public toServerDTO(): ScheduleConfigServerDTO {
+  public toDTO(): ScheduleConfigDTO {
     return { ...this.props };
-  }
-
-  public toPersistenceDTO(): ScheduleConfigPersistenceDTO {
-    return {
-      cronExpression: this.props.cronExpression,
-      timezone: this.props.timezone,
-      startDate: this.props.startDate,
-      endDate: this.props.endDate,
-      maxExecutions: this.props.maxExecutions,
-    };
   }
 }

@@ -55,14 +55,9 @@ export function createMockRepository(
     isDeleted: false,
     isArchived: status === 'Archived',
     isActive: status === 'Active',
-    statusText: faker.helpers.arrayElement(['活跃', '已归档', '同步中', '错误']),
-    typeText: faker.helpers.arrayElement(['本地', 'Git', '云端', '混合']),
     folderCount: faker.number.int({ min: 0, max: 50 }),
     resourceCount: faker.number.int({ min: 0, max: 200 }),
     totalSize: faker.number.int({ min: 0, max: 10737418240 }),
-    formattedSize: `${faker.number.float({ min: 0, max: 10, fractionDigits: 2 })} GB`,
-    createdAtText: faker.date.past().toLocaleDateString(),
-    updatedAtText: faker.date.recent().toLocaleDateString(),
     ...overrides,
   } as RepositoryClientDTO;
 }
@@ -115,17 +110,6 @@ export function createMockResource(overrides: Partial<ResourceClientDTO> = {}): 
     isArchived: faker.datatype.boolean({ probability: 0.1 }),
     isActive: true,
     isDraft: faker.datatype.boolean({ probability: 0.2 }),
-    statusText: faker.helpers.arrayElement(['活跃', '草稿', '已归档', '已删除']),
-    typeText: faker.helpers.arrayElement(['文件', '文件夹', '链接', '笔记']),
-    displayName: faker.system.fileName(),
-    formattedSize:
-      size > 1048576
-        ? `${(size / 1048576).toFixed(2)} MB`
-        : size > 1024
-          ? `${(size / 1024).toFixed(2)} KB`
-          : `${size} B`,
-    createdAtText: faker.date.past().toLocaleDateString(),
-    updatedAtText: faker.date.recent().toLocaleDateString(),
     extension: type === 'File' ? faker.helpers.arrayElement(['.md', '.txt', '.json', '.png']) : '',
     icon: faker.helpers.arrayElement(['file', 'folder', 'link', 'note']),
     ...overrides,

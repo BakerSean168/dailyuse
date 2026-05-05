@@ -87,7 +87,7 @@
           </div>
           <template v-if="currentFocusMode">
             <div class="text-xs text-muted-foreground">
-              {{ t('goal.focusMode.panel.remainingDays') }}: {{ currentFocusMode.remainingDays }} d
+              {{ t('goal.focusMode.panel.remainingDays') }}: {{ remainingDays }} d
             </div>
             <div class="text-xs text-muted-foreground">
               {{ formatTime(currentFocusMode.startTime) }} -
@@ -209,6 +209,12 @@ const progressValue = computed(() => {
   if (!mode) return 0;
   const total = mode.endTime - mode.startTime;
   return Math.max(0, Math.min(100, Math.round(((Date.now() - mode.startTime) / total) * 100)));
+});
+
+const remainingDays = computed(() => {
+  const mode = currentFocusMode.value;
+  if (!mode) return 0;
+  return Math.max(0, Math.ceil((mode.endTime - Date.now()) / (1000 * 60 * 60 * 24)));
 });
 
 function formatTime(value: number): string {

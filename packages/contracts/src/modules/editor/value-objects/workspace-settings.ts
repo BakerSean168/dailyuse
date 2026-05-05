@@ -2,10 +2,10 @@
  * Workspace Settings Value Object
  */
 
-// ============ Interface Definitions ============
+// ============ Interface Definition ============
 
-/** Workspace Settings - Server interface. */
-export interface IWorkspaceSettingsServer {
+/** Workspace Settings interface. */
+export interface IWorkspaceSettings {
   theme: string | null;
   fontSize: number | null;
   fontFamily: string | null;
@@ -23,44 +23,19 @@ export interface IWorkspaceSettingsServer {
   with(
     updates: Partial<
       Omit<
-        IWorkspaceSettingsServer,
-        'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
+        IWorkspaceSettings,
+        'equals' | 'with' | 'toDTO'
       >
     >,
-  ): IWorkspaceSettingsServer;
-
-  // DTO conversion methods
+  ): IWorkspaceSettings;
 }
 
-/** Workspace Settings - Client interface. */
-export interface IWorkspaceSettingsClient {
-  theme: string;
-  fontSize: number;
-  fontFamily: string;
-  lineHeight: number;
-  tabSize: number;
-  wordWrap: boolean;
-  lineNumbers: boolean;
-  minimap: boolean;
-  autoSave: {
-    enabled: boolean;
-    interval: number;
-  };
-
-  // UI helper properties
-  autoSaveFormatted: string; // e.g. "every 30 seconds"
-
-  // Value object methods
-
-  // DTO conversion methods
-}
-
-// ============ DTO Definitions ============
+// ============ DTO Definition ============
 
 /**
- * Workspace Settings Server DTO
+ * Workspace Settings DTO
  */
-export interface WorkspaceSettingsServerDTO {
+export interface WorkspaceSettingsDTO {
   theme: string | null;
   fontSize: number | null;
   fontFamily: string | null;
@@ -75,48 +50,9 @@ export interface WorkspaceSettingsServerDTO {
   } | null;
 }
 
-/**
- * Workspace Settings Client DTO
- */
-export interface WorkspaceSettingsClientDTO {
-  theme: string;
-  fontSize: number;
-  fontFamily: string;
-  lineHeight: number;
-  tabSize: number;
-  wordWrap: boolean;
-  lineNumbers: boolean;
-  minimap: boolean;
-  autoSave: {
-    enabled: boolean;
-    interval: number;
-  };
-  autoSaveFormatted: string;
-}
-
-/**
- * Workspace Settings Persistence DTO
- */
-export interface WorkspaceSettingsPersistenceDTO {
-  theme: string | null;
-  font_size: number | null;
-  font_family: string | null;
-  line_height: number | null;
-  tab_size: number | null;
-  word_wrap: boolean | null;
-  line_numbers: boolean | null;
-  minimap: boolean | null;
-  auto_save: string | null; // JSON string
-}
-
-// ============ Type Exports ============
-
-export type WorkspaceSettingsServer = IWorkspaceSettingsServer;
-export type WorkspaceSettingsClient = IWorkspaceSettingsClient;
-
 // ============ Defaults ============
 
-export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettingsServerDTO = {
+export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettingsDTO = {
   theme: 'default',
   fontSize: 14,
   fontFamily: 'Consolas, "Courier New", monospace',

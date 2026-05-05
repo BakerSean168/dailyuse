@@ -14,8 +14,8 @@ import type {
 import type {
   EditorWorkspaceServerDTO,
   EditorWorkspaceClientDTO,
-  WorkspaceLayoutServerDTO,
-  WorkspaceSettingsServerDTO,
+  WorkspaceLayoutDTO,
+  WorkspaceSettingsDTO,
   EditorEventMap,
 } from '@dailyuse/contracts/editor';
 import { ProjectType } from '@dailyuse/contracts/editor';
@@ -77,12 +77,12 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
     return this._props.projectType;
   }
 
-  get layout(): WorkspaceLayoutServerDTO {
-    return this._props.layout.toServerDTO();
+  get layout(): WorkspaceLayoutDTO {
+    return this._props.layout.toDTO();
   }
 
-  get settings(): WorkspaceSettingsServerDTO {
-    return this._props.settings.toServerDTO();
+  get settings(): WorkspaceSettingsDTO {
+    return this._props.settings.toDTO();
   }
 
   get isActive(): boolean {
@@ -124,8 +124,8 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
     description?: string;
     projectPath: string;
     projectType?: ProjectType;
-    layout?: WorkspaceLayoutServerDTO;
-    settings?: WorkspaceSettingsServerDTO;
+    layout?: WorkspaceLayoutDTO;
+    settings?: WorkspaceSettingsDTO;
     createDefaultSession?: boolean;
   }): EditorWorkspace {
     const id = EditorWorkspaceId.of(EditorWorkspaceId.generate());
@@ -197,7 +197,7 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
     });
   }
 
-  updateLayout(layout: Partial<WorkspaceLayoutServerDTO>): void {
+  updateLayout(layout: Partial<WorkspaceLayoutDTO>): void {
     this._props.layout = this._props.layout.with(layout);
     this._props.updatedAt = new Date();
 
@@ -206,7 +206,7 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
     });
   }
 
-  updateSettings(settings: Partial<WorkspaceSettingsServerDTO>): void {
+  updateSettings(settings: Partial<WorkspaceSettingsDTO>): void {
     this._props.settings = this._props.settings.with(settings);
     this._props.updatedAt = new Date();
 
@@ -273,8 +273,8 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
       description: this._props.description,
       projectPath: this._props.projectPath,
       projectType: this._props.projectType,
-      layout: this._props.layout.toServerDTO(),
-      settings: this._props.settings.toServerDTO(),
+      layout: this._props.layout.toDTO(),
+      settings: this._props.settings.toDTO(),
       sessions: this._props.sessions.map((s) => s.toServerDTO()),
       isActive: this._props.isActive,
       lastActiveSessionId: this._props.lastActiveSessionId,
@@ -285,9 +285,8 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
   }
 
   toClientDTO(): EditorWorkspaceClientDTO {
-    const settingsServerDTO = this._props.settings.toServerDTO();
+    const settingsServerDTO = this._props.settings.toDTO();
     const autoSave = settingsServerDTO.autoSave ?? { enabled: false, interval: 0 };
-    const autoSaveFormatted = autoSave.enabled ? `every ${autoSave.interval}s` : 'Disabled';
 
     return {
       id: this.id,
@@ -296,7 +295,7 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
       description: this._props.description,
       projectPath: this._props.projectPath,
       projectType: this._props.projectType,
-      layout: this._props.layout.toServerDTO(),
+      layout: this._props.layout.toDTO(),
       settings: {
         theme: settingsServerDTO.theme ?? 'default',
         fontSize: settingsServerDTO.fontSize ?? 14,
@@ -307,7 +306,6 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
         lineNumbers: settingsServerDTO.lineNumbers ?? true,
         minimap: settingsServerDTO.minimap ?? true,
         autoSave,
-        autoSaveFormatted,
       },
       sessions: this._props.sessions.map((s) => s.toClientDTO()),
       isActive: this._props.isActive,

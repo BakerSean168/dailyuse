@@ -13,10 +13,9 @@ function createFocusModeFixture(overrides?: Record<string, any>) {
     id: overrides?.id ?? 'focus-1',
     isActive: overrides?.isActive ?? true,
     getRemainingDays: vi.fn().mockReturnValue(overrides?.remainingDays ?? 3),
-    toClientDTO: vi.fn().mockReturnValue({
+    toDTO: vi.fn().mockReturnValue({
       id: dto.id,
       isActive: dto.isActive,
-      remainingDays: dto.remainingDays,
     }),
     ...overrides,
   } as any;
@@ -36,8 +35,8 @@ describe('GetCurrentFocusModeUseCase', () => {
     expect(findActiveByIdentityId).toHaveBeenCalledWith('identity-1');
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data).toEqual({ id: 'focus-1', isActive: true, remainingDays: 3 });
-    expect(focusMode.toClientDTO).toHaveBeenCalled();
+    expect(result.data).toEqual({ id: 'focus-1', isActive: true });
+    expect(focusMode.toDTO).toHaveBeenCalled();
   });
 
   it('should return null when no active focus mode exists', async () => {

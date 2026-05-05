@@ -301,18 +301,6 @@ export class Repository extends AggregateRoot<RepositoryId> {
     const isArchived = this._props.status === RepositoryStatus.Archived;
     const isActive = this._props.status === RepositoryStatus.Active;
 
-    const statusTextMap: Record<RepositoryStatus, string> = {
-      Active: '活跃',
-      Archived: '已归档',
-      Deleted: '已删除',
-    };
-
-    const typeTextMap: Record<RepositoryType, string> = {
-      Markdown: 'Markdown',
-      Code: '代码',
-      Mixed: '混合',
-    };
-
     return {
       id: String(this.id) as import('@dailyuse/contracts/repository').RepositoryClientDTO['id'],
       identityId: String(
@@ -332,18 +320,9 @@ export class Repository extends AggregateRoot<RepositoryId> {
       isDeleted,
       isArchived,
       isActive,
-      statusText: statusTextMap[this._props.status] ?? this._props.status,
-      typeText: typeTextMap[this._props.type] ?? this._props.type,
       folderCount: this._props.stats.folderCount,
       resourceCount: this._props.stats.resourceCount,
       totalSize: this._props.stats.totalSize,
-      formattedSize: this._props.stats.formattedSize,
-      createdAtText: isNaN(this._props.createdAt.getTime())
-        ? '-'
-        : this._props.createdAt.toLocaleString(),
-      updatedAtText: isNaN(this._props.updatedAt.getTime())
-        ? '-'
-        : this._props.updatedAt.toLocaleString(),
     };
   }
 

@@ -14,43 +14,24 @@ export { ConflictSuggestionType } from './conflict-detection-result';
 
 // ============ Complex Value Objects ============
 export type {
-  IScheduleConfigServer,
-  IScheduleConfigClient,
-  ScheduleConfigServerDTO,
-  ScheduleConfigClientDTO,
-  ScheduleConfigPersistenceDTO,
-  ScheduleConfigServer,
-  ScheduleConfigClient,
+  IScheduleConfig,
+  ScheduleConfigDTO,
 } from './schedule-config';
 
 export type {
-  IExecutionInfoServer,
-  IExecutionInfoClient,
-  ExecutionInfoServerDTO,
-  ExecutionInfoClientDTO,
-  ExecutionInfoPersistenceDTO,
-  ExecutionInfoServer,
-  ExecutionInfoClient,
+  IExecutionInfo,
+  ExecutionInfoDTO,
 } from './execution-info';
+export { ExecutionHealthStatus } from './execution-info';
 
 export type {
-  IRetryPolicyServer,
-  IRetryPolicyClient,
-  RetryPolicyServerDTO,
-  RetryPolicyClientDTO,
-  RetryPolicyPersistenceDTO,
-  RetryPolicyServer,
-  RetryPolicyClient,
+  IRetryPolicy,
+  RetryPolicyDTO,
 } from './retry-policy';
 
 export type {
-  ITaskMetadataServer,
-  ITaskMetadataClient,
-  TaskMetadataServerDTO,
-  TaskMetadataClientDTO,
-  TaskMetadataPersistenceDTO,
-  TaskMetadataServer,
-  TaskMetadataClient,
+  ITaskMetadata,
+  TaskMetadataDTO,
 } from './task-metadata';
 
 export type {

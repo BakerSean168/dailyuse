@@ -217,16 +217,6 @@ export class ScheduleExecution extends Entity<string> {
       createdAt: this._createdAt.getTime(),
       updatedAt: this._createdAt.getTime(),
       deletedAt: null,
-      // UI 辅助属性
-      executionTimeFormatted: isNaN(this._executionTime.getTime())
-        ? '-'
-        : this._executionTime.toLocaleString('zh-CN'),
-      statusDisplay: this._getStatusText(),
-      statusColor: this._getStatusColor(),
-      durationFormatted: this._formatDuration(),
-      hasError: this._error !== null,
-      hasResult: this._result !== null,
-      resultSummary: this._getResultSummary(),
     };
   }
 
@@ -235,54 +225,6 @@ export class ScheduleExecution extends Entity<string> {
    */
   public toDTO(): ScheduleExecutionServerDTO {
     return this.toServerDTO();
-  }
-
-  // ===== 私有辅助方法 =====
-
-  private _getStatusText(): string {
-    switch (this._status) {
-      case ExecutionStatus.Success:
-        return '执行成功';
-      case ExecutionStatus.Failed:
-        return '执行失败';
-      case ExecutionStatus.Timeout:
-        return '执行超时';
-      case ExecutionStatus.Skipped:
-        return '已跳过';
-      case ExecutionStatus.Retrying:
-        return '重试中';
-      default:
-        return '未知状态';
-    }
-  }
-
-  private _getStatusColor(): string {
-    switch (this._status) {
-      case ExecutionStatus.Success:
-        return 'green';
-      case ExecutionStatus.Failed:
-        return 'red';
-      case ExecutionStatus.Timeout:
-        return 'orange';
-      case ExecutionStatus.Skipped:
-        return 'gray';
-      case ExecutionStatus.Retrying:
-        return 'blue';
-      default:
-        return 'gray';
-    }
-  }
-
-  private _formatDuration(): string {
-    if (this._duration === null) return '-';
-    if (this._duration < 1000) return `${this._duration} 毫秒`;
-    return `${(this._duration / 1000).toFixed(2)} 秒`;
-  }
-
-  private _getResultSummary(): string {
-    if (!this._result) return '空';
-    const keys = Object.keys(this._result);
-    return `${keys.length} 个字段`;
   }
 
   // ===== 静态工厂方法 =====

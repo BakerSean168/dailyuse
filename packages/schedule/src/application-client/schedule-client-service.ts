@@ -51,13 +51,6 @@ function scheduleExecutionFromDTO(dto: ScheduleExecutionClientDTO): ScheduleExec
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    executionTimeFormatted: dto.executionTimeFormatted,
-    statusDisplay: dto.statusDisplay,
-    statusColor: dto.statusColor,
-    durationFormatted: dto.durationFormatted,
-    hasError: dto.hasError,
-    hasResult: dto.hasResult,
-    resultSummary: dto.resultSummary,
   });
 }
 
@@ -79,15 +72,6 @@ function scheduleTaskFromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    statusDisplay: dto.statusDisplay,
-    statusColor: dto.statusColor,
-    sourceModuleDisplay: dto.sourceModuleDisplay,
-    enabledDisplay: dto.enabledDisplay,
-    nextRunAtFormatted: dto.nextRunAtFormatted,
-    lastRunAtFormatted: dto.lastRunAtFormatted,
-    executionSummary: dto.executionSummary,
-    healthStatus: dto.healthStatus,
-    isOverdue: dto.isOverdue,
     executions: dto.executions ? dto.executions.map((e) => scheduleExecutionFromDTO(e)) : null,
   });
 }

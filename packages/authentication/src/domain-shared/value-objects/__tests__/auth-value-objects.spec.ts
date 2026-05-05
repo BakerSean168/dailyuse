@@ -352,9 +352,6 @@ describe('EmailAddress', () => {
       expect(email.toDTO()).toEqual({ value: 'user@example.com' });
     });
 
-    it('toPersistence() matches toDTO for email', () => {
-      expect(email.toPersistence()).toEqual({ value: 'user@example.com' });
-    });
   });
 });
 
@@ -416,10 +413,9 @@ describe('PhoneNumber', () => {
   });
 
   describe('serialization', () => {
-    it('toDTO() and toPersistence() match', () => {
+    it('toDTO() round-trips', () => {
       const phone = PhoneNumber.create({ value: '13800138000' });
       expect(phone.toDTO()).toEqual({ value: '13800138000' });
-      expect(phone.toPersistence()).toEqual({ value: '13800138000' });
     });
   });
 });
@@ -511,19 +507,6 @@ describe('HashedPassword', () => {
     });
   });
 
-  describe('fromPersistence()', () => {
-    it('converts Date timestamps', () => {
-      const dto = {
-        hash: VALID_HASH,
-        salt: 'salt123',
-        algorithm: 'Argon2' as const,
-        createdAt: new Date('2024-01-01'),
-      };
-      const hp = HashedPassword.fromPersistence(dto);
-      expect(hp.createdAt).toBe(new Date('2024-01-01').getTime());
-    });
-  });
-
   describe('createPlaceholder()', () => {
     it('creates a placeholder with empty hash and salt', () => {
       const hp = HashedPassword.createPlaceholder();
@@ -596,12 +579,6 @@ describe('HashedPassword', () => {
       const dto = hp.toDTO();
       expect(dto.hash).toBe(VALID_HASH);
       expect(dto.salt).toBe('bW9ja3NhbHQ');
-    });
-
-    it('toPersistence() converts timestamp to Date', () => {
-      const hp = HashedPassword.fromDTO(VALID_DTO);
-      const p = hp.toPersistence();
-      expect(p.createdAt).toBeInstanceOf(Date);
     });
   });
 });
@@ -774,13 +751,6 @@ describe('DeviceInfo', () => {
       const dto = info.toDTO();
       expect(dto.deviceId).toBe('device-001');
       expect(dto.ipAddress).toBe('192.168.1.1');
-    });
-
-    it('toPersistence() converts timestamps to Date', () => {
-      const info = DeviceInfo.create(BASE_PROPS);
-      const p = info.toPersistence();
-      expect(p.firstSeenAt).toBeInstanceOf(Date);
-      expect(p.lastSeenAt).toBeInstanceOf(Date);
     });
   });
 });

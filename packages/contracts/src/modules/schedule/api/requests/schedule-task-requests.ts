@@ -7,9 +7,9 @@ import { z } from 'zod';
 import { brandedId } from '../../../../primitives';
 import type { ScheduleTaskId } from '../../../../primitives';
 import type { ScheduleTaskClientDTO } from '../../aggregates/schedule-task-client';
-import type { ScheduleConfigServerDTO } from '../../value-objects/schedule-config';
-import type { RetryPolicyServerDTO } from '../../value-objects/retry-policy';
-import type { TaskMetadataServerDTO } from '../../value-objects/task-metadata';
+import type { ScheduleConfigDTO } from '../../value-objects/schedule-config';
+import type { RetryPolicyDTO } from '../../value-objects/retry-policy';
+import type { TaskMetadataDTO } from '../../value-objects/task-metadata';
 import { SourceModule } from '../../value-objects/source-module';
 import { ScheduleTaskStatus } from '../../value-objects/schedule-task-status';
 import { TaskPriority } from '../../value-objects/task-priority';
@@ -121,10 +121,10 @@ export interface CreateScheduleTaskRequest {
   readonly name: string;
   readonly sourceModule: SourceModule;
   readonly sourceEntityId: string;
-  readonly schedule: ScheduleConfigServerDTO;
+  readonly schedule: ScheduleConfigDTO;
   readonly description?: string;
-  readonly metadata?: Partial<TaskMetadataServerDTO>;
-  readonly retryPolicy?: Partial<RetryPolicyServerDTO>;
+  readonly metadata?: Partial<TaskMetadataDTO>;
+  readonly retryPolicy?: Partial<RetryPolicyDTO>;
   readonly enabled?: boolean;
 }
 
@@ -134,9 +134,9 @@ export interface CreateScheduleTaskRequest {
 export interface UpdateScheduleTaskRequest {
   readonly name?: string;
   readonly description?: string;
-  readonly schedule?: Partial<ScheduleConfigServerDTO>;
-  readonly metadata?: Partial<TaskMetadataServerDTO>;
-  readonly retryPolicy?: Partial<RetryPolicyServerDTO>;
+  readonly schedule?: Partial<ScheduleConfigDTO>;
+  readonly metadata?: Partial<TaskMetadataDTO>;
+  readonly retryPolicy?: Partial<RetryPolicyDTO>;
   readonly enabled?: boolean;
 }
 

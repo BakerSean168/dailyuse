@@ -28,9 +28,9 @@ export interface FolderServerDTO {
 }
 
 /**
- * Folder Persistence DTO
+ * Folder storage shape
  */
-export interface FolderPersistenceDTO {
+export interface FolderStorageShape {
   id: string;
   repositoryId: string;
   identityId: string;
@@ -95,7 +95,7 @@ export interface FolderServer {
   setExpanded(isExpanded: boolean): void;
   toServerDTO(includeChildren?: boolean): FolderServerDTO;
   toClientDTO(includeChildren?: boolean): FolderClientDTO;
-  toPersistenceDTO(): FolderPersistenceDTO;
+  toStorage(): FolderStorageShape;
 }
 
 /** Domain state interface for Folder */
@@ -287,6 +287,22 @@ export class Folder extends Entity<ResourceId> {
       displayName,
       createdAtText: formattedCreatedAt,
       updatedAtText: formattedUpdatedAt,
+    };
+  }
+
+  toStorage(): FolderStorageShape {
+    return {
+      id: String(this.id),
+      repositoryId: this._props.repositoryId,
+      identityId: this._props.identityId,
+      parentId: this._props.parentId,
+      name: this._props.name,
+      path: this._props.path,
+      order: this._props.order,
+      isExpanded: this._props.isExpanded,
+      metadata: JSON.stringify(this._props.metadata.toDTO()),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 

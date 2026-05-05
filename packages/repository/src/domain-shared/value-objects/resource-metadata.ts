@@ -11,7 +11,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   ResourceMetadataDTO,
-  ResourceMetadataPersistenceDTO,
 } from '@dailyuse/contracts/repository';
 
 /**
@@ -38,10 +37,6 @@ export class ResourceMetadata extends ValueObject<ResourceMetadataDTO> {
   }
 
   public static fromDTO(dto: ResourceMetadataDTO): ResourceMetadata {
-    return new ResourceMetadata(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ResourceMetadataPersistenceDTO): ResourceMetadata {
     return new ResourceMetadata(dto);
   }
 
@@ -124,9 +119,5 @@ export class ResourceMetadata extends ValueObject<ResourceMetadataDTO> {
       readingTime: this.props.readingTime,
       thumbnail: this.props.thumbnail,
     };
-  }
-
-  public toPersistenceDTO(): ResourceMetadataPersistenceDTO {
-    return this.toDTO();
   }
 }

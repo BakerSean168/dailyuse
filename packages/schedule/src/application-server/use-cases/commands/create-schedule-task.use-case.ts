@@ -20,8 +20,8 @@ import {
 } from '../../../domain-server';
 import type {
   ScheduleTaskClientDTO,
-  ScheduleConfigServerDTO,
-  RetryPolicyServerDTO,
+  ScheduleConfigDTO,
+  RetryPolicyDTO,
   SourceModule,
 } from '@dailyuse/contracts/schedule';
 import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../../domain-shared/value-objects';
@@ -33,11 +33,11 @@ export interface CreateScheduleTaskReq {
   name: string;
   sourceModule: SourceModule;
   sourceId: string;
-  scheduleConfig: ScheduleConfigServerDTO;
+  scheduleConfig: ScheduleConfigDTO;
   handlerType: string;
   handlerPayload?: any;
   priority?: number;
-  retryPolicy?: RetryPolicyServerDTO;
+  retryPolicy?: RetryPolicyDTO;
   enabled?: boolean;
   description?: string;
   identityId: string;

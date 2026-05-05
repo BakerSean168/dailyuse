@@ -1,7 +1,6 @@
 import { ValueObject } from '@dailyuse/utils';
 import type {
   AccountSettingsDTO,
-  AccountSettingsPersistenceDTO,
   AccountSettings as IAccountSettings,
 } from '@dailyuse/contracts/account';
 import { ThemeType } from './theme-type';
@@ -90,19 +89,6 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
   }
   get notificationEnabled(): boolean {
     return this.props.notificationEnabled;
-  }
-
-  public static fromPersistenceDTO(dto: AccountSettingsPersistenceDTO): AccountSettings {
-    return new AccountSettings({
-      theme: ThemeType.of(dto.theme),
-      language: LanguageCode.of(dto.language),
-      timezone: dto.timezone,
-      notificationEnabled: dto.notificationEnabled,
-    });
-  }
-
-  public toPersistenceDTO(): AccountSettingsPersistenceDTO {
-    return { ...this.props };
   }
 
   public toDTO(): AccountSettingsDTO {

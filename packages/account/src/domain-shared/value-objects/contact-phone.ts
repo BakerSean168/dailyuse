@@ -1,5 +1,5 @@
 import { ValueObject } from '@dailyuse/utils';
-import type { ContactPhoneDTO, ContactPhonePersistenceDTO, ContactPhone as IContactPhone } from '@dailyuse/contracts/account';
+import type { ContactPhoneDTO, ContactPhone as IContactPhone } from '@dailyuse/contracts/account';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 
 export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IContactPhone {
@@ -60,26 +60,6 @@ export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IConta
   get number(): string { return this.props.number; }
   get fullNumber(): string { return this.props.fullNumber; }
   get isVerified(): boolean { return this.props.isVerified; }
-
-  public static fromPersistenceDTO(dto: ContactPhonePersistenceDTO): ContactPhone {
-    return new ContactPhone({
-      countryCode: dto.countryCode,
-      number: dto.number,
-      fullNumber: dto.fullNumber,
-      isVerified: dto.isVerified,
-      verifiedAt: dto.verifiedAt ? new Date(dto.verifiedAt).getTime() : null,
-    });
-  }
-
-  public toPersistenceDTO(): ContactPhonePersistenceDTO {
-    return {
-      countryCode: this.props.countryCode,
-      number: this.props.number,
-      fullNumber: this.props.fullNumber,
-      isVerified: this.props.isVerified,
-      verifiedAt: this.props.verifiedAt ? new Date(this.props.verifiedAt) : null,
-    };
-  }
 
   public toDTO(): ContactPhoneDTO {
     return { ...this.props };

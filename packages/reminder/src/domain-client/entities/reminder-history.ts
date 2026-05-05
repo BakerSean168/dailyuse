@@ -30,9 +30,6 @@ export interface ReminderHistoryState {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  resultText: string;
-  timeAgo: string;
-  channelsText: string | null;
 }
 
 export class ReminderHistory extends Entity<ReminderInstanceId> {
@@ -84,19 +81,6 @@ export class ReminderHistory extends Entity<ReminderInstanceId> {
     return this._props.deletedAt;
   }
 
-  // UI 扩展属性
-  get resultText(): string {
-    return this._props.resultText;
-  }
-
-  get timeAgo(): string {
-    return this._props.timeAgo;
-  }
-
-  get channelsText(): string | null {
-    return this._props.channelsText;
-  }
-
   // UI 计算属性
   get isDeleted(): boolean {
     return this._props.deletedAt !== null;
@@ -133,9 +117,6 @@ export class ReminderHistory extends Entity<ReminderInstanceId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      resultText: this._props.resultText,
-      timeAgo: this._props.timeAgo,
-      channelsText: this._props.channelsText,
     };
   }
 }

@@ -12,24 +12,39 @@ import {
 
 export class AccountPrismaMapper {
   static toDomain(row: PrismaAccount): Account {
+    const profile = row.profile as any;
+    const settings = row.settings as any;
+
     const state: AccountState = {
       id: IdentityId.of(row.id),
       status: AccountStatus.of(row.status),
-      profile: AccountProfile.fromPersistenceDTO(row.profile as any),
-      settings: AccountSettings.fromPersistenceDTO(row.settings as any),
-      email: ContactEmail.fromPersistenceDTO({
+      profile: AccountProfile.fromDTO({
+        nickname: profile.nickname,
+        realName: profile.realName,
+        avatarUrl: profile.avatarUrl,
+        bio: profile.bio,
+        gender: profile.gender,
+        birthday: profile.birthday ? new Date(profile.birthday).getTime() : null,
+      }),
+      settings: AccountSettings.fromDTO({
+        theme: settings.theme,
+        language: settings.language,
+        timezone: settings.timezone,
+        notificationEnabled: settings.notificationEnabled,
+      }),
+      email: ContactEmail.fromDTO({
         address: row.emailAddress,
         isVerified: row.emailIsVerified,
-        verifiedAt: row.emailVerifiedAt,
+        verifiedAt: row.emailVerifiedAt ? new Date(row.emailVerifiedAt).getTime() : null,
         isPrimary: row.emailIsPrimary,
       }),
       phone: row.phoneNumber
-        ? ContactPhone.fromPersistenceDTO({
+        ? ContactPhone.fromDTO({
             fullNumber: row.phoneFullNumber as string,
             countryCode: row.phoneCountryCode as string,
             number: row.phoneNumber,
             isVerified: row.phoneIsVerified as boolean,
-            verifiedAt: row.phoneVerifiedAt,
+            verifiedAt: row.phoneVerifiedAt ? new Date(row.phoneVerifiedAt).getTime() : null,
           })
         : null,
       version: row.version,

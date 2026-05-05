@@ -11,7 +11,7 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
   constructor(private readonly db: GoalPowerSyncDatabase) {}
 
   async save(focusMode: FocusMode): Promise<void> {
-    const dto = focusMode.toPersistenceDTO();
+    const dto = focusMode.toDTO();
     this.logger.info('保存专注模式', {
       id: dto.id,
       identityId: dto.identityId,
@@ -37,10 +37,10 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
                end_time = ?,
                actual_end_time = ?,
                is_active = ?,
-               version = ?,
+               version = 1,
                created_at = ?,
                updated_at = ?,
-               deleted_at = ?
+               deleted_at = NULL
            WHERE id = ?`,
           [
             dto.identityId,
@@ -50,10 +50,8 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
             toDbDateTime(dto.endTime),
             toDbDateTime(dto.actualEndTime),
             dto.isActive ? 1 : 0,
-            dto.version,
             toDbDateTime(dto.createdAt),
             toDbDateTime(dto.updatedAt),
-            toDbDateTime(dto.deletedAt),
             dto.id,
           ],
         );
@@ -63,7 +61,7 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
              id, identity_id, focused_goal_ids, hidden_goals_mode,
              start_time, end_time, actual_end_time, is_active,
              version, created_at, updated_at, deleted_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
           [
             dto.id,
             dto.identityId,
@@ -73,10 +71,8 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
             toDbDateTime(dto.endTime),
             toDbDateTime(dto.actualEndTime),
             dto.isActive ? 1 : 0,
-            dto.version,
             toDbDateTime(dto.createdAt),
             toDbDateTime(dto.updatedAt),
-            toDbDateTime(dto.deletedAt),
           ],
         );
       }

@@ -27,12 +27,3 @@ export interface DoNotDisturbConfigDTO {
   daysOfWeek: number[];
 }
 
-/**
- * DoNotDisturbConfig Persistence DTO (持久层)
- */
-export interface DoNotDisturbConfigPersistenceDTO {
-  enabled: boolean;
-  startTime: string;
-  endTime: string;
-  daysOfWeek: string; // JSON.stringify(number[])
-}

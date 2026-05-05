@@ -23,9 +23,8 @@ describe('PrismaGoalMapper key result progress mapping', () => {
       deletedAt: null,
     } as any);
 
-    const progress = JSON.parse(String(dto.progress));
-    expect(progress.initialValue).toBe(0);
-    expect(progress.currentValue).toBe(90);
+    expect(dto.progress.initialValue).toBe(0);
+    expect(dto.progress.currentValue).toBe(90);
   });
 
   it('parses initialValue back into persistence payload', () => {
@@ -34,14 +33,14 @@ describe('PrismaGoalMapper key result progress mapping', () => {
       goalId: 'goal-1',
       title: 'KR 1',
       description: null,
-      progress: JSON.stringify({
+      progress: {
         initialValue: 0,
         currentValue: 91,
         targetValue: 100,
         valueType: 'Incremental',
         aggregationMethod: 'Sum',
         unit: null,
-      }),
+      },
       weight: 1,
       sortOrder: 0,
       version: 1,

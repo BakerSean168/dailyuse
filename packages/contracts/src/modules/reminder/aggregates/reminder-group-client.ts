@@ -6,7 +6,7 @@
 import type { ReminderGroupId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { ControlMode } from '../value-objects/control-mode';
 import type { ReminderStatus } from '../value-objects/reminder-status';
-import type { GroupStatsClientDTO } from '../value-objects';
+import type { GroupStatsDTO } from '../value-objects';
 
 // ============ DTO 定义 ============
 
@@ -24,18 +24,9 @@ export interface ReminderGroupClientDTO {
   enabled: boolean;
   status: ReminderStatus;
   order: number;
-  stats: GroupStatsClientDTO;
+  stats: GroupStatsDTO;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-
-  // UI 扩展
-  displayName: string;
-  controlModeText: string; // "组控? | "个体控制"
-  statusText: string;
-  templateCountText: string; // "5 个提?
-  activeStatusText: string; // "3 个活?
-  controlDescription: string; // "所有提醒统一启用" | "提醒独立控制"
-  effectiveTemplatePolicyText: string;
 }

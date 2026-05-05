@@ -40,10 +40,10 @@ export {
 } from './editor-runtime.dto';
 
 export * from './response-schemas';
-import type { WorkspaceLayoutServerDTO } from '../value-objects/workspace-layout';
-import type { WorkspaceSettingsServerDTO } from '../value-objects/workspace-settings';
-import type { SessionLayoutServerDTO } from '../value-objects/session-layout';
-import type { TabViewStateServerDTO } from '../value-objects/tab-view-state';
+import type { WorkspaceLayoutDTO } from '../value-objects/workspace-layout';
+import type { WorkspaceSettingsDTO } from '../value-objects/workspace-settings';
+import type { SessionLayoutDTO } from '../value-objects/session-layout';
+import type { TabViewStateDTO } from '../value-objects/tab-view-state';
 
 // ==================== EditorWorkspace API DTOs ====================
 
@@ -55,8 +55,8 @@ export interface CreateEditorWorkspaceRequest {
   description?: string | null;
   projectPath: string;
   projectType: ProjectType;
-  layout?: Partial<WorkspaceLayoutServerDTO> | null;
-  settings?: Partial<WorkspaceSettingsServerDTO> | null;
+  layout?: Partial<WorkspaceLayoutDTO> | null;
+  settings?: Partial<WorkspaceSettingsDTO> | null;
 }
 
 /**
@@ -65,8 +65,8 @@ export interface CreateEditorWorkspaceRequest {
 export interface UpdateEditorWorkspaceRequest {
   name?: string;
   description?: string | null;
-  layout?: Partial<WorkspaceLayoutServerDTO> | null;
-  settings?: Partial<WorkspaceSettingsServerDTO> | null;
+  layout?: Partial<WorkspaceLayoutDTO> | null;
+  settings?: Partial<WorkspaceSettingsDTO> | null;
 }
 
 /**
@@ -95,7 +95,7 @@ export interface CreateEditorSessionRequest {
   workspaceId: string;
   name: string;
   description?: string | null;
-  layout?: Partial<SessionLayoutServerDTO> | null;
+  layout?: Partial<SessionLayoutDTO> | null;
 }
 
 /**
@@ -104,7 +104,7 @@ export interface CreateEditorSessionRequest {
 export interface UpdateEditorSessionRequest {
   name?: string;
   description?: string | null;
-  layout?: Partial<SessionLayoutServerDTO> | null;
+  layout?: Partial<SessionLayoutDTO> | null;
   activeGroupIndex?: number;
 }
 
@@ -171,7 +171,7 @@ export interface CreateEditorTabRequest {
   tabIndex: number;
   tabType: TabType;
   title: string;
-  viewState?: Partial<TabViewStateServerDTO> | null;
+  viewState?: Partial<TabViewStateDTO> | null;
 }
 
 /**
@@ -179,7 +179,7 @@ export interface CreateEditorTabRequest {
  */
 export interface UpdateEditorTabRequest {
   title?: string;
-  viewState?: Partial<TabViewStateServerDTO> | null;
+  viewState?: Partial<TabViewStateDTO> | null;
   isPinned?: boolean;
   isDirty?: boolean;
 }

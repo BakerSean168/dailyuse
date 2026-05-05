@@ -7,7 +7,7 @@
  * @module Schedule
  */
 
-import type { ScheduleId, IdentityId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
+import type { ScheduleId, IdentityId, TransferDate } from '../../../primitives';
 
 export interface CalendarEntryServerDTO {
   id: string;
@@ -24,21 +24,4 @@ export interface CalendarEntryServerDTO {
   attendees?: string[];
   createdAt: TransferDate;
   updatedAt: TransferDate;
-}
-
-export interface CalendarEntryPersistenceDTO {
-  id: string;
-  identityId: string;
-  title: string;
-  description: string | null;
-  startTime: PersistenceDate;
-  endTime: PersistenceDate;
-  duration: number;
-  hasConflict: boolean;
-  conflictingEntries: string | null;
-  priority: number | null;
-  location: string | null;
-  attendees: string | null;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
 }

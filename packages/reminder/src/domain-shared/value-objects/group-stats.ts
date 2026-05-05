@@ -7,23 +7,22 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IGroupStatsServer,
-  GroupStatsServerDTO,
-  GroupStatsPersistenceDTO,
+  IGroupStats,
+  GroupStatsDTO,
 } from '@dailyuse/contracts/reminder';
 
 /**
  * GroupStats 值对象实现
  */
-export class GroupStats extends ValueObject<GroupStatsServerDTO> implements IGroupStatsServer {
+export class GroupStats extends ValueObject<GroupStatsDTO> implements IGroupStats {
 
-  private constructor(props: GroupStatsServerDTO) {
+  private constructor(props: GroupStatsDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
   
-  public static create(props: GroupStatsServerDTO): GroupStats {
+  public static create(props: GroupStatsDTO): GroupStats {
     return new GroupStats(props);
   }
 
@@ -37,18 +36,8 @@ export class GroupStats extends ValueObject<GroupStatsServerDTO> implements IGro
     });
   }
 
-  public static fromDTO(dto: GroupStatsServerDTO): GroupStats {
+  public static fromDTO(dto: GroupStatsDTO): GroupStats {
     return new GroupStats(dto);
-  }
-
-  public static fromPersistenceDTO(dto: GroupStatsPersistenceDTO): GroupStats {
-    return new GroupStats({
-      totalTemplates: dto.total_templates,
-      activeTemplates: dto.active_templates,
-      pausedTemplates: dto.paused_templates,
-      selfEnabledTemplates: dto.self_enabled_templates,
-      selfPausedTemplates: dto.self_paused_templates,
-    });
   }
 
   // ================= Getters =================
@@ -76,7 +65,7 @@ export class GroupStats extends ValueObject<GroupStatsServerDTO> implements IGro
   // ================= 行为方法 =================
 
   public with(
-    updates: Partial<GroupStatsServerDTO>,
+    updates: Partial<GroupStatsDTO>,
   ): GroupStats {
     return new GroupStats({ ...this.props, ...updates });
   }
@@ -128,17 +117,8 @@ export class GroupStats extends ValueObject<GroupStatsServerDTO> implements IGro
 
   // ================= 序列化 =================
 
-  public toServerDTO(): GroupStatsServerDTO {
+  public toDTO(): GroupStatsDTO {
     return { ...this.props };
   }
 
-  public toPersistenceDTO(): GroupStatsPersistenceDTO {
-    return {
-      total_templates: this.props.totalTemplates,
-      active_templates: this.props.activeTemplates,
-      paused_templates: this.props.pausedTemplates,
-      self_enabled_templates: this.props.selfEnabledTemplates,
-      self_paused_templates: this.props.selfPausedTemplates,
-    };
-  }
 }

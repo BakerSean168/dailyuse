@@ -14,7 +14,7 @@ import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabServerDTO } from './editor-tab-server';
 
 // Value object imports
-import type { TabViewStateClientDTO } from '../value-objects';
+import type { TabViewStateDTO } from '../value-objects';
 
 /**
  * Editor Tab Client DTO (includes UI formatted fields).
@@ -29,7 +29,7 @@ export interface EditorTabClientDTO {
   tabIndex: number;
   tabType: TabType;
   name: string;
-  viewState: TabViewStateClientDTO;
+  viewState: TabViewStateDTO;
   isPinned: boolean;
   isActive: boolean;
   isDirty: boolean;

@@ -9,7 +9,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   DoNotDisturbConfig as IDoNotDisturbConfig,
   DoNotDisturbConfigDTO,
-  DoNotDisturbConfigPersistenceDTO,
 } from '@dailyuse/contracts/notification';
 
 /**
@@ -48,15 +47,6 @@ export class DoNotDisturbConfig extends ValueObject<DoNotDisturbConfigDTO> imple
 
   public static fromDTO(dto: DoNotDisturbConfigDTO): DoNotDisturbConfig {
     return new DoNotDisturbConfig(dto);
-  }
-
-  public static fromPersistenceDTO(dto: DoNotDisturbConfigPersistenceDTO): DoNotDisturbConfig {
-    return new DoNotDisturbConfig({
-      enabled: dto.enabled,
-      startTime: dto.startTime,
-      endTime: dto.endTime,
-      daysOfWeek: JSON.parse(dto.daysOfWeek),
-    });
   }
 
   // ================= 校验 =================
@@ -161,15 +151,6 @@ export class DoNotDisturbConfig extends ValueObject<DoNotDisturbConfigDTO> imple
       startTime: this.props.startTime,
       endTime: this.props.endTime,
       daysOfWeek: [...this.props.daysOfWeek],
-    };
-  }
-
-  public toPersistenceDTO(): DoNotDisturbConfigPersistenceDTO {
-    return {
-      enabled: this.props.enabled,
-      startTime: this.props.startTime,
-      endTime: this.props.endTime,
-      daysOfWeek: JSON.stringify(this.props.daysOfWeek),
     };
   }
 }

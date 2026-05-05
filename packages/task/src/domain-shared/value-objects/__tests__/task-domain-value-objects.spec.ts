@@ -19,7 +19,6 @@ describe('task domain value objects', () => {
     expect(rule.isWeekly).toBe(true);
     expect(rule.hasEndCondition).toBe(true);
     expect(rule.getDescription()).toContain('周一');
-    expect(RecurrenceRule.fromPersistenceDTO(rule.toPersistenceDTO()).toDTO()).toEqual(rule.toDTO());
     expect(() =>
       RecurrenceRule.create({
         frequency: 'Weekly',
@@ -36,9 +35,6 @@ describe('task domain value objects', () => {
       .addAbsoluteTrigger(Date.UTC(2026, 3, 26, 9, 0, 0));
     expect(reminders.isEffective).toBe(true);
     expect(reminders.triggersCount).toBe(2);
-    expect(TaskReminderConfig.fromPersistenceDTO(reminders.toPersistenceDTO()).toDTO()).toEqual(
-      reminders.toDTO(),
-    );
   });
 
   it('covers time config, completion records, and checklist definitions', () => {
@@ -48,9 +44,6 @@ describe('task domain value objects', () => {
     expect(timeConfig.getTimeRangeFormatted()).toBe('09:00 - 10:30');
     expect(timeConfig.getDurationMinutes()).toBe(90);
     expect(timeConfig.setTimePoint(null).startDate?.getTime()).toBe(startDate.getTime());
-    expect(TaskTimeConfig.fromPersistenceDTO(timeConfig.toPersistenceDTO()).toDTO()).toEqual(
-      timeConfig.toDTO(),
-    );
     expect(() =>
       TaskTimeConfig.create({
         timeType: TaskTimeType.TimeRange,
@@ -65,9 +58,6 @@ describe('task domain value objects', () => {
       .setRating(5);
     expect(completion.getDurationFormatted()).toBe('1h 30m');
     expect(completion.isHighRating).toBe(true);
-    expect(CompletionRecord.fromPersistenceDTO(completion.toPersistenceDTO()).toDTO()).toEqual(
-      completion.toDTO(),
-    );
 
     const items = ChecklistItemDefinition.fromTitles(['A', 'B']);
     expect(items[1].order).toBe(1);
@@ -89,9 +79,6 @@ describe('task domain value objects', () => {
 
     expect(binding.hasContribution).toBe(true);
     expect(binding.getDisplayText()).toContain('ALL_INSTANCES_COMPLETED');
-    expect(TaskGoalBinding.fromPersistenceDTO(binding.toPersistenceDTO()).toDTO()).toEqual(
-      binding.toDTO(),
-    );
 
     expect(TaskInstanceStatus.getAll()).toEqual([
       TaskInstanceStatus.Pending,

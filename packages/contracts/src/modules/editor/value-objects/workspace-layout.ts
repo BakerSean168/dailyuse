@@ -4,8 +4,8 @@
 
 // ============ Interface Definitions ============
 
-/** Workspace Layout - Server interface. */
-export interface IWorkspaceLayoutServer {
+/** Workspace Layout interface. */
+export interface IWorkspaceLayout {
   sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
   panelPosition: 'Bottom' | 'Right';
@@ -16,26 +16,9 @@ export interface IWorkspaceLayoutServer {
   // Value object methods
   with(
     updates: Partial<
-      Omit<
-        IWorkspaceLayoutServer,
-        'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
-      >
+      Omit<IWorkspaceLayout, 'equals' | 'with' | 'toDTO'>
     >,
-  ): IWorkspaceLayoutServer;
-
-  // DTO conversion methods
-}
-
-/** Workspace Layout - Client interface. */
-export interface IWorkspaceLayoutClient {
-  sidebarPosition: 'Left' | 'Right';
-  sidebarWidth: number;
-  panelPosition: 'Bottom' | 'Right';
-  panelHeight: number;
-  isSidebarVisible: boolean;
-  isPanelVisible: boolean;
-
-  // Value object methods
+  ): IWorkspaceLayout;
 
   // DTO conversion methods
 }
@@ -43,9 +26,9 @@ export interface IWorkspaceLayoutClient {
 // ============ DTO Definitions ============
 
 /**
- * Workspace Layout Server DTO
+ * Workspace Layout DTO
  */
-export interface WorkspaceLayoutServerDTO {
+export interface WorkspaceLayoutDTO {
   sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
   panelPosition: 'Bottom' | 'Right';
@@ -53,39 +36,10 @@ export interface WorkspaceLayoutServerDTO {
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
 }
-
-/**
- * Workspace Layout Client DTO
- */
-export interface WorkspaceLayoutClientDTO {
-  sidebarPosition: 'Left' | 'Right';
-  sidebarWidth: number;
-  panelPosition: 'Bottom' | 'Right';
-  panelHeight: number;
-  isSidebarVisible: boolean;
-  isPanelVisible: boolean;
-}
-
-/**
- * Workspace Layout Persistence DTO
- */
-export interface WorkspaceLayoutPersistenceDTO {
-  sidebar_position: 'Left' | 'Right';
-  sidebar_width: number;
-  panel_position: 'Bottom' | 'Right';
-  panel_height: number;
-  is_sidebar_visible: boolean;
-  is_panel_visible: boolean;
-}
-
-// ============ Type Exports ============
-
-export type WorkspaceLayoutServer = IWorkspaceLayoutServer;
-export type WorkspaceLayoutClient = IWorkspaceLayoutClient;
 
 // ============ Defaults ============
 
-export const DEFAULT_WORKSPACE_LAYOUT: WorkspaceLayoutServerDTO = {
+export const DEFAULT_WORKSPACE_LAYOUT: WorkspaceLayoutDTO = {
   sidebarPosition: 'Left',
   sidebarWidth: 300,
   panelPosition: 'Bottom',

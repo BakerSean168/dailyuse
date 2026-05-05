@@ -28,9 +28,6 @@ describe('notification shared value objects', () => {
     expect(preference.hasAnyChannel).toBe(true);
     expect(preference.isEffective).toBe(true);
     expect(CategoryPreference.fromDTO(preference.toDTO()).toDTO()).toEqual(preference.toDTO());
-    expect(CategoryPreference.fromPersistenceDTO(preference.toPersistenceDTO()).toDTO()).toEqual(
-      preference.toDTO(),
-    );
 
     const disabled = preference.setEnabled(false).updateChannels({
       inApp: false,
@@ -65,9 +62,6 @@ describe('notification shared value objects', () => {
       }).isWeekendsOnly,
     ).toBe(true);
     expect(
-      DoNotDisturbConfig.fromPersistenceDTO(quiet.toPersistenceDTO()).toDTO(),
-    ).toEqual(quiet.toDTO());
-    expect(
       () =>
         DoNotDisturbConfig.create({
           enabled: true,
@@ -96,19 +90,6 @@ describe('notification shared value objects', () => {
     expect(metadata.hasImage).toBe(false);
     expect(metadata.hasSound).toBe(false);
     expect(NotificationMetadata.fromDTO(metadata.toDTO()).toDTO()).toEqual(metadata.toDTO());
-    expect(
-      NotificationMetadata.fromPersistenceDTO({
-        ...metadata.toPersistenceDTO(),
-        image: '/img.png',
-        sound: 'ding',
-        data: JSON.stringify({ source: 'system' }),
-      }).toDTO(),
-    ).toEqual({
-      ...metadata.toDTO(),
-      image: '/img.png',
-      sound: 'ding',
-      data: { source: 'system' },
-    });
 
     const limit = RateLimit.createDefault().setLimits(5, 10);
     expect(limit.enabled).toBe(true);
@@ -116,7 +97,6 @@ describe('notification shared value objects', () => {
     expect(limit.wouldExceed(0, 10)).toBe(true);
     expect(limit.setEnabled(false).wouldExceed(100, 100)).toBe(false);
     expect(RateLimit.fromDTO(limit.toDTO()).toDTO()).toEqual(limit.toDTO());
-    expect(RateLimit.fromPersistenceDTO(limit.toPersistenceDTO()).toDTO()).toEqual(limit.toDTO());
     expect(RateLimit.createUnlimited().isUnlimited).toBe(true);
     expect(() => RateLimit.create({ enabled: true, maxPerHour: -1, maxPerDay: 5 })).toThrow(
       'maxPerHour must be non-negative',
@@ -134,7 +114,6 @@ describe('notification shared value objects', () => {
     expect(error.hasDetails).toBe(true);
     expect(error.isRetryable).toBe(true);
     expect(ChannelError.fromDTO(error.toDTO()).toDTO()).toEqual(error.toDTO());
-    expect(ChannelError.fromPersistenceDTO(error.toPersistenceDTO()).toDTO()).toEqual(error.toDTO());
     expect(() => ChannelError.create({ code: '', message: 'x' })).toThrow('Error code is required');
     expect(() => ChannelError.create({ code: 'X', message: '' })).toThrow('Error message is required');
 
@@ -145,9 +124,6 @@ describe('notification shared value objects', () => {
     expect(response.hasMessageId).toBe(true);
     expect(response.hasData).toBe(true);
     expect(ChannelResponse.fromDTO(response.toDTO()).toDTO()).toEqual(response.toDTO());
-    expect(ChannelResponse.fromPersistenceDTO(response.toPersistenceDTO()).toDTO()).toEqual(
-      response.toDTO(),
-    );
     expect(ChannelResponse.create({ messageId: null, statusCode: null }).isSuccess).toBe(false);
     expect(ChannelResponse.failed(500).hasMessageId).toBe(false);
     expect(ChannelResponse.failed(500).hasData).toBe(false);
@@ -160,9 +136,6 @@ describe('notification shared value objects', () => {
     expect(action.type).toBe(NotificationActionType.Navigate);
     expect(action.payload).toEqual({ href: '/x' });
     expect(NotificationAction.fromDTO(action.toDTO()).toDTO()).toEqual(action.toDTO());
-    expect(NotificationAction.fromPersistenceDTO(action.toPersistenceDTO()).toDTO()).toEqual(
-      action.toDTO(),
-    );
     expect(() =>
       NotificationAction.create({
         id: '',

@@ -7,25 +7,24 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IResourceMetadataServer,
-  ResourceMetadataServerDTO,
-  ResourceMetadataPersistenceDTO,
+  IResourceMetadata,
+  ResourceMetadataDTO,
 } from '@dailyuse/contracts/editor';
 
 /**
  * ResourceMetadata 值对象实现
  */
 export class ResourceMetadata
-  extends ValueObject<ResourceMetadataServerDTO>
-  implements IResourceMetadataServer
+  extends ValueObject<ResourceMetadataDTO>
+  implements IResourceMetadata
 {
-  private constructor(props: ResourceMetadataServerDTO) {
+  private constructor(props: ResourceMetadataDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
 
-  public static create(props: ResourceMetadataServerDTO): ResourceMetadata {
+  public static create(props: ResourceMetadataDTO): ResourceMetadata {
     return new ResourceMetadata(props);
   }
 
@@ -42,21 +41,8 @@ export class ResourceMetadata
     });
   }
 
-  public static fromDTO(dto: ResourceMetadataServerDTO): ResourceMetadata {
+  public static fromDTO(dto: ResourceMetadataDTO): ResourceMetadata {
     return new ResourceMetadata(dto);
-  }
-
-  public static fromPersistenceDTO(dto: ResourceMetadataPersistenceDTO): ResourceMetadata {
-    return new ResourceMetadata({
-      tags: JSON.parse(dto.tags),
-      category: dto.category,
-      wordCount: dto.word_count,
-      characterCount: dto.character_count,
-      readingTime: dto.reading_time,
-      encoding: dto.encoding,
-      language: dto.language,
-      customFields: dto.custom_fields !== null ? JSON.parse(dto.custom_fields) : null,
-    });
   }
 
   // ================= Getters =================
@@ -97,7 +83,7 @@ export class ResourceMetadata
 
   // ================= 行为方法 =================
 
-  public with(updates: Partial<ResourceMetadataServerDTO>): ResourceMetadata {
+  public with(updates: Partial<ResourceMetadataDTO>): ResourceMetadata {
     return new ResourceMetadata({ ...this.props, ...updates });
   }
 
@@ -150,7 +136,7 @@ export class ResourceMetadata
 
   // ================= 序列化 =================
 
-  public toServerDTO(): ResourceMetadataServerDTO {
+  public toDTO(): ResourceMetadataDTO {
     return {
       tags: [...this.props.tags],
       category: this.props.category,
@@ -162,22 +148,6 @@ export class ResourceMetadata
       customFields:
         this.props.customFields !== undefined && this.props.customFields !== null
           ? { ...this.props.customFields }
-          : null,
-    };
-  }
-
-  public toPersistenceDTO(): ResourceMetadataPersistenceDTO {
-    return {
-      tags: JSON.stringify(this.props.tags),
-      category: this.props.category,
-      word_count: this.props.wordCount,
-      character_count: this.props.characterCount,
-      reading_time: this.props.readingTime,
-      encoding: this.props.encoding,
-      language: this.props.language,
-      custom_fields:
-        this.props.customFields !== undefined && this.props.customFields !== null
-          ? JSON.stringify(this.props.customFields)
           : null,
     };
   }

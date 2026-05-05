@@ -8,7 +8,7 @@
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import type { IdentityId, FocusSessionId, GoalId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
+import type { IdentityId, FocusSessionId, GoalId, TransferDate, DomainDate } from '../../../primitives';
 import type { FocusSessionStatus } from '../value-objects/focus-session-status';
 
 /**
@@ -39,30 +39,4 @@ export interface FocusSessionServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * FocusSession Persistence DTO (数据库映射)
- */
-export interface FocusSessionPersistenceDTO {
-  id: FocusSessionId;
-  identityId: IdentityId;
-  goalId: GoalId | null;
-  status: string;
-  durationMinutes: number;
-  actualDurationMinutes: number;
-  description: string | null;
-
-  startedAt: PersistenceDate | null;
-  pausedAt: PersistenceDate | null;
-  resumedAt: PersistenceDate | null;
-  completedAt: PersistenceDate | null;
-  cancelledAt: PersistenceDate | null;
-  pauseCount: number;
-  pausedDurationMinutes: number;
-
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
 }

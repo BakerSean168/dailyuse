@@ -5,8 +5,8 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type {
   EditorWorkspaceServerDTO,
-  WorkspaceLayoutServerDTO,
-  WorkspaceSettingsServerDTO,
+  WorkspaceLayoutDTO,
+  WorkspaceSettingsDTO,
 } from '@dailyuse/contracts/editor';
 import type { ProjectType } from '@dailyuse/contracts/editor';
 
@@ -19,8 +19,8 @@ export class CreateEditorWorkspaceUseCase {
     description?: string;
     projectPath: string;
     projectType: ProjectType;
-    layout?: Partial<WorkspaceLayoutServerDTO>;
-    settings?: Partial<WorkspaceSettingsServerDTO>;
+    layout?: Partial<WorkspaceLayoutDTO>;
+    settings?: Partial<WorkspaceSettingsDTO>;
   }): Promise<Result<EditorWorkspaceServerDTO>> {
     const workspace = EditorWorkspace.create({
       identityId: IdentityIdType.of(params.identityId),
@@ -28,8 +28,8 @@ export class CreateEditorWorkspaceUseCase {
       description: params.description,
       projectPath: params.projectPath,
       projectType: params.projectType,
-      layout: params.layout as WorkspaceLayoutServerDTO | undefined,
-      settings: params.settings as WorkspaceSettingsServerDTO | undefined,
+      layout: params.layout as WorkspaceLayoutDTO | undefined,
+      settings: params.settings as WorkspaceSettingsDTO | undefined,
     });
 
     await this.workspaceRepository.save(workspace);

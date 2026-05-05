@@ -11,10 +11,10 @@
 
 import type {
   ScheduleTaskClientDTO,
-  ScheduleConfigClientDTO,
-  ExecutionInfoClientDTO,
-  RetryPolicyClientDTO,
-  TaskMetadataClientDTO,
+  ScheduleConfigDTO,
+  ExecutionInfoDTO,
+  RetryPolicyDTO,
+  TaskMetadataDTO,
   ScheduleTaskStatus,
   SourceModule,
   Timezone,
@@ -32,7 +32,7 @@ import { ScheduleExecution } from '../entities/schedule-execution.js';
  * ScheduleConfig 值对象包装
  */
 export class ScheduleConfigVO {
-  constructor(private readonly dto: ScheduleConfigClientDTO) {}
+  constructor(private readonly dto: ScheduleConfigDTO) {}
 
   get cronExpression(): string | null {
     return this.dto.cronExpression;
@@ -54,27 +54,7 @@ export class ScheduleConfigVO {
     return this.dto.maxExecutions;
   }
 
-  get cronDescription(): string {
-    return this.dto.cronDescription;
-  }
-
-  get timezoneDisplay(): string {
-    return this.dto.timezoneDisplay;
-  }
-
-  get startDateFormatted(): string | null {
-    return this.dto.startDateFormatted;
-  }
-
-  get endDateFormatted(): string | null {
-    return this.dto.endDateFormatted;
-  }
-
-  get maxExecutionsFormatted(): string {
-    return this.dto.maxExecutionsFormatted;
-  }
-
-  toDTO(): ScheduleConfigClientDTO {
+  toDTO(): ScheduleConfigDTO {
     return { ...this.dto };
   }
 }
@@ -83,7 +63,7 @@ export class ScheduleConfigVO {
  * ExecutionInfo 值对象包装
  */
 export class ExecutionInfoVO {
-  constructor(private readonly dto: ExecutionInfoClientDTO) {}
+  constructor(private readonly dto: ExecutionInfoDTO) {}
 
   get nextRunAt(): Date | null {
     return this.dto.nextRunAt ? new Date(this.dto.nextRunAt) : null;
@@ -105,27 +85,7 @@ export class ExecutionInfoVO {
     return this.dto.consecutiveFailures;
   }
 
-  get nextRunAtFormatted(): string | null {
-    return this.dto.nextRunAtFormatted;
-  }
-
-  get lastRunAtFormatted(): string | null {
-    return this.dto.lastRunAtFormatted;
-  }
-
-  get lastExecutionDurationFormatted(): string | null {
-    return this.dto.lastExecutionDurationFormatted;
-  }
-
-  get executionCountFormatted(): string {
-    return this.dto.executionCountFormatted;
-  }
-
-  get healthStatus(): 'healthy' | 'warning' | 'critical' {
-    return this.dto.healthStatus;
-  }
-
-  toDTO(): ExecutionInfoClientDTO {
+  toDTO(): ExecutionInfoDTO {
     return { ...this.dto };
   }
 }
@@ -134,7 +94,7 @@ export class ExecutionInfoVO {
  * RetryPolicy 值对象包装
  */
 export class RetryPolicyVO {
-  constructor(private readonly dto: RetryPolicyClientDTO) {}
+  constructor(private readonly dto: RetryPolicyDTO) {}
 
   get enabled(): boolean {
     return this.dto.enabled;
@@ -156,23 +116,7 @@ export class RetryPolicyVO {
     return this.dto.maxRetryDelay;
   }
 
-  get policyDescription(): string {
-    return this.dto.policyDescription;
-  }
-
-  get enabledDisplay(): string {
-    return this.dto.enabledDisplay;
-  }
-
-  get retryDelayFormatted(): string {
-    return this.dto.retryDelayFormatted;
-  }
-
-  get maxRetryDelayFormatted(): string {
-    return this.dto.maxRetryDelayFormatted;
-  }
-
-  toDTO(): RetryPolicyClientDTO {
+  toDTO(): RetryPolicyDTO {
     return { ...this.dto };
   }
 }
@@ -181,7 +125,7 @@ export class RetryPolicyVO {
  * TaskMetadata 值对象包装
  */
 export class TaskMetadataVO {
-  constructor(private readonly dto: TaskMetadataClientDTO) {}
+  constructor(private readonly dto: TaskMetadataDTO) {}
 
   get payload(): Record<string, any> {
     return { ...this.dto.payload };
@@ -199,27 +143,7 @@ export class TaskMetadataVO {
     return this.dto.timeout;
   }
 
-  get priorityDisplay(): string {
-    return this.dto.priorityDisplay;
-  }
-
-  get priorityColor(): string {
-    return this.dto.priorityColor;
-  }
-
-  get tagsDisplay(): string {
-    return this.dto.tagsDisplay;
-  }
-
-  get timeoutFormatted(): string {
-    return this.dto.timeoutFormatted;
-  }
-
-  get payloadSummary(): string {
-    return this.dto.payloadSummary;
-  }
-
-  toDTO(): TaskMetadataClientDTO {
+  toDTO(): TaskMetadataDTO {
     return { ...this.dto };
   }
 }
@@ -244,15 +168,6 @@ export interface ScheduleTaskState {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  statusDisplay: string;
-  statusColor: string;
-  sourceModuleDisplay: string;
-  enabledDisplay: string;
-  nextRunAtFormatted: string;
-  lastRunAtFormatted: string;
-  executionSummary: string;
-  healthStatus: string;
-  isOverdue: boolean;
   executions: ScheduleExecution[] | null;
 }
 
@@ -327,43 +242,6 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return this._props.deletedAt;
   }
 
-  // UI 辅助属性
-  get statusDisplay(): string {
-    return this._props.statusDisplay;
-  }
-
-  get statusColor(): string {
-    return this._props.statusColor;
-  }
-
-  get sourceModuleDisplay(): string {
-    return this._props.sourceModuleDisplay;
-  }
-
-  get enabledDisplay(): string {
-    return this._props.enabledDisplay;
-  }
-
-  get nextRunAtFormatted(): string {
-    return this._props.nextRunAtFormatted;
-  }
-
-  get lastRunAtFormatted(): string {
-    return this._props.lastRunAtFormatted;
-  }
-
-  get executionSummary(): string {
-    return this._props.executionSummary;
-  }
-
-  get healthStatus(): string {
-    return this._props.healthStatus;
-  }
-
-  get isOverdue(): boolean {
-    return this._props.isOverdue;
-  }
-
   // 子实体
   get executions(): ScheduleExecution[] | null {
     return this._props.executions ? [...this._props.executions] : null;
@@ -418,15 +296,6 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      statusDisplay: this._props.statusDisplay,
-      statusColor: this._props.statusColor,
-      sourceModuleDisplay: this._props.sourceModuleDisplay,
-      enabledDisplay: this._props.enabledDisplay,
-      nextRunAtFormatted: this._props.nextRunAtFormatted,
-      lastRunAtFormatted: this._props.lastRunAtFormatted,
-      executionSummary: this._props.executionSummary,
-      healthStatus: this._props.healthStatus,
-      isOverdue: this._props.isOverdue,
       executions: this._props.executions ? this._props.executions.map((e) => e.toDTO()) : null,
     };
   }

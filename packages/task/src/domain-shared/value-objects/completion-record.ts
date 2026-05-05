@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   CompletionRecord as ICompletionRecord,
   CompletionRecordDTO,
-  CompletionRecordPersistenceDTO,
 } from '@dailyuse/contracts/task';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 
@@ -74,19 +73,6 @@ export class CompletionRecord extends ValueObject<CompletionRecordDTO> implement
    */
   public static fromDTO(dto: CompletionRecordDTO): CompletionRecord {
     return new CompletionRecord(dto);
-  }
-
-  // ================= 工厂方法 5: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: CompletionRecordPersistenceDTO): CompletionRecord {
-    return new CompletionRecord({
-      completedAt: new Date(dto.completedAt).getTime(),
-      actualDuration: dto.actualDuration,
-      note: dto.note,
-      rating: dto.rating,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -233,15 +219,4 @@ export class CompletionRecord extends ValueObject<CompletionRecordDTO> implement
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): Omit<CompletionRecordPersistenceDTO, 'taskId' | 'completionStatus'> {
-    return {
-      completedAt: new Date(this.props.completedAt),
-      actualDuration: this.props.actualDuration,
-      note: this.props.note,
-      rating: this.props.rating,
-    };
-  }
 }

@@ -4,7 +4,6 @@
 
 export type {
   GoalRecordServerDTO,
-  GoalRecordPersistenceDTO,
 } from './goal-record-server';
 
 export type {
@@ -13,7 +12,6 @@ export type {
 
 export type {
   GoalReviewServerDTO,
-  GoalReviewPersistenceDTO,
 } from './goal-review-server';
 
 export type {
@@ -22,7 +20,6 @@ export type {
 
 export type {
   KeyResultServerDTO,
-  KeyResultPersistenceDTO,
 } from './key-result-server';
 
 export type {

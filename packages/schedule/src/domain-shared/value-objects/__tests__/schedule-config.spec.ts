@@ -41,9 +41,9 @@ describe('ScheduleConfig', () => {
     expect(config.calculateNextRun(new Date('2026-01-01T00:00:00.000Z').getTime())).toBeNull();
   });
 
-  it('uses startDate as a one-shot run and preserves persistence DTOs', () => {
+  it('uses startDate as a one-shot run and preserves DTO round-trip', () => {
     const startDate = new Date('2026-01-01T10:00:00.000Z').toISOString();
-    const config = ScheduleConfig.fromPersistenceDTO({
+    const config = ScheduleConfig.fromDTO({
       cronExpression: null,
       timezone: Timezone.Shanghai,
       startDate,
@@ -54,7 +54,7 @@ describe('ScheduleConfig', () => {
     expect(config.calculateNextRun(new Date('2026-01-01T09:00:00.000Z').getTime())).toBe(
       new Date(startDate).getTime(),
     );
-    expect(config.toPersistenceDTO()).toEqual({
+    expect(config.toDTO()).toEqual({
       cronExpression: null,
       timezone: Timezone.Shanghai,
       startDate,

@@ -11,7 +11,7 @@
 
 import type {
   EditorTabClientDTO,
-  TabViewStateClientDTO,
+  TabViewStateDTO,
   TabType,
 } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
@@ -31,7 +31,7 @@ export interface EditorTabState {
   tabIndex: number;
   tabType: TabType;
   name: string;
-  viewState: TabViewStateClientDTO;
+  viewState: TabViewStateDTO;
   isPinned: boolean;
   isDirty: boolean;
   lastAccessedAt: Date | null;
@@ -82,7 +82,7 @@ export class EditorTab extends Entity<EditorTabId> {
     return this._props.name;
   }
 
-  get viewState(): TabViewStateClientDTO {
+  get viewState(): TabViewStateDTO {
     return this._props.viewState;
   }
 

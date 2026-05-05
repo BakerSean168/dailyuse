@@ -3,7 +3,7 @@
  * 目标文件夹聚合根 - 服务端接口
  */
 
-import type { DomainDate, TransferDate, PersistenceDate, GoalFolderId, IdentityId } from '../../../primitives';
+import type { DomainDate, TransferDate, GoalFolderId, IdentityId } from '../../../primitives';
 import type { FolderType } from '../value-objects/folder-type';
 
 // ============ DTO 定义 ============
@@ -29,26 +29,4 @@ export interface GoalFolderServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-}
-
-/**
- * GoalFolder Persistence DTO
- * 注意：使用 camelCase 命名
- */
-export interface GoalFolderPersistenceDTO {
-  id: GoalFolderId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  parentFolderId: GoalFolderId | null;
-  sortOrder: number;
-  folderType: FolderType | null;
-  goalCount: number;
-  completedGoalCount: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-  version: number;
 }

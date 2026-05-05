@@ -38,12 +38,3 @@ export interface CategoryPreferenceDTO {
   importance: ImportanceLevel[];
 }
 
-/**
- * CategoryPreference Persistence DTO (持久层)
- */
-export interface CategoryPreferencePersistenceDTO {
-  enabled: boolean;
-  channels: string; // JSON.stringify(ChannelPreference)
-  importance: string; // JSON.stringify(ImportanceLevel[])
-}
-

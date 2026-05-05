@@ -11,7 +11,7 @@
 
 import type {
   ReminderGroupClientDTO,
-  GroupStatsClientDTO,
+  GroupStatsDTO,
   ControlMode,
   ReminderStatus,
 } from '@dailyuse/contracts/reminder';
@@ -30,18 +30,11 @@ export interface ReminderGroupState {
   enabled: boolean;
   status: ReminderStatus;
   order: number;
-  stats: GroupStatsClientDTO;
+  stats: GroupStatsDTO;
   version: number;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  displayName: string;
-  controlModeText: string;
-  statusText: string;
-  templateCountText: string;
-  activeStatusText: string;
-  controlDescription: string;
-  effectiveTemplatePolicyText: string;
 }
 
 export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
@@ -89,7 +82,7 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
     return this._props.order;
   }
 
-  get stats(): GroupStatsClientDTO {
+  get stats(): GroupStatsDTO {
     return this._props.stats;
   }
 
@@ -107,31 +100,6 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
 
   get deletedAt(): Date | null {
     return this._props.deletedAt;
-  }
-
-  // UI 扩展属性
-  get displayName(): string {
-    return this._props.displayName;
-  }
-
-  get controlModeText(): string {
-    return this._props.controlModeText;
-  }
-
-  get statusText(): string {
-    return this._props.statusText;
-  }
-
-  get templateCountText(): string {
-    return this._props.templateCountText;
-  }
-
-  get activeStatusText(): string {
-    return this._props.activeStatusText;
-  }
-
-  get controlDescription(): string {
-    return this._props.controlDescription;
   }
 
   // UI 计算属性
@@ -162,13 +130,6 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      displayName: this._props.displayName,
-      controlModeText: this._props.controlModeText,
-      statusText: this._props.statusText,
-      templateCountText: this._props.templateCountText,
-      activeStatusText: this._props.activeStatusText,
-      controlDescription: this._props.controlDescription,
-      effectiveTemplatePolicyText: this._props.effectiveTemplatePolicyText,
     };
   }
 }

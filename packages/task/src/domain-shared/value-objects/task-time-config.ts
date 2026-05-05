@@ -11,7 +11,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type {
   TaskTimeConfig as ITaskTimeConfig,
   TaskTimeConfigDTO,
-  TaskTimeConfigPersistenceDTO,
   TaskTimeType,
 } from '@dailyuse/contracts/task';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
@@ -94,20 +93,6 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
    */
   public static fromDTO(dto: TaskTimeConfigDTO): TaskTimeConfig {
     return TaskTimeConfig.create(dto);
-  }
-
-  // ================= 工厂方法 6: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: TaskTimeConfigPersistenceDTO): TaskTimeConfig {
-    const timeRange = dto.timeRange ? JSON.parse(dto.timeRange) : null;
-    return new TaskTimeConfig({
-      timeType: dto.timeType as TaskTimeType,
-      startDate: dto.startDate ? new Date(dto.startDate).getTime() : null,
-      timePoint: dto.timePoint,
-      timeRange: timeRange,
-    });
   }
 
   // ================= 内部校验逻辑 =================
@@ -260,15 +245,4 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
     };
   }
 
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): TaskTimeConfigPersistenceDTO {
-    return {
-      timeType: this.props.timeType,
-      startDate: this.props.startDate !== null ? new Date(this.props.startDate) : null,
-      timePoint: this.props.timePoint,
-      timeRange: this.props.timeRange ? JSON.stringify(this.props.timeRange) : null,
-    };
-  }
 }
