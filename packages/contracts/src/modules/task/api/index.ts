@@ -8,4 +8,5 @@
 export * from './task-template.dto';
 export * from './task-instance.dto';
 export * from './task-schedule.dto';
+export * from './task-dependency.dto';
 export * from './response-schemas';

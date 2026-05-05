@@ -5,7 +5,8 @@
  */
 
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
-import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import { dependencyServerToClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -18,7 +19,7 @@ export class CreateTaskDependencyUseCase {
     dependencyType?: import('@dailyuse/contracts/task').DependencyType;
     lagDays?: number;
     identityId: string;
-  }): Promise<Result<TaskDependencyServerDTO>> {
+  }): Promise<Result<TaskDependencyClientDTO>> {
     // Check for self-dependency
     if (request.predecessorTaskId === request.successorTaskId) {
       return { success: false, error: { code: 'VALIDATION_ERROR', message: '任务不能依赖自身' } } as any;
@@ -41,6 +42,6 @@ export class CreateTaskDependencyUseCase {
       identityId: request.identityId,
     });
 
-    return ok(dependency);
+    return ok(dependencyServerToClientDTO(dependency));
   }
 }

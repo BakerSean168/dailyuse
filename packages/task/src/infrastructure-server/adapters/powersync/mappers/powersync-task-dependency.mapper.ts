@@ -1,4 +1,5 @@
 import type { DependencyType, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 
 export type PowerSyncTaskDependencyRow = {
   id: string;
@@ -15,10 +16,10 @@ export type PowerSyncTaskDependencyRow = {
 export class PowerSyncTaskDependencyMapper {
   static toDTO(data: PowerSyncTaskDependencyRow): TaskDependencyServerDTO {
     return {
-      id: data.id,
-      identityId: data.identity_id,
-      predecessorTaskId: data.predecessor_task_id,
-      successorTaskId: data.successor_task_id,
+      id: data.id as TaskDependencyId,
+      identityId: data.identity_id as IdentityId,
+      predecessorTaskId: data.predecessor_task_id as TaskTemplateId,
+      successorTaskId: data.successor_task_id as TaskTemplateId,
       dependencyType: data.dependency_type as DependencyType,
       lagDays: data.lag_days ?? undefined,
       createdAt: new Date(data.created_at).getTime(),

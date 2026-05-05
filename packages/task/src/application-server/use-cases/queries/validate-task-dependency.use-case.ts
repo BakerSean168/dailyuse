@@ -5,16 +5,10 @@
  */
 
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { ValidateDependencyResponse } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-
-export interface ValidateDependencyResult {
-  isValid: boolean;
-  errors?: string[];
-  wouldCreateCycle?: boolean;
-  cyclePath?: string[];
-  message?: string;
-}
 
 export class ValidateTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
@@ -22,7 +16,7 @@ export class ValidateTaskDependencyUseCase {
   async execute(
     predecessorTaskId: string,
     successorTaskId: string,
-  ): Promise<Result<ValidateDependencyResult>> {
+  ): Promise<Result<ValidateDependencyResponse>> {
     // Self-dependency check
     if (predecessorTaskId === successorTaskId) {
       return ok({
@@ -53,7 +47,7 @@ export class ValidateTaskDependencyUseCase {
         isValid: false,
         errors: ['会产生循环依赖'],
         wouldCreateCycle: true,
-        cyclePath: [predecessorTaskId, successorTaskId, ...allSuccessorsOfSuccessor],
+        cyclePath: [predecessorTaskId, successorTaskId, ...allSuccessorsOfSuccessor] as TaskTemplateId[],
         message: '会产生循环依赖',
       });
     }

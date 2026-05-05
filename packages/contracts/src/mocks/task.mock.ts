@@ -14,6 +14,7 @@
 import { faker } from '@faker-js/faker';
 import type { TaskTemplateClientDTO } from '../modules/task/aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../modules/task/aggregates/task-instance-client';
+import type { TaskTemplateId, TaskInstanceId, IdentityId } from '../primitives';
 
 // ============================================================================
 // TaskTemplateClientDTO
@@ -30,8 +31,8 @@ export function createMockTaskTemplate(
   const startDate = faker.date.recent({ days: 30 }).getTime();
 
   return {
-    id: faker.string.uuid(),
-    identityId: faker.string.uuid(),
+    id: faker.string.uuid() as TaskTemplateId,
+    identityId: faker.string.uuid() as IdentityId,
     name: faker.lorem.words({ min: 2, max: 5 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     timeConfig: {
@@ -109,9 +110,9 @@ export function createMockTaskInstance(
   const instanceDate = faker.date.soon({ days: 7 }).getTime();
 
   return {
-    id: faker.string.uuid(),
-    templateId: faker.string.uuid(),
-    identityId: faker.string.uuid(),
+    id: faker.string.uuid() as TaskInstanceId,
+    templateId: faker.string.uuid() as TaskTemplateId,
+    identityId: faker.string.uuid() as IdentityId,
     instanceDate,
     timeConfig: {
       timeType: 'AllDay',

@@ -1,6 +1,8 @@
+import type { IdentityId, TaskInstanceId, TaskTemplateId } from '../../../../primitives';
+
 export interface TaskInstanceDeletedEvent {
-  identityId: string;
-  taskInstanceId: string;
-  taskTemplateId: string;
+  identityId: IdentityId;
+  taskInstanceId: TaskInstanceId;
+  taskTemplateId: TaskTemplateId;
   deletedAt: number;
 }

@@ -2,22 +2,56 @@
  * Task - Response Schemas (Zod)
  *
  * OpenAPI 响应体 Zod Schema，路由文件统一从此处导入。
+ * These schemas must match what controllers actually return (the ClientDTO interfaces).
  */
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { TaskTemplateId, TaskInstanceId } from '../../../primitives';
+import type { TaskTemplateId, TaskInstanceId, TaskDependencyId, IdentityId, TaskFolderId } from '../../../primitives';
+import {
+  TaskGoalBindingSchema,
+  TaskReminderConfigSchema,
+  TaskTimeConfigSchema,
+  RecurrenceConfigSchema,
+} from './task-template.dto';
 
-/**
- * TaskTemplate Response Schema
- */
+// ============ TaskTemplate Response Schema ============
+
 export const TaskTemplateResponseSchema = z.object({
   id: brandedId<TaskTemplateId>(),
+  identityId: brandedId<IdentityId>(),
   name: z.string(),
-  taskType: z.string(),
+  description: z.string().nullable(),
+  timeConfig: TaskTimeConfigSchema,
+  recurrenceRule: RecurrenceConfigSchema.nullable(),
+  reminderConfig: TaskReminderConfigSchema.nullable(),
+  importance: z.string(),
+  priority: z.number().optional(),
+  goalBinding: TaskGoalBindingSchema.nullable(),
+  folderId: brandedId<TaskFolderId>().nullable(),
+  tags: z.array(z.string()),
+  color: z.string().nullable(),
   status: z.string(),
+  lastGeneratedDate: z.number().nullable(),
+  generateAheadDays: z.number().nullable(),
+  version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+  parentTaskId: brandedId<TaskTemplateId>().nullable(),
+  startDate: z.number().nullable(),
+  dueDate: z.number().nullable(),
+  completedAt: z.number().nullable(),
+  estimatedMinutes: z.number().nullable(),
+  actualMinutes: z.number().nullable(),
+  comment: z.string().nullable(),
+  dependencyStatus: z.string().optional(),
+  isBlocked: z.boolean().optional(),
+  blockingReason: z.string().nullable(),
+  instanceCount: z.number(),
+  completedInstanceCount: z.number(),
+  pendingInstanceCount: z.number(),
+  completionRate: z.number(),
 });
 
 export const TaskTemplateListResponseSchema = z.object({
@@ -25,14 +59,34 @@ export const TaskTemplateListResponseSchema = z.object({
   total: z.number(),
 });
 
+// ============ TaskDependency Response Schema ============
+
 export const TaskDependencyResponseSchema = z.object({
-  id: z.string(),
-  predecessorTaskId: z.string(),
-  successorTaskId: z.string(),
+  id: brandedId<TaskDependencyId>(),
+  predecessorTaskId: brandedId<TaskTemplateId>(),
+  successorTaskId: brandedId<TaskTemplateId>(),
   dependencyType: z.string(),
   lagDays: z.number().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
+  predecessorTaskTitle: z.string().optional(),
+  successorTaskTitle: z.string().optional(),
+});
+
+export const DependencyChainResponseSchema = z.object({
+  taskId: brandedId<TaskTemplateId>(),
+  allPredecessors: z.array(brandedId<TaskTemplateId>()),
+  allSuccessors: z.array(brandedId<TaskTemplateId>()),
+  depth: z.number(),
+  isOnCriticalPath: z.boolean(),
+});
+
+export const ValidateDependencyResponseSchema = z.object({
+  isValid: z.boolean(),
+  errors: z.array(z.string()).optional(),
+  wouldCreateCycle: z.boolean().optional(),
+  cyclePath: z.array(brandedId<TaskTemplateId>()).optional(),
+  message: z.string().optional(),
 });
 
 export const TaskTemplateGraphResponseSchema = z.object({
@@ -41,14 +95,27 @@ export const TaskTemplateGraphResponseSchema = z.object({
   total: z.number(),
 });
 
-/**
- * TaskInstance Response Schema
- */
+// ============ TaskInstance Response Schema ============
+
 export const TaskInstanceResponseSchema = z.object({
   id: brandedId<TaskInstanceId>(),
   templateId: brandedId<TaskTemplateId>(),
+  identityId: brandedId<IdentityId>(),
+  instanceDate: z.number(),
+  timeConfig: TaskTimeConfigSchema,
+  importance: z.string().optional(),
+  priority: z.number().optional(),
   status: z.string(),
-  scheduledDate: z.number(),
+  actualStartTime: z.number().nullable(),
+  actualEndTime: z.number().nullable(),
+  comment: z.string().nullable(),
+  version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+});
+
+export const CheckExpiredTaskInstancesResponseSchema = z.object({
+  count: z.number(),
+  instances: z.array(TaskInstanceResponseSchema),
 });

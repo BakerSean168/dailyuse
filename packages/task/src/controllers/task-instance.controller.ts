@@ -13,7 +13,12 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, isOk, ok } from '@dailyuse/contracts/result';
 import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from '@dailyuse/contracts/task';
-import type { TaskInstanceClientDTO, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type {
+  CheckExpiredTaskInstancesRes,
+  GetTaskInstancesByRangeReq,
+  TaskInstanceClientDTO,
+  TaskInstanceStatus,
+} from '@dailyuse/contracts/task';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CompleteTaskInstanceUseCase } from '../application-server/use-cases/commands/complete-task-instance.use-case';
 import type { DeleteTaskInstanceUseCase } from '../application-server/use-cases/commands/delete-task-instance.use-case';
@@ -79,10 +84,13 @@ export class TaskInstanceController {
    */
   async getInstancesByDateRange(
     identityId: string,
-    startDate: number,
-    endDate: number,
+    request: GetTaskInstancesByRangeReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    const result = await this.useCases.getByDateRange.execute(identityId, startDate, endDate);
+    const result = await this.useCases.getByDateRange.execute(
+      identityId,
+      request.startDate,
+      request.endDate,
+    );
 
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO[]>;
@@ -150,7 +158,16 @@ export class TaskInstanceController {
   /**
    * Check and mark expired instances
    */
-  async checkExpired(identityId: string): Promise<Result<TaskInstanceClientDTO[]>> {
-    return await this.useCases.checkExpired.execute(identityId);
+  async checkExpired(identityId: string): Promise<Result<CheckExpiredTaskInstancesRes>> {
+    const result = await this.useCases.checkExpired.execute(identityId);
+
+    if (!isOk(result)) {
+      return result as Result<CheckExpiredTaskInstancesRes>;
+    }
+
+    return ok({
+      count: result.data.length,
+      instances: result.data,
+    });
   }
 }

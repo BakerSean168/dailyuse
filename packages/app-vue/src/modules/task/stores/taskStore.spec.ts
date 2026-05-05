@@ -5,6 +5,7 @@ import type {
   TaskTemplateClientDTO,
 } from '@dailyuse/contracts/task';
 import { DependencyType } from '@dailyuse/contracts/task';
+import type { TaskTemplateId, TaskInstanceId, TaskDependencyId } from '@dailyuse/contracts/primitives';
 import { createTestPinia } from '@dailyuse/test-utils';
 import { useTaskStore } from './taskStore';
 
@@ -12,7 +13,7 @@ function createTemplate(
   overrides: Partial<TaskTemplateClientDTO> = {},
 ): TaskTemplateClientDTO {
   return {
-    id: 'template-1' as TaskTemplateClientDTO['id'],
+    id: 'template-1' as TaskTemplateId,
     status: 'Active',
     name: 'Write tests',
     ...overrides,
@@ -23,8 +24,8 @@ function createInstance(
   overrides: Partial<TaskInstanceClientDTO> = {},
 ): TaskInstanceClientDTO {
   return {
-    id: 'instance-1' as TaskInstanceClientDTO['id'],
-    templateId: 'template-1',
+    id: 'instance-1' as TaskInstanceId,
+    templateId: 'template-1' as TaskTemplateId,
     status: 'Pending',
     ...overrides,
   } as TaskInstanceClientDTO;
@@ -39,7 +40,7 @@ describe('useTaskStore', () => {
     const store = useTaskStore();
     const active = createTemplate();
     const archived = createTemplate({
-      id: 'template-2' as TaskTemplateClientDTO['id'],
+      id: 'template-2' as TaskTemplateId,
       status: 'Archived',
       name: 'Archive old flow',
     });
@@ -70,9 +71,9 @@ describe('useTaskStore', () => {
       status: 'Completed',
     });
     const dependency = {
-      id: 'dependency-1',
-      predecessorTaskId: 'template-1',
-      successorTaskId: 'template-2',
+      id: 'dependency-1' as TaskDependencyId,
+      predecessorTaskId: 'template-1' as TaskTemplateId,
+      successorTaskId: 'template-2' as TaskTemplateId,
       dependencyType: DependencyType.FinishToStart,
       createdAt: 0,
       updatedAt: 0,

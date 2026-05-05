@@ -7,6 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type {
+  ListTaskTemplateFilters,
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   CreateTaskTemplateReq,
@@ -14,14 +15,12 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   QueryTaskTemplateGraphRes,
+  TaskTemplateInstancesQuery,
 } from '@dailyuse/contracts/task';
 
-export interface TaskTemplateListParams extends Record<string, unknown> {
+export interface TaskTemplateListParams extends Record<string, unknown>, ListTaskTemplateFilters {
   page?: number;
   limit?: number;
-  status?: string;
-  goalId?: string;
-  tags?: string[];
 }
 
 export interface ITaskTemplateApiClient {
@@ -51,8 +50,7 @@ export interface ITaskTemplateApiClient {
   ): Promise<Result<TaskInstanceClientDTO[]>>;
   getInstancesByDateRange(
     templateId: string,
-    from: number,
-    to: number,
+    query?: TaskTemplateInstancesQuery,
   ): Promise<Result<TaskInstanceClientDTO[]>>;
   bindToGoal(templateId: string, request: BindToGoalReq): Promise<Result<TaskTemplateClientDTO>>;
   unbindFromGoal(templateId: string): Promise<Result<TaskTemplateClientDTO>>;

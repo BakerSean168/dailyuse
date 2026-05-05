@@ -10,7 +10,10 @@ describe('TaskInstanceHttpAdapter', () => {
 
     const adapter = new TaskInstanceHttpAdapter(httpClient);
 
-    await adapter.getTaskInstancesByDateRange(1_700_000_000_000, 1_700_086_399_999);
+    await adapter.getTaskInstancesByDateRange({
+      startDate: 1_700_000_000_000,
+      endDate: 1_700_086_399_999,
+    });
 
     expect(httpClient.get).toHaveBeenCalledWith('/task-instances/by-date-range', {
       params: {

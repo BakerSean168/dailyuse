@@ -27,8 +27,8 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
  * TaskTemplate Server DTO
  */
 export interface TaskTemplateServerDTO {
-  id: string;
-  identityId: string;
+  id: TaskTemplateId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
 
@@ -46,7 +46,7 @@ export interface TaskTemplateServerDTO {
 
   goalBinding: TaskGoalBindingDTO | null;
 
-  parentTaskId: string | null;
+  parentTaskId: TaskTemplateId | null;
   checklist: ChecklistItemDefinitionDTO[]; // To be defined later
 
   dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
@@ -54,7 +54,7 @@ export interface TaskTemplateServerDTO {
   blockingReason: string | null;
 
   // === Other ===
-  folderId: string | null;
+  folderId: TaskFolderId | null;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

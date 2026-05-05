@@ -3,9 +3,11 @@
  *
  * Triggered when a dependency relationship is established between two tasks.
  */
+import type { IdentityId, TaskTemplateId } from '../../../../primitives';
+
 export interface TaskDependencyCreatedEvent {
-  identityId: string;
-  predecessorTaskId: string;
-  successorTaskId: string;
+  identityId: IdentityId;
+  predecessorTaskId: TaskTemplateId;
+  successorTaskId: TaskTemplateId;
   dependencyType: string;
 }

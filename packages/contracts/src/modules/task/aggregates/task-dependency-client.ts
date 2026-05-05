@@ -6,7 +6,6 @@
 import type {
   TaskDependencyId,
   TaskTemplateId,
-  IdentityId,
   TransferDate,
   DomainDate,
 } from '../../../primitives';
@@ -17,120 +16,80 @@ import type { DependencyStatus } from '../value-objects/dependency-status';
  * 任务依赖关系实体（客户端）
  */
 export interface TaskDependencyClientDTO {
-  readonly id: string;
-  readonly predecessorTaskId: string;
-  readonly successorTaskId: string;
-  readonly dependencyType: DependencyType;
-  readonly lagDays?: number;
-  readonly version: number;
-  readonly createdAt: TransferDate;
-  readonly updatedAt: TransferDate;
-  readonly deletedAt: TransferDate | null;
+  id: TaskDependencyId;
+  predecessorTaskId: TaskTemplateId;
+  successorTaskId: TaskTemplateId;
+  dependencyType: DependencyType;
+  lagDays?: number;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
 
   /**
    * 前置任务的标题（用于显示）
    */
-  readonly predecessorTaskTitle?: string;
+  predecessorTaskTitle?: string;
 
   /**
    * 后续任务的标题（用于显示）
    */
-  readonly successorTaskTitle?: string;
+  successorTaskTitle?: string;
 }
 
 /**
  * 带依赖信息的任务模板（客户端）
  */
 export interface TaskTemplateWithDependenciesClientDTO {
-  readonly id: string;
-  readonly title: string;
+  id: TaskTemplateId;
+  title: string;
   // ... 其他 TaskTemplate 字段
 
-  readonly dependencies: TaskDependencyClientDTO[];
-  readonly dependents: string[];
-  readonly dependencyStatus: DependencyStatus;
-  readonly isBlocked: boolean;
-  readonly blockingReason?: string;
+  dependencies: TaskDependencyClientDTO[];
+  dependents: TaskTemplateId[];
+  dependencyStatus: DependencyStatus;
+  isBlocked: boolean;
+  blockingReason?: string;
 
   /**
    * 可以开始的最早时间（基于依赖计算）
    */
-  readonly earliestStartTime?: DomainDate;
+  earliestStartTime?: DomainDate;
 
   /**
    * 依赖层级（用于可视化）
    */
-  readonly dependencyLevel?: number;
+  dependencyLevel?: number;
+}
+
+/**
+ * 将 ServerDTO 转换为 ClientDTO
+ * 剥离 identityId，添加 version/deletedAt 传输字段
+ */
+export function dependencyServerToClientDTO(
+  server: import('./task-dependency-server').TaskDependencyServerDTO,
+): TaskDependencyClientDTO {
+  return {
+    id: server.id,
+    predecessorTaskId: server.predecessorTaskId,
+    successorTaskId: server.successorTaskId,
+    dependencyType: server.dependencyType,
+    lagDays: server.lagDays,
+    createdAt: server.createdAt,
+    updatedAt: server.updatedAt,
+  };
 }
 
 /**
  * 依赖链信息（客户端）
  */
 export interface DependencyChainClientDTO {
-  readonly taskId: string;
-  readonly allPredecessors: string[];
-  readonly allSuccessors: string[];
-  readonly depth: number;
-  readonly isOnCriticalPath: boolean;
+  taskId: TaskTemplateId;
+  allPredecessors: TaskTemplateId[];
+  allSuccessors: TaskTemplateId[];
+  depth: number;
+  isOnCriticalPath: boolean;
 
   /**
    * 关键路径的预计完成时间
    */
-  readonly estimatedCompletionDate?: DomainDate;
-}
-
-/**
- * 创建依赖请求
- */
-export interface CreateTaskDependencyRequest {
-  readonly identityId: string;
-  readonly predecessorTaskId: string;
-  readonly successorTaskId: string;
-  readonly dependencyType: DependencyType;
-  readonly lagDays?: number;
-}
-
-/**
- * 更新依赖请求
- */
-export interface UpdateTaskDependencyRequest {
-  readonly dependencyType?: DependencyType;
-  readonly lagDays?: number;
-}
-
-/**
- * 验证依赖请求
- */
-export interface ValidateDependencyRequest {
-  readonly predecessorTaskId: string;
-  readonly successorTaskId: string;
-}
-
-/**
- * 验证依赖响应
- */
-export interface ValidateDependencyResponse {
-  readonly isValid: boolean;
-  readonly errors?: string[];
-  readonly wouldCreateCycle?: boolean;
-  readonly cyclePath?: string[];
-  readonly message?: string;
-}
-
-/**
- * 批量创建依赖请求
- */
-export interface BatchCreateDependenciesRequest {
-  readonly dependencies: CreateTaskDependencyRequest[];
-}
-
-/**
- * 批量创建依赖响应
- */
-export interface BatchCreateDependenciesResponse {
-  readonly created: TaskDependencyClientDTO[];
-  readonly failed: {
-    readonly request: CreateTaskDependencyRequest;
-    readonly error: string;
-  }[];
+  estimatedCompletionDate?: DomainDate;
 }

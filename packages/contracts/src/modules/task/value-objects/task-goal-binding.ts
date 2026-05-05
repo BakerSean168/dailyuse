@@ -18,8 +18,8 @@ export interface TaskGoalBinding {
 // ============ DTO 定义 ============
 
 export interface TaskGoalBindingDTO {
-  goalId: string;
-  keyResultId: string;
+  goalId: GoalId;
+  keyResultId: KeyResultId;
   goalRecordValue: number;
   progressTrigger: TaskGoalBindingTrigger;
 }

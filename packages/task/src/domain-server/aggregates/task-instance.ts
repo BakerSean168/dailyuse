@@ -258,9 +258,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   public toServerDTO(): TaskInstanceServerDTO {
     return {
-      id: this.id.toString(),
-      templateId: this._props.templateId.toString(),
-      identityId: this._props.identityId.toString(),
+      id: this.id.toString() as TaskInstanceId,
+      templateId: this._props.templateId.toString() as TaskTemplateId,
+      identityId: this._props.identityId.toString() as IdentityId,
       instanceDate: this._props.instanceDate,
       timeConfig: this._props.timeConfig.toDTO(),
       importance: this._props.importance,
@@ -278,9 +278,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   public toClientDTO(): TaskInstanceClientDTO {
     return {
-      id: this.id.toString(),
-      templateId: this._props.templateId.toString(),
-      identityId: this._props.identityId.toString(),
+      id: this.id.toString() as TaskInstanceId,
+      templateId: this._props.templateId.toString() as TaskTemplateId,
+      identityId: this._props.identityId.toString() as IdentityId,
       instanceDate: this._props.instanceDate,
       timeConfig: this._props.timeConfig.toDTO(),
       importance: this._props.importance,

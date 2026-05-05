@@ -9,26 +9,26 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   TaskDependencyClientDTO,
   DependencyChainClientDTO,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
+  CreateTaskDependencyBody,
+  UpdateTaskDependencyBody,
+  ValidateDependencyBody,
   ValidateDependencyResponse,
 } from '@dailyuse/contracts/task';
 
 export interface ITaskDependencyApiClient {
   createDependency(
     taskId: string,
-    request: CreateTaskDependencyRequest,
+    request: CreateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>>;
   getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
   getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
   getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>>;
   validateDependency(
-    request: ValidateDependencyRequest,
+    request: ValidateDependencyBody,
   ): Promise<Result<ValidateDependencyResponse>>;
   deleteDependency(id: string): Promise<Result<void>>;
   updateDependency(
     id: string,
-    request: UpdateTaskDependencyRequest,
+    request: UpdateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>>;
 }

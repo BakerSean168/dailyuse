@@ -16,6 +16,7 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   QueryTaskTemplateGraphRes,
+  TaskTemplateInstancesQuery,
 } from '@dailyuse/contracts/task';
 
 /**
@@ -97,11 +98,10 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   async getInstancesByDateRange(
     templateId: string,
-    from: number,
-    to: number,
+    query?: TaskTemplateInstancesQuery,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/${templateId}/instances`, {
-      params: { from, to },
+      params: query,
     });
   }
 

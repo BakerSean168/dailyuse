@@ -207,19 +207,10 @@ export const TaskElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.TEMPLATE_GET_INSTANCES, (_, payload) =>
       withAuthenticatedValue(ctx, async () => {
-        const result = await handlers.template.listInstancesByTemplate.execute(payload?.templateId);
-        if (!result.ok) {
-          return result;
-        }
-
-        if (typeof payload?.from !== 'number' || typeof payload?.to !== 'number') {
-          return result.data;
-        }
-
-        return result.data.filter(
-          (instance) =>
-            instance.instanceDate >= payload.from && instance.instanceDate <= payload.to,
-        );
+        return templateController.getInstancesByTemplate(payload?.templateId, {
+          from: payload?.from,
+          to: payload?.to,
+        });
       }),
     );
     ipcMain.handle(Ch.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
@@ -254,12 +245,10 @@ export const TaskElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.INSTANCE_LIST_BY_DATE_RANGE, (_, params) =>
       withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await handlers.instance.getByDateRange.execute(
-          requestContext.identityId,
-          params?.startDate ?? Date.now(),
-          params?.endDate ?? Date.now() + 86400000 * 7,
-        );
-        return result.ok ? result.data.data : result;
+        return instanceController.getInstancesByDateRange(requestContext.identityId, {
+          startDate: params?.startDate ?? Date.now(),
+          endDate: params?.endDate ?? Date.now() + 86400000 * 7,
+        });
       }),
     );
     ipcMain.handle(Ch.INSTANCE_GET, (_, payload) =>
@@ -289,10 +278,9 @@ export const TaskElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(Ch.INSTANCE_CHECK_EXPIRED, () =>
-      withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await instanceController.checkExpired(requestContext.identityId);
-        return result.ok ? { count: result.data.length, instances: result.data } : result;
-      }),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        instanceController.checkExpired(requestContext.identityId),
+      ),
     );
 
     // --- Dependency channels ---

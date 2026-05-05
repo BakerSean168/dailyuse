@@ -5,7 +5,7 @@
 import type {
   TaskTemplateId,
   IdentityId,
-  GoalFolderId,
+  TaskFolderId,
   DomainDate,
   TransferDate,
 } from '../../../primitives';
@@ -24,8 +24,8 @@ import type {
 } from '../value-objects';
 
 export interface TaskTemplateClientDTO {
-  id: string;
-  identityId: string;
+  id: TaskTemplateId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
 
@@ -36,7 +36,7 @@ export interface TaskTemplateClientDTO {
 
   priority?: number;
   goalBinding: TaskGoalBindingDTO | null;
-  folderId: string | null;
+  folderId: TaskFolderId | null;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
@@ -49,7 +49,7 @@ export interface TaskTemplateClientDTO {
   history?: unknown[];
   instances?: unknown[];
 
-  parentTaskId: string | null;
+  parentTaskId: TaskTemplateId | null;
   startDate: TransferDate | null;
   dueDate: TransferDate | null;
   completedAt: TransferDate | null;

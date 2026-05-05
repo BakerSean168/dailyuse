@@ -112,7 +112,7 @@ export function useTaskTemplates() {
     const result = await service.listTemplates({
       page: 1,
       limit: 100,
-      status: filter === 'all' ? undefined : filter,
+      status: filter === 'all' ? undefined : [filter],
     });
 
     if (!result.ok) {
@@ -144,7 +144,7 @@ export function useTaskTemplates() {
       const result = await service.listTemplates({
         page: 1,
         limit: 100,
-        status: statusFilter === 'all' ? undefined : statusFilter,
+        status: statusFilter === 'all' ? undefined : [statusFilter],
       });
 
       if (cancelled) {

@@ -3,8 +3,10 @@
  *
  * Triggered when a dependency relationship between two tasks is removed.
  */
+import type { TaskDependencyId, TaskTemplateId } from '../../../../primitives';
+
 export interface TaskDependencyDeletedEvent {
-  dependencyId: string;
-  predecessorTaskId: string;
-  successorTaskId: string;
+  dependencyId: TaskDependencyId;
+  predecessorTaskId: TaskTemplateId;
+  successorTaskId: TaskTemplateId;
 }

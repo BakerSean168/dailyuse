@@ -9,6 +9,8 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type { ITaskInstanceApiClient } from '../types';
 import type {
+  CheckExpiredTaskInstancesRes,
+  GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
@@ -36,11 +38,10 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
   }
 
   async getTaskInstancesByDateRange(
-    startDate: number,
-    endDate: number,
+    request: GetTaskInstancesByRangeReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/by-date-range`, {
-      params: { startDate, endDate },
+      params: request,
     });
   }
 
@@ -74,12 +75,7 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
 
   // ===== Batch Operations =====
 
-  async checkExpiredInstances(): Promise<
-    Result<{
-      count: number;
-      instances: TaskInstanceClientDTO[];
-    }>
-  > {
+  async checkExpiredInstances(): Promise<Result<CheckExpiredTaskInstancesRes>> {
     return this.httpClient.post(`${this.baseUrl}/check-expired`);
   }
 }

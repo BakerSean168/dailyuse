@@ -1,7 +1,9 @@
+import type { IdentityId, TaskInstanceId, TaskTemplateId } from '../../../../primitives';
+
 export interface TaskInstanceSkippedEvent {
-  identityId: string;
-  taskInstanceId: string;
-  taskTemplateId: string;
+  identityId: IdentityId;
+  taskInstanceId: TaskInstanceId;
+  taskTemplateId: TaskTemplateId;
   skippedAt: number;
   reason: string | null;
 }

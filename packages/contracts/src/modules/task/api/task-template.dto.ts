@@ -6,11 +6,17 @@ import type {
   GoalId,
   KeyResultId,
   TaskTemplateId,
+  TaskDependencyId,
 } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
+import { DayOfWeek } from '../value-objects/day-of-week';
+import { RecurrenceFrequency } from '../value-objects/recurrence-frequency';
+import { ReminderTimeUnit } from '../value-objects/reminder-time-unit';
+import { TaskReminderType } from '../value-objects/task-reminder-type';
 import { TaskGoalBindingTrigger } from '../value-objects/task-goal-binding-trigger';
+import { TaskTimeType } from '../value-objects/task-time-type';
 import { TaskType } from '../value-objects/task-type';
 import type { DependencyType } from '../value-objects/dependency-type';
 import type { RecurrenceRuleDTO } from '../value-objects/recurrence-rule';
@@ -18,32 +24,125 @@ import type { TaskReminderConfigDTO } from '../value-objects/task-reminder-confi
 import type { TaskGoalBindingDTO } from '../value-objects/task-goal-binding';
 import type { TaskTimeConfigDTO } from '../value-objects/task-time-config';
 
-export const TaskTimeConfigSchema = z
-  .custom<TaskTimeConfigDTO>()
+const DayOfWeekSchema = z.union([
+  z.literal(DayOfWeek.Sunday),
+  z.literal(DayOfWeek.Monday),
+  z.literal(DayOfWeek.Tuesday),
+  z.literal(DayOfWeek.Wednesday),
+  z.literal(DayOfWeek.Thursday),
+  z.literal(DayOfWeek.Friday),
+  z.literal(DayOfWeek.Saturday),
+]);
+
+export const TaskTimeConfigSchema: z.ZodType<TaskTimeConfigDTO> = z
+  .object({
+    timeType: z.enum([TaskTimeType.AllDay, TaskTimeType.TimePoint, TaskTimeType.TimeRange]),
+    startDate: z.number().int().nullable(),
+    timePoint: z.number().int().nullable(),
+    timeRange: z
+      .object({
+        start: z.number().int(),
+        end: z.number().int(),
+      })
+      .nullable()
+      .optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.timeType === TaskTimeType.TimePoint && value.timePoint == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['timePoint'],
+        message: '时间点任务必须提供 timePoint',
+      });
+    }
+
+    if (value.timeType === TaskTimeType.TimeRange) {
+      if (!value.timeRange) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['timeRange'],
+          message: '时间段任务必须提供 timeRange',
+        });
+      } else if (value.timeRange.start >= value.timeRange.end) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['timeRange'],
+          message: 'timeRange.start 必须小于 timeRange.end',
+        });
+      }
+    }
+  })
   .openapi({ type: 'object', description: '任务时间配置' });
 
 export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
 
-export const RecurrenceConfigSchema = z
-  .custom<RecurrenceRuleDTO>((value) => {
-    if (!value || typeof value !== 'object') {
-      return false;
+export const RecurrenceConfigSchema: z.ZodType<RecurrenceRuleDTO> = z
+  .object({
+    frequency: z.enum([
+      RecurrenceFrequency.Daily,
+      RecurrenceFrequency.Weekly,
+      RecurrenceFrequency.Monthly,
+      RecurrenceFrequency.Yearly,
+    ]),
+    interval: z.number().int().positive(),
+    daysOfWeek: z.array(DayOfWeekSchema),
+    endDate: z.number().int().nullable(),
+    occurrences: z.number().int().positive().nullable(),
+  })
+  .superRefine((candidate, ctx) => {
+    if (candidate.endDate != null && candidate.occurrences != null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '重复规则不能同时设置结束日期和重复次数',
+      });
     }
-
-    const candidate = value as RecurrenceRuleDTO;
-    return !(
-      candidate.endDate !== null &&
-      candidate.endDate !== undefined &&
-      candidate.occurrences !== null &&
-      candidate.occurrences !== undefined
-    );
-  }, '重复规则不能同时设置结束日期和重复次数')
+  })
   .openapi({ type: 'object', description: '循环规则配置' });
 
 export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;
 
-export const TaskReminderConfigSchema = z
-  .custom<TaskReminderConfigDTO>()
+export const TaskReminderConfigSchema: z.ZodType<TaskReminderConfigDTO> = z
+  .object({
+    enabled: z.boolean(),
+    triggers: z.array(
+      z
+        .object({
+          type: z.enum([TaskReminderType.Absolute, TaskReminderType.Relative]),
+          absoluteTime: z.number().int().nullable(),
+          relativeValue: z.number().int().nullable(),
+          relativeUnit: z
+            .enum([ReminderTimeUnit.Minutes, ReminderTimeUnit.Hours, ReminderTimeUnit.Days])
+            .nullable(),
+        })
+        .superRefine((trigger, ctx) => {
+          if (trigger.type === TaskReminderType.Absolute && trigger.absoluteTime == null) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['absoluteTime'],
+              message: '绝对时间提醒必须提供 absoluteTime',
+            });
+          }
+
+          if (trigger.type === TaskReminderType.Relative) {
+            if (trigger.relativeValue == null) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['relativeValue'],
+                message: '相对时间提醒必须提供 relativeValue',
+              });
+            }
+
+            if (trigger.relativeUnit == null) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['relativeUnit'],
+                message: '相对时间提醒必须提供 relativeUnit',
+              });
+            }
+          }
+        }),
+    ),
+  })
   .openapi({ type: 'object', description: '任务提醒配置' });
 
 export const TaskGoalBindingSchema = z.object({
@@ -81,7 +180,7 @@ export type CreateTaskTemplateRes = {
 };
 
 export const UpdateTaskTemplateSchema = z.object({
-  templateId: z.string().optional(),
+  templateId: brandedId<TaskTemplateId>().optional(),
   name: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
   timeConfig: TaskTimeConfigSchema.optional().nullable(),
@@ -115,6 +214,13 @@ export const ListTaskTemplateFiltersSchema = z.object({
 
 export type ListTaskTemplateFilters = z.infer<typeof ListTaskTemplateFiltersSchema>;
 
+export const TaskTemplateInstancesQuerySchema = z.object({
+  from: z.coerce.number().int().optional(),
+  to: z.coerce.number().int().optional(),
+});
+
+export type TaskTemplateInstancesQuery = z.infer<typeof TaskTemplateInstancesQuerySchema>;
+
 // Internal query type (used by controller -> use case) with identityId
 export interface QueryTaskTemplatesInternal {
   identityId: IdentityId;
@@ -129,9 +235,9 @@ export interface QueryTaskTemplatesRes {
 }
 
 export interface TaskGraphDependencyDTO {
-  id: string;
-  predecessorTaskId: string;
-  successorTaskId: string;
+  id: TaskDependencyId;
+  predecessorTaskId: TaskTemplateId;
+  successorTaskId: TaskTemplateId;
   dependencyType: DependencyType;
   lagDays?: number;
   createdAt: number;
@@ -165,5 +271,5 @@ export type BindToGoalRes = TaskTemplateClientDTO;
 export type UnbindFromGoalReq = void;
 export type UnbindFromGoalRes = TaskTemplateClientDTO;
 
-export type GetTaskTemplateReq = { id: string; includeChildren?: boolean };
+export type GetTaskTemplateReq = { id: TaskTemplateId; includeChildren?: boolean };
 export type GetTaskTemplateRes = TaskTemplateClientDTO | null;

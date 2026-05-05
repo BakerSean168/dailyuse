@@ -7,6 +7,8 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type {
+  CheckExpiredTaskInstancesRes,
+  GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
@@ -20,8 +22,7 @@ export interface ITaskInstanceApiClient {
     status?: string;
   }): Promise<Result<TaskInstanceClientDTO[]>>;
   getTaskInstancesByDateRange(
-    startDate: number,
-    endDate: number,
+    request: GetTaskInstancesByRangeReq,
   ): Promise<Result<TaskInstanceClientDTO[]>>;
   getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>>;
   deleteTaskInstance(id: string): Promise<Result<void>>;
@@ -34,5 +35,5 @@ export interface ITaskInstanceApiClient {
     id: string,
     request?: SkipTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>>;
-  checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstanceClientDTO[] }>>;
+  checkExpiredInstances(): Promise<Result<CheckExpiredTaskInstancesRes>>;
 }

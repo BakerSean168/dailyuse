@@ -79,7 +79,7 @@ export class Subtask extends Entity<ISubtaskId> {
   // ================= 5. DTO Conversion =================
   public toDTO(): SubtaskClientDTO {
     return {
-      id: this.id as string,
+      id: this.id as ISubtaskId,
       name: this._props.name,
       isCompleted: this._props.isCompleted,
       order: this._props.order,

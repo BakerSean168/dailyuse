@@ -5,7 +5,8 @@
  */
 
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
-import type { TaskDependencyServerDTO, DependencyType } from '@dailyuse/contracts/task';
+import type { TaskDependencyClientDTO, DependencyType } from '@dailyuse/contracts/task';
+import { dependencyServerToClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -15,13 +16,13 @@ export class UpdateTaskDependencyUseCase {
   async execute(
     id: string,
     request: { dependencyType?: DependencyType; lagDays?: number },
-  ): Promise<Result<TaskDependencyServerDTO>> {
+  ): Promise<Result<TaskDependencyClientDTO>> {
     const dependency = await this.dependencyRepository.findById(id);
     if (!dependency) {
       return error('NOT_FOUND', `TaskDependency ${id} not found`);
     }
 
     const updated = await this.dependencyRepository.update(id, request);
-    return ok(updated);
+    return ok(dependencyServerToClientDTO(updated));
   }
 }

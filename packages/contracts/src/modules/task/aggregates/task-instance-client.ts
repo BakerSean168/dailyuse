@@ -20,9 +20,9 @@ import type {
 } from '../value-objects';
 
 export interface TaskInstanceClientDTO {
-  id: string;
-  templateId: string;
-  identityId: string;
+  id: TaskInstanceId;
+  templateId: TaskTemplateId;
+  identityId: IdentityId;
 
   instanceDate: TransferDate;
   timeConfig: TaskTimeConfigDTO;

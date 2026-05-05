@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { taskInstancesToEvents, toLocalDateKey } from './useCalendarView';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateId, TaskInstanceId, IdentityId } from '@dailyuse/contracts/primitives';
 
 function makeTemplate(overrides: Partial<TaskTemplateClientDTO> = {}): TaskTemplateClientDTO {
   return {
-    id: 'tpl-1',
-    identityId: 'acc-1',
+    id: 'tpl-1' as TaskTemplateId,
+    identityId: 'acc-1' as IdentityId,
     name: 'Morning Task',
     description: null,
     timeConfig: {
@@ -50,9 +51,9 @@ function makeTemplate(overrides: Partial<TaskTemplateClientDTO> = {}): TaskTempl
 
 function makeInstance(overrides: Partial<TaskInstanceClientDTO> = {}): TaskInstanceClientDTO {
   return {
-    id: 'inst-1',
-    templateId: 'tpl-1',
-    identityId: 'acc-1',
+    id: 'inst-1' as TaskInstanceId,
+    templateId: 'tpl-1' as TaskTemplateId,
+    identityId: 'acc-1' as IdentityId,
     instanceDate: new Date('2026-03-18T00:00:00+08:00').getTime(),
     timeConfig: {
       timeType: 'AllDay',

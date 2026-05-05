@@ -28,8 +28,9 @@ import { translateResultError } from '../../../shared/utils/translateResultError
 type TaskTemplateListParams = {
   page?: number;
   limit?: number;
-  status?: string;
+  status?: string[];
   goalId?: string;
+  folderId?: string;
   tags?: string[];
 };
 
@@ -265,7 +266,6 @@ export function useTask() {
   }) {
     store.setError(null);
     let result = await service.createDependency(request.successorTaskId, {
-      identityId: '',
       predecessorTaskId: request.predecessorTaskId,
       successorTaskId: request.successorTaskId,
       dependencyType: request.dependencyType,
@@ -273,7 +273,6 @@ export function useTask() {
 
     if (!result.ok && (await maybeRecoverAuth(result.error))) {
       result = await service.createDependency(request.successorTaskId, {
-        identityId: '',
         predecessorTaskId: request.predecessorTaskId,
         successorTaskId: request.successorTaskId,
         dependencyType: request.dependencyType,

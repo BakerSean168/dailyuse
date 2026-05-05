@@ -5,7 +5,8 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
-import type { TaskDependencyServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
+import type { TaskDependencyServerDTO, TaskDependencyClientDTO, TaskEventMap } from '@dailyuse/contracts/task';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { TaskDependencyId } from '../../domain-shared/value-objects/task-dependency-id';
 import { DependencyType, DependencyStatus } from '../value-objects';
 
@@ -101,9 +102,9 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     dependency.addDomainEvent<TaskEventMap['task:dependency-created']>(
       'task:dependency-created',
       {
-        identityId: props.identityId,
-        predecessorTaskId: props.predecessorTaskId,
-        successorTaskId: props.successorTaskId,
+        identityId: props.identityId as IdentityId,
+        predecessorTaskId: props.predecessorTaskId as TaskTemplateId,
+        successorTaskId: props.successorTaskId as TaskTemplateId,
         dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
       },
     );
@@ -129,7 +130,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
-      { dependencyId: String(this.id), changedFields: ['dependencyType'] },
+      { dependencyId: String(this.id) as TaskDependencyId, changedFields: ['dependencyType'] },
     );
   }
 
@@ -142,7 +143,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
-      { dependencyId: String(this.id), changedFields: ['lagDays'] },
+      { dependencyId: String(this.id) as TaskDependencyId, changedFields: ['lagDays'] },
     );
   }
 
@@ -160,10 +161,25 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
    */
   public toServerDTO(): TaskDependencyServerDTO {
     return {
-      id: this.id.toString(),
+      id: this.id.toString() as TaskDependencyId,
       identityId: this._props.identityId,
-      predecessorTaskId: this._props.predecessorTaskId,
-      successorTaskId: this._props.successorTaskId,
+      predecessorTaskId: this._props.predecessorTaskId as TaskTemplateId,
+      successorTaskId: this._props.successorTaskId as TaskTemplateId,
+      dependencyType: this._props.dependencyType,
+      lagDays: this._props.lagDays,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+    };
+  }
+
+  /**
+   * 转换为 ClientDTO（传输层，剥离服务端内部字段）
+   */
+  public toClientDTO(): TaskDependencyClientDTO {
+    return {
+      id: this.id.toString() as TaskDependencyId,
+      predecessorTaskId: this._props.predecessorTaskId as TaskTemplateId,
+      successorTaskId: this._props.successorTaskId as TaskTemplateId,
       dependencyType: this._props.dependencyType,
       lagDays: this._props.lagDays,
       createdAt: this._props.createdAt.getTime(),

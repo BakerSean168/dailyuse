@@ -22,7 +22,7 @@ import type {
   TaskTemplateStatus,
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { TaskFolderId } from '@dailyuse/contracts/primitives';
+import type { TaskFolderId, GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -253,7 +253,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalBinding: this._props.goalBinding
         ? this.serializeGoalBinding(this._props.goalBinding)
         : null,
-      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      folderId: this._props.folderId ? (String(this._props.folderId) as TaskFolderId) : null,
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
@@ -263,7 +263,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      parentTaskId: this._props.parentTaskId ? String(this._props.parentTaskId) : null,
+      parentTaskId: this._props.parentTaskId ? (String(this._props.parentTaskId) as TaskTemplateId) : null,
       startDate: this._props.startDate?.getTime() ?? null,
       dueDate: this._props.dueDate?.getTime() ?? null,
       completedAt: this._props.completedAt?.getTime() ?? null,
@@ -303,8 +303,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   private serializeGoalBinding(binding: TaskGoalBinding): TaskGoalBindingDTO {
     return {
-      goalId: String(binding.goalId),
-      keyResultId: String(binding.keyResultId),
+      goalId: String(binding.goalId) as GoalId,
+      keyResultId: String(binding.keyResultId) as KeyResultId,
       goalRecordValue: binding.goalRecordValue,
       progressTrigger: binding.progressTrigger,
     };

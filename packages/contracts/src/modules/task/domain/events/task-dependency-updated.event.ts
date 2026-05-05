@@ -3,7 +3,9 @@
  *
  * Triggered when an existing task dependency is modified.
  */
+import type { TaskDependencyId } from '../../../../primitives';
+
 export interface TaskDependencyUpdatedEvent {
-  dependencyId: string;
+  dependencyId: TaskDependencyId;
   changedFields: string[];
 }

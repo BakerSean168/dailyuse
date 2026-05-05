@@ -1,7 +1,7 @@
 import type { SubtaskId,  TransferDate } from '../../../primitives';
 
 export interface SubtaskClientDTO {
-  id: string;
+  id: SubtaskId;
   name: string;
   isCompleted: boolean;
   order: number;

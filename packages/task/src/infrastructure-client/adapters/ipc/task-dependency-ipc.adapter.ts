@@ -10,9 +10,9 @@ import { TaskChannels } from '@dailyuse/contracts/electron';
 import type { ITaskDependencyApiClient, IResultIpcClient } from '../types';
 import type {
   TaskDependencyClientDTO,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
+  CreateTaskDependencyBody,
+  UpdateTaskDependencyBody,
+  ValidateDependencyBody,
   ValidateDependencyResponse,
   DependencyChainClientDTO,
 } from '@dailyuse/contracts/task';
@@ -22,7 +22,7 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
 
   async createDependency(
     taskId: string,
-    request: CreateTaskDependencyRequest,
+    request: CreateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>> {
     return this.ipcClient.invoke(TaskChannels.DEPENDENCY_CREATE, { taskId, request });
   }
@@ -40,7 +40,7 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
   }
 
   async validateDependency(
-    request: ValidateDependencyRequest,
+    request: ValidateDependencyBody,
   ): Promise<Result<ValidateDependencyResponse>> {
     return this.ipcClient.invoke(TaskChannels.DEPENDENCY_VALIDATE, request);
   }
@@ -51,7 +51,7 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
 
   async updateDependency(
     id: string,
-    request: UpdateTaskDependencyRequest,
+    request: UpdateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>> {
     return this.ipcClient.invoke(TaskChannels.DEPENDENCY_UPDATE, { id, request });
   }

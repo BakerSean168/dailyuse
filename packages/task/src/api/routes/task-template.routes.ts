@@ -23,10 +23,11 @@ import {
   BindToGoalSchema,
   TaskInstanceResponseSchema,
   ListTaskTemplateFiltersSchema,
+  TaskTemplateInstancesQuerySchema,
 } from '@dailyuse/contracts/task';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { TaskTemplateStatus, ListTaskTemplateFilters } from '@dailyuse/contracts/task';
+import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import type { TaskTemplateController } from '../../controllers/task-template.controller';
 
 // ============ Types ============
@@ -45,16 +46,33 @@ function getFirstQueryValue(value: unknown): string | undefined {
 }
 
 function parseTemplateFilters(query: Record<string, unknown> | undefined): ListTaskTemplateFilters {
-  const status = getFirstQueryValue(query?.status) as TaskTemplateStatus | undefined;
-  const folderId = getFirstQueryValue(query?.folderId) as ListTaskTemplateFilters['folderId'];
-  const goalId = getFirstQueryValue(query?.goalId) as ListTaskTemplateFilters['goalId'];
-  const tags = getFirstQueryValue(query?.tags)?.split(',');
+  const status = Array.isArray(query?.status)
+    ? (query!.status as string[])
+    : typeof query?.status === 'string'
+      ? [query!.status as string]
+      : undefined;
+  const folderId = typeof query?.folderId === 'string' ? (query.folderId as ListTaskTemplateFilters['folderId']) : undefined;
+  const goalId = typeof query?.goalId === 'string' ? (query.goalId as ListTaskTemplateFilters['goalId']) : undefined;
+  const tags = Array.isArray(query?.tags)
+    ? (query!.tags as string[])
+    : typeof query?.tags === 'string'
+      ? [query!.tags as string]
+      : undefined;
+
+  return { status, folderId, goalId, tags };
+}
+
+function parseTemplateInstancesRange(
+  query: Record<string, unknown> | undefined,
+): { from?: number; to?: number } {
+  const fromValue = getFirstQueryValue(query?.from);
+  const toValue = getFirstQueryValue(query?.to);
+  const from = fromValue ? Number(fromValue) : undefined;
+  const to = toValue ? Number(toValue) : undefined;
 
   return {
-    status: status ? [status] : undefined,
-    folderId,
-    goalId,
-    tags,
+    from: Number.isFinite(from) ? from : undefined,
+    to: Number.isFinite(to) ? to : undefined,
   };
 }
 
@@ -98,12 +116,7 @@ export function registerTaskTemplateRoutes(
       path: '/',
       summary: '获取任务模板列表',
       request: {
-        query: z.object({
-          status: z.string().optional(),
-          folderId: z.string().optional(),
-          goalId: z.string().optional(),
-          tags: z.string().optional(),
-        }),
+        query: ListTaskTemplateFiltersSchema,
       },
       responses: {
         200: successResponse(TaskTemplateListResponseSchema, '获取成功'),
@@ -120,12 +133,7 @@ export function registerTaskTemplateRoutes(
       path: '/graph',
       summary: '获取任务模板图数据',
       request: {
-        query: z.object({
-          status: z.string().optional(),
-          folderId: z.string().optional(),
-          goalId: z.string().optional(),
-          tags: z.string().optional(),
-        }),
+        query: ListTaskTemplateFiltersSchema,
       },
       responses: {
         200: successResponse(TaskTemplateGraphResponseSchema, '获取成功'),
@@ -302,6 +310,7 @@ export function registerTaskTemplateRoutes(
       summary: '获取模板的任务实例列表',
       request: {
         params: z.object({ id: brandedId<TaskTemplateId>() }),
+        query: TaskTemplateInstancesQuerySchema,
       },
       responses: {
         200: successResponse(z.array(TaskInstanceResponseSchema), '获取成功'),
@@ -309,7 +318,11 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getInstancesByTemplate(req.params!.id),
+    (req) =>
+      controller.getInstancesByTemplate(
+        req.params!.id,
+        parseTemplateInstancesRange(req.query as Record<string, unknown>),
+      ),
     { requireAuth: false },
   );
 

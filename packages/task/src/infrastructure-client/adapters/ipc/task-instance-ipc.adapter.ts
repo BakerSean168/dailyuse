@@ -9,6 +9,8 @@ import type { Result } from '@dailyuse/contracts/result';
 import { TaskChannels } from '@dailyuse/contracts/electron';
 import type { ITaskInstanceApiClient, IResultIpcClient } from '../types';
 import type {
+  CheckExpiredTaskInstancesRes,
+  GetTaskInstancesByRangeReq,
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
@@ -27,13 +29,9 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
   }
 
   async getTaskInstancesByDateRange(
-    startDate: number,
-    endDate: number,
+    request: GetTaskInstancesByRangeReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    return this.ipcClient.invoke(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE, {
-      startDate,
-      endDate,
-    });
+    return this.ipcClient.invoke(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE, request);
   }
 
   async getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>> {
@@ -62,12 +60,7 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     return this.ipcClient.invoke(TaskChannels.INSTANCE_SKIP, { id, request });
   }
 
-  async checkExpiredInstances(): Promise<
-    Result<{
-      count: number;
-      instances: TaskInstanceClientDTO[];
-    }>
-  > {
+  async checkExpiredInstances(): Promise<Result<CheckExpiredTaskInstancesRes>> {
     return this.ipcClient.invoke(TaskChannels.INSTANCE_CHECK_EXPIRED);
   }
 }

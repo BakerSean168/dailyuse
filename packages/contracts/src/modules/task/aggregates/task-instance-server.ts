@@ -27,9 +27,9 @@ import type {
  * TaskInstance Server DTO
  */
 export interface TaskInstanceServerDTO {
-  id: string;
-  templateId: string;
-  identityId: string;
+  id: TaskInstanceId;
+  templateId: TaskTemplateId;
+  identityId: IdentityId;
 
   importance: ImportanceLevel;
   priority?: number;

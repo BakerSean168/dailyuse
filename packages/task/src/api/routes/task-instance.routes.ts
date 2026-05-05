@@ -16,10 +16,12 @@ import {
 import {
   CompleteTaskInstanceSchema,
   SkipTaskInstanceSchema,
+  CheckExpiredTaskInstancesResponseSchema,
   TaskInstanceResponseSchema,
+  GetTaskInstancesByRangeSchema,
 } from '@dailyuse/contracts/task';
 import { brandedId } from '@dailyuse/contracts/primitives';
-import type { TaskInstanceId } from '@dailyuse/contracts/primitives';
+import type { TaskInstanceId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskInstanceController } from '../../controllers/task-instance.controller';
 
@@ -36,6 +38,16 @@ function getFirstQueryValue(value: unknown): string | undefined {
   }
 
   return typeof value === 'string' ? value : undefined;
+}
+
+function parseTimestampQuery(value: unknown, fallback: number): number {
+  const firstValue = getFirstQueryValue(value);
+  if (!firstValue) {
+    return fallback;
+  }
+
+  const parsed = Number(firstValue);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 // ============ Route Registration ============
@@ -61,10 +73,7 @@ export function registerTaskInstanceRoutes(
       path: '/by-date-range',
       summary: '按日期范围获取任务实例',
       request: {
-        query: z.object({
-          startDate: z.string().optional(),
-          endDate: z.string().optional(),
-        }),
+        query: GetTaskInstancesByRangeSchema,
       },
       responses: {
         200: successResponse(z.array(TaskInstanceResponseSchema), '获取成功'),
@@ -74,8 +83,10 @@ export function registerTaskInstanceRoutes(
     (req, ctx) =>
       controller.getInstancesByDateRange(
         ctx.identityId,
-        req.query?.startDate ? Number(req.query.startDate) : Date.now(),
-        req.query?.endDate ? Number(req.query.endDate) : Date.now() + 86400000 * 7,
+        {
+          startDate: parseTimestampQuery(req.query?.startDate, Date.now()),
+          endDate: parseTimestampQuery(req.query?.endDate, Date.now() + 86400000 * 7),
+        },
       ),
   );
 
@@ -86,7 +97,7 @@ export function registerTaskInstanceRoutes(
       path: '/check-expired',
       summary: '检查并标记过期任务实例',
       responses: {
-        200: successResponse(z.array(TaskInstanceResponseSchema), '检查完成'),
+        200: successResponse(CheckExpiredTaskInstancesResponseSchema, '检查完成'),
       },
     },
     [auth],
@@ -101,7 +112,7 @@ export function registerTaskInstanceRoutes(
       summary: '获取任务实例列表',
       request: {
         query: z.object({
-          templateId: z.string().optional(),
+          templateId: brandedId<TaskTemplateId>().optional(),
           status: z.string().optional(),
         }),
       },

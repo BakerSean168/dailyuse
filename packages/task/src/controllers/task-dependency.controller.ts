@@ -7,35 +7,21 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
-import type { TaskDependencyServerDTO, DependencyType } from '@dailyuse/contracts/task';
-import type { DependencyChainServerDTO } from '@dailyuse/contracts/task';
+import type { TaskDependencyClientDTO, DependencyType } from '@dailyuse/contracts/task';
+import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
+import {
+  CreateDependencyBodySchema,
+  UpdateDependencyBodySchema,
+  ValidateDependencyBodySchema,
+  type ValidateDependencyResponse,
+} from '@dailyuse/contracts/task';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import { z } from 'zod';
 import type { CreateTaskDependencyUseCase } from '../application-server/use-cases/commands/create-task-dependency.use-case';
 import type { DeleteTaskDependencyUseCase } from '../application-server/use-cases/commands/delete-task-dependency.use-case';
 import type { UpdateTaskDependencyUseCase } from '../application-server/use-cases/commands/update-task-dependency.use-case';
 import type { ListTaskDependenciesUseCase } from '../application-server/use-cases/queries/list-task-dependencies.use-case';
 import type { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
 import type { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
-import type { ValidateDependencyResult } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
-
-const CreateDependencySchema = z.object({
-  predecessorTaskId: z.string().min(1),
-  successorTaskId: z.string().min(1),
-  dependencyType: z.string().optional(),
-  lagDays: z.number().optional(),
-});
-
-const UpdateDependencySchema = z.object({
-  dependencyType: z.string().optional(),
-  lagDays: z.number().optional(),
-});
-
-const ValidateDependencySchema = z.object({
-  predecessorTaskId: z.string().min(1),
-  successorTaskId: z.string().min(1),
-});
-
 export interface TaskDependencyUseCases {
   createDependency: CreateTaskDependencyUseCase;
   deleteDependency: DeleteTaskDependencyUseCase;
@@ -55,8 +41,8 @@ export class TaskDependencyController {
     taskId: string,
     input: unknown,
     identityId: string,
-  ): Promise<Result<TaskDependencyServerDTO>> {
-    const parsed = CreateDependencySchema.safeParse(input);
+  ): Promise<Result<TaskDependencyClientDTO>> {
+    const parsed = CreateDependencyBodySchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -77,29 +63,29 @@ export class TaskDependencyController {
   /**
    * Get dependencies for a task (predecessor tasks)
    */
-  async getDependencies(taskId: string): Promise<Result<TaskDependencyServerDTO[]>> {
+  async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
     return await this.useCases.listDependencies.executeDependencies(taskId);
   }
 
   /**
    * Get dependents for a task (successor tasks)
    */
-  async getDependents(taskId: string): Promise<Result<TaskDependencyServerDTO[]>> {
+  async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
     return await this.useCases.listDependencies.executeDependents(taskId);
   }
 
   /**
    * Get dependency chain for a task
    */
-  async getDependencyChain(taskId: string): Promise<Result<DependencyChainServerDTO>> {
+  async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
     return await this.useCases.getDependencyChain.execute(taskId);
   }
 
   /**
    * Validate a potential dependency
    */
-  async validateDependency(input: unknown): Promise<Result<ValidateDependencyResult>> {
-    const parsed = ValidateDependencySchema.safeParse(input);
+  async validateDependency(input: unknown): Promise<Result<ValidateDependencyResponse>> {
+    const parsed = ValidateDependencyBodySchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -124,8 +110,8 @@ export class TaskDependencyController {
   /**
    * Update a dependency
    */
-  async updateDependency(id: string, input: unknown): Promise<Result<TaskDependencyServerDTO>> {
-    const parsed = UpdateDependencySchema.safeParse(input);
+  async updateDependency(id: string, input: unknown): Promise<Result<TaskDependencyClientDTO>> {
+    const parsed = UpdateDependencyBodySchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',

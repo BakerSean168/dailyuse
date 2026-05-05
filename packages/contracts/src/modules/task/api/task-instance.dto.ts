@@ -16,15 +16,19 @@ import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
  * 获取任务实例列表 Schema
  */
 export const GetTaskInstancesByRangeSchema = z.object({
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime(),
-  includeArchived: z.boolean().default(false).optional(),
+  startDate: z.coerce.number().int(),
+  endDate: z.coerce.number().int(),
 });
 
 export type GetTaskInstancesByRangeReq = z.infer<typeof GetTaskInstancesByRangeSchema>;
 export interface GetTaskInstancesByRangeRes {
   data: TaskInstanceClientDTO[];
   total: number;
+}
+
+export interface CheckExpiredTaskInstancesRes {
+  count: number;
+  instances: TaskInstanceClientDTO[];
 }
 
 export const CompleteTaskInstanceSchema = z.object({

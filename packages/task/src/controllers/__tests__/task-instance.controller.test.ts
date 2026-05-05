@@ -19,19 +19,29 @@ function createMockUseCases(): TaskInstanceUseCases {
     skip: { execute: vi.fn() },
     start: { execute: vi.fn() },
     deleteInstance: { execute: vi.fn() },
+    checkExpired: { execute: vi.fn() },
   } as unknown as TaskInstanceUseCases;
 }
+
+const TEST_IDENTITY_ID = anIdentityId();
 
 const FAKE_INSTANCE_DTO: TaskInstanceClientDTO = {
   id: 'inst_abc123',
   templateId: 'tmpl_abc123',
+  identityId: TEST_IDENTITY_ID,
+  instanceDate: 1000,
+  timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null, timeRange: null },
+  importance: 'Moderate',
+  priority: 1,
   status: 'Pending',
-  scheduledDate: 1000,
+  actualStartTime: null,
+  actualEndTime: null,
+  comment: null,
+  version: 1,
   createdAt: 1000,
   updatedAt: 1000,
+  deletedAt: null,
 } as unknown as TaskInstanceClientDTO;
-
-const TEST_IDENTITY_ID = anIdentityId();
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -143,15 +153,11 @@ describe('TaskInstanceController', () => {
   // =========================================================================
   describe('getInstancesByDateRange', () => {
     it('should call getByDateRange use case with all parameters', async () => {
-      // NOTE: The use case returns { data: [...], total: N } but the controller
-      // accesses result.data.instances which does not exist on that shape.
-      // This is a pre-existing bug in the controller (should be result.data.data).
-      // We test the actual behavior here.
       (useCases.getByDateRange.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ data: [FAKE_INSTANCE_DTO], total: 1 }),
       );
 
-      await controller.getInstancesByDateRange(TEST_IDENTITY_ID, 1000, 2000);
+      await controller.getInstancesByDateRange(TEST_IDENTITY_ID, { startDate: 1000, endDate: 2000 });
 
       expect(useCases.getByDateRange.execute).toHaveBeenCalledWith(TEST_IDENTITY_ID, 1000, 2000);
     });
@@ -160,7 +166,7 @@ describe('TaskInstanceController', () => {
       const useCaseError = fail({ code: 'VALIDATION_ERROR', message: 'Invalid range' });
       (useCases.getByDateRange.execute as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, 1000, 2000);
+      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, { startDate: 1000, endDate: 2000 });
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -169,12 +175,11 @@ describe('TaskInstanceController', () => {
     });
 
     it('should return ok with instances from use case result', async () => {
-      // The controller does: return ok(result.data.data) — so use case returns { data: [...], total }
       (useCases.getByDateRange.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ data: [FAKE_INSTANCE_DTO], total: 1 }),
       );
 
-      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, 1000, 2000);
+      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, { startDate: 1000, endDate: 2000 });
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {

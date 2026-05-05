@@ -6,6 +6,7 @@
 import type {
   TaskDependencyId,
   TaskTemplateId,
+  IdentityId,
   TransferDate,
   DomainDate,
 } from '../../../primitives';
@@ -20,22 +21,22 @@ export interface TaskDependencyServerDTO {
   /**
    * 依赖关系唯一标识符
    */
-  id: string;
+  id: TaskDependencyId;
 
   /**
    * 身份 ID
    */
-  identityId: string;
+  identityId: IdentityId;
 
   /**
    * 前置任务 ID（必须先完成的任务）
    */
-  predecessorTaskId: string;
+  predecessorTaskId: TaskTemplateId;
 
   /**
    * 后续任务 ID（依赖于前置任务的任务）
    */
-  successorTaskId: string;
+  successorTaskId: TaskTemplateId;
 
   /**
    * 依赖类型
@@ -69,7 +70,7 @@ export interface TaskTemplateWithDependenciesServerDTO {
   /**
    * 任务的基本信息（从 TaskTemplateServerDTO 继承）
    */
-  id: string;
+  id: TaskTemplateId;
   title: string;
   // ... 其他 TaskTemplate 字段
 
@@ -83,7 +84,7 @@ export interface TaskTemplateWithDependenciesServerDTO {
    * 依赖此任务的其他任务
    * （后续任务的 ID 列表）
    */
-  dependents: string[];
+  dependents: TaskTemplateId[];
 
   /**
    * 当前依赖状态
@@ -117,7 +118,7 @@ export interface CircularDependencyValidationResult {
    * 包含形成循环的任务 ID 数组
    * @example ['task-a', 'task-b', 'task-c', 'task-a']
    */
-  cycle?: string[];
+  cycle?: TaskTemplateId[];
 
   /**
    * 验证消息
@@ -133,19 +134,19 @@ export interface DependencyChainServerDTO {
   /**
    * 任务 ID
    */
-  taskId: string;
+  taskId: TaskTemplateId;
 
   /**
    * 所有前置任务（递归）
    * 按依赖层级排序
    */
-  allPredecessors: string[];
+  allPredecessors: TaskTemplateId[];
 
   /**
    * 所有后续任务（递归）
    * 按依赖层级排序
    */
-  allSuccessors: string[];
+  allSuccessors: TaskTemplateId[];
 
   /**
    * 依赖深度

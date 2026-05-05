@@ -38,10 +38,6 @@ export type {
   TaskDependencyClientDTO,
   TaskTemplateWithDependenciesClientDTO,
   DependencyChainClientDTO,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
-  ValidateDependencyResponse,
-  BatchCreateDependenciesRequest,
-  BatchCreateDependenciesResponse,
 } from './task-dependency-client';
+
+export { dependencyServerToClientDTO } from './task-dependency-client';

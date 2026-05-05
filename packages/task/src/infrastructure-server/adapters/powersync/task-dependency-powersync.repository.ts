@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
 import type { DependencyType, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import {
   PowerSyncTaskDependencyMapper,
   type PowerSyncTaskDependencyRow,
@@ -43,10 +44,10 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
     );
 
     return {
-      id,
-      identityId: data.identityId,
-      predecessorTaskId: data.predecessorTaskId,
-      successorTaskId: data.successorTaskId,
+      id: id as TaskDependencyId,
+      identityId: data.identityId as IdentityId,
+      predecessorTaskId: data.predecessorTaskId as TaskTemplateId,
+      successorTaskId: data.successorTaskId as TaskTemplateId,
       dependencyType: (data.dependencyType ?? 'FinishToStart') as DependencyType,
       lagDays: data.lagDays,
       createdAt: new Date(now).getTime(),

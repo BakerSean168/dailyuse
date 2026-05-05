@@ -12,9 +12,9 @@ import type {
 } from '../types';
 import type {
   TaskDependencyClientDTO,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
+  CreateTaskDependencyBody,
+  UpdateTaskDependencyBody,
+  ValidateDependencyBody,
   ValidateDependencyResponse,
   DependencyChainClientDTO,
 } from '@dailyuse/contracts/task';
@@ -31,7 +31,7 @@ export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
 
   async createDependency(
     taskId: string,
-    request: CreateTaskDependencyRequest,
+    request: CreateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${taskId}/dependencies`, request);
   }
@@ -49,7 +49,7 @@ export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
   }
 
   async validateDependency(
-    request: ValidateDependencyRequest,
+    request: ValidateDependencyBody,
   ): Promise<Result<ValidateDependencyResponse>> {
     return this.httpClient.post(`${this.baseUrl}/dependencies/validate`, request);
   }
@@ -60,7 +60,7 @@ export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
 
   async updateDependency(
     id: string,
-    request: UpdateTaskDependencyRequest,
+    request: UpdateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/dependencies/${id}`, request);
   }

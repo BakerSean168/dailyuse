@@ -6,9 +6,9 @@ import type {
   BindToGoalReq,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
+  CreateTaskDependencyBody,
+  UpdateTaskDependencyBody,
+  ValidateDependencyBody,
   ValidateDependencyResponse,
   TaskDependencyClientDTO,
   TaskGraphDependencyDTO,
@@ -46,11 +46,11 @@ export interface TaskClientPort {
   checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstance[] }>>;
 
   // Task Dependency Operations
-  createDependency(taskId: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
+  createDependency(taskId: string, request: CreateTaskDependencyBody): Promise<Result<TaskDependencyClientDTO>>;
   getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
   getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
   getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>>;
-  validateDependency(request: ValidateDependencyRequest): Promise<Result<ValidateDependencyResponse>>;
-  updateDependency(id: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
+  validateDependency(request: ValidateDependencyBody): Promise<Result<ValidateDependencyResponse>>;
+  updateDependency(id: string, request: UpdateTaskDependencyBody): Promise<Result<TaskDependencyClientDTO>>;
   deleteDependency(id: string): Promise<Result<void>>;
 }

@@ -1004,8 +1004,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
 
     this._props.goalBinding = TaskGoalBinding.fromDTO({
-      goalId,
-      keyResultId,
+      goalId: goalId as GoalId,
+      keyResultId: keyResultId as KeyResultId,
       goalRecordValue,
       progressTrigger,
     });
@@ -1622,7 +1622,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       recurrenceRule: params.recurrenceRule ?? null,
       reminderConfig: params.reminderConfig ?? null,
       importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      goalBinding: params.goalBinding ? TaskGoalBinding.fromDTO(params.goalBinding) : null,
+      goalBinding: params.goalBinding
+        ? TaskGoalBinding.fromDTO({
+            ...params.goalBinding,
+            goalId: params.goalBinding.goalId as GoalId,
+            keyResultId: params.goalBinding.keyResultId as KeyResultId,
+          })
+        : null,
       folderId: params.folderId ?? null,
       goalId: (params.goalBinding?.goalId as GoalId | undefined) ?? null,
       keyResultId: (params.goalBinding?.keyResultId as KeyResultId | undefined) ?? null,

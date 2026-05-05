@@ -16,6 +16,7 @@ import type {
   GenerateInstancesReq,
   BindToGoalReq,
   QueryTaskTemplateGraphRes,
+  TaskTemplateInstancesQuery,
 } from '@dailyuse/contracts/task';
 
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
@@ -83,13 +84,11 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 
   async getInstancesByDateRange(
     templateId: string,
-    from: number,
-    to: number,
+    query?: TaskTemplateInstancesQuery,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_GET_INSTANCES, {
       templateId,
-      from,
-      to,
+      ...query,
     });
   }
 

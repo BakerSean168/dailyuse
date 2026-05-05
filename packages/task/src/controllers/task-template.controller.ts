@@ -23,6 +23,7 @@ import type {
   TaskInstanceClientDTO,
   CreateTaskTemplateInput,
   ListTaskTemplateFilters,
+  TaskTemplateInstancesQuery,
   QueryTaskTemplateGraphRes,
   QueryTaskTemplatesInternal,
 } from '@dailyuse/contracts/task';
@@ -272,8 +273,33 @@ export class TaskTemplateController {
   /**
    * Get instances by template ID
    */
-  async getInstancesByTemplate(templateId: string): Promise<Result<TaskInstanceClientDTO[]>> {
-    return await this.useCases.listInstancesByTemplate.execute(templateId);
+  async getInstancesByTemplate(
+    templateId: string,
+    range?: TaskTemplateInstancesQuery,
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
+    const result = await this.useCases.listInstancesByTemplate.execute(templateId);
+
+    if (!isOk(result)) {
+      return result as Result<TaskInstanceClientDTO[]>;
+    }
+
+    if (!range?.from && !range?.to) {
+      return result;
+    }
+
+    return ok(
+      result.data.filter((instance) => {
+        if (range.from != null && instance.instanceDate < range.from) {
+          return false;
+        }
+
+        if (range.to != null && instance.instanceDate > range.to) {
+          return false;
+        }
+
+        return true;
+      }),
+    );
   }
 
   /**

@@ -15,52 +15,17 @@ import {
 } from '@dailyuse/utils/result';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId, TaskDependencyId } from '@dailyuse/contracts/primitives';
+import {
+  TaskDependencyResponseSchema,
+  DependencyChainResponseSchema,
+  ValidateDependencyResponseSchema,
+} from '@dailyuse/contracts/task';
+import {
+  CreateDependencyBodySchema,
+  UpdateDependencyBodySchema,
+  ValidateDependencyBodySchema,
+} from '@dailyuse/contracts/task';
 import type { TaskDependencyController } from '../../controllers/task-dependency.controller';
-
-// ============ Schemas ============
-
-const TaskDependencyResponseSchema = z.object({
-  id: z.string(),
-  predecessorTaskId: z.string(),
-  successorTaskId: z.string(),
-  dependencyType: z.string(),
-  lagDays: z.number().optional(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const DependencyChainResponseSchema = z.object({
-  taskId: z.string(),
-  allPredecessors: z.array(z.string()),
-  allSuccessors: z.array(z.string()),
-  depth: z.number(),
-  isOnCriticalPath: z.boolean(),
-});
-
-const ValidateDependencyResponseSchema = z.object({
-  isValid: z.boolean(),
-  errors: z.array(z.string()).optional(),
-  wouldCreateCycle: z.boolean().optional(),
-  cyclePath: z.array(z.string()).optional(),
-  message: z.string().optional(),
-});
-
-const CreateDependencyBodySchema = z.object({
-  predecessorTaskId: z.string().min(1),
-  successorTaskId: z.string().min(1).optional(),
-  dependencyType: z.string().optional(),
-  lagDays: z.number().optional(),
-});
-
-const UpdateDependencyBodySchema = z.object({
-  dependencyType: z.string().optional(),
-  lagDays: z.number().optional(),
-});
-
-const ValidateDependencyBodySchema = z.object({
-  predecessorTaskId: z.string().min(1),
-  successorTaskId: z.string().min(1),
-});
 
 // ============ Types ============
 
@@ -183,7 +148,7 @@ export function registerTaskDependencyRoutes(
       method: 'delete',
       path: '/dependencies/:id',
       summary: '删除任务依赖关系',
-      request: { params: z.object({ id: z.string() }) },
+      request: { params: z.object({ id: brandedId<TaskDependencyId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('依赖关系不存在'),
@@ -200,7 +165,7 @@ export function registerTaskDependencyRoutes(
       path: '/dependencies/:id',
       summary: '更新任务依赖关系',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<TaskDependencyId>() }),
         body: { content: { 'application/json': { schema: UpdateDependencyBodySchema } } },
       },
       responses: {

@@ -1,4 +1,5 @@
 import type { CircularDependencyValidationResult, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 
 /**
  * TaskDependencyPolicy
@@ -28,7 +29,7 @@ export class TaskDependencyPolicy {
     if (hasCycle) {
       return {
         isValid: false,
-        cycle: [...path, predecessorId],
+        cycle: [...path, predecessorId] as TaskTemplateId[],
         message: `Creating this dependency would introduce a cycle: ${[...path, predecessorId].join(' -> ')}`,
       };
     }

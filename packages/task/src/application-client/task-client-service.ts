@@ -16,9 +16,10 @@ import type {
   BindToGoalReq,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
+  CreateTaskDependencyBody,
+  GetTaskInstancesByRangeReq,
+  UpdateTaskDependencyBody,
+  ValidateDependencyBody,
   ValidateDependencyResponse,
   TaskDependencyClientDTO,
   TaskGraphDependencyDTO,
@@ -253,7 +254,7 @@ export class TaskClientService implements TaskClientPort {
     from: number,
     to: number,
   ): Promise<Result<TaskInstance[]>> {
-    const result = await this.templateApi.getInstancesByDateRange(templateId, from, to);
+    const result = await this.templateApi.getInstancesByDateRange(templateId, { from, to });
     return mapResult(result, (dtos) => dtos.map((dto) => taskInstanceFromDTO(dto)));
   }
 
@@ -282,7 +283,11 @@ export class TaskClientService implements TaskClientPort {
   }
 
   async listInstancesByDateRange(from: number, to: number): Promise<Result<TaskInstance[]>> {
-    const result = await this.instanceApi.getTaskInstancesByDateRange(from, to);
+    const request: GetTaskInstancesByRangeReq = {
+      startDate: from,
+      endDate: to,
+    };
+    const result = await this.instanceApi.getTaskInstancesByDateRange(request);
     return mapResult(result, (dtos) =>
       (Array.isArray(dtos) ? dtos : []).map((dto) => taskInstanceFromDTO(dto)),
     );
@@ -327,7 +332,7 @@ export class TaskClientService implements TaskClientPort {
 
   async createDependency(
     taskId: string,
-    request: CreateTaskDependencyRequest,
+    request: CreateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>> {
     return this.dependencyApi.createDependency(taskId, request);
   }
@@ -345,14 +350,14 @@ export class TaskClientService implements TaskClientPort {
   }
 
   async validateDependency(
-    request: ValidateDependencyRequest,
+    request: ValidateDependencyBody,
   ): Promise<Result<ValidateDependencyResponse>> {
     return this.dependencyApi.validateDependency(request);
   }
 
   async updateDependency(
     id: string,
-    request: UpdateTaskDependencyRequest,
+    request: UpdateTaskDependencyBody,
   ): Promise<Result<TaskDependencyClientDTO>> {
     return this.dependencyApi.updateDependency(id, request);
   }
