@@ -2,6 +2,7 @@ import { computed, ref, type ComputedRef, type WritableComputedRef } from 'vue';
 import { toast } from 'vue-sonner';
 import type { ComposerTranslation } from 'vue-i18n';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
 import { repairBrokenMarkdownReference } from '../utils/resourceReferenceIndex';
 import type {
@@ -134,7 +135,7 @@ export function useEditorSceneDialogs(options: UseEditorSceneDialogsOptions) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${options.currentResource.value.displayName || options.currentResource.value.name || 'note'}-self-contained.md`;
+    link.download = `${getResourceDisplayName(options.currentResource.value)}-self-contained.md`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success(options.t('editor.exportDialog.downloadSuccess'));

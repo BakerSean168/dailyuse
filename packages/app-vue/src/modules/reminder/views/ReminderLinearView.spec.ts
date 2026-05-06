@@ -241,7 +241,6 @@ function createTemplate(
       type: 'FixedTime',
       fixedTime: { time: '09:00', timezone: null },
       interval: null,
-      displayText: 'At 09:00',
     },
     selfEnabled: true,
     effectiveEnabled: true,
@@ -304,7 +303,6 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     templateCountText: '2 templates',
     activeStatusText: '1 active',
     controlDescription: 'Group decides the final state.',
-    effectiveTemplatePolicyText: 'Group switch decides whether reminders run.',
     ...overrides,
   } as ReminderGroupClientDTO;
 }
@@ -313,7 +311,7 @@ function createPreferences(
   overrides: Partial<UserReminderPreferencesClientDTO> = {},
 ): UserReminderPreferencesClientDTO {
   return {
-    id: 'pref-1',
+    id: 'pref-1' as UserReminderPreferencesClientDTO['id'],
     identityId: 'identity-1' as UserReminderPreferencesClientDTO['identityId'],
     bestTimeSlots: [],
     worstTimeSlots: [],

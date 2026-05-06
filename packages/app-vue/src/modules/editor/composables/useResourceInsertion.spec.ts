@@ -25,12 +25,6 @@ function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceCli
     isArchived: false,
     isActive: true,
     isDraft: false,
-    statusText: 'Active',
-    typeText: 'File',
-    displayName: 'Meeting Notes',
-    formattedSize: '128 B',
-    createdAtText: 'today',
-    updatedAtText: 'today',
     extension: '.png',
     icon: 'file-image',
     ...overrides,
@@ -39,7 +33,7 @@ function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceCli
 
 describe('useResourceInsertion helpers', () => {
   it('falls back to image when alt text is empty after normalization', () => {
-    expect(__test__.deriveImageAltText(createResource({ name: '.png', displayName: '' }))).toBe(
+    expect(__test__.deriveImageAltText(createResource({ name: '.png' }))).toBe(
       'image',
     );
   });
@@ -89,7 +83,6 @@ describe('useResourceInsertion orchestration', () => {
         createResource({
           id: `image-${index + 1}` as ResourceClientDTO['id'],
           name: file.name,
-          displayName: file.name.replace(/\.[^.]+$/, ''),
           path: `/images/${file.name}`,
         }),
       ),

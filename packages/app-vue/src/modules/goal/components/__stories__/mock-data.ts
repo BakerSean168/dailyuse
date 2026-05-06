@@ -11,11 +11,13 @@ import type {
 const now = Date.now();
 const DAY = 86400000;
 
+const asKeyResultId = (value: string) => value as KeyResultClientDTO['id'];
+
 export function createMockKeyResult(
   overrides: Partial<KeyResultClientDTO> = {},
 ): KeyResultClientDTO {
   return {
-    id: 'kr-1',
+    id: asKeyResultId('kr-1'),
     title: '每日完成3道算法题',
     description: '在 LeetCode 上完成中等难度以上题目',
     progress: {
@@ -40,7 +42,7 @@ export function createMockKeyResults(): KeyResultClientDTO[] {
   return [
     createMockKeyResult(),
     createMockKeyResult({
-      id: 'kr-2',
+      id: asKeyResultId('kr-2'),
       title: '阅读3本技术书籍',
       description: '深入学习设计模式和系统架构',
       progress: {
@@ -55,7 +57,7 @@ export function createMockKeyResults(): KeyResultClientDTO[] {
       order: 1,
     }),
     createMockKeyResult({
-      id: 'kr-3',
+      id: asKeyResultId('kr-3'),
       title: '完成2个开源项目贡献',
       description: null,
       progress: {
@@ -125,7 +127,7 @@ export function createMockGoals(): GoalClientDTO[] {
       sortOrder: 1,
       keyResults: [
         createMockKeyResult({
-          id: 'kr-4',
+          id: asKeyResultId('kr-4'),
           title: '每周运动3次',
           progress: {
             valueType: 'Number',
@@ -138,7 +140,7 @@ export function createMockGoals(): GoalClientDTO[] {
           weight: 50,
         }),
         createMockKeyResult({
-          id: 'kr-5',
+          id: asKeyResultId('kr-5'),
           title: '体重降至70kg',
           progress: {
             valueType: 'Number',
@@ -166,7 +168,7 @@ export function createMockGoals(): GoalClientDTO[] {
       sortOrder: 2,
       keyResults: [
         createMockKeyResult({
-          id: 'kr-6',
+          id: asKeyResultId('kr-6'),
           title: '迁移所有API',
           progress: {
             valueType: 'Number',
@@ -188,7 +190,7 @@ export function createMockGoalRecord(
 ): GoalRecordClientDTO {
   return {
     id: 'record-1',
-    keyResultId: 'kr-1',
+    keyResultId: asKeyResultId('kr-1'),
     goalId: 'goal-1',
     value: 3,
     valueAfter: 48,
@@ -238,14 +240,14 @@ export function createMockReview(
     reviewedAt: now,
     keyResultSnapshots: [
       {
-        keyResultId: 'kr-1',
+        keyResultId: asKeyResultId('kr-1'),
         title: '每日完成3道算法题',
         currentValue: 45,
         targetValue: 90,
         progressPercentage: 50,
       },
       {
-        keyResultId: 'kr-2',
+        keyResultId: asKeyResultId('kr-2'),
         title: '阅读3本技术书籍',
         currentValue: 2,
         targetValue: 3,

@@ -23,12 +23,29 @@ function createResource(
 ): ResourceClientDTO {
   return {
     id: 'resource-1' as ResourceClientDTO['id'],
+    repositoryId: 'repository-1' as ResourceClientDTO['repositoryId'],
+    folderId: null,
     name: 'note.md',
-    displayName: 'note.md',
+    type: 'File',
     mimeType: 'text/markdown',
+    path: '/note.md',
+    size: 0,
+    content: null,
+    metadata: { tags: [], wordCount: null, readingTime: null, thumbnail: null },
+    stats: { viewCount: 0, editCount: 0, linkCount: 0, lastViewedAt: null, lastEditedAt: null },
+    status: 'Active',
+    createdAt: 1741910400000,
+    updatedAt: 1741910400000,
+    deletedAt: null,
+    version: 1,
+    isDeleted: false,
+    isArchived: false,
+    isActive: true,
+    isDraft: false,
     extension: '.md',
+    icon: 'file',
     ...overrides,
-  } as ResourceClientDTO;
+  };
 }
 
 function createBookmark(
@@ -37,11 +54,19 @@ function createBookmark(
   return {
     id: 'bookmark-1' as ResourceBookmarkClientDTO['id'],
     resourceId: 'resource-1' as ResourceBookmarkClientDTO['resourceId'],
+    identityId: 'identity-1' as ResourceBookmarkClientDTO['identityId'],
     displayName: 'note.md',
     aliasName: null,
+    icon: null,
+    color: null,
+    sortOrder: 0,
+    version: 1,
+    createdAt: 1741910400000,
     updatedAt: 1741910400000,
+    deletedAt: null,
+    isOwner: true,
     ...overrides,
-  } as ResourceBookmarkClientDTO;
+  };
 }
 
 describe('useRepositoryStore', () => {
@@ -95,7 +120,6 @@ describe('useRepositoryStore', () => {
       createResource({
         id: 'resource-2' as ResourceClientDTO['id'],
         name: 'photo.png',
-        displayName: 'photo.png',
         mimeType: 'image/png',
         extension: '.png',
       }),

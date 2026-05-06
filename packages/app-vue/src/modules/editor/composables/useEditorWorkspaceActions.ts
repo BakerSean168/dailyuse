@@ -2,6 +2,7 @@ import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
 import { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
 import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
 
 export function useEditorWorkspaceActions() {
@@ -23,7 +24,7 @@ export function useEditorWorkspaceActions() {
 
     const opened = await editorWorkspaceStore.openResource({
       resourceId,
-      title: resource.displayName || resource.name,
+      title: getResourceDisplayName(resource),
       workspaceId: resourceGateway.repositoryId.value,
     });
 

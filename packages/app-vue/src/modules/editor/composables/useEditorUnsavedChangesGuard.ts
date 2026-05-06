@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
 import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 
 export function useEditorUnsavedChangesGuard() {
   const { t } = useI18n();
@@ -15,7 +16,7 @@ export function useEditorUnsavedChangesGuard() {
   function getDocumentName(resourceId: string): string {
     const session = registry.getDocument(resourceId);
     const resource = session?.resource.value ?? resourceGateway.getCachedResource(resourceId);
-    return resource?.displayName || resource?.name || t('editor.container.resource');
+    return resource ? getResourceDisplayName(resource) : t('editor.container.resource');
   }
 
   async function confirmCloseResource(resourceId: string | null | undefined) {

@@ -184,16 +184,13 @@
               />
               <div class="text-center">
                 <h3 class="text-lg font-medium">
-                  {{
-                    workspaceScene.main.editor.resource.displayName ||
-                    workspaceScene.main.editor.resource.name
-                  }}
+                  {{ getResourceDisplayName(workspaceScene.main.editor.resource) }}
                 </h3>
                 <p class="text-sm text-muted-foreground mt-1">
                   {{ workspaceScene.main.editor.resource.mimeType }}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">
-                  {{ workspaceScene.main.editor.resource.formattedSize }}
+                  {{ getResourceFormattedSize(workspaceScene.main.editor.resource) }}
                 </p>
               </div>
             </div>
@@ -353,6 +350,8 @@ import ActiveDocumentPane from '../../editor/components/ActiveDocumentPane.vue';
 import { useRepositoryWorkspaceScene } from '../../editor/composables';
 import type { EditorWorkspaceSidebarMode } from '../../editor/stores/editorWorkspaceUiStore';
 import {
+  getResourceDisplayName,
+  getResourceFormattedSize,
   getResourceIcon,
   getResourceMediaType,
   isMarkdownResource,

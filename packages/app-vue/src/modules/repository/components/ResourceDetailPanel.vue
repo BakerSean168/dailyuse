@@ -3,7 +3,7 @@
     <div class="border-b px-4 py-3">
       <h3 class="text-sm font-semibold">{{ t('repository.resourceDetails.title') }}</h3>
       <p class="truncate text-xs text-muted-foreground">
-        {{ resource.displayName || resource.name }}
+        {{ resourceDisplayName }}
       </p>
     </div>
 
@@ -20,9 +20,9 @@
         <div class="space-y-1 text-muted-foreground">
           <div>{{ t('repository.resourceDetails.path') }}: {{ resource.path }}</div>
           <div>{{ t('repository.resourceDetails.type') }}: {{ resource.mimeType }}</div>
-          <div>{{ t('repository.resourceDetails.size') }}: {{ resource.formattedSize }}</div>
-          <div>{{ t('repository.resourceDetails.createdAt') }}: {{ resource.createdAtText }}</div>
-          <div>{{ t('repository.resourceDetails.updatedAt') }}: {{ resource.updatedAtText }}</div>
+          <div>{{ t('repository.resourceDetails.size') }}: {{ resourceFormattedSize }}</div>
+          <div>{{ t('repository.resourceDetails.createdAt') }}: {{ resourceCreatedAtText }}</div>
+          <div>{{ t('repository.resourceDetails.updatedAt') }}: {{ resourceUpdatedAtText }}</div>
           <div>
             {{ t('repository.resourceDetails.references') }}: {{ inboundReferences.length }}
           </div>
@@ -64,6 +64,12 @@ import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { ResourceReferenceUsage } from '../../editor/utils/resourceReferenceIndex';
+import {
+  getResourceCreatedAtText,
+  getResourceDisplayName,
+  getResourceFormattedSize,
+  getResourceUpdatedAtText,
+} from '../utils/resourcePresentation';
 
 const props = defineProps<{
   resource: ResourceClientDTO | null;
@@ -78,5 +84,17 @@ defineEmits<{
 const { t } = useI18n();
 const isBrokenReferenceTarget = computed(
   () => props.resource != null && props.inboundReferences.some((usage) => usage.reference.isBroken),
+);
+const resourceDisplayName = computed(() =>
+  props.resource ? getResourceDisplayName(props.resource) : '',
+);
+const resourceFormattedSize = computed(() =>
+  props.resource ? getResourceFormattedSize(props.resource) : '-',
+);
+const resourceCreatedAtText = computed(() =>
+  props.resource ? getResourceCreatedAtText(props.resource) : '-',
+);
+const resourceUpdatedAtText = computed(() =>
+  props.resource ? getResourceUpdatedAtText(props.resource) : '-',
 );
 </script>

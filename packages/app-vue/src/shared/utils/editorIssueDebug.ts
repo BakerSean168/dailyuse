@@ -1,4 +1,5 @@
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../../modules/repository/utils/resourcePresentation';
 
 const STORAGE_KEY = 'dailyuse:debug:editor-issues';
 const QUERY_KEY = 'debug-editor-issues';
@@ -48,7 +49,7 @@ export function summarizeResourceForDebug(
   resource: Partial<
     Pick<
       ResourceClientDTO,
-      'id' | 'name' | 'displayName' | 'path' | 'extension' | 'mimeType' | 'folderId' | 'type'
+      'id' | 'name' | 'path' | 'extension' | 'mimeType' | 'folderId' | 'type'
     >
   > | null | undefined,
 ) {
@@ -59,7 +60,7 @@ export function summarizeResourceForDebug(
   return {
     id: resource.id ?? null,
     name: resource.name ?? null,
-    displayName: resource.displayName ?? null,
+    displayName: resource.name ? getResourceDisplayName(resource as Pick<ResourceClientDTO, 'name' | 'path'>) : null,
     path: resource.path ?? null,
     extension: resource.extension ?? null,
     mimeType: resource.mimeType ?? null,

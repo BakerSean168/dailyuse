@@ -2,6 +2,7 @@ import { computed, type ComputedRef } from 'vue';
 import { toast } from 'vue-sonner';
 import type { ComposerTranslation } from 'vue-i18n';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import {
   getResourceInsertionFeedback,
   type EditorSelectionRange,
@@ -60,8 +61,7 @@ export function useEditorSceneInsertion(options: UseEditorSceneInsertionOptions)
       });
       const result = await options.insertUploadedImages({
         files,
-        currentNoteName:
-          options.currentResource.value.displayName || options.currentResource.value.name,
+        currentNoteName: getResourceDisplayName(options.currentResource.value),
         insertText: options.insertTextAtSelection,
         selection,
       });

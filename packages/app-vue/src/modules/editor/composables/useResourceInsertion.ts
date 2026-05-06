@@ -5,6 +5,7 @@ import type {
   RepositoryUploadResult,
 } from '../../repository/composables/useRepository';
 import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import { serializeMarkdownResourceReference } from '../utils/markdownResourceReferences';
 
 export interface EditorSelectionRange {
@@ -378,7 +379,7 @@ export function buildResourceInsertionItems(
 export function toResourceInsertionItem(resource: ResourceClientDTO): ResourceInsertionItem {
   const tags = Array.isArray(resource.metadata?.tags) ? resource.metadata.tags : [];
   const searchableText = [
-    resource.displayName,
+    getResourceDisplayName(resource),
     resource.name,
     resource.path,
     resource.mimeType,
@@ -494,7 +495,7 @@ export async function buildResourceMarkdown(
 }
 
 export function buildPathMarkdownReference(
-  resource: Pick<ResourceClientDTO, 'name' | 'displayName' | 'path' | 'mimeType' | 'extension'>,
+  resource: Pick<ResourceClientDTO, 'name' | 'path' | 'mimeType' | 'extension'>,
   template: Exclude<ResourceInsertionTemplate, 'auto'>,
 ): string {
   if (!resource.path) {
@@ -519,20 +520,17 @@ export function buildPathMarkdownReference(
 }
 
 export function deriveImageAltText(
-  resource: Pick<ResourceClientDTO, 'name' | 'displayName'>,
+  resource: Pick<ResourceClientDTO, 'name' | 'path'>,
 ): string {
-  const rawName = resource.displayName?.trim() || resource.name.trim();
+  const rawName = getResourceDisplayName(resource).trim() || resource.name.trim();
   const withoutExtension = rawName.replace(/\.[^.]+$/, '').trim();
   return withoutExtension || 'image';
 }
 
 export function deriveResourceLabel(
-  resource: Pick<ResourceClientDTO, 'name' | 'displayName'>,
+  resource: Pick<ResourceClientDTO, 'name' | 'path'>,
 ): string {
-  return (resource.displayName?.trim() || resource.name.trim() || 'resource').replace(
-    /\.[^.]+$/,
-    '',
-  );
+  return getResourceDisplayName(resource).trim() || 'resource';
 }
 
 export function resolveInsertionTemplate(

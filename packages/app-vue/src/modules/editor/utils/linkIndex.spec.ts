@@ -50,12 +50,6 @@ function createResource(overrides: Partial<ResourceClientDTO>): ResourceClientDT
     isArchived: overrides.isArchived ?? false,
     isActive: overrides.isActive ?? true,
     isDraft: overrides.isDraft ?? false,
-    statusText: overrides.statusText ?? 'active',
-    typeText: overrides.typeText ?? 'file',
-    displayName: overrides.displayName ?? overrides.name ?? 'Untitled.md',
-    formattedSize: overrides.formattedSize ?? '0 B',
-    createdAtText: overrides.createdAtText ?? '2026-03-10',
-    updatedAtText: overrides.updatedAtText ?? '2026-03-10',
     extension: overrides.extension ?? '.md',
     icon: overrides.icon ?? 'mdi:file-document-outline',
   };
@@ -67,7 +61,6 @@ describe('linkIndex', () => {
       createResource({
         id: asResourceId('alpha'),
         name: 'Alpha.md',
-        displayName: 'Alpha.md',
         path: '/notes/Alpha.md',
         metadata: { tags: ['knowledge'], wordCount: 10, readingTime: 1, thumbnail: null },
         content: 'Reference to [[Beta]] and [[Missing Note]].',
@@ -75,14 +68,12 @@ describe('linkIndex', () => {
       createResource({
         id: asResourceId('beta'),
         name: 'Beta.md',
-        displayName: 'Beta.md',
         path: '/notes/Beta.md',
         content: 'Backlink to [[Alpha|the alpha note]].',
       }),
       createResource({
         id: asResourceId('gamma'),
         name: 'Gamma.md',
-        displayName: 'Gamma.md',
         path: '/archive/Gamma.md',
         content: '',
       }),

@@ -14,13 +14,6 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { ResultError } from '@dailyuse/contracts/result';
 import type {
-  Goal,
-  GoalFolder,
-  KeyResult,
-  GoalReview,
-  GoalRecord,
-} from '@dailyuse/goal/domain-client';
-import type {
   GoalClientDTO,
   CreateGoalReq,
   UpdateGoalReq,
@@ -34,6 +27,12 @@ import type {
   CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
 import { translateResultError } from '../../../shared/utils/translateResultError';
+
+type GoalEntityLike = { toDTO(): GoalClientDTO };
+type GoalFolderEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalFolders'][number] };
+type KeyResultEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['keyResults'][number] };
+type GoalReviewEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalReviews'][number] };
+type GoalRecordEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalRecords'][number] };
 
 export function useGoal() {
   const store = useGoalStore();
@@ -100,7 +99,7 @@ export function useGoal() {
 
       if (result.ok) {
         store.setGoals(
-          (result.data.goals ?? []).map((g: Goal) => g.toDTO()),
+          (result.data.goals ?? []).map((g: GoalEntityLike) => g.toDTO()),
           result.data.pagination?.total ?? 0,
         );
       } else {
@@ -191,7 +190,7 @@ export function useGoal() {
   async function fetchFolders() {
     const result = await service.listGoalFolders();
     if (result.ok) {
-      store.setGoalFolders((result.data ?? []).map((f: GoalFolder) => f.toDTO()));
+      store.setGoalFolders((result.data ?? []).map((f: GoalFolderEntityLike) => f.toDTO()));
     } else {
       handleError(result.error, 'goal.error.loadFoldersFailed', 'fetchFolders');
     }
@@ -235,7 +234,9 @@ export function useGoal() {
   async function fetchKeyResults(goalId: string) {
     const result = await service.getKeyResults(goalId);
     if (result.ok) {
-      store.setKeyResults((result.data.keyResults ?? []).map((kr: KeyResult) => kr.toDTO()));
+      store.setKeyResults(
+        (result.data.keyResults ?? []).map((kr: KeyResultEntityLike) => kr.toDTO()),
+      );
     } else {
       handleError(result.error, 'goal.error.loadKRFailed', 'fetchKeyResults');
     }
@@ -279,7 +280,9 @@ export function useGoal() {
   async function fetchRecords(goalId: string) {
     const result = await service.getGoalRecordsByGoal(goalId);
     if (result.ok) {
-      store.setGoalRecords((result.data.records ?? []).map((r: GoalRecord) => r.toDTO()));
+      store.setGoalRecords(
+        (result.data.records ?? []).map((r: GoalRecordEntityLike) => r.toDTO()),
+      );
     } else {
       handleError(result.error, 'goal.error.loadRecordsFailed', 'fetchRecords');
     }
@@ -337,7 +340,9 @@ export function useGoal() {
   async function fetchReviews(goalId: string) {
     const result = await service.getGoalReviews(goalId);
     if (result.ok) {
-      store.setGoalReviews((result.data.reviews ?? []).map((r: GoalReview) => r.toDTO()));
+      store.setGoalReviews(
+        (result.data.reviews ?? []).map((r: GoalReviewEntityLike) => r.toDTO()),
+      );
     } else {
       handleError(result.error, 'goal.error.loadReviewsFailed', 'fetchReviews');
     }

@@ -1,4 +1,5 @@
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import {
   buildResourcePathMap,
   resolveMarkdownResourceReferences,
@@ -68,7 +69,7 @@ function stripMarkdownExtension(value: string): string {
 }
 
 function buildNote(resource: ResourceClientDTO): ResourceReferenceNote {
-  const displayName = resource.displayName || resource.name;
+  const displayName = getResourceDisplayName(resource);
 
   return {
     id: resource.id,

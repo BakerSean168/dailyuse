@@ -25,12 +25,6 @@ function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceCli
     isArchived: false,
     isActive: true,
     isDraft: false,
-    statusText: 'Active',
-    typeText: 'File',
-    displayName: 'Original Name',
-    formattedSize: '10 B',
-    createdAtText: 'today',
-    updatedAtText: 'today',
     extension: '.md',
     icon: 'file',
     ...overrides,
@@ -69,7 +63,7 @@ describe('useRepository helpers', () => {
   });
 
   it('rebuilds bookmark display name from linked resource when alias is cleared', () => {
-    const resource = createResource({ displayName: 'Recovered Title' });
+    const resource = createResource({ name: 'Recovered Title.md' });
     const bookmark = createBookmark({ aliasName: 'Old Alias', displayName: 'Old Alias' });
 
     const updated = storeTest.buildBookmarkWithAlias(bookmark, null, [resource]);

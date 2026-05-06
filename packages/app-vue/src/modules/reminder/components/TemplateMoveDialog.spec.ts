@@ -268,7 +268,6 @@ function createGroup(overrides: Partial<ReminderGroupClientDTO> = {}): ReminderG
     templateCountText: '1 template',
     activeStatusText: '1 active',
     controlDescription: 'Group decides the final state.',
-    effectiveTemplatePolicyText: '分组开启时统一生效，分组暂停时统一暂停。',
     ...overrides,
   } as ReminderGroupClientDTO;
 }
@@ -288,7 +287,6 @@ function mountDialog(props?: {
           name: '工作提醒',
           controlMode: 'Individual',
           enabled: true,
-          effectiveTemplatePolicyText: '模板保留自身开关控制。',
         }),
       ],
       templates: props?.templates ?? [
@@ -371,7 +369,6 @@ describe('TemplateMoveDialog', () => {
           name: '暂停分组',
           controlMode: 'Group',
           enabled: false,
-          effectiveTemplatePolicyText: '分组暂停时所有提醒都会暂停。',
         }),
       ],
     });

@@ -5,6 +5,7 @@ import { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 import { useWindowUnsavedChangesGuard } from './useWindowUnsavedChangesGuard';
 import { useEditorScene } from './useEditorScene';
 import { useEditorLinkSuggestion } from './useEditorLinkSuggestion';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 
 export function useEditorLinearScene() {
   const { t } = useI18n();
@@ -24,7 +25,9 @@ export function useEditorLinearScene() {
 
   const title = computed(
     () =>
-      editor.document.resource.value?.displayName ||
+      (editor.document.resource.value
+        ? getResourceDisplayName(editor.document.resource.value)
+        : null) ||
       editor.document.resource.value?.name ||
       t('editor.linear.untitled'),
   );

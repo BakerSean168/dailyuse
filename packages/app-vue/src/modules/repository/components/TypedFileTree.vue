@@ -134,7 +134,7 @@
                     :class="getFileIconClass(resource)"
                   />
                   <span class="text-sm truncate flex-1" :title="resource.path">{{
-                    resource.displayName || resource.name
+                    getResourceDisplayName(resource)
                   }}</span>
                   <span
                     v-if="resource.metadata?.tags?.length"
@@ -185,6 +185,7 @@ import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceClientDTO, TreeNode } from '@dailyuse/contracts/repository';
 import { findNotesFolderId } from '../utils/noteFolder';
+import { getResourceDisplayName } from '../utils/resourcePresentation';
 
 const props = withDefaults(
   defineProps<{

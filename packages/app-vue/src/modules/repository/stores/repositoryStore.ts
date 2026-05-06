@@ -10,6 +10,7 @@ import type {
   TreeNode,
   ResourceBookmarkClientDTO,
 } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../utils/resourcePresentation';
 
 interface BookmarkUiState {
   aliasById: Record<string, string | null>;
@@ -228,7 +229,7 @@ function applyBookmarkUiState(
     return visibleBookmarks;
   }
 
-  const byId = new Map(visibleBookmarks.map((bookmark) => [bookmark.id, bookmark]));
+  const byId = new Map(visibleBookmarks.map((bookmark) => [String(bookmark.id), bookmark]));
   const orderedBookmarks = uiState.orderedIds
     .map((bookmarkId) => byId.get(bookmarkId) ?? null)
     .filter((bookmark): bookmark is ResourceBookmarkClientDTO => bookmark !== null);
@@ -245,7 +246,8 @@ function buildBookmarkWithAlias(
   resources: ResourceClientDTO[],
 ): ResourceBookmarkClientDTO {
   const resource = resources.find((item) => item.id === bookmark.resourceId) ?? null;
-  const displayName = aliasName || resource?.displayName || resource?.name || bookmark.displayName;
+  const displayName =
+    aliasName || (resource ? getResourceDisplayName(resource) : null) || bookmark.displayName;
 
   return {
     ...bookmark,

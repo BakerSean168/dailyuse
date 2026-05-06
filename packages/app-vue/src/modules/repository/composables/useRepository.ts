@@ -106,7 +106,7 @@ interface RepositoryServiceLike {
   }>;
   updateBookmark?(
     repositoryId: string,
-    bookmarkId: string,
+    bookmarkId: ResourceBookmarkClientDTO['id'],
     payload: { aliasName: string | null },
   ): Promise<{
     ok: boolean;
@@ -115,7 +115,7 @@ interface RepositoryServiceLike {
   }>;
   reorderBookmarks?(
     repositoryId: string,
-    payload: { bookmarkIds: string[] },
+    payload: { bookmarkIds: Array<ResourceBookmarkClientDTO['id']> },
   ): Promise<{
     ok: boolean;
     data?: ResourceBookmarkClientDTO[];
@@ -123,7 +123,7 @@ interface RepositoryServiceLike {
   }>;
   deleteBookmark?(
     repositoryId: string,
-    bookmarkId: string,
+    bookmarkId: ResourceBookmarkClientDTO['id'],
   ): Promise<{ ok: boolean; error?: { code?: string; message?: string } }>;
   getResource?(resourceId: string): Promise<{
     ok: boolean;
@@ -591,7 +591,9 @@ export function useRepository() {
     return { bookmark: fallbackBookmark, persisted: false };
   }
 
-  async function reorderBookmarks(bookmarkIds: string[]): Promise<boolean> {
+  async function reorderBookmarks(
+    bookmarkIds: Array<ResourceBookmarkClientDTO['id']>,
+  ): Promise<boolean> {
     if (!store.currentRepositoryId) {
       return false;
     }
@@ -632,7 +634,7 @@ export function useRepository() {
     return false;
   }
 
-  async function removeBookmark(bookmarkId: string): Promise<boolean> {
+  async function removeBookmark(bookmarkId: ResourceBookmarkClientDTO['id']): Promise<boolean> {
     if (!store.currentRepositoryId) {
       return false;
     }
@@ -845,7 +847,7 @@ function getResultErrorMessage(
 
 function reorderBookmarkCollection(
   bookmarks: ResourceBookmarkClientDTO[],
-  bookmarkIds: string[],
+  bookmarkIds: Array<ResourceBookmarkClientDTO['id']>,
 ): ResourceBookmarkClientDTO[] {
   const bookmarkById = new Map(bookmarks.map((bookmark) => [bookmark.id, bookmark]));
   const ordered = bookmarkIds

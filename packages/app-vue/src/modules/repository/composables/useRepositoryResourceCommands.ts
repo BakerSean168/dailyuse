@@ -8,7 +8,7 @@ import { useEditorWorkspaceStore } from '../../editor/stores/editorWorkspaceStor
 import { useResourceReferenceIndex } from '../../editor/composables/useResourceReferenceIndex';
 import { findNotesFolderId } from '../utils/noteFolder';
 import { getEditableResourceName, normalizeRenamedResourceName } from '../utils/resourceName';
-import { isMarkdownResource } from '../utils/resourcePresentation';
+import { getResourceDisplayName, isMarkdownResource } from '../utils/resourcePresentation';
 import { useRepository } from './useRepository';
 
 export function useRepositoryResourceCommands(activeResource: Ref<ResourceClientDTO | null>) {
@@ -75,7 +75,7 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
     }
 
     toast.success(
-      t('repository.workspace.createNoteSuccess', { name: note.displayName || note.name }),
+      t('repository.workspace.createNoteSuccess', { name: getResourceDisplayName(note) }),
     );
   }
 
@@ -113,7 +113,7 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
     renameTarget.value = null;
     renameValue.value = '';
     toast.success(
-      t('repository.resourceDetails.renameSuccess', { name: renamed.displayName || renamed.name }),
+      t('repository.resourceDetails.renameSuccess', { name: getResourceDisplayName(renamed) }),
     );
   }
 

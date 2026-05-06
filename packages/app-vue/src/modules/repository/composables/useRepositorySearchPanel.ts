@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { SearchMode, SearchResultItem } from '@dailyuse/contracts/repository';
+import type { SearchMode, SearchRequest, SearchResultItem } from '@dailyuse/contracts/repository';
 import { useEditorWorkspaceActions } from '../../editor/composables/useEditorWorkspaceActions';
 import { useRepository } from './useRepository';
 
@@ -32,7 +32,7 @@ export function useRepositorySearchPanel() {
       }
 
       const result = await searchResources({
-        repositoryId: repositoryId.value,
+        repositoryId: repositoryId.value as SearchRequest['repositoryId'],
         query,
         mode,
         caseSensitive: options.caseSensitive,

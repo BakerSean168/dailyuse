@@ -1,6 +1,5 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Goal, KeyResult } from '@dailyuse/goal/domain-client';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { GoalBindingOption, KeyResultBindingOption } from '../components/types';
@@ -10,8 +9,8 @@ import {
 } from '../../../shared/utils/desktopAuthRecovery';
 import { translateResultError } from '../../../shared/utils/translateResultError';
 
-type GoalLike = Goal | { toDTO?: () => Record<string, any> } | Record<string, any>;
-type KeyResultLike = KeyResult | { toDTO?: () => Record<string, any> } | Record<string, any>;
+type GoalLike = { toDTO?: () => Record<string, any> } | Record<string, any>;
+type KeyResultLike = { toDTO?: () => Record<string, any> } | Record<string, any>;
 
 function toPlainObject<T extends Record<string, any>>(value: T | { toDTO?: () => T }): T {
   if (value && typeof (value as { toDTO?: () => T }).toDTO === 'function') {
@@ -104,7 +103,7 @@ export function useTaskGoalBindingOptions() {
           return [];
         }
 
-        collectedGoals.push(...(result.data.goals ?? []).map((goal: Goal) => mapGoalOption(goal)));
+        collectedGoals.push(...(result.data.goals ?? []).map((goal: GoalLike) => mapGoalOption(goal)));
 
         const pagination = result.data.pagination;
         hasMore = Boolean(pagination?.hasMore);
@@ -155,7 +154,7 @@ export function useTaskGoalBindingOptions() {
         return [];
       }
 
-      const mapped = (result.data.keyResults ?? []).map((keyResult: KeyResult) =>
+      const mapped = (result.data.keyResults ?? []).map((keyResult: KeyResultLike) =>
         mapKeyResultOption(keyResult),
       );
 

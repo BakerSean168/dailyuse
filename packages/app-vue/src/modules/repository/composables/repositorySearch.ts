@@ -5,6 +5,7 @@ import type {
   SearchResponse,
   SearchResultItem,
 } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../utils/resourcePresentation';
 
 export interface HighlightOptions {
   caseSensitive?: boolean;
@@ -153,7 +154,7 @@ function searchSingleResource(
   regex: RegExp,
   request: SearchRequest,
 ): SearchResultItem | null {
-  const resourceName = resource.displayName || resource.name;
+  const resourceName = getResourceDisplayName(resource);
   const tags = Array.isArray(resource.metadata?.tags)
     ? resource.metadata.tags.filter((tag): tag is string => typeof tag === 'string')
     : [];

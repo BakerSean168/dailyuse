@@ -83,9 +83,9 @@
                 >
                   <component :is="getKindIcon(item.kind)" class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div class="min-w-0 flex-1">
+                  <div class="min-w-0 flex-1">
                   <div class="truncate text-sm font-medium">
-                    {{ item.resource.displayName || item.resource.name }}
+                    {{ getResourceDisplayName(item.resource) }}
                   </div>
                   <div class="truncate text-xs text-muted-foreground">{{ item.resource.path }}</div>
                 </div>
@@ -117,7 +117,7 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                   <div class="truncate text-sm font-medium">
-                    {{ item.resource.displayName || item.resource.name }}
+                    {{ getResourceDisplayName(item.resource) }}
                   </div>
                   <Badge variant="outline" class="shrink-0 text-[10px] uppercase">
                     {{ t(`editor.resourcePicker.kinds.${item.kind}`) }}
@@ -153,6 +153,7 @@ import {
   Input,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import { File, FileImage, FileText, Film, Link2 } from 'lucide-vue-next';
 import type {
   ResourceInsertionItem,

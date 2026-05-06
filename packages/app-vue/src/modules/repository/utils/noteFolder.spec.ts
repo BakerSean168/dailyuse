@@ -8,7 +8,7 @@ function createFolder(overrides: Partial<TreeNode> = {}): TreeNode {
     name: 'notes',
     type: 'folder',
     parentId: null,
-    repositoryId: 'repo-1',
+    repositoryId: 'repo-1' as TreeNode['repositoryId'],
     path: '/notes',
     children: [],
     ...overrides,
@@ -30,7 +30,7 @@ describe('noteFolder', () => {
   it('finds the fixed notes folder in nested tree nodes', () => {
     const nestedFolder = createFolder({
       id: 'notes-folder',
-      parentId: 'root-folder',
+      parentId: 'root-folder' as TreeNode['parentId'],
       path: '/content/notes',
     });
 

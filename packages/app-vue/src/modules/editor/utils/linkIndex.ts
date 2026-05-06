@@ -1,4 +1,5 @@
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import {
   normalizeWikiLinkValue,
   parseWikiLinks,
@@ -106,7 +107,7 @@ function toTimestamp(value: string | number | null | undefined): number {
 }
 
 function getNoteTitle(resource: ResourceClientDTO): string {
-  return stripMarkdownExtension(resource.displayName || resource.name);
+  return stripMarkdownExtension(getResourceDisplayName(resource));
 }
 
 function getLookupKeys(note: LinkIndexNote): string[] {
@@ -151,12 +152,14 @@ function extractLinkContext(content: string, match: WikiLinkMatch): string {
 }
 
 function buildNote(resource: ResourceClientDTO): LinkIndexNote {
+  const displayName = getResourceDisplayName(resource);
+
   return {
     id: resource.id,
     resourceId: resource.id,
     title: getNoteTitle(resource),
     name: resource.name,
-    displayName: resource.displayName || resource.name,
+    displayName,
     path: resource.path,
     type: resource.type,
     mimeType: resource.mimeType,

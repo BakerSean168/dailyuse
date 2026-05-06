@@ -54,7 +54,7 @@
               </div>
               <div class="min-w-0 flex-1">
                 <div class="truncate text-sm font-medium">
-                  {{ candidate.displayName || candidate.name }}
+                  {{ getResourceDisplayName(candidate) }}
                 </div>
                 <div class="truncate text-xs text-muted-foreground">{{ candidate.path }}</div>
               </div>
@@ -78,6 +78,7 @@ import {
   Input,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
+import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
 import { File, FileImage } from 'lucide-vue-next';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
@@ -111,7 +112,7 @@ const filteredCandidates = computed(() => {
       return true;
     }
 
-    return [candidate.displayName, candidate.name, candidate.path]
+    return [getResourceDisplayName(candidate), candidate.name, candidate.path]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
