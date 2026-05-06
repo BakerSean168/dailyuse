@@ -1,19 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ConflictAlert from './ConflictAlert.vue';
 import type { ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import { createScheduleConflict } from './story-fixtures';
 
-const mockConflict: ConflictDetectionResult = {
-  hasConflict: true,
-  conflicts: [
-    {
-      scheduleId: 'sched-1',
-      scheduleTitle: 'Team Standup Meeting',
-      overlapStart: Date.now(),
-      overlapEnd: Date.now() + 30 * 60 * 1000,
-      overlapDuration: 30 * 60 * 1000,
-      severity: 'Moderate',
-    },
-  ],
+const mockConflict: ConflictDetectionResult = createScheduleConflict({
   suggestions: [
     {
       type: 'MoveLater',
@@ -22,13 +12,12 @@ const mockConflict: ConflictDetectionResult = {
       description: 'Move to 1 hour later to avoid conflict',
     },
   ],
-};
+});
 
-const severeConflict: ConflictDetectionResult = {
-  hasConflict: true,
+const severeConflict: ConflictDetectionResult = createScheduleConflict({
   conflicts: [
     {
-      scheduleId: 'sched-2',
+      scheduleId: 'sched-2' as ConflictDetectionResult['conflicts'][number]['scheduleId'],
       scheduleTitle: 'Sprint Planning',
       overlapStart: Date.now(),
       overlapEnd: Date.now() + 60 * 60 * 1000,
@@ -36,7 +25,7 @@ const severeConflict: ConflictDetectionResult = {
       severity: 'Severe',
     },
     {
-      scheduleId: 'sched-3',
+      scheduleId: 'sched-3' as ConflictDetectionResult['conflicts'][number]['scheduleId'],
       scheduleTitle: 'Design Review',
       overlapStart: Date.now() + 30 * 60 * 1000,
       overlapEnd: Date.now() + 90 * 60 * 1000,
@@ -58,7 +47,7 @@ const severeConflict: ConflictDetectionResult = {
       description: 'Shorten to 30 minutes',
     },
   ],
-};
+});
 
 const noConflict: ConflictDetectionResult = {
   hasConflict: false,

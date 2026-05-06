@@ -1,80 +1,26 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import GoalTasksCard from './GoalTasksCard.vue';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import { createScheduleStoryTask } from './story-fixtures';
 
 function makeTask(
-  overrides: Record<string, unknown> & { id: string; name: string },
+  overrides: Parameters<typeof createScheduleStoryTask>[0] & { id: string; name: string },
 ): ScheduleTaskClientDTO {
-  const now = new Date();
-  return {
-    identityId: 'user-1',
-    description: null,
+  const { id, name, ...restOverrides } = overrides;
+
+  return createScheduleStoryTask({
+    id,
+    name,
     sourceModule: 'Goal',
     sourceEntityId: 'goal-1',
-    status: 'Active',
-    enabled: true,
-    schedule: {
-      cronExpression: '0 9 * * 1-5',
-      timezone: 'Asia/Shanghai',
-      startDate: null,
-      endDate: null,
-      maxExecutions: null,
-      cronDescription: 'At 09:00, Monday through Friday',
-      timezoneDisplay: 'Asia/Shanghai',
-      startDateFormatted: null,
-      endDateFormatted: null,
-      maxExecutionsFormatted: 'Unlimited',
-    },
-    execution: {
-      nextRunAt: new Date(now.getTime() + 86400000).toISOString(),
-      lastRunAt: new Date(now.getTime() - 3600000).toISOString(),
-      executionCount: 12,
-      lastExecutionStatus: 'Success',
-      consecutiveFailures: 0,
-      nextRunAtFormatted: 'Tomorrow 09:00',
-      lastRunAtFormatted: '1 hour ago',
-      lastExecutionDurationFormatted: '2.3s',
-      executionCountFormatted: '12 times',
-      healthStatus: 'healthy',
-    },
-    retryPolicy: {
-      enabled: true,
-      maxRetries: 3,
-      retryDelay: 60,
-      backoffMultiplier: 2,
-      maxRetryDelay: 3600,
-      policyDescription: 'Retry 3 times with exponential backoff',
-      enabledDisplay: 'Enabled',
-      retryDelayFormatted: '1 min',
-      maxRetryDelayFormatted: '1 hour',
-    },
     metadata: {
       payload: {},
       tags: ['goal'],
       priority: 'Normal',
       timeout: null,
-      priorityDisplay: 'Normal',
-      priorityColor: 'blue',
-      tagsDisplay: 'goal',
-      timeoutFormatted: 'No timeout',
-      payloadSummary: '',
     },
-    version: 1,
-    createdAt: now.getTime(),
-    updatedAt: now.getTime(),
-    deletedAt: null,
-    statusDisplay: 'Active',
-    statusColor: 'green',
-    sourceModuleDisplay: 'Goal Module',
-    enabledDisplay: 'Enabled',
-    nextRunAtFormatted: 'Tomorrow 09:00',
-    lastRunAtFormatted: '1 hour ago',
-    executionSummary: '12 executions, 12 successful',
-    healthStatus: 'healthy',
-    isOverdue: false,
-    executions: null,
-    ...overrides,
-  } as ScheduleTaskClientDTO;
+    ...restOverrides,
+  });
 }
 
 const mockTasks: ScheduleTaskClientDTO[] = [
@@ -83,10 +29,7 @@ const mockTasks: ScheduleTaskClientDTO[] = [
     id: 'task-2',
     name: 'Update OKR progress',
     status: 'Paused',
-    statusDisplay: 'Paused',
-    statusColor: 'gray',
     enabled: false,
-    enabledDisplay: 'Disabled',
   }),
   makeTask({
     id: 'task-3',
@@ -96,14 +39,9 @@ const mockTasks: ScheduleTaskClientDTO[] = [
       lastRunAt: new Date(Date.now() - 7200000).toISOString(),
       executionCount: 5,
       lastExecutionStatus: 'Failed',
+      lastExecutionDuration: 500,
       consecutiveFailures: 3,
-      nextRunAtFormatted: '-',
-      lastRunAtFormatted: '2 hours ago',
-      lastExecutionDurationFormatted: '0.5s',
-      executionCountFormatted: '5 times',
-      healthStatus: 'critical',
     },
-    healthStatus: 'critical',
   }),
 ];
 

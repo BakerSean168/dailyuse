@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { GetScheduleTaskUseCase } from './get-schedule-task.use-case';
+import { GetDueScheduleTasksUseCase } from './get-due-schedule-tasks.use-case';
 import { ListScheduleTasksByAccountUseCase } from './list-schedule-tasks-by-account.use-case';
 import { ListScheduleTasksBySourceUseCase } from './list-schedule-tasks-by-source.use-case';
 import { ListScheduleTasksByStatusUseCase } from './list-schedule-tasks-by-status.use-case';
@@ -85,6 +86,24 @@ describe('Schedule query use-cases', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toEqual([{ id: 't1' }]);
+    }
+  });
+
+  it('lists due tasks as client dtos', async () => {
+    const repository = {
+      findDueTasksForExecution: vi.fn().mockResolvedValue([
+        { toClientDTO: vi.fn().mockReturnValue({ id: 't1' }) },
+        { toClientDTO: vi.fn().mockReturnValue({ id: 't2' }) },
+      ]),
+    } as any;
+    const useCase = new GetDueScheduleTasksUseCase(repository);
+
+    const result = await useCase.execute(new Date('2026-05-06T00:00:00.000Z'));
+
+    expect(repository.findDueTasksForExecution).toHaveBeenCalled();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([{ id: 't1' }, { id: 't2' }]);
     }
   });
 });

@@ -2,13 +2,12 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref } from 'vue';
 import CreateScheduleDialog from './CreateScheduleDialog.vue';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import { createScheduleStoryEvent } from './story-fixtures';
 
 const now = Date.now();
 const later = now + 2 * 60 * 60 * 1000;
 
-const existingSchedule: ScheduleJobClientDTO = {
-  id: 'sched-1',
-  identityId: 'user-1',
+const existingSchedule: ScheduleJobClientDTO = createScheduleStoryEvent({
   title: 'Weekly Team Standup',
   description: 'Discuss progress and blockers',
   startTime: now,
@@ -18,9 +17,7 @@ const existingSchedule: ScheduleJobClientDTO = {
   priority: 2,
   location: 'Conference Room A',
   attendees: ['alice@example.com', 'bob@example.com'],
-  createdAt: now,
-  updatedAt: now,
-};
+});
 
 const meta = {
   title: 'Business/Schedule/CreateScheduleDialog',

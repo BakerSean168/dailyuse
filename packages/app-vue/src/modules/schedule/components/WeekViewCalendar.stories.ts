@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import WeekViewCalendar from './WeekViewCalendar.vue';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEventItem } from '../composables/useCalendarView';
+import { createCalendarStoryEvent } from './story-fixtures';
 
-const now = Date.now();
 const dayStart = new Date(
   new Date().getFullYear(),
   new Date().getMonth(),
@@ -11,75 +11,44 @@ const dayStart = new Date(
 const toTimestamp = (dayOffset: number, hour: number, min = 0) =>
   dayStart + dayOffset * 86400000 + hour * 3600000 + min * 60000;
 
-const mockSchedules: ScheduleJobClientDTO[] = [
-  {
+const mockSchedules: CalendarEventItem[] = [
+  createCalendarStoryEvent({
     id: 'cal-1',
-    identityId: 'user-1',
     title: 'Team Standup',
-    description: 'Daily sync',
     startTime: toTimestamp(0, 9),
     endTime: toTimestamp(0, 9, 30),
-    duration: 1800,
-    hasConflict: false,
-    priority: 2,
-    location: 'Zoom',
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
+    source: 'schedule',
+  }),
+  createCalendarStoryEvent({
     id: 'cal-2',
-    identityId: 'user-1',
     title: 'Sprint Planning',
-    description: 'Plan next sprint stories',
     startTime: toTimestamp(1, 10),
     endTime: toTimestamp(1, 12),
-    duration: 7200,
-    hasConflict: false,
-    priority: 1,
-    location: 'Conference Room A',
-    attendees: ['alice@example.com', 'charlie@example.com'],
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
+    source: 'goal',
+  }),
+  createCalendarStoryEvent({
     id: 'cal-3',
-    identityId: 'user-1',
     title: 'Design Review',
     startTime: toTimestamp(1, 14),
     endTime: toTimestamp(1, 15),
-    duration: 3600,
     hasConflict: true,
-    conflictingEntries: ['cal-4'],
-    priority: 3,
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
+    source: 'schedule',
+  }),
+  createCalendarStoryEvent({
     id: 'cal-4',
-    identityId: 'user-1',
     title: '1:1 with Manager',
     startTime: toTimestamp(1, 14, 30),
     endTime: toTimestamp(1, 15, 30),
-    duration: 3600,
     hasConflict: true,
-    conflictingEntries: ['cal-3'],
-    priority: 2,
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
+    source: 'task',
+  }),
+  createCalendarStoryEvent({
     id: 'cal-5',
-    identityId: 'user-1',
     title: 'Lunch & Learn: TypeScript Tips',
     startTime: toTimestamp(3, 12),
     endTime: toTimestamp(3, 13),
-    duration: 3600,
-    hasConflict: false,
-    priority: 4,
-    location: 'Cafeteria',
-    createdAt: now,
-    updatedAt: now,
-  },
+    source: 'schedule',
+  }),
 ];
 
 const meta = {

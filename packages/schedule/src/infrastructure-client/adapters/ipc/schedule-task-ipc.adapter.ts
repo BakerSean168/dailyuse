@@ -13,7 +13,9 @@ import type {
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
+  BatchOperationResponseDTO,
   CreateScheduleTaskRequest,
+  UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
 
 /**
@@ -50,7 +52,7 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CREATE_TASKS_BATCH, tasks);
   }
 
-  async getTasks(): Promise<Result<{ tasks: ScheduleTaskClientDTO[]; total: number }>> {
+  async getTasks(): Promise<Result<ScheduleTaskClientDTO[]>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASKS);
   }
 
@@ -74,19 +76,19 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
 
   // ===== Schedule Task Status Management =====
 
-  async pauseTask(taskId: string): Promise<Result<void>> {
+  async pauseTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.PAUSE_TASK, taskId);
   }
 
-  async resumeTask(taskId: string): Promise<Result<void>> {
+  async resumeTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.RESUME_TASK, taskId);
   }
 
-  async completeTask(taskId: string, reason?: string): Promise<Result<void>> {
+  async completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.COMPLETE_TASK, taskId, reason);
   }
 
-  async cancelTask(taskId: string, reason?: string): Promise<Result<void>> {
+  async cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CANCEL_TASK, taskId, reason);
   }
 
@@ -94,18 +96,11 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_TASK, taskId);
   }
 
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<void>> {
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_TASKS_BATCH, taskIds);
   }
 
-  async updateTaskMetadata(
-    taskId: string,
-    metadata: {
-      payload?: unknown;
-      tagsToAdd?: string[];
-      tagsToRemove?: string[];
-    },
-  ): Promise<Result<void>> {
+  async updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTaskClientDTO>> {
     return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.UPDATE_METADATA, taskId, metadata);
   }
 }

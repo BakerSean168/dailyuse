@@ -20,8 +20,13 @@ import type {
   IScheduleTaskRepository,
 } from '../domain-server';
 import {
+  BatchDeleteScheduleTasksUseCase,
+  BatchOperateScheduleTasksUseCase,
+  CancelScheduleTaskUseCase,
+  CompleteScheduleTaskUseCase,
   CreateScheduleTaskUseCase,
   DeleteScheduleTaskUseCase,
+  GetDueScheduleTasksUseCase,
   ListScheduleTasksBySourceUseCase,
   PauseScheduleTaskUseCase,
   ResumeScheduleTaskUseCase,
@@ -30,11 +35,14 @@ import {
   ListScheduleTasksByStatusUseCase,
   TriggerScheduleTaskUseCase,
   UpdateScheduleTaskUseCase,
+  UpdateScheduleTaskMetadataUseCase,
 } from '../application-server/use-cases';
 import { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
 import { ScheduleConflictDetectionService } from '../application-server/services/schedule-conflict-detection-service';
+import { ScheduleConflictResolutionService } from '../application-server/services/schedule-conflict-resolution-service';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail, isOk, toResultErrorException } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@dailyuse/contracts/result';
+import type { BatchScheduleTaskOperationRequest } from '@dailyuse/contracts/schedule';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   CreateScheduleRequest,
@@ -44,6 +52,7 @@ import type {
   CreateScheduleTaskRequest,
   UpdateScheduleRequest,
   UpdateScheduleTaskRequest,
+  UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
 import { resultify } from '@dailyuse/utils/result';
 
@@ -93,12 +102,19 @@ export interface ScheduleModuleUseCases {
   readonly pauseScheduleTask: PauseScheduleTaskUseCase;
   readonly resumeScheduleTask: ResumeScheduleTaskUseCase;
   readonly triggerScheduleTask: TriggerScheduleTaskUseCase;
+  readonly completeScheduleTask: CompleteScheduleTaskUseCase;
+  readonly cancelScheduleTask: CancelScheduleTaskUseCase;
   readonly getScheduleTask: GetScheduleTaskUseCase;
+  readonly getDueScheduleTasks: GetDueScheduleTasksUseCase;
   readonly listScheduleTasksByAccount: ListScheduleTasksByAccountUseCase;
   readonly listScheduleTasksBySource: ListScheduleTasksBySourceUseCase;
   readonly listScheduleTasksByStatus: ListScheduleTasksByStatusUseCase;
+  readonly batchDeleteScheduleTasks: BatchDeleteScheduleTasksUseCase;
+  readonly batchOperateScheduleTasks: BatchOperateScheduleTasksUseCase;
+  readonly updateScheduleTaskMetadata: UpdateScheduleTaskMetadataUseCase;
   readonly scheduleEventService: ScheduleEventApplicationService;
   readonly conflictDetectionService: ScheduleConflictDetectionService;
+  readonly conflictResolutionService: ScheduleConflictResolutionService;
 }
 
 /** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
@@ -114,8 +130,9 @@ export interface ScheduleApplicationPort {
   completeTask(id: string): Promise<Result<unknown>>;
   cancelTask(id: string, reason: string): Promise<Result<unknown>>;
   getDueTasks(ctx: Context): Promise<Result<unknown>>;
+  batchOperateTasks(data: BatchScheduleTaskOperationRequest): Promise<Result<unknown>>;
   batchDeleteTasks(ids: string[]): Promise<Result<unknown>>;
-  updateTaskMetadata(id: string, metadata: Record<string, unknown>): Promise<Result<unknown>>;
+  updateTaskMetadata(id: string, metadata: UpdateTaskMetadataRequest): Promise<Result<unknown>>;
 }
 
 export interface ScheduleEventApplicationPort {
@@ -185,20 +202,42 @@ export function createScheduleUseCases(
   dependencies: ScheduleModuleDependencies,
 ): ScheduleModuleUseCases {
   const { scheduleRepository, scheduleExecutionRepository, scheduleTaskRepository } = dependencies;
+  const deleteScheduleTask = new DeleteScheduleTaskUseCase(scheduleTaskRepository);
+  const pauseScheduleTask = new PauseScheduleTaskUseCase(scheduleTaskRepository);
+  const resumeScheduleTask = new ResumeScheduleTaskUseCase(scheduleTaskRepository);
+  const cancelScheduleTask = new CancelScheduleTaskUseCase(scheduleTaskRepository);
+  const updateScheduleTask = new UpdateScheduleTaskUseCase(scheduleTaskRepository);
+  const scheduleEventService = new ScheduleEventApplicationService(scheduleRepository);
+  const conflictDetectionService = new ScheduleConflictDetectionService(scheduleRepository);
 
   return {
     createScheduleTask: new CreateScheduleTaskUseCase(scheduleTaskRepository),
-    updateScheduleTask: new UpdateScheduleTaskUseCase(scheduleTaskRepository),
-    deleteScheduleTask: new DeleteScheduleTaskUseCase(scheduleTaskRepository),
-    pauseScheduleTask: new PauseScheduleTaskUseCase(scheduleTaskRepository),
-    resumeScheduleTask: new ResumeScheduleTaskUseCase(scheduleTaskRepository),
+    updateScheduleTask,
+    deleteScheduleTask,
+    pauseScheduleTask,
+    resumeScheduleTask,
     triggerScheduleTask: new TriggerScheduleTaskUseCase(scheduleTaskRepository),
+    completeScheduleTask: new CompleteScheduleTaskUseCase(scheduleTaskRepository),
+    cancelScheduleTask,
     getScheduleTask: new GetScheduleTaskUseCase(scheduleTaskRepository),
+    getDueScheduleTasks: new GetDueScheduleTasksUseCase(scheduleTaskRepository),
     listScheduleTasksByAccount: new ListScheduleTasksByAccountUseCase(scheduleTaskRepository),
     listScheduleTasksBySource: new ListScheduleTasksBySourceUseCase(scheduleTaskRepository),
     listScheduleTasksByStatus: new ListScheduleTasksByStatusUseCase(scheduleTaskRepository),
-    scheduleEventService: new ScheduleEventApplicationService(scheduleRepository),
-    conflictDetectionService: new ScheduleConflictDetectionService(scheduleRepository),
+    batchDeleteScheduleTasks: new BatchDeleteScheduleTasksUseCase(deleteScheduleTask),
+    batchOperateScheduleTasks: new BatchOperateScheduleTasksUseCase({
+      pauseScheduleTask,
+      resumeScheduleTask,
+      cancelScheduleTask,
+      updateScheduleTask,
+    }),
+    updateScheduleTaskMetadata: new UpdateScheduleTaskMetadataUseCase(scheduleTaskRepository),
+    scheduleEventService,
+    conflictDetectionService,
+    conflictResolutionService: new ScheduleConflictResolutionService(
+      scheduleEventService,
+      conflictDetectionService,
+    ),
   };
 }
 
@@ -283,46 +322,12 @@ export function createScheduleModule(
     resumeTask: async (id) => useCases.resumeScheduleTask.execute(id),
     triggerTask: async (id) => useCases.triggerScheduleTask.execute(id),
     getTask: async (id) => useCases.getScheduleTask.execute(id),
-    completeTask: async (id) => {
-      const task = await scheduleTaskRepository.findById(id as any);
-      if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
-      task.complete();
-      await scheduleTaskRepository.save(task);
-      return ok(task.toServerDTO());
-    },
-    cancelTask: async (id, reason) => {
-      const task = await scheduleTaskRepository.findById(id as any);
-      if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
-      task.cancel(reason);
-      await scheduleTaskRepository.save(task);
-      return ok(task.toServerDTO());
-    },
-    getDueTasks: async () => {
-      const tasks = await scheduleTaskRepository.findDueTasksForExecution(new Date());
-      return ok(tasks.map((t: any) => t.toServerDTO()));
-    },
-    batchDeleteTasks: async (ids) => {
-      const results = { success: [] as string[], failed: [] as { id: string; error: string }[] };
-      for (const id of ids) {
-        const result = await useCases.deleteScheduleTask.execute(id);
-        if (isOk(result)) {
-          results.success.push(id);
-        } else {
-          results.failed.push({
-            id,
-            error: result.error.message,
-          });
-        }
-      }
-      return ok(results);
-    },
-    updateTaskMetadata: async (id, metadata) => {
-      const task = await scheduleTaskRepository.findById(id as any);
-      if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
-      task.updateMetadata(metadata);
-      await scheduleTaskRepository.save(task);
-      return ok(task.toServerDTO());
-    },
+    completeTask: async (id) => useCases.completeScheduleTask.execute(id),
+    cancelTask: async (id, reason) => useCases.cancelScheduleTask.execute(id, reason),
+    getDueTasks: async () => useCases.getDueScheduleTasks.execute(),
+    batchOperateTasks: async (data) => useCases.batchOperateScheduleTasks.execute(data),
+    batchDeleteTasks: async (ids) => useCases.batchDeleteScheduleTasks.execute(ids),
+    updateTaskMetadata: async (id, metadata) => useCases.updateScheduleTaskMetadata.execute(id, metadata),
   };
 
   const eventApi: ScheduleEventApplicationPort = {
@@ -361,204 +366,19 @@ export function createScheduleModule(
         return null;
       }, 'Failed to delete schedule event'),
     getConflicts: async (id) =>
-      resultify(
-        () => useCases.conflictDetectionService.getScheduleConflicts(id),
-        'Failed to get schedule conflicts',
-      ),
+      resultify(() => useCases.conflictResolutionService.getConflicts(id), 'Failed to get schedule conflicts'),
     detectConflicts: async (data) =>
-      resultify(
-        () =>
-          useCases.conflictDetectionService.detectConflictsForTimeRange({
-            identityId: data.identityId,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            excludeId: data.excludeId,
-          }),
-        'Failed to detect schedule conflicts',
-      ),
+      resultify(() => useCases.conflictResolutionService.detectConflicts(data), 'Failed to detect schedule conflicts'),
     createEventWithConflictDetection: async (data, ctx) =>
-      resultify(async () => {
-        const schedule = await useCases.scheduleEventService.createSchedule(
-          toCreateSchedulePayload(data, ctx.identityId),
-        );
-        const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(schedule.id);
-        return { schedule, conflicts };
-      }, 'Failed to create schedule event with conflict detection'),
-    resolveConflict: async (id, data) => {
-      const { resolution, newStartTime, newEndTime, newDuration } = data;
-
-      return resultify(async () => {
-        const currentEvent = await useCases.scheduleEventService.getSchedule(id);
-        if (!currentEvent) {
-          throw toResultErrorException({ code: 'NOT_FOUND', message: '日程不存在' }, 404);
-        }
-
-        switch (resolution) {
-          case 'REJECT': {
-            throw toResultErrorException(
-              {
-                code: 'CONFLICT_REJECTED',
-                message: 'Schedule conflict was rejected by the user',
-              },
-              409,
-            );
-          }
-
-          case 'AUTO': {
-            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
-            if (!conflicts.hasConflict || conflicts.suggestions.length === 0) {
-              return ok({
-                schedule: currentEvent,
-                conflicts,
-                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
-              });
-            }
-
-            const suggestion = conflicts.suggestions[0];
-            const event = await useCases.scheduleEventService.updateSchedule(id, {
-              startTime: suggestion.newStartTime,
-              endTime: suggestion.newEndTime,
-            });
-            return ok({
-              schedule: event,
-              conflicts,
-              applied: {
-                strategy: resolution,
-                previousStartTime: currentEvent.startTime,
-                previousEndTime: currentEvent.endTime,
-                changes: [
-                  `Auto-resolved using ${suggestion.type}: moved to ${suggestion.newStartTime}-${suggestion.newEndTime}`,
-                ],
-              },
-            });
-          }
-
-          case 'ADJUST_START_TIME': {
-            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
-            if (!conflicts.hasConflict) {
-              return ok({
-                schedule: currentEvent,
-                conflicts,
-                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
-              });
-            }
-
-            const latestOverlapEnd = Math.max(...conflicts.conflicts.map((c) => c.overlapEnd));
-            const duration = currentEvent.endTime - currentEvent.startTime;
-            const adjustedStartTime = newStartTime ?? latestOverlapEnd;
-            const adjustedEndTime = adjustedStartTime + duration;
-            const event = await useCases.scheduleEventService.updateSchedule(id, {
-              startTime: adjustedStartTime,
-              endTime: adjustedEndTime,
-            });
-            return ok({
-              schedule: event,
-              conflicts,
-              applied: {
-                strategy: resolution,
-                previousStartTime: currentEvent.startTime,
-                previousEndTime: currentEvent.endTime,
-                changes: [
-                  `Adjusted start time from ${currentEvent.startTime} to ${adjustedStartTime}`,
-                ],
-              },
-            });
-          }
-
-          case 'ADJUST_END_TIME': {
-            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
-            if (!conflicts.hasConflict) {
-              return ok({
-                schedule: currentEvent,
-                conflicts,
-                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
-              });
-            }
-
-            const earliestOverlapStart = Math.min(
-              ...conflicts.conflicts.map((c) => c.overlapStart),
-            );
-            const adjustedEndTime = newEndTime ?? earliestOverlapStart;
-            if (adjustedEndTime <= currentEvent.startTime) {
-              throw toResultErrorException(
-                {
-                  code: 'VALIDATION_ERROR',
-                  message: 'Cannot adjust end time: would result in zero or negative duration',
-                },
-                422,
-              );
-            }
-
-            const event = await useCases.scheduleEventService.updateSchedule(id, {
-              endTime: adjustedEndTime,
-            });
-            return ok({
-              schedule: event,
-              conflicts,
-              applied: {
-                strategy: resolution,
-                previousStartTime: currentEvent.startTime,
-                previousEndTime: currentEvent.endTime,
-                changes: [`Adjusted end time from ${currentEvent.endTime} to ${adjustedEndTime}`],
-              },
-            });
-          }
-
-          case 'ADJUST_DURATION': {
-            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
-            if (!conflicts.hasConflict) {
-              return ok({
-                schedule: currentEvent,
-                conflicts,
-                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
-              });
-            }
-
-            const earliestOverlapStart = Math.min(
-              ...conflicts.conflicts.map((c) => c.overlapStart),
-            );
-            const adjustedEndTime = newDuration
-              ? currentEvent.startTime + newDuration * 60000
-              : earliestOverlapStart;
-            if (adjustedEndTime <= currentEvent.startTime) {
-              throw toResultErrorException(
-                {
-                  code: 'VALIDATION_ERROR',
-                  message: 'Cannot adjust duration: would result in zero or negative duration',
-                },
-                422,
-              );
-            }
-
-            const event = await useCases.scheduleEventService.updateSchedule(id, {
-              endTime: adjustedEndTime,
-            });
-            return ok({
-              schedule: event,
-              conflicts,
-              applied: {
-                strategy: resolution,
-                previousStartTime: currentEvent.startTime,
-                previousEndTime: currentEvent.endTime,
-                changes: [
-                  `Adjusted duration: end time changed from ${currentEvent.endTime} to ${adjustedEndTime}`,
-                ],
-              },
-            });
-          }
-
-          default: {
-            throw toResultErrorException(
-              {
-                code: 'VALIDATION_ERROR',
-                message: `Unknown resolution strategy: ${resolution}`,
-              },
-              422,
-            );
-          }
-        }
-      }, 'Failed to resolve schedule conflict');
-    },
+      resultify(
+        () => useCases.conflictResolutionService.createWithConflictDetection(data, ctx.identityId),
+        'Failed to create schedule event with conflict detection',
+      ),
+    resolveConflict: async (id, data) =>
+      resultify(
+        () => useCases.conflictResolutionService.resolveConflict(id, data),
+        'Failed to resolve schedule conflict',
+      ),
   };
 
   return {

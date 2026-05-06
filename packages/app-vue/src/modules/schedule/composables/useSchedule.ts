@@ -48,8 +48,8 @@ export function useSchedule() {
       const result = await service.getTasks();
       if (result.ok) {
         store.setTasks(
-          (result.data.tasks ?? []).map((t: ScheduleTask) => t.toDTO()),
-          result.data.total ?? 0,
+          result.data.map((t: ScheduleTask) => t.toDTO()),
+          result.data.length,
         );
       } else {
         handleError(result.error, 'schedule.error.loadTasksFailed');

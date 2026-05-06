@@ -11,6 +11,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
   CalendarEntryClientDTO,
+  BatchOperationResponseDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -20,6 +21,7 @@ import type {
   ScheduleTaskClientDTO,
   ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
+  UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
 import type { IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
 import type { IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
@@ -192,12 +194,9 @@ export class ScheduleClientService implements ScheduleClientPort {
     return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
 
-  async getTasks(): Promise<Result<{ tasks: ScheduleTask[]; total: number }>> {
+  async getTasks(): Promise<Result<ScheduleTask[]>> {
     const result = await this.taskApi.getTasks();
-    return mapResult(result, (data) => ({
-      tasks: data.tasks.map((dto) => scheduleTaskFromDTO(dto)),
-      total: data.total,
-    }));
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
 
   async getTaskById(taskId: string): Promise<Result<ScheduleTask>> {
@@ -223,35 +222,40 @@ export class ScheduleClientService implements ScheduleClientPort {
 
   // ===== Schedule Task Status Management =====
 
-  async pauseTask(taskId: string): Promise<Result<void>> {
-    return this.taskApi.pauseTask(taskId);
+  async pauseTask(taskId: string): Promise<Result<ScheduleTask>> {
+    const result = await this.taskApi.pauseTask(taskId);
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
-  async resumeTask(taskId: string): Promise<Result<void>> {
-    return this.taskApi.resumeTask(taskId);
+  async resumeTask(taskId: string): Promise<Result<ScheduleTask>> {
+    const result = await this.taskApi.resumeTask(taskId);
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
-  async completeTask(taskId: string, reason?: string): Promise<Result<void>> {
-    return this.taskApi.completeTask(taskId, reason);
+  async completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTask>> {
+    const result = await this.taskApi.completeTask(taskId, reason);
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
-  async cancelTask(taskId: string, reason?: string): Promise<Result<void>> {
-    return this.taskApi.cancelTask(taskId, reason);
+  async cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTask>> {
+    const result = await this.taskApi.cancelTask(taskId, reason);
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
   async deleteTask(taskId: string): Promise<Result<void>> {
     return this.taskApi.deleteTask(taskId);
   }
 
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<void>> {
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>> {
     return this.taskApi.deleteTasksBatch(taskIds);
   }
 
   async updateTaskMetadata(
     taskId: string,
-    metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] },
-  ): Promise<Result<void>> {
-    return this.taskApi.updateTaskMetadata(taskId, metadata);
+    metadata: UpdateTaskMetadataRequest,
+  ): Promise<Result<ScheduleTask>> {
+    const result = await this.taskApi.updateTaskMetadata(taskId, metadata);
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 }
 

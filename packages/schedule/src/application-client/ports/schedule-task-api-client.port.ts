@@ -12,6 +12,8 @@ import type {
   SourceModule,
   ScheduleTaskClientDTO,
   CreateScheduleTaskRequest,
+  UpdateTaskMetadataRequest,
+  BatchOperationResponseDTO,
 } from '@dailyuse/contracts/schedule';
 
 /**
@@ -23,7 +25,7 @@ export interface IScheduleTaskApiClient {
   // ===== Schedule Task CRUD =====
   createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTaskClientDTO>>;
   createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>>;
-  getTasks(): Promise<Result<{ tasks: ScheduleTaskClientDTO[]; total: number }>>;
+  getTasks(): Promise<Result<ScheduleTaskClientDTO[]>>;
   getTaskById(taskId: string): Promise<Result<ScheduleTaskClientDTO>>;
   getDueTasks(params?: {
     beforeTime?: string;
@@ -35,14 +37,11 @@ export interface IScheduleTaskApiClient {
   ): Promise<Result<ScheduleTaskClientDTO[]>>;
 
   // ===== Schedule Task Status Management =====
-  pauseTask(taskId: string): Promise<Result<void>>;
-  resumeTask(taskId: string): Promise<Result<void>>;
-  completeTask(taskId: string, reason?: string): Promise<Result<void>>;
-  cancelTask(taskId: string, reason?: string): Promise<Result<void>>;
+  pauseTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>>;
+  resumeTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>>;
+  completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>>;
+  cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>>;
   deleteTask(taskId: string): Promise<Result<void>>;
-  deleteTasksBatch(taskIds: string[]): Promise<Result<void>>;
-  updateTaskMetadata(
-    taskId: string,
-    metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] },
-  ): Promise<Result<void>>;
+  deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>>;
+  updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTaskClientDTO>>;
 }

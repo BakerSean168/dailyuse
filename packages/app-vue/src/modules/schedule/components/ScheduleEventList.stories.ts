@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ScheduleEventList from './ScheduleEventList.vue';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import { createScheduleStoryEvent } from './story-fixtures';
 
 const now = Date.now();
 const toTimestamp = (offset: number) => now + offset;
 
 const mockSchedules: ScheduleJobClientDTO[] = [
-  {
-    id: 'sched-1',
-    identityId: 'user-1',
+  createScheduleStoryEvent({
     title: 'Team Standup',
     description: 'Daily sync with the team',
     startTime: toTimestamp(3600000),
@@ -18,12 +17,9 @@ const mockSchedules: ScheduleJobClientDTO[] = [
     priority: 2,
     location: 'Zoom Meeting Room',
     attendees: ['alice@example.com', 'bob@example.com'],
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
+  }),
+  createScheduleStoryEvent({
     id: 'sched-2',
-    identityId: 'user-1',
     title: 'Sprint Planning',
     description: 'Plan the next sprint',
     startTime: toTimestamp(7200000),
@@ -33,12 +29,9 @@ const mockSchedules: ScheduleJobClientDTO[] = [
     conflictingEntries: ['sched-3'],
     priority: 1,
     location: 'Conference Room B',
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
+  }),
+  createScheduleStoryEvent({
     id: 'sched-3',
-    identityId: 'user-1',
     title: 'Design Review',
     startTime: toTimestamp(10800000),
     endTime: toTimestamp(14400000),
@@ -46,9 +39,7 @@ const mockSchedules: ScheduleJobClientDTO[] = [
     hasConflict: true,
     conflictingEntries: ['sched-2'],
     priority: 3,
-    createdAt: now,
-    updatedAt: now,
-  },
+  }),
 ];
 
 const meta = {

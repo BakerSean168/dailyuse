@@ -6,17 +6,20 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail, isOk } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateScheduleTaskRequestSchema,
   UpdateScheduleTaskRequestSchema,
   ScheduleTaskQueryParamsSchema,
   BatchScheduleTaskOperationRequestSchema,
+  UpdateTaskMetadataRequestSchema,
 } from '@dailyuse/contracts/schedule';
 import type {
+  BatchScheduleTaskOperationRequest,
   CreateScheduleTaskRequest,
   UpdateScheduleTaskRequest,
+  UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -34,8 +37,9 @@ export interface ScheduleUseCases {
   completeTask(id: string): Promise<Result<unknown>>;
   cancelTask(id: string, reason: string): Promise<Result<unknown>>;
   getDueTasks(ctx: Context): Promise<Result<unknown>>;
+  batchOperateTasks(data: BatchScheduleTaskOperationRequest): Promise<Result<unknown>>;
   batchDeleteTasks(ids: string[]): Promise<Result<unknown>>;
-  updateTaskMetadata(id: string, metadata: Record<string, unknown>): Promise<Result<unknown>>;
+  updateTaskMetadata(id: string, metadata: UpdateTaskMetadataRequest): Promise<Result<unknown>>;
 }
 
 export class ScheduleController {
@@ -123,10 +127,15 @@ export class ScheduleController {
   }
 
   async updateTaskMetadata(id: string, input: unknown): Promise<Result<unknown>> {
-    if (!input || typeof input !== 'object') {
-      return fail({ code: 'VALIDATION_ERROR', message: 'metadata must be an object' });
+    const parsed = UpdateTaskMetadataRequestSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
     }
-    return this.useCases.updateTaskMetadata(id, input as Record<string, unknown>);
+    return this.useCases.updateTaskMetadata(id, parsed.data);
   }
 
   // ==================== Batch Operations ====================
@@ -141,31 +150,6 @@ export class ScheduleController {
       });
     }
 
-    const { taskIds, operation } = parsed.data;
-    const results = { success: [] as string[], failed: [] as { taskId: string; error: string }[] };
-
-    for (const taskId of taskIds) {
-      if (operation !== 'pause' && operation !== 'resume') {
-        results.failed.push({ taskId, error: `Unsupported batch operation: ${operation}` });
-        continue;
-      }
-
-      const result = operation === 'pause'
-        ? await this.useCases.pauseTask(taskId)
-        : await this.useCases.resumeTask(taskId);
-
-      if (isOk(result)) {
-        results.success.push(taskId);
-      } else {
-        results.failed.push({ taskId, error: result.error.message });
-      }
-    }
-
-    return ok({
-      ...results,
-      total: taskIds.length,
-      successCount: results.success.length,
-      failedCount: results.failed.length,
-    });
+    return this.useCases.batchOperateTasks(parsed.data);
   }
 }

@@ -76,7 +76,7 @@ export function useScheduleTasks() {
         return;
       }
 
-      setTasks(result.data.tasks.map((task) => mapScheduleTask(task)));
+      setTasks(result.data.map((task) => mapScheduleTask(task)));
       setIsLoading(false);
     }
 
@@ -101,7 +101,7 @@ export function useScheduleTasks() {
       return;
     }
 
-    setTasks(result.data.tasks.map((task) => mapScheduleTask(task)));
+    setTasks(result.data.map((task) => mapScheduleTask(task)));
     setError(null);
     setIsLoading(false);
   }

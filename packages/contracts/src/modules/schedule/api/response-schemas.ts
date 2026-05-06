@@ -191,5 +191,9 @@ export const ResolveConflictResponseSchema = z.object({
  * BatchDelete Response Schema
  */
 export const BatchDeleteResponseSchema = z.object({
-  deleted: z.number(),
+  success: z.array(z.string()),
+  failed: z.array(z.object({ taskId: brandedId<ScheduleTaskId>(), error: z.string() })),
+  total: z.number(),
+  successCount: z.number(),
+  failedCount: z.number(),
 });

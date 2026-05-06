@@ -5,6 +5,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   IScheduleTaskApiClient,
@@ -12,7 +13,9 @@ import type {
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
+  BatchOperationResponseDTO,
   CreateScheduleTaskRequest,
+  UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
 
 /**
@@ -32,10 +35,20 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
   }
 
   async createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>> {
-    return this.httpClient.post(`${this.baseUrl}/tasks/batch`, { tasks });
+    const created: ScheduleTaskClientDTO[] = [];
+
+    for (const task of tasks) {
+      const result = await this.createTask(task);
+      if (!result.ok) {
+        return result;
+      }
+      created.push(result.data);
+    }
+
+    return ok(created);
   }
 
-  async getTasks(): Promise<Result<{ tasks: ScheduleTaskClientDTO[]; total: number }>> {
+  async getTasks(): Promise<Result<ScheduleTaskClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/tasks`);
   }
 
@@ -61,19 +74,19 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
 
   // ===== Schedule Task Status Management =====
 
-  async pauseTask(taskId: string): Promise<Result<void>> {
+  async pauseTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/pause`);
   }
 
-  async resumeTask(taskId: string): Promise<Result<void>> {
+  async resumeTask(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/resume`);
   }
 
-  async completeTask(taskId: string, reason?: string): Promise<Result<void>> {
+  async completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/complete`, { reason });
   }
 
-  async cancelTask(taskId: string, reason?: string): Promise<Result<void>> {
+  async cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/cancel`, { reason });
   }
 
@@ -81,18 +94,11 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
     return this.httpClient.delete(`${this.baseUrl}/tasks/${taskId}`);
   }
 
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<void>> {
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>> {
     return this.httpClient.post(`${this.baseUrl}/tasks/batch/delete`, { taskIds });
   }
 
-  async updateTaskMetadata(
-    taskId: string,
-    metadata: {
-      payload?: unknown;
-      tagsToAdd?: string[];
-      tagsToRemove?: string[];
-    },
-  ): Promise<Result<void>> {
+  async updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTaskClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/tasks/${taskId}/metadata`, metadata);
   }
 }

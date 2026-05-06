@@ -1,19 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ScheduleFormDemo from './ScheduleFormDemo.vue';
 import type { ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import { createScheduleConflict } from './story-fixtures';
 
-const mockConflicts: ConflictDetectionResult = {
-  hasConflict: true,
-  conflicts: [
-    {
-      scheduleId: 'sched-1',
-      scheduleTitle: 'Team Standup',
-      overlapStart: Date.now(),
-      overlapEnd: Date.now() + 30 * 60 * 1000,
-      overlapDuration: 30 * 60 * 1000,
-      severity: 'Moderate',
-    },
-  ],
+const mockConflicts: ConflictDetectionResult = createScheduleConflict({
   suggestions: [
     {
       type: 'MoveLater',
@@ -22,7 +12,7 @@ const mockConflicts: ConflictDetectionResult = {
       description: 'Move to 1 hour later',
     },
   ],
-};
+});
 
 const meta = {
   title: 'Business/Schedule/ScheduleFormDemo',
