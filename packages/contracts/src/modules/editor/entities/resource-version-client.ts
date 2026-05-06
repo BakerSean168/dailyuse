@@ -17,16 +17,16 @@ import type { ResourceVersionServerDTO } from './resource-version-server';
  * Resource Version Client DTO (includes UI formatted fields).
  */
 export interface ResourceVersionClientDTO {
-  id: string;
-  resourceId: string;
-  workspaceId: string;
-  identityId: string;
+  id: ResourceVersionId;
+  resourceId: ResourceId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
   versionNumber: number;
   changeType: VersionChangeType;
   contentHash: string;
   contentDiff: string | null;
   changeDescription: string | null;
-  previousVersionId: string | null;
+  previousVersionId: ResourceVersionId | null;
   createdBy: string | null;
   createdAt: TransferDate;
 

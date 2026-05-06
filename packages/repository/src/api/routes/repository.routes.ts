@@ -28,9 +28,12 @@ import {
   ResourceResponseSchema,
   ResourceBookmarkResponseSchema,
   UploadResourcesResponseSchema,
+  UploadResourcesMultipartSchema,
+  DeleteResourceBookmarkResultSchema,
+  UpdateRepositoryStatsSchema,
 } from '@dailyuse/contracts/repository';
 import { brandedId } from '@dailyuse/contracts/primitives';
-import type { RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
+import type { RepositoryId, FolderId, BookmarkId } from '@dailyuse/contracts/primitives';
 import type { RepositoryController } from '../../controllers/repository.controller';
 import type { UploadResourcesRequestDTO } from '@dailyuse/contracts/repository';
 
@@ -123,12 +126,7 @@ export function registerRepositoryCrudRoutes(
         body: {
           content: {
             'multipart/form-data': {
-              schema: z.object({
-                files: z.any(),
-                folderId: z.string().optional(),
-                tags: z.union([z.string(), z.array(z.string())]).optional(),
-                overwritePolicy: z.enum(['skip', 'replace']).optional(),
-              }),
+              schema: UploadResourcesMultipartSchema,
             },
           },
         },
@@ -193,7 +191,7 @@ export function registerRepositoryCrudRoutes(
       path: '/:repoId/bookmarks/:bookmarkId',
       summary: '更新书签',
       request: {
-        params: z.object({ repoId: brandedId<RepositoryId>(), bookmarkId: z.string().min(1) }),
+        params: z.object({ repoId: brandedId<RepositoryId>(), bookmarkId: brandedId<BookmarkId>() }),
         body: { content: { 'application/json': { schema: UpdateResourceBookmarkSchema } } },
       },
       responses: {
@@ -228,10 +226,10 @@ export function registerRepositoryCrudRoutes(
       path: '/:repoId/bookmarks/:bookmarkId',
       summary: '删除书签',
       request: {
-        params: z.object({ repoId: brandedId<RepositoryId>(), bookmarkId: z.string().min(1) }),
+        params: z.object({ repoId: brandedId<RepositoryId>(), bookmarkId: brandedId<BookmarkId>() }),
       },
       responses: {
-        200: successResponse(z.object({ ok: z.boolean() }), '删除成功'),
+        200: successResponse(DeleteResourceBookmarkResultSchema, '删除成功'),
       },
     },
     [auth],
@@ -294,7 +292,7 @@ export function registerRepositoryCrudRoutes(
       summary: '更新仓库统计信息',
       request: {
         params: z.object({ id: brandedId<RepositoryId>() }),
-        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+        body: { content: { 'application/json': { schema: UpdateRepositoryStatsSchema } } },
       },
       responses: {
         200: successResponse(RepositoryResponseSchema, '更新成功'),

@@ -120,9 +120,9 @@ describe('SendAIMessageUseCase', () => {
     );
 
     const result = await useCase.execute(
-      identityId,
       String(conversation.id),
       'Hello from user',
+      { identityId },
       'provider-1',
     );
 
@@ -219,10 +219,10 @@ describe('StreamAIMessageUseCase', () => {
     streamAbortController.abort();
 
     const result = await useCase.execute(
-      identityId,
       String(conversation.id),
       'Hello from user',
       vi.fn(),
+      { identityId },
       'provider-1',
       undefined,
       streamAbortController.signal,

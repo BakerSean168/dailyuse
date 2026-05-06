@@ -1,8 +1,5 @@
 // ============ ID Types ============
 
-import type { IdentifierType } from './identifier-type';
-import type { OAuthProvider } from './oauth-provider';
-
 export type {
   AuthCredentialId,
 } from './auth-credential-id';

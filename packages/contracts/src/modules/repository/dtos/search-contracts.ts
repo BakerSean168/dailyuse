@@ -3,6 +3,7 @@
  * Story 11.2: Obsidian 风格搜索
  * Story 11.6: 高级搜索功能（property 模式）
  */
+import type { RepositoryId, ResourceId } from '../../../primitives';
 
 /**
  * 搜索模式
@@ -23,7 +24,7 @@ export type SearchMode = (typeof SearchMode)[keyof typeof SearchMode];
  * 搜索请求
  */
 export interface SearchRequest {
-  repositoryId: string;
+  repositoryId: RepositoryId;
   query: string;
   mode: SearchMode;
   caseSensitive?: boolean;
@@ -64,7 +65,7 @@ export type MatchType = (typeof MatchType)[keyof typeof MatchType];
  */
 export interface SearchResultItem {
   // 资源信息
-  resourceId: string;
+  resourceId: ResourceId;
   resourceName: string;
   resourcePath: string;
   resourceType: string;

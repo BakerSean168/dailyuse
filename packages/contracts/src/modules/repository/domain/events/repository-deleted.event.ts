@@ -1,3 +1,5 @@
+import type { RepositoryId } from '../../../../primitives';
+
 export interface RepositoryDeletedEvent {
-  repositoryId: string;
+  repositoryId: RepositoryId;
 }

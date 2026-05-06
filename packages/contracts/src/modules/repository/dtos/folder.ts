@@ -1,9 +1,10 @@
 import type { FolderMetadataDTO } from '../value-objects/folder-metadata';
+import type { FolderId, RepositoryId } from '../../../primitives';
 
 export interface FolderClientDTO {
-  id: string;
-  repositoryId: string;
-  parentId: string | null;
+  id: FolderId;
+  repositoryId: RepositoryId;
+  parentId: FolderId | null;
   name: string;
   path: string;
   order: number;

@@ -24,8 +24,8 @@ import type { EditorSessionClientDTO } from '../entities/editor-session-client';
  * Editor Workspace Client DTO
  */
 export interface EditorWorkspaceClientDTO {
-  id: string;
-  identityId: string;
+  id: EditorWorkspaceId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
 
@@ -39,7 +39,7 @@ export interface EditorWorkspaceClientDTO {
   sessions: EditorSessionClientDTO[];
 
   isActive: boolean;
-  lastActiveSessionId: string | null;
+  lastActiveSessionId: EditorSessionId | null;
 
   // Timestamps use TransferDate
   lastAccessedAt: TransferDate | null;

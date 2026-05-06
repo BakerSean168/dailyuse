@@ -21,6 +21,8 @@ import {
 import {
   CreateGoalRecordSchema,
   GoalRecordClientDTOSchema,
+  GoalRecordListResSchema,
+  DeleteSuccessResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, KeyResultId, GoalRecordId } from '@dailyuse/contracts/primitives';
@@ -99,13 +101,7 @@ export function registerRecordRoutes(
         }),
       },
       responses: {
-        200: successResponse(
-          z.object({
-            data: z.array(GoalRecordClientDTOSchema),
-            total: z.number(),
-          }),
-          '查询成功',
-        ),
+        200: successResponse(GoalRecordListResSchema, '查询成功'),
       },
     },
     [auth],
@@ -131,13 +127,7 @@ export function registerRecordRoutes(
         }),
       },
       responses: {
-        200: successResponse(
-          z.object({
-            data: z.array(GoalRecordClientDTOSchema),
-            total: z.number(),
-          }),
-          '查询成功',
-        ),
+        200: successResponse(GoalRecordListResSchema, '查询成功'),
       },
     },
     [auth],
@@ -162,7 +152,7 @@ export function registerRecordRoutes(
         }),
       },
       responses: {
-        200: successResponse(z.object({ success: z.boolean() }), '删除成功'),
+        200: successResponse(DeleteSuccessResSchema, '删除成功'),
         404: errorResponse('记录不存在'),
       },
     },

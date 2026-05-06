@@ -27,6 +27,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
+import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   NotificationConfig,
@@ -245,7 +246,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     // 发布创建事件
     template.addDomainEvent<ReminderEventMap['reminder:template:created']>('reminder:template:created', {
       identityId: params.identityId,
-      templateId: id as string,
+      templateId: id,
       reminder: template.toServerDTO(),
     });
 
@@ -453,8 +454,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this.addDomainEvent<ReminderEventMap['reminder:template:moved']>('reminder:template:moved', {
       identityId: this._props.identityId,
       templateId: this.id,
-      oldGroupId,
-      newGroupId: targetGroupId,
+      oldGroupId: oldGroupId as ReminderGroupId | null,
+      newGroupId: targetGroupId as ReminderGroupId | null,
       reminder: this.toServerDTO(),
     });
   }
@@ -550,7 +551,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this.addDomainEvent<ReminderEventMap['reminder:triggered']>('reminder:triggered', {
       identityId: this._props.identityId,
       templateId: this.id,
-      groupId: this._props.groupId,
+      groupId: this._props.groupId as ReminderGroupId | null,
       triggeredAt: now,
       nextTriggerAt: this._props.nextTriggerAt,
       reminder: this.toServerDTO(),

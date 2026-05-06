@@ -126,10 +126,10 @@ describe('AIKnowledgeNoteService', () => {
       executionLogPort,
     );
 
-    const result = await service.createKnowledgeNote('identity-1', {
+    const result = await service.createKnowledgeNote({
       topic: 'Python tooling',
       title: 'Python Tooling',
-    });
+    }, { identityId: 'identity-1' });
 
     expect(executionPort.generate).toHaveBeenCalledWith({
       identityId: 'identity-1',

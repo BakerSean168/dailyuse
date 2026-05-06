@@ -3,6 +3,7 @@
  * 调度执行记录实体 - 服务端接口
  */
 
+import type { ScheduleExecutionId, ScheduleTaskId } from '../../../primitives';
 import type { ExecutionStatus } from '../value-objects';
 import type { ScheduleExecutionClientDTO } from './schedule-execution-client';
 
@@ -12,8 +13,8 @@ import type { ScheduleExecutionClientDTO } from './schedule-execution-client';
  * ScheduleExecution Server DTO
  */
 export interface ScheduleExecutionServerDTO {
-  id: string;
-  taskId: string;
+  id: ScheduleExecutionId;
+  taskId: ScheduleTaskId;
   executionTime: number; // epoch ms
   status: ExecutionStatus;
   duration: number | null; // 执行时长（毫秒）
@@ -31,7 +32,7 @@ export interface ScheduleExecutionServerStatic {
    * 创建新的 ScheduleExecution 实体（静态工厂方法）
    */
   create(params: {
-    taskId: string;
+    taskId: ScheduleTaskId;
     executionTime: number;
     status?: ExecutionStatus;
   }): ScheduleExecutionServerDTO;

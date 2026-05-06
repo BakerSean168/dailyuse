@@ -3,7 +3,7 @@
  * 通知模板聚合根 - 服务端实现
  */
 
-import type { NotificationTemplateId } from '@dailyuse/contracts/primitives';
+import type { NotificationTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
 import type { NotificationEventMap } from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { AggregateRoot, createLogger } from '@dailyuse/utils';
@@ -138,7 +138,7 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
 
     this.addDomainEvent<NotificationEventMap['notification:template-activated']>(
       'notification:template-activated',
-      { templateId: String(this.id) },
+      { templateId: this.id as NotificationTemplateId },
     );
 
     logger.info('✅ [聚合根] 模板已激活', { id: String(this.id) });
@@ -154,7 +154,7 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
 
     this.addDomainEvent<NotificationEventMap['notification:template-deactivated']>(
       'notification:template-deactivated',
-      { templateId: String(this.id) },
+      { templateId: this.id as NotificationTemplateId },
     );
 
     logger.info('✅ [聚合根] 模板已停用', { id: String(this.id) });
@@ -171,7 +171,7 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
 
     this.addDomainEvent<NotificationEventMap['notification:template-updated']>(
       'notification:template-updated',
-      { templateId: String(this.id), changedFields: Object.keys(template) },
+      { templateId: this.id as NotificationTemplateId, changedFields: Object.keys(template) },
     );
 
     logger.info('✅ [聚合根] 模板配置已更新', { id: String(this.id) });
@@ -250,7 +250,7 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
 
   public toServerDTO(): NotificationTemplateServerDTO {
     return {
-      id: String(this.id) as NotificationTemplateId,
+      id: this.id as NotificationTemplateId,
       name: this._props.name,
       description: this._props.description,
       type: this._props.type,
@@ -304,7 +304,7 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
     // NOTE: NotificationTemplate does not have identityId; using template id as fallback.
     template.addDomainEvent<NotificationEventMap['notification:template-created']>(
       'notification:template-created',
-      { identityId: String(id), name: params.name, type: params.type, category: params.category },
+      { identityId: String(id) as IdentityId, templateId: id as NotificationTemplateId, name: params.name, type: params.type, category: params.category },
     );
 
     return template;

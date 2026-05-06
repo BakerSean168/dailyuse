@@ -16,6 +16,7 @@ import type {
 import { AggregateRoot } from '@dailyuse/utils';
 import { NotificationPreferenceId } from '../../domain-shared/value-objects/notification-preference-id';
 import { IdentityId } from '@dailyuse/domain-shared';
+import type { NotificationPreferenceId as NotificationPreferenceIdBranded, IdentityId as IdentityIdBranded } from '@dailyuse/contracts/primitives';
 
 export interface NotificationPreferenceState {
   id: NotificationPreferenceId;
@@ -89,8 +90,8 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
   // ================= 5. DTO Conversion =================
   public toDTO(): NotificationPreferenceClientDTO {
     return {
-      id: this.id as unknown as string,
-      identityId: this._props.identityId as unknown as string,
+      id: this.id as unknown as NotificationPreferenceIdBranded,
+      identityId: this._props.identityId as unknown as IdentityIdBranded,
       settings: this._props.settings,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),

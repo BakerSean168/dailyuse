@@ -27,7 +27,7 @@ export const CreateNotificationSchema = z.object({
   urgency: z.string().optional(),
   relatedEntityType: z.enum(RelatedEntityType).optional(),
   relatedEntityId: brandedId<string>().optional(),
-  actions: z.array(z.any().openapi({ type: 'object' })).optional(),
+  actions: z.array(z.unknown()).optional(),
   metadata: z.record(z.string(), openApiJsonValue).optional(),
   expiresAt: z.number().int().optional(),
   sendImmediately: z.boolean().default(false).optional(),

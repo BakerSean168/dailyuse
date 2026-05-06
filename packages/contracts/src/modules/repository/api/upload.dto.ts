@@ -10,8 +10,20 @@ export const UploadResourcesMetadataSchema = z.object({
 
 export type UploadResourcesMetadataZodReq = z.infer<typeof UploadResourcesMetadataSchema>;
 
+const MultipartBinaryFilesSchema = z
+  .unknown()
+  .refine((value) => value !== undefined, 'At least one file is required')
+  .openapi({
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+  })
+  .describe('待上传文件');
+
 export const UploadResourcesMultipartSchema = z.object({
-  files: z.any().describe('待上传文件'),
+  files: MultipartBinaryFilesSchema,
   folderId: brandedId<FolderId>().optional().describe('目标文件夹 ID'),
   tags: z
     .union([z.string(), z.array(z.string())])

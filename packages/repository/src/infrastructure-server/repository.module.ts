@@ -52,6 +52,7 @@ import {
   RepositoryResourceMutationType,
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
+import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
 import { PathCalculator } from '../domain-server/services/PathCalculator';
 import { eventBus } from '@dailyuse/utils';
 
@@ -587,9 +588,9 @@ function buildApplicationPort(
       const createdResource = await resourceRepository.findById(String(result.data.resource.id));
       if (createdResource) {
         emitResourceMutationEvent({
-          identityId: createdResource.identityId,
-          repositoryId: String(createdResource.repositoryId),
-          resourceId: String(createdResource.id),
+          identityId: createdResource.identityId as IdentityId,
+          repositoryId: String(createdResource.repositoryId) as RepositoryId,
+          resourceId: String(createdResource.id) as ResourceId,
           resourcePath: createdResource.path,
           mutation: RepositoryResourceMutationType.Created,
         });
@@ -633,9 +634,9 @@ function buildApplicationPort(
         const updatedResource = await resourceRepository.findById(id);
         if (updatedResource) {
           emitResourceMutationEvent({
-            identityId: updatedResource.identityId,
-            repositoryId: String(updatedResource.repositoryId),
-            resourceId: String(updatedResource.id),
+            identityId: updatedResource.identityId as IdentityId,
+            repositoryId: String(updatedResource.repositoryId) as RepositoryId,
+            resourceId: String(updatedResource.id) as ResourceId,
             resourcePath: updatedResource.path,
             mutation: RepositoryResourceMutationType.ContentUpdated,
           });
@@ -645,9 +646,9 @@ function buildApplicationPort(
 
       if (pathChanged) {
         emitResourceMutationEvent({
-          identityId: currentResource.identityId,
-          repositoryId: String(currentResource.repositoryId),
-          resourceId: String(currentResource.id),
+          identityId: currentResource.identityId as IdentityId,
+          repositoryId: String(currentResource.repositoryId) as RepositoryId,
+          resourceId: String(currentResource.id) as ResourceId,
           resourcePath: currentResource.path,
           mutation: RepositoryResourceMutationType.Moved,
         });
@@ -660,9 +661,9 @@ function buildApplicationPort(
       if (!result.ok) return result;
 
       emitResourceMutationEvent({
-        identityId: result.data.identityId,
-        repositoryId: String(result.data.repositoryId),
-        resourceId: String(result.data.id),
+        identityId: result.data.identityId as IdentityId,
+        repositoryId: String(result.data.repositoryId) as RepositoryId,
+        resourceId: String(result.data.id) as ResourceId,
         resourcePath: result.data.path,
         mutation: RepositoryResourceMutationType.Moved,
       });
@@ -675,9 +676,9 @@ function buildApplicationPort(
 
       if (resource) {
         emitResourceMutationEvent({
-          identityId: resource.identityId,
-          repositoryId: String(resource.repositoryId),
-          resourceId: String(resource.id),
+          identityId: resource.identityId as IdentityId,
+          repositoryId: String(resource.repositoryId) as RepositoryId,
+          resourceId: String(resource.id) as ResourceId,
           resourcePath: resource.path,
           mutation: RepositoryResourceMutationType.Deleted,
         });

@@ -1,5 +1,6 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { ResourceBookmarkServerDTO } from '@dailyuse/contracts/repository';
+import type { ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
 import type {
   CreateResourceBookmarkInput,
   DeleteResourceBookmarkInput,
@@ -55,8 +56,8 @@ export class ResourceBookmarkPowerSyncRepository implements IResourceBookmarkRep
       return [
         {
           id: `${repositoryId}:${identityId}:${resource.id}`,
-          resourceId: resource.id,
-          identityId,
+          resourceId: resource.id as ResourceId,
+          identityId: identityId as IdentityId,
           aliasName: item.aliasName ?? null,
           icon: item.icon ?? null,
           color: item.color ?? null,
@@ -94,8 +95,8 @@ export class ResourceBookmarkPowerSyncRepository implements IResourceBookmarkRep
       ...bookmarks,
       {
         id: `${input.repositoryId}:${input.identityId}:${input.resourceId}`,
-        resourceId: input.resourceId,
-        identityId: input.identityId,
+        resourceId: input.resourceId as ResourceId,
+        identityId: input.identityId as IdentityId,
         aliasName: input.aliasName ?? null,
         icon: input.icon ?? null,
         color: input.color ?? null,

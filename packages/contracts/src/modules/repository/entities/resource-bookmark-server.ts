@@ -9,7 +9,7 @@
  * - version: 乐观锁版本号
  * - updatedAt: 最后更新时间（增量同步）
  */
-import type { DomainDate, TransferDate } from '../../../primitives';
+import type { DomainDate, TransferDate, ResourceId, IdentityId, BookmarkId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -17,9 +17,9 @@ import type { DomainDate, TransferDate } from '../../../primitives';
  * Resource Bookmark Server DTO
  */
 export interface ResourceBookmarkServerDTO {
-  id: string;
-  resourceId: string;
-  identityId: string;
+  id: BookmarkId;
+  resourceId: ResourceId;
+  identityId: IdentityId;
 
   aliasName: string | null;
   icon: string | null;

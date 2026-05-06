@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
@@ -7,7 +6,7 @@ import {
   errorResponse,
   successResponse,
 } from '@dailyuse/utils/result';
-import { QueryAnalyticsSchema } from '@dailyuse/contracts/ai';
+import { QueryAnalyticsSchema, QueryAnalyticsResSchema } from '@dailyuse/contracts/ai';
 import type { AIAnalyticsQueryController } from '../../controllers/ai-analytics-query.controller';
 
 interface PlatformMiddleware {
@@ -36,7 +35,7 @@ export function registerAIAnalyticsQueryRoutes(
       summary: '查询分析洞察',
       request: { body: { content: { 'application/json': { schema: QueryAnalyticsSchema } } } },
       responses: {
-        200: successResponse(z.any(), '查询成功'),
+        200: successResponse(QueryAnalyticsResSchema, '查询成功'),
         400: errorResponse('参数错误'),
       },
     },

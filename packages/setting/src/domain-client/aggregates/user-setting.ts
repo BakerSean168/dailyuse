@@ -82,8 +82,8 @@ export class UserSetting extends AggregateRoot<ISettingId> {
 
   toDTO(): UserSettingClientDTO {
     return {
-      id: String(this.id) as ISettingId,
-      identityId: String(this._props.identityId) as IIdentityId,
+      id: this.id as ISettingId,
+      identityId: this._props.identityId as IIdentityId,
       preferences: this.toPreferences(),
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),

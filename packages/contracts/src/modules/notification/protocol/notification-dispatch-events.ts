@@ -2,12 +2,13 @@ import type { NotificationCategory } from '../value-objects/notification-categor
 import type { NotificationType } from '../value-objects/notification-type';
 import type { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { UrgencyLevel } from '../../../shared/value-objects/urgency';
+import type { IdentityId, NotificationId } from '../../../primitives';
 
 export type AssetImageKey = string;
 
 export interface NotificationDispatchBase {
-  id: string;
-  identityId: string;
+  id: NotificationId;
+  identityId: IdentityId;
   title: string;
   body?: string | null;
   category: NotificationCategory;

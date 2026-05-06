@@ -112,6 +112,6 @@ export class MoveFolderUseCase {
 
     await this.updateResourcesRecursively(String(folder.id), folder.path);
 
-    return ok({ folder: folder.toClientDTO() });
+    return ok({ folder: folder.toClientDTO() as unknown as FolderClientDTO });
   }
 }

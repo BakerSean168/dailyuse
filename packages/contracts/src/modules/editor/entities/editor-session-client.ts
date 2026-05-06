@@ -11,9 +11,9 @@ import type { SessionLayoutDTO } from '../value-objects/session-layout';
 
 export interface EditorSessionClientDTO {
   // ===== 基础属性 =====
-  id: string;
-  workspaceId: string;
-  identityId: string;
+  id: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
 

@@ -15,6 +15,7 @@ import type {
   CreateResourceReq as CreateResourceZodReq,
   UpdateResourceReq as UpdateResourceZodReq,
 } from '../api/repository.dto';
+import type { RepositoryId, ResourceId, FolderId } from '../../../primitives';
 
 // === Repository Module RPC Map ===
 export type RepositoryRpcMap = {
@@ -22,19 +23,19 @@ export type RepositoryRpcMap = {
   'repository:current': [void, RepositoryClientDTO | null];
 
   // === Resource Operations ===
-  'resource:create': [{ repositoryId: string } & CreateResourceZodReq, ResourceClientDTO];
-  'resource:update': [{ resourceId: string } & UpdateResourceZodReq, ResourceClientDTO];
-  'resource:get': [{ resourceId: string }, ResourceClientDTO];
+  'resource:create': [{ repositoryId: RepositoryId } & CreateResourceZodReq, ResourceClientDTO];
+  'resource:update': [{ resourceId: ResourceId } & UpdateResourceZodReq, ResourceClientDTO];
+  'resource:get': [{ resourceId: ResourceId }, ResourceClientDTO];
   'resource:list': [
-    { repositoryId: string; folderId?: string; status?: string },
+    { repositoryId: RepositoryId; folderId?: FolderId; status?: string },
     ResourceClientDTO[],
   ];
-  'resource:delete': [{ resourceId: string; hardDelete?: boolean }, { ok: boolean }];
-  'resource:search': [{ repositoryId: string; keyword: string }, ResourceClientDTO[]];
-  'resource:move': [{ resourceId: string; targetFolderId: string }, ResourceClientDTO];
+  'resource:delete': [{ resourceId: ResourceId; hardDelete?: boolean }, { ok: boolean }];
+  'resource:search': [{ repositoryId: RepositoryId; keyword: string }, ResourceClientDTO[]];
+  'resource:move': [{ resourceId: ResourceId; targetFolderId: FolderId }, ResourceClientDTO];
   'resource:upload': [
     {
-      repositoryId: string;
+      repositoryId: RepositoryId;
       files: UploadResourceFileDTO[];
       metadata?: UploadResourcesRequestDTO;
     },
@@ -43,17 +44,17 @@ export type RepositoryRpcMap = {
 
   // === Bookmark Operations ===
   'resource-bookmark:create': [
-    { repositoryId: string; request: CreateResourceBookmarkRequestDTO },
+    { repositoryId: RepositoryId; request: CreateResourceBookmarkRequestDTO },
     ResourceBookmarkClientDTO,
   ];
   'resource-bookmark:update': [
-    { repositoryId: string; bookmarkId: string; request: UpdateResourceBookmarkRequestDTO },
+    { repositoryId: RepositoryId; bookmarkId: string; request: UpdateResourceBookmarkRequestDTO },
     ResourceBookmarkClientDTO,
   ];
   'resource-bookmark:reorder': [
-    { repositoryId: string; request: ReorderResourceBookmarksRequestDTO },
+    { repositoryId: RepositoryId; request: ReorderResourceBookmarksRequestDTO },
     ResourceBookmarkClientDTO[],
   ];
-  'resource-bookmark:delete': [{ repositoryId: string; bookmarkId: string }, { ok: boolean }];
-  'resource-bookmark:list': [{ repositoryId: string }, ResourceBookmarkClientDTO[]];
+  'resource-bookmark:delete': [{ repositoryId: RepositoryId; bookmarkId: string }, { ok: boolean }];
+  'resource-bookmark:list': [{ repositoryId: RepositoryId }, ResourceBookmarkClientDTO[]];
 };

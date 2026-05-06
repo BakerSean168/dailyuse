@@ -15,6 +15,7 @@ import type {
   IdentityId,
   GoalRecordId,
   FocusSessionId,
+  FocusModeId,
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
@@ -24,10 +25,13 @@ import { ReviewType } from '../value-objects/review-type';
 import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
+import { HiddenGoalsMode } from '../value-objects/focus-mode';
+import { ProgressCalculationMode } from '../value-objects/progress-breakdown';
 import type { GoalClientDTO } from '../aggregates/goal-client';
 import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
 import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
+import type { FocusModeDTO } from '../value-objects/focus-mode';
 
 // ============================================================================
 // Sub-entity Schemas
@@ -107,6 +111,22 @@ const ReminderTriggerSchema = z.object({
 const GoalReminderConfigDTOSchema = z.object({
   enabled: z.boolean(),
   triggers: z.array(ReminderTriggerSchema),
+});
+
+/**
+ * FocusMode Client DTO Schema
+ */
+export const FocusModeClientDTOSchema: z.ZodType<FocusModeDTO> = z.object({
+  id: brandedId<FocusModeId>(),
+  identityId: brandedId<IdentityId>(),
+  focusedGoalIds: z.array(brandedId<GoalId>()),
+  startTime: z.number(),
+  endTime: z.number(),
+  hiddenGoalsMode: z.enum(HiddenGoalsMode),
+  isActive: z.boolean(),
+  actualEndTime: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
 });
 
 // ============================================================================
@@ -264,3 +284,80 @@ export const GetGoalAggregateResSchema = z.object({
 });
 
 export type GetGoalAggregateRes = z.infer<typeof GetGoalAggregateResSchema>;
+
+// ============================================================================
+// List Response Schemas
+// ============================================================================
+
+/**
+ * 关键结果列表响应 Schema
+ */
+export const KeyResultListResSchema = z.object({
+  data: z.array(KeyResultClientDTOSchema),
+  total: z.number(),
+});
+
+/**
+ * 进度记录列表响应 Schema
+ */
+export const GoalRecordListResSchema = z.object({
+  data: z.array(GoalRecordClientDTOSchema),
+  total: z.number(),
+});
+
+/**
+ * 复盘列表响应 Schema
+ */
+export const GoalReviewListResSchema = z.object({
+  data: z.array(GoalReviewClientDTOSchema),
+  total: z.number(),
+});
+
+// ============================================================================
+// Simple Response Schemas
+// ============================================================================
+
+/**
+ * 删除操作成功响应 Schema
+ */
+export const DeleteSuccessResSchema = z.object({ success: z.boolean() });
+
+/**
+ * 归档过期目标响应 Schema
+ */
+export const ArchiveExpiredResSchema = z.object({ archivedCount: z.number() });
+
+/**
+ * 进度分解响应 Schema
+ */
+export const ProgressBreakdownResSchema = z.object({
+  totalProgress: z.number(),
+  calculationMode: z.literal('WeightedAverage'),
+  krContributions: z.array(
+    z.object({
+      keyResultId: brandedId<KeyResultId>(),
+      keyResultName: z.string(),
+      progress: z.number(),
+      weight: z.number(),
+      contribution: z.number(),
+    }),
+  ),
+  lastUpdateTime: z.number(),
+  updateTrigger: z.string(),
+});
+
+// ============================================================================
+// Request Schemas
+// ============================================================================
+
+/**
+ * 批量更新关键结果权重请求 Schema
+ */
+export const BatchUpdateKeyResultWeightsReqSchema = z.object({
+  updates: z.array(
+    z.object({
+      keyResultId: brandedId<KeyResultId>(),
+      weight: z.number().int().min(1).max(5),
+    }),
+  ),
+});

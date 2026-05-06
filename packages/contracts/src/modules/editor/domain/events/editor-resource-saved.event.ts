@@ -1,3 +1,5 @@
+import type { ResourceId } from '../../../../primitives';
+
 /**
  * Editor Resource Saved Event
  *
@@ -10,5 +12,5 @@
  */
 export interface EditorResourceSavedDomainEvent {
   /** The ID of the saved resource */
-  resourceId: string;
+  resourceId: ResourceId;
 }

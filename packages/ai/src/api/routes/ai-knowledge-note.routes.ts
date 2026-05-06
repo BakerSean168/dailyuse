@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
@@ -7,7 +6,7 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import { CreateKnowledgeNoteSchema } from '@dailyuse/contracts/ai';
+import { CreateKnowledgeNoteSchema, CreateKnowledgeNoteResSchema } from '@dailyuse/contracts/ai';
 import type { AIKnowledgeNoteController } from '../../controllers/ai-knowledge-note.controller';
 
 interface PlatformMiddleware {
@@ -37,7 +36,7 @@ export function registerAIKnowledgeNoteRoutes(
       summary: '创建知识笔记',
       request: { body: { content: { 'application/json': { schema: CreateKnowledgeNoteSchema } } } },
       responses: {
-        201: successResponse(z.any(), '创建成功'),
+        201: successResponse(CreateKnowledgeNoteResSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
     },

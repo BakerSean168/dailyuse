@@ -1,9 +1,10 @@
 import type { FocusSessionServerDTO } from '../../aggregates/focus-session-server';
+import type { IdentityId, FocusSessionId, GoalId } from '../../../../primitives';
 
 export interface FocusSessionCompletedEvent {
-  identityId: string;
-  sessionId: string;
-  goalId: string | null;
+  identityId: IdentityId;
+  sessionId: FocusSessionId;
+  goalId: GoalId | null;
   session: FocusSessionServerDTO;
   completedAt: number;
   actualDurationMinutes: number;

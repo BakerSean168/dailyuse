@@ -15,6 +15,7 @@ import type {
   EditorTabId,
   EditorWorkspaceId,
   IdentityId,
+  ResourceId,
 } from '@dailyuse/contracts/primitives';
 
 /**
@@ -259,7 +260,7 @@ export class EditorTab extends Entity<EditorTabId> {
       sessionId: this._props.sessionId,
       workspaceId: this._props.workspaceId,
       identityId: this._props.identityId,
-      resourceId: this._props.resourceId,
+      resourceId: this._props.resourceId as ResourceId | null,
       tabIndex: this._props.tabIndex,
       tabType: this._props.tabType,
       name: this._props.name,
@@ -278,12 +279,12 @@ export class EditorTab extends Entity<EditorTabId> {
    */
   public toClientDTO(): EditorTabClientDTO {
     return {
-      id: this.id as unknown as string,
-      groupId: this._props.groupId as unknown as string,
-      sessionId: this._props.sessionId as unknown as string,
-      workspaceId: this._props.workspaceId as unknown as string,
-      identityId: this._props.identityId as unknown as string,
-      resourceId: this._props.resourceId,
+      id: this.id,
+      groupId: this._props.groupId,
+      sessionId: this._props.sessionId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      resourceId: this._props.resourceId as ResourceId | null,
       tabIndex: this._props.tabIndex,
       tabType: this._props.tabType,
       name: this._props.name,

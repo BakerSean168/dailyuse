@@ -1,4 +1,5 @@
 import type { NotificationServerDTO } from '../../aggregates/notification-server';
+import type { IdentityId, NotificationId } from '../../../../primitives';
 
 /**
  * Notification Channel Failed Event
@@ -6,8 +7,8 @@ import type { NotificationServerDTO } from '../../aggregates/notification-server
  * Triggered when delivery for a notification channel fails.
  */
 export interface NotificationChannelFailedEvent {
-  identityId: string;
-  notificationId: string;
+  identityId: IdentityId;
+  notificationId: NotificationId;
   notification: NotificationServerDTO;
   channel: string;
   reason: string;

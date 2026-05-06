@@ -85,14 +85,14 @@ export class EditorHttpAdapter implements IEditorApiClient {
   }
 
   createGroup(
-    request: CreateEditorGroupRequest & { workspaceId: string },
+    request: CreateEditorGroupRequest,
   ): Promise<Result<EditorGroupClientDTO | null>> {
     return this.httpClient.post(`${this.baseUrl}/groups`, request);
   }
 
   updateGroup(
     groupId: string,
-    request: UpdateEditorGroupRequest & { workspaceId: string; sessionId: string },
+    request: UpdateEditorGroupRequest,
   ): Promise<Result<EditorGroupClientDTO | null>> {
     return this.httpClient.put(`${this.baseUrl}/groups/${groupId}`, request);
   }
@@ -104,14 +104,14 @@ export class EditorHttpAdapter implements IEditorApiClient {
   }
 
   createTab(
-    request: CreateEditorTabRequest & { workspaceId: string },
+    request: CreateEditorTabRequest,
   ): Promise<Result<EditorTabClientDTO | null>> {
     return this.httpClient.post(`${this.baseUrl}/tabs`, request);
   }
 
   updateTab(
     tabId: string,
-    request: UpdateEditorTabRequest & { workspaceId: string; sessionId: string; groupId: string },
+    request: UpdateEditorTabRequest,
   ): Promise<Result<EditorTabClientDTO | null>> {
     return this.httpClient.put(`${this.baseUrl}/tabs/${tabId}`, request);
   }

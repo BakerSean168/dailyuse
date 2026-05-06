@@ -1,4 +1,6 @@
+import type { RepositoryId } from '../../../../primitives';
+
 export interface RepositoryUpdatedEvent {
-  repositoryId: string;
+  repositoryId: RepositoryId;
   changedFields: string[];
 }

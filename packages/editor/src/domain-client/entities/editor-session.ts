@@ -106,9 +106,9 @@ export class EditorSession extends Entity<IEditorSessionId> {
   // ================= 5. DTO Conversion =================
   public toDTO(): EditorSessionClientDTO {
     return {
-      id: String(this.id),
-      workspaceId: String(this._props.workspaceId),
-      identityId: String(this._props.identityId),
+      id: this.id as EditorSessionId,
+      workspaceId: this._props.workspaceId as EditorWorkspaceId,
+      identityId: this._props.identityId as IdentityId,
       name: this._props.name,
       description: this._props.description,
       groups: this._props.groups.map((g) => g.toDTO()),

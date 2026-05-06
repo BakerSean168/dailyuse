@@ -1,3 +1,5 @@
+import type { IdentityId, RepositoryId, ResourceId } from '../../../../primitives';
+
 export { type RepositoryCreatedEvent } from './repository-created.event';
 export { type RepositoryUpdatedEvent } from './repository-updated.event';
 export { type RepositoryArchivedEvent } from './repository-archived.event';
@@ -17,9 +19,9 @@ export type RepositoryResourceMutationType =
   (typeof RepositoryResourceMutationType)[keyof typeof RepositoryResourceMutationType];
 
 export interface RepositoryResourceMutatedEvent {
-  identityId: string;
-  repositoryId: string;
-  resourceId: string;
+  identityId: IdentityId;
+  repositoryId: RepositoryId;
+  resourceId: ResourceId;
   resourcePath: string;
   mutation: RepositoryResourceMutationType;
   timestamp: number;

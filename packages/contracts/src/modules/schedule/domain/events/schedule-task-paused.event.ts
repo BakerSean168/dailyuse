@@ -1,3 +1,4 @@
+import type { ScheduleTaskId } from '../../../../primitives';
 import type { SourceModule } from '../../value-objects';
 
 /**
@@ -10,7 +11,7 @@ import type { SourceModule } from '../../value-objects';
  * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface ScheduleTaskPausedEvent {
-  taskId: string;
+  taskId: ScheduleTaskId;
   sourceModule: SourceModule;
   sourceEntityId: string;
   reason?: string;

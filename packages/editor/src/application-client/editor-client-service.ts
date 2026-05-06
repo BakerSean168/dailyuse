@@ -81,14 +81,14 @@ export class EditorClientService implements EditorClientPort {
   }
 
   createGroup(
-    request: CreateEditorGroupRequest & { workspaceId: string },
+    request: CreateEditorGroupRequest,
   ): Promise<Result<EditorGroupClientDTO | null>> {
     return this.editorApi.createGroup(request);
   }
 
   updateGroup(
     groupId: string,
-    request: UpdateEditorGroupRequest & { workspaceId: string; sessionId: string },
+    request: UpdateEditorGroupRequest,
   ): Promise<Result<EditorGroupClientDTO | null>> {
     return this.editorApi.updateGroup(groupId, request);
   }
@@ -98,14 +98,14 @@ export class EditorClientService implements EditorClientPort {
   }
 
   createTab(
-    request: CreateEditorTabRequest & { workspaceId: string },
+    request: CreateEditorTabRequest,
   ): Promise<Result<EditorTabClientDTO | null>> {
     return this.editorApi.createTab(request);
   }
 
   updateTab(
     tabId: string,
-    request: UpdateEditorTabRequest & { workspaceId: string; sessionId: string; groupId: string },
+    request: UpdateEditorTabRequest,
   ): Promise<Result<EditorTabClientDTO | null>> {
     return this.editorApi.updateTab(tabId, request);
   }

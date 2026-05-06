@@ -14,6 +14,7 @@ import type {
   TabViewStateDTO,
   TabType,
 } from '@dailyuse/contracts/editor';
+import type { ResourceId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorTabId } from '../../domain-shared/value-objects/editor-tab-id';
 import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
@@ -114,12 +115,12 @@ export class EditorTab extends Entity<EditorTabId> {
   // ================= 5. DTO Conversion =================
   public toDTO(): EditorTabClientDTO {
     return {
-      id: String(this.id),
-      groupId: String(this._props.groupId),
-      sessionId: String(this._props.sessionId),
-      workspaceId: String(this._props.workspaceId),
-      identityId: String(this._props.identityId),
-      resourceId: this._props.resourceId,
+      id: this.id as EditorTabId,
+      groupId: this._props.groupId as EditorGroupId,
+      sessionId: this._props.sessionId as EditorSessionId,
+      workspaceId: this._props.workspaceId as EditorWorkspaceId,
+      identityId: this._props.identityId as IdentityId,
+      resourceId: this._props.resourceId as ResourceId | null,
       tabIndex: this._props.tabIndex,
       tabType: this._props.tabType,
       name: this._props.name,

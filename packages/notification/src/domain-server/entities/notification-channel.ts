@@ -144,8 +144,8 @@ export class NotificationChannel extends Entity<NotificationChannelId> {
 
   public toServerDTO(): NotificationChannelServerDTO {
     return {
-      id: String(this.id),
-      notificationId: String(this._props.notificationId),
+      id: this.id as NotificationChannelId,
+      notificationId: this._props.notificationId as NotificationId,
       channelType: this._props.channelType,
       status: this._props.status,
       recipient: this._props.recipient,
@@ -162,8 +162,8 @@ export class NotificationChannel extends Entity<NotificationChannelId> {
   public toClientDTO(): import('@dailyuse/contracts/notification').NotificationChannelClientDTO {
     const now = Date.now();
     return {
-      id: String(this.id),
-      notificationId: String(this._props.notificationId),
+      id: this.id as NotificationChannelId,
+      notificationId: this._props.notificationId as NotificationId,
       channelType: this._props.channelType,
       status: this._props.status,
       recipient: this._props.recipient,

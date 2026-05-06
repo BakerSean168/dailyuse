@@ -8,7 +8,7 @@ import type {
   ResourceStatsDTO,
   ExternalLink,
 } from '@dailyuse/contracts/repository';
-import type { ResourceId, RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
+import type { ResourceId, RepositoryId, FolderId, IdentityId } from '@dailyuse/contracts/primitives';
 import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
 import { ResourceId as ResourceIdType } from '../../domain-shared/value-objects/resource-id';
@@ -239,10 +239,10 @@ export class Resource extends Entity<ResourceId> {
     };
 
     return {
-      id: String(this.id),
-      repositoryId: String(this._props.repositoryId),
-      identityId: this._props.identityId,
-      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      id: this.id as ResourceId,
+      repositoryId: this._props.repositoryId as RepositoryId,
+      identityId: this._props.identityId as IdentityId,
+      folderId: this._props.folderId as FolderId | null,
       name: this._props.name,
       type: this._props.type,
       path: this._props.path,
@@ -296,13 +296,9 @@ export class Resource extends Entity<ResourceId> {
       this._props.type === ResourceType.Folder ? 'mdi-folder' : (iconMap[extension] ?? 'mdi-file');
 
     return {
-      id: String(this.id) as import('@dailyuse/contracts/repository').ResourceClientDTO['id'],
-      repositoryId: String(
-        this._props.repositoryId,
-      ) as import('@dailyuse/contracts/repository').ResourceClientDTO['repositoryId'],
-      folderId: (this._props.folderId
-        ? String(this._props.folderId)
-        : null) as import('@dailyuse/contracts/repository').ResourceClientDTO['folderId'],
+      id: this.id as import('@dailyuse/contracts/repository').ResourceClientDTO['id'],
+      repositoryId: this._props.repositoryId as import('@dailyuse/contracts/repository').ResourceClientDTO['repositoryId'],
+      folderId: this._props.folderId as import('@dailyuse/contracts/repository').ResourceClientDTO['folderId'],
       name: this._props.name,
       type: this._props.type,
       mimeType: this._props.mimeType ?? '',

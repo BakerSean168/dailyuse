@@ -1,9 +1,10 @@
 import type { ResourceClientDTO } from '../aggregates/resource-client';
+import type { FolderId } from '../../../primitives';
 
 export type UploadOverwritePolicy = 'skip' | 'replace';
 
 export interface UploadResourcesRequestDTO {
-  folderId?: string;
+  folderId?: FolderId;
   tags?: string[];
   overwritePolicy?: UploadOverwritePolicy;
 }

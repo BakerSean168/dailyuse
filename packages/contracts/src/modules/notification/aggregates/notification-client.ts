@@ -18,8 +18,8 @@ import type { IdentityId, NotificationId, TransferDate } from '../../../primitiv
  * Notification Client DTO
  */
 export interface NotificationClientDTO {
-  id: string;
-  identityId: string;
+  id: NotificationId;
+  identityId: IdentityId;
 
   title: string;
   content: string;

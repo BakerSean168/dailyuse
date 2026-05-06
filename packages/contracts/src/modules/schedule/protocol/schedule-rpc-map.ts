@@ -1,3 +1,4 @@
+import type { ScheduleId, ScheduleTaskId } from '../../../primitives';
 import type {
   CreateScheduleRequest,
   UpdateScheduleRequest,
@@ -15,10 +16,10 @@ export type ScheduleRpcMap = {
   // === Schedule (Calendar Events) Operations ===
   'schedule:create': [CreateScheduleRequest, CalendarEntryClientDTO];
   'schedule:update': [UpdateScheduleRequest, CalendarEntryClientDTO];
-  'schedule:delete': [{ scheduleId: string }, ScheduleOperationSuccessResponseDTO];
+  'schedule:delete': [{ scheduleId: ScheduleId }, ScheduleOperationSuccessResponseDTO];
   'schedule:get-by-range': [{ startTime: number; endTime: number }, CalendarEntryClientDTO[]];
   'schedule:detect-conflicts': [
-    { startTime: number; endTime: number; excludeId?: string },
+    { startTime: number; endTime: number; excludeId?: ScheduleId },
     ConflictDetectionResult,
   ];
   'schedule:resolve-conflict': [
@@ -29,10 +30,10 @@ export type ScheduleRpcMap = {
   // === Schedule Task Operations ===
   'schedule-task:create': [unknown, ScheduleTaskClientDTO];
   'schedule-task:update': [unknown, ScheduleTaskClientDTO];
-  'schedule-task:delete': [{ taskId: string }, ScheduleOperationSuccessResponseDTO];
+  'schedule-task:delete': [{ taskId: ScheduleTaskId }, ScheduleOperationSuccessResponseDTO];
   'schedule-task:query': [ScheduleTaskQueryParamsDTO, unknown];
-  'schedule-task:enable': [{ taskId: string }, ScheduleTaskClientDTO];
-  'schedule-task:disable': [{ taskId: string }, ScheduleTaskClientDTO];
+  'schedule-task:enable': [{ taskId: ScheduleTaskId }, ScheduleTaskClientDTO];
+  'schedule-task:disable': [{ taskId: ScheduleTaskId }, ScheduleTaskClientDTO];
   'schedule-task:update-config': [unknown, ScheduleTaskClientDTO];
   'schedule-task:update-metadata': [unknown, ScheduleTaskClientDTO];
 
@@ -41,5 +42,5 @@ export type ScheduleRpcMap = {
     ScheduleExecutionQueryParamsDTO,
     { items: ScheduleExecutionClientDTO[]; total: number; page: number; limit: number },
   ];
-  'schedule-execution:get-stats': [{ taskId: string }, unknown];
+  'schedule-execution:get-stats': [{ taskId: ScheduleTaskId }, unknown];
 };

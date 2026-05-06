@@ -7,6 +7,7 @@ import type {
   UserReminderPreferencesClientDTO,
   UserReminderPreferencesServerDTO,
 } from '@dailyuse/contracts/reminder';
+import type { UserReminderPreferencesId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 
@@ -261,7 +262,7 @@ export class UserReminderPreferences extends AggregateRoot<string> {
    */
   public toServerDTO(): UserReminderPreferencesServerDTO {
     return {
-      id: this.id,
+      id: this.id as UserReminderPreferencesId,
       identityId: this._identityId,
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
@@ -293,7 +294,7 @@ export class UserReminderPreferences extends AggregateRoot<string> {
       .join(', ');
 
     return {
-      id: this.id,
+      id: this.id as UserReminderPreferencesId,
       identityId: this._identityId,
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],

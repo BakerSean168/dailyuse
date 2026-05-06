@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { ResourceBookmarkServerDTO } from '@dailyuse/contracts/repository';
+import type { ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
 import type {
   CreateResourceBookmarkInput,
   DeleteResourceBookmarkInput,
@@ -248,8 +249,8 @@ export class ResourceBookmarkPrismaRepository implements IResourceBookmarkReposi
       return [
         {
           id: `${repositoryId}:${identityId}:${resource.id}`,
-          resourceId: resource.id,
-          identityId,
+          resourceId: resource.id as ResourceId,
+          identityId: identityId as IdentityId,
           aliasName: item.aliasName ?? null,
           icon: item.icon ?? null,
           color: item.color ?? null,

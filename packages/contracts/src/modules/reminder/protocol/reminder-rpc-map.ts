@@ -18,6 +18,7 @@ import type {
 } from '../api/reminder-group.dto';
 import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
 import type { ReminderGroupClientDTO } from '../aggregates/reminder-group-client';
+import type { ReminderTemplateId } from '../../../primitives';
 
 // === Reminder Module RPC Map ===
 export type ReminderRpcMap = {
@@ -28,10 +29,10 @@ export type ReminderRpcMap = {
   'reminder:get-today-schedule': [GetReminderTodayScheduleReq, GetReminderTodayScheduleRes];
 
   // === Template Control ===
-  'reminder:enable-template': [{ templateId: string }, ReminderTemplateClientDTO];
-  'reminder:pause-template': [{ templateId: string }, ReminderTemplateClientDTO];
-  'reminder:disable-template': [{ templateId: string }, ReminderTemplateClientDTO];
-  'reminder:delete-template': [{ templateId: string }, void];
+  'reminder:enable-template': [{ templateId: ReminderTemplateId }, ReminderTemplateClientDTO];
+  'reminder:pause-template': [{ templateId: ReminderTemplateId }, ReminderTemplateClientDTO];
+  'reminder:disable-template': [{ templateId: ReminderTemplateId }, ReminderTemplateClientDTO];
+  'reminder:delete-template': [{ templateId: ReminderTemplateId }, void];
 
   // === Group Operations ===
   'reminder-group:create': [CreateReminderGroupReq, CreateReminderGroupRes];

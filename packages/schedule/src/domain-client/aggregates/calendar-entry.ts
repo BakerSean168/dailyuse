@@ -78,8 +78,8 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
   public toDTO(): CalendarEntryClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: this.id as ScheduleId,
+      identityId: this._props.identityId as IdentityId,
       title: this._props.title,
       description: this._props.description ?? undefined,
       startTime: this._props.startTime.getTime(),

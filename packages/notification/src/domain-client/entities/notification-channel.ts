@@ -22,6 +22,7 @@ import {
   ChannelError,
   ChannelResponse,
 } from '../../domain-shared/value-objects';
+import type { NotificationChannelId as NotificationChannelIdBranded, NotificationId as NotificationIdBranded } from '@dailyuse/contracts/primitives';
 
 export interface NotificationChannelState {
   id: NotificationChannelId;
@@ -148,8 +149,8 @@ export class NotificationChannel extends Entity<NotificationChannelId> {
     const sentAt = this._props.sentAt as Date | null;
     const failedAt = this._props.failedAt as Date | null;
     return {
-      id: this.id as unknown as string,
-      notificationId: this._props.notificationId as unknown as string,
+      id: this.id as unknown as NotificationChannelIdBranded,
+      notificationId: this._props.notificationId as unknown as NotificationIdBranded,
       channelType: this._props.channelType,
       status: this._props.status,
       recipient: this._props.recipient,

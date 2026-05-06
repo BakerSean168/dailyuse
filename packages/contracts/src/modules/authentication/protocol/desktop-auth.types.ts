@@ -9,6 +9,7 @@
  */
 
 import type { CurrentUserDTO } from '../api/session.dto';
+import type { IdentityId } from '../value-objects/identity-id';
 
 // ============================================================================
 // Auth Mode & Connection Status
@@ -67,7 +68,7 @@ export interface TokenStorageData {
   refreshToken: string;
   accessTokenExpiresAt: number;
   refreshTokenExpiresAt: number;
-  identityId: string;
+  identityId: IdentityId;
   sessionId: string;
 }
 
@@ -79,7 +80,7 @@ export interface SaveTokenRequest {
   refreshToken: string;
   accessTokenExpiresIn: number;
   refreshTokenExpiresIn?: number;
-  identityId: string;
+  identityId: IdentityId;
   sessionId: string;
 }
 
@@ -117,7 +118,7 @@ export interface SessionRestoreResult {
   success?: boolean;
   hasValidSession?: boolean;
   runtimeState?: AuthRuntimeState;
-  identityId?: string;
+  identityId?: IdentityId;
   sessionId?: string;
   needsRefresh?: boolean;
   needsReLogin?: boolean;
@@ -130,7 +131,7 @@ export interface SessionRestoreResult {
 export interface AutoLoginResult {
   ok: boolean;
   authenticated: boolean;
-  identityId?: string;
+  identityId?: IdentityId;
   sessionId?: string;
   isNewSession?: boolean;
   error?: string;
@@ -142,7 +143,7 @@ export interface AutoLoginResult {
 export interface SessionStatusDTO {
   hasActiveSession: boolean;
   sessionId?: string;
-  identityId?: string;
+  identityId?: IdentityId;
   tokenStatus: TokenStatus;
   lastActivityAt?: number | Date;
   sessionCreatedAt?: number | Date;
@@ -186,7 +187,7 @@ export interface LoginResponse {
   sessionId?: string;
   accessToken?: string;
   refreshToken?: string;
-  identityId?: string;
+  identityId?: IdentityId;
   expiresIn?: number;
   authMode?: AuthMode;
   error?: string;
@@ -273,7 +274,7 @@ export interface AuthStatusDTO {
   authenticated: boolean;
   mode: AuthMode;
   connectionStatus: ConnectionStatus;
-  identityId: string | null;
+  identityId: IdentityId | null;
   canSync: boolean;
 }
 
@@ -300,7 +301,7 @@ export interface EmailLoginCredentials {
 }
 
 export interface RememberedDesktopAccountDTO {
-  identityId: string;
+  identityId: IdentityId;
   identifier: string;
   nickname: string | null;
   avatarUrl: string | null;

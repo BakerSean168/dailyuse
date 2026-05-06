@@ -3,6 +3,8 @@
  * 用户提醒偏好聚合根 - 服务端
  */
 
+import type { UserReminderPreferencesId, IdentityId } from '../../../primitives';
+
 // ============ 值对象：TimeSlot ============
 
 /**
@@ -22,8 +24,8 @@ export interface TimeSlotDTO {
  * User Reminder Preferences Server DTO
  */
 export interface UserReminderPreferencesServerDTO {
-  id: string;
-  identityId: string;
+  id: UserReminderPreferencesId;
+  identityId: IdentityId;
   bestTimeSlots: TimeSlotDTO[]; // 最佳时间段
   worstTimeSlots: TimeSlotDTO[]; // 最差时间段
   globalReminderEnabled: boolean; // 全局提醒总开关
@@ -36,8 +38,8 @@ export interface UserReminderPreferencesServerDTO {
  * User Reminder Preferences Client DTO
  */
 export interface UserReminderPreferencesClientDTO {
-  id: string;
-  identityId: string;
+  id: UserReminderPreferencesId;
+  identityId: IdentityId;
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
   globalReminderEnabled: boolean;

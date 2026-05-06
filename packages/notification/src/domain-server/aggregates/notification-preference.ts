@@ -7,7 +7,7 @@ import type {
   NotificationPreferenceClientDTO,
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId, NotificationPreferenceId as NotificationPreferenceIdBranded } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   NotificationPreferenceId,
@@ -135,7 +135,7 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
     }
 
     return {
-      id: String(this.id),
+      id: this.id as NotificationPreferenceIdBranded,
       identityId: this._props.identityId,
       settings: settingsRecord,
       version: this._props.version,
@@ -151,7 +151,7 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
       settingsRecord[key] = [...value];
     }
     return {
-      id: String(this.id),
+      id: this.id as NotificationPreferenceIdBranded,
       identityId: this._props.identityId,
       settings: settingsRecord,
       version: this._props.version,

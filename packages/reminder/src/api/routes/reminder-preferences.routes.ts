@@ -8,7 +8,6 @@
  *   PUT  /preferences — Update user reminder preferences
  */
 
-import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import {
   RouteRegistrar,
@@ -16,6 +15,10 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
+import {
+  UserReminderPreferencesResponseSchema,
+  UpdateReminderPreferencesSchema,
+} from '@dailyuse/contracts/reminder';
 import type { ReminderController } from '../../controllers/reminder.controller';
 
 // ============ Types ============
@@ -48,7 +51,7 @@ export function registerReminderPreferencesRoutes(
       path: '/preferences',
       summary: '获取用户提醒偏好',
       responses: {
-        200: successResponse(z.object({}).passthrough(), '获取成功'),
+        200: successResponse(UserReminderPreferencesResponseSchema, '获取成功'),
       },
     },
     [auth],
@@ -62,10 +65,10 @@ export function registerReminderPreferencesRoutes(
       path: '/preferences',
       summary: '更新用户提醒偏好',
       request: {
-        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+        body: { content: { 'application/json': { schema: UpdateReminderPreferencesSchema } } },
       },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '更新成功'),
+        200: successResponse(UserReminderPreferencesResponseSchema, '更新成功'),
         400: errorResponse('参数错误'),
       },
     },

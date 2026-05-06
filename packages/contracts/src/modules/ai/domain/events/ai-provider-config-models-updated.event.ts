@@ -1,7 +1,8 @@
+import type { IdentityId } from '../../../../primitives';
 import type { AIProviderConfigServerDTO } from '../../aggregates/ai-provider-config-server';
 
 export interface AIProviderConfigModelsUpdatedEvent {
-  identityId: string;
+  identityId: IdentityId;
   providerConfig: AIProviderConfigServerDTO;
   modelCount: number;
 }

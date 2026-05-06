@@ -5,6 +5,7 @@
 import type {
   ReminderInstanceId,
   ReminderTemplateId,
+  ReminderHistoryId,
   TransferDate,
   DomainDate,
 } from '../../../primitives';
@@ -18,8 +19,8 @@ import type { ReminderHistoryServerDTO } from './reminder-history-server';
  * Reminder History Client DTO
  */
 export interface ReminderHistoryClientDTO {
-  id: string;
-  templateId: string;
+  id: ReminderHistoryId;
+  templateId: ReminderTemplateId;
   triggeredAt: TransferDate;
   result: TriggerResult;
   error: string | null;

@@ -9,6 +9,7 @@ import type {
   ReminderGroupClientDTO,
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
+import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GroupStats } from '../value-objects';
@@ -145,7 +146,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       version: 1,
     });
     group.addDomainEvent<ReminderEventMap['reminder:group:created']>('reminder:group:created', {
-      identityId: params.identityId,
+      identityId: params.identityId as IdentityId,
       group: group.toServerDTO(),
     });
     return group;
@@ -158,7 +159,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
     this.addDomainEvent<ReminderEventMap['reminder:group:control-mode-switched']>('reminder:group:control-mode-switched', {
       identityId: this._identityId,
-      groupId: this.id,
+      groupId: this.id as ReminderGroupId,
       previousMode: oldMode,
       newMode: ControlMode.Group,
     });
@@ -171,7 +172,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
     this.addDomainEvent<ReminderEventMap['reminder:group:control-mode-switched']>('reminder:group:control-mode-switched', {
       identityId: this._identityId,
-      groupId: this.id,
+      groupId: this.id as ReminderGroupId,
       previousMode: oldMode,
       newMode: ControlMode.Individual,
     });
@@ -191,7 +192,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
     this.addDomainEvent<ReminderEventMap['reminder:group:enabled']>('reminder:group:enabled', {
       identityId: this._identityId,
-      groupId: this.id,
+      groupId: this.id as ReminderGroupId,
     });
   }
 
@@ -201,7 +202,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._updatedAt = new Date(Date.now());
     this.addDomainEvent<ReminderEventMap['reminder:group:paused']>('reminder:group:paused', {
       identityId: this._identityId,
-      groupId: this.id,
+      groupId: this.id as ReminderGroupId,
     });
   }
 
@@ -277,7 +278,7 @@ export class ReminderGroup extends AggregateRoot<string> {
 
   public toServerDTO(): ReminderGroupServerDTO {
     return {
-      id: this.id,
+      id: this.id as ReminderGroupId,
       identityId: this.identityId,
       name: this.name,
       description: this.description,

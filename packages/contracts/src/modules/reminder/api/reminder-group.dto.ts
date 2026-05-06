@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { ReminderGroupId, ReminderTemplateId } from '../../../primitives';
 import type { ReminderGroupClientDTO } from '../aggregates/reminder-group-client';
 import { ControlMode } from '../value-objects/control-mode';
 
@@ -97,7 +99,7 @@ export interface ReminderTriggerRes {
 }
 
 export interface TemplateScheduleStatusRes {
-  templateId: string;
+  templateId: ReminderTemplateId;
   hasSchedule: boolean;
   nextExecutionTime?: number | null;
   lastExecutionTime?: number | null;

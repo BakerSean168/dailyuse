@@ -1,4 +1,5 @@
 import type { GoalServerDTO } from '../../aggregates/goal-server';
+import type { IdentityId } from '../../../../primitives';
 
 /**
  * Goal Reminder Config Changed Event
@@ -8,7 +9,7 @@ import type { GoalServerDTO } from '../../aggregates/goal-server';
  */
 export interface GoalReminderConfigChangedEvent {
   /** User/Identity identifier */
-  identityId: string;
+  identityId: IdentityId;
 
   /** Updated goal snapshot */
   goal: GoalServerDTO;

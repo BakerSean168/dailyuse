@@ -2,6 +2,7 @@
  * 文件树节点类型
  * 用于统一渲染文件夹和文件
  */
+import type { FolderId, RepositoryId } from '../../../primitives';
 
 export type TreeNodeType = 'folder' | 'file';
 
@@ -10,11 +11,11 @@ export type TreeNodeType = 'folder' | 'file';
  * 可以表示文件夹或文件
  */
 export interface TreeNode {
-  id: string;
+  id: string; // ResourceId for files, FolderId for folders (mixed type)
   name: string;
   type: TreeNodeType;
-  parentId: string | null;
-  repositoryId: string;
+  parentId: FolderId | null;
+  repositoryId: RepositoryId;
   path: string;
 
   // 文件夹特有属性
@@ -40,6 +41,6 @@ export interface TreeNode {
  * 文件树 API 响应
  */
 export interface FileTreeResponse {
-  repositoryId: string;
+  repositoryId: RepositoryId;
   tree: TreeNode[];
 }

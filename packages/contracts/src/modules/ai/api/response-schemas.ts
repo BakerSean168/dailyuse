@@ -1,14 +1,18 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { AiProviderConfigId } from '../../../primitives';
+import type { AiProviderConfigId, AiConversationId, AiMessageId } from '../../../primitives';
 import { GoalCategory } from '../dtos/goal-generation-result.dto';
 import {
   GoalAutomationActionSchema,
   GoalAutomationExecutedActionSchema,
+  GoalAutomationTaskTemplatePreviewSchema,
 } from './ai-goal-automation.dto';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
 import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
+import { ConversationStatus } from '../value-objects/conversation-status';
+import { MessageRole } from '../value-objects/message-role';
+import { AIProviderType } from '../value-objects/ai-provider-type';
 
 const TokenUsageSchema = z.object({
   promptTokens: z.number(),
@@ -19,8 +23,8 @@ const TokenUsageSchema = z.object({
 const KeyResultPreviewSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
-  valueType: z.enum(KeyResultValueType),
-  calculationMethod: z.enum(KeyResultCalculationMethod),
+  valueType: z.enum(Object.values(KeyResultValueType)),
+  calculationMethod: z.enum(Object.values(KeyResultCalculationMethod)),
   startValue: z.number(),
   currentValue: z.number(),
   targetValue: z.number(),
@@ -83,7 +87,7 @@ const GoalWorkflowPlanPayloadSchema = z.object({
   plan: z.object({
     goal: GeneratedGoalDraftSchema,
     keyResults: z.array(KeyResultPreviewSchema).optional(),
-    taskTemplates: z.array(z.any()).optional(),
+    taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
   }),
   actions: z.array(GoalAutomationActionSchema),
   tokenUsage: TokenUsageSchema,
@@ -124,3 +128,170 @@ export const GoalWorkflowResultDTOSchema = z.discriminatedUnion('state', [
   GoalWorkflowConfirmResultDTOSchema,
   GoalWorkflowExecutionResultDTOSchema,
 ]);
+
+// ============ Route Response Schemas ============
+
+export const MessageClientDTOSchema = z.object({
+  id: brandedId<AiMessageId>(),
+  conversationId: brandedId<AiConversationId>(),
+  role: z.enum(Object.values(MessageRole)),
+  content: z.string(),
+  tokenCount: z.number().nullable(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+  isUser: z.boolean(),
+  isAssistant: z.boolean(),
+  isSystem: z.boolean(),
+  formattedTime: z.string(),
+});
+
+export const AIConversationClientDTOSchema = z.object({
+  id: brandedId<AiConversationId>(),
+  identityId: z.string(),
+  name: z.string(),
+  status: z.enum(Object.values(ConversationStatus)),
+  messageCount: z.number(),
+  lastMessageAt: z.number().nullable(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+  messages: z.array(MessageClientDTOSchema).nullable(),
+});
+
+const AIModelInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  contextWindow: z.number().optional(),
+  inputCostPer1M: z.number().optional(),
+  outputCostPer1M: z.number().optional(),
+});
+
+export const AIProviderConfigClientDTOSchema = z.object({
+  id: brandedId<AiProviderConfigId>(),
+  identityId: z.string(),
+  name: z.string(),
+  providerType: z.enum(Object.values(AIProviderType)),
+  baseUrl: z.string(),
+  apiKeyMasked: z.string(),
+  defaultModel: z.string().nullable(),
+  availableModels: z.array(AIModelInfoSchema),
+  isActive: z.boolean(),
+  isDefault: z.boolean(),
+  priority: z.number(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+});
+
+export const AIProviderConfigSummarySchema = z.object({
+  id: brandedId<AiProviderConfigId>(),
+  name: z.string(),
+  providerType: z.enum(Object.values(AIProviderType)),
+  defaultModel: z.string().nullable(),
+  isActive: z.boolean(),
+  isDefault: z.boolean(),
+});
+
+export const SendMessageResSchema = z.object({
+  userMessage: MessageClientDTOSchema,
+  assistantMessage: MessageClientDTOSchema,
+  tokenUsage: TokenUsageSchema,
+  providerId: brandedId<AiProviderConfigId>(),
+  processingTimeMs: z.number(),
+});
+
+export const ConversationListResSchema = z.object({
+  data: z.array(AIConversationClientDTOSchema),
+  total: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+});
+
+export const MessageListResSchema = z.object({
+  data: z.array(MessageClientDTOSchema),
+  total: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+});
+
+export const TestAIProviderResultDTOSchema = z.object({
+  ok: z.boolean(),
+  response: z.string().optional(),
+  model: z.string().optional(),
+  error: z.string().optional(),
+  latencyMs: z.number(),
+});
+
+const KnowledgeCitationResSchema = z.object({
+  resourceId: z.string(),
+  resourcePath: z.string(),
+  title: z.string().optional(),
+  chunkIndex: z.number().int().nonnegative(),
+  excerpt: z.string(),
+  score: z.number().nonnegative(),
+});
+
+export const QueryKnowledgeResSchema = z.object({
+  answer: z.string(),
+  citations: z.array(KnowledgeCitationResSchema),
+  providerId: brandedId<AiProviderConfigId>(),
+  tokenUsage: TokenUsageSchema,
+  processingTimeMs: z.number(),
+  matchedResourceCount: z.number(),
+});
+
+export const ExpandKnowledgeResSchema = z.object({
+  expandedContent: z.string(),
+  citations: z.array(KnowledgeCitationResSchema),
+  providerId: brandedId<AiProviderConfigId>(),
+  tokenUsage: TokenUsageSchema,
+  processingTimeMs: z.number(),
+  matchedResourceCount: z.number(),
+});
+
+const ResourceClientResSchema = z.object({
+  id: z.string(),
+  repositoryId: z.string(),
+  folderId: z.string().nullable(),
+  name: z.string(),
+  type: z.string(),
+  mimeType: z.string(),
+  path: z.string(),
+  size: z.number(),
+  content: z.string().nullable(),
+  status: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+  version: z.number(),
+});
+
+export const CreateKnowledgeNoteResSchema = z.object({
+  resource: ResourceClientResSchema,
+  resolvedPath: z.string(),
+  tokenUsage: TokenUsageSchema,
+  providerId: brandedId<AiProviderConfigId>(),
+  processingTimeMs: z.number(),
+  generatedAt: z.number(),
+});
+
+export const QueryAnalyticsResSchema = z.object({
+  answer: z.string(),
+  highlights: z.array(z.string()),
+  providerId: brandedId<AiProviderConfigId>(),
+  tokenUsage: TokenUsageSchema,
+  processingTimeMs: z.number(),
+});
+
+export const ListAIProviderConfigsResSchema = z.object({
+  data: z.array(AIProviderConfigSummarySchema),
+});
+
+export const ActionSuccessSchema = z.object({
+  success: z.boolean(),
+});

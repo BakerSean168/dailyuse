@@ -31,6 +31,8 @@ import {
   BatchScheduleTaskOperationRequestSchema,
   ScheduleTaskResponseSchema,
   BatchOperationResponseSchema,
+  BatchDeleteResponseSchema,
+  UpdateTaskMetadataRequestSchema,
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ScheduleTaskId } from '@dailyuse/contracts/primitives';
@@ -107,11 +109,11 @@ export function registerScheduleRoutes(
       summary: '批量删除调度任务',
       request: {
         body: {
-          content: { 'application/json': { schema: z.object({ taskIds: z.array(z.string()).min(1) }) } },
+          content: { 'application/json': { schema: z.object({ taskIds: z.array(brandedId<ScheduleTaskId>()).min(1) }) } },
         },
       },
       responses: {
-        200: successResponse(z.object({ deleted: z.number() }), '删除成功'),
+        200: successResponse(BatchDeleteResponseSchema, '删除成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -323,7 +325,7 @@ export function registerScheduleRoutes(
       summary: '更新调度任务元数据',
       request: {
         params: z.object({ id: brandedId<ScheduleTaskId>() }),
-        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+        body: { content: { 'application/json': { schema: UpdateTaskMetadataRequestSchema } } },
       },
       responses: {
         200: successResponse(ScheduleTaskResponseSchema, '更新成功'),

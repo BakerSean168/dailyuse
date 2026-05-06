@@ -19,10 +19,10 @@ import type { EditorTabClientDTO } from './editor-tab-client';
  * Editor Group Client DTO (includes UI formatted fields).
  */
 export interface EditorGroupClientDTO {
-  id: string;
-  sessionId: string;
-  workspaceId: string;
-  identityId: string;
+  id: EditorGroupId;
+  sessionId: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
   groupIndex: number;
   activeTabIndex: number;
   name: string | null;

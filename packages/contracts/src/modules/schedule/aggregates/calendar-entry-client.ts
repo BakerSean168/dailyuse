@@ -10,8 +10,8 @@
 import type { ScheduleId, IdentityId, DomainDate, TransferDate } from '../../../primitives';
 
 export interface CalendarEntryClientDTO {
-  id: string;
-  identityId: string;
+  id: ScheduleId;
+  identityId: IdentityId;
   title: string;
   description?: string;
   startTime: TransferDate;

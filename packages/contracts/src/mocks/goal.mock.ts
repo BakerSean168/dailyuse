@@ -20,6 +20,7 @@ import type { GoalRecordClientDTO } from '../modules/goal/aggregates/goal-record
 import type { GoalReviewClientDTO } from '../modules/goal/entities/goal-review-client';
 import type { QueryGoalsRes } from '../modules/goal/api/response-schemas';
 import { ReviewType } from '../modules/goal/value-objects/review-type';
+import type { KeyResultId } from '../primitives';
 
 // ============================================================================
 // GoalClientDTO
@@ -140,7 +141,7 @@ export function createMockKeyResult(
   const now = Date.now();
 
   return {
-    id: `IKeyResultId_${faker.string.uuid()}`,
+    id: `IKeyResultId_${faker.string.uuid()}` as KeyResultId,
     title: faker.lorem.words({ min: 3, max: 6 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     progress: {

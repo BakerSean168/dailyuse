@@ -52,7 +52,7 @@ export interface EditorWorkspaceServerDTO {
 /** Workspace created event. */
 export interface EditorWorkspaceCreatedEvent {
   type: 'editor.workspace.created';
-  aggregateId: string; // workspaceId
+  aggregateId: EditorWorkspaceId;
   timestamp: DomainDate;
   payload: {
     workspace: EditorWorkspaceServerDTO;
@@ -63,7 +63,7 @@ export interface EditorWorkspaceCreatedEvent {
 /** Workspace updated event. */
 export interface EditorWorkspaceUpdatedEvent {
   type: 'editor.workspace.updated';
-  aggregateId: string;
+  aggregateId: EditorWorkspaceId;
   timestamp: DomainDate;
   payload: {
     workspace: EditorWorkspaceServerDTO;
@@ -75,7 +75,7 @@ export interface EditorWorkspaceUpdatedEvent {
 /** Workspace deleted event. */
 export interface EditorWorkspaceDeletedEvent {
   type: 'editor.workspace.deleted';
-  aggregateId: string;
+  aggregateId: EditorWorkspaceId;
   timestamp: DomainDate;
   payload: {
     workspaceId: EditorWorkspaceId;
@@ -86,7 +86,7 @@ export interface EditorWorkspaceDeletedEvent {
 /** Workspace activated event. */
 export interface EditorWorkspaceActivatedEvent {
   type: 'editor.workspace.activated';
-  aggregateId: string;
+  aggregateId: EditorWorkspaceId;
   timestamp: DomainDate;
   payload: {
     workspaceId: EditorWorkspaceId;

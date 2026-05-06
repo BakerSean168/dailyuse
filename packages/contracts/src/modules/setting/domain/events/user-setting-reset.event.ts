@@ -1,3 +1,5 @@
+import type { IdentityId } from '../../../../primitives';
+
 /**
  * User Setting Reset Event
  *
@@ -6,6 +8,6 @@
  * Note: aggregateId and occurredAt are automatically set by the domain event system.
  */
 export interface UserSettingResetEvent {
-  readonly identityId: string;
+  readonly identityId: IdentityId;
   readonly category?: string;
 }

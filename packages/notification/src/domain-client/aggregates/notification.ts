@@ -25,6 +25,7 @@ import {
 } from '../../domain-shared/value-objects';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { NotificationChannel } from '../entities/notification-channel.js';
+import type { NotificationId as NotificationIdBranded, IdentityId as IdentityIdBranded } from '@dailyuse/contracts/primitives';
 
 export interface NotificationState {
   id: NotificationId;
@@ -165,8 +166,8 @@ export class Notification extends AggregateRoot<NotificationId> {
     const deletedAt = this._props.deletedAt as Date | null;
     const notificationChannels = this._props.notificationChannels as NotificationChannel[] | null | undefined;
     return {
-      id: this.id as unknown as string,
-      identityId: this._props.identityId as unknown as string,
+      id: this.id as unknown as NotificationIdBranded,
+      identityId: this._props.identityId as unknown as IdentityIdBranded,
       title: this._props.title,
       content: this._props.content,
       type: this._props.type,

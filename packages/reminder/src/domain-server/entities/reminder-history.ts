@@ -8,6 +8,7 @@ import type {
   ReminderHistoryClientDTO,
 } from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { ReminderHistoryId } from '../../domain-shared/value-objects/reminder-history-id';
 
@@ -132,8 +133,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
   public toServerDTO(): ReminderHistoryServerDTO {
     return {
       id: this.id,
-      templateId: this._props.templateId,
-      identityId: this._props.identityId,
+      templateId: this._props.templateId as ReminderTemplateId,
+      identityId: this._props.identityId as IdentityId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,
@@ -146,7 +147,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
   public toClientDTO(): ReminderHistoryClientDTO {
     return {
       id: this.id,
-      templateId: this._props.templateId,
+      templateId: this._props.templateId as ReminderTemplateId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,

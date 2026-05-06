@@ -1,4 +1,5 @@
 import type { NotificationServerDTO } from '../../aggregates/notification-server';
+import type { IdentityId, NotificationId } from '../../../../primitives';
 
 /**
  * Notification Deleted Event
@@ -6,8 +7,8 @@ import type { NotificationServerDTO } from '../../aggregates/notification-server
  * Triggered when a notification is soft-deleted.
  */
 export interface NotificationDeletedEvent {
-  identityId: string;
-  notificationId: string;
+  identityId: IdentityId;
+  notificationId: NotificationId;
   notification: NotificationServerDTO;
   isSoftDelete: boolean;
   deletedAt: number;

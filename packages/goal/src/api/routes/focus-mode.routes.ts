@@ -4,9 +4,8 @@
  */
 
 import { Router, type RequestHandler } from 'express';
-import { z } from 'zod';
 import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@dailyuse/utils/result';
-import { ActivateFocusModeSchema, ExtendFocusModeSchema } from '@dailyuse/contracts/goal';
+import { ActivateFocusModeSchema, ExtendFocusModeSchema, FocusModeClientDTOSchema } from '@dailyuse/contracts/goal';
 import type { GoalController } from '../../controllers/goal.controller';
 
 interface PlatformMiddleware {
@@ -32,7 +31,7 @@ export function registerFocusModeRoutes(
       method: 'get',
       path: '/focus-mode',
       summary: '获取当前专注模式',
-      responses: { 200: successResponse(z.any(), '获取成功') },
+      responses: { 200: successResponse(FocusModeClientDTOSchema, '获取成功') },
     },
     [auth],
     (_req, ctx) => controller.getCurrentFocusMode(ctx),
@@ -44,7 +43,7 @@ export function registerFocusModeRoutes(
       path: '/focus-mode/activate',
       summary: '激活专注模式',
       request: { body: { content: { 'application/json': { schema: ActivateFocusModeSchema } } } },
-      responses: { 200: successResponse(z.any(), '激活成功') },
+      responses: { 200: successResponse(FocusModeClientDTOSchema, '激活成功') },
     },
     [auth],
     (req, ctx) => controller.activateFocusMode(req.body, ctx),
@@ -55,7 +54,7 @@ export function registerFocusModeRoutes(
       method: 'post',
       path: '/focus-mode/deactivate',
       summary: '停用专注模式',
-      responses: { 200: successResponse(z.any(), '停用成功') },
+      responses: { 200: successResponse(FocusModeClientDTOSchema, '停用成功') },
     },
     [auth],
     (_req, ctx) => controller.deactivateFocusMode(ctx),
@@ -67,7 +66,7 @@ export function registerFocusModeRoutes(
       path: '/focus-mode/extend',
       summary: '延长专注模式',
       request: { body: { content: { 'application/json': { schema: ExtendFocusModeSchema } } } },
-      responses: { 200: successResponse(z.any(), '延长成功') },
+      responses: { 200: successResponse(FocusModeClientDTOSchema, '延长成功') },
     },
     [auth],
     (req, ctx) => controller.extendFocusMode(req.body, ctx),

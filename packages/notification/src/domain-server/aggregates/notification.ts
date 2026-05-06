@@ -8,7 +8,7 @@ import type {
   NotificationMetadataDTO,
   NotificationEventMap,
 } from '@dailyuse/contracts/notification';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId, NotificationId as NotificationIdBranded } from '@dailyuse/contracts/primitives';
 import {
   NotificationCategory,
   NotificationStatus,
@@ -148,8 +148,8 @@ export class Notification extends AggregateRoot<NotificationId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<NotificationEventMap['notification:sent']>('notification:sent', {
-      identityId: String(this._props.identityId),
-      notificationId: String(this.id),
+      identityId: this._props.identityId as IdentityId,
+      notificationId: this.id as NotificationIdBranded,
       notification: this.toServerDTO(),
       channelTypes: this._props.notificationChannels.map((channel) => channel.channelType),
       sentAt: this._props.updatedAt.getTime(),
@@ -182,8 +182,8 @@ export class Notification extends AggregateRoot<NotificationId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<NotificationEventMap['notification:read']>('notification:read', {
-      identityId: String(this._props.identityId),
-      notificationId: String(this.id),
+      identityId: this._props.identityId as IdentityId,
+      notificationId: this.id as NotificationIdBranded,
       notification: this.toServerDTO(),
       readAt: this._props.readAt,
     });
@@ -231,8 +231,8 @@ export class Notification extends AggregateRoot<NotificationId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<NotificationEventMap['notification:deleted']>('notification:deleted', {
-      identityId: String(this._props.identityId),
-      notificationId: String(this.id),
+      identityId: this._props.identityId as IdentityId,
+      notificationId: this.id as NotificationIdBranded,
       notification: this.toServerDTO(),
       isSoftDelete: true,
       deletedAt: this._props.deletedAt.getTime(),
@@ -270,7 +270,7 @@ export class Notification extends AggregateRoot<NotificationId> {
 
   public toServerDTO(): NotificationServerDTO {
     return {
-      id: String(this.id) as NotificationId,
+      id: this.id as NotificationId,
       identityId: this._props.identityId,
       title: this._props.title,
       content: this._props.content,
@@ -344,8 +344,8 @@ export class Notification extends AggregateRoot<NotificationId> {
     });
 
     notification.addDomainEvent<NotificationEventMap['notification:created']>('notification:created', {
-      identityId: String(notification.identityId),
-      notificationId: String(notification.id),
+      identityId: notification.identityId as IdentityId,
+      notificationId: notification.id as NotificationIdBranded,
       notification: notification.toServerDTO(),
     });
 
@@ -363,8 +363,8 @@ export class Notification extends AggregateRoot<NotificationId> {
     this.addDomainEvent<NotificationEventMap['notification:status-changed']>(
       'notification:status-changed',
       {
-        identityId: String(this._props.identityId),
-        notificationId: String(this.id),
+        identityId: this._props.identityId as IdentityId,
+        notificationId: this.id as NotificationIdBranded,
         notification: this.toServerDTO(),
         previousStatus,
         newStatus,

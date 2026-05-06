@@ -8,6 +8,7 @@ import type {
   ReminderResponseClientDTO,
   ReminderResponseAction,
 } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { ReminderResponseId } from '../../domain-shared/value-objects/reminder-response-id';
 
@@ -170,8 +171,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
   public toServerDTO(): ReminderResponseServerDTO {
     return {
       id: this.id,
-      reminderTemplateId: this._props.reminderTemplateId,
-      identityId: this._props.identityId,
+      reminderTemplateId: this._props.reminderTemplateId as ReminderTemplateId,
+      identityId: this._props.identityId as IdentityId,
       action: this._props.action,
       responseTime: this._props.responseTime?.getTime() ?? null,
       timestamp: this._props.timestamp.getTime(),
@@ -184,7 +185,7 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
   public toClientDTO(): ReminderResponseClientDTO {
     return {
       id: this.id,
-      reminderTemplateId: this._props.reminderTemplateId,
+      reminderTemplateId: this._props.reminderTemplateId as ReminderTemplateId,
       action: this._props.action,
       responseTime: this._props.responseTime?.getTime() ?? null,
       timestamp: this._props.timestamp.getTime(),

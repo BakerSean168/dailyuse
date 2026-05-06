@@ -1,3 +1,5 @@
+import type { IdentityId, ReminderGroupId } from '../../../../primitives';
+
 /**
  * Reminder Group Paused Event.
  * 提醒分组暂停事件。
@@ -6,6 +8,6 @@
  * ReminderGroup.pause() 调用后触发。
  */
 export interface ReminderGroupPausedEvent {
-  identityId: string;
-  groupId: string;
+  identityId: IdentityId;
+  groupId: ReminderGroupId;
 }

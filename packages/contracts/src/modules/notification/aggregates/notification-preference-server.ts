@@ -10,7 +10,7 @@
 
 import type { NotificationChannelType } from '../value-objects/notification-channel-type';
 
-import type { IdentityId, TransferDate } from '../../../primitives';
+import type { IdentityId, NotificationPreferenceId, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -18,8 +18,8 @@ import type { IdentityId, TransferDate } from '../../../primitives';
  * NotificationPreference Server DTO
  */
 export interface NotificationPreferenceServerDTO {
-  id: string;
-  identityId: string;
+  id: NotificationPreferenceId;
+  identityId: IdentityId;
   settings: Record<string, NotificationChannelType[]>; // 模块名 => 渠道列表
   version: number;
   createdAt: TransferDate;

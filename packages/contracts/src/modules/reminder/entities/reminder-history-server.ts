@@ -4,6 +4,7 @@
  */
 
 import type { TriggerResult, NotificationChannel } from '../value-objects';
+import type { ReminderHistoryId, ReminderTemplateId, IdentityId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -11,9 +12,9 @@ import type { TriggerResult, NotificationChannel } from '../value-objects';
  * Reminder History Server DTO
  */
 export interface ReminderHistoryServerDTO {
-  id: string;
-  templateId: string;
-  identityId: string;
+  id: ReminderHistoryId;
+  templateId: ReminderTemplateId;
+  identityId: IdentityId;
   triggeredAt: number; // epoch ms
   result: TriggerResult;
   error?: string | null;

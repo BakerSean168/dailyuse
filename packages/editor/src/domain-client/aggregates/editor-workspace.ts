@@ -109,8 +109,8 @@ export class EditorWorkspace extends AggregateRoot<EditorWorkspaceId> {
   // ================= 5. DTO Conversion =================
   public toDTO(): EditorWorkspaceClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: this.id as EditorWorkspaceId,
+      identityId: this._props.identityId as IdentityId,
       name: this._props.name,
       description: this._props.description,
       projectPath: this._props.projectPath,
@@ -120,7 +120,7 @@ export class EditorWorkspace extends AggregateRoot<EditorWorkspaceId> {
       sessions: this._props.sessions.map((s) => s.toDTO()),
       isActive: this._props.isActive,
       lastActiveSessionId: this._props.lastActiveSessionId
-        ? String(this._props.lastActiveSessionId)
+        ? (this._props.lastActiveSessionId as EditorSessionId)
         : null,
       lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
       createdAt: this._props.createdAt.getTime(),

@@ -1,3 +1,5 @@
+import type { IdentityId } from '../../../../primitives';
+
 /**
  * Editor Workspace Created Event
  *
@@ -10,7 +12,7 @@
  */
 export interface EditorWorkspaceCreatedDomainEvent {
   /** The identity that owns this workspace */
-  identityId: string;
+  identityId: IdentityId;
   /** The name of the workspace */
   name: string;
   /** The project path associated with the workspace, if any */

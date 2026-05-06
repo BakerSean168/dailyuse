@@ -34,12 +34,12 @@ export interface EditorClientPort {
   activateSession(workspaceId: string, sessionId: string): Promise<Result<EditorSessionClientDTO | null>>;
   deleteSession(sessionId: string): Promise<Result<void>>;
 
-  createGroup(request: CreateEditorGroupRequest & { workspaceId: string }): Promise<Result<EditorGroupClientDTO | null>>;
-  updateGroup(groupId: string, request: UpdateEditorGroupRequest & { workspaceId: string; sessionId: string }): Promise<Result<EditorGroupClientDTO | null>>;
+  createGroup(request: CreateEditorGroupRequest): Promise<Result<EditorGroupClientDTO | null>>;
+  updateGroup(groupId: string, request: UpdateEditorGroupRequest): Promise<Result<EditorGroupClientDTO | null>>;
   deleteGroup(workspaceId: string, sessionId: string, groupId: string): Promise<Result<void>>;
 
-  createTab(request: CreateEditorTabRequest & { workspaceId: string }): Promise<Result<EditorTabClientDTO | null>>;
-  updateTab(tabId: string, request: UpdateEditorTabRequest & { workspaceId: string; sessionId: string; groupId: string }): Promise<Result<EditorTabClientDTO | null>>;
+  createTab(request: CreateEditorTabRequest): Promise<Result<EditorTabClientDTO | null>>;
+  updateTab(tabId: string, request: UpdateEditorTabRequest): Promise<Result<EditorTabClientDTO | null>>;
   activateTab(workspaceId: string, sessionId: string, groupId: string, tabId: string): Promise<Result<void>>;
   deleteTab(workspaceId: string, sessionId: string, groupId: string, tabId: string): Promise<Result<void>>;
 

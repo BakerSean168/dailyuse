@@ -1,3 +1,5 @@
+import type { ScheduleTaskId } from '../../../../primitives';
+
 /**
  * ScheduleTask Schedule Updated Event
  *
@@ -8,7 +10,7 @@
  * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface ScheduleTaskScheduleUpdatedEvent {
-  taskId: string;
+  taskId: ScheduleTaskId;
   previousCronExpression: string;
   newCronExpression: string;
   nextRunAt: number;

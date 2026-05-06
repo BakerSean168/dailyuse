@@ -1,4 +1,5 @@
 import type { ResourceBookmarkServerDTO } from '@dailyuse/contracts/repository';
+import type { ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
 import type {
   CreateResourceBookmarkInput,
   DeleteResourceBookmarkInput,
@@ -20,8 +21,8 @@ export class ResourceBookmarkMemoryRepository implements IResourceBookmarkReposi
     const items = await this.list(input.repositoryId, input.identityId);
     const created: ResourceBookmarkServerDTO = {
       id: `${input.repositoryId}:${input.identityId}:${input.resourceId}`,
-      resourceId: input.resourceId,
-      identityId: input.identityId,
+      resourceId: input.resourceId as ResourceId,
+      identityId: input.identityId as IdentityId,
       aliasName: input.aliasName ?? null,
       icon: input.icon ?? null,
       color: input.color ?? null,

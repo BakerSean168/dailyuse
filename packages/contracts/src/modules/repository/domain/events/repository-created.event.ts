@@ -1,5 +1,7 @@
+import type { IdentityId } from '../../../../primitives';
+
 export interface RepositoryCreatedEvent {
-  identityId: string;
+  identityId: IdentityId;
   name: string;
   path: string;
 }

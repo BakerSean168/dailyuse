@@ -81,14 +81,14 @@ export class EditorIpcAdapter implements IEditorApiClient {
   }
 
   createGroup(
-    request: CreateEditorGroupRequest & { workspaceId: string },
+    request: CreateEditorGroupRequest,
   ): Promise<Result<EditorGroupClientDTO | null>> {
     return this.ipcClient.invoke(EditorChannels.GROUP_CREATE, request);
   }
 
   updateGroup(
     groupId: string,
-    request: UpdateEditorGroupRequest & { workspaceId: string; sessionId: string },
+    request: UpdateEditorGroupRequest,
   ): Promise<Result<EditorGroupClientDTO | null>> {
     return this.ipcClient.invoke(EditorChannels.GROUP_UPDATE, { groupId, data: request });
   }
@@ -98,14 +98,14 @@ export class EditorIpcAdapter implements IEditorApiClient {
   }
 
   createTab(
-    request: CreateEditorTabRequest & { workspaceId: string },
+    request: CreateEditorTabRequest,
   ): Promise<Result<EditorTabClientDTO | null>> {
     return this.ipcClient.invoke(EditorChannels.TAB_CREATE, request);
   }
 
   updateTab(
     tabId: string,
-    request: UpdateEditorTabRequest & { workspaceId: string; sessionId: string; groupId: string },
+    request: UpdateEditorTabRequest,
   ): Promise<Result<EditorTabClientDTO | null>> {
     return this.ipcClient.invoke(EditorChannels.TAB_UPDATE, { tabId, data: request });
   }

@@ -47,7 +47,7 @@ export class GetFolderTreeUseCase {
         clientDTO.children = node.children.map((child: any) => convertTreeNode(child));
       }
 
-      return clientDTO;
+      return clientDTO as unknown as FolderClientDTO;
     };
 
     return ok({ folders: tree.map((node) => convertTreeNode(node)) });

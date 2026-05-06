@@ -146,6 +146,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
 
     // 🎯 触发领域事件
     record.addDomainEvent<GoalEventMap['goal-record:created']>('goal-record:created', {
+      identityId: params.identityId,
       keyResultId: params.keyResultId,
       value: params.value,
       note: params.note || null,

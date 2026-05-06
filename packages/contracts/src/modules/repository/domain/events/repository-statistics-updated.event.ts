@@ -1,5 +1,7 @@
+import type { IdentityId } from '../../../../primitives';
+
 export interface RepositoryStatisticsUpdatedEvent {
-  identityId: string;
+  identityId: IdentityId;
   totalRepositories: number;
   totalResources: number;
 }

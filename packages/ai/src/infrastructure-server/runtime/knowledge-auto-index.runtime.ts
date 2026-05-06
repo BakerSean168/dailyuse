@@ -1,3 +1,4 @@
+import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
 import {
   REPOSITORY_RESOURCE_MUTATED_EVENT,
   RepositoryResourceMutationType,
@@ -109,9 +110,9 @@ function parseRepositoryResourceMutation(payload: unknown): RepositoryResourceMu
   }
 
   return {
-    identityId: event.identityId,
-    repositoryId: event.repositoryId,
-    resourceId: event.resourceId,
+    identityId: event.identityId as IdentityId,
+    repositoryId: event.repositoryId as RepositoryId,
+    resourceId: event.resourceId as ResourceId,
     resourcePath: event.resourcePath,
     mutation: event.mutation,
     timestamp: event.timestamp,

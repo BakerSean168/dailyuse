@@ -1,7 +1,8 @@
 import type { GoalFolderServerDTO } from '../../aggregates/goal-folder-server';
+import type { IdentityId, GoalFolderId } from '../../../../primitives';
 
 export interface GoalFolderCreatedEvent {
-  identityId: string;
-  folderId: string;
+  identityId: IdentityId;
+  folderId: GoalFolderId;
   folder: GoalFolderServerDTO;
 }

@@ -17,11 +17,9 @@ export * from './domain/events';
 
 // ============ Protocol ============
 export * from './protocol';
-export type {
-  NotificationDispatchBase,
-  NotificationDispatchDesktopEvent,
-  NotificationDispatchInAppEvent,
-} from './protocol';
 
 // ============ API ============
 export * from './api';
+
+// ============ DTOs ============
+export * from './dtos';

@@ -18,16 +18,16 @@ import type { LinkedResourceServerDTO } from './linked-resource-server';
  * Linked Resource Client DTO (includes UI formatted fields).
  */
 export interface LinkedResourceClientDTO {
-  id: string;
-  workspaceId: string;
-  identityId: string;
-  sourceResourceId: string;
+  id: LinkedResourceId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  sourceResourceId: ResourceId;
   sourceType: LinkedSourceType;
   sourceLine: number | null;
   sourceColumn: number | null;
   targetPath: string;
   targetType: LinkedTargetType;
-  targetResourceId: string | null;
+  targetResourceId: ResourceId | null;
   targetAnchor: string | null;
   isValid: boolean;
   lastValidatedAt: TransferDate | null;

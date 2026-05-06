@@ -86,7 +86,7 @@ export type RevokeSessionRes = void;
 // ============================================================================
 
 export interface GuestModeRes {
-  identityId: string;
+  identityId: IdentityId;
   mode: string;
   message: string;
 }

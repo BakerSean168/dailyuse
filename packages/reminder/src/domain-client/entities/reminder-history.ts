@@ -17,6 +17,7 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { ReminderInstanceId } from '../../domain-shared/value-objects/reminder-instance-id';
 import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
+import type { ReminderHistoryId } from '@dailyuse/contracts/primitives';
 
 export interface ReminderHistoryState {
   id: ReminderInstanceId;
@@ -106,8 +107,8 @@ export class ReminderHistory extends Entity<ReminderInstanceId> {
   // ================= DTO Conversion =================
   public toDTO(): ReminderHistoryClientDTO {
     return {
-      id: String(this._props.id),
-      templateId: String(this._props.templateId),
+      id: String(this.id) as ReminderHistoryId,
+      templateId: this._props.templateId as ReminderTemplateId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,

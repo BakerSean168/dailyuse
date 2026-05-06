@@ -1,3 +1,4 @@
+import type { ScheduleTaskId, ScheduleExecutionId, IdentityId } from '../../../../primitives';
 import type { SourceModule, ExecutionStatus } from '../../value-objects';
 
 /**
@@ -10,11 +11,11 @@ import type { SourceModule, ExecutionStatus } from '../../value-objects';
  * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface ScheduleTaskExecutedEvent {
-  taskId: string;
-  executionId: string;
+  taskId: ScheduleTaskId;
+  executionId: ScheduleExecutionId;
   sourceModule: SourceModule;
   sourceEntityId: string;
-  identityId: string;
+  identityId: IdentityId;
   status: ExecutionStatus;
   duration: number;
   payload: Record<string, unknown>;

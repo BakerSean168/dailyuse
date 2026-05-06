@@ -129,7 +129,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     entry.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-created']>(
       'schedule:calendar-entry-created',
       {
-        identityId: params.identityId,
+        identityId: params.identityId as IdentityId,
         title: params.title,
         startTime: params.startTime,
         endTime: params.endTime,
@@ -279,7 +279,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-rescheduled']>(
       'schedule:calendar-entry-rescheduled',
       {
-        entryId: String(this.id),
+        entryId: this.id as ScheduleId,
         oldStartTime,
         oldEndTime,
         newStartTime,
@@ -297,7 +297,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
       'schedule:calendar-entry-updated',
-      { entryId: String(this.id), changedFields: ['title'] },
+      { entryId: this.id as ScheduleId, changedFields: ['title'] },
     );
   }
 
@@ -307,7 +307,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
       'schedule:calendar-entry-updated',
-      { entryId: String(this.id), changedFields: ['description'] },
+      { entryId: this.id as ScheduleId, changedFields: ['description'] },
     );
   }
 
@@ -320,7 +320,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
       'schedule:calendar-entry-updated',
-      { entryId: String(this.id), changedFields: ['priority'] },
+      { entryId: this.id as ScheduleId, changedFields: ['priority'] },
     );
   }
 
@@ -330,7 +330,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
       'schedule:calendar-entry-updated',
-      { entryId: String(this.id), changedFields: ['location'] },
+      { entryId: this.id as ScheduleId, changedFields: ['location'] },
     );
   }
 
@@ -340,7 +340,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
     this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-updated']>(
       'schedule:calendar-entry-updated',
-      { entryId: String(this.id), changedFields: ['attendees'] },
+      { entryId: this.id as ScheduleId, changedFields: ['attendees'] },
     );
   }
 }

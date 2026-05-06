@@ -26,3 +26,31 @@ export const UpdateResourceSchema = z.object({
 });
 
 export type UpdateResourceReq = z.infer<typeof UpdateResourceSchema>;
+
+export const UpdateRepositoryStatsSchema = z.object({
+  resourceCount: z.number().int().min(0).optional().describe('资源数量'),
+  folderCount: z.number().int().min(0).optional().describe('文件夹数量'),
+  totalSize: z.number().int().min(0).optional().describe('总大小 (bytes)'),
+});
+
+export type UpdateRepositoryStatsReq = z.infer<typeof UpdateRepositoryStatsSchema>;
+
+export const CreateFolderSchema = z.object({
+  name: z.string().min(1).max(255).describe('文件夹名称'),
+  parentId: brandedId<FolderId>().optional().describe('父文件夹 ID'),
+  order: z.number().int().optional().describe('排序值'),
+});
+
+export type CreateFolderReq = z.infer<typeof CreateFolderSchema>;
+
+export const RenameFolderSchema = z.object({
+  name: z.string().min(1).max(255).describe('文件夹新名称'),
+});
+
+export type RenameFolderReq = z.infer<typeof RenameFolderSchema>;
+
+export const MoveFolderSchema = z.object({
+  parentId: brandedId<FolderId>().nullable().optional().describe('新的父文件夹 ID；null 表示移动到根节点'),
+});
+
+export type MoveFolderReq = z.infer<typeof MoveFolderSchema>;

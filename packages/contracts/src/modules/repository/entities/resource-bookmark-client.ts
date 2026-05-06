@@ -3,7 +3,7 @@
  * 资源书签实体 - 客户端接口
  */
 import type { TransferDate } from '../../../primitives';
-import type { ResourceId, IdentityId } from '../../../primitives';
+import type { ResourceId, IdentityId, BookmarkId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -12,7 +12,7 @@ import type { ResourceId, IdentityId } from '../../../primitives';
  * 客户端展示用的数据传输对象
  */
 export interface ResourceBookmarkClientDTO {
-  id: string;
+  id: BookmarkId;
   resourceId: ResourceId;
   identityId: IdentityId;
 

@@ -5,24 +5,30 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { IdentityId } from '../value-objects/identity-id';
+import { AccountStatus } from '../value-objects/account-status';
+import { GenderType } from '../value-objects/gender-type';
+import { ThemeType } from '../value-objects/theme-type';
+import { LanguageCode } from '../value-objects/language-code';
 
 /**
  * Account Response Schema
  */
 export const AccountResponseSchema = z.object({
-  id: z.string(),
-  status: z.string(),
+  id: brandedId<IdentityId>(),
+  status: z.enum(AccountStatus),
   profile: z.object({
     nickname: z.string(),
     realName: z.string().nullable(),
     avatarUrl: z.string().nullable(),
     bio: z.string().nullable(),
-    gender: z.string(),
+    gender: z.enum(GenderType),
     birthday: z.union([z.number(), z.null()]),
   }),
   settings: z.object({
-    theme: z.string(),
-    language: z.string(),
+    theme: z.enum(ThemeType),
+    language: z.enum(LanguageCode),
     timezone: z.string(),
     notificationEnabled: z.boolean(),
   }),

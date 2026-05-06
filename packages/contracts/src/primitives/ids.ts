@@ -63,6 +63,9 @@ export type ReminderHistoryId = string & { readonly __brand: 'ReminderHistoryId'
 /** 提醒响应 ID */
 export type ReminderResponseId = string & { readonly __brand: 'ReminderResponseId' };
 
+/** 用户提醒偏好 ID */
+export type UserReminderPreferencesId = string & { readonly __brand: 'UserReminderPreferencesId' };
+
 /** 日程 ID */
 export type ScheduleId = string & { readonly __brand: 'ScheduleId' };
 
@@ -89,6 +92,9 @@ export type ResourceVersionId = string & { readonly __brand: 'ResourceVersionId'
 
 /** 资源链接 ID */
 export type ResourceLinkId = string & { readonly __brand: 'ResourceLinkId' };
+
+/** 资源书签 ID */
+export type BookmarkId = string & { readonly __brand: 'BookmarkId' };
 
 /** 设置 ID */
 export type SettingId = string & { readonly __brand: 'SettingId' };

@@ -1,7 +1,8 @@
 import type { AccountServerDTO } from '../../aggregates';
+import type { IdentityId } from '../../../../primitives';
 
 export interface AccountCreatedEvent {
-  identityId: string;
-  accountId: string;
+  identityId: IdentityId;
+  accountId: IdentityId;
   account: AccountServerDTO;
 }

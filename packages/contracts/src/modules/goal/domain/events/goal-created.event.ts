@@ -1,4 +1,5 @@
 import type { GoalServerDTO } from '../../aggregates/goal-server';
+import type { IdentityId, GoalFolderId } from '../../../../primitives';
 
 /**
  * Goal Created Event
@@ -11,10 +12,10 @@ import type { GoalServerDTO } from '../../aggregates/goal-server';
  */
 export interface GoalCreatedEvent {
   /** User/Identity identifier */
-  identityId: string;
+  identityId: IdentityId;
 
   /** Parent folder identifier (if any) */
-  folderId: string | null;
+  folderId: GoalFolderId | null;
 
   /** Created goal snapshot */
   goal: GoalServerDTO;

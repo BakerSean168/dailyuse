@@ -3,6 +3,7 @@
  * 调度任务聚合根 - 服务端接口
  */
 
+import type { ScheduleTaskId, IdentityId } from '../../../primitives';
 import type { ScheduleTaskClientDTO } from './schedule-task-client';
 import type { ScheduleExecutionServerDTO } from '../entities/schedule-execution-server';
 import type {
@@ -25,8 +26,8 @@ import type {
  * ScheduleTask Server DTO
  */
 export interface ScheduleTaskServerDTO {
-  id: string;
-  identityId: string;
+  id: ScheduleTaskId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   sourceModule: SourceModule;
@@ -65,7 +66,7 @@ export interface ScheduleTaskServerStatic {
    * @returns 新的 ScheduleTask 实例
    */
   create(params: {
-    identityId: string;
+    identityId: IdentityId;
     name: string;
     sourceModule: SourceModule;
     sourceEntityId: string;

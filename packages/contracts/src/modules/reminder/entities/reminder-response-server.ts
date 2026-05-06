@@ -3,6 +3,8 @@
  * 提醒响应实体 - 服务端
  */
 
+import type { ReminderResponseId, ReminderTemplateId, IdentityId } from '../../../primitives';
+
 /**
  * 响应行为类型
  */
@@ -23,9 +25,9 @@ export type ReminderResponseAction =
  * Reminder Response Server DTO
  */
 export interface ReminderResponseServerDTO {
-  id: string;
-  reminderTemplateId: string;
-  identityId: string;
+  id: ReminderResponseId;
+  reminderTemplateId: ReminderTemplateId;
+  identityId: IdentityId;
   action: ReminderResponseAction;
   responseTime?: number | null; // 响应时间（从发送到响应的秒数，CLICKED/COMPLETED 时有值）
   timestamp: number; // 响应时间戳 (epoch ms)
@@ -35,8 +37,8 @@ export interface ReminderResponseServerDTO {
  * Reminder Response Client DTO
  */
 export interface ReminderResponseClientDTO {
-  id: string;
-  reminderTemplateId: string;
+  id: ReminderResponseId;
+  reminderTemplateId: ReminderTemplateId;
   action: ReminderResponseAction;
   responseTime?: number | null;
   timestamp: number;

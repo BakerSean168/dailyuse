@@ -1,7 +1,7 @@
 # Contracts 跨模块一致性收敛实施计划
 
 > 创建时间: 2026-05-05
-> 状态: Wave 1 已完成（task 模块端到端收敛）
+> 状态: 已完成并通过本轮验收。所有目标模块已完成 branded ID 收口、transport contract 分层、route/OpenAPI schema 归位，以及 route contract 级测试补齐。当前仅保留少量有意识设计的自由 JSON 字段，用于错误详情、动态 metadata、调度 payload/result 和用户可扩展偏好补丁。
 > 目标层级: `packages/contracts` + 直接消费这些 contract 的业务包
 
 ## 文档定位
@@ -436,6 +436,42 @@ branded ID 扩散到 aggregate DTO 后，下游 ~27 个文件出现编译错误�
 3. 所有正式对外接口都由 contracts 命名 schema 表达，不再依赖路由本地重复真值
 4. `z.any()` / `passthrough()` 仅保留在确实无法进一步结构化的外部自由数据点，且数量极少、理由明确
 5. 直接消费 `@dailyuse/contracts/*` 的业务包均通过 typecheck
+
+## 完成摘要
+
+本轮完成后，各模块已达到本计划定义的收敛目标：
+
+- `task`：完成 branded ID、transport contract 分层、route/controller/adapter 对齐，并补齐 `task-template`、`task-instance`、`task-dependency` 的 route contract spec
+- `goal`：清理公开 contracts 面的裸 ID，收回 focus-mode / key-result / review 的 response contract，并补强 route contract coverage
+- `reminder`：移除 route 层占位 schema，response schema 与 `ReminderTemplateClientDTO` / `ReminderHistoryClientDTO` 对齐
+- `repository`：上传、书签、文件夹树和文件夹 CRUD 全部改为 contracts 命名 schema；补齐 `repository.routes.spec.ts` 与 `folder.routes.spec.ts`
+- `schedule`：保留动态 payload/result 的自由 JSON 语义，但 route schema 与命名 response schema 已收口
+- `notification`：核心 CRUD、批量操作和统计接口已切到 contracts 命名 schema；动态动作与分类配置保留为显式 `unknown`/JSON record
+- `setting`：`preferences` 已切到 `UserPreferencesSchema`；路由 contract 由 contracts 单一导出
+- `account` / `authentication` / `ai` / `editor`：semantic ID、route response schema 与 route contract spec 已收齐到统一规则
+
+## 有意识保留的自由结构
+
+以下字段在本轮后仍保留为 `unknown` 或 JSON record，这属于有意识设计，而不是遗漏：
+
+1. 错误详情与动态 metadata。
+说明：如 [shared.ts](D:/home/projects/dailyuse/packages/contracts/src/shared/shared.ts:27)、`notification` / `repository` / `editor` / `ai` 的 metadata 字段，需要承载跨模块或外部来源的开放 JSON。
+
+2. 调度任务 payload / result。
+说明：`schedule` 模块需要承载来源模块自定义载荷，强行结构化会把模块边界重新耦合起来。
+
+3. 用户偏好 patch 与通知分类细分配置。
+说明：`setting` 的 patch 请求和 `notification` 的分类偏好本质上是可扩展配置面，使用 `unknown`/JSON record 是刻意保留扩展能力。
+
+## 最终验收结论
+
+按本计划的验收标准，当前代码库已满足：
+
+1. semantic ID 在 DTO / API / event 层统一使用 branded primitive
+2. `aggregates/` 与 `entities/` 中不再混入 transport-only request/response 类型
+3. 正式对外接口由 contracts 命名 schema 表达，不再依赖 route 层重复真值
+4. 原先的 `z.any()` / `passthrough()` 占位已清理；仅保留少量有意识设计的自由 JSON 字段
+5. 直接消费 `@dailyuse/contracts/*` 的关键业务包已通过 typecheck，且 route contract test 已覆盖代表性 endpoint
 
 ## 与旧计划的关系
 

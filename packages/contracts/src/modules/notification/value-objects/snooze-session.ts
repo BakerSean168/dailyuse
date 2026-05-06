@@ -1,5 +1,7 @@
+import type { NotificationId } from '../../../primitives/ids';
+
 export interface SnoozeSessionDTO {
-  notificationId: string; // 关联的原始通知
+  notificationId: NotificationId; // 关联的原始通知
   
   // 延迟配置
   snoozedAt: number;      // 用户点击“稍后”的时间戳

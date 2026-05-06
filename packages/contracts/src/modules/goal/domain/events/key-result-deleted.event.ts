@@ -1,9 +1,10 @@
 import type { GoalServerDTO } from '../../aggregates/goal-server';
 import type { KeyResultServerDTO } from '../../entities/key-result-server';
+import type { IdentityId, KeyResultId } from '../../../../primitives';
 
 export interface KeyResultDeletedEvent {
-  identityId: string;
+  identityId: IdentityId;
   goal: GoalServerDTO;
-  keyResultId: string;
+  keyResultId: KeyResultId;
   keyResult: KeyResultServerDTO;
 }

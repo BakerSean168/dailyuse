@@ -1,3 +1,5 @@
+import type { IdentityId, KeyResultId } from '../../../../primitives';
+
 /**
  * Goal Record Created Event
  *
@@ -8,7 +10,8 @@
  * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface GoalRecordCreatedEvent {
-  keyResultId: string;
+  identityId: IdentityId;
+  keyResultId: KeyResultId;
   value: number;
   note: string | null;
 }

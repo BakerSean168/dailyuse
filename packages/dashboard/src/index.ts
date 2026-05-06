@@ -7,6 +7,7 @@ import type {
   TrendDay,
 } from '@dailyuse/contracts/dashboard';
 import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalId, ScheduleTaskId } from '@dailyuse/contracts/primitives';
 import { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { TaskInstanceStatus, TaskTemplateStatus } from '@dailyuse/contracts/task';
 
@@ -143,7 +144,7 @@ export async function getDashboardData(
     .sort((left, right) => left.startTime - right.startTime)
     .slice(0, UPCOMING_SCHEDULE_LIMIT)
     .map((schedule) => ({
-      id: String(schedule.id),
+      id: String(schedule.id) as ScheduleTaskId,
       title: schedule.title,
       startTime: schedule.startTime,
       endTime: schedule.endTime,
@@ -161,10 +162,10 @@ export async function getDashboardData(
     })
     .slice(0, GOAL_PROGRESS_LIMIT)
     .map((goal) => ({
-      id: String(goal.id),
+      id: goal.id as GoalId,
       name: goal.name,
       progress: normalizePercentage(goal.progress),
-      status: goal.status,
+      status: goal.status as GoalStatus,
       dueDate: goal.targetDate?.getTime() ?? 0,
       keyResultCount: goal.keyResults.length,
     }));

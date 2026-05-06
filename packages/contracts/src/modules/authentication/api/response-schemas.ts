@@ -5,35 +5,33 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { IdentityId } from '../value-objects/identity-id';
+import type { AuthSessionId } from '../value-objects/auth-session-id';
+import { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 
-const DeviceInfoSchema = z
-  .object({
-    deviceId: z.string(),
-    deviceType: z.string(),
-  })
-  .passthrough();
+const DeviceInfoSchema = z.object({
+  deviceId: z.string(),
+  deviceType: z.string(),
+});
 
-const AuthIdentitySchema = z
-  .object({
-    id: z.string(),
-    status: z.string(),
-  })
-  .passthrough();
+const AuthIdentitySchema = z.object({
+  id: brandedId<IdentityId>(),
+  status: z.enum(AuthIdentityStatus),
+});
 
-const AuthSessionSchema = z
-  .object({
-    id: z.string(),
-    identityId: z.string(),
-    deviceInfo: DeviceInfoSchema,
-    isCurrentSession: z.boolean(),
-    version: z.number(),
-    createdAt: z.number(),
-    updatedAt: z.number(),
-    expiresAt: z.number(),
-    lastActiveAt: z.number(),
-    deletedAt: z.number().nullable(),
-  })
-  .passthrough();
+const AuthSessionSchema = z.object({
+  id: brandedId<AuthSessionId>(),
+  identityId: brandedId<IdentityId>(),
+  deviceInfo: DeviceInfoSchema,
+  isCurrentSession: z.boolean(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  expiresAt: z.number(),
+  lastActiveAt: z.number(),
+  deletedAt: z.number().nullable(),
+});
 
 /**
  * Auth Response Schema (token pair)

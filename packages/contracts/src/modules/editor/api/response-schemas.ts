@@ -6,7 +6,14 @@
 
 import { z } from 'zod';
 import { brandedId, openApiJsonValue } from '../../../primitives';
-import type { EditorWorkspaceId } from '../../../primitives';
+import type {
+  EditorWorkspaceId,
+  EditorSessionId,
+  EditorGroupId,
+  EditorTabId,
+  ResourceId,
+  IdentityId,
+} from '../../../primitives';
 import { TabType } from '../value-objects/tab-type';
 
 /**
@@ -23,12 +30,12 @@ export const WorkspaceResponseSchema = z.object({
 });
 
 export const TabResponseSchema = z.object({
-  id: z.string(),
-  groupId: z.string(),
-  sessionId: z.string(),
-  workspaceId: z.string(),
-  identityId: z.string(),
-  resourceId: z.string().nullable(),
+  id: brandedId<EditorTabId>(),
+  groupId: brandedId<EditorGroupId>(),
+  sessionId: brandedId<EditorSessionId>(),
+  workspaceId: brandedId<EditorWorkspaceId>(),
+  identityId: brandedId<IdentityId>(),
+  resourceId: brandedId<ResourceId>().nullable(),
   tabIndex: z.number().int().min(0),
   tabType: z.enum(TabType),
   name: z.string(),
@@ -45,10 +52,10 @@ export const TabResponseSchema = z.object({
 });
 
 export const GroupResponseSchema = z.object({
-  id: z.string(),
-  sessionId: z.string(),
-  workspaceId: z.string(),
-  identityId: z.string(),
+  id: brandedId<EditorGroupId>(),
+  sessionId: brandedId<EditorSessionId>(),
+  workspaceId: brandedId<EditorWorkspaceId>(),
+  identityId: brandedId<IdentityId>(),
   groupIndex: z.number().int().min(0),
   activeTabIndex: z.number().int().min(0),
   name: z.string().nullable(),
@@ -60,9 +67,9 @@ export const GroupResponseSchema = z.object({
 });
 
 export const SessionResponseSchema = z.object({
-  id: z.string(),
-  workspaceId: z.string(),
-  identityId: z.string(),
+  id: brandedId<EditorSessionId>(),
+  workspaceId: brandedId<EditorWorkspaceId>(),
+  identityId: brandedId<IdentityId>(),
   name: z.string(),
   description: z.string().nullable(),
   groups: z.array(GroupResponseSchema),
@@ -76,7 +83,7 @@ export const SessionResponseSchema = z.object({
 });
 
 export const EditorContentResponseSchema = z.object({
-  resourceId: z.string(),
+  resourceId: brandedId<ResourceId>(),
   name: z.string(),
   content: z.string().nullable(),
 });
@@ -84,7 +91,7 @@ export const EditorContentResponseSchema = z.object({
 export const SearchResponseSchema = z.object({
   results: z.array(
     z.object({
-      resourceId: z.string(),
+      resourceId: brandedId<ResourceId>(),
       resourcePath: z.string(),
       resourceName: z.string(),
       snippet: z.string(),

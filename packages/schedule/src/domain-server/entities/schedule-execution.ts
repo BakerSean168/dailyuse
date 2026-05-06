@@ -14,6 +14,8 @@ import type {
   ScheduleExecutionServerDTO,
 } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleExecutionId } from '../../domain-shared/value-objects/schedule-execution-id';
+import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 
 /** Domain state interface for the ScheduleExecution entity */
 export interface ScheduleExecutionState {
@@ -188,8 +190,8 @@ export class ScheduleExecution extends Entity<string> {
    */
   public toServerDTO(): ScheduleExecutionServerDTO {
     return {
-      id: this.id,
-      taskId: this._taskId,
+      id: this.id as ScheduleExecutionId,
+      taskId: this._taskId as ScheduleTaskId,
       executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,

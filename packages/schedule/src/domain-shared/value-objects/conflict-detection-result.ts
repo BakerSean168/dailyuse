@@ -6,24 +6,11 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import type { ConflictDetectionResult as IConflictDetectionResult } from '@dailyuse/contracts/schedule';
-
-// 从接口复制的类型定义（因为 contracts 未导出这些类型）
-interface ConflictDetail {
-  readonly scheduleId: string;
-  readonly scheduleTitle: string;
-  readonly overlapStart: number;
-  readonly overlapEnd: number;
-  readonly overlapDuration: number;
-  readonly severity?: 'Minor' | 'Moderate' | 'Severe';
-}
-
-interface ConflictSuggestion {
-  readonly type: 'MoveEarlier' | 'MoveLater' | 'Shorten';
-  readonly newStartTime: number;
-  readonly newEndTime: number;
-  readonly description?: string;
-}
+import type {
+  ConflictDetectionResult as IConflictDetectionResult,
+  ConflictDetail,
+  ConflictSuggestion,
+} from '@dailyuse/contracts/schedule';
 
 interface ConflictDetectionResultDTO {
   hasConflict: boolean;

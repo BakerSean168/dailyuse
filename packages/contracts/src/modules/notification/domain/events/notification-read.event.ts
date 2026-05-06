@@ -1,4 +1,5 @@
 import type { NotificationServerDTO } from '../../aggregates/notification-server';
+import type { IdentityId, NotificationId } from '../../../../primitives';
 
 /**
  * Notification Read Event
@@ -6,8 +7,8 @@ import type { NotificationServerDTO } from '../../aggregates/notification-server
  * Triggered when a notification is marked as read.
  */
 export interface NotificationReadEvent {
-  identityId: string;
-  notificationId: string;
+  identityId: IdentityId;
+  notificationId: NotificationId;
   notification: NotificationServerDTO;
   readAt: number;
 }

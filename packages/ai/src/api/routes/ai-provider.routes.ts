@@ -11,7 +11,13 @@ import {
   CreateAIProviderConfigSchema,
   UpdateAIProviderConfigSchema,
   TestAIProviderSchema,
+  AIProviderConfigClientDTOSchema,
+  ListAIProviderConfigsResSchema,
+  TestAIProviderResultDTOSchema,
+  ActionSuccessSchema,
 } from '@dailyuse/contracts/ai';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
 import type { AIProviderConfigController } from '../../controllers/ai-provider-config.controller';
 
 interface PlatformMiddleware {
@@ -43,7 +49,7 @@ export function registerAIProviderRoutes(
         body: { content: { 'application/json': { schema: CreateAIProviderConfigSchema } } },
       },
       responses: {
-        201: successResponse(z.any(), '创建成功'),
+        201: successResponse(AIProviderConfigClientDTOSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -59,7 +65,7 @@ export function registerAIProviderRoutes(
       path: '/',
       summary: '获取 AI 提供商配置列表',
       responses: {
-        200: successResponse(z.any(), '获取成功'),
+        200: successResponse(ListAIProviderConfigsResSchema, '获取成功'),
       },
     },
     [auth],
@@ -73,10 +79,10 @@ export function registerAIProviderRoutes(
       path: '/:id',
       summary: '获取 AI 提供商配置',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(z.any(), '获取成功'),
+        200: successResponse(AIProviderConfigClientDTOSchema, '获取成功'),
         404: errorResponse('未找到'),
       },
     },
@@ -91,11 +97,11 @@ export function registerAIProviderRoutes(
       path: '/:id',
       summary: '更新 AI 提供商配置',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
         body: { content: { 'application/json': { schema: UpdateAIProviderConfigSchema } } },
       },
       responses: {
-        200: successResponse(z.any(), '更新成功'),
+        200: successResponse(AIProviderConfigClientDTOSchema, '更新成功'),
         400: errorResponse('参数错误'),
         404: errorResponse('未找到'),
       },
@@ -111,10 +117,10 @@ export function registerAIProviderRoutes(
       path: '/:id',
       summary: '删除 AI 提供商配置',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(z.object({}), '删除成功'),
+        200: successResponse(ActionSuccessSchema, '删除成功'),
         404: errorResponse('未找到'),
       },
     },
@@ -130,7 +136,7 @@ export function registerAIProviderRoutes(
       summary: '测试 AI 提供商连接',
       request: { body: { content: { 'application/json': { schema: TestAIProviderSchema } } } },
       responses: {
-        200: successResponse(z.any(), '测试成功'),
+        200: successResponse(TestAIProviderResultDTOSchema, '测试成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -145,10 +151,10 @@ export function registerAIProviderRoutes(
       path: '/:id/set-default',
       summary: '设置默认 AI 提供商',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(z.object({}), '设置成功'),
+        200: successResponse(ActionSuccessSchema, '设置成功'),
         404: errorResponse('未找到'),
       },
     },
@@ -163,10 +169,10 @@ export function registerAIProviderRoutes(
       path: '/:id/refresh-models',
       summary: '刷新 AI 提供商模型列表',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(z.any(), '刷新成功'),
+        200: successResponse(AIProviderConfigClientDTOSchema, '刷新成功'),
         404: errorResponse('未找到'),
       },
     },

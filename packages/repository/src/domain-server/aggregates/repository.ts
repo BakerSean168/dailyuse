@@ -118,7 +118,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
-      repositoryId: String(this.id),
+      repositoryId: this.id as RepositoryId,
       changedFields: ['name'],
     });
   }
@@ -128,7 +128,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
-      repositoryId: String(this.id),
+      repositoryId: this.id as RepositoryId,
       changedFields: ['description'],
     });
   }
@@ -138,7 +138,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
-      repositoryId: String(this.id),
+      repositoryId: this.id as RepositoryId,
       changedFields: ['path'],
     });
   }
@@ -149,7 +149,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<RepositoryEventMap['repository:updated']>('repository:updated', {
-      repositoryId: String(this.id),
+      repositoryId: this.id as RepositoryId,
       changedFields: ['config'],
     });
   }
@@ -243,7 +243,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<RepositoryEventMap['repository:archived']>('repository:archived', {
-      repositoryId: String(this.id),
+      repositoryId: this.id as RepositoryId,
     });
   }
 
@@ -260,7 +260,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<RepositoryEventMap['repository:deleted']>('repository:deleted', {
-      repositoryId: String(this.id),
+      repositoryId: this.id as RepositoryId,
     });
   }
 
@@ -280,8 +280,8 @@ export class Repository extends AggregateRoot<RepositoryId> {
 
   public toServerDTO(): RepositoryServerDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: this.id as RepositoryId,
+      identityId: this._props.identityId as IdentityId,
       name: this._props.name,
       type: this._props.type,
       path: this._props.path,
@@ -302,10 +302,8 @@ export class Repository extends AggregateRoot<RepositoryId> {
     const isActive = this._props.status === RepositoryStatus.Active;
 
     return {
-      id: String(this.id) as import('@dailyuse/contracts/repository').RepositoryClientDTO['id'],
-      identityId: String(
-        this._props.identityId,
-      ) as import('@dailyuse/contracts/repository').RepositoryClientDTO['identityId'],
+      id: this.id as import('@dailyuse/contracts/repository').RepositoryClientDTO['id'],
+      identityId: this._props.identityId as import('@dailyuse/contracts/repository').RepositoryClientDTO['identityId'],
       name: this._props.name,
       type: this._props.type,
       path: this._props.path,

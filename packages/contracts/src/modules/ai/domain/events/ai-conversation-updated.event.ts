@@ -1,7 +1,8 @@
+import type { IdentityId, AiConversationId } from '../../../../primitives';
 import type { AIConversationServerDTO } from '../../aggregates/ai-conversation-server';
 
 export interface AIConversationUpdatedEvent {
-  identityId: string;
+  identityId: IdentityId;
   conversation: AIConversationServerDTO;
   changes: string[];
 }

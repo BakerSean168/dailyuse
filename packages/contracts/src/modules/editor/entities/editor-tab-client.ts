@@ -8,6 +8,7 @@ import type {
   EditorSessionId,
   EditorWorkspaceId,
   IdentityId,
+  ResourceId,
   TransferDate,
 } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
@@ -20,12 +21,12 @@ import type { TabViewStateDTO } from '../value-objects';
  * Editor Tab Client DTO (includes UI formatted fields).
  */
 export interface EditorTabClientDTO {
-  id: string;
-  groupId: string;
-  sessionId: string;
-  workspaceId: string;
-  identityId: string;
-  resourceId: string | null;
+  id: EditorTabId;
+  groupId: EditorGroupId;
+  sessionId: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  resourceId: ResourceId | null;
   tabIndex: number;
   tabType: TabType;
   name: string;

@@ -80,7 +80,7 @@ export class NotificationHistory extends Entity<INotificationHistoryId> {
 
   public toServerDTO(): NotificationHistoryServerDTO {
     return {
-      id: String(this.id) as INotificationHistoryId,
+      id: this.id as INotificationHistoryId,
       notificationId: this._props.notificationId,
       action: this._props.action,
       details: this._props.details,

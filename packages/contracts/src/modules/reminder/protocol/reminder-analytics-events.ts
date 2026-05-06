@@ -1,3 +1,4 @@
+import type { IdentityId, ReminderResponseId, ReminderTemplateId } from '../../../primitives/ids';
 import type { ReminderResponseAction } from '../entities/reminder-response-server';
 
 /**
@@ -9,17 +10,17 @@ import type { ReminderResponseAction } from '../entities/reminder-response-serve
  */
 
 export interface ReminderResponseRecordedEvent {
-  identityId: string;
-  responseId: string;
-  templateId: string;
+  identityId: IdentityId;
+  responseId: ReminderResponseId;
+  templateId: ReminderTemplateId;
   action: ReminderResponseAction;
   responseTime: number | null;
   recordedAt: number;
 }
 
 export interface ReminderFrequencyAdjustedEvent {
-  identityId: string;
-  templateId: string;
+  identityId: IdentityId;
+  templateId: ReminderTemplateId;
   originalInterval: number;
   adjustedInterval: number;
   reason: string;
@@ -27,7 +28,7 @@ export interface ReminderFrequencyAdjustedEvent {
 }
 
 export interface ReminderFrequencyAdjustmentRejectedEvent {
-  identityId: string;
-  templateId: string;
+  identityId: IdentityId;
+  templateId: ReminderTemplateId;
   rejectedAt: number;
 }

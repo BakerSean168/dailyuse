@@ -28,6 +28,12 @@ import {
   ReminderTodayScheduleItemSchema,
   ReminderTemplateResponseSchema,
   ReminderTemplateListResponseSchema,
+  ReminderHistoryResponseSchema,
+  ReminderResponseItemSchema,
+  ResponseRecordResultSchema,
+  ResponseStatsResultSchema,
+  FrequencyAnalysisResultSchema,
+  FrequencyAdjustmentResultSchema,
 } from '@dailyuse/contracts/reminder';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
@@ -303,7 +309,7 @@ export function registerReminderTemplateRoutes(
       summary: '获取提醒模板触发历史',
       request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
-        200: successResponse(z.array(z.object({}).passthrough()), '获取成功'),
+        200: successResponse(z.array(ReminderHistoryResponseSchema), '获取成功'),
         404: errorResponse('模板不存在'),
       },
     },
@@ -330,7 +336,7 @@ export function registerReminderTemplateRoutes(
         },
       },
       responses: {
-        201: successResponse(z.object({}).passthrough(), '记录成功'),
+        201: successResponse(ResponseRecordResultSchema, '记录成功'),
         404: errorResponse('模板不存在'),
       },
     },
@@ -347,7 +353,7 @@ export function registerReminderTemplateRoutes(
       summary: '获取提醒响应历史',
       request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
-        200: successResponse(z.array(z.object({}).passthrough()), '获取成功'),
+        200: successResponse(z.array(ReminderResponseItemSchema), '获取成功'),
         404: errorResponse('模板不存在'),
       },
     },
@@ -363,7 +369,7 @@ export function registerReminderTemplateRoutes(
       summary: '获取提醒响应统计',
       request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '获取成功'),
+        200: successResponse(ResponseStatsResultSchema, '获取成功'),
         404: errorResponse('模板不存在'),
       },
     },
@@ -381,7 +387,7 @@ export function registerReminderTemplateRoutes(
       summary: '分析提醒频率效果',
       request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '分析成功'),
+        200: successResponse(FrequencyAnalysisResultSchema, '分析成功'),
         404: errorResponse('模板不存在'),
       },
     },
@@ -406,7 +412,7 @@ export function registerReminderTemplateRoutes(
         },
       },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '调整成功'),
+        200: successResponse(FrequencyAdjustmentResultSchema, '调整成功'),
         404: errorResponse('模板不存在'),
       },
     },
@@ -422,7 +428,7 @@ export function registerReminderTemplateRoutes(
       summary: '拒绝频率调整建议',
       request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '已拒绝'),
+        200: successResponse(z.null(), '已拒绝'),
         404: errorResponse('模板不存在'),
       },
     },

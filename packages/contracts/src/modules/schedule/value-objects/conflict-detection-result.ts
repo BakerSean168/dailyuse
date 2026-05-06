@@ -8,6 +8,8 @@
  * @since Story 9.1 (EPIC-SCHEDULE-001)
  */
 
+import type { ScheduleId } from '../../../primitives';
+
 /**
  * Result of conflict detection analysis
  */
@@ -52,7 +54,7 @@ export interface ConflictDetail {
   /**
    * UUID of the conflicting schedule
    */
-  readonly scheduleId: string;
+  readonly scheduleId: ScheduleId;
 
   /**
    * Title of the conflicting schedule

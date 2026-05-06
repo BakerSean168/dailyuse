@@ -25,6 +25,9 @@ import {
   DetectConflictsRequestSchema,
   ResolveConflictRequestSchema,
   CalendarEntryResponseSchema,
+  DetectConflictsResponseSchema,
+  CreateScheduleResponseSchema,
+  ResolveConflictResponseSchema,
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ScheduleId } from '@dailyuse/contracts/primitives';
@@ -173,7 +176,7 @@ export function registerScheduleEventRoutes(
         body: { content: { 'application/json': { schema: DetectConflictsRequestSchema } } },
       },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '检测完成'),
+        200: successResponse(DetectConflictsResponseSchema, '检测完成'),
       },
     },
     [auth],
@@ -190,7 +193,7 @@ export function registerScheduleEventRoutes(
         body: { content: { 'application/json': { schema: CreateScheduleRequestSchema } } },
       },
       responses: {
-        201: successResponse(z.object({}).passthrough(), '创建成功（含冲突信息）'),
+        201: successResponse(CreateScheduleResponseSchema, '创建成功（含冲突信息）'),
         400: errorResponse('参数错误'),
       },
     },
@@ -207,7 +210,7 @@ export function registerScheduleEventRoutes(
       summary: '获取日程事件冲突',
       request: { params: z.object({ id: brandedId<ScheduleId>() }) },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '获取成功'),
+        200: successResponse(DetectConflictsResponseSchema, '获取成功'),
         404: errorResponse('日程不存在'),
       },
     },
@@ -230,7 +233,7 @@ export function registerScheduleEventRoutes(
         },
       },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '冲突已解决'),
+        200: successResponse(ResolveConflictResponseSchema, '冲突已解决'),
         404: errorResponse('日程不存在'),
       },
     },

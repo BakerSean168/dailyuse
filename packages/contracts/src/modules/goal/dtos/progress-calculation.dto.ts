@@ -7,6 +7,8 @@
  * - 预览功能（用户保存前预览进度变化）
  */
 
+import type { GoalId, KeyResultId } from '../../../primitives';
+
 /**
  * 单个 KeyResult 的计算结果 DTO
  * 
@@ -15,7 +17,7 @@
  */
 export interface ProgressCalculationResultDTO {
   /** KeyResult ID */
-  keyResultId: string;
+  keyResultId: KeyResultId;
   /** 旧的当前值 */
   oldValue: number;
   /** 新的当前值 */
@@ -35,7 +37,7 @@ export interface ProgressCalculationResultDTO {
  */
 export interface GoalProgressCalculationResultDTO {
   /** Goal ID */
-  goalId: string;
+  goalId: GoalId;
   /** 旧的目标进度 (0-100) */
   oldProgress: number;
   /** 新的目标进度 (0-100) */

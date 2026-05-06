@@ -220,16 +220,16 @@ export class ResourceVersion extends Entity<ResourceVersionId> {
    */
   public toClientDTO(): ResourceVersionClientDTO {
     return {
-      id: this.id as unknown as string,
-      resourceId: this._props.resourceId as unknown as string,
-      workspaceId: this._props.workspaceId as unknown as string,
-      identityId: this._props.identityId as unknown as string,
+      id: this.id,
+      resourceId: this._props.resourceId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
       versionNumber: this._props.versionNumber,
       changeType: this._props.changeType,
       contentHash: this._props.contentHash,
       contentDiff: this._props.contentDiff,
       changeDescription: this._props.changeDescription,
-      previousVersionId: this._props.previousVersionId as unknown as string | null,
+      previousVersionId: this._props.previousVersionId,
       createdBy: this._props.createdBy,
       createdAt: this._props.createdAt.getTime(),
       formattedCreatedAt: this._props.createdAt.toLocaleString(),

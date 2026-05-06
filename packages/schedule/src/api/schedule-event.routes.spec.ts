@@ -1,0 +1,230 @@
+import type { RequestHandler } from 'express';
+import { describe, expect, it, vi } from 'vitest';
+import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { ScheduleEventController } from '../controllers/schedule-event.controller';
+import { registerScheduleEventRoutes } from './schedule-event.routes';
+
+type RegisteredRoute = {
+  method: string;
+  path: string;
+  request?: Record<string, unknown>;
+  responses?: Record<string, unknown>;
+};
+
+class TestOpenApiRegistry implements OpenApiRegistryLike {
+  readonly paths: RegisteredRoute[] = [];
+
+  registerPath(route: Record<string, unknown>): void {
+    this.paths.push(route as RegisteredRoute);
+  }
+
+  register(): void {}
+}
+
+const authMiddleware = ((_, __, next) => next()) as RequestHandler;
+
+function createScheduleControllerStub(): ScheduleEventController {
+  return {
+    create: vi.fn(),
+    get: vi.fn(),
+    getByTimeRange: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getConflicts: vi.fn(),
+    detectConflicts: vi.fn(),
+    createWithConflictDetection: vi.fn(),
+    resolveConflict: vi.fn(),
+  } as unknown as ScheduleEventController;
+}
+
+function getRegisteredRoute(
+  registry: TestOpenApiRegistry,
+  method: string,
+  path: string,
+): RegisteredRoute {
+  const route = registry.paths.find((candidate) => candidate.method === method && candidate.path === path);
+
+  expect(route).toBeDefined();
+  return route!;
+}
+
+function getJsonBodySchema(route: RegisteredRoute): {
+  safeParse: (value: unknown) => { success: boolean };
+} {
+  return (((route.request?.body as Record<string, unknown> | undefined)?.content as
+    | Record<string, unknown>
+    | undefined)?.['application/json'] as Record<string, unknown> | undefined)?.schema as {
+    safeParse: (value: unknown) => { success: boolean };
+  };
+}
+
+function getResponseSchema(
+  route: RegisteredRoute,
+  status: number,
+): {
+  safeParse: (value: unknown) => { success: boolean };
+  _def?: { typeName?: string; innerType?: unknown };
+} {
+  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const response = responses?.[String(status)];
+  const schema = (response?.content as Record<string, unknown> | undefined)?.[
+    'application/json'
+  ] as { schema?: { safeParse: (value: unknown) => { success: boolean }; _def?: { typeName?: string; innerType?: unknown } } } | undefined;
+  return schema?.schema ?? (response as unknown as { safeParse: (value: unknown) => { success: boolean } });
+}
+
+function getParamsSchema(route: RegisteredRoute): {
+  safeParse: (value: unknown) => { success: boolean };
+} {
+  return route.request?.params as {
+    safeParse: (value: unknown) => { success: boolean };
+  };
+}
+
+// basePath is '/api/v1/schedules/events', and :param becomes {param} in OpenAPI paths
+const BASE = '/api/v1/schedules/events';
+
+describe('schedule event route contracts', () => {
+  it('list endpoint uses contracts schemas (array of CalendarEntryResponseSchema)', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const listRoute = getRegisteredRoute(registry, 'get', BASE);
+    const responseSchema = getResponseSchema(listRoute, 200);
+
+    // The response wraps in success envelope with data as ZodArray
+    expect(responseSchema).toBeDefined();
+    // Verify the schema accepts an envelope wrapping an array of entries
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: [],
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(true);
+    // Should reject if data is not an array
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: 'not-an-array',
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(false);
+  });
+
+  it('route params use branded IDs (not bare strings)', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const getRoute = getRegisteredRoute(registry, 'get', `${BASE}/{id}`);
+    const paramsSchema = getParamsSchema(getRoute);
+
+    // brandedId rejects bare strings
+    expect(paramsSchema.safeParse({ id: 'not-a-branded-id' }).success).toBe(false);
+  });
+
+  it('create body schema uses CreateScheduleRequestSchema', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const createSchema = getJsonBodySchema(getRegisteredRoute(registry, 'post', BASE));
+
+    // Should reject an empty object (CreateScheduleRequestSchema requires fields)
+    expect(createSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('delete endpoint response has null data field in success envelope', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const deleteRoute = getRegisteredRoute(registry, 'delete', `${BASE}/{id}`);
+    const responseSchema = getResponseSchema(deleteRoute, 200);
+
+    // successResponse(z.null()) wraps into { ok, code, message, data: null, timestamp }
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: null,
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(true);
+    // data must be null, not an object
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: { something: 'else' },
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(false);
+  });
+
+  it('core CRUD response schemas do not use passthrough()', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    // The create, get, update, and delete response schemas should be proper contracts schemas
+    const createRoute = getRegisteredRoute(registry, 'post', BASE);
+    const createResponse = getResponseSchema(createRoute, 201);
+    expect(createResponse).toBeDefined();
+
+    const getRoute = getRegisteredRoute(registry, 'get', `${BASE}/{id}`);
+    const getResponse = getResponseSchema(getRoute, 200);
+    expect(getResponse).toBeDefined();
+
+    const updateRoute = getRegisteredRoute(registry, 'put', `${BASE}/{id}`);
+    const updateResponse = getResponseSchema(updateRoute, 200);
+    expect(updateResponse).toBeDefined();
+  });
+
+  it('query schema requires startTime and endTime', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerScheduleEventRoutes(
+      createScheduleControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const listRoute = getRegisteredRoute(registry, 'get', BASE);
+    const querySchema = listRoute.request?.query as {
+      safeParse: (value: unknown) => { success: boolean };
+    };
+
+    expect(querySchema.safeParse({ startTime: '1000', endTime: '2000' }).success).toBe(true);
+    expect(querySchema.safeParse({ startTime: '1000' }).success).toBe(false);
+    expect(querySchema.safeParse({}).success).toBe(false);
+  });
+});

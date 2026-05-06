@@ -7,7 +7,7 @@ import type { NotificationChannelType } from '../value-objects/notification-chan
 import type { ChannelStatus } from '../value-objects/channel-status';
 import type { ChannelErrorDTO } from '../value-objects/channel-error';
 import type { ChannelResponseDTO } from '../value-objects/channel-response';
-import type { TransferDate } from '../../../primitives';
+import type { NotificationChannelId, NotificationId, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -15,8 +15,8 @@ import type { TransferDate } from '../../../primitives';
  * NotificationChannel Client DTO
  */
 export interface NotificationChannelClientDTO {
-  id: string;
-  notificationId: string;
+  id: NotificationChannelId;
+  notificationId: NotificationId;
   channelType: NotificationChannelType;
   status: ChannelStatus;
   recipient?: string | null;

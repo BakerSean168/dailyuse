@@ -1,3 +1,5 @@
+import type { IdentityId } from '../../../../primitives';
+
 /**
  * Reminder Group Created Event
  *
@@ -9,6 +11,6 @@
  * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
  */
 export interface ReminderGroupCreatedEvent {
-  identityId: string;
+  identityId: IdentityId;
   group: Record<string, any>;
 }

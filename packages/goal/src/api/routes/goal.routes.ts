@@ -24,6 +24,9 @@ import {
   GoalReviewClientDTOSchema,
   KeyResultClientDTOSchema,
   GetGoalAggregateResSchema,
+  ArchiveExpiredResSchema,
+  ProgressBreakdownResSchema,
+  BatchUpdateKeyResultWeightsReqSchema,
 } from '@dailyuse/contracts/goal';
 import type { CloneGoalReq, ListGoalFilters } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
@@ -248,7 +251,7 @@ export function registerGoalCrudRoutes(
       path: '/archive-expired',
       summary: '归档所有已过期目标',
       responses: {
-        200: successResponse(z.object({ archivedCount: z.number() }), '归档成功'),
+        200: successResponse(ArchiveExpiredResSchema, '归档成功'),
       },
     },
     [auth],
@@ -327,24 +330,7 @@ export function registerGoalCrudRoutes(
       summary: '获取目标进度分解',
       request: { params: z.object({ id: brandedId<GoalId>() }) },
       responses: {
-        200: successResponse(
-          z.object({
-            totalProgress: z.number(),
-            calculationMode: z.literal('WeightedAverage'),
-            krContributions: z.array(
-              z.object({
-                keyResultId: z.string(),
-                keyResultName: z.string(),
-                progress: z.number(),
-                weight: z.number(),
-                contribution: z.number(),
-              }),
-            ),
-            lastUpdateTime: z.number(),
-            updateTrigger: z.string(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(ProgressBreakdownResSchema, '获取成功'),
         404: errorResponse('目标不存在'),
       },
     },
@@ -389,14 +375,7 @@ export function registerGoalCrudRoutes(
         body: {
           content: {
             'application/json': {
-              schema: z.object({
-                updates: z.array(
-                  z.object({
-                    keyResultId: z.string(),
-                    weight: z.number().int().min(1).max(5),
-                  }),
-                ),
-              }),
+              schema: BatchUpdateKeyResultWeightsReqSchema,
             },
           },
         },

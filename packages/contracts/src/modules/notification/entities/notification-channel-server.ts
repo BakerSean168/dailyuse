@@ -3,7 +3,7 @@
  * 通知渠道实体 - 服务端接口
  */
 
-import type { NotificationId, TransferDate } from '../../../primitives';
+import type { NotificationChannelId, NotificationId, TransferDate } from '../../../primitives';
 import type { NotificationChannelType } from '../value-objects/notification-channel-type';
 import type { ChannelStatus } from '../value-objects/channel-status';
 import type { ChannelErrorDTO } from '../value-objects/channel-error';
@@ -15,8 +15,8 @@ import type { ChannelResponseDTO } from '../value-objects/channel-response';
  * NotificationChannel Server DTO
  */
 export interface NotificationChannelServerDTO {
-  id: string;
-  notificationId: string;
+  id: NotificationChannelId;
+  notificationId: NotificationId;
   channelType: NotificationChannelType;
   status: ChannelStatus;
   recipient?: string | null;

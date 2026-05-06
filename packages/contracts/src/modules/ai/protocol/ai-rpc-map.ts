@@ -31,27 +31,28 @@ import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '../api/ai-k
 import type { ExpandKnowledgeReq, ExpandKnowledgeRes } from '../api/ai-knowledge-expansion.dto';
 import type { QueryAnalyticsReq, QueryAnalyticsRes } from '../api/ai-analytics-query.dto';
 import type { QueryKnowledgeReq, QueryKnowledgeRes } from '../api/ai-knowledge-query.dto';
+import type { AiProviderConfigId, AiConversationId } from '../../../primitives';
 
 export type AIRpcMap = {
   'ai:provider:create': [CreateAIProviderConfigReq, CreateAIProviderConfigRes];
   'ai:provider:update': [UpdateAIProviderConfigReq, UpdateAIProviderConfigRes];
   'ai:provider:list': [void, ListAIProviderConfigsRes];
-  'ai:provider:get': [string, GetAIProviderConfigRes];
-  'ai:provider:delete': [string, DeleteAIProviderConfigRes];
+  'ai:provider:get': [AiProviderConfigId, GetAIProviderConfigRes];
+  'ai:provider:delete': [AiProviderConfigId, DeleteAIProviderConfigRes];
   'ai:provider:test': [TestAIProviderReq, TestAIProviderRes];
   'ai:provider:set-default': [SetDefaultAIProviderReq, SetDefaultAIProviderRes];
 
   'ai:goal:generate': [GenerateGoalsReq, GenerateGoalsRes];
 
   'ai:chat:conversation:create': [CreateConversationReq, CreateConversationRes];
-  'ai:chat:conversation:update': [UpdateConversationReq & { id: string }, UpdateConversationRes];
+  'ai:chat:conversation:update': [UpdateConversationReq & { id: AiConversationId }, UpdateConversationRes];
   'ai:chat:conversation:list': [ListConversationsQuery | undefined, ConversationListRes];
-  'ai:chat:conversation:get': [string, GetConversationRes];
-  'ai:chat:conversation:delete': [string, DeleteConversationRes];
+  'ai:chat:conversation:get': [AiConversationId, GetConversationRes];
+  'ai:chat:conversation:delete': [AiConversationId, DeleteConversationRes];
   'ai:chat:message:send': [SendMessageReq, SendMessageRes];
   'ai:chat:message:list': [ListMessagesQuery, MessageListRes];
   'ai:chat:message:stream:start': [SendMessageReq, StreamMessageDonePayload];
-  'ai:chat:message:stream:cancel': [string, void];
+  'ai:chat:message:stream:cancel': [AiConversationId, void];
 
   'ai:knowledge-note:create': [CreateKnowledgeNoteReq, CreateKnowledgeNoteRes];
   'ai:knowledge:expand': [ExpandKnowledgeReq, ExpandKnowledgeRes];

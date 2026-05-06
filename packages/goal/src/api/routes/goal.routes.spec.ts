@@ -9,6 +9,7 @@ type RegisteredRoute = {
   method: string;
   path: string;
   request?: Record<string, unknown>;
+  responses?: Record<string, unknown>;
 };
 
 class TestOpenApiRegistry implements OpenApiRegistryLike {
@@ -66,6 +67,30 @@ function getQuerySchema(route: RegisteredRoute): {
   safeParse: (value: unknown) => { success: boolean };
 } {
   return route.request?.query as {
+    safeParse: (value: unknown) => { success: boolean };
+  };
+}
+
+function getParamsSchema(route: RegisteredRoute): {
+  safeParse: (value: unknown) => { success: boolean };
+} {
+  return route.request?.params as {
+    safeParse: (value: unknown) => { success: boolean };
+  };
+}
+
+function getResponseSchema(
+  route: RegisteredRoute,
+  status: number,
+): {
+  safeParse: (value: unknown) => { success: boolean };
+} {
+  const responses = route.responses as Record<string, { content?: Record<string, unknown> }> | undefined;
+  const response = responses?.[String(status)];
+  const schema = (response?.content as Record<string, unknown> | undefined)?.[
+    'application/json'
+  ] as { schema?: { safeParse: (value: unknown) => { success: boolean } } } | undefined;
+  return schema?.schema as {
     safeParse: (value: unknown) => { success: boolean };
   };
 }
@@ -164,5 +189,74 @@ describe('goal route contracts', () => {
 
     expect(firstRouterPaths).toContain('/focus-mode');
     expect(secondRouterPaths).toContain('/:id');
+  });
+
+  it('documents focus mode endpoints with contracts-backed response schemas', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerGoalRoutes(
+      createGoalUseCasesStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const currentRoute = getRegisteredRoute(registry, 'get', '/api/v1/goals/focus-mode');
+    const activateRoute = getRegisteredRoute(registry, 'post', '/api/v1/goals/focus-mode/activate');
+    const activateBody = getJsonBodySchema(activateRoute);
+
+    expect(getResponseSchema(currentRoute, 200)).toBeDefined();
+    expect(getResponseSchema(activateRoute, 200)).toBeDefined();
+    expect(
+      activateBody.safeParse({
+        focusedGoalIds: ['IGoalId_550e8400-e29b-41d4-a716-446655440000'],
+        hiddenGoalsMode: 'Hide',
+      }).success,
+    ).toBe(true);
+  });
+
+  it('documents key-result routes with named list and detail contracts', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerGoalRoutes(
+      createGoalUseCasesStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const listRoute = getRegisteredRoute(registry, 'get', '/api/v1/goals/{id}/key-results');
+    const detailMutationRoute = getRegisteredRoute(
+      registry,
+      'put',
+      '/api/v1/goals/{id}/key-results/{krId}',
+    );
+
+    expect(getResponseSchema(listRoute, 200)).toBeDefined();
+    expect(getResponseSchema(detailMutationRoute, 200)).toBeDefined();
+    expect(getParamsSchema(detailMutationRoute).safeParse({ id: 'bare', krId: 'bare' }).success).toBe(
+      false,
+    );
+  });
+
+  it('documents review delete with the shared delete success contract', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerGoalRoutes(
+      createGoalUseCasesStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const route = getRegisteredRoute(registry, 'delete', '/api/v1/goals/{id}/reviews/{reviewId}');
+    const responseSchema = getResponseSchema(route, 200);
+
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: { success: true },
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(true);
   });
 });

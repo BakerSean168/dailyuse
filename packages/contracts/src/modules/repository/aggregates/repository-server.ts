@@ -29,8 +29,8 @@ import type {
  * Repository Server DTO
  */
 export interface RepositoryServerDTO {
-  id: string;
-  identityId: string;
+  id: RepositoryId;
+  identityId: IdentityId;
   name: string;
   type: RepositoryType;
   path: string | null;

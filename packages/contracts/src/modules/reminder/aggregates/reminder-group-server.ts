@@ -4,12 +4,12 @@
  */
 
 import type { ControlMode, ReminderStatus, GroupStatsDTO } from '../value-objects';
-import type { TransferDate } from '../../../primitives';
+import type { TransferDate, ReminderGroupId, IdentityId } from '../../../primitives';
 
 export interface ReminderGroupServerDTO {
   // 基础属性
-  id: string;
-  identityId: string;
+  id: ReminderGroupId;
+  identityId: IdentityId;
   name: string;
   description?: string | null;
   color?: string | null;

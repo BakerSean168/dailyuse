@@ -35,6 +35,7 @@ import {
   CleanupOldNotificationsSchema,
   NotificationResponseSchema,
   NotificationBatchResultSchema,
+  UnreadCountResponseSchema,
 } from '@dailyuse/contracts/notification';
 import { NotificationController } from '../controllers/notification.controller';
 import type { NotificationUseCases } from '../controllers/notification.controller';
@@ -197,7 +198,7 @@ export function registerNotificationRoutes(
       path: '/unread-count',
       summary: '获取未读通知数量',
       responses: {
-        200: successResponse(z.object({ count: z.number() }), '获取成功'),
+        200: successResponse(UnreadCountResponseSchema, '获取成功'),
       },
     },
     [auth],
@@ -211,7 +212,7 @@ export function registerNotificationRoutes(
       path: '/read-all',
       summary: '标记所有通知为已读',
       responses: {
-        200: successResponse(z.object({ count: z.number() }), '操作成功'),
+        200: successResponse(UnreadCountResponseSchema, '操作成功'),
       },
     },
     [auth],

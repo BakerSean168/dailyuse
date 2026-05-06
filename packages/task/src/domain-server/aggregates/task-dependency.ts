@@ -130,7 +130,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
-      { dependencyId: String(this.id) as TaskDependencyId, changedFields: ['dependencyType'] },
+      { dependencyId: this.id as TaskDependencyId, changedFields: ['dependencyType'] },
     );
   }
 
@@ -143,7 +143,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
-      { dependencyId: String(this.id) as TaskDependencyId, changedFields: ['lagDays'] },
+      { dependencyId: this.id as TaskDependencyId, changedFields: ['lagDays'] },
     );
   }
 

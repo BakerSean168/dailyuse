@@ -35,12 +35,12 @@ export const UpdateNotificationPreferenceSchema = z.object({
     .optional(),
   categories: z
     .object({
-      task: z.any().optional(),
-      goal: z.any().optional(),
-      schedule: z.any().optional(),
-      reminder: z.any().optional(),
-      account: z.any().optional(),
-      system: z.any().optional(),
+      task: z.unknown().optional(),
+      goal: z.unknown().optional(),
+      schedule: z.unknown().optional(),
+      reminder: z.unknown().optional(),
+      account: z.unknown().optional(),
+      system: z.unknown().optional(),
     })
     .optional(),
   doNotDisturb: z

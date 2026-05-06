@@ -29,7 +29,7 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { GoalId, GoalFolderId, KeyResultWeightSnapshotId } from '../../domain-shared';
+import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
 import type { SnapshotTrigger, GoalReminderConfigDTO } from '@dailyuse/contracts/goal';
@@ -1063,7 +1063,7 @@ export class Goal extends AggregateRoot<GoalId> {
    * ✅ 删除关键结果
    * @throws {GoalDeletedError} 当目标已删除时
    */
-  public removeKeyResult(keyResultId: string): KeyResult | null {
+  public removeKeyResult(keyResultId: KeyResultId | string): KeyResult | null {
     this.ensureModifiable();
 
     const index = this._props.keyResults.findIndex((kr) => kr.id === keyResultId);
@@ -1074,7 +1074,7 @@ export class Goal extends AggregateRoot<GoalId> {
       this.addDomainEvent<GoalEventMap['goal:key-result-deleted']>('goal:key-result-deleted', {
         identityId: this._props.identityId,
         goal: this.toServerDTO(true),
-        keyResultId: keyResultId,
+        keyResultId: keyResultId as KeyResultId,
         keyResult: removed.toServerDTO(),
       });
 

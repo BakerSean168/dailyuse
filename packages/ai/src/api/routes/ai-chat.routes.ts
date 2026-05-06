@@ -13,7 +13,14 @@ import {
   UpdateConversationSchema,
   SendMessageSchema,
   ListMessagesSchema,
+  AIConversationClientDTOSchema,
+  SendMessageResSchema,
+  ConversationListResSchema,
+  MessageListResSchema,
+  ActionSuccessSchema,
 } from '@dailyuse/contracts/ai';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { AiConversationId } from '@dailyuse/contracts/primitives';
 import type { AIChatController } from '../../controllers/ai-chat.controller';
 
 interface PlatformMiddleware {
@@ -43,7 +50,7 @@ export function registerAIChatRoutes(
       summary: '创建 AI 对话',
       request: { body: { content: { 'application/json': { schema: CreateConversationSchema } } } },
       responses: {
-        201: successResponse(z.any(), '创建成功'),
+        201: successResponse(AIConversationClientDTOSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -65,7 +72,7 @@ export function registerAIChatRoutes(
         }),
       },
       responses: {
-        200: successResponse(z.any(), '获取成功'),
+        200: successResponse(ConversationListResSchema, '获取成功'),
       },
     },
     [auth],
@@ -84,10 +91,10 @@ export function registerAIChatRoutes(
       path: '/conversations/:id',
       summary: '获取 AI 对话详情',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiConversationId>() }),
       },
       responses: {
-        200: successResponse(z.any(), '获取成功'),
+        200: successResponse(AIConversationClientDTOSchema, '获取成功'),
         404: errorResponse('未找到'),
       },
     },
@@ -102,11 +109,11 @@ export function registerAIChatRoutes(
       path: '/conversations/:id',
       summary: '更新 AI 对话',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiConversationId>() }),
         body: { content: { 'application/json': { schema: UpdateConversationSchema } } },
       },
       responses: {
-        200: successResponse(z.any(), '更新成功'),
+        200: successResponse(AIConversationClientDTOSchema, '更新成功'),
         400: errorResponse('参数错误'),
         404: errorResponse('未找到'),
       },
@@ -122,10 +129,10 @@ export function registerAIChatRoutes(
       path: '/conversations/:id',
       summary: '删除 AI 对话',
       request: {
-        params: z.object({ id: z.string() }),
+        params: z.object({ id: brandedId<AiConversationId>() }),
       },
       responses: {
-        200: successResponse(z.object({}), '删除成功'),
+        200: successResponse(ActionSuccessSchema, '删除成功'),
         404: errorResponse('未找到'),
       },
     },
@@ -141,7 +148,7 @@ export function registerAIChatRoutes(
       summary: '发送 AI 消息',
       request: { body: { content: { 'application/json': { schema: SendMessageSchema } } } },
       responses: {
-        201: successResponse(z.any(), '发送成功'),
+        201: successResponse(SendMessageResSchema, '发送成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -160,7 +167,7 @@ export function registerAIChatRoutes(
         query: ListMessagesSchema,
       },
       responses: {
-        200: successResponse(z.any(), '获取成功'),
+        200: successResponse(MessageListResSchema, '获取成功'),
       },
     },
     [auth],

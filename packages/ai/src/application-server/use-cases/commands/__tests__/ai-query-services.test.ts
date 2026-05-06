@@ -267,9 +267,9 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.execute('identity-1', {
+    const result = await service.execute({
       query: 'How does knowledge grounding work?',
-    } satisfies QueryKnowledgeReq);
+    } satisfies QueryKnowledgeReq, { identityId: 'identity-1' });
 
     expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
       'identity-1',
@@ -362,9 +362,9 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.execute('identity-1', {
+    const result = await service.execute({
       query: 'How does grounding from repos cite sources?',
-    } satisfies QueryKnowledgeReq);
+    } satisfies QueryKnowledgeReq, { identityId: 'identity-1' });
 
     expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
       'identity-1',
@@ -425,9 +425,9 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    await service.execute('identity-1', {
+    await service.execute({
       query: 'How does repository grounding work?',
-    } satisfies QueryKnowledgeReq);
+    } satisfies QueryKnowledgeReq, { identityId: 'identity-1' });
 
     expect(knowledgeIndexRepository.findRelevantResources).toHaveBeenCalledWith(
       'identity-1',
@@ -470,10 +470,10 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.execute('identity-1', {
+    const result = await service.execute({
       instruction: 'Expand this note with citation guidance.',
       currentContent: '# Repository Grounding',
-    } satisfies ExpandKnowledgeReq);
+    } satisfies ExpandKnowledgeReq, { identityId: 'identity-1' });
 
     expect(queryPort.expand).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -528,10 +528,10 @@ describe('AIKnowledgeQueryService', () => {
       reindexAll,
     );
 
-    await service.execute('identity-1', {
+    await service.execute({
       force: true,
       limit: 20,
-    });
+    }, { identityId: 'identity-1' });
 
     expect(ingestionPort.indexResource).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -567,9 +567,9 @@ describe('AIAnalyticsQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.queryAnalytics('identity-1', {
+    const result = await service.queryAnalytics({
       query: 'What needs attention today?',
-    } satisfies QueryAnalyticsReq);
+    } satisfies QueryAnalyticsReq, { identityId: 'identity-1' });
 
     expect(readPort.buildContext).toHaveBeenCalledWith(
       'identity-1',

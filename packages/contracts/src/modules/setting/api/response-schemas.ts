@@ -6,14 +6,17 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId } from '../../../primitives';
+import type { IdentityId, SettingId } from '../../../primitives';
+import { UserPreferencesSchema } from '../preferences/schemas';
 
 /**
  * UserSetting Response Schema
  */
 export const UserSettingResponseSchema = z.object({
-  id: z.string(),
+  id: brandedId<SettingId>(),
   identityId: brandedId<IdentityId>(),
+  preferences: UserPreferencesSchema,
+  version: z.number(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });

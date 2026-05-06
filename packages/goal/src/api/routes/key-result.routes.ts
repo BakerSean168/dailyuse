@@ -17,6 +17,7 @@ import {
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
   KeyResultClientDTOSchema,
+  KeyResultListResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
@@ -28,12 +29,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// Response schema for key results list
-const GetKeyResultsResSchema = z.object({
-  data: z.array(KeyResultClientDTOSchema),
-  total: z.number(),
-});
 
 // ============ Route Registration ============
 
@@ -63,7 +58,7 @@ export function registerKeyResultRoutes(
         params: z.object({ id: brandedId<GoalId>() }),
       },
       responses: {
-        200: successResponse(GetKeyResultsResSchema, '获取成功'),
+        200: successResponse(KeyResultListResSchema, '获取成功'),
         404: errorResponse('目标不存在'),
       },
     },

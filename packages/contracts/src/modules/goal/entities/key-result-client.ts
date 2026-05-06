@@ -6,7 +6,7 @@ import type { DomainDate, TransferDate, KeyResultId } from '../../../primitives'
 import type { KeyResultProgress, KeyResultProgressDTO } from '../value-objects';
 
 export interface KeyResultClientDTO {
-  id: string;
+  id: KeyResultId;
   title: string;
   description: string | null;
   progress: KeyResultProgressDTO;

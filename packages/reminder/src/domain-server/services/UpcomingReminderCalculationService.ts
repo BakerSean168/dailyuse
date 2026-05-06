@@ -25,6 +25,7 @@ import type {
   TriggerConfigDTO,
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ReminderTemplateId, ReminderGroupId } from '@dailyuse/contracts/primitives';
 
 const REMINDER_CALCULATION_DEBUG =
   typeof process !== 'undefined' && process.env.DEBUG_REMINDER_CALCULATION === 'true';
@@ -47,7 +48,7 @@ function debugUpcomingReminderCalculation(message: string, payload?: unknown): v
  */
 export interface UpcomingReminderDTO {
   // 提醒信息
-  templateId: string;
+  templateId: ReminderTemplateId;
   title: string;
   description?: string;
   type: ReminderType;
@@ -67,7 +68,7 @@ export interface UpcomingReminderDTO {
   notificationChannels: NotificationChannel[];
 
   // 分组信息
-  groupId?: string | null;
+  groupId?: ReminderGroupId | null;
 }
 
 /**

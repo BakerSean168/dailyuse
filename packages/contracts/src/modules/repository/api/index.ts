@@ -13,6 +13,14 @@ export {
   type CreateResourceReq as CreateResourceZodReq,
   UpdateResourceSchema,
   type UpdateResourceReq as UpdateResourceZodReq,
+  UpdateRepositoryStatsSchema,
+  type UpdateRepositoryStatsReq as UpdateRepositoryStatsZodReq,
+  CreateFolderSchema,
+  type CreateFolderReq as CreateFolderZodReq,
+  RenameFolderSchema,
+  type RenameFolderReq as RenameFolderZodReq,
+  MoveFolderSchema,
+  type MoveFolderReq as MoveFolderZodReq,
 } from './repository.dto';
 
 export {

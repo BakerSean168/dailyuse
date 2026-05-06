@@ -5,6 +5,7 @@ import type {
   ResourceId,
   RepositoryId,
   FolderId,
+  IdentityId,
   DomainDate,
   TransferDate,
 } from '../../../primitives';
@@ -24,10 +25,10 @@ import type {
  * Resource Server DTO
  */
 export interface ResourceServerDTO {
-  id: string;
-  repositoryId: string; // Foreign key - aggregate root ID
-  identityId: string;
-  folderId: string | null; // Foreign key - parent folder
+  id: ResourceId;
+  repositoryId: RepositoryId; // Foreign key - aggregate root ID
+  identityId: IdentityId;
+  folderId: FolderId | null; // Foreign key - parent folder
 
   name: string;
 

@@ -4,6 +4,8 @@
  * 提供目标进度的详细计算信息，包括每个关键结果的贡献度
  */
 
+import type { KeyResultId } from '../../../primitives';
+
 /**
  * 进度分解详情
  */
@@ -17,7 +19,7 @@ export interface ProgressBreakdown {
   /** 各关键结果的贡献度列表 */
   krContributions: Array<{
     /** 关键结果 UUID */
-    keyResultId: string;
+    keyResultId: KeyResultId;
 
     /** 关键结果名称 */
     keyResultName: string;

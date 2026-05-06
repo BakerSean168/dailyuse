@@ -16,7 +16,7 @@ import type {
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
 import { NotificationChannelType as ChannelTypeEnum } from '@dailyuse/contracts/notification';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId, NotificationId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type {
@@ -124,7 +124,7 @@ export class CreateNotificationUseCase {
       if (resolvedChannels.includes(ChannelTypeEnum.InApp)) {
         const dispatchEvent: NotificationEventMap['notification:dispatch_in_app'] = {
           id: clientDTO.id,
-          identityId,
+          identityId: identityId as IdentityId,
           title: clientDTO.title,
           body: clientDTO.content,
           category: clientDTO.category,
@@ -138,7 +138,7 @@ export class CreateNotificationUseCase {
       if (resolvedChannels.includes(ChannelTypeEnum.Push)) {
         const desktopEvent: NotificationDispatchDesktopEvent = {
           id: clientDTO.id,
-          identityId,
+          identityId: identityId as IdentityId,
           title: clientDTO.title,
           body: clientDTO.content,
           category: clientDTO.category,

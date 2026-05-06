@@ -32,6 +32,7 @@ import type {
   GoalProgressCalculationResultDTO,
   ProgressPreviewDTO,
 } from '@dailyuse/contracts/goal';
+import type { KeyResultId } from '@dailyuse/contracts/primitives';
 
 /**
  * GoalProgressCalculator 领域服务
@@ -74,7 +75,7 @@ export class GoalProgressCalculator {
    */
   public async recalculateKeyResultProgress(
     goal: Goal,
-    keyResultId: string,
+    keyResultId: KeyResultId,
     options?: GoalRecordQueryOptions,
   ): Promise<ProgressCalculationResultDTO> {
     // 1. 获取 KeyResult
@@ -197,7 +198,7 @@ export class GoalProgressCalculator {
    * @returns 值数组
    */
   public async getKeyResultHistoryValues(
-    keyResultId: string,
+    keyResultId: KeyResultId,
     options?: GoalRecordQueryOptions,
   ): Promise<number[]> {
     const records = await this.goalRecordRepository.findByKeyResultId(
@@ -221,7 +222,7 @@ export class GoalProgressCalculator {
    */
   public async previewProgress(
     goal: Goal,
-    keyResultId: string,
+    keyResultId: KeyResultId,
     additionalValue?: number,
   ): Promise<ProgressPreviewDTO> {
     const keyResult = goal.getKeyResult(keyResultId);
@@ -263,7 +264,7 @@ export class GoalProgressCalculator {
    */
   public async needsRecalculation(
     goal: Goal,
-    keyResultId: string,
+    keyResultId: KeyResultId,
   ): Promise<boolean> {
     const keyResult = goal.getKeyResult(keyResultId);
     if (!keyResult) {

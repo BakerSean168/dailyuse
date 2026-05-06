@@ -12,6 +12,8 @@ import {
   QueryKnowledgeSchema,
   ReindexKnowledgeResultItemSchema,
   ReindexKnowledgeSchema,
+  QueryKnowledgeResSchema,
+  ExpandKnowledgeResSchema,
 } from '@dailyuse/contracts/ai';
 import type { AIKnowledgeQueryController } from '../../controllers/ai-knowledge-query.controller';
 
@@ -41,7 +43,7 @@ export function registerAIKnowledgeQueryRoutes(
       summary: '扩写知识内容',
       request: { body: { content: { 'application/json': { schema: ExpandKnowledgeSchema } } } },
       responses: {
-        200: successResponse(z.any(), '扩写成功'),
+        200: successResponse(ExpandKnowledgeResSchema, '扩写成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -56,7 +58,7 @@ export function registerAIKnowledgeQueryRoutes(
       summary: '查询知识库',
       request: { body: { content: { 'application/json': { schema: QueryKnowledgeSchema } } } },
       responses: {
-        200: successResponse(z.any(), '查询成功'),
+        200: successResponse(QueryKnowledgeResSchema, '查询成功'),
         400: errorResponse('参数错误'),
       },
     },

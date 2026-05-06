@@ -8,6 +8,7 @@ import type {
   EditorSessionId,
   EditorWorkspaceId,
   IdentityId,
+  ResourceId,
   TransferDate,
 } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
@@ -25,7 +26,7 @@ export interface EditorTabServerDTO {
   sessionId: EditorSessionId; // Parent session ID
   workspaceId: EditorWorkspaceId; // Parent workspace ID (aggregate root FK)
   identityId: IdentityId;
-  resourceId: string | null; // Associated repository resource ID
+  resourceId: ResourceId | null; // Associated repository resource ID
   tabIndex: number; // Tab index (position within group)
   tabType: TabType;
   name: string;

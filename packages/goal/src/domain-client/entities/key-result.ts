@@ -92,7 +92,7 @@ export class KeyResult extends Entity<KeyResultId> {
   // ================= 5. DTO Conversion =================
   public toDTO(): KeyResultClientDTO {
     return {
-      id: String(this.id),
+      id: this.id as KeyResultId,
       title: this._props.title,
       description: this._props.description,
       progress: { ...this._props.progress },

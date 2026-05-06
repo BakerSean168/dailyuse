@@ -87,10 +87,10 @@ export class EditorGroup extends Entity<EditorGroupId> {
   // ================= 5. DTO Conversion =================
   public toDTO(): EditorGroupClientDTO {
     return {
-      id: String(this.id),
-      sessionId: String(this._props.sessionId),
-      workspaceId: String(this._props.workspaceId),
-      identityId: String(this._props.identityId),
+      id: this.id as EditorGroupId,
+      sessionId: this._props.sessionId as EditorSessionId,
+      workspaceId: this._props.workspaceId as EditorWorkspaceId,
+      identityId: this._props.identityId as IdentityId,
       groupIndex: this._props.groupIndex,
       activeTabIndex: this._props.activeTabIndex,
       name: this._props.name,

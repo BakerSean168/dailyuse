@@ -30,6 +30,7 @@ import type { ReminderEventMap, NotificationChannel } from '@dailyuse/contracts/
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
 import { SourceModule, ExecutionStatus } from '@dailyuse/contracts/schedule';
+import type { NotificationId, IdentityId } from '@dailyuse/contracts/primitives';
 
 const notificationEventHandlersInitTask: InitializationTask = {
   name: 'notificationEventHandlers',
@@ -49,8 +50,8 @@ const notificationEventHandlersInitTask: InitializationTask = {
       const channels = reminder.notificationConfig?.channels ?? [];
 
       const base: NotificationDispatchDesktopEvent & NotificationDispatchInAppEvent = {
-        id: generateUUID(),
-        identityId: event.identityId,
+        id: generateUUID() as NotificationId,
+        identityId: event.identityId as IdentityId,
         title,
         body,
         category: NotificationCategory.Reminder,
@@ -103,8 +104,8 @@ const notificationEventHandlersInitTask: InitializationTask = {
         titleFallback;
 
       const base: NotificationDispatchDesktopEvent & NotificationDispatchInAppEvent = {
-        id: generateUUID(),
-        identityId,
+        id: generateUUID() as NotificationId,
+        identityId: identityId as IdentityId,
         title,
         body: null,
         category:

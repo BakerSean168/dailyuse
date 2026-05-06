@@ -24,6 +24,12 @@ import {
 } from '@dailyuse/utils/result';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
+import {
+  FolderResponseSchema,
+  CreateFolderSchema,
+  RenameFolderSchema,
+  MoveFolderSchema,
+} from '@dailyuse/contracts/repository';
 import type { RepositoryController } from '../../controllers/repository.controller';
 
 // ============ Types ============
@@ -60,17 +66,13 @@ export function registerNestedFolderRoutes(
         body: {
           content: {
             'application/json': {
-              schema: z.object({
-                name: z.string().min(1),
-                parentId: z.string().optional(),
-                order: z.number().optional(),
-              }),
+              schema: CreateFolderSchema,
             },
           },
         },
       },
       responses: {
-        201: successResponse(z.object({}).passthrough(), '创建成功'),
+        201: successResponse(FolderResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
         404: errorResponse('仓库不存在'),
       },
@@ -88,7 +90,7 @@ export function registerNestedFolderRoutes(
       summary: '获取文件夹树',
       request: { params: z.object({ repoId: brandedId<RepositoryId>() }) },
       responses: {
-        200: successResponse(z.array(z.object({}).passthrough()), '获取成功'),
+        200: successResponse(z.array(FolderResponseSchema), '获取成功'),
         404: errorResponse('仓库不存在'),
       },
     },
@@ -123,7 +125,7 @@ export function registerStandaloneFolderRoutes(
       summary: '获取文件夹详情',
       request: { params: z.object({ id: brandedId<FolderId>() }) },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '获取成功'),
+        200: successResponse(FolderResponseSchema, '获取成功'),
         404: errorResponse('文件夹不存在'),
       },
     },
@@ -139,10 +141,10 @@ export function registerStandaloneFolderRoutes(
       summary: '重命名文件夹',
       request: {
         params: z.object({ id: brandedId<FolderId>() }),
-        body: { content: { 'application/json': { schema: z.object({ name: z.string().min(1) }) } } },
+        body: { content: { 'application/json': { schema: RenameFolderSchema } } },
       },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '重命名成功'),
+        200: successResponse(FolderResponseSchema, '重命名成功'),
         404: errorResponse('文件夹不存在'),
       },
     },
@@ -158,10 +160,10 @@ export function registerStandaloneFolderRoutes(
       summary: '移动文件夹',
       request: {
         params: z.object({ id: brandedId<FolderId>() }),
-        body: { content: { 'application/json': { schema: z.object({ parentId: z.string().nullable().optional() }) } } },
+        body: { content: { 'application/json': { schema: MoveFolderSchema } } },
       },
       responses: {
-        200: successResponse(z.object({}).passthrough(), '移动成功'),
+        200: successResponse(FolderResponseSchema, '移动成功'),
         404: errorResponse('文件夹不存在'),
       },
     },

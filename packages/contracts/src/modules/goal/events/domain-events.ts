@@ -10,6 +10,13 @@
  * 6. UI 自动响应
  */
 
+import type {
+  GoalId,
+  GoalRecordId,
+  GoalReviewId,
+  KeyResultId,
+} from '../../../primitives';
+
 /**
  * Goal 聚合根刷新事件 - 事件原因类型
  */
@@ -42,13 +49,13 @@ export type GoalAggregateRefreshReason =
  * - 可能的其他模块（如统计、报告等）
  */
 export interface GoalAggregateRefreshEvent {
-  goalId: string;
+  goalId: GoalId;
   reason: GoalAggregateRefreshReason;
   timestamp: number;
   metadata?: {
-    keyResultId?: string;
-    goalRecordId?: string;
-    reviewId?: string;
+    keyResultId?: KeyResultId;
+    goalRecordId?: GoalRecordId;
+    reviewId?: GoalReviewId;
     changeData?: unknown;
   };
 }

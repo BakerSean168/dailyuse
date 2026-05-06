@@ -1,8 +1,9 @@
+import type { IdentityId, ReminderTemplateId } from '../../../../primitives';
 import type { ReminderTemplateServerDTO } from '../../aggregates/reminder-template-server';
 
 export interface ReminderTemplateDeletedEvent {
-  identityId: string;
-  templateId: string;
+  identityId: IdentityId;
+  templateId: ReminderTemplateId;
   templateTitle: string;
   reminder: ReminderTemplateServerDTO;
   isSoftDelete: boolean;

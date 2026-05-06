@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import type { GoalId, ScheduleTaskId } from '../../../primitives';
+import { brandedId } from '../../../primitives';
+import { GoalStatus } from '../../goal/value-objects/goal-status';
 
 export const DashboardStatsSchema = z.object({
   activeTasks: z.number().int().nonnegative(),
@@ -30,10 +33,10 @@ export const DashboardTrendDaySchema = z.object({
 export type TrendDay = z.infer<typeof DashboardTrendDaySchema>;
 
 export const DashboardGoalProgressItemSchema = z.object({
-  id: z.string(),
+  id: brandedId<GoalId>(),
   name: z.string(),
   progress: z.number().int().min(0).max(100),
-  status: z.string(),
+  status: z.enum(GoalStatus),
   dueDate: z.number().int().nonnegative(),
   keyResultCount: z.number().int().nonnegative(),
 });
@@ -50,7 +53,7 @@ export const DashboardTaskBoardSummarySchema = z.object({
 export type TaskBoardSummary = z.infer<typeof DashboardTaskBoardSummarySchema>;
 
 export const DashboardScheduleItemSchema = z.object({
-  id: z.string(),
+  id: brandedId<ScheduleTaskId>(),
   title: z.string(),
   startTime: z.number().int(),
   endTime: z.number().int(),

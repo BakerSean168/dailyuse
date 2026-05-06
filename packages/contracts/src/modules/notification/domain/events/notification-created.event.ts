@@ -1,4 +1,5 @@
 import type { NotificationServerDTO } from '../../aggregates/notification-server';
+import type { IdentityId, NotificationId } from '../../../../primitives';
 
 /**
  * Notification Created Event
@@ -6,7 +7,7 @@ import type { NotificationServerDTO } from '../../aggregates/notification-server
  * Triggered when a new notification aggregate is created.
  */
 export interface NotificationCreatedEvent {
-  identityId: string;
-  notificationId: string;
+  identityId: IdentityId;
+  notificationId: NotificationId;
   notification: NotificationServerDTO;
 }

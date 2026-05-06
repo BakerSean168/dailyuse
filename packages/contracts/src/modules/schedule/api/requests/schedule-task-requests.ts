@@ -53,7 +53,7 @@ const RetryPolicySchema = z.object({
 });
 
 const TaskMetadataSchema = z.object({
-  payload: z.record(z.string(), z.any().openapi({ type: 'object' })).optional(),
+  payload: z.record(z.string(), z.unknown()).optional(),
   tags: z.array(z.string()).optional(),
   priority: z.enum(TaskPriority).optional(),
   timeout: z.number().min(1000).nullable().optional(),
@@ -88,7 +88,7 @@ export const UpdateScheduleConfigRequestSchema = z.object({
 });
 
 export const UpdateTaskMetadataRequestSchema = z.object({
-  payload: z.record(z.string(), z.any().openapi({ type: 'object' })).optional(),
+  payload: z.record(z.string(), z.unknown()).optional(),
   tags: z.array(z.string()).optional(),
   priority: z.enum(TaskPriority).optional(),
   timeout: z.number().min(1000).nullable().optional(),

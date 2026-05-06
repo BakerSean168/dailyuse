@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { ReminderGroupId } from '../../../primitives';
+import type { ReminderGroupId, ReminderTemplateId } from '../../../primitives';
 import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
 import { ReminderType } from '../value-objects/reminder-type';
 import { TriggerType } from '../value-objects/trigger-type';
@@ -115,7 +115,7 @@ export interface GetUpcomingRemindersRes {
 }
 
 export const ReminderTodayScheduleItemSchema = z.object({
-  templateId: z.string(),
+  templateId: brandedId<ReminderTemplateId>(),
   title: z.string(),
   description: z.string().optional(),
   type: z.enum(ReminderType),
@@ -127,7 +127,7 @@ export const ReminderTodayScheduleItemSchema = z.object({
   icon: z.string(),
   color: z.string(),
   notificationChannels: z.array(z.enum(NotificationChannel)),
-  groupId: z.string().nullable().optional(),
+  groupId: brandedId<ReminderGroupId>().nullable().optional(),
 });
 
 export type ReminderTodayScheduleItem = z.infer<typeof ReminderTodayScheduleItemSchema>;

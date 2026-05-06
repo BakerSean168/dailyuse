@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { openApiJsonValue } from '../primitives';
 
 /**
  * 分页查询参数 (Zod Schema)
@@ -26,7 +27,7 @@ export const Paginated = <T extends z.ZodTypeAny>(item: T) =>
 export const ZodErrorResponse = z.object({
   code: z.string(),
   message: z.string(),
-  details: z.record(z.string(), z.any()).optional(),
+  details: z.record(z.string(), openApiJsonValue).optional(),
   traceId: z.string().optional(),
 });
 export type ZodErrorResponse = z.infer<typeof ZodErrorResponse>;

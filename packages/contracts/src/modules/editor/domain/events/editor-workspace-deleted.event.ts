@@ -1,3 +1,5 @@
+import type { EditorWorkspaceId } from '../../../../primitives';
+
 /**
  * Editor Workspace Deleted Event
  *
@@ -10,5 +12,5 @@
  */
 export interface EditorWorkspaceDeletedDomainEvent {
   /** The ID of the deleted workspace */
-  workspaceId: string;
+  workspaceId: EditorWorkspaceId;
 }

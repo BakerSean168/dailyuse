@@ -1,3 +1,5 @@
+import type { IdentityId, ReminderGroupId } from '../../../../primitives';
+
 /**
  * Reminder Group Enabled Event.
  * 提醒分组启用事件。
@@ -6,6 +8,6 @@
  * ReminderGroup.enable() 调用后触发。
  */
 export interface ReminderGroupEnabledEvent {
-  identityId: string;
-  groupId: string;
+  identityId: IdentityId;
+  groupId: ReminderGroupId;
 }

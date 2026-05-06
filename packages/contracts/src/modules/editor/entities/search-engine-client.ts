@@ -15,9 +15,9 @@ import type { SearchEngineServerDTO } from './search-engine-server';
  * Search Engine Client DTO (includes UI formatted fields).
  */
 export interface SearchEngineClientDTO {
-  id: string;
-  workspaceId: string;
-  identityId: string;
+  id: SearchEngineId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   indexPath: string;

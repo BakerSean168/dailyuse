@@ -253,7 +253,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       goalBinding: this._props.goalBinding
         ? this.serializeGoalBinding(this._props.goalBinding)
         : null,
-      folderId: this._props.folderId ? (String(this._props.folderId) as TaskFolderId) : null,
+      folderId: this._props.folderId,
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
@@ -263,7 +263,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      parentTaskId: this._props.parentTaskId ? (String(this._props.parentTaskId) as TaskTemplateId) : null,
+      parentTaskId: this._props.parentTaskId,
       startDate: this._props.startDate?.getTime() ?? null,
       dueDate: this._props.dueDate?.getTime() ?? null,
       completedAt: this._props.completedAt?.getTime() ?? null,

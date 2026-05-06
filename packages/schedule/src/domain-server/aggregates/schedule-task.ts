@@ -19,6 +19,7 @@ import {
   ScheduleTaskMetadata,
 } from '../../domain-shared/value-objects';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
+import { ScheduleExecutionId } from '../../domain-shared/value-objects/schedule-execution-id';
 import { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
@@ -421,7 +422,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     // Publish event
     this.addDomainEvent<ScheduleEventMap['schedule:task:executed']>('schedule:task:executed', {
       taskId: this.id,
-      executionId: execution.id,
+      executionId: execution.id as ScheduleExecutionId,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       status,
