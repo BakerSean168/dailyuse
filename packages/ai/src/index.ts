@@ -51,7 +51,6 @@ export {
   // -- Composition Root (canonical entry point) --
   createAIModule,
   createAIUseCases,
-  createAIServices,
   createAIPowerSyncModule,
   type AIModuleDependencies,
   type AIModuleInstance,

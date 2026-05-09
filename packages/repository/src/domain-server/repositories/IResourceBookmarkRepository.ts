@@ -2,6 +2,7 @@ import type {
   ResourceBookmarkClientDTO,
   ResourceBookmarkServerDTO,
 } from '@dailyuse/contracts/repository';
+import type { BookmarkId } from '@dailyuse/contracts/primitives';
 
 export interface CreateResourceBookmarkInput {
   repositoryId: string;
@@ -15,7 +16,7 @@ export interface CreateResourceBookmarkInput {
 export interface UpdateResourceBookmarkInput {
   repositoryId: string;
   identityId: string;
-  bookmarkId: string;
+  bookmarkId: BookmarkId;
   aliasName?: string | null;
   icon?: string | null;
   color?: string | null;
@@ -24,13 +25,13 @@ export interface UpdateResourceBookmarkInput {
 export interface DeleteResourceBookmarkInput {
   repositoryId: string;
   identityId: string;
-  bookmarkId: string;
+  bookmarkId: BookmarkId;
 }
 
 export interface ReorderResourceBookmarksInput {
   repositoryId: string;
   identityId: string;
-  bookmarkIds: string[];
+  bookmarkIds: BookmarkId[];
 }
 
 export interface IResourceBookmarkRepository {

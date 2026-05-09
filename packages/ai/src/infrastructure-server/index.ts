@@ -13,7 +13,6 @@
 export {
   createAIModule,
   createAIUseCases,
-  createAIServices,
   type AIModuleDependencies,
   type AIModuleInstance,
   type AIModuleUseCases,

@@ -1,4 +1,5 @@
 import type { ResourceBookmarkClientDTO } from '@dailyuse/contracts/repository';
+import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import {
   type IResourceBookmarkRepository,
   toBookmarkClientDTO,
@@ -16,7 +17,7 @@ export class ReorderResourceBookmarksUseCase {
   async execute(input: {
     repositoryId: string;
     identityId: string;
-    bookmarkIds: string[];
+    bookmarkIds: BookmarkId[];
   }): Promise<Result<{ bookmarks: ResourceBookmarkClientDTO[] }>> {
     const bookmarks = await this.bookmarkRepository.reorder(input);
     const resources = await this.resourceRepository.findByRepositoryId(input.repositoryId);

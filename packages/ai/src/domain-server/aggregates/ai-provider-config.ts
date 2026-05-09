@@ -113,9 +113,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     priority?: number;
   }): AIProviderConfig {
     const now = new Date();
+    const identityId = IdentityId.of(params.identityId);
     const instance = new AIProviderConfig({
       id: AiProviderConfigId.generate(),
-      identityId: IdentityId.of(params.identityId),
+      identityId,
       name: params.name.trim(),
       providerType: params.providerType,
       baseUrl: AIProviderConfig.normalizeBaseUrl(params.baseUrl),
@@ -132,7 +133,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     });
 
     instance.addDomainEvent<AIEventMap['ai:provider-config-created']>('ai:provider-config-created', {
-      identityId: String(instance._props.identityId),
+      identityId,
       providerConfig: instance.toServerDTO(),
     });
 
@@ -182,9 +183,9 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     this.addDomainEvent<AIEventMap['ai:provider-config-models-updated']>(
       'ai:provider-config-models-updated',
       {
-      identityId: String(this._props.identityId),
-      providerConfig: this.toServerDTO(),
-      modelCount: models.length,
+        identityId: this._props.identityId,
+        providerConfig: this.toServerDTO(),
+        modelCount: models.length,
       },
     );
   }
@@ -212,7 +213,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     this.addDomainEvent<AIEventMap['ai:provider-config-set-default']>(
       'ai:provider-config-set-default',
       {
-        identityId: String(this._props.identityId),
+        identityId: this._props.identityId,
         providerConfig: this.toServerDTO(),
       },
     );

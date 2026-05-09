@@ -1135,7 +1135,7 @@ export class Goal extends AggregateRoot<GoalId> {
             : Math.round((krProgress / this._props.keyResults.length) * 100) / 100;
 
         return {
-          keyResultId: kr.id as unknown as string,
+          keyResultId: kr.id,
           keyResultName: kr.title,
           progress: krProgress,
           weight: kr.weight,

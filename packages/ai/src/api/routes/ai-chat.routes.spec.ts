@@ -239,7 +239,7 @@ describe('ai chat route contracts', () => {
         ok: true,
         code: 200,
         message: 'ok',
-        data: {},
+        data: { success: true },
         timestamp: Date.now(),
       }).success,
     ).toBe(true);

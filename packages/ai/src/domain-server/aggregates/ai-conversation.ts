@@ -73,9 +73,10 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
 
   public static create(params: { identityId: string; name: string }): AIConversation {
     const now = new Date();
+    const identityId = IdentityId.of(params.identityId);
     const conversation = new AIConversation({
       id: AiConversationId.generate(),
-      identityId: IdentityId.of(params.identityId),
+      identityId,
       name: params.name,
       status: ConversationStatus.Active,
       messageCount: 0,
@@ -88,7 +89,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     });
 
     conversation.addDomainEvent<AIEventMap['ai:conversation-created']>('ai:conversation-created', {
-      identityId: params.identityId,
+      identityId,
       conversation: conversation.toServerDTO(),
     });
 
@@ -109,8 +110,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<AIEventMap['ai:message-added']>('ai:message-added', {
-      identityId: String(this._props.identityId),
-      conversationId: String(this.id),
+      identityId: this._props.identityId,
+      conversationId: this.id,
       conversation: this.toServerDTO(true),
       message: message.toServerDTO(),
     });
@@ -138,10 +139,10 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this.addDomainEvent<AIEventMap['ai:conversation-status-changed']>(
       'ai:conversation-status-changed',
       {
-      identityId: String(this._props.identityId),
-      conversation: this.toServerDTO(true),
-      oldStatus,
-      newStatus: status,
+        identityId: this._props.identityId,
+        conversation: this.toServerDTO(true),
+        oldStatus,
+        newStatus: status,
       },
     );
   }
@@ -156,7 +157,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<AIEventMap['ai:conversation-updated']>('ai:conversation-updated', {
-      identityId: String(this._props.identityId),
+      identityId: this._props.identityId,
       conversation: this.toServerDTO(true),
       changes: ['name'],
     });
@@ -169,8 +170,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     this._props.updatedAt = deletedAt;
 
     this.addDomainEvent<AIEventMap['ai:conversation-deleted']>('ai:conversation-deleted', {
-      identityId: String(this._props.identityId),
-      conversationId: String(this.id),
+      identityId: this._props.identityId,
+      conversationId: this.id,
       conversation: this.toServerDTO(true),
       deletedAt: deletedAt.getTime(),
     });

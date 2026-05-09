@@ -43,22 +43,18 @@ import {
   ListResourceBookmarksUseCase,
   DeleteResourceUseCase,
 } from '../application-server';
-import { ok, error } from '@dailyuse/contracts/result';
+import { RepositoryResolutionService } from '../application-server/services/repository-resolution.service';
+import { StoredResourceHydrationService } from '../application-server/services/stored-resource-hydration.service';
+import { ResourceMutationService } from '../application-server/services/resource-mutation.service';
+import { ok } from '@dailyuse/contracts/result';
+import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
-import { RepositoryStatus } from '@dailyuse/contracts/repository';
-import {
-  REPOSITORY_RESOURCE_MUTATED_EVENT,
-  RepositoryResourceMutationType,
-  type RepositoryResourceMutatedEvent,
+import type {
+  ResourceClientDTO,
+  UploadResourcesRequestDTO,
+  UploadResourcesResponseDTO,
 } from '@dailyuse/contracts/repository';
-import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
-import { PathCalculator } from '../domain-server/services/PathCalculator';
-import { eventBus } from '@dailyuse/utils';
-
-const repositoryEventBus = eventBus as unknown as {
-  send(eventType: string, payload: unknown): void;
-};
 
 // ---------------------------------------------------------------------------
 // Dependencies — 依赖类型
@@ -173,7 +169,7 @@ export interface RepositoryApplicationPort {
       content?: string;
     },
     ctx: Context,
-  ): Promise<Result<unknown>>;
+  ): Promise<Result<ResourceClientDTO>>;
   listResources(
     repositoryId: string,
     filters?: { folderId?: string; status?: string },
@@ -186,9 +182,9 @@ export interface RepositoryApplicationPort {
       metadata?: Record<string, unknown>;
       content?: string;
     },
-  ): Promise<Result<unknown>>;
-  moveResource(id: string, targetFolderId: string): Promise<Result<unknown>>;
-  deleteResource(id: string): Promise<Result<unknown>>;
+  ): Promise<Result<ResourceClientDTO>>;
+  moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>>;
+  deleteResource(id: string): Promise<Result<void>>;
   uploadResources(
     data: {
       repositoryId: string;
@@ -196,7 +192,7 @@ export interface RepositoryApplicationPort {
       metadata?: unknown;
     },
     ctx: Context,
-  ): Promise<Result<unknown>>;
+  ): Promise<Result<UploadResourcesResponseDTO>>;
 
   // Repository stats — 仓库统计
   updateRepositoryStats(id: string, data: Record<string, unknown>): Promise<Result<unknown>>;
@@ -321,6 +317,16 @@ export function createRepositoryUseCases(
     storagePort,
   );
 
+  const mutationService = new ResourceMutationService({
+    resourceRepository,
+    repositoryRepository,
+    folderRepository,
+    storagePort,
+    createResource,
+    deleteResource,
+    updateResourceContent,
+  });
+
   return {
     createRepository: new CreateRepositoryUseCase(repositoryRepository),
     updateRepositoryStats: new UpdateRepositoryStatsUseCase(repositoryRepository),
@@ -329,11 +335,7 @@ export function createRepositoryUseCases(
     createResource,
     updateResourceContent,
     uploadResources: new UploadResourcesUseCase(
-      createResource,
-      deleteResource,
-      resourceRepository,
-      repositoryRepository,
-      folderRepository,
+      mutationService,
     ),
     deleteResource,
     createFolder: new CreateFolderUseCase(folderRepository, repositoryRepository, storagePort),
@@ -412,190 +414,42 @@ function buildApplicationPort(
   useCases: RepositoryModuleUseCases,
   deps: RepositoryModuleDependencies,
 ): RepositoryApplicationPort {
-  const { resourceRepository, folderRepository, repositoryRepository, storagePort } = deps;
+  const repositoryResolution = new RepositoryResolutionService({
+    repositoryRepository: deps.repositoryRepository,
+    createRepository: useCases.createRepository,
+    autoCreateCanonicalRepository: deps.autoCreateCanonicalRepository !== false,
+  });
 
-  async function hydrateStoredResourceContent<T extends { repositoryId: string; path: string; content: string | null; mimeType: string }>(
-    resource: T | null,
-  ): Promise<T | null> {
-    if (!resource || resource.content) {
-      return resource;
-    }
+  const hydration = new StoredResourceHydrationService({
+    storagePort: deps.storagePort,
+  });
 
-    const storedBytes = await storagePort.read({
-      repositoryId: resource.repositoryId,
-      path: resource.path,
-    });
-    if (!storedBytes) {
-      return resource;
-    }
-
-    const textLike =
-      resource.mimeType.startsWith('text/') || resource.mimeType === 'application/json';
-
-    return {
-      ...resource,
-      content: textLike
-        ? Buffer.from(storedBytes).toString('utf8')
-        : Buffer.from(storedBytes).toString('base64'),
-    };
-  }
-
-  async function resolveParentPath(folderId?: string | null): Promise<Result<string | null>> {
-    if (!folderId) {
-      return ok(null);
-    }
-
-    const folder = await folderRepository.findById(folderId);
-    if (!folder) {
-      return error('NOT_FOUND', `Folder not found: ${folderId}`);
-    }
-
-    return ok(folder.path);
-  }
-
-  async function ensureResourcePathAvailable(
-    repositoryId: string,
-    path: string,
-    currentResourceId: string,
-  ): Promise<Result<void>> {
-    const existing = await resourceRepository.findByRepositoryIdAndPath(repositoryId, path);
-    if (existing && String(existing.id) !== currentResourceId) {
-      return error('CONFLICT', `Resource already exists at path: ${path}`);
-    }
-    return ok(undefined);
-  }
-
-  async function moveResourceInStorage(
-    resourceId: string,
-    nextName?: string,
-    nextFolderId?: string | null,
-  ) {
-    const resource = await resourceRepository.findById(resourceId);
-    if (!resource) {
-      return error('NOT_FOUND', `Resource not found: ${resourceId}`);
-    }
-
-    const repository = await repositoryRepository.findById(String(resource.repositoryId));
-    if (!repository) {
-      return error('NOT_FOUND', `Repository not found: ${resource.repositoryId}`);
-    }
-
-    const targetFolderId = nextFolderId === undefined ? resource.folderId : nextFolderId;
-    const targetName = nextName ?? resource.name;
-    const parentPathResult = await resolveParentPath(targetFolderId);
-    if (!parentPathResult.ok) return parentPathResult;
-    const parentPath = parentPathResult.data;
-    const targetPath = PathCalculator.buildPath(parentPath, targetName);
-
-    if (targetPath === resource.path) {
-      return ok(resource);
-    }
-
-    const pathAvailableResult = await ensureResourcePathAvailable(
-      String(resource.repositoryId),
-      targetPath,
-      String(resource.id),
-    );
-    if (!pathAvailableResult.ok) return pathAvailableResult;
-
-    await storagePort.move({
-      repositoryId: String(repository.id),
-      fromPath: resource.path,
-      toPath: targetPath,
-      isFolder: false,
-    });
-
-    if (nextName !== undefined) {
-      resource.rename(targetName);
-    }
-    if (nextFolderId !== undefined) {
-      resource.moveTo(targetFolderId as any, targetPath);
-    } else if (nextName !== undefined) {
-      resource.moveTo(resource.folderId, targetPath);
-    }
-
-    await resourceRepository.save(resource);
-    return ok(resource);
-  }
-
-  async function resolveCanonicalRepository(identityId: string) {
-    const activeRepos = await repositoryRepository.findByIdentityIdAndStatus(
-      identityId,
-      RepositoryStatus.Active,
-    );
-    const repository =
-      activeRepos[0] ?? (await repositoryRepository.findByIdentityId(identityId))[0];
-
-    if (!repository) {
-      return error('NOT_FOUND', `No repository available for identity: ${identityId}`);
-    }
-
-    return ok(repository.toClientDTO());
-  }
-
-  async function ensureCanonicalRepository(identityId: string) {
-    const existing = await resolveCanonicalRepository(identityId);
-    if (existing.ok) {
-      return existing;
-    }
-
-    if (existing.error.code !== 'NOT_FOUND') {
-      return existing;
-    }
-
-    if (deps.autoCreateCanonicalRepository === false) {
-      return existing;
-    }
-
-    const result = await useCases.createRepository.execute({
-      identityId,
-      name: 'Knowledge Base',
-      type: 'Markdown' as any,
-      path: 'knowledge-base',
-    });
-
-    if (!result.ok) return result;
-    return ok(result.data.repository);
-  }
-
-  function emitResourceMutationEvent(
-    payload: Omit<RepositoryResourceMutatedEvent, 'timestamp'>,
-  ): void {
-    repositoryEventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
-      ...payload,
-      timestamp: Date.now(),
-    } satisfies RepositoryResourceMutatedEvent);
-  }
+  const mutation = new ResourceMutationService({
+    resourceRepository: deps.resourceRepository,
+    repositoryRepository: deps.repositoryRepository,
+    folderRepository: deps.folderRepository,
+    storagePort: deps.storagePort,
+    createResource: useCases.createResource,
+    deleteResource: useCases.deleteResource,
+    updateResourceContent: useCases.updateResourceContent,
+  });
 
   return {
     getCurrentRepository: async (ctx) => {
-      return ensureCanonicalRepository(ctx.identityId);
+      return repositoryResolution.ensureCanonicalRepository(ctx.identityId);
     },
 
     // ---- Resource CRUD — 资源增删改查 ----
     createResource: async (data, ctx) => {
-      const result = await useCases.createResource.execute({
+      return mutation.createResource({
         repositoryId: data.repositoryId,
         identityId: ctx.identityId,
         folderId: data.folderId,
         name: data.name,
-        type: data.type as any,
-        path: data.path ?? `/${data.name}`,
+        type: data.type,
+        path: data.path,
         content: data.content,
       });
-      if (!result.ok) return result;
-
-      const createdResource = await resourceRepository.findById(String(result.data.resource.id));
-      if (createdResource) {
-        emitResourceMutationEvent({
-          identityId: createdResource.identityId as IdentityId,
-          repositoryId: String(createdResource.repositoryId) as RepositoryId,
-          resourceId: String(createdResource.id) as ResourceId,
-          resourcePath: createdResource.path,
-          mutation: RepositoryResourceMutationType.Created,
-        });
-      }
-      return ok(result.data.resource);
     },
     listResources: async (repositoryId) => {
       return useCases.listResources.execute({ repositoryId });
@@ -603,94 +457,23 @@ function buildApplicationPort(
     getResource: async (id) => {
       const result = await useCases.getResource.execute({ id });
       if (!result.ok) return result;
-      return ok(await hydrateStoredResourceContent(result.data.resource));
+      return ok(await hydration.hydrateContent(result.data.resource));
     },
     updateResource: async (id, data) => {
-      let currentResource = await resourceRepository.findById(id);
-      if (!currentResource) {
-        return error('NOT_FOUND', `Resource not found: ${id}`);
-      }
-      const pathChanged = data.name !== undefined;
-
-      if (pathChanged) {
-        const moveResult = await moveResourceInStorage(id, data.name);
-        if (!moveResult.ok) return moveResult;
-        currentResource = moveResult.data;
-      }
-
-      if (data.metadata !== undefined) {
-        currentResource.updateMetadata(data.metadata);
-      }
-
-      await resourceRepository.save(currentResource);
-
-      if (data.content !== undefined) {
-        const result = await useCases.updateResourceContent.execute({
-          id,
-          content: data.content,
-        });
-        if (!result.ok) return result;
-
-        const updatedResource = await resourceRepository.findById(id);
-        if (updatedResource) {
-          emitResourceMutationEvent({
-            identityId: updatedResource.identityId as IdentityId,
-            repositoryId: String(updatedResource.repositoryId) as RepositoryId,
-            resourceId: String(updatedResource.id) as ResourceId,
-            resourcePath: updatedResource.path,
-            mutation: RepositoryResourceMutationType.ContentUpdated,
-          });
-        }
-        return ok(result.data.resource);
-      }
-
-      if (pathChanged) {
-        emitResourceMutationEvent({
-          identityId: currentResource.identityId as IdentityId,
-          repositoryId: String(currentResource.repositoryId) as RepositoryId,
-          resourceId: String(currentResource.id) as ResourceId,
-          resourcePath: currentResource.path,
-          mutation: RepositoryResourceMutationType.Moved,
-        });
-      }
-
-      return ok(currentResource.toClientDTO());
+      return mutation.updateResource(id, data);
     },
     moveResource: async (id, targetFolderId) => {
-      const result = await moveResourceInStorage(id, undefined, targetFolderId);
-      if (!result.ok) return result;
-
-      emitResourceMutationEvent({
-        identityId: result.data.identityId as IdentityId,
-        repositoryId: String(result.data.repositoryId) as RepositoryId,
-        resourceId: String(result.data.id) as ResourceId,
-        resourcePath: result.data.path,
-        mutation: RepositoryResourceMutationType.Moved,
-      });
-      return ok(result.data.toClientDTO());
+      return mutation.moveResource(id, targetFolderId);
     },
     deleteResource: async (id) => {
-      const resource = await resourceRepository.findById(id);
-      const result = await useCases.deleteResource.execute({ id });
-      if (!result.ok) return result;
-
-      if (resource) {
-        emitResourceMutationEvent({
-          identityId: resource.identityId as IdentityId,
-          repositoryId: String(resource.repositoryId) as RepositoryId,
-          resourceId: String(resource.id) as ResourceId,
-          resourcePath: resource.path,
-          mutation: RepositoryResourceMutationType.Deleted,
-        });
-      }
-      return ok(undefined);
+      return mutation.deleteResource(id);
     },
     uploadResources: async (data, ctx) => {
       return useCases.uploadResources.execute({
         repositoryId: data.repositoryId,
         identityId: ctx.identityId,
         files: data.files as any,
-        metadata: data.metadata as any,
+        metadata: data.metadata as UploadResourcesRequestDTO | undefined,
       });
     },
 
@@ -746,7 +529,7 @@ function buildApplicationPort(
       return useCases.updateResourceBookmark.execute({
         repositoryId,
         identityId: ctx.identityId,
-        bookmarkId,
+        bookmarkId: bookmarkId as BookmarkId,
         aliasName: data.aliasName,
         icon: data.icon,
         color: data.color,
@@ -756,20 +539,20 @@ function buildApplicationPort(
       return useCases.reorderResourceBookmarks.execute({
         repositoryId,
         identityId: ctx.identityId,
-        bookmarkIds: data.bookmarkIds,
+        bookmarkIds: data.bookmarkIds.map((bookmarkId) => bookmarkId as BookmarkId),
       });
     },
     deleteResourceBookmark: async (repositoryId, bookmarkId, ctx) => {
       return useCases.deleteResourceBookmark.execute({
         repositoryId,
         identityId: ctx.identityId,
-        bookmarkId,
+        bookmarkId: bookmarkId as BookmarkId,
       });
     },
 
     // ---- Repository resolution — 仓库解析 ----
     findActiveRepository: async (identityId) => {
-      return ensureCanonicalRepository(identityId);
+      return repositoryResolution.ensureCanonicalRepository(identityId);
     },
   };
 }

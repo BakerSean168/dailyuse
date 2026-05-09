@@ -38,53 +38,15 @@ import type {
 } from '../application-server/ports';
 
 import {
-  QueryAIAnalyticsUseCase,
+  // Concrete classes used by createAIUseCases()
   CreateConversationUseCase,
   DeleteConversationUseCase,
-  ManageAIEvaluationReportUseCase,
-  GenerateAIGoalUseCase,
-  ManageAIKnowledgeNoteUseCase,
-  // Provider config decomposed use cases
-  CreateAIProviderUseCase,
-  UpdateAIProviderUseCase,
-  DeleteAIProviderUseCase,
-  GetAIProviderUseCase,
-  ListAIProvidersUseCase,
-  TestAIProviderConnectionUseCase,
-  SetDefaultAIProviderUseCase,
-  GetDefaultAIProviderUseCase,
-  RefreshAIProviderModelsUseCase,
-  // Chat decomposed use cases
-  SendAIMessageUseCase,
-  StreamAIMessageUseCase,
-  // Conversation decomposed use cases
-  CreateConversationV2UseCase,
-  GetConversationV2UseCase,
-  ListConversationsV2UseCase,
-  DeleteConversationV2UseCase,
-  UpdateConversationUseCase,
-  AddConversationMessageUseCase,
-  GetConversationsByStatusUseCase,
-  UpdateConversationStatusUseCase,
-  // Knowledge index decomposed use cases
-  SyncKnowledgeResourcesUseCase,
-  ReindexAllKnowledgeUseCase,
-  SyncRelevantKnowledgeUseCase,
-  SyncResourceByIdUseCase,
-  // Knowledge query decomposed use cases
-  QueryKnowledgeUseCase,
-  ExpandKnowledgeUseCase,
-  ReindexKnowledgeUseCase,
+  ListConversationsUseCase,
+  GetConversationUseCase,
 } from '../application-server/use-cases';
-import { ListConversationsUseCase, GetConversationUseCase } from '../application-server/use-cases';
-import { AIKnowledgeNotePathResolver } from './services/ai-knowledge-note-path-resolver';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
-import {
-  DirectProviderChatExecutionAdapter,
-  DirectProviderGoalPlanningAdapter,
-  DirectProviderKnowledgeNoteGenerationAdapter,
-} from './chat-execution';
-import { OpenAICompatibleModelCatalogGateway } from './gateways/openai-compatible-model-catalog.gateway';
+import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
+import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@dailyuse/contracts/result';
 import type {
@@ -116,6 +78,34 @@ import type {
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
 } from '@dailyuse/contracts/ai';
+
+// Type-only imports for exported interfaces (runtimes own the concrete classes)
+import type {
+  GenerateAIGoalUseCase,
+  CreateAIProviderUseCase,
+  UpdateAIProviderUseCase,
+  DeleteAIProviderUseCase,
+  GetAIProviderUseCase,
+  ListAIProvidersUseCase,
+  TestAIProviderConnectionUseCase,
+  SetDefaultAIProviderUseCase,
+  GetDefaultAIProviderUseCase,
+  RefreshAIProviderModelsUseCase,
+  SendAIMessageUseCase,
+  StreamAIMessageUseCase,
+  CreateConversationV2UseCase,
+  GetConversationV2UseCase,
+  ListConversationsV2UseCase,
+  DeleteConversationV2UseCase,
+  UpdateConversationUseCase,
+  AddConversationMessageUseCase,
+  GetConversationsByStatusUseCase,
+  UpdateConversationStatusUseCase,
+  SyncKnowledgeResourcesUseCase,
+  ReindexAllKnowledgeUseCase,
+  SyncRelevantKnowledgeUseCase,
+  SyncResourceByIdUseCase,
+} from '../application-server/use-cases';
 
 // ---------------------------------------------------------------------------
 // Dependencies — AI 模块服务端运行时向外部索取的全部依赖
@@ -258,9 +248,48 @@ export interface AIKnowledgeIndexServices {
  * Knowledge query decomposed use cases.
  */
 export interface AIKnowledgeQueryServices {
-  readonly query: QueryKnowledgeUseCase;
-  readonly expand: ExpandKnowledgeUseCase;
-  readonly reindex: ReindexKnowledgeUseCase;
+  readonly isAvailable: boolean;
+  readonly query: {
+    execute(
+      req: QueryKnowledgeReq,
+      cx: ExecutionContext,
+    ): Promise<Result<QueryKnowledgeRes>>;
+  };
+  readonly expand: {
+    execute(
+      req: ExpandKnowledgeReq,
+      cx: ExecutionContext,
+    ): Promise<Result<ExpandKnowledgeRes>>;
+  };
+  readonly reindex: {
+    execute(
+      req: ReindexKnowledgeReq,
+      cx: ExecutionContext,
+    ): Promise<Result<ReindexKnowledgeRes>>;
+  };
+}
+
+export interface AIKnowledgeNoteService {
+  readonly isAvailable: boolean;
+  createKnowledgeNote(
+    req: CreateKnowledgeNoteReq,
+    cx: ExecutionContext,
+  ): Promise<Result<CreateKnowledgeNoteRes>>;
+}
+
+export interface AIAnalyticsQueryService {
+  readonly isAvailable: boolean;
+  queryAnalytics(
+    req: QueryAnalyticsReq,
+    cx: ExecutionContext,
+  ): Promise<Result<QueryAnalyticsRes>>;
+}
+
+export interface AIEvaluationReportService {
+  readonly isAvailable: boolean;
+  getOverview(
+    req?: GetAIEvaluationOverviewReq,
+  ): Promise<Result<GetAIEvaluationOverviewRes>>;
 }
 
 /**
@@ -276,10 +305,10 @@ export interface AIModuleServices {
   readonly chatServices: AIChatServices;
   readonly goalGenerationService: GenerateAIGoalUseCase;
   readonly knowledgeIndexServices: AIKnowledgeIndexServices | null;
-  readonly knowledgeNoteService: ManageAIKnowledgeNoteUseCase | null;
-  readonly knowledgeQueryServices: AIKnowledgeQueryServices | null;
-  readonly analyticsQueryService: QueryAIAnalyticsUseCase | null;
-  readonly evaluationReportService: ManageAIEvaluationReportUseCase | null;
+  readonly knowledgeNoteService: AIKnowledgeNoteService;
+  readonly knowledgeQueryServices: AIKnowledgeQueryServices;
+  readonly analyticsQueryService: AIAnalyticsQueryService;
+  readonly evaluationReportService: AIEvaluationReportService;
 }
 
 // ---------------------------------------------------------------------------
@@ -379,52 +408,6 @@ export interface AIModuleInstance {
   dispose(): void;
 }
 
-const ADVANCED_AI_REASON =
-  'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
-
-function resolveAICapabilities(dependencies: AIModuleDependencies): AICapabilities {
-  const runtimeMode =
-    dependencies.chatExecutionPort ||
-    dependencies.goalPlanningPort ||
-    dependencies.goalAutomationPlanningPort ||
-    dependencies.knowledgeIngestionPort ||
-    dependencies.knowledgeQueryPort ||
-    dependencies.knowledgeNoteGenerationPort ||
-    dependencies.analyticsQueryPort
-      ? 'remote-ai-service'
-      : 'direct-provider';
-  const supportsKnowledgeNotes = Boolean(
-    dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath,
-  );
-  const supportsKnowledgeQuery = Boolean(
-    dependencies.knowledgeSourcePort &&
-    dependencies.knowledgeIndexRepository &&
-    dependencies.knowledgeIngestionPort &&
-    dependencies.knowledgeQueryPort,
-  );
-  const supportsAnalyticsQuery = Boolean(
-    dependencies.analyticsReadPort && dependencies.analyticsQueryPort,
-  );
-  const supportsGoalAutomation = Boolean(
-    dependencies.goalAutomationPlanningPort && dependencies.automationToolExecutorPort,
-  );
-
-  return {
-    runtimeMode,
-    supportsChat: true,
-    supportsGoalGeneration: true,
-    supportsKnowledgeNotes,
-    supportsKnowledgeQuery,
-    supportsKnowledgeReindex: supportsKnowledgeQuery,
-    supportsAnalyticsQuery,
-    supportsGoalAutomation,
-    supportsEvaluationReports: Boolean(dependencies.evaluationReportPort),
-    advancedFeaturesReason:
-      supportsKnowledgeQuery && supportsAnalyticsQuery && supportsGoalAutomation
-        ? undefined
-        : ADVANCED_AI_REASON,
-  };
-}
 
 async function getKnowledgeIndexDiagnostics(
   dependencies: AIModuleDependencies,
@@ -439,17 +422,6 @@ async function getKnowledgeIndexDiagnostics(
   } catch {
     return undefined;
   }
-}
-
-function buildCapabilityUnavailableMessage(
-  capabilityLabel: string,
-  capabilities: AICapabilities,
-): string {
-  if (capabilities.advancedFeaturesReason) {
-    return `${capabilityLabel} is unavailable. ${capabilities.advancedFeaturesReason}`;
-  }
-
-  return `${capabilityLabel} is unavailable in the current AI runtime.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -491,160 +463,6 @@ export function createAIUseCases(
   };
 }
 
-/**
- * Pure assembly helper for higher-level services.
- * 纯组装函数：给定依赖对象，返回已接好线的服务集合。
- */
-export function createAIServices(dependencies: AIModuleDependencies): AIModuleServices {
-  const { conversationRepository, providerConfigRepository } = dependencies;
-  const chatExecutionPort =
-    dependencies.chatExecutionPort ?? new DirectProviderChatExecutionAdapter();
-  const goalPlanningPort = dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
-  const knowledgeNoteGenerationPort =
-    dependencies.knowledgeNoteGenerationPort ?? new DirectProviderKnowledgeNoteGenerationAdapter();
-  const modelCatalogPort = new OpenAICompatibleModelCatalogGateway();
-
-  // Provider config services
-  const providerServices: AIProviderServices = {
-    create: new CreateAIProviderUseCase(providerConfigRepository),
-    update: new UpdateAIProviderUseCase(providerConfigRepository),
-    delete: new DeleteAIProviderUseCase(providerConfigRepository),
-    get: new GetAIProviderUseCase(providerConfigRepository),
-    list: new ListAIProvidersUseCase(providerConfigRepository),
-    testConnection: new TestAIProviderConnectionUseCase(providerConfigRepository, chatExecutionPort),
-    setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
-    getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
-    refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
-  };
-
-  // Conversation services (decomposed from ManageAIConversationUseCase)
-  const conversationServices: AIConversationServices = {
-    createConversationV2: new CreateConversationV2UseCase(conversationRepository),
-    getConversationV2: new GetConversationV2UseCase(conversationRepository),
-    listConversationsV2: new ListConversationsV2UseCase(conversationRepository),
-    deleteConversationV2: new DeleteConversationV2UseCase(conversationRepository),
-    updateConversation: new UpdateConversationUseCase(conversationRepository),
-    addMessage: new AddConversationMessageUseCase(conversationRepository),
-    getByStatus: new GetConversationsByStatusUseCase(conversationRepository),
-    updateStatus: new UpdateConversationStatusUseCase(conversationRepository),
-  };
-
-  // Chat services
-  const chatServices: AIChatServices = {
-    send: new SendAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
-    stream: new StreamAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
-  };
-
-  const goalGenerationService = new GenerateAIGoalUseCase(
-    providerConfigRepository,
-    goalPlanningPort,
-    dependencies.goalAutomationPlanningPort,
-    dependencies.automationToolExecutorPort,
-    dependencies.executionLogPort,
-    dependencies.knowledgeSourcePort,
-    dependencies.analyticsReadPort,
-  );
-
-  let knowledgeIndexServices: AIKnowledgeIndexServices | null = null;
-
-  const knowledgeNoteService =
-    dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath
-      ? new ManageAIKnowledgeNoteUseCase(
-          providerConfigRepository,
-          knowledgeNoteGenerationPort,
-          dependencies.knowledgeNotePersistence,
-          dependencies.getKnowledgeNoteSubpath,
-          new AIKnowledgeNotePathResolver(),
-          dependencies.executionLogPort,
-        )
-      : null;
-  const knowledgeQueryServices =
-    dependencies.knowledgeSourcePort &&
-    dependencies.knowledgeIndexRepository &&
-    dependencies.knowledgeIngestionPort &&
-    dependencies.knowledgeQueryPort
-      ? (() => {
-          knowledgeIndexServices = {
-            syncResources: new SyncKnowledgeResourcesUseCase(
-              dependencies.knowledgeIndexRepository,
-              dependencies.knowledgeIngestionPort,
-              dependencies.executionLogPort,
-            ),
-            reindexAll: new ReindexAllKnowledgeUseCase(
-              dependencies.knowledgeSourcePort,
-              dependencies.knowledgeIndexRepository,
-              dependencies.knowledgeIngestionPort,
-              dependencies.executionLogPort,
-            ),
-            syncRelevant: new SyncRelevantKnowledgeUseCase(
-              dependencies.knowledgeSourcePort,
-              dependencies.knowledgeIndexRepository,
-              dependencies.knowledgeIngestionPort,
-              dependencies.executionLogPort,
-            ),
-            syncById: new SyncResourceByIdUseCase(
-              dependencies.knowledgeSourcePort,
-              dependencies.knowledgeIndexRepository,
-              dependencies.knowledgeIngestionPort,
-              dependencies.executionLogPort,
-            ),
-          };
-
-          return {
-            query: new QueryKnowledgeUseCase(
-              providerConfigRepository,
-              knowledgeIndexServices!.syncRelevant,
-              dependencies.knowledgeQueryPort,
-              dependencies.executionLogPort,
-            ),
-            expand: new ExpandKnowledgeUseCase(
-              providerConfigRepository,
-              knowledgeIndexServices!.syncRelevant,
-              dependencies.knowledgeQueryPort,
-              dependencies.executionLogPort,
-            ),
-            reindex: new ReindexKnowledgeUseCase(
-              providerConfigRepository,
-              knowledgeIndexServices!.reindexAll,
-            ),
-          };
-        })()
-      : null;
-  const analyticsQueryService =
-    dependencies.analyticsReadPort && dependencies.analyticsQueryPort
-      ? new QueryAIAnalyticsUseCase(
-          providerConfigRepository,
-          dependencies.analyticsReadPort,
-          dependencies.analyticsQueryPort,
-          dependencies.executionLogPort,
-        )
-      : null;
-  const evaluationReportService = dependencies.evaluationReportPort
-    ? new ManageAIEvaluationReportUseCase(dependencies.evaluationReportPort)
-    : null;
-
-  return {
-    providerServices,
-    conversationServices,
-    chatServices,
-    goalGenerationService,
-    knowledgeIndexServices,
-    knowledgeNoteService,
-    knowledgeQueryServices,
-    analyticsQueryService,
-    evaluationReportService,
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Composition Root — 规范化的 AI 模块主组合根
@@ -664,7 +482,27 @@ export function createAIServices(dependencies: AIModuleDependencies): AIModuleSe
 export function createAIModule(dependencies: AIModuleDependencies): AIModuleInstance {
   const { conversationRepository, providerConfigRepository } = dependencies;
   const useCases = createAIUseCases({ conversationRepository });
-  const services = createAIServices(dependencies);
+
+  // --- Runtime selection: delegate to the appropriate runtime ---
+
+  const isRemoteMode = Boolean(
+    dependencies.chatExecutionPort ||
+      dependencies.goalPlanningPort ||
+      dependencies.goalAutomationPlanningPort ||
+      dependencies.knowledgeIngestionPort ||
+      dependencies.knowledgeQueryPort ||
+      dependencies.knowledgeNoteGenerationPort ||
+      dependencies.analyticsQueryPort,
+  );
+
+  const runtime = isRemoteMode
+    ? createRemoteAIServiceRuntime(dependencies)
+    : createDirectProviderAIRuntime(dependencies);
+
+  const { services, capabilities: baseCapabilities } = runtime;
+
+  // --- Runtime contributions ---
+
   const runtimeContributions = [
     ...(services.knowledgeIndexServices
       ? [
@@ -676,7 +514,9 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       : []),
     ...normalizeRuntimeContributions(dependencies.runtimeContributions),
   ];
-  const baseCapabilities = resolveAICapabilities(dependencies);
+
+  // --- API facade: delegates to runtime-owned services ---
+
   let started = false;
 
   const api: AIApplicationPort = {
@@ -690,16 +530,13 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }),
 
     // -- Provider Config --
-    createProvider: (req, cx) =>
-      services.providerServices.create.execute(req, cx),
+    createProvider: (req, cx) => services.providerServices.create.execute(req, cx),
     updateProvider: (id, req) => services.providerServices.update.execute(id, req),
     deleteProvider: (id) => services.providerServices.delete.execute(id),
     getProvider: (id) => services.providerServices.get.execute(id),
     listProviders: (cx) => services.providerServices.list.execute(cx),
-    testConnection: (req, cx) =>
-      services.providerServices.testConnection.execute(req, cx),
-    setDefaultProvider: (id, cx) =>
-      services.providerServices.setDefault.execute(id, cx),
+    testConnection: (req, cx) => services.providerServices.testConnection.execute(req, cx),
+    setDefaultProvider: (id, cx) => services.providerServices.setDefault.execute(id, cx),
     refreshProviderModels: (providerId, cx) =>
       services.providerServices.refreshModels.execute(providerId, cx),
 
@@ -742,58 +579,12 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     generateGoal: (params) => services.goalGenerationService.generateGoal(params),
 
     // -- Knowledge Notes --
-    createKnowledgeNote: (req, cx) => {
-      if (!services.knowledgeNoteService) {
-        return Promise.resolve(
-          error(
-            'SERVICE_UNAVAILABLE',
-            'Knowledge-note persistence was not provided to createAIModule. ' +
-              '知识笔记持久化端口未注入到 createAIModule。',
-          ),
-        );
-      }
-      return services.knowledgeNoteService.createKnowledgeNote(req, cx);
-    },
-    expandKnowledge: (req, cx) => {
-      if (!services.knowledgeQueryServices) {
-        return Promise.resolve(
-          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Knowledge expansion', baseCapabilities)),
-        );
-      }
-      return services.knowledgeQueryServices.expand.execute(req, cx);
-    },
-    queryKnowledge: (req, cx) => {
-      if (!services.knowledgeQueryServices) {
-        return Promise.resolve(
-          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Knowledge retrieval', baseCapabilities)),
-        );
-      }
-      return services.knowledgeQueryServices.query.execute(req, cx);
-    },
-    reindexKnowledge: (req, cx) => {
-      if (!services.knowledgeQueryServices) {
-        return Promise.resolve(
-          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Knowledge reindexing', baseCapabilities)),
-        );
-      }
-      return services.knowledgeQueryServices.reindex.execute(req, cx);
-    },
-    queryAnalytics: (req, cx) => {
-      if (!services.analyticsQueryService) {
-        return Promise.resolve(
-          error('SERVICE_UNAVAILABLE', buildCapabilityUnavailableMessage('Analytics query', baseCapabilities)),
-        );
-      }
-      return services.analyticsQueryService.queryAnalytics(req, cx);
-    },
-    getEvaluationOverview: (req = {}) => {
-      if (!services.evaluationReportService) {
-        return Promise.resolve(
-          error('SERVICE_UNAVAILABLE', 'AI evaluation report access is unavailable.'),
-        );
-      }
-      return services.evaluationReportService.getOverview(req);
-    },
+    createKnowledgeNote: (req, cx) => services.knowledgeNoteService.createKnowledgeNote(req, cx),
+    expandKnowledge: (req, cx) => services.knowledgeQueryServices.expand.execute(req, cx),
+    queryKnowledge: (req, cx) => services.knowledgeQueryServices.query.execute(req, cx),
+    reindexKnowledge: (req, cx) => services.knowledgeQueryServices.reindex.execute(req, cx),
+    queryAnalytics: (req, cx) => services.analyticsQueryService.queryAnalytics(req, cx),
+    getEvaluationOverview: (req = {}) => services.evaluationReportService.getOverview(req),
   };
 
   return {

@@ -5,20 +5,46 @@ import * as path from 'path';
 import { UploadResourcesUseCase } from '../use-cases/commands/upload-resources.use-case';
 import { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
+import { UpdateResourceContentUseCase } from '../use-cases/commands/update-resource-content.use-case';
+import { ResourceMutationService } from '../services/resource-mutation.service';
 import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
 import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
 import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
 import { FolderMemoryRepository } from '../../infrastructure-server/adapters/memory/folder-memory.repository';
 import { Repository } from '../../domain-server/aggregates/repository';
 
+function createTestUploadSetup(tempDir: string) {
+  const storage = new FsStorageAdapter(tempDir);
+  const resourceRepository = new ResourceMemoryRepository();
+  const repositoryRepository = new RepositoryMemoryRepository();
+  const folderRepository = new FolderMemoryRepository();
+
+  const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
+  const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
+  const updateResourceContent = new UpdateResourceContentUseCase(resourceRepository, repositoryRepository, storage);
+
+  const mutationService = new ResourceMutationService({
+    resourceRepository,
+    repositoryRepository,
+    folderRepository,
+    storagePort: storage,
+    createResource,
+    deleteResource,
+    updateResourceContent,
+  });
+
+  const uploadResources = new UploadResourcesUseCase(
+    mutationService,
+  );
+
+  return { storage, resourceRepository, repositoryRepository, folderRepository, createResource, uploadResources };
+}
+
 describe('UploadResources', () => {
   it('writes markdown and binary files without corruption', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-upload-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
+      const { resourceRepository, repositoryRepository, uploadResources } = createTestUploadSetup(tempDir);
       const repository = Repository.create({
         identityId: 'user-1' as any,
         name: 'Repo',
@@ -26,16 +52,6 @@ describe('UploadResources', () => {
         path: '/repo',
       });
       await repositoryRepository.save(repository);
-
-      const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
-      const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
-      const uploadResources = new UploadResourcesUseCase(
-        createResource,
-        deleteResource,
-        resourceRepository,
-        repositoryRepository,
-        folderRepository,
-      );
 
       const pngBytes = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]);
       const pdfBytes = Uint8Array.from([37, 80, 68, 70, 45, 49, 46, 55]);
@@ -92,10 +108,7 @@ describe('UploadResources', () => {
   it('replaces existing files through the unified delete path before uploading', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-upload-replace-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
+      const { resourceRepository, repositoryRepository, createResource, uploadResources } = createTestUploadSetup(tempDir);
       const repository = Repository.create({
         identityId: 'user-1' as any,
         name: 'Repo',
@@ -103,16 +116,6 @@ describe('UploadResources', () => {
         path: '/repo',
       });
       await repositoryRepository.save(repository);
-
-      const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
-      const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
-      const uploadResources = new UploadResourcesUseCase(
-        createResource,
-        deleteResource,
-        resourceRepository,
-        repositoryRepository,
-        folderRepository,
-      );
 
       const created = await createResource.execute({
         repositoryId: String(repository.id),

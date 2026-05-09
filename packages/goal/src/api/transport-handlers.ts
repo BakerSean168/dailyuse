@@ -60,6 +60,14 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
       execute: api.deactivateFocusMode,
     } as GoalUseCases['deactivateFocusMode'],
     extendFocusMode: { execute: api.extendFocusMode } as GoalUseCases['extendFocusMode'],
+    getGoalAggregate: { execute: api.getGoalAggregate } as GoalUseCases['getGoalAggregate'],
+    getGoalProgressBreakdown: {
+      execute: api.getGoalProgressBreakdown,
+    } as GoalUseCases['getGoalProgressBreakdown'],
+    cloneGoal: { execute: api.cloneGoal } as GoalUseCases['cloneGoal'],
+    batchUpdateKeyResultWeights: {
+      execute: api.batchUpdateKeyResultWeights,
+    } as GoalUseCases['batchUpdateKeyResultWeights'],
   };
 }
 

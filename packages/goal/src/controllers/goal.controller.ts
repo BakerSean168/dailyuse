@@ -28,11 +28,9 @@ import {
   ExtendFocusModeSchema,
 } from '@dailyuse/contracts/goal';
 import type {
-  CreateGoalReq,
   GoalClientDTO,
   GetGoalAggregateRes,
   ProgressBreakdown,
-  CloneGoalReq,
   UpdateGoalReq,
   ListGoalFilters,
   ListGoalsQuery,
@@ -71,6 +69,10 @@ import type {
   DeactivateFocusModeUseCase,
   ExtendFocusModeUseCase,
   GetCurrentFocusModeUseCase,
+  GetGoalAggregateUseCase,
+  GetGoalProgressBreakdownUseCase,
+  CloneGoalUseCase,
+  BatchUpdateKeyResultWeightsUseCase,
 } from '../application-server';
 
 // ============ Use Case Port ============
@@ -101,6 +103,10 @@ export interface GoalUseCases {
   deactivateFocusMode: DeactivateFocusModeUseCase;
   extendFocusMode: ExtendFocusModeUseCase;
   getCurrentFocusMode: GetCurrentFocusModeUseCase;
+  getGoalAggregate: GetGoalAggregateUseCase;
+  getGoalProgressBreakdown: GetGoalProgressBreakdownUseCase;
+  cloneGoal: CloneGoalUseCase;
+  batchUpdateKeyResultWeights: BatchUpdateKeyResultWeightsUseCase;
 }
 
 /**
@@ -200,87 +206,11 @@ export class GoalController {
   }
 
   async getAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>> {
-    const goalResult = await this.useCases.getGoal.execute(goalId, true);
-    if (!goalResult.ok) return goalResult;
-
-    const goal = this.toGoalClientDTO(goalResult.data);
-    const recordsResult = await this.useCases.listRecords.execute({ goalId });
-    const records = recordsResult.ok ? recordsResult.data.data : [];
-    const reviews = goal.reviews ?? [];
-    const keyResults = goal.keyResults ?? [];
-
-    return ok({
-      goal,
-      keyResults,
-      records,
-      reviews,
-      statistics: {
-        totalKeyResults: keyResults.length,
-        completedKeyResults: 0,
-        totalRecords: records.length,
-        totalReviews: reviews.length,
-        overallProgress: 0,
-      },
-    });
+    return this.useCases.getGoalAggregate.execute(goalId);
   }
 
   async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
-    const goalResult = await this.useCases.getGoal.execute(goalId, true);
-    if (!goalResult.ok) return goalResult;
-
-    const goal = this.toGoalClientDTO(goalResult.data);
-    const keyResults = goal.keyResults ?? [];
-    const totalWeight = keyResults.reduce(
-      (sum, kr) => sum + (typeof kr.weight === 'number' ? kr.weight : 0),
-      0,
-    );
-
-    return ok({
-      totalProgress: keyResults.length
-        ? Math.round(
-            keyResults.reduce((sum, kr) => {
-              const progressValue =
-                typeof kr.progress?.currentValue === 'number' &&
-                typeof kr.progress?.targetValue === 'number' &&
-                kr.progress.targetValue > kr.progress.initialValue
-                  ? ((kr.progress.currentValue - kr.progress.initialValue) /
-                      (kr.progress.targetValue - kr.progress.initialValue)) *
-                    100
-                  : typeof kr.progress?.targetValue === 'number' && kr.progress.targetValue > 0
-                    ? (kr.progress.currentValue / kr.progress.targetValue) * 100
-                    : 0;
-              const weight = typeof kr.weight === 'number' ? kr.weight : 0;
-              return sum + progressValue * weight;
-            }, 0) / (totalWeight || keyResults.length),
-          ) / 100
-        : 0,
-      calculationMode: 'WeightedAverage' as const,
-      krContributions: keyResults.map((kr) => {
-        const progress =
-          typeof kr.progress?.currentValue === 'number' &&
-          typeof kr.progress?.targetValue === 'number' &&
-          kr.progress.targetValue > kr.progress.initialValue
-            ? Math.round(
-                ((kr.progress.currentValue - kr.progress.initialValue) /
-                  (kr.progress.targetValue - kr.progress.initialValue)) *
-                  10000,
-              ) / 100
-            : typeof kr.progress?.targetValue === 'number' && kr.progress.targetValue > 0
-              ? Math.round((kr.progress.currentValue / kr.progress.targetValue) * 10000) / 100
-              : 0;
-        const weight = typeof kr.weight === 'number' ? kr.weight : 0;
-        return {
-          keyResultId: kr.id,
-          keyResultName: kr.title,
-          progress,
-          weight,
-          contribution:
-            totalWeight > 0 ? Math.round(((progress * weight) / totalWeight) * 100) / 100 : 0,
-        };
-      }),
-      lastUpdateTime: typeof goal.updatedAt === 'number' ? goal.updatedAt : Date.now(),
-      updateTrigger: '自动计算',
-    });
+    return this.useCases.getGoalProgressBreakdown.execute(goalId);
   }
 
   async cloneGoal(goalId: string, params: unknown, cx: ExecutionContext): Promise<Result<GoalClientDTO>> {
@@ -293,27 +223,14 @@ export class GoalController {
       });
     }
 
-    // Get original goal
-    const goalResult = await this.useCases.getGoal.execute(goalId, true);
-    if (!goalResult.ok) return goalResult;
-
-    const original = this.toGoalClientDTO(goalResult.data);
-    const createData = toCreateGoalReqFromCloneSource(original, parsedParams.data);
-
-    return this.useCases.createGoal.execute(createData, cx);
+    return this.useCases.cloneGoal.execute(goalId, parsedParams.data, cx);
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
     updates: Array<{ keyResultId: string; weight: number }>,
   ): Promise<Result<unknown>> {
-    // Update weights one by one
-    for (const { keyResultId, weight } of updates) {
-      const result = await this.useCases.updateKeyResult.execute(goalId, keyResultId, { weight });
-      if (!result.ok) return result;
-    }
-    // Return updated goal
-    return this.useCases.getGoal.execute(goalId, true);
+    return this.useCases.batchUpdateKeyResultWeights.execute(goalId, updates);
   }
 
   // ==================== Key Results ====================
@@ -577,17 +494,4 @@ export class GoalController {
     });
     return this.useCases.extendFocusMode.execute(cx.identityId, parsed.data.newEndTime);
   }
-}
-
-function toCreateGoalReqFromCloneSource(
-  original: GoalClientDTO,
-  params: CloneGoalReq,
-): CreateGoalReq {
-  return CreateGoalSchema.parse({
-    name: params.name ?? `${original.name} (Copy)`,
-    description: params.description ?? original.description ?? undefined,
-    importance: original.importance,
-    category: original.category ?? undefined,
-    tags: original.tags.length > 0 ? original.tags : undefined,
-  });
 }

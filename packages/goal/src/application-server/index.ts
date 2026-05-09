@@ -48,6 +48,11 @@ export {
   DeleteGoalRecordUseCase,
   // Focus Mode Services
   GetCurrentFocusModeUseCase,
+  // Workflow Services
+  GetGoalAggregateUseCase,
+  GetGoalProgressBreakdownUseCase,
+  CloneGoalUseCase,
+  BatchUpdateKeyResultWeightsUseCase,
 } from './use-cases';
 
 // ============================================================

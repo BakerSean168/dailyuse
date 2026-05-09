@@ -1,5 +1,5 @@
 import type { ResourceBookmarkServerDTO } from '@dailyuse/contracts/repository';
-import type { ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { BookmarkId, ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
 import type {
   CreateResourceBookmarkInput,
   DeleteResourceBookmarkInput,
@@ -20,7 +20,7 @@ export class ResourceBookmarkMemoryRepository implements IResourceBookmarkReposi
   async create(input: CreateResourceBookmarkInput): Promise<ResourceBookmarkServerDTO> {
     const items = await this.list(input.repositoryId, input.identityId);
     const created: ResourceBookmarkServerDTO = {
-      id: `${input.repositoryId}:${input.identityId}:${input.resourceId}`,
+      id: toBookmarkId(`${input.repositoryId}:${input.identityId}:${input.resourceId}`),
       resourceId: input.resourceId as ResourceId,
       identityId: input.identityId as IdentityId,
       aliasName: input.aliasName ?? null,
@@ -58,7 +58,7 @@ export class ResourceBookmarkMemoryRepository implements IResourceBookmarkReposi
 
   async reorder(input: ReorderResourceBookmarksInput): Promise<ResourceBookmarkServerDTO[]> {
     const items = await this.list(input.repositoryId, input.identityId);
-    const map = new Map(items.map((item) => [item.id, item]));
+    const map = new Map<BookmarkId, ResourceBookmarkServerDTO>(items.map((item) => [item.id, item]));
     const next = input.bookmarkIds.map((id, index) => {
       const bookmark = map.get(id);
       if (!bookmark) throw new Error(`Bookmark not found: ${id}`);
@@ -86,4 +86,8 @@ export class ResourceBookmarkMemoryRepository implements IResourceBookmarkReposi
   private key(repositoryId: string, identityId: string): string {
     return `${repositoryId}:${identityId}`;
   }
+}
+
+function toBookmarkId(value: string): BookmarkId {
+  return value as BookmarkId;
 }

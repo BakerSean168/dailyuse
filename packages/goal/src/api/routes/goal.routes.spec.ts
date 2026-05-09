@@ -122,6 +122,10 @@ function createGoalUseCasesStub(): Parameters<typeof registerGoalRoutes>[0] {
     deactivateFocusMode: vi.fn(),
     extendFocusMode: vi.fn(),
     getCurrentFocusMode: vi.fn(),
+    getGoalAggregate: vi.fn(),
+    getGoalProgressBreakdown: vi.fn(),
+    cloneGoal: vi.fn(),
+    batchUpdateKeyResultWeights: vi.fn(),
   };
 }
 

@@ -7,6 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
+import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateResourceSchema,
@@ -19,10 +20,12 @@ import type {
   CreateResourceZodReq,
   UpdateResourceZodReq,
   CreateResourceBookmarkRequestDTO,
+  ResourceClientDTO,
   UpdateResourceBookmarkRequestDTO,
   ReorderResourceBookmarksRequestDTO,
   UploadResourcesRequestDTO,
   UploadResourceFileDTO,
+  UploadResourcesResponseDTO,
 } from '@dailyuse/contracts/repository';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -35,14 +38,14 @@ export interface RepositoryUseCases {
   createResource(
     data: CreateResourceZodReq & { repositoryId: string },
     ctx: Context,
-  ): Promise<Result<unknown>>;
+  ): Promise<Result<ResourceClientDTO>>;
   listResources(
     repositoryId: string,
     filters: { folderId?: string; status?: string },
   ): Promise<Result<unknown>>;
   getResource(id: string): Promise<Result<unknown>>;
-  updateResource(id: string, data: UpdateResourceZodReq): Promise<Result<unknown>>;
-  deleteResource(id: string): Promise<Result<unknown>>;
+  updateResource(id: string, data: UpdateResourceZodReq): Promise<Result<ResourceClientDTO>>;
+  deleteResource(id: string): Promise<Result<void>>;
   uploadResources(
     data: {
       repositoryId: string;
@@ -50,7 +53,7 @@ export interface RepositoryUseCases {
       metadata?: UploadResourcesRequestDTO;
     },
     ctx: Context,
-  ): Promise<Result<unknown>>;
+  ): Promise<Result<UploadResourcesResponseDTO>>;
   // Folder CRUD
   createFolder(
     data: { repositoryId: string; name: string; parentId?: string; order?: number },
@@ -96,7 +99,11 @@ export class RepositoryController {
 
   // ==================== Resource Operations ====================
 
-  async createResource(repoId: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async createResource(
+    repoId: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<ResourceClientDTO>> {
     const parsed = CreateResourceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -125,7 +132,7 @@ export class RepositoryController {
     return this.useCases.getResource(id);
   }
 
-  async updateResource(id: string, input: unknown): Promise<Result<unknown>> {
+  async updateResource(id: string, input: unknown): Promise<Result<ResourceClientDTO>> {
     const parsed = UpdateResourceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -137,7 +144,7 @@ export class RepositoryController {
     return this.useCases.updateResource(id, parsed.data);
   }
 
-  async deleteResource(id: string): Promise<Result<unknown>> {
+  async deleteResource(id: string): Promise<Result<void>> {
     return this.useCases.deleteResource(id);
   }
 
@@ -146,7 +153,7 @@ export class RepositoryController {
     files: UploadResourceFileDTO[],
     metadata: UploadResourcesRequestDTO | undefined,
     ctx: Context,
-  ): Promise<Result<unknown>> {
+  ): Promise<Result<UploadResourcesResponseDTO>> {
     return this.useCases.uploadResources({ repositoryId, files, metadata }, ctx);
   }
 
@@ -252,7 +259,13 @@ export class RepositoryController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.reorderResourceBookmarks(repositoryId, parsed.data, ctx);
+    return this.useCases.reorderResourceBookmarks(
+      repositoryId,
+      {
+        bookmarkIds: parsed.data.bookmarkIds.map((bookmarkId) => bookmarkId as BookmarkId),
+      },
+      ctx,
+    );
   }
 
   async deleteResourceBookmark(

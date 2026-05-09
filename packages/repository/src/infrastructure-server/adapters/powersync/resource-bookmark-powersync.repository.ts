@@ -1,6 +1,6 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { ResourceBookmarkServerDTO } from '@dailyuse/contracts/repository';
-import type { ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { BookmarkId, ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
 import type {
   CreateResourceBookmarkInput,
   DeleteResourceBookmarkInput,
@@ -55,7 +55,7 @@ export class ResourceBookmarkPowerSyncRepository implements IResourceBookmarkRep
       if (!resource) return [];
       return [
         {
-          id: `${repositoryId}:${identityId}:${resource.id}`,
+          id: toBookmarkId(`${repositoryId}:${identityId}:${resource.id}`),
           resourceId: resource.id as ResourceId,
           identityId: identityId as IdentityId,
           aliasName: item.aliasName ?? null,
@@ -94,7 +94,7 @@ export class ResourceBookmarkPowerSyncRepository implements IResourceBookmarkRep
     await this.persist(input.repositoryId, input.identityId, [
       ...bookmarks,
       {
-        id: `${input.repositoryId}:${input.identityId}:${input.resourceId}`,
+        id: toBookmarkId(`${input.repositoryId}:${input.identityId}:${input.resourceId}`),
         resourceId: input.resourceId as ResourceId,
         identityId: input.identityId as IdentityId,
         aliasName: input.aliasName ?? null,
@@ -133,7 +133,9 @@ export class ResourceBookmarkPowerSyncRepository implements IResourceBookmarkRep
 
   async reorder(input: ReorderResourceBookmarksInput): Promise<ResourceBookmarkServerDTO[]> {
     const bookmarks = await this.list(input.repositoryId, input.identityId);
-    const map = new Map(bookmarks.map((bookmark) => [bookmark.id, bookmark]));
+    const map = new Map<BookmarkId, ResourceBookmarkServerDTO>(
+      bookmarks.map((bookmark) => [bookmark.id, bookmark]),
+    );
     const next = input.bookmarkIds.map((id, index) => {
       const bookmark = map.get(id);
       if (!bookmark) throw new Error(`Bookmark not found: ${id}`);
@@ -217,4 +219,8 @@ export class ResourceBookmarkPowerSyncRepository implements IResourceBookmarkRep
       ],
     );
   }
+}
+
+function toBookmarkId(value: string): BookmarkId {
+  return value as BookmarkId;
 }

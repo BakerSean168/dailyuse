@@ -21,3 +21,5 @@ export * from './update-goal-key-result.use-case';
 export * from './update-goal-key-result-progress.use-case';
 export * from './update-goal-review.use-case';
 export * from './extend-focus-mode.use-case';
+export * from './clone-goal.use-case';
+export * from './batch-update-key-result-weights.use-case';

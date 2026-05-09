@@ -60,6 +60,32 @@ function parseStringArray(value: unknown): string[] | undefined {
   return undefined;
 }
 
+/**
+ * Normalize raw Express req.query into a canonical ListGoalFilters object.
+ * Resolves aliases: includeChildren → includeKeyResults, limit → pageSize, dirId → folderId.
+ * 集中 route 层 query alias 兼容，controller 只接收 canonical shape。
+ */
+function normalizeGoalListQuery(query: Record<string, unknown>): ListGoalFilters {
+  return {
+    status: parseStringArray(query.status) as ListGoalFilters['status'],
+    systemView: query.systemView as ListGoalFilters['systemView'],
+    importance: parseStringArray(query.importance) as ListGoalFilters['importance'],
+    category: (query.category as string | undefined) ?? undefined,
+    tags: parseStringArray(query.tags),
+    folderId: (query.folderId ?? query.dirId) as ListGoalFilters['folderId'],
+    query: (query.query as string | undefined) ?? undefined,
+    startDate: parseNumber(query.startDate),
+    endDate: parseNumber(query.endDate),
+    sortBy: query.sortBy as ListGoalFilters['sortBy'],
+    sortOrder: query.sortOrder as ListGoalFilters['sortOrder'],
+    page: parseNumber(query.page),
+    pageSize: parseNumber(query.pageSize) ?? parseNumber(query.limit),
+    includeKeyResults:
+      parseBoolean(query.includeKeyResults) ?? parseBoolean(query.includeChildren),
+    includeReviews: parseBoolean(query.includeReviews),
+  };
+}
+
 // ============ Types ============
 
 interface PlatformMiddleware {
@@ -114,42 +140,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) => {
-      const includeKeyResults =
-        parseBoolean(req.query?.includeKeyResults) ?? parseBoolean(req.query?.includeChildren);
-      const pageSize = parseNumber(req.query?.pageSize) ?? parseNumber(req.query?.limit);
-      const status = parseStringArray(req.query?.status) as ListGoalFilters['status'];
-      const importance = parseStringArray(req.query?.importance) as ListGoalFilters['importance'];
-      const folderId = (req.query?.folderId ?? req.query?.dirId) as ListGoalFilters['folderId'];
-      const systemView = req.query?.systemView as ListGoalFilters['systemView'];
-
-      // Pass filters to controller - identityId is injected from ctx inside controller
-      return controller.list(
-        {
-          status,
-          systemView,
-          importance,
-          category: req.query?.category as string | undefined,
-          tags: parseStringArray(req.query?.tags),
-          folderId,
-          query: req.query?.query as string | undefined,
-          startDate: parseNumber(req.query?.startDate),
-          endDate: parseNumber(req.query?.endDate),
-          sortBy: req.query?.sortBy as
-            | 'createdAt'
-            | 'updatedAt'
-            | 'targetDate'
-            | 'priority'
-            | undefined,
-          sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
-          page: parseNumber(req.query?.page),
-          pageSize,
-          includeKeyResults,
-          includeReviews: parseBoolean(req.query?.includeReviews),
-        },
-        ctx,
-      );
-    },
+    (req, ctx) => controller.list(normalizeGoalListQuery(req.query as Record<string, unknown>), ctx),
   );
 
   // GET /search — 搜索目标

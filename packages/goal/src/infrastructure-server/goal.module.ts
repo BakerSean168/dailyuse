@@ -54,6 +54,10 @@ import {
   ActivateFocusModeUseCase,
   DeactivateFocusModeUseCase,
   ExtendFocusModeUseCase,
+  GetGoalAggregateUseCase,
+  GetGoalProgressBreakdownUseCase,
+  CloneGoalUseCase,
+  BatchUpdateKeyResultWeightsUseCase,
 } from '../application-server';
 import type { Result } from '@dailyuse/contracts/result';
 import type {
@@ -76,6 +80,9 @@ import type {
   UpdateGoalFolderReq,
   UpdateGoalFolderRes,
   GoalServerDTO,
+  GetGoalAggregateRes,
+  ProgressBreakdown,
+  CloneGoalReq,
 } from '@dailyuse/contracts/goal';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/domain-shared';
@@ -173,6 +180,12 @@ export interface GoalModuleUseCases {
   readonly activateFocusMode: ActivateFocusModeUseCase;
   readonly deactivateFocusMode: DeactivateFocusModeUseCase;
   readonly extendFocusMode: ExtendFocusModeUseCase;
+
+  // Workflow / 工作流
+  readonly getGoalAggregate: GetGoalAggregateUseCase;
+  readonly getGoalProgressBreakdown: GetGoalProgressBreakdownUseCase;
+  readonly cloneGoal: CloneGoalUseCase;
+  readonly batchUpdateKeyResultWeights: BatchUpdateKeyResultWeightsUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -308,6 +321,19 @@ export interface GoalApplicationPort {
   getCurrentFocusMode(
     identityId: string,
   ): Promise<Result<import('@dailyuse/contracts/goal').FocusModeDTO | null>>;
+
+  // Workflow / 工作流
+  getGoalAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>>;
+  getGoalProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
+  cloneGoal(
+    goalId: string,
+    params: CloneGoalReq,
+    cx: ExecutionContext,
+  ): Promise<Result<GoalClientDTO>>;
+  batchUpdateKeyResultWeights(
+    goalId: string,
+    updates: Array<{ keyResultId: string; weight: number }>,
+  ): Promise<Result<GetGoalRes>>;
 }
 
 /**
@@ -390,6 +416,18 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     ),
     deactivateFocusMode: new DeactivateFocusModeUseCase(focusModeRepository),
     extendFocusMode: new ExtendFocusModeUseCase(focusModeRepository),
+
+    // Workflow / 工作流
+    getGoalAggregate: new GetGoalAggregateUseCase(goalRepository, goalRecordRepository),
+    getGoalProgressBreakdown: new GetGoalProgressBreakdownUseCase(goalRepository),
+    cloneGoal: new CloneGoalUseCase(
+      goalRepository,
+      new CreateGoalUseCase(goalRepository, goalPolicy),
+    ),
+    batchUpdateKeyResultWeights: new BatchUpdateKeyResultWeightsUseCase(
+      goalRepository,
+      new UpdateGoalKeyResultUseCase(goalRepository, goalPolicy),
+    ),
   };
 }
 
@@ -474,6 +512,13 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     deactivateFocusMode: (identityId) => useCases.deactivateFocusMode.execute(identityId),
     extendFocusMode: (identityId, newEndTime) =>
       useCases.extendFocusMode.execute(identityId, newEndTime),
+
+    // Workflow / 工作流
+    getGoalAggregate: (goalId) => useCases.getGoalAggregate.execute(goalId),
+    getGoalProgressBreakdown: (goalId) => useCases.getGoalProgressBreakdown.execute(goalId),
+    cloneGoal: (goalId, params, cx) => useCases.cloneGoal.execute(goalId, params, cx),
+    batchUpdateKeyResultWeights: (goalId, updates) =>
+      useCases.batchUpdateKeyResultWeights.execute(goalId, updates),
   };
 
   return {

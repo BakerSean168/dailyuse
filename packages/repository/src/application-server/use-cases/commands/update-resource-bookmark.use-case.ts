@@ -1,4 +1,5 @@
 import type { ResourceBookmarkClientDTO } from '@dailyuse/contracts/repository';
+import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import {
   type IResourceBookmarkRepository,
   toBookmarkClientDTO,
@@ -16,7 +17,7 @@ export class UpdateResourceBookmarkUseCase {
   async execute(input: {
     repositoryId: string;
     identityId: string;
-    bookmarkId: string;
+    bookmarkId: BookmarkId;
     aliasName?: string | null;
     icon?: string | null;
     color?: string | null;

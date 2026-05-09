@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { ResourceBookmarkServerDTO } from '@dailyuse/contracts/repository';
-import type { ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { BookmarkId, ResourceId, IdentityId } from '@dailyuse/contracts/primitives';
 import type {
   CreateResourceBookmarkInput,
   DeleteResourceBookmarkInput,
@@ -155,7 +155,7 @@ export class ResourceBookmarkPrismaRepository implements IResourceBookmarkReposi
       resources,
       explorer,
     );
-    const pathByBookmarkId = new Map(
+    const pathByBookmarkId = new Map<BookmarkId, string>(
       current.map((bookmark) => [bookmark.id, targetPathForBookmark(bookmark, resources)]),
     );
 
@@ -248,7 +248,7 @@ export class ResourceBookmarkPrismaRepository implements IResourceBookmarkReposi
 
       return [
         {
-          id: `${repositoryId}:${identityId}:${resource.id}`,
+          id: toBookmarkId(`${repositoryId}:${identityId}:${resource.id}`),
           resourceId: resource.id as ResourceId,
           identityId: identityId as IdentityId,
           aliasName: item.aliasName ?? null,
@@ -295,4 +295,8 @@ function targetPathForBookmark(
     throw new Error(`Resource not found for bookmark: ${bookmark.id}`);
   }
   return resource.path;
+}
+
+function toBookmarkId(value: string): BookmarkId {
+  return value as BookmarkId;
 }

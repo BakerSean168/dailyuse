@@ -198,33 +198,17 @@ export function createAIApiModule(options: {
         },
       );
 
-      // Guard against missing knowledge-note service — 对缺失的知识笔记服务进行防御
-      if (!aiModule.services.knowledgeNoteService) {
-        throw new Error(
-          'AI API module requires knowledgeNotePersistence to be provided. ' +
-            'AI API 模块需要注入 knowledgeNotePersistence。',
-        );
-      }
+      // Routes always register — unavailable capabilities return SERVICE_UNAVAILABLE
+      // from the runtime service surface.
+      // 路由始终注册 — 不可用的能力由运行时服务层返回 SERVICE_UNAVAILABLE。
       const knowledgeNoteController = new AIKnowledgeNoteController({
         createKnowledgeNote: handlers.createKnowledgeNote,
       });
-      if (!aiModule.services.knowledgeQueryServices) {
-        throw new Error(
-          'AI API module requires knowledge query dependencies to be provided. ' +
-            'AI API 模块需要注入知识查询依赖。',
-        );
-      }
       const knowledgeQueryController = new AIKnowledgeQueryController({
         expandKnowledge: handlers.expandKnowledge,
         queryKnowledge: handlers.queryKnowledge,
         reindexKnowledge: handlers.reindexKnowledge,
       });
-      if (!aiModule.services.analyticsQueryService) {
-        throw new Error(
-          'AI API module requires analytics query dependencies to be provided. ' +
-            'AI API 模块需要注入分析查询依赖。',
-        );
-      }
       const analyticsQueryController = new AIAnalyticsQueryController({
         queryAnalytics: handlers.queryAnalytics,
       });
