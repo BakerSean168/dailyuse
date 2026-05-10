@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ai
   - goal
   - workflow
@@ -9,7 +9,10 @@ tags:
 description: AI goal workflow 快速测试系统实施计划
 created: 2026-04-30T00:00:00
 updated: 2026-04-30T00:00:00
+status: archived
 ---
+
+> 归档说明：`ai-service` goal workflow eval harness、cases、baseline 与 Nx target 已完成，本文仅保留为测试系统实施记录。
 
 # AI Goal Workflow Test System
 

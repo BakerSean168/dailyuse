@@ -1,7 +1,7 @@
 # 服务端 Deepening 实现诊断
 
 > 创建时间: 2026-05-07
-> 状态: 审查完成
+> 状态: 审查完成，已归档
 > 范围: `schedule`、`repository`、`goal`、`ai` 四个服务端模块
 > 基线文档:
 >
@@ -9,6 +9,7 @@
 > - [Repository Resource Mutation Deepening 执行方案](./2026-05-06-repository-resource-mutation-deepening.md)
 > - [Goal Read-Model Workflow Deepening 执行方案](./2026-05-06-goal-read-model-workflow-deepening.md)
 > - [AI Runtime Module Split 执行方案](./2026-05-06-ai-runtime-module-split.md)
+> 归档说明：相关实现已按诊断结论完成，本文件现仅保留为历史诊断基线。
 
 ## 文档定位
 

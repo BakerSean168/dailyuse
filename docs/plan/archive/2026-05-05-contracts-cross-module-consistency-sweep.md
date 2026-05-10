@@ -3,6 +3,7 @@
 > 创建时间: 2026-05-05
 > 状态: 已完成并通过本轮验收。所有目标模块已完成 branded ID 收口、transport contract 分层、route/OpenAPI schema 归位，以及 route contract 级测试补齐。当前仅保留少量有意识设计的自由 JSON 字段，用于错误详情、动态 metadata、调度 payload/result 和用户可扩展偏好补丁。
 > 目标层级: `packages/contracts` + 直接消费这些 contract 的业务包
+> 归档说明：本轮 contracts 一致性收敛已验收完成，本文仅保留为历史执行记录。
 
 ## 文档定位
 

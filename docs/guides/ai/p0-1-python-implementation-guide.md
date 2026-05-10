@@ -1,4 +1,4 @@
-# 说明：本文档保留为工程实现参考，不是当前 canonical plan。当前统一方案见 `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`。
+# 说明：本文档保留为工程实现参考，不是当前 canonical plan。历史统一方案见 `docs/plan/archive/2026-04-29-ai-goal-agent-workflow-unification.md`；当前真值以代码、配置和仍留在 `docs/plan/active` 的计划为准。
 
 # P0-1 Python 实现指南 - 逐步编码
 

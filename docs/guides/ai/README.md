@@ -18,8 +18,8 @@ updated: 2026-04-29T00:00:00
 
 ## Canonical Plan
 
-- [2026-04-29-ai-goal-agent-workflow-unification.md](../../plan/active/2026-04-29-ai-goal-agent-workflow-unification.md)
-  - 当前唯一正式 AI goal / agent workflow 实施方案
+- [2026-04-29-ai-goal-agent-workflow-unification.md](../../plan/archive/2026-04-29-ai-goal-agent-workflow-unification.md)
+  - 历史统一方案与冻结实施记录；当前真值以代码、配置和仍留在 `docs/plan/active` 的计划为准
 - [ai-goal-creation-current-workflow.md](../development/ai-goal-creation-current-workflow.md)
   - 当前真实主链路说明，帮助区分现状与目标
 

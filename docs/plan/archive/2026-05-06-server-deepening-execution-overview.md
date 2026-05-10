@@ -1,9 +1,10 @@
 # 服务端 Deepening 执行总览
 
 > 创建时间: 2026-05-06
-> 状态: 进行中
+> 状态: 已完成，归档
 > 来源: [Codebase Architecture Deepening 审查与后续计划](./2026-05-06-codebase-architecture-deepening-audit.md)
 > 范围: `repository`、`goal`、`ai` 三个服务端模块的剩余 deepening 工作
+> 归档说明：本轮服务端 deepening 已完成并通过测试收口，本文仅保留为历史总览。
 
 ## 文档定位
 

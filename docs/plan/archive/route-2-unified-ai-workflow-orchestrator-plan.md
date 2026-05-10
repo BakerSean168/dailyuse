@@ -10,7 +10,7 @@ created: 2026-04-19T00:00:00
 updated: 2026-04-19T00:00:00
 ---
 
-> Superseded by `docs/plan/active/2026-04-29-ai-goal-agent-workflow-unification.md`. 本文仅保留为 2026-04-19 阶段方案参考。
+> Superseded by `docs/plan/archive/2026-04-29-ai-goal-agent-workflow-unification.md`. 本文仅保留为 2026-04-19 阶段方案参考。
 
 # Route 2：Unified AI Workflow Orchestrator 方案
 

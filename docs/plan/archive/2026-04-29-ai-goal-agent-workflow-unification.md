@@ -1,14 +1,17 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ai
   - goal
   - workflow
 description: AI goal 与 agent workflow 文档统一及后续实现主计划
 created: 2026-04-29T00:00:00
 updated: 2026-04-29T22:05:00
+status: archived
 ---
+
+> 归档说明：该统一方案涉及的主链路与后续 workflow 收口已落地，本文现仅保留为历史统一方案参考。
 
 # AI Goal / Agent Workflow Unification
 

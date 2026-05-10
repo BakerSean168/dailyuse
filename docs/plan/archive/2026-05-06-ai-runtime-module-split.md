@@ -1,9 +1,10 @@
 # AI Runtime Module Split 执行方案
 
 > 创建时间: 2026-05-06
-> 状态: 进行中
+> 状态: 已完成，归档
 > 来源: [服务端 Deepening 执行总览](./2026-05-06-server-deepening-execution-overview.md)
 > 审查来源: [Codebase Architecture Deepening 审查与后续计划](./2026-05-06-codebase-architecture-deepening-audit.md)
+> 归档说明：AI runtime split 与 runtime-owned unavailable surface 已完成，本文仅保留为历史执行方案。
 
 ## 问题定位
 

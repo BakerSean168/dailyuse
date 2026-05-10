@@ -1,9 +1,10 @@
 # Codebase Architecture Deepening 审查与后续计划
 
 > 创建时间: 2026-05-06
-> 状态: 审查完成，`schedule` workflow deepening 已完成，其余波次待选择
+> 状态: 审查完成，已归档
 > 审查方法: `$improve-codebase-architecture` 全仓系统审查
 > 审查范围: `packages/*`、`apps/*`、`packages/contracts/*`、当前 ADR 约束下的 module / interface / implementation / seam 设计
+> 归档说明：后续 server deepening 已按审查结论落地，本文现仅保留为审查基线。
 
 ## 文档定位
 
