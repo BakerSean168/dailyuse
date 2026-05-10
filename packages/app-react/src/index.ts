@@ -32,6 +32,7 @@ export * from './hooks/use-task-service';
 export * from './hooks/use-task-template-detail';
 export * from './hooks/use-task-templates';
 export * from './providers/app-providers';
+export * from './providers/app-client-registry-provider';
 export * from './providers/app-session-provider';
 export * from './root-layout';
 export * from './screens/account-screen';

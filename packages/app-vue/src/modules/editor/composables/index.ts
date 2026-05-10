@@ -6,6 +6,7 @@ export { useEditorLinkIndex } from './useEditorLinkIndex';
 export { useActiveEditorDocument } from './useActiveEditorDocument';
 export { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
 export { useEditorWorkspaceActions } from './useEditorWorkspaceActions';
+export { useEditorResourceSession } from './useEditorResourceSession';
 export { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 export { useWindowUnsavedChangesGuard } from './useWindowUnsavedChangesGuard';
 export { useResourceInsertion } from './useResourceInsertion';

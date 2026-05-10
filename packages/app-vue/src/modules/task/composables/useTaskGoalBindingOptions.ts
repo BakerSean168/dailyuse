@@ -3,16 +3,13 @@ import { useI18n } from 'vue-i18n';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { GoalBindingOption, KeyResultBindingOption } from '../components/types';
-import {
-  getDesktopAuthApi,
-  recoverDesktopAuthIfNeeded,
-} from '../../../shared/utils/desktopAuthRecovery';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
 
-type GoalLike = { toDTO?: () => Record<string, any> } | Record<string, any>;
-type KeyResultLike = { toDTO?: () => Record<string, any> } | Record<string, any>;
+type GoalRecord = Record<string, unknown>;
+type GoalLike = { toDTO?: () => GoalRecord } | GoalRecord;
+type KeyResultLike = { toDTO?: () => GoalRecord } | GoalRecord;
 
-function toPlainObject<T extends Record<string, any>>(value: T | { toDTO?: () => T }): T {
+function toPlainObject<T extends GoalRecord>(value: T | { toDTO?: () => T }): T {
   if (value && typeof (value as { toDTO?: () => T }).toDTO === 'function') {
     return (value as { toDTO: () => T }).toDTO();
   }
@@ -61,8 +58,20 @@ export function useTaskGoalBindingOptions() {
   const loadingKeyResults = ref<Record<string, boolean>>({});
   const loadError = ref<string | null>(null);
 
-  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
-    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'TaskGoalBindingOptions');
+  async function executeGoalBindingOperation<T>(
+    operation: () => Promise<{ ok: boolean; data?: T; error?: { code?: string; message?: string } }>,
+    fallbackKey: string,
+  ) {
+    return executeDesktopAuthenticatedResult({
+      operation,
+      logScope: 'TaskGoalBindingOptions',
+      t,
+      fallbackKey,
+      onError: (error, translatedMessage) => {
+        loadError.value = translatedMessage;
+        console.error('[TaskGoalBindingOptions] operation failed', error);
+      },
+    });
   }
 
   async function loadGoals(force = false): Promise<GoalBindingOption[]> {
@@ -79,27 +88,18 @@ export function useTaskGoalBindingOptions() {
       let hasMore = true;
 
       while (hasMore) {
-        let result = await goalService.listGoals({
+        const listParams = {
           page,
-          // Goal list query validation caps pageSize at 100.
           pageSize: GOAL_BINDING_PAGE_SIZE,
-          systemView: 'active',
-        });
-
-        if (!result.ok && (await maybeRecoverAuth(result.error))) {
-          result = await goalService.listGoals({
-            page,
-            pageSize: GOAL_BINDING_PAGE_SIZE,
-            systemView: 'active',
-          });
-        }
+          systemView: 'active' as const,
+        };
+        const result = await executeGoalBindingOperation(
+          () => goalService.listGoals(listParams),
+          'goal.error.loadListFailed',
+        );
 
         if (!result.ok) {
-          loadError.value = translateResultError(result.error, t, {
-            fallbackKey: 'goal.error.loadListFailed',
-          });
           goals.value = [];
-          console.error('[TaskGoalBindingOptions] Failed to load goals', result.error);
           return [];
         }
 
@@ -133,24 +133,16 @@ export function useTaskGoalBindingOptions() {
     loadError.value = null;
 
     try {
-      let result = await goalService.getKeyResults(goalId);
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await goalService.getKeyResults(goalId);
-      }
+      const result = await executeGoalBindingOperation(
+        () => goalService.getKeyResults(goalId),
+        'goal.error.loadKRFailed',
+      );
 
       if (!result.ok) {
-        loadError.value = translateResultError(result.error, t, {
-          fallbackKey: 'goal.error.loadKRFailed',
-        });
         keyResultsByGoal.value = {
           ...keyResultsByGoal.value,
           [goalId]: [],
         };
-        console.error('[TaskGoalBindingOptions] Failed to load key results', {
-          goalId,
-          error: result.error,
-        });
         return [];
       }
 

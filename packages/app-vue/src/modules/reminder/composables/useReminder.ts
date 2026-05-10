@@ -25,11 +25,15 @@ import type {
   UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
 import type { Result } from '@dailyuse/contracts/result';
-import {
-  getDesktopAuthApi,
-  recoverDesktopAuthIfNeeded,
-} from '../../../shared/utils/desktopAuthRecovery';
 import { translateResultError } from '../../../shared/utils/translateResultError';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
+
+type ReminderPreferencesCapableService = {
+  getPreferences?: () => Promise<Result<UserReminderPreferencesClientDTO>>;
+  updatePreferences?: (
+    data: Record<string, unknown>,
+  ) => Promise<Result<UserReminderPreferencesClientDTO>>;
+};
 
 export function useReminder() {
   const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
@@ -37,13 +41,13 @@ export function useReminder() {
 
   const store = useReminderStore();
   const savingId = ref<string | null>(null);
+  const isSaving = computed(() => savingId.value !== null);
 
   const templates = computed(() => store.templates);
   const groups = computed(() => store.groups);
   const preferences = computed(() => store.preferences);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
-  const isSaving = computed(() => savingId.value !== null);
 
   function handleError(error: unknown, fallbackKey: string): void {
     const message = translateResultError(error, t, { fallbackKey });
@@ -51,18 +55,19 @@ export function useReminder() {
     console.error(message);
   }
 
-  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
-    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'Reminder');
-  }
-
-  async function executeWithOptionalAuthRecovery<T>(
-    action: () => Promise<Result<T>>,
-  ): Promise<Result<T>> {
-    let result = await action();
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await action();
-    }
-    return result;
+  async function executeReminderOperation<T>(
+    operation: () => Promise<Result<T>>,
+    fallbackKey: string,
+  ) {
+    return executeDesktopAuthenticatedResult({
+      operation,
+      logScope: 'Reminder',
+      t,
+      fallbackKey,
+      onError: (error) => {
+        handleError(error, fallbackKey);
+      },
+    });
   }
 
   async function reloadReminderScene() {
@@ -75,17 +80,14 @@ export function useReminder() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result: Result<ReminderTemplateListRes> = await service.getReminderTemplates();
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.getReminderTemplates();
-      }
+      const result = await executeReminderOperation<ReminderTemplateListRes>(
+        () => service.getReminderTemplates() as Promise<Result<ReminderTemplateListRes>>,
+        'reminder.error.loadTemplatesFailed',
+      );
 
       if (result.ok) {
         const templates = result.data.templates;
         store.setTemplates(templates, templates.length);
-      } else {
-        handleError(result.error, 'reminder.error.loadTemplatesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -97,13 +99,13 @@ export function useReminder() {
     includeExpired?: boolean;
   }): Promise<GetReminderTodayScheduleRes | null> {
     store.setError(null);
-    const result = await executeWithOptionalAuthRecovery<GetReminderTodayScheduleRes>(() =>
-      service.getTodaySchedule(params),
+    const result = await executeReminderOperation<GetReminderTodayScheduleRes>(
+      () => service.getTodaySchedule(params),
+      'reminder.error.loadTemplatesFailed',
     );
     if (result.ok) {
       return result.data;
     }
-    handleError(result.error, 'reminder.error.loadTemplatesFailed');
     return null;
   }
 
@@ -113,16 +115,15 @@ export function useReminder() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
-        service.createReminderTemplate(data),
+      const result = await executeReminderOperation<ReminderTemplateClientDTO>(
+        () => service.createReminderTemplate(data),
+        'reminder.error.createTemplateFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
-      } else {
-        handleError(result.error, 'reminder.error.createTemplateFailed');
-        return null;
       }
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -135,16 +136,15 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
-        service.updateReminderTemplate(id, data),
+      const result = await executeReminderOperation<ReminderTemplateClientDTO>(
+        () => service.updateReminderTemplate(id, data),
+        'reminder.error.updateTemplateFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
-      } else {
-        handleError(result.error, 'reminder.error.updateTemplateFailed');
-        return null;
       }
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -154,16 +154,15 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery(() =>
-        service.deleteReminderTemplate(id),
+      const result = await executeReminderOperation(
+        () => service.deleteReminderTemplate(id),
+        'reminder.error.deleteTemplateFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return true;
-      } else {
-        handleError(result.error, 'reminder.error.deleteTemplateFailed');
-        return false;
       }
+      return false;
     } finally {
       savingId.value = null;
     }
@@ -173,15 +172,15 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
-        service.toggleTemplateEnabled(id),
+      const result = await executeReminderOperation<ReminderTemplateClientDTO>(
+        () => service.toggleTemplateEnabled(id),
+        'reminder.error.toggleTemplateFailed',
       );
       if (result.ok) {
         store.updateTemplate(result.data);
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error, 'reminder.error.toggleTemplateFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -195,15 +194,15 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderTemplateClientDTO>(() =>
-        service.moveTemplateToGroup(id, groupId),
+      const result = await executeReminderOperation<ReminderTemplateClientDTO>(
+        () => service.moveTemplateToGroup(id, groupId),
+        'reminder.error.moveTemplateFailed',
       );
       if (result.ok) {
         store.updateTemplate(result.data);
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error, 'reminder.error.moveTemplateFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -216,17 +215,14 @@ export function useReminder() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result: Result<ReminderGroupListRes> = await service.getReminderGroups();
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.getReminderGroups();
-      }
+      const result = await executeReminderOperation<ReminderGroupListRes>(
+        () => service.getReminderGroups() as Promise<Result<ReminderGroupListRes>>,
+        'reminder.error.loadGroupsFailed',
+      );
 
       if (result.ok) {
         const groups = result.data.groups;
         store.setGroups(groups);
-      } else {
-        handleError(result.error, 'reminder.error.loadGroupsFailed');
       }
     } finally {
       store.setLoading(false);
@@ -237,16 +233,15 @@ export function useReminder() {
     savingId.value = 'new-group';
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
-        service.createReminderGroup(data),
+      const result = await executeReminderOperation<ReminderGroupClientDTO>(
+        () => service.createReminderGroup(data),
+        'reminder.error.createGroupFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
-      } else {
-        handleError(result.error, 'reminder.error.createGroupFailed');
-        return null;
       }
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -259,16 +254,15 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
-        service.updateReminderGroup(id, data),
+      const result = await executeReminderOperation<ReminderGroupClientDTO>(
+        () => service.updateReminderGroup(id, data),
+        'reminder.error.updateGroupFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
-      } else {
-        handleError(result.error, 'reminder.error.updateGroupFailed');
-        return null;
       }
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -278,14 +272,15 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery(() => service.deleteReminderGroup(id));
+      const result = await executeReminderOperation(
+        () => service.deleteReminderGroup(id),
+        'reminder.error.deleteGroupFailed',
+      );
       if (result.ok) {
         await reloadReminderScene();
         return true;
-      } else {
-        handleError(result.error, 'reminder.error.deleteGroupFailed');
-        return false;
       }
+      return false;
     } finally {
       savingId.value = null;
     }
@@ -295,14 +290,14 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
-        service.toggleReminderGroupStatus(id),
+      const result = await executeReminderOperation<ReminderGroupClientDTO>(
+        () => service.toggleReminderGroupStatus(id),
+        'reminder.error.toggleGroupFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error, 'reminder.error.toggleGroupFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -316,14 +311,14 @@ export function useReminder() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<ReminderGroupClientDTO>(() =>
-        service.switchReminderGroupControlMode(id, mode),
+      const result = await executeReminderOperation<ReminderGroupClientDTO>(
+        () => service.switchReminderGroupControlMode(id, mode),
+        'reminder.error.updateGroupFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error, 'reminder.error.updateGroupFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -331,41 +326,41 @@ export function useReminder() {
   }
 
   async function fetchPreferences(): Promise<UserReminderPreferencesClientDTO | null> {
-    const anyService = service as any;
-    if (typeof anyService.getPreferences !== 'function') {
+    const preferencesService = service as ReminderPreferencesCapableService;
+    if (typeof preferencesService.getPreferences !== 'function') {
       return null;
     }
 
-    const result = await executeWithOptionalAuthRecovery<UserReminderPreferencesClientDTO>(() =>
-      anyService.getPreferences(),
+    const result = await executeReminderOperation<UserReminderPreferencesClientDTO>(
+      () => preferencesService.getPreferences!(),
+      'reminder.error.loadPreferencesFailed',
     );
     if (result.ok) {
       store.setPreferences(result.data);
       return result.data;
     }
-    handleError(result.error, 'reminder.error.loadPreferencesFailed');
     return null;
   }
 
   async function updatePreferences(
     data: Record<string, unknown>,
   ): Promise<UserReminderPreferencesClientDTO | null> {
-    const anyService = service as any;
-    if (typeof anyService.updatePreferences !== 'function') {
+    const preferencesService = service as ReminderPreferencesCapableService;
+    if (typeof preferencesService.updatePreferences !== 'function') {
       return null;
     }
 
     savingId.value = 'preferences';
     store.setError(null);
     try {
-      const result = await executeWithOptionalAuthRecovery<UserReminderPreferencesClientDTO>(() =>
-        anyService.updatePreferences(data),
+      const result = await executeReminderOperation<UserReminderPreferencesClientDTO>(
+        () => preferencesService.updatePreferences!(data),
+        'reminder.error.updatePreferencesFailed',
       );
       if (result.ok) {
         await reloadReminderScene();
         return result.data;
       }
-      handleError(result.error, 'reminder.error.updatePreferencesFailed');
       return null;
     } finally {
       savingId.value = null;

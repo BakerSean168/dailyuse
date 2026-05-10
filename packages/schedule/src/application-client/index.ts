@@ -12,3 +12,4 @@ export type { ScheduleClientPort } from './schedule-client.port';
 
 // ===== Client Service =====
 export { ScheduleClientService, createScheduleClientService } from './schedule-client-service';
+export { createScheduleServiceFromHttpClient } from './schedule-http-service-factory';

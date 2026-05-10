@@ -1,16 +1,7 @@
-import { useRef } from 'react';
-
 import type { IResultHttpClient } from '@dailyuse/http-client';
 
-import { useAppSession } from './use-app-session';
+import { useAppClientRegistry } from '../providers/app-client-registry-provider';
 
 export function useAppApiClient(): IResultHttpClient {
-  const { createAuthorizedHttpClient } = useAppSession();
-  const clientRef = useRef<IResultHttpClient | null>(null);
-
-  if (!clientRef.current) {
-    clientRef.current = createAuthorizedHttpClient();
-  }
-
-  return clientRef.current;
+  return useAppClientRegistry().httpClient;
 }

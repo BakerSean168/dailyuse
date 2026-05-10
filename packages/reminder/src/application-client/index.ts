@@ -15,3 +15,4 @@ export type { ReminderClientPort } from './reminder-client.port';
 
 // ===== Client Service / 客户端服务 =====
 export { ReminderClientService, createReminderClientService } from './reminder-client-service';
+export { createReminderServiceFromHttpClient } from './reminder-http-service-factory';

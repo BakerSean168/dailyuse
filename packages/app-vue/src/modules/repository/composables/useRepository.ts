@@ -17,15 +17,16 @@ import type {
   TreeNode,
 } from '@dailyuse/contracts/repository';
 import type { Repository } from '@dailyuse/repository/domain-client';
+import type { Result } from '@dailyuse/contracts/result';
 import { searchRepositoryResources } from './repositorySearch';
 import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
 import {
-  getDesktopAuthApi,
   recoverDesktopAuthIfNeeded,
   type DesktopAuthApi,
 } from '../../../shared/utils/desktopAuthRecovery';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import { translateResultError } from '../../../shared/utils/translateResultError';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -45,51 +46,20 @@ export interface RepositoryUploadProgress {
 }
 
 interface RepositoryServiceLike {
-  getCurrentRepository(): Promise<{
-    ok: boolean;
-    data?: Repository | null;
-    error?: { code?: string; message?: string };
-  }>;
-  listResources(repositoryId: string): Promise<{
-    ok: boolean;
-    data?: ResourceClientDTO[];
-    error?: { code?: string; message?: string };
-  }>;
+  getCurrentRepository(): Promise<Result<Repository | null>>;
+  listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>>;
   createResource(
     repositoryId: string,
     request: Record<string, unknown>,
-  ): Promise<{
-    ok: boolean;
-    data?: ResourceClientDTO;
-    error?: { code?: string; message?: string };
-  }>;
+  ): Promise<Result<ResourceClientDTO>>;
   updateResource(
     resourceId: string,
     request: Record<string, unknown>,
-  ): Promise<{
-    ok: boolean;
-    data?: ResourceClientDTO;
-    error?: { code?: string; message?: string };
-  }>;
-  deleteResource(
-    resourceId: string,
-  ): Promise<{ ok: boolean; error?: { code?: string; message?: string } }>;
-  renameResource?(
-    resourceId: string,
-    name: string,
-  ): Promise<{
-    ok: boolean;
-    data?: ResourceClientDTO;
-    error?: { code?: string; message?: string };
-  }>;
-  getFileTree?(repositoryId: string): Promise<{
-    ok: boolean;
-    data?: FileTreeResponse;
-    error?: { code?: string; message?: string };
-  }>;
-  search?(
-    request: SearchRequest,
-  ): Promise<{ ok: boolean; data?: unknown; error?: { code?: string; message?: string } }>;
+  ): Promise<Result<ResourceClientDTO>>;
+  deleteResource(resourceId: string): Promise<Result<void>>;
+  renameResource?(resourceId: string, name: string): Promise<Result<ResourceClientDTO>>;
+  getFileTree?(repositoryId: string): Promise<Result<FileTreeResponse>>;
+  search?(request: SearchRequest): Promise<Result<unknown>>;
   uploadResources?(
     repositoryId: string,
     request: {
@@ -98,38 +68,22 @@ interface RepositoryServiceLike {
       folderId?: string;
       overwritePolicy?: 'skip' | 'replace';
     },
-  ): Promise<{ ok: boolean; data?: unknown; error?: { code?: string; message?: string } }>;
-  listBookmarks?(repositoryId: string): Promise<{
-    ok: boolean;
-    data?: ResourceBookmarkClientDTO[];
-    error?: { code?: string; message?: string };
-  }>;
+  ): Promise<Result<unknown>>;
+  listBookmarks?(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>>;
   updateBookmark?(
     repositoryId: string,
     bookmarkId: ResourceBookmarkClientDTO['id'],
     payload: { aliasName: string | null },
-  ): Promise<{
-    ok: boolean;
-    data?: ResourceBookmarkClientDTO;
-    error?: { code?: string; message?: string };
-  }>;
+  ): Promise<Result<ResourceBookmarkClientDTO>>;
   reorderBookmarks?(
     repositoryId: string,
     payload: { bookmarkIds: Array<ResourceBookmarkClientDTO['id']> },
-  ): Promise<{
-    ok: boolean;
-    data?: ResourceBookmarkClientDTO[];
-    error?: { code?: string; message?: string };
-  }>;
+  ): Promise<Result<ResourceBookmarkClientDTO[]>>;
   deleteBookmark?(
     repositoryId: string,
     bookmarkId: ResourceBookmarkClientDTO['id'],
-  ): Promise<{ ok: boolean; error?: { code?: string; message?: string } }>;
-  getResource?(resourceId: string): Promise<{
-    ok: boolean;
-    data?: ResourceClientDTO;
-    error?: { code?: string; message?: string };
-  }>;
+  ): Promise<Result<void>>;
+  getResource?(resourceId: string): Promise<Result<ResourceClientDTO>>;
 }
 
 type ResultLike<T = unknown> = {
@@ -145,6 +99,7 @@ export function useRepository() {
   ) as RepositoryServiceLike;
   const store = useRepositoryStore();
   const savingId = ref<string | null>(null);
+  const isSaving = computed(() => savingId.value !== null);
   const isUploading = ref(false);
   const uploadProgress = ref<RepositoryUploadProgress>({
     total: 0,
@@ -161,7 +116,6 @@ export function useRepository() {
   const bookmarks = computed(() => store.bookmarks);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
-  const isSaving = computed(() => savingId.value !== null);
   const bookmarkCapabilities = computed(() => ({
     canList: typeof service.listBookmarks === 'function',
     canRename: typeof service.updateBookmark === 'function',
@@ -175,20 +129,25 @@ export function useRepository() {
     console.error(msg);
   }
 
-  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
-    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'Repository');
-  }
+  async function executeRepositoryOperation<T>(
+    operation: () => Promise<Result<T>>,
+    fallbackMessage: string,
+  ) {
+    const translate = getI18nGlobal()?.t;
 
-  async function executeWithAuthRecovery<T extends ResultLike>(
-    operation: () => Promise<T>,
-  ): Promise<T> {
-    let result = await operation();
-
-    if (!result.ok && result.error && (await maybeRecoverAuth(result.error))) {
-      result = await operation();
-    }
-
-    return result;
+    return executeDesktopAuthenticatedResult({
+      operation,
+      logScope: 'Repository',
+      t: translate,
+      fallbackKey: 'common.operationFailed',
+      onError: (error, translatedMessage) => {
+        handleError(
+          translatedMessage === translate?.('common.operationFailed')
+            ? fallbackMessage
+            : translatedMessage,
+        );
+      },
+    });
   }
 
   // ── Repository init ──
@@ -199,14 +158,16 @@ export function useRepository() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await executeWithAuthRecovery(() => service.getCurrentRepository());
+      const result = await executeRepositoryOperation(
+        () => service.getCurrentRepository(),
+        '加载仓库失败',
+      );
       if (result.ok) {
         const repository = result.data ?? null;
         store.setCurrentRepository(repository ? repository.toDTO() : null);
         await fetchTreeNodes();
       } else {
         store.setCurrentRepository(null);
-        handleError(getResultErrorMessage(result, '加载仓库失败'));
       }
     } finally {
       store.setLoading(false);
@@ -221,12 +182,13 @@ export function useRepository() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await executeWithAuthRecovery(() => service.listResources(repositoryId));
+      const result = await executeRepositoryOperation(
+        () => service.listResources(repositoryId),
+        '加载资源失败',
+      );
       if (result.ok) {
         store.setResources(result.data ?? []);
         await fetchTreeNodes();
-      } else {
-        handleError(getResultErrorMessage(result, '加载资源失败'));
       }
     } finally {
       store.setLoading(false);
@@ -245,10 +207,12 @@ export function useRepository() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await executeWithAuthRecovery(() =>
+      const result = await executeRepositoryOperation(
+        () =>
         service.createResource(repositoryId, {
           ...data,
         }),
+        '创建资源失败',
       );
       if (result.ok && result.data) {
         store.addResource(result.data);
@@ -269,15 +233,16 @@ export function useRepository() {
     savingId.value = resourceId;
     store.setError(null);
     try {
-      const result = await executeWithAuthRecovery(() => service.deleteResource(resourceId));
+      const result = await executeRepositoryOperation(
+        () => service.deleteResource(resourceId),
+        '删除资源失败',
+      );
       if (result.ok) {
         store.removeResource(resourceId);
         await fetchTreeNodes();
         return true;
-      } else {
-        handleError(getResultErrorMessage(result, '删除资源失败'));
-        return false;
       }
+      return false;
     } finally {
       savingId.value = null;
     }
@@ -312,7 +277,10 @@ export function useRepository() {
     }
 
     try {
-      const result = await executeWithAuthRecovery(() => service.getResource!(resourceId));
+      const result = await executeRepositoryOperation(
+        () => service.getResource!(resourceId),
+        '加载资源失败',
+      );
       if (result.ok && result.data) {
         store.updateResource(result.data);
         logEditorIssue('repository:get-resource:service-hit', {
@@ -325,7 +293,7 @@ export function useRepository() {
       const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
       logEditorIssue('repository:get-resource:fallback-cache', {
         resourceId,
-        errorCode: result.error?.code ?? null,
+        errorCode: !result.ok ? result.error?.code ?? null : null,
         resource: summarizeResourceForDebug(cached),
       });
       return cached;
@@ -344,8 +312,9 @@ export function useRepository() {
     savingId.value = resourceId;
     store.setError(null);
     try {
-      const result = await executeWithAuthRecovery(() =>
-        service.updateResource(resourceId, { metadata }),
+      const result = await executeRepositoryOperation(
+        () => service.updateResource(resourceId, { metadata }),
+        '更新资源元数据失败',
       );
       if (result.ok && result.data) {
         store.updateResource(result.data);
@@ -384,7 +353,10 @@ export function useRepository() {
 
   async function searchResources(request: SearchRequest): Promise<SearchResponse> {
     if (typeof service.search === 'function') {
-      const result = await executeWithAuthRecovery(() => service.search!(request));
+      const result = await executeRepositoryOperation(
+        () => service.search!(request),
+        '搜索资源失败',
+      );
       if (result.ok && isSearchResponse(result.data)) {
         return result.data;
       }
@@ -405,14 +377,15 @@ export function useRepository() {
       return;
     }
 
-    const result = await executeWithAuthRecovery(() => listBookmarks(repositoryId));
+    const result = await executeRepositoryOperation(
+      () => listBookmarks(repositoryId),
+      '加载书签失败',
+    );
     if (result.ok) {
       store.setPersistedBookmarks(result.data ?? []);
       store.resetBookmarkUiState();
       return;
     }
-
-    handleError(getResultErrorMessage(result, '加载书签失败'));
   }
 
   async function resyncBookmarks(): Promise<void> {
@@ -444,12 +417,14 @@ export function useRepository() {
 
     try {
       if (typeof service.uploadResources === 'function') {
-        const remoteResult = await executeWithAuthRecovery(() =>
-          service.uploadResources!(repositoryId, {
-            files,
-            tags,
-            folderId,
-          }),
+        const remoteResult = await executeRepositoryOperation(
+          () =>
+            service.uploadResources!(repositoryId, {
+              files,
+              tags,
+              folderId,
+            }),
+          '上传资源失败',
         );
         if (remoteResult.ok && isUploadResponse(remoteResult.data)) {
           const successes = remoteResult.data.successes.map(
@@ -570,10 +545,12 @@ export function useRepository() {
         return null;
       }
 
-      const result = await executeWithAuthRecovery(() =>
-        updateBookmark(repositoryId, bookmark.id, {
-          aliasName: normalizedAlias,
-        }),
+      const result = await executeRepositoryOperation(
+        () =>
+          updateBookmark(repositoryId, bookmark.id, {
+            aliasName: normalizedAlias,
+          }),
+        '重命名书签失败',
       );
       if (result.ok && result.data) {
         store.upsertPersistedBookmark(result.data);
@@ -581,7 +558,11 @@ export function useRepository() {
         return { bookmark: result.data, persisted: true };
       }
 
-      handleError(getResultErrorMessage(result, '重命名书签失败'));
+      if (!result.ok) {
+        handleError(getResultErrorMessage(result, '重命名书签失败'));
+      } else {
+        handleError('重命名书签失败');
+      }
       await resyncBookmarks();
       return null;
     }
@@ -613,8 +594,9 @@ export function useRepository() {
       return false;
     }
 
-    const result = await executeWithAuthRecovery(() =>
-      reorderBookmarks(repositoryId, { bookmarkIds }),
+    const result = await executeRepositoryOperation(
+      () => reorderBookmarks(repositoryId, { bookmarkIds }),
+      '更新书签顺序失败',
     );
     if (result.ok) {
       if (result.data) {
@@ -629,7 +611,6 @@ export function useRepository() {
     }
 
     store.setTransientBookmarkOrder(previousOrder);
-    handleError(getResultErrorMessage(result, '更新书签顺序失败'));
     await resyncBookmarks();
     return false;
   }
@@ -653,7 +634,10 @@ export function useRepository() {
       return false;
     }
 
-    const result = await executeWithAuthRecovery(() => deleteBookmark(repositoryId, bookmarkId));
+    const result = await executeRepositoryOperation(
+      () => deleteBookmark(repositoryId, bookmarkId),
+      '删除书签失败',
+    );
     if (result.ok) {
       store.removePersistedBookmark(bookmarkId);
       store.unmarkTransientBookmarkRemoved(bookmarkId);
@@ -661,7 +645,6 @@ export function useRepository() {
     }
 
     store.unmarkTransientBookmarkRemoved(bookmarkId);
-    handleError(getResultErrorMessage(result, '删除书签失败'));
     await resyncBookmarks();
     return false;
   }
@@ -674,14 +657,15 @@ export function useRepository() {
     }
 
     const repositoryId = store.currentRepositoryId;
-    const result = await executeWithAuthRecovery(() => service.getFileTree!(repositoryId));
+    const result = await executeRepositoryOperation(
+      () => service.getFileTree!(repositoryId),
+      '加载目录失败',
+    );
     if (result.ok) {
       const tree = result.data?.tree ?? [];
       store.setTreeNodes(tree);
       return tree;
     }
-
-    handleError(getResultErrorMessage(result, '加载目录失败'));
     return store.treeNodes;
   }
 
@@ -700,8 +684,9 @@ export function useRepository() {
       return null;
     }
 
-    const result = await executeWithAuthRecovery(() =>
-      service.renameResource!(resourceId, trimmedName),
+    const result = await executeRepositoryOperation(
+      () => service.renameResource!(resourceId, trimmedName),
+      '重命名资源失败',
     );
     if (result.ok && result.data) {
       store.updateResource(result.data);

@@ -84,3 +84,5 @@ export class SettingClientService implements SettingClientPort {
 export function createSettingClientService(apiClient: ISettingApiClient): SettingClientService {
   return new SettingClientService(apiClient);
 }
+
+export { createSettingServiceFromHttpClient } from './setting-http-service-factory';

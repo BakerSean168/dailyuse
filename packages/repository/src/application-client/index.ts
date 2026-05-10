@@ -14,3 +14,4 @@ export type { RepositoryClientPort } from './repository-client.port';
 
 // ===== Client Service =====
 export { RepositoryClientService, createRepositoryClientService } from './repository-client-service';
+export { createRepositoryServiceFromHttpClient } from './repository-http-service-factory';

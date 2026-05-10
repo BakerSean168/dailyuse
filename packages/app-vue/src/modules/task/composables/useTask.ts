@@ -16,14 +16,11 @@ import type {
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,
   DependencyType,
-  TaskGraphDependencyDTO,
 } from '@dailyuse/contracts/task';
+import type { Result } from '@dailyuse/contracts/result';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
-import {
-  getDesktopAuthApi,
-  recoverDesktopAuthIfNeeded,
-} from '../../../shared/utils/desktopAuthRecovery';
 import { translateResultError } from '../../../shared/utils/translateResultError';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
 
 type TaskTemplateListParams = {
   page?: number;
@@ -39,6 +36,7 @@ export function useTask() {
   const store = useTaskStore();
   const { t } = useI18n();
   const savingId = ref<string | null>(null);
+  const isSaving = computed(() => savingId.value !== null);
 
   const templates = computed(() => store.templates);
   const instances = computed(() => store.instances);
@@ -48,7 +46,6 @@ export function useTask() {
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const pagination = computed(() => store.pagination);
-  const isSaving = computed(() => savingId.value !== null);
 
   function handleError(error: unknown, fallbackKey: string): void {
     const message = translateResultError(error, t, { fallbackKey });
@@ -56,8 +53,19 @@ export function useTask() {
     toast.error(t('task.error.operationFailed'), { description: message });
   }
 
-  async function maybeRecoverAuth(error: { code?: string }): Promise<boolean> {
-    return recoverDesktopAuthIfNeeded(error, getDesktopAuthApi(), 'Task');
+  async function executeTaskOperation<T>(
+    operation: () => Promise<Result<T>>,
+    fallbackKey: string,
+  ) {
+    return executeDesktopAuthenticatedResult({
+      operation,
+      logScope: 'Task',
+      t,
+      fallbackKey,
+      onError: (error) => {
+        handleError(error, fallbackKey);
+      },
+    });
   }
 
   // ========== Templates ==========
@@ -65,31 +73,21 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.listTemplates(
-        sanitizeForIpc({
-          page: query?.page ?? store.pagination.page,
-          limit: query?.limit ?? store.pagination.pageSize,
-          ...query,
-        }),
+      const payload = sanitizeForIpc({
+        page: query?.page ?? store.pagination.page,
+        limit: query?.limit ?? store.pagination.pageSize,
+        ...query,
+      });
+      const result = await executeTaskOperation(
+        () => service.listTemplates(payload),
+        'task.error.loadTemplatesFailed',
       );
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.listTemplates(
-          sanitizeForIpc({
-            page: query?.page ?? store.pagination.page,
-            limit: query?.limit ?? store.pagination.pageSize,
-            ...query,
-          }),
-        );
-      }
 
       if (result.ok) {
         store.setTemplates(
           (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),
           result.data.total ?? 0,
         );
-      } else {
-        handleError(result.error, 'task.error.loadTemplatesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -100,23 +98,15 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.getTaskGraph(
-        sanitizeForIpc({
-          page: query?.page ?? store.pagination.page,
-          limit: query?.limit ?? store.pagination.pageSize,
-          ...query,
-        }),
+      const payload = sanitizeForIpc({
+        page: query?.page ?? store.pagination.page,
+        limit: query?.limit ?? store.pagination.pageSize,
+        ...query,
+      });
+      const result = await executeTaskOperation(
+        () => service.getTaskGraph(payload),
+        'task.error.loadTemplatesFailed',
       );
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.getTaskGraph(
-          sanitizeForIpc({
-            page: query?.page ?? store.pagination.page,
-            limit: query?.limit ?? store.pagination.pageSize,
-            ...query,
-          }),
-        );
-      }
 
       if (result.ok) {
         store.setTemplates(
@@ -124,8 +114,6 @@ export function useTask() {
           result.data.total ?? 0,
         );
         store.setDependencies(result.data.dependencies ?? []);
-      } else {
-        handleError(result.error, 'task.error.loadTemplatesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -136,16 +124,12 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.getTemplate(id);
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.getTemplate(id);
-      }
+      const result = await executeTaskOperation(() => service.getTemplate(id), 'task.error.loadTemplatesFailed');
       if (result.ok) {
         const dto = result.data.toDTO();
         store.setCurrentTemplate(dto);
         return dto;
       }
-      handleError(result.error, 'task.error.loadTemplatesFailed');
       return null;
     } finally {
       store.setLoading(false);
@@ -156,17 +140,16 @@ export function useTask() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      let result = await service.createTemplate(sanitizeForIpc(req));
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.createTemplate(sanitizeForIpc(req));
-      }
+      const result = await executeTaskOperation(
+        () => service.createTemplate(sanitizeForIpc(req)),
+        'task.error.createFailed',
+      );
       if (result.ok) {
         const dto = result.data.toDTO();
         store.addTemplate(dto);
         toast.success(t('task.error.createSuccess'));
         return dto;
       }
-      handleError(result.error, 'task.error.createFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -177,17 +160,16 @@ export function useTask() {
     savingId.value = id;
     store.setError(null);
     try {
-      let result = await service.updateTemplate(id, sanitizeForIpc(req));
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.updateTemplate(id, sanitizeForIpc(req));
-      }
+      const result = await executeTaskOperation(
+        () => service.updateTemplate(id, sanitizeForIpc(req)),
+        'task.error.updateFailed',
+      );
       if (result.ok) {
         const dto = result.data.toDTO();
         store.updateTemplate(dto);
         toast.success(t('task.error.updateSuccess'));
         return dto;
       }
-      handleError(result.error, 'task.error.updateFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -198,16 +180,12 @@ export function useTask() {
     savingId.value = id;
     store.setError(null);
     try {
-      let result = await service.deleteTemplate(id);
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.deleteTemplate(id);
-      }
+      const result = await executeTaskOperation(() => service.deleteTemplate(id), 'task.error.deleteFailed');
       if (result.ok) {
         store.removeTemplate(id);
         toast.success(t('task.error.deleteSuccess'));
         return true;
       }
-      handleError(result.error, 'task.error.deleteFailed');
       return false;
     } finally {
       savingId.value = null;
@@ -215,47 +193,41 @@ export function useTask() {
   }
 
   async function activateTemplate(id: string) {
-    let result = await service.activateTemplate(id);
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.activateTemplate(id);
-    }
+    const result = await executeTaskOperation(
+      () => service.activateTemplate(id),
+      'task.error.activateFailed',
+    );
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
       toast.success(t('task.error.activateSuccess'));
       return dto;
     }
-    handleError(result.error, 'task.error.activateFailed');
     return null;
   }
 
   async function pauseTemplate(id: string) {
-    let result = await service.pauseTemplate(id);
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.pauseTemplate(id);
-    }
+    const result = await executeTaskOperation(() => service.pauseTemplate(id), 'task.error.pauseFailed');
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
       toast.success(t('task.error.pauseSuccess'));
       return dto;
     }
-    handleError(result.error, 'task.error.pauseFailed');
     return null;
   }
 
   async function archiveTemplate(id: string) {
-    let result = await service.archiveTemplate(id);
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.archiveTemplate(id);
-    }
+    const result = await executeTaskOperation(
+      () => service.archiveTemplate(id),
+      'task.error.archiveFailed',
+    );
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
       toast.success(t('task.error.archiveSuccess'));
       return dto;
     }
-    handleError(result.error, 'task.error.archiveFailed');
     return null;
   }
 
@@ -265,43 +237,36 @@ export function useTask() {
     dependencyType: DependencyType;
   }) {
     store.setError(null);
-    let result = await service.createDependency(request.successorTaskId, {
-      predecessorTaskId: request.predecessorTaskId,
-      successorTaskId: request.successorTaskId,
-      dependencyType: request.dependencyType,
-    });
-
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.createDependency(request.successorTaskId, {
-        predecessorTaskId: request.predecessorTaskId,
-        successorTaskId: request.successorTaskId,
-        dependencyType: request.dependencyType,
-      });
-    }
+    const result = await executeTaskOperation(
+      () =>
+        service.createDependency(request.successorTaskId, {
+          predecessorTaskId: request.predecessorTaskId,
+          successorTaskId: request.successorTaskId,
+          dependencyType: request.dependencyType,
+        }),
+      'task.error.operationFailed',
+    );
 
     if (result.ok) {
       toast.success(t('common.success'));
       return result.data;
     }
 
-    handleError(result.error, 'task.error.operationFailed');
     return null;
   }
 
   async function deleteDependency(id: string) {
     store.setError(null);
-    let result = await service.deleteDependency(id);
-
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.deleteDependency(id);
-    }
+    const result = await executeTaskOperation(
+      () => service.deleteDependency(id),
+      'task.error.operationFailed',
+    );
 
     if (result.ok) {
       toast.success(t('common.success'));
       return true;
     }
 
-    handleError(result.error, 'task.error.operationFailed');
     return false;
   }
 
@@ -310,20 +275,14 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.listInstances(
-        sanitizeForIpc(query) as Parameters<typeof service.listInstances>[0],
+      const payload = sanitizeForIpc(query) as Parameters<typeof service.listInstances>[0];
+      const result = await executeTaskOperation(
+        () => service.listInstances(payload),
+        'task.error.loadInstancesFailed',
       );
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.listInstances(
-          sanitizeForIpc(query) as Parameters<typeof service.listInstances>[0],
-        );
-      }
 
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
-      } else {
-        handleError(result.error, 'task.error.loadInstancesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -334,16 +293,13 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.listInstancesByDateRange(startDate, endDate);
-
-      if (!result.ok && (await maybeRecoverAuth(result.error))) {
-        result = await service.listInstancesByDateRange(startDate, endDate);
-      }
+      const result = await executeTaskOperation(
+        () => service.listInstancesByDateRange(startDate, endDate),
+        'task.error.loadInstancesFailed',
+      );
 
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
-      } else {
-        handleError(result.error, 'task.error.loadInstancesFailed');
       }
     } finally {
       store.setLoading(false);
@@ -351,46 +307,37 @@ export function useTask() {
   }
 
   async function startInstance(id: string) {
-    let result = await service.startInstance(id);
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.startInstance(id);
-    }
+    const result = await executeTaskOperation(() => service.startInstance(id), 'task.error.startFailed');
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
       return dto;
     }
-    handleError(result.error, 'task.error.startFailed');
     return null;
   }
 
   async function completeInstance(id: string, request?: CompleteTaskInstanceReq) {
-    let result = await service.completeInstance(id, sanitizeForIpc(request));
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.completeInstance(id, sanitizeForIpc(request));
-    }
+    const result = await executeTaskOperation(
+      () => service.completeInstance(id, sanitizeForIpc(request)),
+      'task.error.completeFailed',
+    );
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
       toast.success(t('task.error.completeSuccess'));
       return dto;
     }
-    handleError(result.error, 'task.error.completeFailed');
     return null;
   }
 
   async function skipInstance(id: string) {
-    let result = await service.skipInstance(id);
-    if (!result.ok && (await maybeRecoverAuth(result.error))) {
-      result = await service.skipInstance(id);
-    }
+    const result = await executeTaskOperation(() => service.skipInstance(id), 'task.error.skipFailed');
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
       toast.success(t('task.error.skipSuccess'));
       return dto;
     }
-    handleError(result.error, 'task.error.skipFailed');
     return null;
   }
 

@@ -13,4 +13,5 @@ export type { TaskClientPort } from './task-client.port';
 
 // ===== Client Service =====
 export { TaskClientService, createTaskClientService } from './task-client-service';
+export { createTaskServiceFromHttpClient } from './task-http-service-factory';
 export * from './types/task-dag.types';

@@ -30,3 +30,4 @@ export type { GoalTemplate, KeyResultTemplate } from './GoalTemplates';
 // ===== Constructor-Injected Service (Result-based) =====
 export { GoalClientService, createGoalClientService } from './goal-client-service';
 export type { GoalClientPort } from './goal-client-service';
+export { createGoalServiceFromHttpClient } from './goal-http-service-factory';
