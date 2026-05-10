@@ -19,6 +19,7 @@ export type ScheduleTaskSummary = {
   lastRunAt: number | null;
   executionCount: number;
   consecutiveFailures: number;
+  isOverdue: boolean;
 };
 
 export type ScheduleStatusFilter = 'all' | ScheduleTaskStatus;
@@ -37,6 +38,11 @@ function mapScheduleTask(task: ScheduleTask): ScheduleTaskSummary {
     lastRunAt: task.execution.lastRunAt?.getTime() ?? null,
     executionCount: task.execution.executionCount,
     consecutiveFailures: task.execution.consecutiveFailures,
+    isOverdue:
+      task.execution.nextRunAt !== null &&
+      task.execution.nextRunAt.getTime() < Date.now() &&
+      task.status !== 'Completed' &&
+      task.status !== 'Cancelled',
   };
 }
 

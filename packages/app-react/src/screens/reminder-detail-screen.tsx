@@ -16,6 +16,12 @@ import {
   StatusPill,
   ThemedText,
 } from '@dailyuse/ui-react-native';
+import {
+  getReminderDisplayTitle,
+  getReminderImportanceText,
+  getReminderNextTriggerText,
+  getReminderTriggerText,
+} from '../utils/entity-presentation';
 
 export function ReminderDetailScreen() {
   const router = useRouter();
@@ -90,7 +96,7 @@ export function ReminderDetailScreen() {
   return (
     <PageShell
       eyebrow="More"
-      title={template?.displayTitle ?? template?.name ?? 'Reminder detail'}
+      title={template ? getReminderDisplayTitle(template) : 'Reminder detail'}
       subtitle="提醒详情页承接模板摘要、启停和编辑入口。"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}>
       <SectionCard title="Navigation" description="提醒详情从 reminders 列表下钻。">
@@ -120,11 +126,11 @@ export function ReminderDetailScreen() {
 
       {template ? (
         <>
-          <SectionCard title="Status" description={template.description ?? template.triggerText}>
+          <SectionCard title="Status" description={template.description ?? getReminderTriggerText(template)}>
             <View style={styles.pillRow}>
-              <StatusPill label={template.typeText || template.type} tone="tint" />
-              <StatusPill label={template.statusText || template.status} tone={template.effectiveEnabled ? 'success' : 'warning'} />
-              <StatusPill label={template.importanceText || template.importanceLevel} tone="textSecondary" />
+              <StatusPill label={template.type} tone="tint" />
+              <StatusPill label={template.status} tone={template.effectiveEnabled ? 'success' : 'warning'} />
+              <StatusPill label={getReminderImportanceText(template)} tone="textSecondary" />
             </View>
             <View style={styles.actionRow}>
               <PrimaryButton
@@ -142,8 +148,8 @@ export function ReminderDetailScreen() {
           </SectionCard>
 
           <SectionCard title="Trigger" description="提醒触发规则和通知方式摘要。">
-            <MetaRow label="Trigger" value={template.triggerText} />
-            <MetaRow label="Next trigger" value={template.nextTriggerText ?? 'Not scheduled'} />
+            <MetaRow label="Trigger" value={getReminderTriggerText(template)} />
+            <MetaRow label="Next trigger" value={getReminderNextTriggerText(template)} />
             <MetaRow label="Lifecycle" value={template.effectiveEnabledReason} />
             <MetaRow label="Channels" value={template.notificationConfig.channels.join(', ')} />
           </SectionCard>

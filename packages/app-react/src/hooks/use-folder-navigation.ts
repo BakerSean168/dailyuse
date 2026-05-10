@@ -71,9 +71,9 @@ export function useFolderNavigation(repositoryId?: string) {
         const topFolders: FolderClientDTO[] = treeResult.data.tree
           .filter((node: TreeNode): node is TreeNode & { type: 'folder' } => node.type === 'folder')
           .map((node: TreeNode & { type: 'folder' }) => ({
-            id: node.id,
-            repositoryId: node.repositoryId,
-            parentId: node.parentId,
+            id: node.id as FolderClientDTO['id'],
+            repositoryId: node.repositoryId as FolderClientDTO['repositoryId'],
+            parentId: node.parentId as FolderClientDTO['parentId'],
             name: node.name,
             path: node.path,
             order: 0,

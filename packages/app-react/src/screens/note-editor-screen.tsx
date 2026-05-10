@@ -17,6 +17,11 @@ import {
   StatusPill,
   ThemedText,
 } from '@dailyuse/ui-react-native';
+import {
+  getResourceDisplayName,
+  getResourceStatusText,
+  getResourceTypeText,
+} from '../utils/entity-presentation';
 
 export function NoteEditorScreen() {
   const router = useRouter();
@@ -99,7 +104,7 @@ export function NoteEditorScreen() {
   return (
     <PageShell
       eyebrow="More"
-      title={resource ? `Note: ${resource.displayName}` : 'Note editor'}
+      title={resource ? `Note: ${getResourceDisplayName(resource)}` : 'Note editor'}
       subtitle="独立 note editor route 现在已经从 repository 页面拆出来。">
       <SectionCard title="Navigation" description="独立编辑 route 方便后续补 markdown toolbar 和预览切换。">
         <PrimaryButton label="Back to repository" onPress={() => router.back()} variant="secondary" />
@@ -127,8 +132,8 @@ export function NoteEditorScreen() {
         <>
           <SectionCard title="Resource" description={resource.path}>
             <View style={styles.pillRow}>
-              <StatusPill label={resource.typeText} tone="tint" />
-              <StatusPill label={resource.statusText} tone="textSecondary" />
+              <StatusPill label={getResourceTypeText(resource)} tone="tint" />
+              <StatusPill label={getResourceStatusText(resource)} tone="textSecondary" />
               <StatusPill label={hasUnsavedChanges ? 'Unsaved changes' : 'Saved'} tone={hasUnsavedChanges ? 'warning' : 'success'} />
             </View>
           </SectionCard>

@@ -4,13 +4,16 @@ import type {
   RepositoryClientDTO,
   ResourceBookmarkClientDTO,
   ResourceClientDTO,
+  SearchRequest,
   SearchResultItem,
   UploadResourceFileDTO,
+  UploadResourcesRequestDTO,
   UploadResourcesResponseDTO,
 } from '@dailyuse/contracts/repository';
 
 import { useAppSession } from './use-app-session';
 import { useRepositoryService } from './use-repository-service';
+import { getResourceDisplayName } from '../utils/entity-presentation';
 
 export function useRepositoryWorkspace() {
   const service = useRepositoryService();
@@ -126,7 +129,7 @@ export function useRepositoryWorkspace() {
     }
 
     return resources.filter((resource) => {
-      const haystack = [resource.displayName, resource.path, resource.content ?? '']
+      const haystack = [getResourceDisplayName(resource), resource.path, resource.content ?? '']
         .join(' ')
         .toLowerCase();
       return haystack.includes(query);
@@ -219,7 +222,7 @@ export function useRepositoryWorkspace() {
     setError(null);
 
     const result = await service.search({
-      repositoryId: String(repository.id),
+      repositoryId: repository.id as SearchRequest['repositoryId'],
       query,
       mode: 'all',
       page: 1,
@@ -253,7 +256,7 @@ export function useRepositoryWorkspace() {
       ? await service.deleteBookmark(String(repository.id), String(existing.id))
       : await service.createBookmark(String(repository.id), {
           resourceId: resource.id,
-          aliasName: resource.displayName,
+          aliasName: getResourceDisplayName(resource),
         });
 
     setIsMutating(false);
@@ -308,7 +311,7 @@ export function useRepositoryWorkspace() {
 
     const result = await service.uploadResources(String(repository.id), {
       files,
-      folderId: options?.folderId,
+      folderId: options?.folderId as UploadResourcesRequestDTO['folderId'],
       tags: options?.tags,
     });
 

@@ -80,11 +80,11 @@ export class AdjustReminderFrequencyUseCase {
 
     // Publish event
     const adjustedEvent: ReminderEventMap['reminder:frequency:adjusted'] = {
-      templateId: request.templateId,
+      templateId: request.templateId as ReminderEventMap['reminder:frequency:adjusted']['templateId'],
       originalInterval,
       adjustedInterval: request.newInterval,
       reason: request.reason,
-      identityId: request.identityId,
+      identityId: request.identityId as ReminderEventMap['reminder:frequency:adjusted']['identityId'],
       adjustedAt: Date.now(),
     };
     eventBus.send('reminder:frequency:adjusted', adjustedEvent);
@@ -112,8 +112,9 @@ export class AdjustReminderFrequencyUseCase {
     }
 
     const rejectedEvent: ReminderEventMap['reminder:frequency:adjustment-rejected'] = {
-      templateId,
-      identityId,
+      templateId: templateId as ReminderEventMap['reminder:frequency:adjustment-rejected']['templateId'],
+      identityId:
+        identityId as ReminderEventMap['reminder:frequency:adjustment-rejected']['identityId'],
       rejectedAt: Date.now(),
     };
     eventBus.send('reminder:frequency:adjustment-rejected', rejectedEvent);

@@ -17,6 +17,14 @@ import {
   ThemedText,
   ThemedView,
 } from '@dailyuse/ui-react-native';
+import {
+  formatDateTime,
+  getRepositoryStatusText,
+  getResourceDisplayName,
+  getResourceFormattedSize,
+  getResourceStatusText,
+  getResourceTypeText,
+} from '../utils/entity-presentation';
 
 export function RepositoryScreen() {
   const router = useRouter();
@@ -166,13 +174,13 @@ export function RepositoryScreen() {
               description={repository.description ?? 'No repository description yet.'}
             >
               <View style={styles.pillRow}>
-                <StatusPill label={repository.statusText} tone="tint" />
+                <StatusPill label={getRepositoryStatusText(repository)} tone="tint" />
                 <StatusPill label={`${repository.resourceCount} resources`} tone="success" />
                 <StatusPill label={`${repository.folderCount} folders`} tone="textSecondary" />
                 <StatusPill label={`${bookmarks.length} bookmarks`} tone="textSecondary" />
               </View>
               <ThemedText type="small" themeColor="textSecondary">
-                Updated {repository.updatedAtText}
+                Updated {formatDateTime(repository.updatedAt)}
               </ThemedText>
             </SectionCard>
           ) : null}
@@ -361,13 +369,13 @@ export function RepositoryScreen() {
 
                   return (
                     <ThemedView key={resource.id} type="backgroundSelected" style={styles.itemCard}>
-                      <ThemedText type="smallBold">{resource.displayName}</ThemedText>
+                      <ThemedText type="smallBold">{getResourceDisplayName(resource)}</ThemedText>
                       <ThemedText type="small" themeColor="textSecondary">
                         {resource.path}
                       </ThemedText>
                       <View style={styles.pillRow}>
-                        <StatusPill label={resource.typeText} tone="tint" />
-                        <StatusPill label={resource.statusText} tone="textSecondary" />
+                        <StatusPill label={getResourceTypeText(resource)} tone="tint" />
+                        <StatusPill label={getResourceStatusText(resource)} tone="textSecondary" />
                         {isBookmarked ? <StatusPill label="Bookmarked" tone="success" /> : null}
                       </View>
                       <View style={styles.actionRow}>
@@ -405,16 +413,16 @@ export function RepositoryScreen() {
 
           <SectionCard
             title={
-              activeResource ? `Inline editor: ${activeResource.displayName}` : 'Inline editor'
+              activeResource ? `Inline editor: ${getResourceDisplayName(activeResource)}` : 'Inline editor'
             }
             description="当前选中资源的编辑区。"
           >
             {activeResource ? (
               <>
                 <View style={styles.pillRow}>
-                  <StatusPill label={activeResource.typeText} tone="tint" />
-                  <StatusPill label={activeResource.statusText} tone="textSecondary" />
-                  <StatusPill label={activeResource.formattedSize} tone="textSecondary" />
+                  <StatusPill label={getResourceTypeText(activeResource)} tone="tint" />
+                  <StatusPill label={getResourceStatusText(activeResource)} tone="textSecondary" />
+                  <StatusPill label={getResourceFormattedSize(activeResource)} tone="textSecondary" />
                   <StatusPill
                     label={hasUnsavedChanges ? 'Unsaved changes' : 'Saved'}
                     tone={hasUnsavedChanges ? 'warning' : 'success'}

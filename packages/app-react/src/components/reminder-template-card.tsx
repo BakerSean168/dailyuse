@@ -9,6 +9,12 @@ import {
   StatusPill,
   ThemedText,
 } from '@dailyuse/ui-react-native';
+import {
+  getReminderDisplayTitle,
+  getReminderImportanceText,
+  getReminderNextTriggerText,
+  getReminderTriggerText,
+} from '../utils/entity-presentation';
 
 export function ReminderTemplateCard({
   template,
@@ -19,8 +25,8 @@ export function ReminderTemplateCard({
 }) {
   return (
     <SectionCard
-      title={template.displayTitle || template.name}
-      description={template.description ?? template.triggerText}
+      title={getReminderDisplayTitle(template)}
+      description={template.description ?? getReminderTriggerText(template)}
       footer={
         onToggle ? (
           <PrimaryButton
@@ -31,12 +37,12 @@ export function ReminderTemplateCard({
         ) : undefined
       }>
       <View style={styles.pillRow}>
-        <StatusPill label={template.typeText || template.type} tone="tint" />
-        <StatusPill label={template.statusText || template.status} tone={template.effectiveEnabled ? 'success' : 'warning'} />
-        <StatusPill label={template.importanceText || template.importanceLevel} tone="textSecondary" />
+        <StatusPill label={template.type} tone="tint" />
+        <StatusPill label={template.status} tone={template.effectiveEnabled ? 'success' : 'warning'} />
+        <StatusPill label={getReminderImportanceText(template)} tone="textSecondary" />
       </View>
       <ThemedText type="small" themeColor="textSecondary">
-        Next trigger: {template.nextTriggerText ?? 'Not scheduled'}
+        Next trigger: {getReminderNextTriggerText(template)}
       </ThemedText>
     </SectionCard>
   );

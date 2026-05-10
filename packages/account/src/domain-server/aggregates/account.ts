@@ -92,8 +92,8 @@ export class Account extends AggregateRoot<IdentityId> {
     const account = new Account(state);
 
     account.addDomainEvent<AccountEventMap['account:created']>('account:created', {
-      identityId: params.id.toString(),
-      accountId: account.id.toString(),
+      identityId: params.id,
+      accountId: account.id,
       account: account.toServerDTO(),
     });
 
@@ -115,8 +115,8 @@ export class Account extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:profile-updated']>('account:profile-updated', {
-      identityId: this.id.toString(),
-      accountId: this.id.toString(),
+      identityId: this.id,
+      accountId: this.id,
       account: this.toServerDTO(),
       changes: ['profile'],
     });
@@ -127,8 +127,8 @@ export class Account extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:settings-updated']>('account:settings-updated', {
-      identityId: this.id.toString(),
-      accountId: this.id.toString(),
+      identityId: this.id,
+      accountId: this.id,
       account: this.toServerDTO(),
       settingKeys: ['settings'],
     });
@@ -146,8 +146,8 @@ export class Account extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:closed']>('account:closed', {
-      identityId: this.id.toString(),
-      accountId: this.id.toString(),
+      identityId: this.id,
+      accountId: this.id,
       account: this.toServerDTO(),
       reason: 'User initiated closure',
       closedAt: this.updatedAt.getTime(),
