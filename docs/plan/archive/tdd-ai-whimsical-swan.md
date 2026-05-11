@@ -5,8 +5,8 @@ tags:
   - diagnosis
 description: 完整测试体系历史诊断输入
 created: 2026-04-27T00:00:00
-updated: 2026-04-27T00:00:00
-status: active
+updated: 2026-05-11T00:00:00
+status: archive
 ---
 
 # 完整测试体系诊断快照
@@ -17,7 +17,7 @@ status: active
 
 当前阶段的正式执行方案见：
 
-- `docs/plan/active/2026-04-27-full-test-system-rollout.md`
+- `docs/plan/archive/2026-04-27-full-test-system-rollout.md`
 - `docs/plan/active/2026-04-27-test-system-oracle-hardening.md`
 
 ## 背景

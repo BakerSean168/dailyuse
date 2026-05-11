@@ -7,11 +7,20 @@ tags:
   - frontend
 description: 完整测试体系第三阶段优化方案
 created: 2026-04-27T00:00:00
-updated: 2026-04-28T14:20:00
-status: active
+updated: 2026-05-11T00:00:00
+status: archive
 ---
 
 # 完整测试体系第三阶段优化方案
+
+## 归档说明（2026-05-11）
+
+这份文档只保留 2026-04-28 阶段的 rollout 快照，不再作为当前执行真值。
+
+- 当时的 coverage allowlist、store coverage 接入、默认 `web:e2e` 收口和首批 integration / 组件 oracle 落地，已经完成其阶段性使命。
+- 其中关于默认 `web:e2e` 数量、integration 运行状态和剩余闭环项的表述已经落后于当前代码与 workflow。
+- 当前仍在执行的主计划见：
+  - `docs/plan/active/2026-04-27-test-system-oracle-hardening.md`
 
 后续将测试系统继续优化为 AI 重构正确性推断器的主计划见：
 

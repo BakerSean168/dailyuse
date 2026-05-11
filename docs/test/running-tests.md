@@ -80,6 +80,12 @@ pnpm nx affected -t test:coverage
 
 `task`、`goal`、`schedule`、`reminder` 的 `test:integration` target 都会通过各自的 `integration-global-setup.ts` 调用 `@dailyuse/test-utils/setup/database`，在本地尝试确保测试数据库可用。
 
+本地运行这些 integration suite 的前提不是“装了 Node 就行”，而是当前账号可以访问 Docker Engine。至少要满足：
+
+- Docker Desktop / Docker Engine 已启动
+- `docker` CLI 可用
+- 当前账号有权限访问 Docker API
+
 当前仓库默认使用根目录 [`docker-compose.yml`](../../docker-compose.yml) 的 `test` profile，而不是旧文档里提到的 `docker-compose.test.yml`。
 
 如果自动启动失败，再手动执行：
@@ -90,7 +96,7 @@ docker compose -f docker-compose.yml --profile test up -d postgres-test
 
 默认测试库连接信息由 `TEST_DATABASE_URL` 或相关 `TEST_DB_*` 环境变量决定；未覆盖时默认走本地 `127.0.0.1:5433`。
 
-默认数据库名是 `memoflow_test`。`TEST_DATABASE_URL`、`DATABASE_URL`、`TEST_DB_NAME` 和 `docker-compose.yml` 的 `postgres-test` 默认值必须保持一致。
+默认数据库名是 `memoflow_test`。`TEST_DATABASE_URL`、`DATABASE_URL`、`TEST_DB_NAME`、`docker-compose.yml` 的 `postgres-test` 默认值，以及 CI 中启动的测试库命名都必须保持一致。
 
 当前集成测试共享同一个本地测试库，并且每个 suite 会在运行前清空全部表。因此：
 
@@ -101,5 +107,6 @@ docker compose -f docker-compose.yml --profile test up -d postgres-test
 ## CI 对应
 
 - 本地与 CI 使用同一组 Nx target。
+- CI 在 `boundary-tests` job 中预先拉起测试数据库；本地则依赖 Docker 可访问并允许 `integration-global-setup.ts` 自动启动 `postgres-test`。
 - `CI=true` 只会改变 reporter、重试、bail 等运行时行为，不应引入另一套文档命令。
 - 需要查具体重试、超时、webServer、worker 设置时，直接看对应配置文件。
