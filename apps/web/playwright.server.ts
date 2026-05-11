@@ -10,9 +10,8 @@ const sharedServerOptions = {
 
 export function createApiServer() {
   return {
-    // API 运行时通过 workspace 包导出消费 server-side 模块；
-    // 先 build 可以避免 stale dist 让 E2E 读到过期产物。
-    command: 'pnpm nx build api && node dist/apps/api/main.js',
+    // API must be built before running E2E (see "Build API for E2E" CI step).
+    command: 'node dist/apps/api/main.js',
     cwd: '.',
     url: `${defaultApiOrigin}/healthz`,
     ...sharedServerOptions,

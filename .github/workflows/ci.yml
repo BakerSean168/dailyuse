@@ -78,7 +78,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
-      JWT_SECRET: test-jwt-secret-not-for-production
+      JWT_SECRET: test-jwt-secret-not-for-production-use
       TZ: UTC
 
     steps:
@@ -226,7 +226,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/memoflow_test
-      JWT_SECRET: test-jwt-secret-for-e2e
+      JWT_SECRET: test-jwt-secret-for-e2e-testing-purposes
       TZ: UTC
 
     services:
@@ -262,6 +262,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build API for E2E
+        run: pnpm nx build api
 
       - name: Run web flow oracle
         run: pnpm nx run web:e2e
