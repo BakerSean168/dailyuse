@@ -90,15 +90,15 @@ export class RecordReminderResponseUseCase {
     });
 
     // 发布响应记录事件
-    const recordedEvent: ReminderEventMap['reminder:response:recorded'] = {
+    const recordedEvent: ReminderEventMap['reminder:response-recorded'] = {
       responseId: savedRecord.id,
-      templateId: dto.templateId as ReminderEventMap['reminder:response:recorded']['templateId'],
+      templateId: dto.templateId as ReminderEventMap['reminder:response-recorded']['templateId'],
       action: dto.action,
       responseTime: dto.responseTime || null,
-      identityId: dto.identityId as ReminderEventMap['reminder:response:recorded']['identityId'],
+      identityId: dto.identityId as ReminderEventMap['reminder:response-recorded']['identityId'],
       recordedAt: Date.now(),
     };
-    eventBus.send('reminder:response:recorded', recordedEvent);
+    eventBus.send('reminder:response-recorded', recordedEvent);
 
     return ok({
       id: savedRecord.id,

@@ -9,10 +9,6 @@
 // Editor Workspace Aggregate (唯一的聚合根)
 export type {
   EditorWorkspaceServerDTO,
-  EditorWorkspaceCreatedEvent,
-  EditorWorkspaceUpdatedEvent,
-  EditorWorkspaceDeletedEvent,
-  EditorWorkspaceActivatedEvent,
 } from './editor-workspace-server';
 
 export type {

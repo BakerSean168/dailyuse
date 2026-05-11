@@ -32,7 +32,7 @@ const customEventBus = eventBus as any;
  * 任务领域事件处理器。
  */
 const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
-  'task:instances:generated': (event) => {
+  'task:instance-generated': (event) => {
     const payload = event.payload ?? event;
     logger.info(`[Task] Instances generated for template: ${payload.templateId}`, {
       templateId: payload.templateId,
@@ -40,21 +40,17 @@ const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
       strategy: payload.strategy,
     });
   },
-  'task:template:created': (event) => {
-    const payload = event.payload ?? event;
-    logger.info(`[Task] Template created: ${payload.templateId}`);
-  },
-  'task:instance:completed': (event) => {
+  'task:instance-completed': (event) => {
     const payload = event.payload ?? event;
     const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
     logger.info(`[Task] Instance completed: ${instanceId}`);
   },
-  'task:instance:skipped': (event) => {
+  'task:instance-skipped': (event) => {
     const payload = event.payload ?? event;
     const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
     logger.info(`[Task] Instance skipped: ${instanceId}`);
   },
-  'task:instance:deleted': (event) => {
+  'task:instance-deleted': (event) => {
     const payload = event.payload ?? event;
     const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
     logger.info(`[Task] Instance deleted: ${instanceId}`);

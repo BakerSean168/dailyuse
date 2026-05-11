@@ -31,7 +31,7 @@ export function createReminderScheduleRuntimeContribution(deps: {
       });
       await deps.scheduleTaskRepository.deleteBatch(existingTasks.map((task) => task.id));
       for (const task of existingTasks) {
-        (eventBus as any).send('schedule:task:deleted', { taskId: task.id });
+        eventBus.send('schedule:task-deleted', { taskId: task.id });
       }
     }
 
@@ -93,25 +93,25 @@ export function createReminderScheduleRuntimeContribution(deps: {
     if (existingTasks.length > 0) {
       await deps.scheduleTaskRepository.deleteBatch(existingTasks.map((task) => task.id));
       for (const task of existingTasks) {
-        (eventBus as any).send('schedule:task:deleted', { taskId: task.id });
+        eventBus.send('schedule:task-deleted', { taskId: task.id });
       }
     }
   };
 
   const upsertFromEvent = async (
     event:
-      | ReminderEventMap['reminder:template:created']
-      | ReminderEventMap['reminder:template:updated']
-      | ReminderEventMap['reminder:template:enabled']
-      | ReminderEventMap['reminder:template:moved'],
+      | ReminderEventMap['reminder:template-created']
+      | ReminderEventMap['reminder:template-updated']
+      | ReminderEventMap['reminder:template-enabled']
+      | ReminderEventMap['reminder:template-moved'],
   ) => {
     await syncReminderTask(event.templateId, String(event.identityId));
   };
 
   const deleteFromEvent = async (
     event:
-      | ReminderEventMap['reminder:template:paused']
-      | ReminderEventMap['reminder:template:deleted'],
+      | ReminderEventMap['reminder:template-paused']
+      | ReminderEventMap['reminder:template-deleted'],
   ) => {
     await deleteReminderTask(event.templateId, String(event.identityId));
   };
@@ -124,22 +124,22 @@ export function createReminderScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.on('reminder:template:created', upsertFromEvent as any);
-      eventBus.on('reminder:template:updated', upsertFromEvent as any);
-      eventBus.on('reminder:template:enabled', upsertFromEvent as any);
-      eventBus.on('reminder:template:moved', upsertFromEvent as any);
-      eventBus.on('reminder:template:paused', deleteFromEvent as any);
-      eventBus.on('reminder:template:deleted', deleteFromEvent as any);
+      eventBus.on('reminder:template-created', upsertFromEvent as any);
+      eventBus.on('reminder:template-updated', upsertFromEvent as any);
+      eventBus.on('reminder:template-enabled', upsertFromEvent as any);
+      eventBus.on('reminder:template-moved', upsertFromEvent as any);
+      eventBus.on('reminder:template-paused', deleteFromEvent as any);
+      eventBus.on('reminder:template-deleted', deleteFromEvent as any);
 
       started = true;
       logger.info('[Reminder] Schedule projection runtime started', {
         subscribedEvents: [
-          'reminder:template:created',
-          'reminder:template:updated',
-          'reminder:template:enabled',
-          'reminder:template:moved',
-          'reminder:template:paused',
-          'reminder:template:deleted',
+          'reminder:template-created',
+          'reminder:template-updated',
+          'reminder:template-enabled',
+          'reminder:template-moved',
+          'reminder:template-paused',
+          'reminder:template-deleted',
         ],
       });
     },
@@ -149,12 +149,12 @@ export function createReminderScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.off('reminder:template:created', upsertFromEvent as any);
-      eventBus.off('reminder:template:updated', upsertFromEvent as any);
-      eventBus.off('reminder:template:enabled', upsertFromEvent as any);
-      eventBus.off('reminder:template:moved', upsertFromEvent as any);
-      eventBus.off('reminder:template:paused', deleteFromEvent as any);
-      eventBus.off('reminder:template:deleted', deleteFromEvent as any);
+      eventBus.off('reminder:template-created', upsertFromEvent as any);
+      eventBus.off('reminder:template-updated', upsertFromEvent as any);
+      eventBus.off('reminder:template-enabled', upsertFromEvent as any);
+      eventBus.off('reminder:template-moved', upsertFromEvent as any);
+      eventBus.off('reminder:template-paused', deleteFromEvent as any);
+      eventBus.off('reminder:template-deleted', deleteFromEvent as any);
 
       started = false;
       logger.info('[Reminder] Schedule projection runtime stopped');

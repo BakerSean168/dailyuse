@@ -362,7 +362,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     if (instances.length > 0) {
       this._props.lastGeneratedDate = new Date(toDate);
       this._props.updatedAt = new Date();
-      this.addDomainEvent<TaskEventMap['task:instances:generated']>('task:instances:generated', {
+      this.addDomainEvent<TaskEventMap['task:instance-generated']>('task:instance-generated', {
         identityId: this._props.identityId,
         templateId: this.id,
         templateTitle: this.title,
@@ -493,7 +493,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.status = TaskTemplateStatus.Active;
     this._props.updatedAt = new Date();
     this.addHistory('resumed');
-    this.addDomainEvent<TaskEventMap['task:template:resumed']>('task:template:resumed', {
+    this.addDomainEvent<TaskEventMap['task:template-resumed']>('task:template-resumed', {
       identityId: this._props.identityId,
       taskTemplateId: this.id,
       resumedAt: this._props.updatedAt.getTime(),
@@ -513,7 +513,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.status = TaskTemplateStatus.Paused;
     this._props.updatedAt = new Date();
     this.addHistory('Paused');
-    this.addDomainEvent<TaskEventMap['task:template:paused']>('task:template:paused', {
+    this.addDomainEvent<TaskEventMap['task:template-paused']>('task:template-paused', {
       identityId: this._props.identityId,
       taskTemplateId: this.id,
       pausedAt: this._props.updatedAt.getTime(),
@@ -697,8 +697,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
-    this.addDomainEvent<TaskEventMap['task:template:schedule-time-changed']>(
-      'task:template:schedule-time-changed',
+    this.addDomainEvent<TaskEventMap['task:template-schedule-time-changed']>(
+      'task:template-schedule-time-changed',
       {
         identityId: this._props.identityId,
         taskTemplate: this.toServerDTO(),
@@ -727,8 +727,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
-    this.addDomainEvent<TaskEventMap['task:template:schedule-time-changed']>(
-      'task:template:schedule-time-changed',
+    this.addDomainEvent<TaskEventMap['task:template-schedule-time-changed']>(
+      'task:template-schedule-time-changed',
       {
         identityId: this._props.identityId,
         taskTemplate: this.toServerDTO(),
@@ -753,8 +753,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newTimeConfig: newTimeConfig?.toDTO() ?? null,
     });
 
-    this.addDomainEvent<TaskEventMap['task:template:schedule-time-changed']>(
-      'task:template:schedule-time-changed',
+    this.addDomainEvent<TaskEventMap['task:template-schedule-time-changed']>(
+      'task:template-schedule-time-changed',
       {
         identityId: this._props.identityId,
         taskTemplate: this.toServerDTO(),
@@ -785,8 +785,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newRule: newRule.toDTO(),
     });
 
-    this.addDomainEvent<TaskEventMap['task:template:recurrence-changed']>(
-      'task:template:recurrence-changed',
+    this.addDomainEvent<TaskEventMap['task:template-recurrence-changed']>(
+      'task:template-recurrence-changed',
       {
         identityId: this._props.identityId,
         taskTemplate: this.toServerDTO(),
@@ -860,8 +860,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       endConditionType,
     });
 
-    this.addDomainEvent<TaskEventMap['task:template:recurrence-changed']>(
-      'task:template:recurrence-changed',
+    this.addDomainEvent<TaskEventMap['task:template-recurrence-changed']>(
+      'task:template-recurrence-changed',
       {
         identityId: this._props.identityId,
         taskTemplate: this.toServerDTO(),

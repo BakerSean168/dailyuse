@@ -1,256 +1,141 @@
 ---
 created: 2026-01-30T19:34:55
-updated: 2026-01-30T19:36:30
+updated: 2026-05-11
 tags: [ddd, event, standard]
 ---
 
 # 领域事件开发规范 (Domain Event Standards)
 
-**版本**: 1.0
+**版本**: 2.0
 
-**核心原则**: 聚合根是事件的工厂，仓储层是事件的邮递员。
+**核心原则**: 聚合根是事件的工厂，contracts 定义 payload 信封由框架自动包裹。
 
-## 1. 基础接口定义 (Shared Kernel)
+## 1. 信封与 Payload 的分离
 
-所有领域事件必须遵循统一的接口结构。
+领域事件有两层结构：
 
-**文件**: `packages/contracts/src/shared/domain-event.interface.ts`
+1. **信封 (Envelope)** — 由 `IDomainEvent` 定义，由 `addDomainEvent()` 自动生成，开发者不需要手动构造：
+   - `eventType: string` — 事件类型 key
+   - `payload: P` — 业务数据
+   - `aggregateId: string` — 聚合根 ID（自动从 `this.id` 获取）
+   - `occurredAt: Date` — 发生时间（自动生成）
 
-```TypeScript
-/**
- * 📨 领域事件基础接口
- * 代表过去发生的一个业务事实
- */
-export interface IDomainEvent<P = unknown> {
-  /**
-   * 事件唯一标识 (UUID) - 用于去重和追踪
-   */
-  eventId: string;
+2. **Payload** — contracts 中定义的业务数据接口，**只包含业务字段，不包含信封字段**。
 
-  /**
-   * 聚合根 ID - 发生在哪一个实体上
-   */
-  aggregateId: string;
-
-  /**
-   * 事件类型 - 命名规范: [Context]:[Noun]-[VerbPastTense]
-   * 例: "auth:identity-created", "order:payment-received"
-   */
+```typescript
+// packages/contracts/src/shared/domain-event.interface.ts
+export interface IDomainEvent<P = any> {
   eventType: string;
-
-  /**
-   * 事件发生时间
-   */
-  occurredAt: Date;
-
-  /**
-   * 事件载荷 - 包含下游所需的最小数据集合
-   */
   payload: P;
+  aggregateId: string;
+  occurredAt: Date;
 }
 ```
 
----
+**规则**: payload 接口中**禁止**出现 `aggregateId`、`occurredAt`/`timestamp`、`eventType` 等信封字段。这些字段由框架自动注入。
 
-## 2. 聚合根基类 (Abstract Base Class)
+## 2. 事件 Key 命名规范
 
-聚合根基类负责管理事件的生命周期（收集、清理）。
+格式: `domain:action-past-tense`
 
-**文件**: `packages/utils/src/ddd/aggregate-root.ts`
+- 聚合根事件: `schedule:task-created`, `task:created`
+- 子实体事件: `domain:entity-action` — 如 `task:instance-completed`, `reminder:template-deleted`
+- **禁止**使用三冒号 `domain:entity:action` 形态
 
-```TypeScript
-import { Entity } from './entity';
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
-import { v4 as uuidv4 } from 'uuid'; // 假设你使用 uuid 库
+示例:
+```
+schedule:task-created        ✅
+schedule:task-paused         ✅
+schedule:calendar-entry-deleted  ✅
+schedule:task:created        ❌ (旧形态，已废弃)
+```
 
-export abstract class AggregateRoot<TId> extends Entity<TId> {
-  // 1. 内部暂存数组 (不暴露给外部修改)
-  private _domainEvents: IDomainEvent[] = [];
+## 3. Payload 接口定义 (Contracts)
 
-  // 2. 只读访问器
-  get domainEvents(): ReadonlyArray<IDomainEvent> {
-    return [...this._domainEvents];
-  }
+在 `packages/contracts/src/modules/{module}/domain/events/` 下定义 payload-only 接口。
 
-  /**
-   * ✅ 核心方法: 添加领域事件
-   * Protected: 只能由聚合根内部的业务逻辑调用
-   */
-  protected addDomainEvent<P>(eventType: string, payload: P): void {
-    const event: IDomainEvent<P> = {
-      eventId: uuidv4(),
-      aggregateId: String(this.id), // 确保 ID 转为字符串
-      eventType,
-      payload,
-      occurredAt: new Date(),
-    };
-    
-    this._domainEvents.push(event);
-    // console.log(`[DomainEvent] Recorded: ${eventType}`);
-  }
+**命名**: `{Entity}{Action}Event`
 
-  /**
-   * 🧹 清空事件 (发送后调用)
-   */
-  public clearDomainEvents(): void {
-    this._domainEvents = [];
-  }
+**规则**:
+- 只包含下游消费所需的最小业务数据
+- 字段使用 `readonly`
+- 不包含信封字段
+
+```typescript
+// packages/contracts/src/modules/schedule/domain/events/schedule-task-created.event.ts
+import type { ScheduleTaskId } from '../../../../primitives';
+import type { SourceModule } from '../../value-objects';
+
+export interface ScheduleTaskCreatedEvent {
+  readonly taskId: ScheduleTaskId;
+  readonly name: string;
+  readonly sourceModule: SourceModule;
+  readonly sourceEntityId: string;
+  readonly cronExpression: string;
+  readonly nextRunAt: number;
 }
 ```
 
----
+## 4. Event Map 定义
 
-## 3. 聚合根实现 (Domain Layer)
+在 `packages/contracts/src/modules/{module}/protocol/{module}-event-map.ts` 中注册所有事件 key 到 payload 类型的映射。
 
-在业务动作完成时，记录事件。
+```typescript
+import type { ScheduleTaskCreatedEvent } from '../domain/events';
 
-**规范**:
-
-1. 事件名必须是**过去式** (Created, Changed, Deleted)。
-2. 不要在构造函数之外的地方随便 `new` 事件，使用 `addDomainEvent`。
-3. 事件 payload 类型必须来自 `packages/contracts/src/modules/{model-name}/protocol/{model-name}-event-map.ts`，禁止本地自定义 payload 类型。
-
-**文件**: `packages/authentication/src/domain/aggregates/auth-identity.ts`
-
-TypeScript
-
-```
-export class AuthIdentity extends AggregateRoot<IdentityId> {
+export type ScheduleEventMap = {
+  'schedule:task-created': ScheduleTaskCreatedEvent;
+  'schedule:task-paused': ScheduleTaskPausedEvent;
   // ...
+};
+```
 
-  public static createWithEmail(params: {
-    email: string;
-    hashedPassword: HashedPassword;
-  }): AuthIdentity {
-    const id = IdentityId.generate();
-    
-    // 1. 执行核心业务逻辑 (组装实体)
-    const identity = new AuthIdentity({ 
-      id, 
-      // ... 
-    });
+## 5. 聚合根中触发事件
 
-    // 2. ✅ 记录事件 (隐式暂存)
-    // 注意：这里没有调用 EventBus，只是记录！
-    identity.addDomainEvent<AuthEventMap['auth:identity-created']>('auth:identity-created', {
-      identityId: id.toString(),
-      email: params.email,
-      registerMethod: 'EMAIL',
-      occurredAt: new Date()
-    });
+在聚合根的业务方法中使用 `addDomainEvent`，泛型参数引用 event map 中的类型：
 
-    return identity;
-  }
+```typescript
+import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
 
-  public changePassword(newHash: HashedPassword): void {
-    // 1. 改变状态
-    this.credentials[0].hashedPassword = newHash;
-    
-    // 2. ✅ 记录事件
-    this.addDomainEvent<AuthEventMap['auth:password-changed']>('auth:password-changed', {
-      identityId: this.id.toString(),
-      changedAt: new Date()
+export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
+  public pause(reason?: string): void {
+    this._props.status = ScheduleTaskStatus.Paused;
+    this._props.enabled = false;
+
+    // payload 只包含业务数据 — aggregateId 和 occurredAt 由框架自动注入
+    this.addDomainEvent<ScheduleEventMap['schedule:task-paused']>('schedule:task-paused', {
+      taskId: this.id,
+      sourceModule: this._props.sourceModule,
+      sourceEntityId: this._props.sourceEntityId,
+      reason,
     });
   }
 }
 ```
 
-> 推荐导入方式：`import type { AuthEventMap } from '@dailyuse/contracts/authentication';`
+## 6. 运行时事件消费
 
----
+运行时通过 `eventBus.on` / `eventBus.send` 消费事件。event map 提供类型安全：
 
-## 4. 仓储层实现 (Infrastructure Layer) - **核心魔法**
+```typescript
+// 订阅
+eventBus.on('schedule:task-created', handler);
 
-这是“隐式发送”发生的地方。仓储层的 `save` 方法充当了拦截器。
-
-**文件**: `packages/authentication/src/infrastructure/repositories/prisma-auth-identity.repo.ts`
-
-TypeScript
-
-```
-import { IEventBus } from '@dailyuse/utils'; // 你的事件总线接口
-
-export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly eventBus: IEventBus, // 注入事件总线
-  ) {}
-
-  /**
-   * ✅ 隐式发送的核心实现
-   */
-  async save(aggregate: AuthIdentity): Promise<void> {
-    
-    // 1. 提取事件 (此时还没发)
-    const events = aggregate.domainEvents;
-
-    // 2. 开启数据库事务 (保证数据一致性)
-    await this.prisma.$transaction(async (tx) => {
-      
-      // A. 持久化聚合根数据 (Persistence Logic)
-      const persistenceDTO = aggregate.toPersistenceDTO();
-      await tx.identity.upsert({
-        where: { id: persistenceDTO.id },
-        create: persistenceDTO,
-        update: persistenceDTO,
-      });
-
-      // B. 分发事件
-      // 策略 1: 直接发送 (简单，适合不需要强一致性的场景)
-      // 策略 2: Outbox Pattern (推荐生产环境，将事件写入 event_outbox 表)
-      
-      // 这里演示策略 1 (直接发送):
-      for (const event of events) {
-        // 注意：如果是直接发送，建议用 publish (Fire-and-forget) 
-        // 或者在这里只是把事件推到一个内存队列，事务提交后再真正发出去
-        await this.eventBus.publish(event.eventType, event.payload);
-      }
-    });
-
-    // 3. ✅ 保存成功后，清理聚合根内的事件
-    // 防止同一个实例被二次 save 时重复发送
-    aggregate.clearDomainEvents();
-  }
-}
+// 发送（直接调用场景）
+eventBus.send('schedule:task-deleted', { taskId: id });
 ```
 
----
+## 7. 与 IPC Channel 的边界
 
-## 5. 领域服务 (Domain Service) - **零污染**
+IPC channel 命名（如 `schedule:task:create`）遵循**不同的约定** — 使用命令式动词，不属于领域事件体系。领域事件使用过去式（created, deleted, paused）。
 
-现在你的领域服务变得非常干净，完全不需要处理 EventBus。
+## 总结
 
-**文件**: `packages/authentication/src/application/registration.service.ts`
-
-TypeScript
-
-```
-export class RegistrationService {
-  constructor(private repo: AuthIdentityRepository) {}
-
-  async register(req: RegisterReq) {
-    // 1. 业务检查
-    // ...
-
-    // 2. 创建聚合 (内部产生了事件)
-    const identity = AuthIdentity.createWithEmail(...);
-
-    // 3. 保存
-    // Repo 会自动发现内部的事件，并在保存数据时发出去
-    await this.repo.save(identity); 
-    
-    // 🎉 完事！没有任何显式的 eventBus 代码
-  }
-}
-```
-
----
-
-## 总结：为什么这样做？
-
-|**之前的做法 (显式发送)**|**现在的规范 (隐式发送)**|
+| 要素 | 规范 |
 |---|---|
-|**容易遗忘**: 必须记得写 `eventBus.publish`|**自动化**: 只要调了 `save`，事件就会发|
-|**逻辑泄露**: Service 层需要知道有哪些事件|**高内聚**: 事件是聚合根内部的事|
-|**事务风险**: 可能数据回滚了但消息发出去了|**一致性**: 可以绑定在数据库事务中|
-|**代码冗余**: 到处都是 `publish` 代码|**DRY**: 发送逻辑只写在 Repository 一处|
+| Payload 接口位置 | `packages/contracts/src/modules/{module}/domain/events/` |
+| Payload 接口命名 | `{Entity}{Action}Event` |
+| Payload 字段 | 只含业务数据，`readonly`，不含信封字段 |
+| Event Map 位置 | `packages/contracts/src/modules/{module}/protocol/{module}-event-map.ts` |
+| Event Key 格式 | `domain:action` 或 `domain:entity-action`（最多两个冒号） |
+| 信封字段 | `aggregateId`、`occurredAt` 由 `addDomainEvent()` 自动生成 |

@@ -8,7 +8,7 @@
  * - 创建、查询、标记已读/删除通知
  * - 通知偏好设置
  * - 通知模板管理
- * - 跨模块事件驱动通知（reminder:triggered, schedule:task:executed）
+ * - 跨模块事件驱动通知（reminder:triggered, schedule:task-executed）
  *
  * 【分层架构】
  *

@@ -7,7 +7,6 @@ import type {
   EditorSessionId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { ProjectType } from '../value-objects/project-type';
 
@@ -45,51 +44,4 @@ export interface EditorWorkspaceServerDTO {
   lastAccessedAt: TransferDate | null;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-}
-
-// ============ Domain Events ============
-
-/** Workspace created event. */
-export interface EditorWorkspaceCreatedEvent {
-  type: 'editor.workspace.created';
-  aggregateId: EditorWorkspaceId;
-  timestamp: DomainDate;
-  payload: {
-    workspace: EditorWorkspaceServerDTO;
-    createDefaultSession: boolean;
-  };
-}
-
-/** Workspace updated event. */
-export interface EditorWorkspaceUpdatedEvent {
-  type: 'editor.workspace.updated';
-  aggregateId: EditorWorkspaceId;
-  timestamp: DomainDate;
-  payload: {
-    workspace: EditorWorkspaceServerDTO;
-    previousData: Partial<EditorWorkspaceServerDTO>;
-    changes: string[];
-  };
-}
-
-/** Workspace deleted event. */
-export interface EditorWorkspaceDeletedEvent {
-  type: 'editor.workspace.deleted';
-  aggregateId: EditorWorkspaceId;
-  timestamp: DomainDate;
-  payload: {
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-  };
-}
-
-/** Workspace activated event. */
-export interface EditorWorkspaceActivatedEvent {
-  type: 'editor.workspace.activated';
-  aggregateId: EditorWorkspaceId;
-  timestamp: DomainDate;
-  payload: {
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-  };
 }

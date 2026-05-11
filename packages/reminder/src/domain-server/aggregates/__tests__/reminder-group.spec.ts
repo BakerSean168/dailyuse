@@ -86,7 +86,7 @@ describe('ReminderGroup aggregate', () => {
       });
       const events = group.pullDomainEvents();
       expect(events.length).toBeGreaterThanOrEqual(1);
-      const createdEvent = events.find((e) => e.eventType === 'reminder:group:created');
+      const createdEvent = events.find((e) => e.eventType === 'reminder:group-created');
       expect(createdEvent).toBeDefined();
     });
 
@@ -129,7 +129,7 @@ describe('ReminderGroup aggregate', () => {
       const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
       group.switchToGroupControl();
       const events = group.pullDomainEvents();
-      expect(events.some((e) => e.eventType === 'reminder:group:control-mode-switched')).toBe(true);
+      expect(events.some((e) => e.eventType === 'reminder:group-control-mode-switched')).toBe(true);
     });
 
     it('should be idempotent if already Group', () => {
@@ -182,13 +182,13 @@ describe('ReminderGroup aggregate', () => {
       expect(group.status).toBe(ReminderStatus.Active);
     });
 
-    it('should emit reminder:group:enabled event', () => {
+    it('should emit reminder:group-enabled event', () => {
       const group = ReminderGroup.load(
         makeGroupState({ enabled: false, status: ReminderStatus.Paused }),
       );
       group.enable();
       const events = group.pullDomainEvents();
-      expect(events.some((e) => e.eventType === 'reminder:group:enabled')).toBe(true);
+      expect(events.some((e) => e.eventType === 'reminder:group-enabled')).toBe(true);
     });
   });
 
@@ -200,11 +200,11 @@ describe('ReminderGroup aggregate', () => {
       expect(group.status).toBe(ReminderStatus.Paused);
     });
 
-    it('should emit reminder:group:paused event', () => {
+    it('should emit reminder:group-paused event', () => {
       const group = ReminderGroup.load(makeGroupState());
       group.pause();
       const events = group.pullDomainEvents();
-      expect(events.some((e) => e.eventType === 'reminder:group:paused')).toBe(true);
+      expect(events.some((e) => e.eventType === 'reminder:group-paused')).toBe(true);
     });
   });
 
@@ -283,7 +283,7 @@ describe('ReminderGroup aggregate', () => {
       const group = ReminderGroup.load(makeGroupState());
       group.softDelete();
       const events = group.pullDomainEvents();
-      expect(events.some((e) => e.eventType === 'reminder:group:deleted')).toBe(true);
+      expect(events.some((e) => e.eventType === 'reminder:group-deleted')).toBe(true);
     });
   });
 

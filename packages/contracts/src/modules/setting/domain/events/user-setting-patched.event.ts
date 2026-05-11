@@ -10,5 +10,4 @@ export interface UserSettingPatchedEvent {
   readonly category: string;
   readonly changes: Record<string, unknown>;
   readonly newVersion: number;
-  readonly timestamp: number;
 }

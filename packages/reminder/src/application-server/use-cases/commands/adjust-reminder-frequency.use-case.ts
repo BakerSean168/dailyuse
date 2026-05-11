@@ -79,15 +79,15 @@ export class AdjustReminderFrequencyUseCase {
     await this.templateRepository.save(template);
 
     // Publish event
-    const adjustedEvent: ReminderEventMap['reminder:frequency:adjusted'] = {
-      templateId: request.templateId as ReminderEventMap['reminder:frequency:adjusted']['templateId'],
+    const adjustedEvent: ReminderEventMap['reminder:frequency-adjusted'] = {
+      templateId: request.templateId as ReminderEventMap['reminder:frequency-adjusted']['templateId'],
       originalInterval,
       adjustedInterval: request.newInterval,
       reason: request.reason,
-      identityId: request.identityId as ReminderEventMap['reminder:frequency:adjusted']['identityId'],
+      identityId: request.identityId as ReminderEventMap['reminder:frequency-adjusted']['identityId'],
       adjustedAt: Date.now(),
     };
-    eventBus.send('reminder:frequency:adjusted', adjustedEvent);
+    eventBus.send('reminder:frequency-adjusted', adjustedEvent);
 
     return ok({
       templateId: request.templateId,
@@ -111,13 +111,13 @@ export class AdjustReminderFrequencyUseCase {
       return error('NOT_FOUND', `Template ${templateId} not found`);
     }
 
-    const rejectedEvent: ReminderEventMap['reminder:frequency:adjustment-rejected'] = {
-      templateId: templateId as ReminderEventMap['reminder:frequency:adjustment-rejected']['templateId'],
+    const rejectedEvent: ReminderEventMap['reminder:frequency-adjustment-rejected'] = {
+      templateId: templateId as ReminderEventMap['reminder:frequency-adjustment-rejected']['templateId'],
       identityId:
-        identityId as ReminderEventMap['reminder:frequency:adjustment-rejected']['identityId'],
+        identityId as ReminderEventMap['reminder:frequency-adjustment-rejected']['identityId'],
       rejectedAt: Date.now(),
     };
-    eventBus.send('reminder:frequency:adjustment-rejected', rejectedEvent);
+    eventBus.send('reminder:frequency-adjustment-rejected', rejectedEvent);
 
     return ok(undefined);
   }

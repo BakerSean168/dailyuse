@@ -18,7 +18,7 @@ export class DeleteTaskInstanceUseCase {
     await this.instanceRepository.delete(id);
 
     if (instance) {
-      (eventBus as any).send('task:instance:deleted', {
+      (eventBus as any).send('task:instance-deleted', {
         identityId: String(instance.identityId),
         taskInstanceId: instance.id,
         taskTemplateId: String(instance.templateId),

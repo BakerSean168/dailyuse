@@ -6,7 +6,6 @@ import { ScheduleTaskQueue, type ScheduledItem } from '../application-server/sch
 import type { ScheduleModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('ScheduleRuntime');
-const eventBusAny = eventBus as any;
 
 export type ScheduleRuntimeContribution = ScheduleModuleRuntimeContribution;
 
@@ -243,15 +242,15 @@ export function createScheduleRuntimeContribution(
         return;
       }
 
-      eventBus.on('schedule:task:created', syncTaskHandler as any);
-      eventBus.on('schedule:task:schedule-updated', syncTaskHandler as any);
-      eventBus.on('schedule:task:resumed', syncTaskHandler as any);
-      eventBus.on('schedule:task:executed', syncTaskHandler as any);
-      eventBus.on('schedule:task:paused', removeTaskHandler as any);
-      eventBus.on('schedule:task:completed', removeTaskHandler as any);
-      eventBus.on('schedule:task:cancelled', removeTaskHandler as any);
-      eventBus.on('schedule:task:failed', removeTaskHandler as any);
-      eventBusAny.on('schedule:task:deleted', removeTaskHandler);
+      eventBus.on('schedule:task-created', syncTaskHandler as any);
+      eventBus.on('schedule:task-schedule-updated', syncTaskHandler as any);
+      eventBus.on('schedule:task-resumed', syncTaskHandler as any);
+      eventBus.on('schedule:task-executed', syncTaskHandler as any);
+      eventBus.on('schedule:task-paused', removeTaskHandler as any);
+      eventBus.on('schedule:task-completed', removeTaskHandler as any);
+      eventBus.on('schedule:task-cancelled', removeTaskHandler as any);
+      eventBus.on('schedule:task-failed', removeTaskHandler as any);
+      eventBus.on('schedule:task-deleted', removeTaskHandler as any);
 
       void queue.start();
       started = true;
@@ -263,15 +262,15 @@ export function createScheduleRuntimeContribution(
         return;
       }
 
-      eventBus.off('schedule:task:created', syncTaskHandler as any);
-      eventBus.off('schedule:task:schedule-updated', syncTaskHandler as any);
-      eventBus.off('schedule:task:resumed', syncTaskHandler as any);
-      eventBus.off('schedule:task:executed', syncTaskHandler as any);
-      eventBus.off('schedule:task:paused', removeTaskHandler as any);
-      eventBus.off('schedule:task:completed', removeTaskHandler as any);
-      eventBus.off('schedule:task:cancelled', removeTaskHandler as any);
-      eventBus.off('schedule:task:failed', removeTaskHandler as any);
-      eventBusAny.off('schedule:task:deleted', removeTaskHandler);
+      eventBus.off('schedule:task-created', syncTaskHandler as any);
+      eventBus.off('schedule:task-schedule-updated', syncTaskHandler as any);
+      eventBus.off('schedule:task-resumed', syncTaskHandler as any);
+      eventBus.off('schedule:task-executed', syncTaskHandler as any);
+      eventBus.off('schedule:task-paused', removeTaskHandler as any);
+      eventBus.off('schedule:task-completed', removeTaskHandler as any);
+      eventBus.off('schedule:task-cancelled', removeTaskHandler as any);
+      eventBus.off('schedule:task-failed', removeTaskHandler as any);
+      eventBus.off('schedule:task-deleted', removeTaskHandler as any);
 
       queue.stop();
       started = false;

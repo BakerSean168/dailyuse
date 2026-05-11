@@ -27,14 +27,14 @@ export type TaskEventMap = {
   'task:created': TaskCreatedEvent;
   'task:updated': TaskUpdatedEvent;
   'task:deleted': TaskDeletedEvent;
-  'task:instance:completed': TaskInstanceCompletedEvent;
-  'task:instance:skipped': TaskInstanceSkippedEvent;
-  'task:instance:deleted': TaskInstanceDeletedEvent;
-  'task:instances:generated': TaskInstancesGeneratedEvent;
-  'task:template:paused': TaskTemplatePausedEvent;
-  'task:template:resumed': TaskTemplateResumedEvent;
-  'task:template:schedule-time-changed': TaskTemplateScheduleTimeChangedEvent;
-  'task:template:recurrence-changed': TaskTemplateRecurrenceChangedEvent;
+  'task:instance-completed': TaskInstanceCompletedEvent;
+  'task:instance-skipped': TaskInstanceSkippedEvent;
+  'task:instance-deleted': TaskInstanceDeletedEvent;
+  'task:instance-generated': TaskInstancesGeneratedEvent;
+  'task:template-paused': TaskTemplatePausedEvent;
+  'task:template-resumed': TaskTemplateResumedEvent;
+  'task:template-schedule-time-changed': TaskTemplateScheduleTimeChangedEvent;
+  'task:template-recurrence-changed': TaskTemplateRecurrenceChangedEvent;
   'task:uncompleted': TaskUncompletedEvent;
   'task:rescheduled': TaskRescheduledEvent;
 

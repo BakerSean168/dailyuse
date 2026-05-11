@@ -86,7 +86,7 @@ export function createGoalScheduleRuntimeContribution(deps: {
 
     await deps.scheduleTaskRepository.deleteBatch(existingTasks.map((task) => task.id));
     for (const task of existingTasks) {
-      (eventBus as any).send('schedule:task:deleted', { taskId: task.id });
+      eventBus.send('schedule:task-deleted', { taskId: task.id });
     }
   };
 

@@ -45,7 +45,7 @@ describe('Schedule command use-cases', () => {
 
     expect(result.ok).toBe(true);
     expect(repository.deleteById).toHaveBeenCalledWith('task-1');
-    expect(eventSpy).toHaveBeenCalledWith('schedule:task:deleted', { taskId: 'task-1' });
+    expect(eventSpy).toHaveBeenCalledWith('schedule:task-deleted', { taskId: 'task-1' });
   });
 
   it('pause returns error when task is missing', async () => {

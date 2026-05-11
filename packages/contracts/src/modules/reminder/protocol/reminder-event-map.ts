@@ -30,73 +30,73 @@ export type ReminderEventMap = {
    * Reminder template created event
    * Triggered when reminder template is created
    */
-  'reminder:template:created': ReminderTemplateCreatedEvent;
+  'reminder:template-created': ReminderTemplateCreatedEvent;
 
   /**
    * Reminder template updated event
    * Triggered when reminder template is updated
    */
-  'reminder:template:updated': ReminderTemplateUpdatedEvent;
+  'reminder:template-updated': ReminderTemplateUpdatedEvent;
 
   /**
    * Reminder template enabled event
    * Triggered when reminder template is enabled
    */
-  'reminder:template:enabled': ReminderTemplateEnabledEvent;
+  'reminder:template-enabled': ReminderTemplateEnabledEvent;
 
   /**
    * Reminder template paused event
    * Triggered when reminder template is paused
    */
-  'reminder:template:paused': ReminderTemplatePausedEvent;
+  'reminder:template-paused': ReminderTemplatePausedEvent;
 
   /**
    * Reminder template deleted event
    * Triggered when reminder template is deleted
    */
-  'reminder:template:deleted': ReminderTemplateDeletedEvent;
+  'reminder:template-deleted': ReminderTemplateDeletedEvent;
 
   /**
    * Reminder template moved event
    * Triggered when reminder template is moved between groups
    */
-  'reminder:template:moved': ReminderTemplateMovedEvent;
+  'reminder:template-moved': ReminderTemplateMovedEvent;
 
   /**
    * Reminder group created event
    * Triggered when reminder group is created
    */
-  'reminder:group:created': ReminderGroupCreatedEvent;
+  'reminder:group-created': ReminderGroupCreatedEvent;
 
   /**
    * Reminder group updated event
    * Triggered when reminder group is updated
    */
-  'reminder:group:updated': ReminderGroupUpdatedEvent;
+  'reminder:group-updated': ReminderGroupUpdatedEvent;
 
   /**
    * Reminder group enabled event
    * Triggered when reminder group is enabled
    */
-  'reminder:group:enabled': ReminderGroupEnabledEvent;
+  'reminder:group-enabled': ReminderGroupEnabledEvent;
 
   /**
    * Reminder group paused event
    * Triggered when reminder group is paused
    */
-  'reminder:group:paused': ReminderGroupPausedEvent;
+  'reminder:group-paused': ReminderGroupPausedEvent;
 
   /**
    * Reminder group control mode switched event
    * Triggered when reminder group control mode changes
    */
-  'reminder:group:control-mode-switched': ReminderGroupControlModeSwitchedEvent;
+  'reminder:group-control-mode-switched': ReminderGroupControlModeSwitchedEvent;
 
   /**
    * Reminder group deleted event
    * Triggered when reminder group is deleted
    */
-  'reminder:group:deleted': ReminderGroupDeletedEvent;
+  'reminder:group-deleted': ReminderGroupDeletedEvent;
 
   /**
    * Reminder triggered event
@@ -108,17 +108,17 @@ export type ReminderEventMap = {
    * Reminder response recorded integration event
    * Triggered when a reminder response entity is persisted
    */
-  'reminder:response:recorded': ReminderResponseRecordedEvent;
+  'reminder:response-recorded': ReminderResponseRecordedEvent;
 
   /**
    * Reminder frequency adjusted integration event
    * Triggered when the smart-frequency service applies an adjustment
    */
-  'reminder:frequency:adjusted': ReminderFrequencyAdjustedEvent;
+  'reminder:frequency-adjusted': ReminderFrequencyAdjustedEvent;
 
   /**
    * Reminder frequency adjustment rejected integration event
    * Triggered when the user rejects a smart-frequency adjustment
    */
-  'reminder:frequency:adjustment-rejected': ReminderFrequencyAdjustmentRejectedEvent;
+  'reminder:frequency-adjustment-rejected': ReminderFrequencyAdjustmentRejectedEvent;
 };

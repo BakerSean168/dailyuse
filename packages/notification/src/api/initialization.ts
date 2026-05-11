@@ -74,10 +74,10 @@ const notificationEventHandlersInitTask: InitializationTask = {
       eventBus.send('notification:dispatch_desktop', base);
     };
 
-    const handleScheduleExecuted = (event: ScheduleEventMap['schedule:task:executed']): void => {
+    const handleScheduleExecuted = (event: ScheduleEventMap['schedule:task-executed']): void => {
       const identityId = event.identityId;
       if (!identityId) {
-        console.warn('[NotificationInit] Missing identityId in schedule:task:executed');
+        console.warn('[NotificationInit] Missing identityId in schedule:task-executed');
         return;
       }
 
@@ -120,7 +120,7 @@ const notificationEventHandlersInitTask: InitializationTask = {
         urgency: UrgencyLevel.Medium,
         importance: ImportanceLevel.Moderate,
         data: {
-          source: 'schedule:task:executed',
+          source: 'schedule:task-executed',
           scheduleTaskId: taskId,
           sourceModule,
           payload,
@@ -133,7 +133,7 @@ const notificationEventHandlersInitTask: InitializationTask = {
     };
 
     eventBus.on('reminder:triggered', handleReminderTriggered);
-    eventBus.on('schedule:task:executed', handleScheduleExecuted);
+    eventBus.on('schedule:task-executed', handleScheduleExecuted);
     console.log('✓ Notification event handlers initialized');
   },
 };

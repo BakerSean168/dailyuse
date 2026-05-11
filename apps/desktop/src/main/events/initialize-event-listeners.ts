@@ -38,18 +38,18 @@ export async function initializeEventListeners(): Promise<void> {
 }
 
 /**
- * Registers a listener for the 'task:instance:completed' event.
+ * Registers a listener for the 'task:instance-completed' event.
  * Automatically updates the associated Goal's Key Result progress when a task is finished.
  */
 function initializeTaskToGoalProgressListener(): void {
   const bus = eventBus as any;
-  bus.on('task:instance:completed', async (event: any) => {
+  bus.on('task:instance-completed', async (event: any) => {
     try {
       const payload = event?.payload ?? event;
       const identityId = (event?.identityId ?? payload?.identityId) as string | undefined;
       if (!identityId) {
         console.error(
-          '❌ [TaskToGoalProgress] Missing identityId in task:instance:completed event',
+          '❌ [TaskToGoalProgress] Missing identityId in task:instance-completed event',
         );
         return;
       }
@@ -132,7 +132,7 @@ function initializeTaskToGoalProgressListener(): void {
         `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultId} with value ${goalBinding.goalRecordValue}`,
       );
     } catch (error) {
-      console.error('❌ [TaskToGoalProgress] Error handling task:instance:completed:', error);
+      console.error('❌ [TaskToGoalProgress] Error handling task:instance-completed:', error);
     }
   });
 
@@ -163,6 +163,6 @@ async function shouldTriggerOnAllInstancesCompleted(
 export function resetEventListeners(): void {
   console.log('🔄 [EventListeners] Resetting event listeners...');
   const bus = eventBus as any;
-  bus.off('task:instance:completed');
+  bus.off('task:instance-completed');
   isInitialized = false;
 }

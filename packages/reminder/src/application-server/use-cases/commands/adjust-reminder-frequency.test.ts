@@ -88,7 +88,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
     });
     expect(repo.save).toHaveBeenCalledWith(template);
     expect(eventSpy).toHaveBeenCalledWith(
-      'reminder:frequency:adjusted',
+      'reminder:frequency-adjusted',
       expect.objectContaining({
         templateId: 'tpl-1',
         originalInterval: 60,
@@ -130,7 +130,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
 
     expect(result.ok).toBe(true);
     expect(eventSpy).toHaveBeenCalledWith(
-      'reminder:frequency:adjustment-rejected',
+      'reminder:frequency-adjustment-rejected',
       expect.objectContaining({
         templateId: 'tpl-1',
         identityId: 'identity-1',

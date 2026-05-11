@@ -134,12 +134,12 @@ describe('ReminderTemplate aggregate', () => {
       expect(template.groupId).toBe('group-1');
     });
 
-    it('should emit a reminder:template:created domain event', () => {
+    it('should emit a reminder:template-created domain event', () => {
       const template = createDefaultTemplate();
       const events = template.pullDomainEvents();
 
       expect(events.length).toBeGreaterThanOrEqual(1);
-      const createdEvent = events.find((e) => e.eventType === 'reminder:template:created');
+      const createdEvent = events.find((e) => e.eventType === 'reminder:template-created');
       expect(createdEvent).toBeDefined();
       expect((createdEvent!.payload as any).templateId).toBe(template.id);
       expect((createdEvent!.payload as any).reminder?.name).toBe('Daily Standup');
@@ -192,14 +192,14 @@ describe('ReminderTemplate aggregate', () => {
       expect(template.effectiveEnabled).toBe(true);
     });
 
-    it('should emit a reminder:template:enabled event', () => {
+    it('should emit a reminder:template-enabled event', () => {
       const template = ReminderTemplate.load(
         makeState({ selfEnabled: false, status: ReminderStatus.Paused }),
       );
       template.enable();
       const events = template.pullDomainEvents();
 
-      const enabledEvent = events.find((e) => e.eventType === 'reminder:template:enabled');
+      const enabledEvent = events.find((e) => e.eventType === 'reminder:template-enabled');
       expect(enabledEvent).toBeDefined();
     });
   });
@@ -215,12 +215,12 @@ describe('ReminderTemplate aggregate', () => {
       expect(template.effectiveEnabled).toBe(false);
     });
 
-    it('should emit a reminder:template:paused event', () => {
+    it('should emit a reminder:template-paused event', () => {
       const template = ReminderTemplate.load(makeState());
       template.pause();
       const events = template.pullDomainEvents();
 
-      const pausedEvent = events.find((e) => e.eventType === 'reminder:template:paused');
+      const pausedEvent = events.find((e) => e.eventType === 'reminder:template-paused');
       expect(pausedEvent).toBeDefined();
     });
   });
@@ -277,12 +277,12 @@ describe('ReminderTemplate aggregate', () => {
       expect(template.trigger.type).toBe('Interval');
     });
 
-    it('should emit a reminder:template:updated event', () => {
+    it('should emit a reminder:template-updated event', () => {
       const template = ReminderTemplate.load(makeState());
       template.update({ title: 'Changed' });
 
       const events = template.pullDomainEvents();
-      const updatedEvent = events.find((e) => e.eventType === 'reminder:template:updated');
+      const updatedEvent = events.find((e) => e.eventType === 'reminder:template-updated');
       expect(updatedEvent).toBeDefined();
     });
 
@@ -313,11 +313,11 @@ describe('ReminderTemplate aggregate', () => {
       expect(template.deletedAt).not.toBeNull();
     });
 
-    it('should emit a reminder:template:deleted event', () => {
+    it('should emit a reminder:template-deleted event', () => {
       const template = ReminderTemplate.load(makeState());
       template.softDelete();
       const events = template.pullDomainEvents();
-      const deletedEvent = events.find((e) => e.eventType === 'reminder:template:deleted');
+      const deletedEvent = events.find((e) => e.eventType === 'reminder:template-deleted');
       expect(deletedEvent).toBeDefined();
     });
   });
@@ -340,11 +340,11 @@ describe('ReminderTemplate aggregate', () => {
       expect(template.groupId).toBe('new-group');
     });
 
-    it('should emit a reminder:template:moved event', () => {
+    it('should emit a reminder:template-moved event', () => {
       const template = ReminderTemplate.load(makeState({ groupId: null }));
       template.moveToGroup('new-group');
       const events = template.pullDomainEvents();
-      const movedEvent = events.find((e) => e.eventType === 'reminder:template:moved');
+      const movedEvent = events.find((e) => e.eventType === 'reminder:template-moved');
       expect(movedEvent).toBeDefined();
       expect((movedEvent!.payload as any).oldGroupId).toBeNull();
       expect((movedEvent!.payload as any).newGroupId).toBe('new-group');

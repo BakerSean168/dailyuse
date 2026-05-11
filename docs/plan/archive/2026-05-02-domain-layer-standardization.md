@@ -1,3 +1,18 @@
+归档时间：`2026-05-11`
+
+归档依据：本文件列出的改造状态已与当前代码核对，并在 `2026-05-11` 实际通过以下验证：
+
+- `pnpm nx run contracts:typecheck`
+- `pnpm nx run editor:typecheck`
+- `pnpm nx run schedule:typecheck`
+- `pnpm nx run task:typecheck`
+- `pnpm nx run notification:typecheck`
+- `pnpm nx run reminder:typecheck`
+- `pnpm nx run authentication:typecheck`
+- `pnpm nx run goal:typecheck`
+- `pnpm nx run setting:typecheck`
+- `pnpm nx run daily-use:governance-check`
+
 # Domain 层标准化收尾计划
 
 更新时间：`2026-05-10`

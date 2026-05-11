@@ -159,7 +159,7 @@ export function createTaskScheduleRuntimeContribution(deps: {
 
     await deps.scheduleTaskRepository.deleteBatch(tasksToDelete.map((task) => task.id));
     for (const task of tasksToDelete) {
-      (eventBus as any).send('schedule:task:deleted', { taskId: task.id });
+      eventBus.send('schedule:task-deleted', { taskId: task.id });
     }
   };
 
@@ -175,7 +175,7 @@ export function createTaskScheduleRuntimeContribution(deps: {
 
     await deps.scheduleTaskRepository.deleteBatch(existingTasks.map((task) => task.id));
     for (const task of existingTasks) {
-      (eventBus as any).send('schedule:task:deleted', { taskId: task.id });
+      eventBus.send('schedule:task-deleted', { taskId: task.id });
     }
   };
 
@@ -247,10 +247,10 @@ export function createTaskScheduleRuntimeContribution(deps: {
     event:
       | TaskEventMap['task:created']
       | TaskEventMap['task:updated']
-      | TaskEventMap['task:instances:generated']
-      | TaskEventMap['task:template:schedule-time-changed']
-      | TaskEventMap['task:template:recurrence-changed']
-      | TaskEventMap['task:template:resumed'],
+      | TaskEventMap['task:instance-generated']
+      | TaskEventMap['task:template-schedule-time-changed']
+      | TaskEventMap['task:template-recurrence-changed']
+      | TaskEventMap['task:template-resumed'],
   ) => {
     let templateId: string;
 
@@ -268,16 +268,16 @@ export function createTaskScheduleRuntimeContribution(deps: {
   };
 
   const deleteFromEvent = async (
-    event: TaskEventMap['task:deleted'] | TaskEventMap['task:template:paused'],
+    event: TaskEventMap['task:deleted'] | TaskEventMap['task:template-paused'],
   ) => {
     await deleteTaskReminderTasks(event.taskTemplateId, String(event.identityId));
   };
 
   const deleteCompletedInstanceTasks = async (
     event:
-      | TaskEventMap['task:instance:completed']
-      | TaskEventMap['task:instance:skipped']
-      | TaskEventMap['task:instance:deleted'],
+      | TaskEventMap['task:instance-completed']
+      | TaskEventMap['task:instance-skipped']
+      | TaskEventMap['task:instance-deleted'],
   ) => {
     await deleteInstanceReminderTasks(event.taskInstanceId, String(event.identityId));
   };
@@ -292,15 +292,15 @@ export function createTaskScheduleRuntimeContribution(deps: {
 
       eventBus.on('task:created', upsertFromEvent as any);
       eventBus.on('task:updated', upsertFromEvent as any);
-      eventBus.on('task:instances:generated', upsertFromEvent as any);
-      eventBus.on('task:template:schedule-time-changed', upsertFromEvent as any);
-      eventBus.on('task:template:recurrence-changed', upsertFromEvent as any);
-      eventBus.on('task:template:resumed', upsertFromEvent as any);
+      eventBus.on('task:instance-generated', upsertFromEvent as any);
+      eventBus.on('task:template-schedule-time-changed', upsertFromEvent as any);
+      eventBus.on('task:template-recurrence-changed', upsertFromEvent as any);
+      eventBus.on('task:template-resumed', upsertFromEvent as any);
       eventBus.on('task:deleted', deleteFromEvent as any);
-      eventBus.on('task:template:paused', deleteFromEvent as any);
-      eventBus.on('task:instance:completed', deleteCompletedInstanceTasks as any);
-      eventBus.on('task:instance:skipped', deleteCompletedInstanceTasks as any);
-      eventBus.on('task:instance:deleted', deleteCompletedInstanceTasks as any);
+      eventBus.on('task:template-paused', deleteFromEvent as any);
+      eventBus.on('task:instance-completed', deleteCompletedInstanceTasks as any);
+      eventBus.on('task:instance-skipped', deleteCompletedInstanceTasks as any);
+      eventBus.on('task:instance-deleted', deleteCompletedInstanceTasks as any);
 
       started = true;
       logger.info('[Task] Schedule projection runtime started');
@@ -313,15 +313,15 @@ export function createTaskScheduleRuntimeContribution(deps: {
 
       eventBus.off('task:created', upsertFromEvent as any);
       eventBus.off('task:updated', upsertFromEvent as any);
-      eventBus.off('task:instances:generated', upsertFromEvent as any);
-      eventBus.off('task:template:schedule-time-changed', upsertFromEvent as any);
-      eventBus.off('task:template:recurrence-changed', upsertFromEvent as any);
-      eventBus.off('task:template:resumed', upsertFromEvent as any);
+      eventBus.off('task:instance-generated', upsertFromEvent as any);
+      eventBus.off('task:template-schedule-time-changed', upsertFromEvent as any);
+      eventBus.off('task:template-recurrence-changed', upsertFromEvent as any);
+      eventBus.off('task:template-resumed', upsertFromEvent as any);
       eventBus.off('task:deleted', deleteFromEvent as any);
-      eventBus.off('task:template:paused', deleteFromEvent as any);
-      eventBus.off('task:instance:completed', deleteCompletedInstanceTasks as any);
-      eventBus.off('task:instance:skipped', deleteCompletedInstanceTasks as any);
-      eventBus.off('task:instance:deleted', deleteCompletedInstanceTasks as any);
+      eventBus.off('task:template-paused', deleteFromEvent as any);
+      eventBus.off('task:instance-completed', deleteCompletedInstanceTasks as any);
+      eventBus.off('task:instance-skipped', deleteCompletedInstanceTasks as any);
+      eventBus.off('task:instance-deleted', deleteCompletedInstanceTasks as any);
 
       started = false;
       logger.info('[Task] Schedule projection runtime stopped');

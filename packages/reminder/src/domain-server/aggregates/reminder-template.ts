@@ -244,7 +244,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     template._props.nextTriggerAt = template.calculateNextTrigger();
 
     // 发布创建事件
-    template.addDomainEvent<ReminderEventMap['reminder:template:created']>('reminder:template:created', {
+    template.addDomainEvent<ReminderEventMap['reminder:template-created']>('reminder:template-created', {
       identityId: params.identityId,
       templateId: id,
       reminder: template.toServerDTO(),
@@ -363,7 +363,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布更新事件
     const changes = Object.keys(updates);
-    this.addDomainEvent<ReminderEventMap['reminder:template:updated']>('reminder:template:updated', {
+    this.addDomainEvent<ReminderEventMap['reminder:template-updated']>('reminder:template-updated', {
       identityId: this._props.identityId,
       templateId: this.id,
       reminder: this.toServerDTO(),
@@ -391,7 +391,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = true;
 
     // 发布启用事件
-    this.addDomainEvent<ReminderEventMap['reminder:template:enabled']>('reminder:template:enabled', {
+    this.addDomainEvent<ReminderEventMap['reminder:template-enabled']>('reminder:template-enabled', {
       activatedAt: now,
       identityId: this._props.identityId,
       templateId: this.id,
@@ -413,7 +413,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = false;
 
     // 发布暂停事件
-    this.addDomainEvent<ReminderEventMap['reminder:template:paused']>('reminder:template:paused', {
+    this.addDomainEvent<ReminderEventMap['reminder:template-paused']>('reminder:template-paused', {
       identityId: this._props.identityId,
       templateId: this.id,
       reminder: this.toServerDTO(),
@@ -451,7 +451,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     // 应用层需要调用 setEffectiveEnabled 来更新
 
     // 发布移动事件
-    this.addDomainEvent<ReminderEventMap['reminder:template:moved']>('reminder:template:moved', {
+    this.addDomainEvent<ReminderEventMap['reminder:template-moved']>('reminder:template-moved', {
       identityId: this._props.identityId,
       templateId: this.id,
       oldGroupId: oldGroupId as ReminderGroupId | null,
@@ -594,7 +594,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(Date.now());
 
     // 发布删除事件
-    this.addDomainEvent<ReminderEventMap['reminder:template:deleted']>('reminder:template:deleted', {
+    this.addDomainEvent<ReminderEventMap['reminder:template-deleted']>('reminder:template-deleted', {
       identityId: this._props.identityId,
       templateId: this.id,
       templateTitle: this._props.title,

@@ -126,7 +126,6 @@ export class UserSetting extends AggregateRoot<ISettingId> {
         category,
         changes: patch as Record<string, unknown>,
         newVersion: this._props.version,
-        timestamp: Date.now(),
       },
     );
   }

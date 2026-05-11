@@ -344,7 +344,7 @@ describe('TaskInstance Aggregate', () => {
         instance.complete();
         const events = instance.pullDomainEvents();
         expect(events.length).toBeGreaterThanOrEqual(1);
-        expect(events.some((e) => e.eventType === 'task:instance:completed')).toBe(true);
+        expect(events.some((e) => e.eventType === 'task:instance-completed')).toBe(true);
       });
     });
 
@@ -823,7 +823,7 @@ describe('TaskInstance Aggregate', () => {
       const events = instance.pullDomainEvents();
       expect(events.length).toBeGreaterThanOrEqual(1);
 
-      const completeEvent = events.find((e) => e.eventType === 'task:instance:completed');
+      const completeEvent = events.find((e) => e.eventType === 'task:instance-completed');
       expect(completeEvent).toBeDefined();
       expect(completeEvent!.aggregateId).toBe(instance.id);
     });

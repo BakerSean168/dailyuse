@@ -28,7 +28,7 @@ describe('RecordReminderResponseUseCase', () => {
 
     expect(repo.save).toHaveBeenCalledTimes(1);
     expect(eventSpy).toHaveBeenCalledWith(
-      'reminder:response:recorded',
+      'reminder:response-recorded',
       expect.objectContaining({
         templateId: 'template-1',
         action: 'Dismiss',

@@ -173,7 +173,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.updatedAt = new Date(now);
 
     // Trigger domain event
-    this.addDomainEvent<TaskEventMap['task:instance:completed']>('task:instance:completed', {
+    this.addDomainEvent<TaskEventMap['task:instance-completed']>('task:instance-completed', {
       identityId: this._props.identityId,
       taskInstanceId: this.id,
       taskTemplateId: this._props.templateId,
@@ -202,7 +202,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
     this._props.updatedAt = new Date(now);
 
-    this.addDomainEvent<TaskEventMap['task:instance:skipped']>('task:instance:skipped', {
+    this.addDomainEvent<TaskEventMap['task:instance-skipped']>('task:instance-skipped', {
       identityId: this._props.identityId,
       taskInstanceId: this.id,
       taskTemplateId: this._props.templateId,
