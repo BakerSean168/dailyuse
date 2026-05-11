@@ -27,6 +27,7 @@ function buildSessionState(overrides: Partial<AuthSessionState> = {}): AuthSessi
     deviceInfo: DeviceInfo.createDefault('test-device-001'),
     refreshTokenHash: 'hashed-refresh-token',
     status: SessionStatus.Active,
+    version: 1,
     createdAt: now,
     expiresAt: new Date(now.getTime() + REFRESH_TOKEN_DURATION_MS),
     lastActiveAt: now,
@@ -77,6 +78,7 @@ describe('AuthSession', () => {
       expect(session.status).toBe('Active');
       expect(session.isRevoked).toBe(false);
       expect(session.refreshTokenHash).toBe('hash-abc');
+      expect(session.version).toBe(1);
     });
 
     it('should emit session-created domain event', () => {
@@ -322,6 +324,7 @@ describe('AuthSession', () => {
       expect(dto.id).toBe(session.id);
       expect(dto.identityId).toBe(session.identityId);
       expect(dto.status).toBe('Active');
+      expect(dto.version).toBe(session.version);
       expect(dto.isRevoked).toBe(false);
       expect(dto.refreshTokenHash).toBeDefined();
       expect(typeof dto.createdAt).toBe('number');
@@ -337,6 +340,7 @@ describe('AuthSession', () => {
       expect(dto.id).toBe(session.id);
       expect(dto.identityId).toBe(session.identityId);
       expect(dto.isCurrentSession).toBe(true);
+      expect(dto.version).toBe(session.version);
       expect(typeof dto.createdAt).toBe('number');
       expect(typeof dto.expiresAt).toBe('number');
       expect(dto.deviceInfo).toBeDefined();
@@ -358,6 +362,7 @@ describe('AuthSession', () => {
         deviceInfo: DeviceInfo.fromDTO(dto.deviceInfo),
         refreshTokenHash: dto.refreshTokenHash,
         status: SessionStatus.of(dto.status),
+        version: dto.version,
         createdAt: new Date(dto.createdAt),
         expiresAt: new Date(dto.expiresAt),
         lastActiveAt: new Date(dto.lastActiveAt),

@@ -11,7 +11,8 @@ export class DeleteEditorWorkspaceUseCase {
       return ok(false);
     }
 
-    await this.workspaceRepository.delete(id);
+    workspace.delete();
+    await this.workspaceRepository.deleteAggregate(workspace);
     return ok(true);
   }
 }

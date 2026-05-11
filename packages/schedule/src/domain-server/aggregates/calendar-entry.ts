@@ -90,7 +90,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
   }
 
   public static create(params: {
-    identityId: string;
+    identityId: IdentityId;
     title: string;
     description?: string;
     startTime: number;
@@ -111,7 +111,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
 
     const entry = new CalendarEntry({
       id: ScheduleId.generate(),
-      identityId: params.identityId as IdentityId,
+      identityId: params.identityId,
       title: params.title,
       description: params.description ?? null,
       startTime: params.startTime,
@@ -129,7 +129,7 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     entry.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-created']>(
       'schedule:calendar-entry-created',
       {
-        identityId: params.identityId as IdentityId,
+        identityId: params.identityId,
         title: params.title,
         startTime: params.startTime,
         endTime: params.endTime,
@@ -261,6 +261,15 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     this._props.hasConflict = false;
     this._props.conflictingEntries = null;
     this._props.updatedAt = new Date();
+  }
+
+  public delete(): void {
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<ScheduleEventMap['schedule:calendar-entry-deleted']>(
+      'schedule:calendar-entry-deleted',
+      { entryId: this.id as ScheduleId },
+    );
   }
 
   public reschedule(newStartTime: number, newEndTime: number): void {

@@ -35,9 +35,14 @@ export interface IEditorWorkspaceRepository {
   save(workspace: EditorWorkspace): Promise<void>;
 
   /**
-   * 鍒犻櫎宸ヤ綔鍖?
+   * 鍒犻犻櫎宸ヤ綔鍖?
    */
   delete(id: string): Promise<void>;
+
+  /**
+   * Domain-command delete — deletes persistently then publishes aggregate domain events.
+   */
+  deleteAggregate(workspace: EditorWorkspace): Promise<void>;
 
   /**
    * 鎵归噺淇濆瓨宸ヤ綔鍖?

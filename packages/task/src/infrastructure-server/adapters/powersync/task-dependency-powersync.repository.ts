@@ -6,6 +6,11 @@ import {
   PowerSyncTaskDependencyMapper,
   type PowerSyncTaskDependencyRow,
 } from './mappers/powersync-task-dependency.mapper';
+import { TaskDependency } from '../../../domain-server/aggregates/task-dependency';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -104,6 +109,19 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
 
   async delete(id: string): Promise<void> {
     await this.db.execute('DELETE FROM task_dependencies WHERE id = ?', [id]);
+  }
+
+  async deleteAggregate(dependency: TaskDependency): Promise<void> {
+    await this.db.execute('DELETE FROM task_dependencies WHERE id = ?', [dependency.id]);
+    await publishAggregateEvents(dependency, eventBusAdapter);
+  }
+
+  async findAggregateById(id: string): Promise<TaskDependency | null> {
+    const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
+      'SELECT * FROM task_dependencies WHERE id = ? LIMIT 1',
+      [id],
+    );
+    return row ? PowerSyncTaskDependencyMapper.toAggregate(row) : null;
   }
 
   async deleteByTaskId(taskId: string): Promise<void> {

@@ -4,60 +4,18 @@
  */
 
 import type { NotificationTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
-import type { NotificationEventMap } from '@dailyuse/contracts/notification';
+import type {
+  NotificationEventMap,
+  NotificationTemplateServerDTO,
+  NotificationTemplateClientDTO,
+  NotificationTemplateConfigServerDTO,
+} from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { AggregateRoot, createLogger } from '@dailyuse/utils';
 import { NotificationTemplateId as NotificationTemplateIdType } from '../../domain-shared/value-objects/notification-template-id';
-import {
-  NotificationTemplateConfig,
-  type NotificationTemplateConfigServerDTO,
-} from '../value-objects/NotificationTemplateConfig';
+import { NotificationTemplateConfig } from '../value-objects/NotificationTemplateConfig';
 
 const logger = createLogger('NotificationTemplate');
-
-// ============ 本地 DTO 定义 ============
-// 这些类型应该移到 @dailyuse/contracts/notification 中
-
-/**
- * NotificationTemplate Server DTO
- */
-export interface NotificationTemplateServerDTO {
-  id: NotificationTemplateId;
-  name: string;
-  description: string | null;
-  type: NotificationType;
-  category: NotificationCategory;
-  template: NotificationTemplateConfigServerDTO;
-  isActive: boolean;
-  isSystemTemplate: boolean;
-  createdAt: number; // TransferDate
-  updatedAt: number; // TransferDate
-}
-
-/**
- * NotificationTemplate Server Interface
- */
-export interface NotificationTemplateServer {
-  readonly id: NotificationTemplateId;
-  readonly name: string;
-  readonly description: string | null;
-  readonly type: NotificationType;
-  readonly category: NotificationCategory;
-  readonly template: NotificationTemplateConfigServerDTO;
-  readonly isActive: boolean;
-  readonly isSystemTemplate: boolean;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-
-  activate(): void;
-  deactivate(): void;
-  updateTemplate(template: Partial<NotificationTemplateConfigServerDTO>): void;
-  render(variables: Record<string, unknown>): { title: string; content: string };
-  renderEmail(variables: Record<string, unknown>): { subject: string; htmlBody: string; textBody?: string };
-  renderPush(variables: Record<string, unknown>): { title: string; body: string };
-  validateVariables(variables: Record<string, unknown>): { isValid: boolean; missingVariables: string[] };
-  toServerDTO(): NotificationTemplateServerDTO;
-}
 
 /**
  * NotificationTemplate 内部状态接口
@@ -249,6 +207,21 @@ export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> 
   // ===== 转换方法 =====
 
   public toServerDTO(): NotificationTemplateServerDTO {
+    return {
+      id: this.id as NotificationTemplateId,
+      name: this._props.name,
+      description: this._props.description,
+      type: this._props.type,
+      category: this._props.category,
+      template: this._props.template.toContract(),
+      isActive: this._props.isActive,
+      isSystemTemplate: this._props.isSystemTemplate,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+    };
+  }
+
+  public toClientDTO(): NotificationTemplateClientDTO {
     return {
       id: this.id as NotificationTemplateId,
       name: this._props.name,

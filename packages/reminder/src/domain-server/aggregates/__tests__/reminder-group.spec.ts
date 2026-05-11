@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ReminderGroup } from '../reminder-group';
 import type { ReminderGroupState } from '../reminder-group';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { GroupStats } from '../../value-objects';
 import { generateUUID } from '@dailyuse/utils';
 
@@ -13,7 +14,7 @@ function makeGroupState(overrides: Partial<ReminderGroupState> = {}): ReminderGr
   const now = new Date();
   return {
     id: generateUUID(),
-    identityId: `IdentityId_${generateUUID()}`,
+    identityId: IdentityId.generate(),
     name: 'Test Group',
     description: null,
     controlMode: ControlMode.Individual,
@@ -42,7 +43,7 @@ describe('ReminderGroup aggregate', () => {
   describe('create()', () => {
     it('should create a group with required fields', () => {
       const group = ReminderGroup.create({
-        identityId: 'IdentityId_test-user',
+        identityId: String(IdentityId.generate()),
         name: 'Morning Reminders',
       });
 
@@ -62,7 +63,7 @@ describe('ReminderGroup aggregate', () => {
 
     it('should apply optional fields when provided', () => {
       const group = ReminderGroup.create({
-        identityId: 'IdentityId_test',
+        identityId: String(IdentityId.generate()),
         name: 'Custom',
         controlMode: ControlMode.Group,
         description: 'Desc',
@@ -80,7 +81,7 @@ describe('ReminderGroup aggregate', () => {
 
     it('should emit a ReminderGroupCreated domain event', () => {
       const group = ReminderGroup.create({
-        identityId: 'IdentityId_test',
+        identityId: String(IdentityId.generate()),
         name: 'Event Test',
       });
       const events = group.pullDomainEvents();
@@ -262,7 +263,7 @@ describe('ReminderGroup aggregate', () => {
   describe('activate()', () => {
     it('should set status to Active and clear deletedAt', () => {
       const group = ReminderGroup.load(
-        makeGroupState({ status: ReminderStatus.Paused, deletedAt: Date.now() }),
+        makeGroupState({ status: ReminderStatus.Paused, deletedAt: new Date() }),
       );
       group.activate();
       expect(group.status).toBe(ReminderStatus.Active);
@@ -289,7 +290,7 @@ describe('ReminderGroup aggregate', () => {
   describe('restore()', () => {
     it('should clear deletedAt and set Active', () => {
       const group = ReminderGroup.load(
-        makeGroupState({ deletedAt: Date.now(), status: ReminderStatus.Paused }),
+        makeGroupState({ deletedAt: new Date(), status: ReminderStatus.Paused }),
       );
       group.restore();
       expect(group.deletedAt).toBeNull();

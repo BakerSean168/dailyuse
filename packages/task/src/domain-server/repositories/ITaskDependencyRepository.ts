@@ -10,6 +10,7 @@
 
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
+import type { TaskDependency } from '../aggregates/task-dependency';
 
 /**
  * TaskDependency 仓储接口
@@ -71,6 +72,16 @@ export interface ITaskDependencyRepository {
    * 删除依赖关系
    */
   delete(id: string): Promise<void>;
+
+  /**
+   * Domain-command delete — deletes persistently then publishes aggregate domain events.
+   */
+  deleteAggregate(dependency: TaskDependency): Promise<void>;
+
+  /**
+   * 查找依赖关系聚合（命令侧删除路径使用）
+   */
+  findAggregateById(id: string): Promise<TaskDependency | null>;
 
   /**
    * 批量删除任务的所有依赖关系

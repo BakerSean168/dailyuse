@@ -16,7 +16,7 @@ import { generateUUID } from '@dailyuse/utils';
 // Helpers
 // ---------------------------------------------------------------------------
 
-const SHARED_IDENTITY = `IdentityId_${generateUUID()}`;
+const SHARED_IDENTITY = IdentityId.generate();
 
 function makeTemplateState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemplateState {
   const now = Date.now();
@@ -164,7 +164,7 @@ describe('ReminderPolicy', () => {
 
     it('should not throw when identities match', () => {
       const template = ReminderTemplate.load(
-        makeTemplateState({ identityId: IdentityId.of(SHARED_IDENTITY) }),
+        makeTemplateState({ identityId: SHARED_IDENTITY }),
       );
       const group = ReminderGroup.load(makeGroupState({ identityId: SHARED_IDENTITY }));
 
@@ -177,7 +177,7 @@ describe('ReminderPolicy', () => {
       const template = ReminderTemplate.load(
         makeTemplateState({ identityId: IdentityId.of(String(anotherIdentity)) }),
       );
-      const group = ReminderGroup.load(makeGroupState({ identityId: String(differentIdentity) }));
+      const group = ReminderGroup.load(makeGroupState({ identityId: differentIdentity }));
 
       expect(() => policy.assertValidGroupAssignment(template, group)).toThrow(
         'Reminder template and group must belong to the same identity',

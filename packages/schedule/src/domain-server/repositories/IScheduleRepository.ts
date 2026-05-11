@@ -30,6 +30,11 @@ export interface IScheduleRepository {
   deleteById(id: string): Promise<void>;
 
   /**
+   * Domain-command delete — deletes persistently then publishes aggregate domain events.
+   */
+  deleteAggregate(entry: CalendarEntry): Promise<void>;
+
+  /**
    * Find schedules that overlap a given time range for an account.
    * @param identityId The account to query
    * @param startTime Start of the query range (timestamp ms)

@@ -2,6 +2,10 @@ import type { Prisma, PrismaClient, EditorWorkspace as PrismaEditorWorkspace } f
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { PrismaEditorWorkspaceMapper } from './mappers/prisma-editor-workspace-mapper';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class EditorWorkspacePrismaRepository implements IEditorWorkspaceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -56,6 +60,13 @@ export class EditorWorkspacePrismaRepository implements IEditorWorkspaceReposito
     await this.prisma.editorWorkspace.delete({
       where: { id },
     });
+  }
+
+  async deleteAggregate(workspace: EditorWorkspace): Promise<void> {
+    await this.prisma.editorWorkspace.delete({
+      where: { id: workspace.id },
+    });
+    await publishAggregateEvents(workspace, eventBusAdapter);
   }
 
   async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {

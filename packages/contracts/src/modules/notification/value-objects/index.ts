@@ -66,3 +66,10 @@ export { ContentType } from './content-type';
 
 export type { NotificationTemplateDTO } from './notification-template';
 export type { SnoozeSessionDTO } from './snooze-session';
+export type {
+  TemplateContent,
+  EmailTemplateContent,
+  PushTemplateContent,
+  ChannelConfig,
+  NotificationTemplateConfigServerDTO,
+} from './notification-template-config';

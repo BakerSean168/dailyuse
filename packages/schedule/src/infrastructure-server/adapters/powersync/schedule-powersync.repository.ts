@@ -4,6 +4,10 @@ import {
   PowerSyncScheduleMapper,
   type PowerSyncScheduleRow,
 } from './mappers/powersync-schedule.mapper';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -95,6 +99,11 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
 
   async deleteById(id: string): Promise<void> {
     await this.db.execute('DELETE FROM schedules WHERE id = ?', [id]);
+  }
+
+  async deleteAggregate(entry: CalendarEntry): Promise<void> {
+    await this.db.execute('DELETE FROM schedules WHERE id = ?', [entry.id]);
+    await publishAggregateEvents(entry, eventBusAdapter);
   }
 
   async findByTimeRange(

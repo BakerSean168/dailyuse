@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { IdentityId } from '@dailyuse/domain-shared';
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { CreateTaskDependencyUseCaseUseCase } from '../create-task-dependency.use-case';
-import { DeleteTaskDependencyUseCaseUseCase } from '../delete-task-dependency.use-case';
-import { UpdateTaskDependencyUseCaseUseCase } from '../update-task-dependency.use-case';
-import { BindTaskToGoalUseCaseUseCase } from '../bind-task-to-goal.use-case';
-import { UnbindTaskFromGoalUseCaseUseCase } from '../unbind-task-from-goal.use-case';
+import { TaskDependency } from '@/domain-server/aggregates/task-dependency';
+import { CreateTaskDependencyUseCase } from '../create-task-dependency.use-case';
+import { DeleteTaskDependencyUseCase } from '../delete-task-dependency.use-case';
+import { UpdateTaskDependencyUseCase } from '../update-task-dependency.use-case';
+import { BindTaskToGoalUseCase } from '../bind-task-to-goal.use-case';
+import { UnbindTaskFromGoalUseCase } from '../unbind-task-from-goal.use-case';
 
 describe('Task dependency and goal binding use-cases', () => {
   let dependencyRepo: ReturnType<typeof createMockRepo<ITaskDependencyRepository>>;
@@ -19,7 +21,9 @@ describe('Task dependency and goal binding use-cases', () => {
       findByPredecessorAndSuccessorId: vi.fn(),
       create: vi.fn(),
       findById: vi.fn(),
+      findAggregateById: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
+      deleteAggregate: vi.fn().mockResolvedValue(undefined),
       update: vi.fn(),
     });
     templateRepo = createMockRepo<ITaskTemplateRepository>({
@@ -93,23 +97,31 @@ describe('Task dependency and goal binding use-cases', () => {
 
   describe('DeleteTaskDependencyUseCase', () => {
     it('returns NOT_FOUND when dependency is missing', async () => {
-      vi.mocked(dependencyRepo.findById).mockResolvedValue(null);
+      vi.mocked(dependencyRepo.findAggregateById).mockResolvedValue(null);
       const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-404');
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
-      expect(dependencyRepo.delete).not.toHaveBeenCalled();
+      expect(dependencyRepo.deleteAggregate).not.toHaveBeenCalled();
     });
 
-    it('deletes dependency and returns ok', async () => {
-      vi.mocked(dependencyRepo.findById).mockResolvedValue({ id: 'dep-1' } as any);
+    it('deletes dependency through deleteAggregate and returns ok', async () => {
+      const dependency = TaskDependency.create({
+        identityId: IdentityId.generate(),
+        predecessorTaskId: 'task-1',
+        successorTaskId: 'task-2',
+      });
+      dependency.pullDomainEvents();
+      vi.mocked(dependencyRepo.findAggregateById).mockResolvedValue(dependency);
       const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-1');
 
       expect(result).toBeOk();
-      expect(dependencyRepo.delete).toHaveBeenCalledWith('dep-1');
+      expect(dependencyRepo.deleteAggregate).toHaveBeenCalledWith(dependency);
+      expect(dependency.domainEvents).toHaveLength(1);
+      expect(dependency.domainEvents[0]?.eventType).toBe('task:dependency-deleted');
     });
   });
 

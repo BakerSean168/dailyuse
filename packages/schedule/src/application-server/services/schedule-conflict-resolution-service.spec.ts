@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { IdentityId } from '@dailyuse/domain-shared';
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
 import { ScheduleConflictDetectionService } from './schedule-conflict-detection-service';
@@ -51,8 +52,9 @@ const hour = (h: number): number => {
 describe('ScheduleConflictResolutionService', () => {
   it('creates a schedule and returns refreshed conflict information', async () => {
     const repository = new InMemoryScheduleRepository();
+    const identityId = IdentityId.generate();
     const existing = CalendarEntry.create({
-      identityId: 'acc-1',
+      identityId,
       title: 'Existing',
       startTime: hour(9),
       endTime: hour(10),
@@ -71,7 +73,7 @@ describe('ScheduleConflictResolutionService', () => {
         endTime: hour(10.5),
         duration: 60,
       },
-      'acc-1',
+      identityId,
     );
 
     expect(result.schedule.hasConflict).toBe(true);
@@ -82,14 +84,15 @@ describe('ScheduleConflictResolutionService', () => {
   it('auto-resolves a conflicting schedule using the first suggestion', async () => {
     const repository = new InMemoryScheduleRepository();
     const eventService = new ScheduleEventApplicationService(repository);
+    const identityId = IdentityId.generate();
     const first = await eventService.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'First',
       startTime: hour(9),
       endTime: hour(10),
     });
     const second = await eventService.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'Second',
       startTime: hour(9.5),
       endTime: hour(10.5),

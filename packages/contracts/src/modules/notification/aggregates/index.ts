@@ -22,3 +22,13 @@ export type {
 export type {
   NotificationPreferenceClientDTO,
 } from './notification-preference-client';
+
+// ===== NotificationTemplate Server =====
+export type {
+  NotificationTemplateServerDTO,
+} from './notification-template-server';
+
+// ===== NotificationTemplate Client =====
+export type {
+  NotificationTemplateClientDTO,
+} from './notification-template-client';

@@ -6,11 +6,16 @@
  */
 
 import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
+import type { IdentityId } from '@dailyuse/domain-shared';
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
 import { TaskDependency } from '@/domain-server/aggregates/task-dependency';
 import { PrismaTaskDependencyMapper } from './mappers/prisma-task-dependency-mapper';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class TaskDependencyPrismaRepository implements ITaskDependencyRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -34,7 +39,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       successorTaskId: data.successorTaskId,
       dependencyType: data.dependencyType,
       lagDays: data.lagDays,
-      identityId: data.identityId,
+      identityId: data.identityId as IdentityId,
     });
     const dto = entity.toServerDTO();
 
@@ -145,6 +150,16 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
 
   async delete(id: string): Promise<void> {
     await this.prisma.taskDependency.delete({ where: { id } });
+  }
+
+  async deleteAggregate(dependency: TaskDependency): Promise<void> {
+    await this.prisma.taskDependency.delete({ where: { id: dependency.id } });
+    await publishAggregateEvents(dependency, eventBusAdapter);
+  }
+
+  async findAggregateById(id: string): Promise<TaskDependency | null> {
+    const data = await this.prisma.taskDependency.findUnique({ where: { id } });
+    return data ? PrismaTaskDependencyMapper.toAggregate(data) : null;
   }
 
   async deleteByTaskId(taskId: string): Promise<void> {

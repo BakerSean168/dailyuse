@@ -19,7 +19,7 @@ import { generateUUID } from '@dailyuse/utils';
 // Helpers
 // ---------------------------------------------------------------------------
 
-const IDENTITY_ID = `IdentityId_${generateUUID()}`;
+const IDENTITY_ID = IdentityId.generate();
 
 function makeTemplateState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemplateState {
   const now = Date.now();
@@ -161,7 +161,7 @@ describe('ReminderDomainService', () => {
 
     it('should throw when group identity does not match', async () => {
       const foreignGroup = ReminderGroup.load(
-        makeGroupState({ identityId: 'IdentityId_other-user' }),
+        makeGroupState({ identityId: IdentityId.generate() }),
       );
       (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(foreignGroup);
 

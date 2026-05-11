@@ -5,6 +5,10 @@ import {
   PowerSyncEditorWorkspaceMapper,
   type PowerSyncEditorWorkspaceRow,
 } from './mappers/powersync-editor-workspace.mapper';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepository {
   constructor(private readonly db: IElectronDatabase) {}
@@ -47,6 +51,11 @@ export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepos
 
   async delete(id: string): Promise<void> {
     await this.db.execute(`DELETE FROM editor_workspaces WHERE id = ?`, [id]);
+  }
+
+  async deleteAggregate(workspace: EditorWorkspace): Promise<void> {
+    await this.db.execute(`DELETE FROM editor_workspaces WHERE id = ?`, [workspace.id]);
+    await publishAggregateEvents(workspace, eventBusAdapter);
   }
 
   async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {

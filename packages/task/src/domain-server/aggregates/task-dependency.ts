@@ -73,7 +73,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
    */
   public static create(props: {
     id?: string;
-    identityId: string;
+    identityId: IdentityId;
     predecessorTaskId: string;
     successorTaskId: string;
     dependencyType?: DependencyType;
@@ -90,7 +90,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
     const dependency = new TaskDependency({
       id,
-      identityId: props.identityId as IdentityId,
+      identityId: props.identityId,
       predecessorTaskId: props.predecessorTaskId,
       successorTaskId: props.successorTaskId,
       dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
@@ -102,7 +102,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     dependency.addDomainEvent<TaskEventMap['task:dependency-created']>(
       'task:dependency-created',
       {
-        identityId: props.identityId as IdentityId,
+        identityId: props.identityId,
         predecessorTaskId: props.predecessorTaskId as TaskTemplateId,
         successorTaskId: props.successorTaskId as TaskTemplateId,
         dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
@@ -144,6 +144,19 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
       { dependencyId: this.id as TaskDependencyId, changedFields: ['lagDays'] },
+    );
+  }
+
+  public delete(): void {
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<TaskEventMap['task:dependency-deleted']>(
+      'task:dependency-deleted',
+      {
+        dependencyId: this.id as TaskDependencyId,
+        predecessorTaskId: this._props.predecessorTaskId as TaskTemplateId,
+        successorTaskId: this._props.successorTaskId as TaskTemplateId,
+      },
     );
   }
 

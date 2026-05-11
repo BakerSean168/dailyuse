@@ -46,7 +46,7 @@ export class PowerSyncReminderGroupMapper {
       version: data.version ?? 1,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
-      deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
+      deletedAt: data.deleted_at ? new Date(data.deleted_at) : null,
     });
   }
 

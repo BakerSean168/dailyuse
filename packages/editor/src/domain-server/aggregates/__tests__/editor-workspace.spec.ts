@@ -136,6 +136,21 @@ describe('EditorWorkspace', () => {
     expect(workspace.isActive).toBe(false);
   });
 
+  it('emits a workspace-deleted event', () => {
+    const workspace = EditorWorkspace.create({
+      identityId: IdentityId.generate(),
+      name: 'Workspace',
+      projectPath: '/tmp/workspace',
+    });
+
+    workspace.pullDomainEvents();
+    workspace.delete();
+
+    const [event] = workspace.pullDomainEvents();
+    expect(event?.eventType).toBe('editor:workspace-deleted');
+    expect(event?.payload).toEqual({ workspaceId: workspace.id });
+  });
+
   it('converts to Server DTO', () => {
     const workspace = EditorWorkspace.create({
       identityId: IdentityId.generate(),

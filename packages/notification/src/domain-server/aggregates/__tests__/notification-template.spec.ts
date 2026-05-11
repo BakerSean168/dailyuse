@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import type { NotificationTemplateConfigServerDTO } from '@dailyuse/contracts/notification';
 import { NotificationTemplate } from '../notification-template';
 import { NotificationType, NotificationCategory } from '@dailyuse/contracts/notification';
-import type { NotificationTemplateConfigServerDTO } from '../../value-objects/NotificationTemplateConfig';
 
 describe('NotificationTemplate Aggregate Root', () => {
   function aTemplateConfig(
@@ -276,6 +276,23 @@ describe('NotificationTemplate Aggregate Root', () => {
       expect(dto.category).toBe(NotificationCategory.System);
       expect(dto.isActive).toBe(true);
       expect(dto.isSystemTemplate).toBe(false);
+      expect(typeof dto.createdAt).toBe('number');
+      expect(typeof dto.updatedAt).toBe('number');
+      expect(dto.template).toBeDefined();
+    });
+  });
+
+  describe('toClientDTO()', () => {
+    it('should convert to a client DTO', () => {
+      const tmpl = aTemplate();
+
+      const dto = tmpl.toClientDTO();
+
+      expect(dto.id).toBeTruthy();
+      expect(dto.name).toBe('Welcome Template');
+      expect(dto.type).toBe(NotificationType.Info);
+      expect(dto.category).toBe(NotificationCategory.System);
+      expect(dto.isActive).toBe(true);
       expect(typeof dto.createdAt).toBe('number');
       expect(typeof dto.updatedAt).toBe('number');
       expect(dto.template).toBeDefined();

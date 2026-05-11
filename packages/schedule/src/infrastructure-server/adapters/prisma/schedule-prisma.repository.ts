@@ -10,6 +10,10 @@ import type { PrismaClient, Schedule as PrismaSchedule } from '@dailyuse/databas
 import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
 import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class SchedulePrismaRepository implements IScheduleRepository {
   constructor(private prisma: PrismaClient) {}
@@ -99,6 +103,13 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     await this.prisma.schedule.delete({
       where: { id },
     });
+  }
+
+  async deleteAggregate(entry: CalendarEntry): Promise<void> {
+    await this.prisma.schedule.delete({
+      where: { id: entry.id },
+    });
+    await publishAggregateEvents(entry, eventBusAdapter);
   }
 
   /**

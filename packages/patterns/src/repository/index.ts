@@ -23,4 +23,8 @@ export interface IQuery {
 }
 
 // DDD Aggregate Repository Base
-export { AggregateRepositoryBase, type IAggregateRepository } from './aggregate-repository.base';
+export {
+  AggregateRepositoryBase,
+  publishAggregateEvents,
+  type IAggregateRepository,
+} from './aggregate-repository.base';

@@ -11,7 +11,7 @@ import type { PrismaClient, Account as PrismaAccount } from '@dailyuse/database'
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
 const logger = createLogger('PrismaAccountRepository');
@@ -75,7 +75,7 @@ export class PrismaAccountRepository
    */
   override async save(account: Account, tx?: unknown): Promise<void> {
     await this.persist(account, tx);
-    await this['publishDomainEvents'](account);
+    await publishAggregateEvents(account, this.eventBus);
   }
 
   async findById(id: string, tx?: unknown): Promise<Account | null> {

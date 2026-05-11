@@ -494,7 +494,7 @@ export function createReminderModule(
         stats: existing.stats as any,
         createdAt: existing.createdAt,
         updatedAt: new Date(),
-        deletedAt: existing.deletedAt?.getTime() ?? null,
+        deletedAt: existing.deletedAt,
         version: existing.version,
       });
       await reminderGroupRepository.save(updated);

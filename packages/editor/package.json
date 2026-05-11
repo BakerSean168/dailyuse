@@ -54,6 +54,7 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/patterns": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",

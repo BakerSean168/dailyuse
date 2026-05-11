@@ -25,6 +25,7 @@ export interface AuthSessionServerDTO {
   deviceInfo: DeviceInfo;
   refreshTokenHash?: string;
   status: SessionStatus;
+  version: number;
   createdAt: TransferDate;
   expiresAt: TransferDate;
   lastActiveAt: TransferDate;

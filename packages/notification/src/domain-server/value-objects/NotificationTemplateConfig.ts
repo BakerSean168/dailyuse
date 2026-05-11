@@ -10,57 +10,13 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-
-// ================= 本地类型定义 =================
-// 这些类型应该移到 @dailyuse/contracts/notification 中
-
-/**
- * 模板内容
- */
-export interface TemplateContent {
-  title: string;
-  content: string;
-  variables?: string[];
-}
-
-/**
- * 邮件模板内容
- */
-export interface EmailTemplateContent {
-  subject: string;
-  htmlBody?: string | null;
-  textBody?: string | null;
-}
-
-/**
- * 推送模板内容
- */
-export interface PushTemplateContent {
-  title: string;
-  body: string;
-  icon?: string | null;
-  sound?: string | null;
-}
-
-/**
- * 渠道配置
- */
-export interface ChannelConfig {
-  inApp: boolean;
-  email: boolean;
-  push: boolean;
-  sms: boolean;
-}
-
-/**
- * NotificationTemplateConfig Server DTO
- */
-export interface NotificationTemplateConfigServerDTO {
-  template: TemplateContent;
-  channels: ChannelConfig;
-  emailTemplate?: EmailTemplateContent | null;
-  pushTemplate?: PushTemplateContent | null;
-}
+import type {
+  TemplateContent,
+  EmailTemplateContent,
+  PushTemplateContent,
+  ChannelConfig,
+  NotificationTemplateConfigServerDTO,
+} from '@dailyuse/contracts/notification';
 
 /**
  * NotificationTemplateConfig Server Interface

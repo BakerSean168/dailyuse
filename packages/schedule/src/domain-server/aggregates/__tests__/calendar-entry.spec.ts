@@ -6,6 +6,7 @@
  */
 
 import { CalendarEntry } from '../calendar-entry';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { ScheduleId } from '../../../domain-shared/value-objects/schedule-id';
 
 describe('CalendarEntry Aggregate', () => {
@@ -13,13 +14,13 @@ describe('CalendarEntry Aggregate', () => {
 
   const createTestSchedule = (params: {
     id?: string;
-    identityId?: string;
+    identityId?: IdentityId;
     title?: string;
     startTime: number;
     endTime: number;
   }): CalendarEntry => {
     return CalendarEntry.create({
-      identityId: params.identityId || 'acc-123',
+      identityId: params.identityId ?? IdentityId.generate(),
       title: params.title || 'Test Meeting',
       startTime: params.startTime,
       endTime: params.endTime,
@@ -36,7 +37,7 @@ describe('CalendarEntry Aggregate', () => {
   describe('create()', () => {
     it('should create a schedule with valid parameters', () => {
       const schedule = CalendarEntry.create({
-        identityId: 'acc-123',
+        identityId: IdentityId.generate(),
         title: 'Team Meeting',
         description: 'Weekly sync',
         startTime: hour(14), // 2:00 PM
@@ -59,7 +60,7 @@ describe('CalendarEntry Aggregate', () => {
     it('should throw error if startTime >= endTime', () => {
       expect(() => {
         CalendarEntry.create({
-          identityId: 'acc-123',
+          identityId: IdentityId.generate(),
           title: 'Invalid Schedule',
           startTime: hour(15),
           endTime: hour(14), // endTime before startTime
@@ -70,7 +71,7 @@ describe('CalendarEntry Aggregate', () => {
     it('should throw error if startTime === endTime', () => {
       expect(() => {
         CalendarEntry.create({
-          identityId: 'acc-123',
+          identityId: IdentityId.generate(),
           title: 'Zero Duration',
           startTime: hour(14),
           endTime: hour(14), // Same time
@@ -81,7 +82,7 @@ describe('CalendarEntry Aggregate', () => {
     it('should throw error if priority is outside the supported range', () => {
       expect(() => {
         CalendarEntry.create({
-          identityId: 'acc-123',
+          identityId: IdentityId.generate(),
           title: 'Invalid Priority',
           startTime: hour(14),
           endTime: hour(15),
@@ -91,7 +92,7 @@ describe('CalendarEntry Aggregate', () => {
 
       expect(() => {
         CalendarEntry.create({
-          identityId: 'acc-123',
+          identityId: IdentityId.generate(),
           title: 'Invalid Priority',
           startTime: hour(14),
           endTime: hour(15),
@@ -102,7 +103,7 @@ describe('CalendarEntry Aggregate', () => {
 
     it('should calculate duration correctly', () => {
       const schedule = CalendarEntry.create({
-        identityId: 'acc-123',
+        identityId: IdentityId.generate(),
         title: 'Long Meeting',
         startTime: hour(9), // 9:00 AM
         endTime: hour(12), // 12:00 PM
@@ -115,9 +116,10 @@ describe('CalendarEntry Aggregate', () => {
   describe('load()', () => {
     it('should load schedule from state', () => {
       const scheduleId = ScheduleId.generate();
+      const identityId = IdentityId.generate();
       const dto = {
         id: scheduleId,
-        identityId: 'acc-789',
+        identityId,
         title: 'Client Meeting',
         description: 'Discuss project',
         startTime: hour(10),
@@ -135,7 +137,7 @@ describe('CalendarEntry Aggregate', () => {
       const schedule = CalendarEntry.load(dto);
 
       expect(schedule.id).toBe(scheduleId);
-      expect(schedule.identityId).toBe('acc-789');
+      expect(schedule.identityId).toBe(identityId);
       expect(schedule.title).toBe('Client Meeting');
       expect(schedule.hasConflict).toBe(true);
       expect(schedule.conflictingEntries).toEqual(['sched-111', 'sched-222']);
@@ -582,7 +584,7 @@ describe('CalendarEntry Aggregate', () => {
   describe('toServerDTO()', () => {
     it('should convert to ServerDTO correctly', () => {
       const schedule = CalendarEntry.create({
-        identityId: 'acc-123',
+        identityId: IdentityId.generate(),
         title: 'Team Standup',
         description: 'Daily sync',
         startTime: hour(9),
@@ -595,7 +597,7 @@ describe('CalendarEntry Aggregate', () => {
       const dto = schedule.toServerDTO();
 
       expect(dto.id).toBe(schedule.id);
-      expect(dto.identityId).toBe('acc-123');
+      expect(dto.identityId).toBe(schedule.identityId);
       expect(dto.title).toBe('Team Standup');
       expect(dto.description).toBe('Daily sync');
       expect(dto.duration).toBe(15);
@@ -608,7 +610,7 @@ describe('CalendarEntry Aggregate', () => {
 
     it('should handle nullable fields correctly', () => {
       const schedule = CalendarEntry.create({
-        identityId: 'acc-123',
+        identityId: IdentityId.generate(),
         title: 'Simple Meeting',
         startTime: hour(10),
         endTime: hour(11),
@@ -695,6 +697,20 @@ describe('CalendarEntry Aggregate', () => {
       expect(() => schedule.updateTitle('   ')).toThrow('Title cannot be empty');
       expect(() => schedule.updatePriority(0)).toThrow('Priority must be between 1 and 5');
       expect(() => schedule.updatePriority(6)).toThrow('Priority must be between 1 and 5');
+    });
+
+    it('emits a calendar-entry-deleted event', () => {
+      const schedule = createTestSchedule({
+        startTime: hour(9),
+        endTime: hour(10),
+      });
+
+      schedule.pullDomainEvents();
+      schedule.delete();
+
+      const [event] = schedule.pullDomainEvents();
+      expect(event?.eventType).toBe('schedule:calendar-entry-deleted');
+      expect(event?.payload).toEqual({ entryId: schedule.id });
     });
   });
 });

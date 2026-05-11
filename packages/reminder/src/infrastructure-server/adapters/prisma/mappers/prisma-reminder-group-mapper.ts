@@ -35,7 +35,7 @@ export class PrismaReminderGroupMapper {
       version: data.version,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt?.getTime() ?? null,
+      deletedAt: data.deletedAt ?? null,
     });
   }
 

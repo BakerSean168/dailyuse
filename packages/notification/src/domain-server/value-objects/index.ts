@@ -18,10 +18,5 @@ export {
 // Server-only value objects (not in domain-shared)
 export {
   NotificationTemplateConfig,
-  type TemplateContent,
-  type EmailTemplateContent,
-  type PushTemplateContent,
-  type ChannelConfig,
-  type NotificationTemplateConfigServerDTO,
   type NotificationTemplateConfigServer,
 } from './NotificationTemplateConfig';

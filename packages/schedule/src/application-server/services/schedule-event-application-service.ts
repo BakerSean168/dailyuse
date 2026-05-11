@@ -1,5 +1,6 @@
 import { toResultErrorException } from '@dailyuse/contracts/result';
 import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
+import type { IdentityId } from '@dailyuse/domain-shared';
 import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { ScheduleConflictCacheService } from './schedule-conflict-cache-service';
@@ -35,7 +36,7 @@ export class ScheduleEventApplicationService {
     return this.withScheduleRepository(async (scheduleRepository) => {
       const conflictCacheService = new ScheduleConflictCacheService(scheduleRepository);
       const schedule = CalendarEntry.create({
-        identityId: params.identityId,
+        identityId: params.identityId as IdentityId,
         title: params.title,
         startTime: params.startTime,
         endTime: params.endTime,
@@ -110,7 +111,8 @@ export class ScheduleEventApplicationService {
         ScheduleEventApplicationService.notFound(id);
       }
 
-      await scheduleRepository.deleteById(id);
+      schedule.delete();
+      await scheduleRepository.deleteAggregate(schedule);
       await conflictCacheService.refreshForTimeRange(
         schedule.identityId,
         schedule.startTime,

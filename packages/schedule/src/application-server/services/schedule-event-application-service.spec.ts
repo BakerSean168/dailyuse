@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { IdentityId } from '@dailyuse/domain-shared';
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
 import { ScheduleConflictDetectionService } from './schedule-conflict-detection-service';
@@ -23,6 +24,10 @@ class InMemoryScheduleRepository implements IScheduleRepository {
 
   async deleteById(id: string): Promise<void> {
     this.schedules.delete(id);
+  }
+
+  async deleteAggregate(entry: CalendarEntry): Promise<void> {
+    this.schedules.delete(entry.id);
   }
 
   async findByTimeRange(
@@ -53,7 +58,7 @@ describe('Schedule services', () => {
   it('detectConflictsForTimeRange is analysis-only and does not save', async () => {
     const repository = new InMemoryScheduleRepository();
     const existing = CalendarEntry.create({
-      identityId: 'acc-1',
+      identityId: IdentityId.generate(),
       title: 'Existing',
       startTime: hour(9),
       endTime: hour(10),
@@ -74,8 +79,9 @@ describe('Schedule services', () => {
 
   it('createSchedule refreshes conflict state for the new and existing events', async () => {
     const repository = new InMemoryScheduleRepository();
+    const identityId = IdentityId.generate();
     const existing = CalendarEntry.create({
-      identityId: 'acc-1',
+      identityId,
       title: 'Existing',
       startTime: hour(9),
       endTime: hour(10),
@@ -84,7 +90,7 @@ describe('Schedule services', () => {
 
     const service = new ScheduleEventApplicationService(repository);
     const created = await service.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'Created',
       startTime: hour(9.5),
       endTime: hour(10.5),
@@ -101,15 +107,16 @@ describe('Schedule services', () => {
   it('updateSchedule persists metadata changes and clears stale conflicts after moving the event', async () => {
     const repository = new InMemoryScheduleRepository();
     const service = new ScheduleEventApplicationService(repository);
+    const identityId = IdentityId.generate();
 
     const first = await service.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'First',
       startTime: hour(9),
       endTime: hour(10),
     });
     const second = await service.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'Second',
       startTime: hour(9.5),
       endTime: hour(10.5),
@@ -138,15 +145,16 @@ describe('Schedule services', () => {
   it('deleteSchedule refreshes remaining events in the old conflict window', async () => {
     const repository = new InMemoryScheduleRepository();
     const service = new ScheduleEventApplicationService(repository);
+    const identityId = IdentityId.generate();
 
     const first = await service.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'First',
       startTime: hour(9),
       endTime: hour(10),
     });
     const second = await service.createSchedule({
-      identityId: 'acc-1',
+      identityId,
       title: 'Second',
       startTime: hour(9.5),
       endTime: hour(10.5),

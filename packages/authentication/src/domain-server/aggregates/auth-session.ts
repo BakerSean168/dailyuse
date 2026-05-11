@@ -38,6 +38,7 @@ export interface AuthSessionState {
   deviceInfo: DeviceInfo;
   refreshTokenHash: string | undefined;
   status: typeof SessionStatus.Active;
+  version: number;
   createdAt: Date;
   expiresAt: Date;
   lastActiveAt: Date;
@@ -73,6 +74,10 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
 
   get status(): typeof SessionStatus.Active {
     return this._props.status;
+  }
+
+  get version(): number {
+    return this._props.version;
   }
 
   get createdAt(): Date {
@@ -111,6 +116,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       deviceInfo: DeviceInfo.fromDTO(params.deviceInfo),
       refreshTokenHash: params.refreshTokenHash,
       status: SessionStatus.Active,
+      version: 1,
       createdAt: now,
       expiresAt: new Date(params.expiresAt),
       lastActiveAt: now,
@@ -293,6 +299,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       deviceInfo: this._props.deviceInfo.toDTO(),
       refreshTokenHash: this._props.refreshTokenHash,
       status: this._props.status,
+      version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       expiresAt: this._props.expiresAt.getTime(),
       lastActiveAt: this._props.lastActiveAt.getTime(),
@@ -309,7 +316,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       identityId: this._props.identityId,
       deviceInfo: this._props.deviceInfo.toDTO(),
       isCurrentSession,
-      version: 1,
+      version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.lastActiveAt.getTime(), // Use lastActiveAt as updatedAt
       expiresAt: this._props.expiresAt.getTime(),

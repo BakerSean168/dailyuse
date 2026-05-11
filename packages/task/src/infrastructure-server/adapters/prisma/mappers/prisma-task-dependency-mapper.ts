@@ -8,6 +8,7 @@
 import type { TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
 import type { TaskDependencyServerDTO, DependencyType } from '@dailyuse/contracts/task';
 import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
+import { TaskDependency } from '../../../../domain-server/aggregates/task-dependency';
 
 export class PrismaTaskDependencyMapper {
   /**
@@ -31,5 +32,21 @@ export class PrismaTaskDependencyMapper {
    */
   static toDTOList(rows: PrismaTaskDependency[]): TaskDependencyServerDTO[] {
     return rows.map((row) => PrismaTaskDependencyMapper.toDTO(row));
+  }
+
+  /**
+   * Prisma record → TaskDependency aggregate
+   */
+  static toAggregate(data: PrismaTaskDependency): TaskDependency {
+    return TaskDependency.load({
+      id: data.id as TaskDependencyId,
+      identityId: data.identityId as IdentityId,
+      predecessorTaskId: data.predecessorTaskId,
+      successorTaskId: data.successorTaskId,
+      dependencyType: data.dependencyType as DependencyType,
+      lagDays: data.lagDays ?? undefined,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    });
   }
 }

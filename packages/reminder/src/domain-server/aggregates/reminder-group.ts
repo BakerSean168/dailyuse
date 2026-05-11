@@ -31,85 +31,59 @@ export interface ReminderGroupState {
   stats: GroupStats;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: number | null;
+  deletedAt: Date | null;
   version: number;
 }
 
 export class ReminderGroup extends AggregateRoot<string> {
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _controlMode: ControlMode;
-  private _enabled: boolean;
-  private _status: ReminderStatus;
-  private _order: number;
-  private _color: string | null;
-  private _icon: string | null;
-  private _stats: GroupStats;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: number | null;
-  private _version: number;
+  private _props: ReminderGroupState;
 
   private constructor(state: ReminderGroupState) {
     super(state.id);
-    this._identityId = state.identityId;
-    this._name = state.name;
-    this._description = state.description;
-    this._controlMode = state.controlMode;
-    this._enabled = state.enabled;
-    this._status = state.status;
-    this._order = state.order;
-    this._color = state.color;
-    this._icon = state.icon;
-    this._stats = state.stats;
-    this._createdAt = state.createdAt;
-    this._updatedAt = state.updatedAt;
-    this._deletedAt = state.deletedAt;
-    this._version = state.version;
+    this._props = state;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
   public get controlMode(): ControlMode {
-    return this._controlMode;
+    return this._props.controlMode;
   }
   public get enabled(): boolean {
-    return this._enabled;
+    return this._props.enabled;
   }
   public get status(): ReminderStatus {
-    return this._status;
+    return this._props.status;
   }
   public get order(): number {
-    return this._order;
+    return this._props.order;
   }
   public get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
   public get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
   public get stats(): IGroupStats {
-    return this._stats;
+    return this._props.stats;
   }
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
   public get deletedAt(): Date | null {
-    return this._deletedAt !== null ? new Date(this._deletedAt) : null;
+    return this._props.deletedAt;
   }
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   public static load(state: ReminderGroupState): ReminderGroup {
@@ -153,12 +127,12 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public switchToGroupControl(): void {
-    if (this._controlMode === ControlMode.Group) return;
-    const oldMode = this._controlMode;
-    this._controlMode = ControlMode.Group;
-    this._updatedAt = new Date(Date.now());
+    if (this._props.controlMode === ControlMode.Group) return;
+    const oldMode = this._props.controlMode;
+    this._props.controlMode = ControlMode.Group;
+    this._props.updatedAt = new Date();
     this.addDomainEvent<ReminderEventMap['reminder:group:control-mode-switched']>('reminder:group:control-mode-switched', {
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       groupId: this.id as ReminderGroupId,
       previousMode: oldMode,
       newMode: ControlMode.Group,
@@ -166,12 +140,12 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public switchToIndividualControl(): void {
-    if (this._controlMode === ControlMode.Individual) return;
-    const oldMode = this._controlMode;
-    this._controlMode = ControlMode.Individual;
-    this._updatedAt = new Date(Date.now());
+    if (this._props.controlMode === ControlMode.Individual) return;
+    const oldMode = this._props.controlMode;
+    this._props.controlMode = ControlMode.Individual;
+    this._props.updatedAt = new Date();
     this.addDomainEvent<ReminderEventMap['reminder:group:control-mode-switched']>('reminder:group:control-mode-switched', {
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       groupId: this.id as ReminderGroupId,
       previousMode: oldMode,
       newMode: ControlMode.Individual,
@@ -179,7 +153,7 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public toggleControlMode(): void {
-    if (this._controlMode === ControlMode.Group) {
+    if (this._props.controlMode === ControlMode.Group) {
       this.switchToIndividualControl();
     } else {
       this.switchToGroupControl();
@@ -187,27 +161,27 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public enable(): void {
-    this._enabled = true;
-    this._status = ReminderStatus.Active;
-    this._updatedAt = new Date(Date.now());
+    this._props.enabled = true;
+    this._props.status = ReminderStatus.Active;
+    this._props.updatedAt = new Date();
     this.addDomainEvent<ReminderEventMap['reminder:group:enabled']>('reminder:group:enabled', {
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       groupId: this.id as ReminderGroupId,
     });
   }
 
   public pause(): void {
-    this._enabled = false;
-    this._status = ReminderStatus.Paused;
-    this._updatedAt = new Date(Date.now());
+    this._props.enabled = false;
+    this._props.status = ReminderStatus.Paused;
+    this._props.updatedAt = new Date();
     this.addDomainEvent<ReminderEventMap['reminder:group:paused']>('reminder:group:paused', {
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       groupId: this.id as ReminderGroupId,
     });
   }
 
   public toggle(): void {
-    if (this._enabled) {
+    if (this._props.enabled) {
       this.pause();
     } else {
       this.enable();
@@ -215,19 +189,19 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public enableAllTemplates(): void {
-    if (this._controlMode !== ControlMode.Group) {
+    if (this._props.controlMode !== ControlMode.Group) {
       throw new Error('只能在 GROUP 模式下批量启用模板');
     }
-    this._enabled = true;
-    this._updatedAt = new Date(Date.now());
+    this._props.enabled = true;
+    this._props.updatedAt = new Date();
   }
 
   public pauseAllTemplates(): void {
-    if (this._controlMode !== ControlMode.Group) {
+    if (this._props.controlMode !== ControlMode.Group) {
       throw new Error('只能在 GROUP 模式下批量暂停模板');
     }
-    this._enabled = false;
-    this._updatedAt = new Date(Date.now());
+    this._props.enabled = false;
+    this._props.updatedAt = new Date();
   }
 
   public enableGroupAndAllTemplates(): void {
@@ -241,39 +215,39 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public updateStats(stats: GroupStats): void {
-    this._stats = stats;
-    this._updatedAt = new Date(Date.now());
+    this._props.stats = stats;
+    this._props.updatedAt = new Date();
   }
 
   public getTemplatesCount(): number {
-    return this._stats.totalTemplates;
+    return this._props.stats.totalTemplates;
   }
 
   public getActiveTemplatesCount(): number {
-    return this._stats.activeTemplates;
+    return this._props.stats.activeTemplates;
   }
 
   public activate(): void {
-    this._status = ReminderStatus.Active;
-    this._deletedAt = null;
-    this._updatedAt = new Date(Date.now());
+    this._props.status = ReminderStatus.Active;
+    this._props.deletedAt = null;
+    this._props.updatedAt = new Date();
   }
 
   public softDelete(): void {
-    this._deletedAt = Date.now();
-    this._status = ReminderStatus.Paused;
-    this._updatedAt = new Date(Date.now());
+    this._props.deletedAt = new Date();
+    this._props.status = ReminderStatus.Paused;
+    this._props.updatedAt = new Date();
     this.addDomainEvent<ReminderEventMap['reminder:group:deleted']>('reminder:group:deleted', {
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       groupId: this.id,
-      groupName: this._name,
+      groupName: this._props.name,
     });
   }
 
   public restore(): void {
-    this._deletedAt = null;
-    this._status = ReminderStatus.Active;
-    this._updatedAt = new Date(Date.now());
+    this._props.deletedAt = null;
+    this._props.status = ReminderStatus.Active;
+    this._props.updatedAt = new Date();
   }
 
   public toServerDTO(): ReminderGroupServerDTO {
@@ -288,7 +262,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       order: this.order,
       color: this.color,
       icon: this.icon,
-      stats: this._stats.toDTO(),
+      stats: this._props.stats.toDTO(),
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
@@ -309,7 +283,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       color: this.color,
       icon: this.icon,
       stats: {
-        ...this._stats.toDTO(),
+        ...this._props.stats.toDTO(),
       },
       version: this.version,
       createdAt: this.createdAt.getTime(),

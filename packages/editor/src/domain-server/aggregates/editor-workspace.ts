@@ -226,6 +226,14 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
     this._props.updatedAt = new Date();
   }
 
+  delete(): void {
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<EditorEventMap['editor:workspace-deleted']>('editor:workspace-deleted', {
+      workspaceId: this.id,
+    });
+  }
+
   addSession(session: EditorSession): void {
     this._props.sessions.push(session);
     this._props.lastActiveSessionId = session.id;
