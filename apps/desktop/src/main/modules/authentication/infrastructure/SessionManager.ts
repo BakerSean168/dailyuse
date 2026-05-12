@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { app } from 'electron';
 import * as os from 'os';
+import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
 import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
 import type { IdentityId, AuthSessionId } from '@dailyuse/contracts/authentication';
@@ -65,6 +66,10 @@ type OfflineLoginResponse = {
   error?: string;
   authMode?: AuthMode;
 };
+
+function toIdentityId(value: string | IdentityId): IdentityId {
+  return IdentityIdValue.of(String(value));
+}
 
 function toErrorLog(error: unknown): unknown {
   if (error instanceof Error) {
@@ -256,7 +261,7 @@ export class SessionManager {
       if (!session) {
         this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
         const activeSessions = await this.sessionRepository.findByIdentityId(
-          tokenData.identityId as unknown as IdentityId,
+          toIdentityId(tokenData.identityId),
         );
         const validActiveSession = activeSessions.find((candidate) => candidate.isValid());
 
@@ -491,7 +496,7 @@ export class SessionManager {
 
     const session = AuthSession.create({
       id: generateUUID() as unknown as AuthSessionId,
-      identityId: verification.identityId! as unknown as IdentityId,
+      identityId: toIdentityId(verification.identityId!),
       refreshTokenHash: generateUUID(),
       expiresAt: Date.now() + 3600 * 1000,
 
@@ -506,8 +511,8 @@ export class SessionManager {
       refreshToken: SessionManager.LOCAL_ACCESS_TOKEN,
       accessTokenExpiresIn: 3600,
       refreshTokenExpiresIn: 30 * 24 * 3600,
-      identityId: session?.identityId,
-      sessionId: session?.id,
+      identityId: toIdentityId(session.identityId),
+      sessionId: session.id,
     });
 
     this.startCurrentSessionLifecycle();
@@ -575,7 +580,7 @@ export class SessionManager {
         accessToken: params.accessToken,
         refreshToken: params.refreshToken,
         accessTokenExpiresIn: params.expiresIn ?? 3600,
-        identityId: params.identityId,
+        identityId: toIdentityId(params.identityId),
         sessionId: params.sessionId,
       });
     } catch (error) {
@@ -615,7 +620,7 @@ export class SessionManager {
 
     const session = AuthSession.create({
       id: params.sessionId as unknown as AuthSessionId,
-      identityId: params.identityId as unknown as IdentityId,
+      identityId: toIdentityId(params.identityId),
       refreshTokenHash: generateUUID(),
       expiresAt: Date.now() + (params.expiresIn ?? 3600) * 1000,
       deviceInfo: device.toDTO(),
@@ -717,7 +722,7 @@ export class SessionManager {
 
     try {
       const sessions = await this.sessionRepository.findByIdentityId(
-        identityId as unknown as IdentityId,
+        toIdentityId(identityId),
       );
       let cleanedCount = 0;
 
@@ -806,7 +811,7 @@ export class SessionManager {
 
       // Create identity using the server's identity ID so local tables stay consistent
       const identity = await AuthIdentity.createWithEmailAndPassword({
-        id: identityId as unknown as IdentityId,
+        id: toIdentityId(identityId),
         email,
         plainPassword,
         hasher: this.passwordHasher,
@@ -921,7 +926,7 @@ export class SessionManager {
         await this.tokenManager.clearTokens();
       } else {
         const existingGuestSessions = await this.sessionRepository.findByIdentityId(
-          cachedGuestId as unknown as IdentityId,
+          toIdentityId(cachedGuestId),
         );
         if (existingGuestSessions.length > 0) {
           const guestSession = existingGuestSessions[0];
@@ -953,7 +958,7 @@ export class SessionManager {
 
     const session = AuthSession.create({
       id: generateUUID() as unknown as AuthSessionId,
-      identityId: guestId as unknown as IdentityId,
+      identityId: toIdentityId(guestId),
       refreshTokenHash: generateUUID(),
       expiresAt: Date.now() + 3600 * 1000,
 
@@ -977,8 +982,8 @@ export class SessionManager {
         refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
         accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
         refreshTokenExpiresIn: 365 * 24 * 3600,
-        identityId: guestId as unknown as IdentityId,
-        sessionId: session?.id,
+        identityId: toIdentityId(guestId),
+        sessionId: session.id,
       });
     } catch (error) {
       session.revoke();
@@ -1016,7 +1021,7 @@ export class SessionManager {
 
     if (cachedGuestId && this.isGuestToken(tokenData)) {
       const guestSessions = await this.sessionRepository.findByIdentityId(
-        cachedGuestId as unknown as IdentityId,
+        toIdentityId(cachedGuestId),
       );
       for (const session of guestSessions) {
         session.revoke();
@@ -1107,7 +1112,7 @@ export class SessionManager {
 
     const session = AuthSession.create({
       id: tokenData.sessionId as unknown as AuthSessionId,
-      identityId: tokenData.identityId as unknown as IdentityId,
+      identityId: toIdentityId(tokenData.identityId),
       refreshTokenHash: generateUUID(),
       expiresAt,
       deviceInfo: device.toDTO(),

@@ -58,6 +58,7 @@ import {
   type TokenStorageData,
   type AuthBootstrapSnapshot,
 } from '@dailyuse/contracts/authentication';
+import { IdentityId } from '@dailyuse/domain-shared';
 import {
   TokenManager,
   getTokenManager,
@@ -576,7 +577,7 @@ export class AuthDesktopApplicationService {
     this.initializePowerSyncAsync(AuthMode.ONLINE_USER);
 
     await this.rememberedAccounts.recordLogin({
-      identityId,
+      identityId: IdentityId.of(identityId),
       identifier: request.email,
       nickname: request.username ?? null,
       avatarUrl: null,
@@ -1147,7 +1148,7 @@ export class AuthDesktopApplicationService {
 
   async removeRememberedAccount(identityId: string): Promise<IpcResult<void>> {
     try {
-      await this.rememberedAccounts.remove(identityId);
+      await this.rememberedAccounts.remove(IdentityId.of(identityId));
       return toIpcResult(ok(undefined));
     } catch (error) {
       return toIpcResult(

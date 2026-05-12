@@ -2,10 +2,12 @@ import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import type { IdentityId } from '@dailyuse/contracts/authentication';
+import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { createLogger, type ILogger } from '@dailyuse/utils';
 
 export interface RememberedAccountRecord {
-  identityId: string;
+  identityId: IdentityId;
   identifier: string;
   nickname: string | null;
   avatarUrl: string | null;
@@ -17,12 +19,28 @@ export interface RememberedAccountRecord {
   encryptedPassword?: string;
 }
 
+interface SerializedRememberedAccountRecord {
+  identityId: string;
+  identifier: string;
+  nickname: string | null;
+  avatarUrl: string | null;
+  rememberPassword: boolean;
+  autoLogin: boolean;
+  lastUsedAt: number;
+  lastLoginAt: number;
+  encryptedPassword?: string;
+}
+
 interface RememberedAccountsFile {
   accounts: RememberedAccountRecord[];
 }
 
+interface SerializedRememberedAccountsFile {
+  accounts: SerializedRememberedAccountRecord[];
+}
+
 interface RecordLoginInput {
-  identityId: string;
+  identityId: IdentityId;
   identifier: string;
   nickname?: string | null;
   avatarUrl?: string | null;
@@ -33,6 +51,10 @@ interface RecordLoginInput {
 }
 
 const DEFAULT_FILE: RememberedAccountsFile = { accounts: [] };
+
+function toIdentityId(value: string | IdentityId): IdentityId {
+  return IdentityIdValue.of(String(value));
+}
 
 export class RememberedAccountsService {
   private static instance: RememberedAccountsService | null = null;
@@ -101,12 +123,13 @@ export class RememberedAccountsService {
   }
 
   async updateProfile(
-    identityId: string,
+    identityId: string | IdentityId,
     profile: { nickname?: string | null; avatarUrl?: string | null },
   ): Promise<void> {
     const data = await this.read();
+    const normalizedIdentityId = toIdentityId(identityId);
     const accounts = data.accounts.map((account) =>
-      account.identityId === identityId
+      account.identityId === normalizedIdentityId
         ? {
             ...account,
             nickname:
@@ -119,9 +142,10 @@ export class RememberedAccountsService {
     await this.write({ accounts });
   }
 
-  async remove(identityId: string): Promise<void> {
+  async remove(identityId: string | IdentityId): Promise<void> {
     const data = await this.read();
-    const accounts = data.accounts.filter((account) => account.identityId !== identityId);
+    const normalizedIdentityId = toIdentityId(identityId);
+    const accounts = data.accounts.filter((account) => account.identityId !== normalizedIdentityId);
     await this.write({ accounts });
   }
 
@@ -138,7 +162,7 @@ export class RememberedAccountsService {
       return safeStorage.decryptString(buffer);
     } catch {
       this.logger.warn('Failed to decrypt password for account', {
-        identityId: account.identityId,
+        identityId: String(account.identityId),
       });
       return null;
     }
@@ -151,9 +175,14 @@ export class RememberedAccountsService {
 
     try {
       const raw = await fs.readFile(this.filePath, 'utf8');
-      const parsed = JSON.parse(raw) as RememberedAccountsFile;
+      const parsed = JSON.parse(raw) as SerializedRememberedAccountsFile;
       this.cache = {
-        accounts: Array.isArray(parsed.accounts) ? parsed.accounts : [],
+        accounts: Array.isArray(parsed.accounts)
+          ? parsed.accounts.map((account) => ({
+              ...account,
+              identityId: toIdentityId(account.identityId),
+            }))
+          : [],
       };
       return this.cache;
     } catch (error) {
@@ -169,7 +198,13 @@ export class RememberedAccountsService {
   private async write(data: RememberedAccountsFile): Promise<void> {
     this.cache = data;
     await fs.mkdir(path.dirname(this.filePath), { recursive: true });
-    await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf8');
+    const serialized: SerializedRememberedAccountsFile = {
+      accounts: data.accounts.map((account) => ({
+        ...account,
+        identityId: String(account.identityId),
+      })),
+    };
+    await fs.writeFile(this.filePath, JSON.stringify(serialized, null, 2), 'utf8');
   }
 
   private buildFallbackNickname(identifier: string): string {
