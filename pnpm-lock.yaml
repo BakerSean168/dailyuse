@@ -478,6 +478,9 @@ importers:
       '@dailyuse/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@dailyuse/domain-shared':
+        specifier: workspace:*
+        version: link:../../packages/domain-shared
       '@dailyuse/goal':
         specifier: workspace:*
         version: link:../../packages/goal
