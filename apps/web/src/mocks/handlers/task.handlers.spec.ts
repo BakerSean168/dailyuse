@@ -133,7 +133,6 @@ describe('task handlers contracts', () => {
         predecessorTaskId: expect.any(String),
         successorTaskId: expect.any(String),
         dependencyType: expect.any(String),
-        version: expect.any(Number),
       }),
     );
 

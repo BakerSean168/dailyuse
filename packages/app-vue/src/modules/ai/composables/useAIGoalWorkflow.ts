@@ -40,6 +40,8 @@ export interface UseAIGoalWorkflowOptions {
   addKeyResult: (goalId: string, req: AddKeyResultReq) => Promise<unknown>;
 }
 
+type GenerateGoalRequest = Parameters<UseAIGoalWorkflowOptions['service']['generateGoal']>[0];
+
 export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const { t } = useI18n();
   const router = useRouter();
@@ -170,7 +172,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       const response = (await options.service.generateGoal({
         idea: options.buildConversationTranscript(),
         includeKeyResults: true,
-        providerId: options.selectedModel.value.providerId,
+        providerId: options.selectedModel.value.providerId as GenerateGoalRequest['providerId'],
         model: options.selectedModel.value.modelId,
         clarificationAnswers: goalClarification.value
           ? clarificationAnswers.value.map((item) => item.trim())
@@ -236,7 +238,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
               }))
             : undefined,
         },
-        providerId: options.selectedModel.value.providerId,
+        providerId: options.selectedModel.value.providerId as GenerateGoalRequest['providerId'],
         model: options.selectedModel.value.modelId,
       })) as GenerateGoalsRes;
 
@@ -297,7 +299,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         approvedSummary: goalAutomationResult.value.summary,
         approvedPlan: goalAutomationResult.value.plan,
         approvedActions: goalAutomationResult.value.actions,
-        providerId: options.selectedModel.value.providerId,
+        providerId: options.selectedModel.value.providerId as GenerateGoalRequest['providerId'],
         model: options.selectedModel.value.modelId,
       })) as GenerateGoalsRes;
 

@@ -1,15 +1,39 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { Result } from '@dailyuse/contracts/result';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { GoalBindingOption, KeyResultBindingOption } from '../components/types';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
 
-type GoalRecord = Record<string, unknown>;
-type GoalLike = { toDTO?: () => GoalRecord } | GoalRecord;
-type KeyResultLike = { toDTO?: () => GoalRecord } | GoalRecord;
+type GoalOptionDTO = {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string | null;
+  status?: string;
+};
 
-function toPlainObject<T extends GoalRecord>(value: T | { toDTO?: () => T }): T {
+type KeyResultProgressDTO = {
+  currentValue?: number;
+  current?: number;
+  targetValue?: number;
+  target?: number;
+  progressPercentage?: number;
+  percentage?: number;
+};
+
+type KeyResultOptionDTO = {
+  id: string;
+  title?: string;
+  weight?: number;
+  progress?: KeyResultProgressDTO;
+};
+
+type GoalLike = { toDTO?: () => GoalOptionDTO } | GoalOptionDTO;
+type KeyResultLike = { toDTO?: () => KeyResultOptionDTO } | KeyResultOptionDTO;
+
+function toPlainObject<T extends object>(value: T | { toDTO?: () => T }): T {
   if (value && typeof (value as { toDTO?: () => T }).toDTO === 'function') {
     return (value as { toDTO: () => T }).toDTO();
   }
@@ -59,9 +83,9 @@ export function useTaskGoalBindingOptions() {
   const loadError = ref<string | null>(null);
 
   async function executeGoalBindingOperation<T>(
-    operation: () => Promise<{ ok: boolean; data?: T; error?: { code?: string; message?: string } }>,
+    operation: () => Promise<Result<T>>,
     fallbackKey: string,
-  ) {
+  ): Promise<Result<T>> {
     return executeDesktopAuthenticatedResult({
       operation,
       logScope: 'TaskGoalBindingOptions',

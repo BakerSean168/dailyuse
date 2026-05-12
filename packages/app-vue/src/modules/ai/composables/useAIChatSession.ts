@@ -1,10 +1,19 @@
 import { computed, nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
-import type { ChatItem, ChatModelOption, ConversationSummary, StreamDoneResult, AIChatService } from './types';
+import type {
+  AIChatService,
+  ChatItem,
+  ChatModelOption,
+  ConversationMessageSummary,
+  ConversationSummary,
+  StreamDoneResult,
+} from './types';
 import { getAIErrorMessage } from './error';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
+type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
+type StreamMessageRequest = Parameters<AIChatService['streamMessage']>[0];
 
 export interface UseAIChatSessionOptions {
   service: AIChatService;
@@ -41,13 +50,13 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   }
 
   function normalizeChatItem(
-    item: Partial<{ id: string; role: string; content: string }>,
+    item: Partial<ConversationMessageSummary>,
     index: number,
   ): ChatItem {
     return {
-      id: item.id || `message-${index}`,
+      id: item.id ? String(item.id) : `message-${index}`,
       role: normalizeChatRole(item.role),
-      content: item.content || '',
+      content: typeof item.content === 'string' ? item.content : '',
       status: 'success',
     };
   }
@@ -98,9 +107,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   ) {
     conversationListLoading.value = true;
     try {
-      const result = (await loadService.listConversations({ page: 1, pageSize: 24 })) as {
-        data?: ConversationSummary[];
-      };
+      const result = await loadService.listConversations({ page: 1, pageSize: 24 });
       conversationList.value = result.data ?? [];
 
       if (listOptions?.preserveSelection !== false && chatConversationId.value) {
@@ -127,16 +134,16 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     abortActiveStream();
     chatConversationId.value = item.id;
     conversationTitle.value =
-      item.name || item.title || t('aiAssistant.dialogs.chat.defaultConversationName');
-    updateLastActiveConversation(item.id);
-    syncModel(getConversationModelKey(item.id));
+      item.name || t('aiAssistant.dialogs.chat.defaultConversationName');
+    updateLastActiveConversation(String(item.id));
+    syncModel(getConversationModelKey(String(item.id)));
 
     try {
       const result = await loadService.listMessages(item.id, { page: 1, pageSize: 80 });
       chatTimeline.value = (result.data ?? []).map((message, index) =>
         normalizeChatItem(message, index),
       );
-      options.restoreWorkflowState?.(item.id);
+      options.restoreWorkflowState?.(String(item.id));
     } catch (error) {
       toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.chat.loadFailed'));
     }
@@ -149,7 +156,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     onClearModel: (id: string) => void,
   ) {
     try {
-      await loadService.deleteConversation(id);
+      await loadService.deleteConversation(id as DeleteConversationId);
       onClearWorkflow(id);
       onClearModel(id);
       if (chatConversationId.value === id) {
@@ -173,10 +180,10 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     const conversation = (await loadService.createConversation({
       name: conversationName,
     }));
-    chatConversationId.value = conversation.id;
-    updateLastActiveConversation(conversation.id);
-    options.onConversationCreated?.(conversation.id);
-    return conversation.id;
+    chatConversationId.value = String(conversation.id);
+    updateLastActiveConversation(String(conversation.id));
+    options.onConversationCreated?.(String(conversation.id));
+    return String(conversation.id);
   }
 
   function resetChatSession(mode: string = 'chat', getDefaultName: (m: string) => string) {
@@ -225,9 +232,9 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
 
       await loadService.streamMessage(
         {
-          conversationId,
+          conversationId: conversationId as StreamMessageRequest['conversationId'],
           content: pendingUserMessage,
-          providerId: selectedModel.providerId,
+          providerId: selectedModel.providerId as StreamMessageRequest['providerId'],
           model: selectedModel.modelId,
         },
         {
@@ -246,7 +253,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
             );
             if (assistantIndex >= 0 && resolved.assistantMessage) {
               chatTimeline.value[assistantIndex] = {
-                id: resolved.assistantMessage.id,
+                id: String(resolved.assistantMessage.id),
                 role: 'assistant',
                 content: resolved.assistantMessage.content,
                 status: 'success',
@@ -255,7 +262,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
             const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
             if (userIndex >= 0 && resolved.userMessage) {
               chatTimeline.value[userIndex] = {
-                id: resolved.userMessage.id,
+                id: String(resolved.userMessage.id),
                 role: 'user',
                 content: resolved.userMessage.content,
                 status: 'success',

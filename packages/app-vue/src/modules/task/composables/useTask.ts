@@ -17,8 +17,8 @@ import type {
   UpdateTaskTemplateReq,
   DependencyType,
 } from '@dailyuse/contracts/task';
+import type { GoalId, TaskFolderId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
-import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 import { translateResultError } from '../../../shared/utils/translateResultError';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
 
@@ -30,6 +30,11 @@ type TaskTemplateListParams = {
   folderId?: string;
   tags?: string[];
 };
+
+type TaskTemplateDTO = ReturnType<typeof useTaskStore>['templates'][number];
+type TaskInstanceDTO = ReturnType<typeof useTaskStore>['instances'][number];
+type TaskTemplateEntityLike = { toDTO(): TaskTemplateDTO };
+type TaskInstanceEntityLike = { toDTO(): TaskInstanceDTO };
 
 export function useTask() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
@@ -56,7 +61,7 @@ export function useTask() {
   async function executeTaskOperation<T>(
     operation: () => Promise<Result<T>>,
     fallbackKey: string,
-  ) {
+  ): Promise<Result<T>> {
     return executeDesktopAuthenticatedResult({
       operation,
       logScope: 'Task',
@@ -68,16 +73,27 @@ export function useTask() {
     });
   }
 
+  function buildTemplateListParams(
+    query?: TaskTemplateListParams,
+  ): Parameters<typeof service.listTemplates>[0] {
+    const payload: NonNullable<Parameters<typeof service.listTemplates>[0]> = {
+      page: query?.page ?? store.pagination.page,
+      limit: query?.limit ?? store.pagination.pageSize,
+      ...(query?.status ? { status: query.status } : {}),
+      ...(query?.goalId ? { goalId: query.goalId as GoalId } : {}),
+      ...(query?.folderId ? { folderId: query.folderId as TaskFolderId } : {}),
+      ...(query?.tags ? { tags: query.tags } : {}),
+    };
+
+    return sanitizeForIpc(payload) as Parameters<typeof service.listTemplates>[0];
+  }
+
   // ========== Templates ==========
   async function fetchTemplates(query?: TaskTemplateListParams) {
     store.setLoading(true);
     store.setError(null);
     try {
-      const payload = sanitizeForIpc({
-        page: query?.page ?? store.pagination.page,
-        limit: query?.limit ?? store.pagination.pageSize,
-        ...query,
-      });
+      const payload = buildTemplateListParams(query);
       const result = await executeTaskOperation(
         () => service.listTemplates(payload),
         'task.error.loadTemplatesFailed',
@@ -85,7 +101,9 @@ export function useTask() {
 
       if (result.ok) {
         store.setTemplates(
-          (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),
+          (result.data.templates ?? []).map((template) =>
+            (template as TaskTemplateEntityLike).toDTO(),
+          ),
           result.data.total ?? 0,
         );
       }
@@ -98,11 +116,7 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const payload = sanitizeForIpc({
-        page: query?.page ?? store.pagination.page,
-        limit: query?.limit ?? store.pagination.pageSize,
-        ...query,
-      });
+      const payload = buildTemplateListParams(query);
       const result = await executeTaskOperation(
         () => service.getTaskGraph(payload),
         'task.error.loadTemplatesFailed',
@@ -110,7 +124,9 @@ export function useTask() {
 
       if (result.ok) {
         store.setTemplates(
-          (result.data.templates ?? []).map((template: TaskTemplate) => template.toDTO()),
+          (result.data.templates ?? []).map((template) =>
+            (template as TaskTemplateEntityLike).toDTO(),
+          ),
           result.data.total ?? 0,
         );
         store.setDependencies(result.data.dependencies ?? []);
@@ -240,8 +256,8 @@ export function useTask() {
     const result = await executeTaskOperation(
       () =>
         service.createDependency(request.successorTaskId, {
-          predecessorTaskId: request.predecessorTaskId,
-          successorTaskId: request.successorTaskId,
+          predecessorTaskId: request.predecessorTaskId as TaskTemplateId,
+          successorTaskId: request.successorTaskId as TaskTemplateId,
           dependencyType: request.dependencyType,
         }),
       'task.error.operationFailed',
@@ -282,7 +298,9 @@ export function useTask() {
       );
 
       if (result.ok) {
-        store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
+        store.setInstances(
+          (result.data ?? []).map((instance) => (instance as TaskInstanceEntityLike).toDTO()),
+        );
       }
     } finally {
       store.setLoading(false);
@@ -299,7 +317,9 @@ export function useTask() {
       );
 
       if (result.ok) {
-        store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
+        store.setInstances(
+          (result.data ?? []).map((instance) => (instance as TaskInstanceEntityLike).toDTO()),
+        );
       }
     } finally {
       store.setLoading(false);

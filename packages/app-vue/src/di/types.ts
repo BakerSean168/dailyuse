@@ -29,50 +29,21 @@ type PublicInterface<T> = { [K in keyof T]: T[K] };
 
 export type IAccountService = PublicInterface<any>;
 export type IAuthService = PublicInterface<any>;
-export type IGoalService = PublicInterface<any>;
-export type ITaskService = PublicInterface<any>;
+export type IGoalService = PublicInterface<
+  import('@dailyuse/goal/application-client').GoalClientService
+>;
+export type ITaskService = PublicInterface<
+  import('@dailyuse/task/application-client').TaskClientService
+>;
 export type IScheduleService = PublicInterface<any>;
 export type IReminderService = PublicInterface<any>;
 export type IRepositoryService = PublicInterface<any>;
 export type IEditorService = PublicInterface<any>;
 export type INotificationService = PublicInterface<any>;
 export type ISettingService = PublicInterface<any>;
-export interface IAIService {
-  getCapabilities(): Promise<unknown>;
-  getEvaluationOverview(request?: unknown): Promise<unknown>;
-  createProvider(request: unknown): Promise<unknown>;
-  updateProvider(id: string, request: unknown): Promise<unknown>;
-  listProviders(): Promise<unknown>;
-  getProvider(id: string): Promise<unknown>;
-  deleteProvider(id: string): Promise<void>;
-  testProvider(request: unknown): Promise<unknown>;
-  setDefaultProvider(providerId: string): Promise<void>;
-  refreshProviderModels(id: string): Promise<unknown>;
-  generateGoal(request: unknown): Promise<unknown>;
-  createConversation(request: unknown): Promise<unknown>;
-  updateConversation(id: string, request: unknown): Promise<unknown>;
-  listConversations(params?: { page?: number; pageSize?: number }): Promise<unknown>;
-  getConversation(id: string): Promise<unknown>;
-  deleteConversation(id: string): Promise<void>;
-  sendMessage(request: unknown): Promise<unknown>;
-  streamMessage(
-    request: unknown,
-    handlers: {
-      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
-      onDone?: (result: unknown) => void;
-    },
-    signal?: AbortSignal,
-  ): Promise<void>;
-  listMessages(
-    conversationId: string,
-    params?: { page?: number; pageSize?: number },
-  ): Promise<unknown>;
-  expandKnowledge(request: unknown): Promise<unknown>;
-  queryKnowledge(request: unknown): Promise<unknown>;
-  reindexKnowledge(request: unknown): Promise<unknown>;
-  createKnowledgeNote(request: unknown): Promise<unknown>;
-  queryAnalytics(request: unknown): Promise<unknown>;
-}
+export type IAIService = PublicInterface<
+  import('@dailyuse/ai/application-client').AIClientService
+>;
 
 // ── Governance（结构化 service interface）──
 export type IRuleService = PublicInterface<
