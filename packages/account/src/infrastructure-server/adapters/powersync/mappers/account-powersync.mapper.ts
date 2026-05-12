@@ -37,7 +37,7 @@ export class AccountPowerSyncMapper {
     const state: AccountState = {
       id: IdentityId.of(row.id),
       status: AccountStatus.of(row.status),
-      profile: AccountProfile.fromDTO({
+      profile: AccountProfile.create({
         nickname: profile.nickname,
         realName: profile.realName,
         avatarUrl: profile.avatarUrl,
@@ -45,13 +45,13 @@ export class AccountPowerSyncMapper {
         gender: profile.gender,
         birthday: profile.birthday ? new Date(profile.birthday).getTime() : null,
       }),
-      settings: AccountSettings.fromDTO({
+      settings: AccountSettings.create({
         theme: settings.theme,
         language: settings.language,
         timezone: settings.timezone,
         notificationEnabled: settings.notificationEnabled,
       }),
-      email: ContactEmail.fromDTO({
+      email: ContactEmail.create({
         address: row.email_address,
         isVerified: this.toBoolean(row.email_is_verified),
         verifiedAt: row.email_verified_at ? new Date(row.email_verified_at).getTime() : null,
@@ -59,7 +59,7 @@ export class AccountPowerSyncMapper {
       }),
       phone:
         row.phone_number && row.phone_country_code && row.phone_full_number
-          ? ContactPhone.fromDTO({
+          ? ContactPhone.create({
               countryCode: row.phone_country_code,
               number: row.phone_number,
               fullNumber: row.phone_full_number,

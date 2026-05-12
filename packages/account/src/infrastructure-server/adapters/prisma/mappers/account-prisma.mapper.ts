@@ -18,7 +18,7 @@ export class AccountPrismaMapper {
     const state: AccountState = {
       id: IdentityId.of(row.id),
       status: AccountStatus.of(row.status),
-      profile: AccountProfile.fromDTO({
+      profile: AccountProfile.create({
         nickname: profile.nickname,
         realName: profile.realName,
         avatarUrl: profile.avatarUrl,
@@ -26,20 +26,20 @@ export class AccountPrismaMapper {
         gender: profile.gender,
         birthday: profile.birthday ? new Date(profile.birthday).getTime() : null,
       }),
-      settings: AccountSettings.fromDTO({
+      settings: AccountSettings.create({
         theme: settings.theme,
         language: settings.language,
         timezone: settings.timezone,
         notificationEnabled: settings.notificationEnabled,
       }),
-      email: ContactEmail.fromDTO({
+      email: ContactEmail.create({
         address: row.emailAddress,
         isVerified: row.emailIsVerified,
         verifiedAt: row.emailVerifiedAt ? new Date(row.emailVerifiedAt).getTime() : null,
         isPrimary: row.emailIsPrimary,
       }),
       phone: row.phoneNumber
-        ? ContactPhone.fromDTO({
+        ? ContactPhone.create({
             fullNumber: row.phoneFullNumber as string,
             countryCode: row.phoneCountryCode as string,
             number: row.phoneNumber,
