@@ -48,7 +48,13 @@
       ],
       "@dailyuse/ui-vue-shadcn/*": ["../../packages/ui-vue-shadcn/dist/*"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
-      "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
+      "@dailyuse/ai/application-client": ["../../packages/ai/dist/application-client/index.d.ts"],
+      "@dailyuse/goal/application-client": [
+        "../../packages/goal/dist/application-client/index.d.ts"
+      ],
+      "@dailyuse/task/application-client": [
+        "../../packages/task/dist/application-client/index.d.ts"
+      ],
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
