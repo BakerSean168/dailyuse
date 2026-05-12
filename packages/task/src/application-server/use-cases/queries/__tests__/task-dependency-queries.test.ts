@@ -4,11 +4,11 @@ import { ok, error } from '@dailyuse/contracts/result';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { GetDependencyChainUseCaseUseCase } from '../get-dependency-chain.use-case';
-import { ListTaskDependenciesUseCaseUseCase } from '../list-task-dependencies.use-case';
-import { ListTaskTemplatesByPriorityUseCaseUseCase } from '../list-task-templates-by-priority.use-case';
-import { ValidateTaskDependencyUseCaseUseCase } from '../validate-task-dependency.use-case';
-import { GetTaskTemplateGraphUseCaseUseCase } from '../get-task-template-graph.use-case';
+import { GetDependencyChainUseCase } from '../get-dependency-chain.use-case';
+import { ListTaskDependenciesUseCase } from '../list-task-dependencies.use-case';
+import { ListTaskTemplatesByPriorityUseCase } from '../list-task-templates-by-priority.use-case';
+import { ValidateTaskDependencyUseCase } from '../validate-task-dependency.use-case';
+import { GetTaskTemplateGraphUseCase } from '../get-task-template-graph.use-case';
 
 describe('Task dependency query use-cases', () => {
   let dependencyRepo: ReturnType<typeof createMockRepo<ITaskDependencyRepository>>;

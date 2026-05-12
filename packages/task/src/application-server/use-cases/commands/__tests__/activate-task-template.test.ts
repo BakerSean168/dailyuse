@@ -5,7 +5,7 @@ import { aLoadedTaskTemplate, aRecurringTask } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ActivateTaskTemplateUseCaseUseCase } from '../activate-task-template.use-case';
+import { ActivateTaskTemplateUseCase } from '../activate-task-template.use-case';
 
 // Mock TaskInstanceGenerationService — provide a constructor mock
 const mockGenerateInstances = vi.fn().mockReturnValue([]);

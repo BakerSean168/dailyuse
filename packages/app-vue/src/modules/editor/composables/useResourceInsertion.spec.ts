@@ -60,7 +60,7 @@ describe('useResourceInsertion helpers', () => {
 
   it('builds path markdown references from repository path values', () => {
     expect(__test__.buildPathMarkdownReference(createResource(), 'image')).toBe(
-      '![Meeting Notes](/images/meeting-notes.png)',
+      '![meeting-notes](/images/meeting-notes.png)',
     );
   });
 
@@ -71,7 +71,7 @@ describe('useResourceInsertion helpers', () => {
       readResourceAsDataUrl: async () => 'data:image/png;base64,ZmFrZQ==',
     });
 
-    expect(result).toBe('![Meeting Notes](data:image/png;base64,ZmFrZQ==)');
+    expect(result).toBe('![meeting-notes](data:image/png;base64,ZmFrZQ==)');
   });
 });
 

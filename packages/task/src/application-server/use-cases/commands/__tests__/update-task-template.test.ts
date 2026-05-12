@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { UpdateTaskTemplateUseCaseUseCase } from '../update-task-template.use-case';
+import { UpdateTaskTemplateUseCase } from '../update-task-template.use-case';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 describe('UpdateTaskTemplateUseCase', () => {

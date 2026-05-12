@@ -23,7 +23,7 @@ describe('task handlers contracts', () => {
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
 
-    await adapter.getInstancesByDateRange('template-1', 100, 200);
+    await adapter.getInstancesByDateRange('template-1', { from: 100, to: 200 });
     await adapter.generateInstances('template-1', {
       fromDate: 100,
       toDate: 200,

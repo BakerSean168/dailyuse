@@ -84,10 +84,10 @@ describe('ImageResourcePickerDialog', () => {
 
     await nextTick();
 
-    expect(document.body.textContent).toContain('Diagram');
+    expect(document.body.textContent).toContain('diagram');
 
     const button = Array.from(document.body.querySelectorAll('button')).find((candidate) =>
-      candidate.textContent?.includes('Diagram'),
+      candidate.textContent?.includes('diagram'),
     );
     expect(button).toBeDefined();
 

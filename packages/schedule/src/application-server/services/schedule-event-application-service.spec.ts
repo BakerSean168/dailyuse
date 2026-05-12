@@ -57,8 +57,9 @@ const hour = (h: number): number => {
 describe('Schedule services', () => {
   it('detectConflictsForTimeRange is analysis-only and does not save', async () => {
     const repository = new InMemoryScheduleRepository();
+    const identityId = IdentityId.generate();
     const existing = CalendarEntry.create({
-      identityId: IdentityId.generate(),
+      identityId,
       title: 'Existing',
       startTime: hour(9),
       endTime: hour(10),
@@ -67,7 +68,7 @@ describe('Schedule services', () => {
 
     const service = new ScheduleConflictDetectionService(repository);
     const result = await service.detectConflictsForTimeRange({
-      identityId: 'acc-1',
+      identityId,
       startTime: hour(9.5),
       endTime: hour(10.5),
     });

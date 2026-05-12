@@ -7,7 +7,7 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import type { CreateTaskTemplateUseCaseReq } from '@dailyuse/contracts/task';
 import { TaskGoalBindingTrigger, TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { CreateTaskTemplateUseCaseUseCase } from '../create-task-template.use-case';
+import { CreateTaskTemplateUseCase } from '../create-task-template.use-case';
 
 vi.mock('@dailyuse/utils', async () => {
   const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
