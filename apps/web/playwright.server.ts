@@ -11,8 +11,8 @@ const sharedServerOptions = {
 export function createApiServer() {
   return {
     // API must be built before running E2E (see "Build API for E2E" CI step).
-    command: 'node dist/apps/api/main.js',
-    cwd: '.',
+    command: 'node main.js',
+    cwd: 'apps/api/dist',
     url: `${defaultApiOrigin}/healthz`,
     ...sharedServerOptions,
   };

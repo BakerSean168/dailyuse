@@ -14,7 +14,7 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/dist/apps/api"],
+      "outputs": ["{workspaceRoot}/apps/api/dist"],
       "dependsOn": ["^build"],
       "options": {
         "command": "node ../../node_modules/tsup/dist/cli-default.js",
