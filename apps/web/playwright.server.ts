@@ -12,7 +12,7 @@ export function createApiServer() {
   return {
     // API must be built before running E2E (see "Build API for E2E" CI step).
     command: 'node main.js',
-    cwd: 'apps/api/dist',
+    cwd: '../../apps/api/dist',
     url: `${defaultApiOrigin}/healthz`,
     ...sharedServerOptions,
   };
@@ -21,7 +21,7 @@ export function createApiServer() {
 export function createWebServer(url = 'http://127.0.0.1:5173/auth') {
   return {
     command: 'pnpm exec vite --config vite.config.ts --host 127.0.0.1 --port 5173',
-    cwd: 'apps/web',
+    cwd: '.',
     url,
     env: {
       ...process.env,
