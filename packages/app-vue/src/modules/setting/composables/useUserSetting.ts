@@ -2,18 +2,23 @@
  * useUserSetting - 设置模块主 composable
  *
  * 通过 inject 获取 SettingClientService。
- * NOTE: SettingClientService 返回 raw Promise<T>（非 Result<T>），
- * 失败时会抛出异常，因此使用 try/catch 处理错误。
+ * SettingClientService 返回 Result<T>，在这里统一解包为 DTO，
+ * 失败时抛出结构化异常后由 try/catch 处理。
  */
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
+import type {
+  PreferenceCategory,
+  UserSettingClientDTO,
+  UserSettingPreferences,
+} from '@dailyuse/contracts/setting';
 import { translateResultError } from '../../../shared/utils/translateResultError';
 
 export function useUserSetting() {
@@ -49,7 +54,7 @@ export function useUserSetting() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const data = await service.getUserSettings();
+      const data = unwrapOrThrowError<UserSettingClientDTO>(await service.getUserSettings());
       store.setUserSetting(data);
       store.setInitialized(true);
       presentationStore.syncFromUserSetting(data.preferences);
@@ -72,9 +77,8 @@ export function useUserSetting() {
   ) {
     store.setError(null);
     try {
-      const data = await service.patchCategory(
-        category,
-        sanitizeForIpc(partial) as Record<string, unknown>,
+      const data = unwrapOrThrowError<UserSettingClientDTO>(
+        await service.patchCategory(category, sanitizeForIpc(partial) as Record<string, unknown>),
       );
       store.setUserSetting(data);
       store.setInitialized(true);
@@ -89,7 +93,7 @@ export function useUserSetting() {
   async function resetToDefaults(_category?: PreferenceCategory) {
     store.setError(null);
     try {
-      const data = await service.resetUserSettings();
+      const data = unwrapOrThrowError<UserSettingClientDTO>(await service.resetUserSettings());
       store.setUserSetting(data);
       store.setInitialized(true);
       presentationStore.syncFromUserSetting(data.preferences);
@@ -100,7 +104,7 @@ export function useUserSetting() {
 
   async function exportSettings() {
     try {
-      return await service.exportSettings();
+      return unwrapOrThrowError<string>(await service.exportSettings());
     } catch (e: unknown) {
       handleError(e, 'setting.errors.exportFailed');
       return null;
@@ -110,7 +114,9 @@ export function useUserSetting() {
   async function importSettings(data: unknown) {
     store.setError(null);
     try {
-      const result = await service.importSettings(sanitizeForIpc(data) as string);
+      const result = unwrapOrThrowError<UserSettingClientDTO>(
+        await service.importSettings(sanitizeForIpc(data) as string),
+      );
       store.setUserSetting(result);
       store.setInitialized(true);
       presentationStore.syncFromUserSetting(result.preferences);
