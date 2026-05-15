@@ -262,53 +262,73 @@ async def evaluate_cases_with_mode(
 
     results: list[EvalResult] = []
     for case in cases:
-        if case.type == "chat_sanity":
-            if mode == "live":
-                results.append(
-                    await evaluate_live_chat_sanity(
-                        case,
-                        chat_service=ensure_live_chat_service(chat_service),
-                        provider_config=ensure_live_provider_config(live_eval_config),
-                    )
-                )
-            else:
-                results.append(await evaluate_chat_sanity(case))
-            continue
-        if case.type == "goal_planning":
-            if mode == "live":
-                results.append(
-                    await evaluate_live_goal_planning(
-                        case,
-                        chat_service=ensure_live_chat_service(chat_service),
-                        provider_config=ensure_live_provider_config(live_eval_config),
-                    )
-                )
-            else:
-                results.append(await evaluate_goal_planning(case))
-            continue
-        if case.type == "goal_workflow":
-            if mode == "live":
-                results.append(
-                    await evaluate_live_goal_workflow(
-                        case,
-                        chat_service=ensure_live_chat_service(chat_service),
-                        provider_config=ensure_live_provider_config(live_eval_config),
-                    )
-                )
-            else:
-                results.append(await evaluate_goal_workflow(case))
-            continue
         if mode == "live":
             results.append(
-                await evaluate_live_knowledge_grounding(
+                await _evaluate_case_live(
                     case,
                     chat_service=ensure_live_chat_service(chat_service),
-                    provider_config=ensure_live_provider_config(live_eval_config),
+                    live_eval_config=ensure_live_eval_config(live_eval_config),
                 )
             )
-            continue
-        results.append(await evaluate_knowledge_grounding(case))
+        else:
+            results.append(await _evaluate_case_deterministic(case))
+
     return results
+
+
+async def _evaluate_case_live(
+    case: EvalCase,
+    *,
+    chat_service: ChatService | StubChatService,
+    live_eval_config: LiveEvalConfig,
+) -> EvalResult:
+    """Route a single case to its live provider evaluation handler."""
+
+    provider_config = live_eval_config.provider_config
+
+    if case.type == "chat_sanity":
+        return await evaluate_live_chat_sanity(
+            case,
+            chat_service=chat_service,
+            provider_config=provider_config,
+        )
+    if case.type == "goal_planning":
+        return await evaluate_live_goal_planning(
+            case,
+            chat_service=chat_service,
+            provider_config=provider_config,
+        )
+    if case.type == "goal_workflow":
+        return await evaluate_live_goal_workflow(
+            case,
+            chat_service=chat_service,
+            provider_config=provider_config,
+        )
+    if case.type == "knowledge_grounding":
+        return await evaluate_live_knowledge_grounding(
+            case,
+            chat_service=chat_service,
+            provider_config=provider_config,
+        )
+
+    raise ValueError(f"Unsupported evaluation case type for live mode: {case.type}")
+
+
+async def _evaluate_case_deterministic(case: EvalCase) -> EvalResult:
+    """Route a single case to its deterministic evaluation handler."""
+
+    if case.type == "chat_sanity":
+        return await evaluate_chat_sanity(case)
+    if case.type == "goal_planning":
+        return await evaluate_goal_planning(case)
+    if case.type == "goal_workflow":
+        return await evaluate_goal_workflow(case)
+    if case.type == "knowledge_grounding":
+        return await evaluate_knowledge_grounding(case)
+
+    raise ValueError(
+        f"Unsupported evaluation case type for deterministic mode: {case.type}"
+    )
 
 
 async def evaluate_chat_sanity(case: ChatSanityEvalCase) -> EvalResult:
@@ -440,20 +460,15 @@ def build_goal_planning_eval_result(
                 else "Goal dates are ordered correctly."
             ),
         ),
-        EvalCheck(
+        check_equal(
             name="goal_category_matches",
-            passed=(
-                case.expected_goal_category is None
-                or response.goal.category == case.expected_goal_category
+            actual=response.goal.category,
+            expected=case.expected_goal_category or response.goal.category,
+            failure_msg=(
+                f"Expected category {case.expected_goal_category}, "
+                f"got {response.goal.category}."
             ),
-            detail=(
-                "Expected category "
-                f"{case.expected_goal_category}, got "
-                f"{response.goal.category}."
-                if case.expected_goal_category is not None
-                and response.goal.category != case.expected_goal_category
-                else "Goal category matches expectations."
-            ),
+            success_msg="Goal category matches expectations.",
         ),
         EvalCheck(
             name="key_result_count_in_range",
@@ -468,14 +483,12 @@ def build_goal_planning_eval_result(
     ]
     checks.extend(
         [
-            EvalCheck(
+            check_equal(
                 name=f"goal_mentions:{term}",
-                passed=term.lower() in goal_blob,
-                detail=(
-                    f'Goal output should mention "{term}".'
-                    if term.lower() not in goal_blob
-                    else f'Goal output mentions "{term}".'
-                ),
+                actual=term.lower() in goal_blob,
+                expected=True,
+                failure_msg=f'Goal output should mention "{term}".',
+                success_msg=f'Goal output mentions "{term}".',
             )
             for term in case.expected_goal_terms
         ]
@@ -502,24 +515,17 @@ def build_goal_workflow_eval_result(
     """Convert one workflow trace into standardized checks."""
 
     checks = [
-        EvalCheck(
+        check_equal(
             name="stage_sequence_matches",
-            passed=trace.stages == case.expected.stage_sequence,
-            detail=(
-                f"Expected stages {case.expected.stage_sequence}, got {trace.stages}."
-                if trace.stages != case.expected.stage_sequence
-                else "Workflow stages match expectations."
-            ),
+            actual=trace.stages,
+            expected=case.expected.stage_sequence,
+            success_msg="Workflow stages match expectations.",
         ),
-        EvalCheck(
+        check_equal(
             name="action_tools_match",
-            passed=trace.action_tools == case.expected.action_tools,
-            detail=(
-                f"Expected action tools {case.expected.action_tools}, "
-                f"got {trace.action_tools}."
-                if trace.action_tools != case.expected.action_tools
-                else "Workflow action tools match expectations."
-            ),
+            actual=trace.action_tools,
+            expected=case.expected.action_tools,
+            success_msg="Workflow action tools match expectations.",
         ),
     ]
 
@@ -540,15 +546,11 @@ def build_goal_workflow_eval_result(
         )
     else:
         checks.append(
-            EvalCheck(
+            check_equal(
                 name="failure_stage_matches",
-                passed=trace.failure_stage == case.expected.failure_stage,
-                detail=(
-                    f"Expected failure stage {case.expected.failure_stage}, "
-                    f"got {trace.failure_stage}."
-                    if trace.failure_stage != case.expected.failure_stage
-                    else "Workflow failed at the expected stage."
-                ),
+                actual=trace.failure_stage,
+                expected=case.expected.failure_stage,
+                success_msg="Workflow failed at the expected stage.",
             )
         )
 
@@ -559,15 +561,11 @@ def build_goal_workflow_eval_result(
             else None
         )
         checks.append(
-            EvalCheck(
+            check_equal(
                 name="execution_status_matches",
-                passed=actual_status == case.expected.execution_status,
-                detail=(
-                    f"Expected execution status "
-                    f"{case.expected.execution_status}, got {actual_status}."
-                    if actual_status != case.expected.execution_status
-                    else "Execution status matches expectations."
-                ),
+                actual=actual_status,
+                expected=case.expected.execution_status,
+                success_msg="Execution status matches expectations.",
             )
         )
 
@@ -576,29 +574,27 @@ def build_goal_workflow_eval_result(
             bool(trace.recovery.get("canRetry")) if trace.recovery is not None else None
         )
         checks.append(
-            EvalCheck(
+            check_equal(
                 name="recovery_can_retry_matches",
-                passed=actual_can_retry == case.expected.can_retry,
-                detail=(
+                actual=actual_can_retry,
+                expected=case.expected.can_retry,
+                failure_msg=(
                     f"Expected canRetry={case.expected.can_retry}, "
                     f"got {actual_can_retry}."
-                    if actual_can_retry != case.expected.can_retry
-                    else "Recovery canRetry matches expectations."
                 ),
+                success_msg="Recovery canRetry matches expectations.",
             )
         )
 
     goal_blob = trace.goal_text.lower()
     checks.extend(
         [
-            EvalCheck(
+            check_equal(
                 name=f"goal_mentions:{term}",
-                passed=term.lower() in goal_blob,
-                detail=(
-                    f'Goal output should mention "{term}".'
-                    if term.lower() not in goal_blob
-                    else f'Goal output mentions "{term}".'
-                ),
+                actual=term.lower() in goal_blob,
+                expected=True,
+                failure_msg=f'Goal output should mention "{term}".',
+                success_msg=f'Goal output mentions "{term}".',
             )
             for term in case.expected.goal_terms
         ]
@@ -607,14 +603,12 @@ def build_goal_workflow_eval_result(
     seen_tool_calls = set(trace.tool_calls_seen)
     checks.extend(
         [
-            EvalCheck(
+            check_equal(
                 name=f"tool_call_seen:{tool_name}",
-                passed=tool_name in seen_tool_calls,
-                detail=(
-                    f'Expected provider tool call "{tool_name}" was not observed.'
-                    if tool_name not in seen_tool_calls
-                    else f'Observed provider tool call "{tool_name}".'
-                ),
+                actual=tool_name in seen_tool_calls,
+                expected=True,
+                failure_msg=f'Expected provider tool call "{tool_name}" was not observed.',
+                success_msg=f'Observed provider tool call "{tool_name}".',
             )
             for tool_name in case.expected.required_tool_calls
         ]
@@ -628,14 +622,12 @@ def build_goal_workflow_eval_result(
     ).lower()
     checks.extend(
         [
-            EvalCheck(
+            check_equal(
                 name=f"recovery_mentions:{term}",
-                passed=term.lower() in recovery_blob,
-                detail=(
-                    f'Recovery output should mention "{term}".'
-                    if term.lower() not in recovery_blob
-                    else f'Recovery output mentions "{term}".'
-                ),
+                actual=term.lower() in recovery_blob,
+                expected=True,
+                failure_msg=f'Recovery output should mention "{term}".',
+                success_msg=f'Recovery output mentions "{term}".',
             )
             for term in case.expected.required_recovery_terms
         ]
@@ -732,15 +724,15 @@ def build_knowledge_grounding_eval_result(
     answer_lower = response.answer.lower()
 
     checks = [
-        EvalCheck(
+        check_equal(
             name="citation_presence_matches_expectation",
-            passed=(len(response.citations) > 0) == case.expect_citations,
-            detail=(
-                "Expected citations="
-                f"{case.expect_citations}, got {len(response.citations)}."
-                if (len(response.citations) > 0) != case.expect_citations
-                else "Citation presence matches expectation."
+            actual=len(response.citations) > 0,
+            expected=case.expect_citations,
+            failure_msg=(
+                f"Expected citations={case.expect_citations}, "
+                f"got {len(response.citations)}."
             ),
+            success_msg="Citation presence matches expectation.",
         ),
         EvalCheck(
             name="citations_reference_indexed_resources",
@@ -754,28 +746,24 @@ def build_knowledge_grounding_eval_result(
     ]
     checks.extend(
         [
-            EvalCheck(
+            check_equal(
                 name=f"cites_expected_path:{path}",
-                passed=path in cited_paths,
-                detail=(
-                    f'Expected citation for "{path}" was not returned.'
-                    if path not in cited_paths
-                    else f'Citation for "{path}" was returned.'
-                ),
+                actual=path in cited_paths,
+                expected=True,
+                failure_msg=f'Expected citation for "{path}" was not returned.',
+                success_msg=f'Citation for "{path}" was returned.',
             )
             for path in case.expected_resource_paths
         ]
     )
     checks.extend(
         [
-            EvalCheck(
+            check_equal(
                 name=f"answer_mentions:{term}",
-                passed=term.lower() in answer_lower,
-                detail=(
-                    f'Answer should mention "{term}".'
-                    if term.lower() not in answer_lower
-                    else f'Answer mentions "{term}".'
-                ),
+                actual=term.lower() in answer_lower,
+                expected=True,
+                failure_msg=f'Answer should mention "{term}".',
+                success_msg=f'Answer mentions "{term}".',
             )
             for term in case.expected_answer_substrings
         ]
@@ -831,6 +819,25 @@ def check_non_empty(name: str, value: str) -> EvalCheck:
     )
 
 
+def check_equal(
+    name: str,
+    actual: Any,
+    expected: Any,
+    *,
+    success_msg: str | None = None,
+    failure_msg: str | None = None,
+) -> EvalCheck:
+    """Build a comparison check with standardized failure messaging."""
+
+    passed = actual == expected
+    if passed:
+        detail = success_msg or "Value matches expectations."
+    else:
+        detail = failure_msg or f"Expected {expected}, got {actual}."
+
+    return EvalCheck(name=name, passed=passed, detail=detail)
+
+
 def check_contains_text(
     answer: str,
     *,
@@ -844,27 +851,23 @@ def check_contains_text(
 
     for token in expected:
         checks.append(
-            EvalCheck(
+            check_equal(
                 name=f"contains:{token}",
-                passed=token.lower() in answer_lower,
-                detail=(
-                    f'Answer should contain "{token}".'
-                    if token.lower() not in answer_lower
-                    else f'Answer contains "{token}".'
-                ),
+                actual=token.lower() in answer_lower,
+                expected=True,
+                failure_msg=f'Answer should contain "{token}".',
+                success_msg=f'Answer contains "{token}".',
             )
         )
 
     for token in forbidden:
         checks.append(
-            EvalCheck(
+            check_equal(
                 name=f"excludes:{token}",
-                passed=token.lower() not in answer_lower,
-                detail=(
-                    f'Answer should not contain "{token}".'
-                    if token.lower() in answer_lower
-                    else f'Answer excludes "{token}".'
-                ),
+                actual=token.lower() not in answer_lower,
+                expected=True,
+                failure_msg=f'Answer should not contain "{token}".',
+                success_msg=f'Answer excludes "{token}".',
             )
         )
 
@@ -1152,14 +1155,22 @@ def ensure_live_chat_service(
     return chat_service
 
 
+def ensure_live_eval_config(
+    live_eval_config: LiveEvalConfig | None,
+) -> LiveEvalConfig:
+    """Validate that live mode received a concrete eval config."""
+
+    if live_eval_config is None:
+        raise ValueError("Live evaluation mode requires provider configuration.")
+    return live_eval_config
+
+
 def ensure_live_provider_config(
     live_eval_config: LiveEvalConfig | None,
 ) -> ProviderConfig:
     """Validate that live mode received a concrete provider config."""
 
-    if live_eval_config is None:
-        raise ValueError("Live evaluation mode requires provider configuration.")
-    return live_eval_config.provider_config
+    return ensure_live_eval_config(live_eval_config).provider_config
 
 
 def resolve_cases_path(args: argparse.Namespace) -> Path:
