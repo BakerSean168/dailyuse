@@ -34,6 +34,7 @@ const sharedConfig = createSharedConfig({
     '@dailyuse/task/infrastructure-client':
       '../../packages/task/src/infrastructure-client/index.ts',
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }) as any;
 
 export default defineConfig({
