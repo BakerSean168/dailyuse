@@ -68,6 +68,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { marked } from 'marked';
+import { sanitizeHtml } from '@dailyuse/utils';
 import { FileText, Image as ImageIcon, Music, Video, FileType } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 
@@ -104,9 +105,10 @@ const renderedExcerpt = computed(() => {
   if (!props.content?.excerpt) return '';
   try {
     const excerpt = props.content.excerpt.slice(0, 500);
-    return marked(excerpt);
+    const html = marked(excerpt) as string;
+    return sanitizeHtml(html);
   } catch {
-    return props.content.excerpt;
+    return '';
   }
 });
 

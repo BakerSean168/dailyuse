@@ -22,3 +22,6 @@ export {
 
 // 加载状态管理
 export * from './loadingState';
+
+// HTML 脱敏工具
+export * from './sanitizer';

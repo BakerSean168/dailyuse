@@ -13,6 +13,7 @@
 import { nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
+import { sanitizeHtml } from '@dailyuse/utils';
 import type Token from 'markdown-it/lib/token.mjs';
 import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
 import { resolveMarkdownResourceReferences } from '../utils/markdownResourceReferences';
@@ -196,7 +197,7 @@ async function renderMarkdown() {
       }
     }
 
-    renderedHtml.value = template.innerHTML;
+    renderedHtml.value = sanitizeHtml(template.innerHTML);
     await nextTick();
 
     if (currentRunId !== renderRunId) {

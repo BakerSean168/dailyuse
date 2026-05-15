@@ -132,6 +132,7 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { marked } from 'marked';
+import { sanitizeHtml } from '@dailyuse/utils';
 import {
   Sparkles,
   Folder,
@@ -207,9 +208,10 @@ const savePath = computed(() => {
 
 const renderedContent = computed(() => {
   try {
-    return marked(generatedContent.value);
+    const html = marked(generatedContent.value) as string;
+    return sanitizeHtml(html);
   } catch {
-    return generatedContent.value;
+    return '';
   }
 });
 

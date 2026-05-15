@@ -160,6 +160,7 @@ import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
 import { marked } from 'marked';
+import { sanitizeHtml } from '@dailyuse/utils';
 import {
   Upload,
   ChevronLeft,
@@ -256,7 +257,8 @@ const displayFileName = computed(() => {
 
 const renderedContent = computed(() => {
   try {
-    return marked(markdownBody.value || '');
+    const html = marked(markdownBody.value || '') as string;
+    return sanitizeHtml(html);
   } catch {
     return `<p>${t('repository.editor.renderError')}</p>`;
   }
