@@ -110,7 +110,9 @@ export function useUserSetting() {
   async function importSettings(data: unknown) {
     store.setError(null);
     try {
-      const result = await service.importSettings(sanitizeForIpc(data) as string);
+      const sanitized = sanitizeForIpc(data);
+      const payload = typeof sanitized === 'string' ? sanitized : JSON.stringify(sanitized);
+      const result = await service.importSettings(payload);
       store.setUserSetting(result);
       store.setInitialized(true);
       presentationStore.syncFromUserSetting(result.preferences);

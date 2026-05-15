@@ -42,6 +42,7 @@ const {
 
 const activeTab = ref('appearance');
 const isHydratingAppearance = ref(true);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 type LocaleFormState = Required<UserSettingPreferences['locale']>;
 type LocaleSettingsInput = {
   language?: string;
@@ -101,9 +102,30 @@ function normalizeTimeFormat(
 }
 
 /** Wrap importSettings for the @import event (which has no payload). */
-async function handleImport() {
-  // TODO: Open a file picker and read JSON, then pass to importSettings
-  await importSettings({});
+function handleImport() {
+  fileInputRef.value?.click();
+}
+
+/** Handle file selection from the hidden input. */
+async function handleFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const content = e.target?.result as string;
+      const data = JSON.parse(content);
+      await importSettings(data);
+    } catch (err) {
+      console.error('Failed to parse settings JSON:', err);
+    } finally {
+      // Clear input so the same file can be selected again if needed
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
 }
 
 async function handleLocaleUpdate(value: LocaleSettingsInput) {
@@ -201,6 +223,15 @@ const tabs = computed(() => [
       <div v-if="isLoading" class="flex items-center justify-center py-12">
         <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
+
+      <!-- Hidden file input for importing settings -->
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept=".json"
+        class="hidden"
+        @change="handleFileSelected"
+      />
 
       <!-- Main content -->
       <Tabs v-else v-model="activeTab" class="w-full">
