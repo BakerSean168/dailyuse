@@ -45,13 +45,14 @@ test.describe('Task Template CRUD Operations', () => {
     const taskId = await openTaskCardMenu(page, originalTitle);
     await page.getByTestId(`task-card-edit-action-${taskId}`).click();
 
-    const dialog = taskDialog(page, /edit task template/i);
-    await expect(dialog).toBeVisible();
+    await expect(taskTitleInput(page)).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    const saveButton = taskPrimaryActionButton(page);
 
-    await dialog.getByRole('textbox', { name: /task title/i }).fill(updatedTitle);
-    await dialog.getByRole('button', { name: /save changes/i }).click();
+    await taskTitleInput(page).fill(updatedTitle);
+    await expect(saveButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await saveButton.click();
 
-    await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    await expect(taskTitleInput(page)).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expect(taskCardByTitle(page, updatedTitle)).toBeVisible();
     await expect(taskCardByTitle(page, originalTitle)).toHaveCount(0);
   });
@@ -66,7 +67,7 @@ test.describe('Task Template CRUD Operations', () => {
 
     const confirmDialog = page.getByRole('alertdialog');
     await expect(confirmDialog).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await confirmDialog.getByRole('button', { name: /delete|删除/i }).click();
+    await confirmDialog.getByRole('button', { name: /确认|confirm/i }).click();
 
     await expect(taskCardByTitle(page, templateTitle)).toHaveCount(0);
   });
@@ -74,9 +75,7 @@ test.describe('Task Template CRUD Operations', () => {
   test('should require a title before allowing save', async ({ page }) => {
     await openCreateTaskDialog(page);
 
-    await expect(
-      taskDialog(page, /create task template/i).getByRole('button', { name: /create template/i }),
-    ).toBeDisabled();
+    await expect(taskPrimaryActionButton(page)).toBeDisabled();
   });
 });
 
@@ -89,27 +88,36 @@ async function openCreateTaskDialog(page: Page) {
     await page.getByTestId('create-first-task-template-button').click();
   }
 
-  await expect(taskDialog(page, /create task template/i)).toBeVisible({
+  await expect(taskTitleInput(page)).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
 }
 
 async function createTaskTemplate(page: Page, title: string) {
   await openCreateTaskDialog(page);
-  const dialog = taskDialog(page, /create task template/i);
+  const saveButton = taskPrimaryActionButton(page);
 
-  await dialog.getByRole('textbox', { name: /task title/i }).fill(title);
-  await dialog.getByRole('textbox', { name: /^description$/i }).fill(`Description for ${title}`);
-  await dialog.getByRole('button', { name: /create template/i }).click();
+  await taskTitleInput(page).fill(title);
+  await taskDescriptionInput(page).fill(`Description for ${title}`);
+  await expect(saveButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await saveButton.click();
 
-  await expect(dialog).toBeHidden({
+  await expect(taskTitleInput(page)).toBeHidden({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
   await expect(taskCardByTitle(page, title)).toBeVisible();
 }
 
-function taskDialog(page: Page, name: RegExp): Locator {
-  return page.getByRole('dialog', { name });
+function taskTitleInput(page: Page): Locator {
+  return page.getByRole('textbox', { name: /任务标题|task title/i });
+}
+
+function taskDescriptionInput(page: Page): Locator {
+  return page.getByRole('textbox', { name: /任务描述|description/i });
+}
+
+function taskPrimaryActionButton(page: Page): Locator {
+  return page.getByRole('button', { name: /创建模板|保存更改|create template|save changes/i });
 }
 
 function taskCardByTitle(page: Page, title: string): Locator {

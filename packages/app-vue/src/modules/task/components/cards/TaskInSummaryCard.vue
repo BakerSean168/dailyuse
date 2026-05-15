@@ -72,7 +72,7 @@
 
             <div class="flex items-center">
               <Clock class="h-3.5 w-3.5 text-muted-foreground mr-1" />
-              <span class="text-xs text-muted-foreground">{{ task.timeConfig.displayText }}</span>
+              <span class="text-xs text-muted-foreground">{{ getTaskTimeLabel(task) }}</span>
             </div>
           </div>
         </div>
@@ -109,6 +109,7 @@ import {
 import { CheckCircle, Clock, Plus } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
 import { useI18n } from 'vue-i18n';
+import { getTaskTimeValueDisplay } from '../../utils/taskTemplatePresentation';
 
 const { t } = useI18n();
 
@@ -158,6 +159,8 @@ const toggleTaskComplete = async (task: TaskInstanceViewModel) => {
   emit('toggle-complete', task);
   await props.onToggleComplete?.(task);
 };
+
+const getTaskTimeLabel = (task: TaskInstanceViewModel) => getTaskTimeValueDisplay(t, task.timeConfig);
 </script>
 
 <style scoped>

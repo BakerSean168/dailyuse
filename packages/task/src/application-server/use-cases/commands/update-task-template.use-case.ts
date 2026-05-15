@@ -74,7 +74,9 @@ export class UpdateTaskTemplateUseCase {
 
     if (request.goalBinding !== undefined) {
       if (request.goalBinding === null) {
-        template.unbindFromGoal();
+        if (template.goalBinding) {
+          template.unbindFromGoal();
+        }
       } else {
         template.bindToGoal(
           request.goalBinding.goalId,

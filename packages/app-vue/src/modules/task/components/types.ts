@@ -23,7 +23,6 @@ export interface TaskTimeConfigViewModel {
   timePoint?: number | null;
   timeRange?: TaskTimeRangeViewModel | null;
   startDate?: string | Date | number;
-  displayText?: string;
 }
 
 export interface TaskGoalBindingViewModel {
