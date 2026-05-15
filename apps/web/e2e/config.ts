@@ -53,6 +53,21 @@ export const WEB_CONFIG = {
    * 首页路径
    */
   HOME_PATH: '/',
+
+  /**
+   * Dashboard 页面路径
+   */
+  DASHBOARD_PATH: '/dashboard',
+
+  /**
+   * Settings 页面路径
+   */
+  SETTINGS_PATH: '/settings',
+
+  /**
+   * Tasks 页面路径
+   */
+  TASKS_PATH: '/tasks',
   
   /**
    * Goals 页面路径

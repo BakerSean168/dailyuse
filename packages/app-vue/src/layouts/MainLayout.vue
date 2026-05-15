@@ -25,6 +25,12 @@ const navigateTo = (path: string) => {
     router.push(path);
   }
 };
+
+function navigationTestId(group: 'main' | 'bottom', path: string): string {
+  const normalizedPath =
+    path === '/' ? 'home' : path.replace(/^\/+|\/+$/g, '').replace(/[^\w]+/g, '-');
+  return `${group}-nav-${normalizedPath}`;
+}
 </script>
 
 <template>
@@ -42,6 +48,7 @@ const navigateTo = (path: string) => {
         <button
           v-for="item in mainNavigation"
           :key="item.path"
+          :data-testid="navigationTestId('main', item.path)"
           class="w-full text-left px-2 py-2 rounded transition-colors"
           :class="
             isActive(item.path)
@@ -58,6 +65,7 @@ const navigateTo = (path: string) => {
         <button
           v-for="item in bottomNavigation"
           :key="item.path"
+          :data-testid="navigationTestId('bottom', item.path)"
           class="w-full text-left px-2 py-2 rounded transition-colors"
           :class="
             isActive(item.path)

@@ -33,6 +33,11 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
 
+    // Wait for providers to load and composer to become enabled
+    await expect(page.getByTestId('ai-chat-composer')).toBeEnabled({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
+
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal').click();
 
@@ -82,7 +87,7 @@ test.describe('AI Goal Workflow', () => {
     await expect(automationPanel).toContainText(/创建目标|Create Goal/i);
     await expect(automationPanel).toContainText(/创建关键结果|Create Key Result/i);
     await expect(automationPanel).toContainText(/Recovery|恢复建议/i);
-    await expect(automationPanel).toContainText(/可以在修正后重试失败动作|ready to retry failed actions/i);
+    await expect(automationPanel).toContainText(/重试执行|retry execution/i);
   });
 });
 
@@ -92,25 +97,27 @@ async function installGoalWorkflowMocks(page: Page): Promise<void> {
   let generateGoalStep = 0;
 
   await page.route('**/api/v1/ai/providers', async (route) => {
-    await fulfillJson(route, [
-      {
-        id: 'provider-e2e-openai',
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        name: 'E2E OpenAI',
-        providerType: 'openai_compatible',
-        baseUrl: 'https://api.openai.com/v1',
-        apiKeyMasked: 'sk-****e2e',
-        defaultModel: 'gpt-4.1-mini',
-        availableModels: [{ id: 'gpt-4.1-mini', name: 'gpt-4.1-mini' }],
-        isActive: true,
-        isDefault: true,
-        priority: 1,
-        version: 1,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        deletedAt: null,
-      },
-    ]);
+    await fulfillJson(route, {
+      data: [
+        {
+          id: 'provider-e2e-openai',
+          identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
+          name: 'E2E OpenAI',
+          providerType: 'openai_compatible',
+          baseUrl: 'https://api.openai.com/v1',
+          apiKeyMasked: 'sk-****e2e',
+          defaultModel: 'gpt-4.1-mini',
+          availableModels: [{ id: 'gpt-4.1-mini', name: 'gpt-4.1-mini' }],
+          isActive: true,
+          isDefault: true,
+          priority: 1,
+          version: 1,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          deletedAt: null,
+        },
+      ],
+    });
   });
 
   await page.route('**/api/v1/ai/chat/conversations?*', async (route) => {
