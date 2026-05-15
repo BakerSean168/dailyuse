@@ -1,5 +1,77 @@
 # Changelog
 
+## [0.7.0](https://github.com/BakerSean168/dailyuse/compare/v0.6.0...v0.7.0) (2026-05-15)
+
+
+### Features
+
+* add desktop screenshot E2E tests and configuration ([678eda2](https://github.com/BakerSean168/dailyuse/commit/678eda254cea153d88672b6b9fc0b8191457341d))
+* add notification-runtime package and refactor notification initialization tasks ([09bc0b2](https://github.com/BakerSean168/dailyuse/commit/09bc0b2972a0a6ea16fadcbe277b45c307b63001))
+* consolidate CI workflows and enhance coverage detection; add optional Python/uv setup ([fa5ba9c](https://github.com/BakerSean168/dailyuse/commit/fa5ba9cfd69323550556980861f02f6b22fd3176))
+* implement web:typecheck failure chain fix plan ([459daf6](https://github.com/BakerSean168/dailyuse/commit/459daf60947386407c8fd2c6f4a8bc8a3b8c0573))
+* **schedule:** 简易日程冲突检测功能，添加日程时，如果有冲突，能实现！标记 ([c5c5397](https://github.com/BakerSean168/dailyuse/commit/c5c5397c4267d0be18373e41b34b0b111add9b03))
+* 实现真正的 agent（goal workflow） ([c0a6856](https://github.com/BakerSean168/dailyuse/commit/c0a6856d5e93d573b788b956010d94d0c4a4a8e4))
+
+
+### Bug Fixes
+
+* action2 ([6cfac63](https://github.com/BakerSean168/dailyuse/commit/6cfac63086e7f340f8ec4b799d36a992af8caca6))
+* action3 ([1ea9475](https://github.com/BakerSean168/dailyuse/commit/1ea9475e50cdab4f90b8181551d600380f022d6a))
+* action4 ([02ba628](https://github.com/BakerSean168/dailyuse/commit/02ba6287f1070f620f2e0fe1077c50f0aa976ca1))
+* add domain-shared and account paths to vitest IPC config ([d0d4531](https://github.com/BakerSean168/dailyuse/commit/d0d4531cb203b14eac4fd36790f719624737318c))
+* add notification-runtime package to pnpm-lock.yaml and link dependencies ([3acc268](https://github.com/BakerSean168/dailyuse/commit/3acc26895ca671453ae835f73662ada021618a98))
+* add path resolution for domain-shared and account aliases in vitest config ([ce16b3d](https://github.com/BakerSean168/dailyuse/commit/ce16b3d93f350e282dbfbf49aa57786c889a5cf5))
+* align test specs with current type contracts ([ecca76c](https://github.com/BakerSean168/dailyuse/commit/ecca76c1536c4f942e9e030a5a163403a0c165b5))
+* **config:** add e2e test file patterns to ESLint configuration ([7fb353c](https://github.com/BakerSean168/dailyuse/commit/7fb353cbfb4f3820e8186a073fe446a425c930b0))
+* correct two TypeScript typecheck errors in spec files ([7fb540b](https://github.com/BakerSean168/dailyuse/commit/7fb540b1d2d977d25f77125efe3b475feed11e6f))
+* fix typecheck errors in spec files - title→name, import path, LocalePreferences casts ([bb319a9](https://github.com/BakerSean168/dailyuse/commit/bb319a948396fbdf662264404bd0b9dc32d121b2))
+* remove baseUrl from authentication tsconfig ([5acb063](https://github.com/BakerSean168/dailyuse/commit/5acb063f6f3c44510d994dd6d08dc887febbd829))
+* resolve pnpm cache issue in setup-node; implement actions/cache for pnpm store ([3fff4c0](https://github.com/BakerSean168/dailyuse/commit/3fff4c00b766d5c27253e5cbc41c8585d39840b0))
+* resolve two TypeScript typecheck errors in spec files ([e850d14](https://github.com/BakerSean168/dailyuse/commit/e850d144143523c79f61d71514fa60bb3f643d51))
+* **settings:** unwrap client results in web settings flows ([6392b81](https://github.com/BakerSean168/dailyuse/commit/6392b81db571d44babb17b347ac49196085aea54))
+* **task:** normalize template time config updates ([6d670fe](https://github.com/BakerSean168/dailyuse/commit/6d670fe9a5f9f3107e3eed7f8649652ac565e845))
+* **ui:** preserve dialog attrs for reminder flows ([b212a2b](https://github.com/BakerSean168/dailyuse/commit/b212a2b6476ae917962f05b6c1a0fca68f09a1ea))
+* update mapping methods to use create instead of fromDTO ([d1d7233](https://github.com/BakerSean168/dailyuse/commit/d1d7233a780ca1841044c595e23bb19cb30340d5))
+* update pnpm-lock.yaml to add @vue/test-utils, pinia, and vue dependencies ([c3ccb99](https://github.com/BakerSean168/dailyuse/commit/c3ccb99ac3faa071445c2673d84e106e63d57849))
+* update pnpm-lock.yaml to include http-client and bump vue-component-type-helpers version ([237bdba](https://github.com/BakerSean168/dailyuse/commit/237bdba366f2502c88a999aa0c8c9eccdfb3ada1))
+* update server cwd paths and adjust build commands in project configuration ([b475114](https://github.com/BakerSean168/dailyuse/commit/b475114047988e880d165ef389ebd8df7420c221))
+* update TaskInstanceCard.vue to use PascalCase timeType values ([61981f3](https://github.com/BakerSean168/dailyuse/commit/61981f305a2b2fcf88667896f7370531a0da87a6))
+* update TypeScript configuration and add test-utils paths; modify dependency status in task fixture ([3db9377](https://github.com/BakerSean168/dailyuse/commit/3db93776e3fb529befb439788aaadab8fe5d9508))
+* **web:** stabilize playwright e2e server startup ([5c6888d](https://github.com/BakerSean168/dailyuse/commit/5c6888ddf59a091ff945015004948e5a9508c5f2))
+* 修typecheck 任务，添加前置依赖；给 mobile 项目补充开发依赖 ([64a1101](https://github.com/BakerSean168/dailyuse/commit/64a1101fd4e51d7cc52217a37312c0611c1d0b58))
+* 修复 ruff 错误， 集成测试漂移， 统一测试环境 ([0c1c5ca](https://github.com/BakerSean168/dailyuse/commit/0c1c5ca3d412cbfd044942244c5935ce6baf2ece))
+* 修复action ([0832457](https://github.com/BakerSean168/dailyuse/commit/0832457474535859561b00ef7d5e7eeb6e101928))
+* 修复api 侧的 SSE 路由把 req.close 视为客户端断开导致没有响应的 bug ([f2d2da7](https://github.com/BakerSean168/dailyuse/commit/f2d2da7292d7ce293139ed3bdb33de2d9718d653))
+* 修复application层导出更新后， app层没有同步更改导致的报错 ([98bd278](https://github.com/BakerSean168/dailyuse/commit/98bd2781aeaadfadd959fb83857e77eb7fab168e))
+* 修复web端的笔记打开报错问题 ([1b5baaa](https://github.com/BakerSean168/dailyuse/commit/1b5baaa6ac1c80e320c868ebcc5fb08972340def))
+* 修复测试文件错误 ([fd58854](https://github.com/BakerSean168/dailyuse/commit/fd58854d2755ad2b7c99748e77430bf47dd73945))
+* 修复语言切换功能 ([9d484f5](https://github.com/BakerSean168/dailyuse/commit/9d484f5e75be28cf4678ccbc572ec936a5bac372))
+* 修复输出文件路径错误 ([e4a1cc7](https://github.com/BakerSean168/dailyuse/commit/e4a1cc7876cd0a35ff5fe7afdf9c35d42ce39c7a))
+* 修复进入 setting 页面会刷新主题为 auto的问题。修复editor路径配置问题 ([b9c0d43](https://github.com/BakerSean168/dailyuse/commit/b9c0d4322eb16884f562c1fe9856ce40fe7a1b28))
+* 修复错误JSON格式数据（多了个，） ([80bbd96](https://github.com/BakerSean168/dailyuse/commit/80bbd962c00b35f2a6b59930c3137fbbc622ea9e))
+* 更新 pnpmlock ([eac2f4a](https://github.com/BakerSean168/dailyuse/commit/eac2f4a7df73903540852c18964fc994d57aae43))
+* 正确实现了reminder模块的相关计数功能 ([9c329ca](https://github.com/BakerSean168/dailyuse/commit/9c329cad957febd27a3c4eb6e1b6e9d62ce50cbb))
+* 补充依赖 ([392ccee](https://github.com/BakerSean168/dailyuse/commit/392ccee691d8b0154ff7fb984abcd3c8894ecd91))
+
+
+### Performance Improvements
+
+* Application-Client 层标准化计划 ([974fad8](https://github.com/BakerSean168/dailyuse/commit/974fad8ca43a1db35b166bba4c2883aeaeb6a318))
+* Application-Server 层标准化计划 ([f3f330c](https://github.com/BakerSean168/dailyuse/commit/f3f330c5cf094abbf54c1d9dc8a0788f77da410a))
+* contract中部分代码规范统一 ([693119a](https://github.com/BakerSean168/dailyuse/commit/693119a5d26777117785fd298e343608f5a94a9f))
+* Task Prisma Mapper toPersistence 统一接受聚合根 ([13ed935](https://github.com/BakerSean168/dailyuse/commit/13ed93552407be3dcf7f4d58810a1a35cbe40a02))
+* task 模块的contracts优化 ([e949dec](https://github.com/BakerSean168/dailyuse/commit/e949dec12fccb72cf1bb5ee89432b76d0f67d983))
+* 事件命名部分优化 ([cb027a6](https://github.com/BakerSean168/dailyuse/commit/cb027a6be88268b1ddca0385bf0c97dc162f72ed))
+* 事件总线相关更新 ([00a7d6e](https://github.com/BakerSean168/dailyuse/commit/00a7d6ee0be920f6a56bb6ccadf2dbc42567cafd))
+* 仓储层标准化 — 事务修复、Mapper 提取、共享工具 ([bbb9fc2](https://github.com/BakerSean168/dailyuse/commit/bbb9fc2cee5af39eaee5899bee74bc80e16d11cc))
+* 优1.化测试系统 2. 统一命令心智模型，使用 nx 命令 ([f6e5eda](https://github.com/BakerSean168/dailyuse/commit/f6e5eda1a35212099eff9c62de0e1db9b1bd6d5a))
+* 优化domain层代码，统一规范 ([77c10da](https://github.com/BakerSean168/dailyuse/commit/77c10da0b6aed64e462284dbe346a506abc8e334))
+* 优化配置文件和测试系统，添加覆盖率要求，完善goal模块的领域层的测试文件。基于TDD思想。 ([dac4a6c](https://github.com/BakerSean168/dailyuse/commit/dac4a6ce68860dabdeed1663bca76405c9159b1c))
+* 展示字段移除后相应的修改 ([c314df1](https://github.com/BakerSean168/dailyuse/commit/c314df1b2b394131d5792ef68f4c8a5638407540))
+* 测试系统（稳定器）的搭建。 优化 reminder 的 修改 template 的接口为 post 方法 ([07c6603](https://github.com/BakerSean168/dailyuse/commit/07c6603506007fdaa47e6d9adda6c145d576e12d))
+* 移除两个文件的跟踪 ([ee88046](https://github.com/BakerSean168/dailyuse/commit/ee880466f38a420a6faa1040bd00a5059f07a910))
+* 补充了 success、warning相关的主题 ([6bbf9e8](https://github.com/BakerSean168/dailyuse/commit/6bbf9e8c0a5597e8b6d54ff92907e25d327393f2))
+
 ## [0.6.0](https://github.com/BakerSean168/dailyuse/compare/v0.5.2...v0.6.0) (2026-04-18)
 
 
