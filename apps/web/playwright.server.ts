@@ -1,7 +1,88 @@
-const defaultApiOrigin = process.env.E2E_API_BASE_URL ?? 'http://localhost:3000';
+import { existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config } from 'dotenv';
+import { expand } from 'dotenv-expand';
 
-process.env.E2E_API_BASE_URL ??= defaultApiOrigin;
-process.env.E2E_API_FULL_URL ??= `${defaultApiOrigin.replace(/\/+$/, '')}/api/v1`;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const WORKSPACE_ROOT = resolve(__dirname, '../..');
+const DEFAULT_API_ORIGIN = 'http://localhost:3000';
+const DEFAULT_WEB_ORIGIN = 'http://127.0.0.1:5173';
+const LEGACY_LOCALHOST_WEB_ORIGIN = 'http://localhost:5173';
+
+function loadEnvFile(filePath: string): void {
+  if (existsSync(filePath)) {
+    expand(config({ path: filePath, override: true }));
+  }
+}
+
+export function loadE2EEnv(): void {
+  const preservedEntries = new Map<string, string>();
+  for (const [key, value] of Object.entries(process.env)) {
+    if (typeof value === 'string') {
+      preservedEntries.set(key, value);
+    }
+  }
+
+  process.env.NODE_ENV = 'test';
+
+  const envFiles = [
+    resolve(WORKSPACE_ROOT, '.env'),
+    resolve(WORKSPACE_ROOT, '.env.test'),
+    resolve(WORKSPACE_ROOT, '.env.local'),
+    resolve(WORKSPACE_ROOT, '.env.test.local'),
+  ];
+
+  for (const filePath of envFiles) {
+    loadEnvFile(filePath);
+  }
+
+  for (const [key, value] of preservedEntries) {
+    process.env[key] = value;
+  }
+
+  process.env.NODE_ENV = 'test';
+}
+
+loadE2EEnv();
+
+function normalizeOrigin(origin: string): string {
+  return origin.replace(/\/+$/, '');
+}
+
+function getApiOrigin(): string {
+  const apiOrigin = normalizeOrigin(process.env.E2E_API_BASE_URL ?? DEFAULT_API_ORIGIN);
+
+  process.env.E2E_API_BASE_URL ??= apiOrigin;
+  process.env.E2E_API_FULL_URL ??= `${apiOrigin}/api/v1`;
+
+  return apiOrigin;
+}
+
+function getWebOrigin(): string {
+  return normalizeOrigin(process.env.E2E_WEB_BASE_URL ?? DEFAULT_WEB_ORIGIN);
+}
+
+function getWebServerRuntimeConfig() {
+  const webOrigin = getWebOrigin();
+  const webUrl = new URL(webOrigin);
+
+  return {
+    origin: webOrigin,
+    host: webUrl.hostname,
+    port: webUrl.port || '80',
+  };
+}
+
+function getCorsOrigins(): string {
+  const configuredOrigins = (process.env.CORS_ORIGIN ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return [...new Set([getWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(',');
+}
 
 const sharedServerOptions = {
   reuseExistingServer: !process.env.CI,
@@ -9,26 +90,37 @@ const sharedServerOptions = {
 } as const;
 
 export function createApiServer() {
-  return {
-    // API must be built before running E2E (see "Build API for E2E" CI step).
-    command: 'node main.js',
-    cwd: '../../apps/api/dist',
-    url: `${defaultApiOrigin}/healthz`,
-    ...sharedServerOptions,
-  };
-}
+  const apiOrigin = getApiOrigin();
 
-export function createWebServer(url = 'http://127.0.0.1:5173/auth') {
   return {
-    command: 'pnpm exec vite --config vite.config.ts --host 127.0.0.1 --port 5173',
+    // Ensure the local test database is ready before booting the built API entrypoint.
+    command: 'pnpm exec tsx ./e2e/helpers/start-api-server.ts',
     cwd: '.',
-    url,
+    url: `${apiOrigin}/healthz`,
     env: {
       ...process.env,
-      PROXY_TARGET_URL: defaultApiOrigin,
+      NODE_ENV: 'test',
+      CORS_ORIGIN: getCorsOrigins(),
     },
     ...sharedServerOptions,
   };
 }
 
-export { defaultApiOrigin };
+export function createWebServer(url = `${getWebOrigin()}/auth`) {
+  const apiOrigin = getApiOrigin();
+  const webServer = getWebServerRuntimeConfig();
+
+  return {
+    command: `pnpm exec vite --config vite.config.ts --host ${webServer.host} --port ${webServer.port}`,
+    cwd: '.',
+    url,
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      PROXY_TARGET_URL: apiOrigin,
+    },
+    ...sharedServerOptions,
+  };
+}
+
+export { DEFAULT_API_ORIGIN as defaultApiOrigin };
