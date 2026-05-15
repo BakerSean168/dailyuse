@@ -32,7 +32,7 @@ test.describe('Reminder Template CRUD Operations', () => {
   });
 
   test('should display reminder templates', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /reminder/i }).first()).toBeVisible();
+    await expect(page.getByTestId('reminder-linear-heading')).toBeVisible();
     await expect(page.getByTestId('create-reminder-template-button')).toBeVisible();
   });
 
@@ -45,11 +45,11 @@ test.describe('Reminder Template CRUD Operations', () => {
     const reminderId = await openReminderCardContextMenu(page, originalTitle);
     await page.getByTestId(`reminder-template-edit-action-${reminderId}`).click();
 
-    const dialog = reminderDialog(page, /edit reminder template/i);
+    const dialog = reminderDialog(page);
     await expect(dialog).toBeVisible();
 
-    await dialog.getByRole('textbox', { name: /title/i }).fill(updatedTitle);
-    await dialog.getByRole('button', { name: /done/i }).click();
+    await dialog.getByTestId('reminder-template-title-input').fill(updatedTitle);
+    await dialog.getByTestId('reminder-template-save-button').click();
 
     await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expect(reminderCardByTitle(page, updatedTitle)).toBeVisible();
@@ -78,11 +78,11 @@ test.describe('Reminder Template CRUD Operations', () => {
 
     await reminderCardByTitle(page, templateTitle).click();
 
-    const detailDialog = page.getByRole('dialog', { name: new RegExp(templateTitle, 'i') });
+    const detailDialog = page.getByTestId('reminder-template-detail');
     await expect(detailDialog).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(detailDialog.getByRole('heading', { name: templateTitle })).toBeVisible();
+    await expect(page.getByTestId('reminder-template-detail-title')).toHaveText(templateTitle);
   });
 });
 
@@ -95,18 +95,18 @@ async function openCreateReminderDialog(page: Page) {
     await page.getByTestId('create-first-reminder-template-button').click();
   }
 
-  await expect(reminderDialog(page, /create reminder template/i)).toBeVisible({
+  await expect(reminderDialog(page)).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
 }
 
 async function createReminderTemplate(page: Page, title: string) {
   await openCreateReminderDialog(page);
-  const dialog = reminderDialog(page, /create reminder template/i);
+  const dialog = reminderDialog(page);
 
-  await dialog.getByRole('textbox', { name: /title/i }).fill(title);
-  await dialog.getByRole('textbox', { name: /description/i }).fill(`Description for ${title}`);
-  await dialog.getByRole('button', { name: /done/i }).click();
+  await dialog.getByTestId('reminder-template-title-input').fill(title);
+  await dialog.getByTestId('reminder-template-description-input').fill(`Description for ${title}`);
+  await dialog.getByTestId('reminder-template-save-button').click();
 
   await expect(dialog).toBeHidden({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -114,8 +114,8 @@ async function createReminderTemplate(page: Page, title: string) {
   await expect(reminderCardByTitle(page, title)).toBeVisible();
 }
 
-function reminderDialog(page: Page, name: RegExp): Locator {
-  return page.getByRole('dialog', { name });
+function reminderDialog(page: Page): Locator {
+  return page.getByTestId('reminder-template-dialog');
 }
 
 function reminderCardByTitle(page: Page, title: string): Locator {

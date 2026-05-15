@@ -79,7 +79,7 @@
       <header
         class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
       >
-        <h1 class="text-lg font-medium text-foreground">
+        <h1 data-testid="reminder-linear-heading" class="text-lg font-medium text-foreground">
           {{ t('reminder.linear.templateTitle') }}
         </h1>
         <div class="flex items-center gap-2">
