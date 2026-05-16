@@ -42,6 +42,7 @@ const {
 
 const activeTab = ref('appearance');
 const isHydratingAppearance = ref(true);
+const fileInput = ref<HTMLInputElement | null>(null);
 type LocaleFormState = Required<UserSettingPreferences['locale']>;
 type LocaleSettingsInput = {
   language?: string;
@@ -102,8 +103,31 @@ function normalizeTimeFormat(
 
 /** Wrap importSettings for the @import event (which has no payload). */
 async function handleImport() {
-  // TODO: Open a file picker and read JSON, then pass to importSettings
-  await importSettings({});
+  fileInput.value?.click();
+}
+
+/** Handle file selection and read JSON content. */
+async function onFileSelected(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const content = e.target?.result as string;
+      const data = JSON.parse(content);
+      await importSettings(data);
+    } catch (err) {
+      console.error('Failed to parse settings JSON:', err);
+    } finally {
+      // Reset input so the same file can be selected again
+      target.value = '';
+    }
+  };
+  reader.readAsText(file);
 }
 
 async function handleLocaleUpdate(value: LocaleSettingsInput) {
@@ -191,6 +215,16 @@ const tabs = computed(() => [
 
 <template>
   <div class="h-full min-h-0 overflow-auto bg-background">
+    <!-- Hidden file input for importing settings -->
+    <input
+      ref="fileInput"
+      type="file"
+      accept=".json"
+      class="hidden"
+      aria-hidden="true"
+      @change="onFileSelected"
+    />
+
     <div class="mx-auto max-w-4xl px-6 py-8 space-y-6">
       <!-- Page header -->
       <div>
