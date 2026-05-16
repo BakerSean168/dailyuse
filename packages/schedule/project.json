@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
       "options": {
-        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
         "cwd": "packages/schedule"
       },
       "dependsOn": ["^build", "database:build"]

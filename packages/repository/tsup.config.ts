@@ -16,7 +16,7 @@ export default defineConfig({
     'src/schema.ts',
   ],
   format: ['esm'],
-  dts: true,
+  dts: false,
   clean: true,
   sourcemap: true,
   external: [

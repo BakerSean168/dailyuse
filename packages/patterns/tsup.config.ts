@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsup';
+import { createLocalOnlyDtsPaths } from '../../tools/build/tsup.base.config.ts';
 
 export default defineConfig({
   entry: [
@@ -9,7 +10,7 @@ export default defineConfig({
     'src/events/index.ts',
   ],
   format: ['esm'],
-  dts: true,
+  dts: createLocalOnlyDtsPaths(),
   clean: true,
   sourcemap: true,
 });

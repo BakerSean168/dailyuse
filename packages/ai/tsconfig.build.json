@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.build.tsbuildinfo",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/domain-server/*": ["./src/domain-server/*"],
+      "@/domain-shared/*": ["./src/domain-shared/*"],
+      "@dailyuse/database": ["../database/dist/index.d.ts"],
+      "@dailyuse/database/prisma": ["../database/dist/generated/prisma/client.d.ts"],
+      "@dailyuse/http-client": ["../http-client/dist/index.d.ts"],
+      "@dailyuse/domain-shared": ["../domain-shared/dist/index.d.ts"],
+      "@dailyuse/domain-shared/shared": ["../domain-shared/dist/shared/index.d.ts"],
+      "@dailyuse/contracts": ["../contracts/dist/index.d.ts"],
+      "@dailyuse/contracts/*": [
+        "../contracts/dist/modules/*/index.d.ts",
+        "../contracts/dist/*/index.d.ts"
+      ],
+      "@dailyuse/utils": ["../utils/dist/index.d.ts"],
+      "@dailyuse/utils/*": ["../utils/dist/*/index.d.ts", "../utils/dist/*.d.ts"],
+      "@dailyuse/governance": ["../governance/dist/index.d.ts"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "src/**/__tests__/**/*"]
+}

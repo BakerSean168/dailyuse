@@ -57,6 +57,7 @@ const TEXT_FILE_EXTENSIONS = new Set([
 ]);
 
 const SKIP_DIRS = new Set([
+  '.pytest_cache',
   '.git',
   '.nx',
   'build',

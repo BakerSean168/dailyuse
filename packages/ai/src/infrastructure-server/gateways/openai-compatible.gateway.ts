@@ -1,4 +1,8 @@
-import type { OpenAICompatibleCompletionRequest, OpenAICompatibleCompletionResult } from './types';
+import type {
+  OpenAICompatibleCompletionRequest,
+  OpenAICompatibleCompletionResponse,
+  OpenAICompatibleCompletionResult,
+} from './types';
 
 export class OpenAICompatibleGateway {
   async complete(
@@ -29,7 +33,7 @@ export class OpenAICompatibleGateway {
         throw new Error(`Provider request failed: ${response.status} ${await response.text()}`);
       }
 
-      const json = await response.json();
+      const json = (await response.json()) as OpenAICompatibleCompletionResponse;
       const content = json?.choices?.[0]?.message?.content;
       if (typeof content !== 'string' || content.trim().length === 0) {
         throw new Error('Provider returned empty content');

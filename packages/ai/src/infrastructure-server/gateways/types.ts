@@ -21,3 +21,17 @@ export interface OpenAICompatibleCompletionResult {
     totalTokens: number;
   };
 }
+
+export interface OpenAICompatibleCompletionResponse {
+  model?: string;
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
+}

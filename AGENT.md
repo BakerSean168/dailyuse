@@ -5,7 +5,7 @@
 ## 真值顺序
 
 1. 当前代码、配置和测试
-2. 根配置与项目配置：`nx.json`、`project.json`、`package.json`、`eslint.config.ts`、`tsconfig.base.json`
+2. 根配置与项目配置：`nx.json`、`project.json`、`package.json`、`eslint.config.ts`、`tsconfig.base.json`、`tsconfig.workspace-src.json`
 3. `docs/` 下的正式文档
 4. 历史说明、背景材料和归档计划
 

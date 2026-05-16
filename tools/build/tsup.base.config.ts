@@ -37,6 +37,19 @@ interface CreateTsupConfigOptions {
   extraOptions?: Partial<Options>;
 }
 
+export function createLocalOnlyDtsPaths(
+  additionalPaths: Record<string, string[]> = {},
+): NonNullable<Options['dts']> {
+  return {
+    compilerOptions: {
+      paths: {
+        '@/*': ['./src/*'],
+        ...additionalPaths,
+      },
+    },
+  };
+}
+
 /**
  * 创建 tsup 配置
  */
@@ -67,8 +80,9 @@ export function createTsupConfig(options: CreateTsupConfigOptions): Options {
     // 类型声明配置
     // ============================================================
 
-    // 使用 tsup 生成类型声明（简单高效）
-    dts: true,
+    // 使用 tsup 生成类型声明，但仅保留包内 alias，
+    // 避免发布态声明构建继续追 workspace 源码图。
+    dts: createLocalOnlyDtsPaths(),
 
     // ============================================================
     // 构建优化

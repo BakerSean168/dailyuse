@@ -8,7 +8,7 @@
 
 Memoflow is an Nx + pnpm monorepo with three different resolution environments running at the same time:
 
-- TypeScript compiler and IDE navigation (`tsconfig.base.json`, project `tsconfig.json`)
+- TypeScript compiler and IDE navigation (`tsconfig.workspace-src.json`, project `tsconfig.json`)
 - Browser and renderer bundlers (`apps/web` and `apps/desktop` via Vite)
 - Package consumers at build/runtime (`package.json` `exports` pointing to `dist`)
 
@@ -45,7 +45,7 @@ This is not an accidental hybrid. It is the official architecture.
 
 ### 1. `tsconfig` is the source-of-truth for compile-time workspace source resolution
 
-`tsconfig.base.json` and package/app-level `tsconfig.json` files define how TypeScript and IDEs resolve workspace source imports.
+`tsconfig.workspace-src.json` and package/app-level `tsconfig.json` files define how TypeScript and IDEs resolve workspace source imports.
 
 Use `tsconfig` paths for:
 
@@ -145,12 +145,12 @@ Rule:
 
 ## Responsibilities by Layer
 
-### Root `tsconfig.base.json`
+### Root `tsconfig.base.json` and `tsconfig.workspace-src.json`
 
 Responsible for:
 
-- monorepo-wide workspace source map
-- canonical TypeScript path conventions
+- compiler baseline and shared TypeScript conventions (`tsconfig.base.json`)
+- monorepo-wide development-time workspace source map (`tsconfig.workspace-src.json`)
 - package-to-package source development ergonomics
 
 Not responsible for:
@@ -158,13 +158,13 @@ Not responsible for:
 - browser runtime resolution
 - validating published package entrypoints
 
-### App `tsconfig.json`
+### App / Package `tsconfig.json`
 
 Responsible for:
 
-- app-local path overrides
+- app/package-local path overrides
 - narrowing or extending source-visible package paths
-- aligning editor/type-checking with the app's development mode
+- aligning editor/type-checking with the project's development mode
 
 ### App `vite.config.ts`
 
@@ -238,7 +238,7 @@ When building an app for verification, packaging, or release:
 Expected setup:
 
 - `packages/ai/package.json` declares `@dailyuse/contracts`
-- `packages/ai/tsconfig.json` maps `@dailyuse/contracts` to workspace source for development
+- `packages/ai/tsconfig.json` inherits the workspace source map for development
 - `@dailyuse/contracts/package.json` exports built entrypoints from `dist`
 
 This package build scenario does not require Vite aliasing.

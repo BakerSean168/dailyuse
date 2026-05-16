@@ -20,6 +20,7 @@ updated: 2026-04-26T00:00:00
 - `package.json`
 - `eslint.config.ts`
 - `tsconfig.base.json`
+- `tsconfig.workspace-src.json`
 - `.prettierrc`
 - `.editorconfig`
 
