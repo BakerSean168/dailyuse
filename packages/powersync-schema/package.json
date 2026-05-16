@@ -1,0 +1,27 @@
+{
+  "name": "@dailyuse/powersync-schema",
+  "version": "0.0.1",
+  "private": false,
+  "description": "Pure PowerSync schema definitions for desktop and sync consumers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@powersync/common": "^1.47.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "sideEffects": false
+}

@@ -496,6 +496,9 @@ importers:
       '@dailyuse/notification-runtime':
         specifier: workspace:*
         version: link:../../packages/notification-runtime
+      '@dailyuse/powersync-schema':
+        specifier: workspace:*
+        version: link:../../packages/powersync-schema
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
@@ -1346,9 +1349,6 @@ importers:
 
   packages/database:
     dependencies:
-      '@powersync/common':
-        specifier: ^1.47.0
-        version: 1.47.0
       '@prisma/adapter-pg':
         specifier: 7.4.2
         version: 7.4.2
@@ -1584,6 +1584,19 @@ importers:
       vitest:
         specifier: 4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.13.14)(@vitest/ui@4.0.18)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.10(@types/node@22.13.14)(typescript@5.9.3))(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/powersync-schema:
+    dependencies:
+      '@powersync/common':
+        specifier: ^1.47.0
+        version: 1.47.0
+    devDependencies:
+      tsup:
+        specifier: ^8.3.5
+        version: 8.5.1(@microsoft/api-extractor@7.55.2(@types/node@22.13.14))(@swc/core@1.15.18(@swc/helpers@0.5.17))(jiti@2.4.2)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/reminder:
     dependencies:

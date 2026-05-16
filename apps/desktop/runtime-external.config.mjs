@@ -22,8 +22,3 @@ export const powerSyncRuntimePackages = [
 ];
 
 export const nativeLoaderRuntimePackages = ['bindings', 'file-uri-to-path'];
-
-export const bundledDatabaseSubpaths = [
-  '@dailyuse/database/powersync',
-  '@dailyuse/database/dashboard-schema',
-];

@@ -30,7 +30,7 @@ import path from 'path';
 import fs from 'fs';
 import { Worker } from 'node:worker_threads';
 
-import { PowerSyncAppSchema } from '@dailyuse/database/powersync';
+import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
 import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { getUnifiedDatabasePath } from './paths';

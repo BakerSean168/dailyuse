@@ -131,12 +131,8 @@ export const domainResolveAliases = [
     replacement: path.resolve(__dirname, './packages/database/src/generated/prisma/client.js'),
   },
   {
-    find: '@dailyuse/database/powersync',
-    replacement: path.resolve(__dirname, './packages/database/src/powersync-schema.ts'),
-  },
-  {
-    find: '@dailyuse/database/dashboard-schema',
-    replacement: path.resolve(__dirname, './packages/database/src/dashboard-schema.ts'),
+    find: '@dailyuse/powersync-schema',
+    replacement: path.resolve(__dirname, './packages/powersync-schema/src/index.ts'),
   },
   {
     find: '@dailyuse/database',
