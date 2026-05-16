@@ -1,4 +1,5 @@
 import { watch } from 'vue';
+import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { useAuthenticationStore } from '../../authentication/stores/authenticationStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -6,6 +7,7 @@ import { usePresentationPreferenceStore } from '../stores/presentationPreference
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import { translateResultError } from '../../../shared/utils/translateResultError';
+import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 export function usePresentationBootstrap() {
   const authStore = useAuthenticationStore();
@@ -71,7 +73,7 @@ export function usePresentationBootstrap() {
       userSettingStore.setError(null);
 
       try {
-        const data = await settingService.getUserSettings();
+        const data = unwrapOrThrowError<UserSettingClientDTO>(await settingService.getUserSettings());
         userSettingStore.setUserSetting(data);
         userSettingStore.setInitialized(true);
         presentationStore.syncFromUserSetting(data.preferences);

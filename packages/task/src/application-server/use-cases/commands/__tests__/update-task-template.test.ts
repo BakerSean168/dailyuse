@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { UpdateTaskTemplateUseCaseUseCase } from '../update-task-template.use-case';
+import { UpdateTaskTemplateUseCase } from '../update-task-template.use-case';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 describe('UpdateTaskTemplateUseCase', () => {
@@ -162,5 +162,16 @@ describe('UpdateTaskTemplateUseCase', () => {
     if (result.ok) {
       expect(result.data.name).toBe('After');
     }
+  });
+
+  it('should treat clearing a missing goal binding as a no-op', async () => {
+    const template = aOneTimeTask({ title: 'No Goal Binding' });
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id, { goalBinding: null });
+
+    expect(result).toBeOk();
+    expect(template.goalBinding).toBeNull();
+    expect(templateRepo.save).toHaveBeenCalledWith(template);
   });
 });

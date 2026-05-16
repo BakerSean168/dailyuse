@@ -37,6 +37,7 @@
         "../../packages/contracts/src/modules/*/index.ts",
         "../../packages/contracts/src/*/index.ts"
       ],
+      "@dailyuse/domain-shared": ["../../packages/domain-shared/src/index.ts"],
       "@dailyuse/editor/electron-entry": ["../../packages/editor/src/electron-entry/index.ts"],
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/*": [

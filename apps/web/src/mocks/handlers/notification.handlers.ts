@@ -11,6 +11,12 @@ import { createMockNotification, createMockNotificationList } from '@dailyuse/co
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const BASE = `${API_BASE}/notifications`;
 
+type MockNotificationOverrides = NonNullable<Parameters<typeof createMockNotification>[0]>;
+type NotificationId = NonNullable<MockNotificationOverrides['id']>;
+
+const toNotificationId = (value: string | readonly string[] | undefined): NotificationId =>
+  (Array.isArray(value) ? value[0] : (value ?? '')) as NotificationId;
+
 export const notificationHandlers = [
   // GET /notifications — list notifications
   http.get(BASE, () => {
@@ -78,7 +84,11 @@ export const notificationHandlers = [
       ok: true,
       code: 200,
       message: 'Marked as read',
-      data: createMockNotification({ id: params.id as string, isRead: true, readAt: Date.now() }),
+      data: createMockNotification({
+        id: toNotificationId(params.id),
+        isRead: true,
+        readAt: Date.now(),
+      }),
       timestamp: Date.now(),
     });
   }),
@@ -89,7 +99,7 @@ export const notificationHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockNotification({ id: params.id as string }),
+      data: createMockNotification({ id: toNotificationId(params.id) }),
       timestamp: Date.now(),
     });
   }),

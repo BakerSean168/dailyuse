@@ -10,7 +10,7 @@ import {
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ListTaskTemplatesUseCaseUseCase } from '../list-task-templates.use-case';
+import { ListTaskTemplatesUseCase } from '../list-task-templates.use-case';
 
 // Mock eventBus — preserve all real exports
 vi.mock('@dailyuse/utils', async () => {

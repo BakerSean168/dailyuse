@@ -3,8 +3,8 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { CheckExpiredInstancesUseCaseUseCase } from '../check-expired-instances.use-case';
-import { GenerateTaskInstancesUseCaseUseCase } from '../generate-task-instances.use-case';
+import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-case';
+import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';
 
 const mockMarkExpiredInstances = vi.fn();
 vi.mock('@/domain-server/services/TaskExpirationService', () => {

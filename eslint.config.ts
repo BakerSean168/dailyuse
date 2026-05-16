@@ -148,6 +148,7 @@ export default tseslint.config(
       files: [
         '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        '**/e2e/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       ],
       plugins: { '@nx': nxPlugin },
       rules: {

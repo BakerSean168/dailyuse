@@ -8,6 +8,7 @@ import type {
   GenerateGoalsRes,
 } from '@dailyuse/contracts/ai';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { IAIService } from '../../../di/types';
 
 export type WorkflowMode = 'chat' | 'goal' | 'knowledge-note';
 
@@ -21,11 +22,10 @@ export type ChatItem = {
   errorMessage?: string;
 };
 
-export type ConversationSummary = {
-  id: string;
-  name?: string;
-  title?: string;
-};
+type ConversationListResponse = Awaited<ReturnType<IAIService['listConversations']>>;
+type MessageListResponse = Awaited<ReturnType<IAIService['listMessages']>>;
+
+export type ConversationSummary = ConversationListResponse['data'][number];
 
 export type ProviderListItem = {
   id: string;
@@ -46,44 +46,21 @@ export type ChatModelOption = {
   modelName: string;
 };
 
-export type StreamDoneResult = {
-  userMessage?: { id: string; content: string };
-  assistantMessage?: { id: string; content: string };
-};
+export type StreamDoneResult = Awaited<ReturnType<IAIService['sendMessage']>>;
 
-export type ConversationMessageSummary = {
-  id?: string;
-  role?: string;
-  content?: string;
-};
+export type ConversationMessageSummary = MessageListResponse['data'][number];
 
-export interface AIChatService {
-  listConversations(params?: { page?: number; pageSize?: number }): Promise<{
-    data?: ConversationSummary[];
-  }>;
-  listMessages(
-    conversationId: string,
-    params?: { page?: number; pageSize?: number },
-  ): Promise<{ data?: ConversationMessageSummary[] }>;
-  createConversation(request: { name: string }): Promise<{ id: string }>;
-  updateConversation(id: string, request: { name: string }): Promise<unknown>;
-  deleteConversation(id: string): Promise<void>;
-  streamMessage(
-    request: {
-      conversationId: string;
-      content: string;
-      providerId: string;
-      model: string;
-    },
-    handlers: {
-      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
-      onDone?: (result: unknown) => void;
-    },
-    signal?: AbortSignal,
-  ): Promise<void>;
-  generateGoal(request: unknown): Promise<GenerateGoalsRes>;
-  createKnowledgeNote(request: unknown): Promise<NoteSummary>;
-}
+export type AIChatService = Pick<
+  IAIService,
+  | 'listConversations'
+  | 'listMessages'
+  | 'createConversation'
+  | 'updateConversation'
+  | 'deleteConversation'
+  | 'streamMessage'
+  | 'generateGoal'
+  | 'createKnowledgeNote'
+>;
 
 export type GoalDraft = GoalWorkflowDraftResultDTO;
 export type GoalClarification = GoalClarificationDTO;
@@ -100,7 +77,7 @@ export type GoalWorkflowStage =
 
 export type NoteSummary = {
   resolvedPath: string;
-  resource?: { id?: string; name?: string; content?: string };
+  resource?: { id?: string; name?: string; content?: string | null };
 };
 
 export type EditableGoal = {

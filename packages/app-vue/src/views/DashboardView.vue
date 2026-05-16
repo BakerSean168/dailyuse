@@ -197,6 +197,7 @@ onBeforeUnmount(() => {
 // ── Stat cards config ──
 const statCards = computed(() => [
   {
+    testId: 'dashboard-stat-card-active-tasks',
     label: '进行中任务',
     value: stats.value.activeTasks,
     icon: ListTodo,
@@ -205,6 +206,7 @@ const statCards = computed(() => [
     route: '/tasks',
   },
   {
+    testId: 'dashboard-stat-card-completed-today',
     label: '今日完成',
     value: stats.value.completedToday,
     icon: CheckCircle2,
@@ -213,6 +215,7 @@ const statCards = computed(() => [
     route: '/tasks',
   },
   {
+    testId: 'dashboard-stat-card-active-goals',
     label: '活跃目标',
     value: stats.value.activeGoals,
     icon: Target,
@@ -221,6 +224,7 @@ const statCards = computed(() => [
     route: '/goals',
   },
   {
+    testId: 'dashboard-stat-card-upcoming-reminders',
     label: '待处理提醒',
     value: stats.value.upcomingReminders,
     icon: Bell,
@@ -229,6 +233,7 @@ const statCards = computed(() => [
     route: '/reminders',
   },
   {
+    testId: 'dashboard-stat-card-unread-notifications',
     label: '未读通知',
     value: stats.value.unreadNotifications,
     icon: Activity,
@@ -237,6 +242,7 @@ const statCards = computed(() => [
     route: '/notifications',
   },
   {
+    testId: 'dashboard-stat-card-schedule-conflicts',
     label: '日程冲突',
     value: stats.value.scheduleConflicts,
     icon: AlertTriangle,
@@ -372,7 +378,7 @@ async function refreshDashboard() {
 </script>
 
 <template>
-  <div class="flex flex-col h-full bg-background">
+  <div class="flex flex-col h-full bg-background" data-testid="dashboard-view">
     <!-- Page Header -->
     <div
       class="flex items-center justify-between px-6 py-3 border-b border-border bg-background sticky top-0 z-10"
@@ -382,7 +388,13 @@ async function refreshDashboard() {
         <p class="text-xs text-muted-foreground mt-0.5">全局概览与快速操作</p>
       </div>
       <div class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" :disabled="isLoading" @click="refreshDashboard">
+        <Button
+          data-testid="dashboard-refresh-button"
+          variant="ghost"
+          size="sm"
+          :disabled="isLoading"
+          @click="refreshDashboard"
+        >
           <RefreshCw class="w-4 h-4 mr-1" :class="{ 'animate-spin': isLoading }" />
           刷新
         </Button>
@@ -415,6 +427,7 @@ async function refreshDashboard() {
             <Card
               v-for="card in statCards"
               :key="card.label"
+              :data-testid="card.testId"
               class="border-border/50 hover:border-border transition-colors cursor-pointer group"
               @click="navigateTo(card.route)"
             >

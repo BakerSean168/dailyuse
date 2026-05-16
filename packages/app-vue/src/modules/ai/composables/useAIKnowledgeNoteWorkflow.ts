@@ -20,6 +20,10 @@ export interface UseAIKnowledgeNoteWorkflowOptions {
   requestOpenResource: (id: string) => Promise<unknown>;
 }
 
+type CreateKnowledgeNoteRequest = Parameters<
+  UseAIKnowledgeNoteWorkflowOptions['service']['createKnowledgeNote']
+>[0];
+
 export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOptions) {
   const { t } = useI18n();
   const router = useRouter();
@@ -59,17 +63,27 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     noteCreating.value = true;
     try {
       const noteTitle = buildKnowledgeNoteTitle();
-      const summary = (await options.service.createKnowledgeNote({
+      const summary = await options.service.createKnowledgeNote({
         topic: buildKnowledgeNoteTopic(),
         ...(noteTitle ? { title: noteTitle } : {}),
         ...(options.knowledgeNoteSubpath.value
           ? { targetSubpath: options.knowledgeNoteSubpath.value }
           : {}),
-        providerId: options.selectedModel.value.providerId,
+        providerId:
+          options.selectedModel.value.providerId as CreateKnowledgeNoteRequest['providerId'],
         model: options.selectedModel.value.modelId,
-      })) as NoteSummary;
+      });
 
-      noteSummary.value = summary;
+      noteSummary.value = {
+        resolvedPath: summary.resolvedPath,
+        resource: summary.resource
+          ? {
+              id: summary.resource.id,
+              name: summary.resource.name,
+              content: summary.resource.content,
+            }
+          : undefined,
+      };
       await options.fetchResources();
       await options.maybeRenameCurrentConversation(
         summary.resource?.name?.replace(/\.md$/i, '') || noteTitle,

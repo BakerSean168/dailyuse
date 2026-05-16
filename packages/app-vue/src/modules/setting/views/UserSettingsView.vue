@@ -106,11 +106,13 @@ function handleImport() {
   fileInputRef.value?.click();
 }
 
-/** Handle file selection from the hidden input. */
-async function handleFileSelected(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
+/** Handle file selection and read JSON content. */
+async function onFileSelected(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) {
+    return;
+  }
 
   const reader = new FileReader();
   reader.onload = async (e) => {
@@ -121,8 +123,8 @@ async function handleFileSelected(event: Event) {
     } catch (err) {
       console.error('Failed to parse settings JSON:', err);
     } finally {
-      // Clear input so the same file can be selected again if needed
-      input.value = '';
+      // Reset input so the same file can be selected again
+      target.value = '';
     }
   };
   reader.readAsText(file);
@@ -213,6 +215,16 @@ const tabs = computed(() => [
 
 <template>
   <div class="h-full min-h-0 overflow-auto bg-background">
+    <!-- Hidden file input for importing settings -->
+    <input
+      ref="fileInputRef"
+      type="file"
+      accept=".json"
+      class="hidden"
+      aria-hidden="true"
+      @change="onFileSelected"
+    />
+
     <div class="mx-auto max-w-4xl px-6 py-8 space-y-6">
       <!-- Page header -->
       <div>
@@ -223,15 +235,6 @@ const tabs = computed(() => [
       <div v-if="isLoading" class="flex items-center justify-center py-12">
         <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
-
-      <!-- Hidden file input for importing settings -->
-      <input
-        ref="fileInputRef"
-        type="file"
-        accept=".json"
-        class="hidden"
-        @change="handleFileSelected"
-      />
 
       <!-- Main content -->
       <Tabs v-else v-model="activeTab" class="w-full">

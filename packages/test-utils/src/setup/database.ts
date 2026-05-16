@@ -213,7 +213,14 @@ export async function ensureTestDatabase(projectRoot?: string): Promise<void> {
   if (isCI) {
     console.log('[test-utils] CI detected — skipping Docker container management');
   } else {
-    startTestContainer(root);
+    const { hostname, port } = getTestDatabaseConnectionInfo();
+    const databaseAlreadyReachable = await canConnectToPort(hostname, port);
+
+    if (databaseAlreadyReachable) {
+      console.log('[test-utils] Test database already reachable — skipping Docker startup');
+    } else {
+      startTestContainer(root);
+    }
   }
 
   await waitForDatabase();

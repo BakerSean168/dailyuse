@@ -1,7 +1,11 @@
 import type { ComposerTranslation } from 'vue-i18n';
-import type { TaskTemplateClientDTO, TaskTimeConfigDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskTimeConfigDTO,
+  TaskTimeConfigReq,
+} from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { TaskTemplateViewModel } from '../components/types';
+import type { TaskTemplateViewModel, TaskTimeConfigViewModel } from '../components/types';
 import { findNamedColor } from '../../../shared/constants/colorPalette';
 
 type Translate = ComposerTranslation<Record<string, never>, string>;
@@ -36,6 +40,17 @@ function formatMinuteOfDay(minutes?: number | null): string {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 }
 
+type TaskTimeDisplayInput = {
+  timeType?: TaskTimeConfigDTO['timeType'] | string;
+  timePoint?: number | null;
+  timeRange?: { start: number; end: number } | null;
+} | null | undefined;
+
+type TaskTimePayloadInput = Pick<
+  TaskTimeConfigViewModel,
+  'timeType' | 'timePoint' | 'timeRange' | 'startDate'
+> | null | undefined;
+
 export function getTaskTimeTypeLabel(t: Translate, type?: string | null): string {
   switch (type) {
     case 'AllDay':
@@ -51,7 +66,7 @@ export function getTaskTimeTypeLabel(t: Translate, type?: string | null): string
 
 export function getTaskTimeValueDisplay(
   t: Translate,
-  timeConfig?: TaskTimeConfigDTO | null,
+  timeConfig?: TaskTimeDisplayInput,
 ): string {
   if (!timeConfig) return t('common.none');
   if (timeConfig.timeType === 'AllDay') return t('task.timeConfig.allDay');
@@ -60,6 +75,23 @@ export function getTaskTimeValueDisplay(
     return `${formatMinuteOfDay(timeConfig.timeRange.start)} - ${formatMinuteOfDay(timeConfig.timeRange.end)}`;
   }
   return t('common.none');
+}
+
+export function toTaskTimeConfigPayload(timeConfig?: TaskTimePayloadInput): TaskTimeConfigReq {
+  const timeType = timeConfig?.timeType ?? 'AllDay';
+  const startDate = timeConfig?.startDate;
+
+  return {
+    timeType,
+    startDate:
+      startDate instanceof Date
+        ? startDate.getTime()
+        : typeof startDate === 'number'
+          ? startDate
+          : null,
+    timePoint: timeType === 'TimePoint' ? (timeConfig?.timePoint ?? null) : null,
+    timeRange: timeType === 'TimeRange' ? (timeConfig?.timeRange ?? null) : null,
+  };
 }
 
 export function getTaskRecurrenceText(t: Translate, dto: TaskTemplateClientDTO): string {
@@ -133,10 +165,9 @@ export function mapTaskTemplateDtoToViewModel(
       : null,
     timeConfig: {
       timeType: dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType'],
-      timePoint: dto.timeConfig?.timePoint ?? undefined,
-      timeRange: dto.timeConfig?.timeRange ?? undefined,
+      timePoint: dto.timeConfig?.timePoint ?? null,
+      timeRange: dto.timeConfig?.timeRange ?? null,
       startDate: dto.timeConfig?.startDate ?? undefined,
-      displayText: getTaskTimeValueDisplay(t, dto.timeConfig),
     },
     reminderConfig: dto.reminderConfig ?? null,
     recurrenceRule: dto.recurrenceRule ?? null,

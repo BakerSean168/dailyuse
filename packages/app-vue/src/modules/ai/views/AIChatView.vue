@@ -56,10 +56,10 @@
           @keydown.enter.prevent="selectConversation(item)"
           @keydown.space.prevent="selectConversation(item)"
         >
-          <MessageSquare class="h-4 w-4 shrink-0" />
-          <span class="min-w-0 flex-1 truncate">
-            {{ item.name || item.title || t('common.untitled') }}
-          </span>
+            <MessageSquare class="h-4 w-4 shrink-0" />
+            <span class="min-w-0 flex-1 truncate">
+            {{ item.name || t('common.untitled') }}
+            </span>
           <Button
             variant="ghost"
             size="icon"
@@ -130,7 +130,7 @@
             "
             @click="selectConversation(item)"
           >
-            {{ item.name || item.title || t('common.untitled') }}
+            {{ item.name || t('common.untitled') }}
           </button>
         </div>
       </header>
@@ -741,6 +741,7 @@ import AIGoalDraftEditor from '../components/AIGoalDraftEditor.vue';
 import { getToolLocaleKey } from '../composables/types';
 import type {
   ChatItem,
+  ConversationSummary,
   GoalAutomationResult,
   GoalExecutedAction,
   ProviderListItem,
@@ -801,9 +802,7 @@ function formatActionStatus(status: GoalExecutedAction['status']) {
   return labels[status];
 }
 
-function formatExecutionOutcome(
-  status: NonNullable<ReturnType<typeof goalExecutionSummary>>['status'],
-) {
+function formatExecutionOutcome(status: 'success' | 'partial' | 'failed') {
   const labels = {
     success: t('aiAssistant.dialogs.automation.outcomeLabels.success'),
     partial: t('aiAssistant.dialogs.automation.outcomeLabels.partial'),
@@ -994,7 +993,7 @@ const workflowStatusText = computed(() => {
 
 // ─── Template wrappers ────────────────────────────────────────────
 
-async function selectConversation(item: { id: string; name?: string; title?: string }) {
+async function selectConversation(item: ConversationSummary) {
   persistence.suspendWorkflowPersistence.value = true;
   await chatSession.selectConversation(
     item,
@@ -1048,7 +1047,10 @@ async function maybeRenameCurrentConversation(name: string) {
   chatSession.conversationTitle.value = nextName;
   if (!chatConversationId.value) return;
   try {
-    await service.updateConversation(chatConversationId.value, { name: nextName });
+    await service.updateConversation(
+      chatConversationId.value as Parameters<typeof service.updateConversation>[0],
+      { name: nextName },
+    );
     await loadConversationList();
   } catch (error) {
     console.warn('[AIChatView] failed to update conversation title', error);
@@ -1069,6 +1071,13 @@ const canSendMessage = computed(
     modelSelection.canSendMessage.value &&
     !chatLoading.value &&
     modelSelection.selectedModel.value !== null,
+);
+const canRunWorkflowActions = computed(
+  () =>
+    modelSelection.selectedModel.value !== null &&
+    !chatLoading.value &&
+    !noteWorkflow.noteCreating.value &&
+    (toolMode.value !== 'knowledge-note' || chatSession.hasWorkflowMessages.value),
 );
 const selectedModelKey = modelSelection.selectedModelKey;
 const modelGroups = modelSelection.modelGroups;

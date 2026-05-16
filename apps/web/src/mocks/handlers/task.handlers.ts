@@ -22,19 +22,32 @@ export const taskMockRoutes = {
   tasks: TASKS,
 };
 
+type MockTaskTemplateOverrides = NonNullable<Parameters<typeof createMockTaskTemplate>[0]>;
+type MockTaskInstanceOverrides = NonNullable<Parameters<typeof createMockTaskInstance>[0]>;
+type TaskTemplateId = NonNullable<MockTaskTemplateOverrides['id']>;
+type TaskInstanceId = NonNullable<MockTaskInstanceOverrides['id']>;
+type TaskDependencyId = NonNullable<TaskDependencyClientDTO['id']>;
+
+const toTaskTemplateId = (value: string | readonly string[] | undefined): TaskTemplateId =>
+  (Array.isArray(value) ? value[0] : (value ?? '')) as TaskTemplateId;
+
+const toTaskInstanceId = (value: string | readonly string[] | undefined): TaskInstanceId =>
+  (Array.isArray(value) ? value[0] : (value ?? '')) as TaskInstanceId;
+
+const toTaskDependencyId = (value: string | readonly string[] | undefined): TaskDependencyId =>
+  (Array.isArray(value) ? value[0] : (value ?? '')) as TaskDependencyId;
+
 export function createMockTaskDependency(
   overrides: Partial<TaskDependencyClientDTO> = {},
 ): TaskDependencyClientDTO {
   return {
-    id: overrides.id ?? `dep-${Date.now()}`,
-    predecessorTaskId: overrides.predecessorTaskId ?? 'task-predecessor-1',
-    successorTaskId: overrides.successorTaskId ?? 'task-successor-1',
+    id: overrides.id ?? toTaskDependencyId(`dep-${Date.now()}`),
+    predecessorTaskId: overrides.predecessorTaskId ?? toTaskTemplateId('task-predecessor-1'),
+    successorTaskId: overrides.successorTaskId ?? toTaskTemplateId('task-successor-1'),
     dependencyType: overrides.dependencyType ?? 'FinishToStart',
     lagDays: overrides.lagDays ?? 0,
-    version: overrides.version ?? 1,
     createdAt: overrides.createdAt ?? Date.now(),
     updatedAt: overrides.updatedAt ?? Date.now(),
-    deletedAt: overrides.deletedAt ?? null,
     predecessorTaskTitle: overrides.predecessorTaskTitle,
     successorTaskTitle: overrides.successorTaskTitle,
   };
@@ -56,7 +69,7 @@ export function createMockDependencyChain(
   overrides: Partial<DependencyChainClientDTO> = {},
 ): DependencyChainClientDTO {
   return {
-    taskId: overrides.taskId ?? 'task-1',
+    taskId: overrides.taskId ?? toTaskTemplateId('task-1'),
     allPredecessors: overrides.allPredecessors ?? [],
     allSuccessors: overrides.allSuccessors ?? [],
     depth: overrides.depth ?? 0,
@@ -126,7 +139,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Started',
-      data: createMockTaskInstance({ id: params.id as string, status: 'InProgress' }),
+      data: createMockTaskInstance({ id: toTaskInstanceId(params.id), status: 'InProgress' }),
       timestamp: Date.now(),
     });
   }),
@@ -136,7 +149,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Completed',
-      data: createMockTaskInstance({ id: params.id as string, status: 'Completed' }),
+      data: createMockTaskInstance({ id: toTaskInstanceId(params.id), status: 'Completed' }),
       timestamp: Date.now(),
     });
   }),
@@ -146,7 +159,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Skipped',
-      data: createMockTaskInstance({ id: params.id as string, status: 'Skipped' }),
+      data: createMockTaskInstance({ id: toTaskInstanceId(params.id), status: 'Skipped' }),
       timestamp: Date.now(),
     });
   }),
@@ -156,7 +169,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockTaskInstance({ id: params.id as string }),
+      data: createMockTaskInstance({ id: toTaskInstanceId(params.id) }),
       timestamp: Date.now(),
     });
   }),
@@ -176,7 +189,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockTaskInstanceList(5, { templateId: params.id as string }),
+      data: createMockTaskInstanceList(5, { templateId: toTaskTemplateId(params.id) }),
       timestamp: Date.now(),
     });
   }),
@@ -186,7 +199,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Generated',
-      data: createMockTaskInstanceList(3, { templateId: params.id as string }),
+      data: createMockTaskInstanceList(3, { templateId: toTaskTemplateId(params.id) }),
       timestamp: Date.now(),
     });
   }),
@@ -196,7 +209,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Activated',
-      data: createMockTaskTemplate({ id: params.id as string, status: 'Active' }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id), status: 'Active' }),
       timestamp: Date.now(),
     });
   }),
@@ -206,7 +219,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Paused',
-      data: createMockTaskTemplate({ id: params.id as string, status: 'Paused' }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id), status: 'Paused' }),
       timestamp: Date.now(),
     });
   }),
@@ -216,7 +229,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Archived',
-      data: createMockTaskTemplate({ id: params.id as string, status: 'Archived' }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id), status: 'Archived' }),
       timestamp: Date.now(),
     });
   }),
@@ -226,7 +239,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Bound',
-      data: createMockTaskTemplate({ id: params.id as string }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id) }),
       timestamp: Date.now(),
     });
   }),
@@ -236,7 +249,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Unbound',
-      data: createMockTaskTemplate({ id: params.id as string, goalBinding: null }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id), goalBinding: null }),
       timestamp: Date.now(),
     });
   }),
@@ -246,7 +259,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockTaskTemplate({ id: params.id as string }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id) }),
       timestamp: Date.now(),
     });
   }),
@@ -257,7 +270,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockTaskTemplate({ id: params.id as string, ...(body as object) }),
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
@@ -290,8 +303,8 @@ export const taskHandlers = [
         code: 200,
         message: 'Created',
         data: createMockTaskDependency({
-          predecessorTaskId: body.predecessorTaskId ?? 'task-predecessor-1',
-          successorTaskId: body.successorTaskId ?? (params.taskId as string),
+          predecessorTaskId: body.predecessorTaskId ?? toTaskTemplateId('task-predecessor-1'),
+          successorTaskId: body.successorTaskId ?? toTaskTemplateId(params.taskId),
           dependencyType: body.dependencyType,
           lagDays: body.lagDays,
         }),
@@ -308,7 +321,7 @@ export const taskHandlers = [
       message: 'Success',
       data: [
         createMockTaskDependency({
-          successorTaskId: params.taskId as string,
+          successorTaskId: toTaskTemplateId(params.taskId),
           predecessorTaskTitle: 'Prepare inputs',
           successorTaskTitle: 'Run task',
         }),
@@ -324,8 +337,8 @@ export const taskHandlers = [
       message: 'Success',
       data: [
         createMockTaskDependency({
-          predecessorTaskId: params.taskId as string,
-          successorTaskId: 'task-dependent-1',
+          predecessorTaskId: toTaskTemplateId(params.taskId),
+          successorTaskId: toTaskTemplateId('task-dependent-1'),
           predecessorTaskTitle: 'Run task',
           successorTaskTitle: 'Review output',
         }),
@@ -339,7 +352,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockDependencyChain({ taskId: params.taskId as string }),
+      data: createMockDependencyChain({ taskId: toTaskTemplateId(params.taskId) }),
       timestamp: Date.now(),
     });
   }),
@@ -351,7 +364,7 @@ export const taskHandlers = [
       code: 200,
       message: 'Updated',
       data: createMockTaskDependency({
-        id: params.id as string,
+        id: toTaskDependencyId(params.id),
         dependencyType: body.dependencyType,
         lagDays: body.lagDays,
       }),

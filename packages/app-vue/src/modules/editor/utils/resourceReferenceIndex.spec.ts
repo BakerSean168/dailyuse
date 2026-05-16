@@ -52,7 +52,7 @@ describe('resourceReferenceIndex', () => {
 
     expect(index.getInboundReferences('image-1')).toHaveLength(1);
     expect(index.getUnresolvedReferences()).toHaveLength(1);
-    expect(index.getDeleteImpact('image-1').notes[0]?.title).toBe('Note');
+    expect(index.getDeleteImpact('image-1').notes[0]?.title).toBe('note');
   });
 
   it('repairs a broken reference using targeted rewrite spans', () => {

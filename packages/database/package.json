@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "description": "Memoflow Shared Database Infrastructure — Prisma Schema, Client, and Connection Management",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./prisma": {
       "types": "./src/generated/prisma/client.d.ts",
@@ -17,12 +17,12 @@
       "default": "./src/generated/prisma/client.js"
     },
     "./powersync": {
-      "types": "./src/powersync-schema.ts",
-      "import": "./src/powersync-schema.ts"
+      "types": "./dist/powersync-schema.d.ts",
+      "import": "./dist/powersync-schema.js"
     },
     "./dashboard-schema": {
-      "types": "./src/dashboard-schema.ts",
-      "import": "./src/dashboard-schema.ts"
+      "types": "./dist/dashboard-schema.d.ts",
+      "import": "./dist/dashboard-schema.js"
     }
   },
   "scripts": {

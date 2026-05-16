@@ -9,7 +9,7 @@ describe('PrismaTaskInstanceMapper', () => {
     templateId: 'template-1',
     identityId: 'identity-1',
     instanceDate: new Date('2024-03-15T00:00:00Z'),
-    timeConfig: '{}',
+    timeConfig: JSON.stringify({ timeType: 'Flexible', startDate: null, timePoint: null, timeRange: null }),
     importance: 'Moderate',
     priority: null,
     status: 'Pending',
@@ -66,8 +66,8 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(domain.actualEndTime).toBeNull();
       expect(domain.note).toBeNull();
       expect(domain.version).toBe(1);
-      expect(domain.createdAt).toBe(row.createdAt.getTime());
-      expect(domain.updatedAt).toBe(row.updatedAt.getTime());
+      expect(domain.createdAt).toEqual(row.createdAt);
+      expect(domain.updatedAt).toEqual(row.updatedAt);
     });
 
     it('maps full Prisma row with all fields to domain', () => {
@@ -116,8 +116,8 @@ describe('PrismaTaskInstanceMapper', () => {
       const row = createFullRow();
       const domain = PrismaTaskInstanceMapper.toDomain(row);
 
-      expect(domain.createdAt).toBe(row.createdAt.getTime());
-      expect(domain.updatedAt).toBe(row.updatedAt.getTime());
+      expect(domain.createdAt).toEqual(row.createdAt);
+      expect(domain.updatedAt).toEqual(row.updatedAt);
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
       expect(domain.actualStartTime).toBe(row.actualStartTime!.getTime());
       expect(domain.actualEndTime).toBe(row.actualEndTime!.getTime());
@@ -149,7 +149,7 @@ describe('PrismaTaskInstanceMapper', () => {
         id: 'instance-3',
         templateId: 'template-3',
         identityId: 'identity-3',
-        instanceDate: new Date('2024-05-01T00:00:00Z').getTime(),
+        instanceDate: new Date('2024-05-01T00:00:00Z'),
         importance: 'Minor',
         status: 'Pending',
         version: 1,

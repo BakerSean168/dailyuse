@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/BakerSean168/dailyuse.git"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "commonjs",
   "dependencies": {
     "@dailyuse/account": "workspace:*",
@@ -21,6 +21,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/dashboard": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/goal": "workspace:*",
     "date-fns": "^4.1.0",
     "gray-matter": "4.0.3",

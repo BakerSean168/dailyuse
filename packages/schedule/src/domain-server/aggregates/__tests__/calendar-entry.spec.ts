@@ -36,8 +36,9 @@ describe('CalendarEntry Aggregate', () => {
 
   describe('create()', () => {
     it('should create a schedule with valid parameters', () => {
+      const identityId = IdentityId.generate();
       const schedule = CalendarEntry.create({
-        identityId: IdentityId.generate(),
+        identityId,
         title: 'Team Meeting',
         description: 'Weekly sync',
         startTime: hour(14), // 2:00 PM
@@ -49,7 +50,7 @@ describe('CalendarEntry Aggregate', () => {
 
       expect(schedule).toBeDefined();
       expect(schedule.id).toBeDefined();
-      expect(schedule.identityId).toBe('acc-123');
+      expect(schedule.identityId).toBe(identityId);
       expect(schedule.title).toBe('Team Meeting');
       expect(schedule.description).toBe('Weekly sync');
       expect(schedule.duration).toBe(60); // 1 hour in minutes

@@ -369,8 +369,10 @@ async function handleActivateFocusMode(request: ActivateFocusModeRequest) {
       })}`,
     );
     router.push({ name: 'goal-focus' });
+    return result.data;
   }
-  return result.ok ? result.data : null;
+
+  throw new Error('Failed to activate focus mode');
 }
 
 function handleFocusModeActivated() {

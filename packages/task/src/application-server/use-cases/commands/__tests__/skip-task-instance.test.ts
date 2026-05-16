@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { SkipTaskInstanceUseCaseUseCase } from '../skip-task-instance.use-case';
+import { SkipTaskInstanceUseCase } from '../skip-task-instance.use-case';
 
 describe('SkipTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;

@@ -83,7 +83,10 @@ import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import type { DependencyType as DependencyTypeValue } from '@dailyuse/contracts/task';
-import { mapTaskTemplateDtoToViewModel } from '../utils/taskTemplatePresentation';
+import {
+  mapTaskTemplateDtoToViewModel,
+  toTaskTimeConfigPayload,
+} from '../utils/taskTemplatePresentation';
 import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
 
@@ -190,7 +193,7 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     name: template.title,
     description: template.description ?? null,
     taskType: template.recurrenceRule ? TaskType.Recurring : TaskType.OneTime,
-    timeConfig: template.timeConfig as any,
+    timeConfig: toTaskTimeConfigPayload(template.timeConfig),
     recurrenceRule: template.recurrenceRule ?? null,
     importance: (template.importance as any) ?? 'Moderate',
     parentTaskId: (template.parentTaskId as TaskTemplateId) ?? null,
@@ -221,7 +224,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const result = await updateTemplate(vm.id, {
     name: vm.title,
     description: vm.description ?? null,
-    timeConfig: vm.timeConfig as any,
+    timeConfig: toTaskTimeConfigPayload(vm.timeConfig),
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
     parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,

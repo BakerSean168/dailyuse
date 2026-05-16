@@ -4,7 +4,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aTaskInstance } from '@dailyuse/task/testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { GetTaskTemplateUseCaseUseCase } from '../get-task-template.use-case';
+import { GetTaskTemplateUseCase } from '../get-task-template.use-case';
 
 describe('GetTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;

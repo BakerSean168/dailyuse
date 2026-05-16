@@ -3,20 +3,19 @@
  *
  * 定义 app-vue 注入键所使用的服务接口类型。
  *
- * 策略：使用 `{ [K in keyof import('...').Class]: ... }` 内联映射类型，
- * 将 Service 类映射为只含公有成员的结构化接口。这同时解决两个问题：
+ * 策略：
  *
- * 1. **Private nominal typing** — class 的 private 字段导致 source 与 dist 解析
- *    出两个不兼容的类型身份。mapped type 的 `keyof` 只遍历 public 成员，
- *    产出纯 structural 类型，彻底消除 nominal 冲突。
- *
- * 2. **rootDir 违规** — 若使用顶层 `import type { X } from '@dailyuse/xxx'`，
- *    vite-plugin-dts 生成 .d.ts 时会沿 tsconfig paths 追踪到外部包源码目录，
- *    违反 `rootDir: "./src"`。内联 `import()` 类型表达式不触发此行为。
- *
- * 对于 governance (Rule) 模块，DI 注入的是 GovernanceClientService 的结构化接口。
+ * 1. Goal / Task / AI 使用各模块显式导出的 `*ClientPort` public interface，
+ *    避免引用具体 service class 触发 private nominal typing。
+ * 2. application-client 的类型解析走依赖包 `dist/*.d.ts`，避免 app-vue 的 d.ts 生成
+ *    追踪到外部源码目录并触发 `rootDir: "./src"` 违规。
+ * 3. governance 仍使用结构化 service interface，因为当前依赖包只对 app-vue 暴露
+ *    build 产物类型。
  */
 
+import type { AIClientPort } from '@dailyuse/ai/application-client';
+import type { GoalClientPort } from '@dailyuse/goal/application-client';
+import type { TaskClientPort } from '@dailyuse/task/application-client';
 import type { Component } from 'vue';
 
 /**
@@ -29,50 +28,15 @@ type PublicInterface<T> = { [K in keyof T]: T[K] };
 
 export type IAccountService = PublicInterface<any>;
 export type IAuthService = PublicInterface<any>;
-export type IGoalService = PublicInterface<any>;
-export type ITaskService = PublicInterface<any>;
+export type IGoalService = GoalClientPort;
+export type ITaskService = TaskClientPort;
 export type IScheduleService = PublicInterface<any>;
 export type IReminderService = PublicInterface<any>;
 export type IRepositoryService = PublicInterface<any>;
 export type IEditorService = PublicInterface<any>;
 export type INotificationService = PublicInterface<any>;
 export type ISettingService = PublicInterface<any>;
-export interface IAIService {
-  getCapabilities(): Promise<unknown>;
-  getEvaluationOverview(request?: unknown): Promise<unknown>;
-  createProvider(request: unknown): Promise<unknown>;
-  updateProvider(id: string, request: unknown): Promise<unknown>;
-  listProviders(): Promise<unknown>;
-  getProvider(id: string): Promise<unknown>;
-  deleteProvider(id: string): Promise<void>;
-  testProvider(request: unknown): Promise<unknown>;
-  setDefaultProvider(providerId: string): Promise<void>;
-  refreshProviderModels(id: string): Promise<unknown>;
-  generateGoal(request: unknown): Promise<unknown>;
-  createConversation(request: unknown): Promise<unknown>;
-  updateConversation(id: string, request: unknown): Promise<unknown>;
-  listConversations(params?: { page?: number; pageSize?: number }): Promise<unknown>;
-  getConversation(id: string): Promise<unknown>;
-  deleteConversation(id: string): Promise<void>;
-  sendMessage(request: unknown): Promise<unknown>;
-  streamMessage(
-    request: unknown,
-    handlers: {
-      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
-      onDone?: (result: unknown) => void;
-    },
-    signal?: AbortSignal,
-  ): Promise<void>;
-  listMessages(
-    conversationId: string,
-    params?: { page?: number; pageSize?: number },
-  ): Promise<unknown>;
-  expandKnowledge(request: unknown): Promise<unknown>;
-  queryKnowledge(request: unknown): Promise<unknown>;
-  reindexKnowledge(request: unknown): Promise<unknown>;
-  createKnowledgeNote(request: unknown): Promise<unknown>;
-  queryAnalytics(request: unknown): Promise<unknown>;
-}
+export type IAIService = AIClientPort;
 
 // ── Governance（结构化 service interface）──
 export type IRuleService = PublicInterface<

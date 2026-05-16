@@ -85,7 +85,7 @@
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.timeValue') }}
               </p>
-              <p class="text-sm">{{ detailViewModel.timeConfig.displayText }}</p>
+              <p class="text-sm">{{ getTimeValueLabel(detailViewModel.timeConfig) }}</p>
             </div>
             <div v-if="detailViewModel.description" class="sm:col-span-2">
               <p class="text-sm font-medium text-muted-foreground">
@@ -282,7 +282,9 @@ import { DependencyType, TaskGoalBindingTrigger } from '@dailyuse/contracts/task
 import type { TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
 import {
   getTaskTimeTypeLabel,
+  getTaskTimeValueDisplay,
   mapTaskTemplateDtoToViewModel,
+  toTaskTimeConfigPayload,
 } from '../utils/taskTemplatePresentation';
 import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
@@ -390,7 +392,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const result = await updateTemplate(id, {
     name: vm.title,
     description: vm.description ?? null,
-    timeConfig: vm.timeConfig as any,
+    timeConfig: toTaskTimeConfigPayload(vm.timeConfig),
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
     parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,
@@ -488,6 +490,10 @@ function formatDate(ts?: number | null): string {
 
 function getTimeTypeLabel(type?: string | null): string {
   return getTaskTimeTypeLabel(t, type);
+}
+
+function getTimeValueLabel(timeConfig?: TaskTemplateViewModel['timeConfig'] | null): string {
+  return getTaskTimeValueDisplay(t, timeConfig);
 }
 
 async function loadDetailPage(id: string) {

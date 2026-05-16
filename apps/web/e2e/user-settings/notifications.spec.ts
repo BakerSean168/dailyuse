@@ -1,5 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { TIMEOUT_CONFIG } from '../config';
+import { API_CONFIG, TIMEOUT_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 
 const generateTestEmail = () =>
@@ -31,8 +31,10 @@ test.describe('Notification Settings', () => {
     const notificationToggle = page.getByTestId('notification-settings-switch');
     const initialState = await notificationToggle.getAttribute('aria-checked');
 
+    const updatedState = initialState === 'true' ? 'false' : 'true';
+
     await toggleSwitch(page, notificationToggle);
-    await expect(notificationToggle).not.toHaveAttribute('aria-checked', initialState ?? '', {
+    await expect(notificationToggle).toHaveAttribute('aria-checked', updatedState, {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
   });
@@ -54,9 +56,30 @@ async function openNotificationsSettings(page: Page) {
 }
 
 async function resetSettings(page: Page) {
-  await page.evaluate(async () => {
-    await fetch('/api/v1/settings/reset', { method: 'POST' });
-  });
+  const resetResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/v1/settings/reset') &&
+      response.request().method() === 'POST' &&
+      response.ok(),
+  );
+
+  await page.evaluate(async (apiBaseUrl) => {
+    const accessToken = window.localStorage.getItem('access_token');
+    if (!accessToken) {
+      throw new Error('Missing access_token for settings reset');
+    }
+
+    await fetch(`${apiBaseUrl}/settings/reset`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({}),
+    });
+  }, API_CONFIG.FULL_URL);
+  await resetResponse;
+
   await page.goto('/settings', {
     waitUntil: 'networkidle',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
@@ -64,6 +87,13 @@ async function resetSettings(page: Page) {
 }
 
 async function toggleSwitch(page: Page, locator: Locator) {
-  await locator.focus();
-  await page.keyboard.press('Space');
+  const patchResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/v1/settings/notification') &&
+      response.request().method() === 'PATCH' &&
+      response.ok(),
+  );
+
+  await locator.click();
+  await patchResponse;
 }

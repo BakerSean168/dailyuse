@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { DeleteTaskInstanceUseCaseUseCase } from '../delete-task-instance.use-case';
+import { DeleteTaskInstanceUseCase } from '../delete-task-instance.use-case';
 
 describe('DeleteTaskInstanceUseCase', () => {
   function setup() {

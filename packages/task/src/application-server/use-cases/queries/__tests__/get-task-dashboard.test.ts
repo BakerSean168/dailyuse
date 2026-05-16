@@ -5,7 +5,7 @@ import { aOneTimeTask, aLoadedTaskTemplate, anIdentityId } from '@dailyuse/task/
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
-import { GetTaskDashboardUseCaseUseCase } from '../get-task-dashboard.use-case';
+import { GetTaskDashboardUseCase } from '../get-task-dashboard.use-case';
 
 describe('GetTaskDashboardUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;

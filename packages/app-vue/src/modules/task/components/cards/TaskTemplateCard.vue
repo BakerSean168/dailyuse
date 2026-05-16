@@ -283,6 +283,7 @@ import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { useI18n } from 'vue-i18n';
+import { getTaskTimeValueDisplay } from '../../utils/taskTemplatePresentation';
 
 const { t } = useI18n();
 import {
@@ -487,31 +488,7 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
  * - TIME_RANGE: HH:mm - HH:mm
  */
 const timeLabel = computed(() => {
-  const timeConfig = props.template.timeConfig;
-
-  if (timeConfig.displayText) {
-    return timeConfig.displayText;
-  }
-
-  if (timeConfig.timeType === 'TimePoint' && timeConfig.timePoint != null) {
-    const hours = Math.floor(timeConfig.timePoint / 60);
-    const minutes = timeConfig.timePoint % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-
-  if (timeConfig.timeType === 'TimeRange' && timeConfig.timeRange) {
-    const startHours = Math.floor(timeConfig.timeRange.start / 60);
-    const startMinutes = timeConfig.timeRange.start % 60;
-    const endHours = Math.floor(timeConfig.timeRange.end / 60);
-    const endMinutes = timeConfig.timeRange.end % 60;
-
-    const startTime = `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
-    const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-
-    return `${startTime} - ${endTime}`;
-  }
-
-  return t('task.templateCard.allDay');
+  return getTaskTimeValueDisplay(t, props.template.timeConfig);
 });
 
 // 事件处理方法

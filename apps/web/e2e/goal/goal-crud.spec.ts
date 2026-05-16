@@ -144,7 +144,7 @@ function goalDialog(page: Page): Locator {
 }
 
 function goalSubmitButton(page: Page): Locator {
-  return page.getByRole('button', { name: /Create Goal|Save Changes|创建目标|保存修改/i });
+  return page.getByTestId('save-goal-button');
 }
 
 async function waitForGoalCardByName(page: Page, goalName: string): Promise<Locator> {

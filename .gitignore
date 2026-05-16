@@ -125,6 +125,7 @@ LPT1
 
 # MCP tool outputs
 tmp/
+.tmp-*/
 
 # 包管理器缓存
 .pnpm-store/
@@ -140,3 +141,5 @@ __pycache__/
 
 # 测试报告
 reports/**/junit.xml
+test-results/
+apps/web/test-results*/

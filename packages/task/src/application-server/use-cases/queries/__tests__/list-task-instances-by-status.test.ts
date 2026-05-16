@@ -3,7 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance, anIdentityId } from '@dailyuse/task/testing';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { ListTaskInstancesByStatusUseCaseUseCase } from '../list-task-instances-by-status.use-case';
+import { ListTaskInstancesByStatusUseCase } from '../list-task-instances-by-status.use-case';
 
 describe('ListTaskInstancesByStatusUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;

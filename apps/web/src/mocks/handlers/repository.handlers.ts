@@ -34,6 +34,9 @@ const toRepoId = (p: string | readonly string[] | undefined) =>
 const toResourceId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as ResourceClientDTO['id'];
 
+const toBookmarkId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as ResourceBookmarkClientDTO['id'];
+
 function createMockFolder(overrides: Record<string, unknown> = {}) {
   return {
     id: faker.string.uuid(),
@@ -54,7 +57,7 @@ export function createMockResourceBookmark(
 ): ResourceBookmarkClientDTO {
   const fallbackName = faker.helpers.arrayElement(['Inbox.md', 'Ideas.md', 'Plan.md']);
   return {
-    id: overrides.id ?? faker.string.uuid(),
+    id: overrides.id ?? (faker.string.uuid() as ResourceBookmarkClientDTO['id']),
     resourceId:
       overrides.resourceId ?? (faker.string.uuid() as ResourceBookmarkClientDTO['resourceId']),
     identityId:
@@ -93,8 +96,8 @@ export function createMockRepositorySearchResponse(
   query: string,
   mode: SearchMode = 'all',
 ): SearchResponse {
-  const results = createMockResourceList(5).map((resource, index) => ({
-    resourceId: resource.id as string,
+  const results: SearchResponse['results'] = createMockResourceList(5).map((resource, index) => ({
+    resourceId: resource.id,
     resourceName: resource.name,
     resourcePath: `/${resource.name}`,
     resourceType: resource.type || 'markdown',
@@ -266,7 +269,7 @@ export const repositoryHandlers = [
       code: 200,
       message: 'Updated',
       data: createMockResourceBookmark({
-        id: params.bookmarkId as string,
+        id: toBookmarkId(params.bookmarkId),
         aliasName,
         displayName: aliasName ?? 'Pinned resource',
       }),
@@ -282,7 +285,7 @@ export const repositoryHandlers = [
       code: 200,
       message: 'Updated',
       data: bookmarkIds.map((bookmarkId, index) =>
-        createMockResourceBookmark({ id: bookmarkId, sortOrder: index }),
+        createMockResourceBookmark({ id: toBookmarkId(bookmarkId), sortOrder: index }),
       ),
       timestamp: Date.now(),
     });
