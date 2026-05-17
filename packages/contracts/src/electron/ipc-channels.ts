@@ -143,6 +143,7 @@ export const AuthChannels = {
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
+  REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
   REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
   VERIFY_TOKEN: 'auth:verify-token',
   TOKEN_STATUS: 'auth:token-status',
@@ -332,4 +333,7 @@ export const WindowChannels = {
   TOGGLE_MAXIMIZE: 'window:toggle-maximize',
   CLOSE: 'window:close',
   GET_CONTROLS_STATE: 'window:get-controls-state',
+  OPEN_AUTH_REGISTER: 'window:open-auth-register',
+  CLOSE_AUTH_REGISTER: 'window:close-auth-register',
+  FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;

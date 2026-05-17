@@ -21,7 +21,7 @@ import {
   PowerSyncAuthSessionRepository,
   Argon2Hasher,
 } from '@dailyuse/authentication/infrastructure-server';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok, toIpcResult } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import { AuthDesktopApplicationService } from './application/AuthDesktopApplicationService';
 import { getNetworkStateManager } from './infrastructure';
@@ -50,6 +50,7 @@ const Ch = {
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
+  REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
   REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
   VERIFY_TOKEN: 'auth:verify-token',
   TOKEN_STATUS: 'auth:token-status',
@@ -157,8 +158,11 @@ export const DesktopAuthElectronModule: IElectronModule = {
     ipcMain.handle(Ch.GET_STATUS, () => desktopService.getStatus());
     ipcMain.handle(Ch.GET_BOOTSTRAP_SNAPSHOT, () => desktopService.buildBootstrapSnapshot());
     ipcMain.handle(Ch.INITIALIZE, () => desktopService.initialize());
-    ipcMain.handle(Ch.AUTO_LOGIN, () => desktopService.autoLogin());
+    ipcMain.handle(Ch.AUTO_LOGIN, async () => toIpcResult(ok(await desktopService.autoLogin())));
     ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LIST, () => desktopService.getRememberedAccounts());
+    ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LOGIN, (_event, request) =>
+      desktopService.loginRememberedAccount(request),
+    );
     ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_REMOVE, (_event, identityId: string) =>
       desktopService.removeRememberedAccount(identityId),
     );

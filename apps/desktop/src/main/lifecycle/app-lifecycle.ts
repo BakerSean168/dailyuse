@@ -8,9 +8,9 @@
  * - app.on('before-quit') - Cleanup before exit
  *
  * 登录流程（Steam-like）：
- * 1. 检查是否有启用自动登录的账号
- * 2. 有 → 检查 Session 是否有效 → 有效则直接进入主窗口
- * 3. 无自动登录 → 显示登录窗口（支持快速登录已保存账号）
+ * 1. 检查是否存在已记住账号
+ * 2. 始终先显示登录窗口
+ * 3. 登录窗口内部根据 remembered account / auto-login 状态决定交互
  *
  * @module lifecycle/app-lifecycle
  */
@@ -25,11 +25,9 @@ import { shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
 import { createNativeWindowChromeOptions } from './desktopChrome';
-import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
-import { getDesktopAuthService } from '../auth/desktop-auth-context';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
-import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
+import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import { resolveWindowIconPath } from '../utils/app-icon';
 import { createLogger } from '@dailyuse/utils';
 import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
@@ -108,9 +106,9 @@ export function getMainWindow(): BrowserWindow | null {
  * Handles the application 'ready' event.
  *
  * 登录流程（Steam-like）：
- * 1. 检查是否有启用自动登录的账号
- * 2. 有 → 检查 Session 是否有效 → 有效则直接进入主窗口
- * 3. 无自动登录 → 显示登录窗口（支持快速登录已保存账号）
+ * 1. 检查是否存在已记住账号
+ * 2. 始终先显示登录窗口
+ * 3. 登录窗口内部根据 remembered account / auto-login 状态决定交互
  *
  * @param {() => Promise<void>} initializeApp - The application initialization function to be called.
  * @returns {Promise<void>} A promise that resolves when initialization is complete.
@@ -125,9 +123,7 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
 
   // 决定显示哪个窗口
   const windowManager = getWindowManager();
-  const tokenManager = getTokenManager();
   const rememberedAccounts = getRememberedAccountsService();
-  const authService = getDesktopAuthService();
   const rememberedAccountList = await rememberedAccounts.list();
   const quickLoginAccounts = rememberedAccountList.map((account) => ({
     id: account.identityId,
@@ -137,39 +133,13 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     lastLoginAt: account.lastLoginAt,
   }));
 
-  // 只有用户明确启用了自动登录，才尝试自动恢复主进程会话
-  const autoLoginAccount = await rememberedAccounts.getAutoLoginAccount();
-  const tokenStatus = autoLoginAccount ? await tokenManager.getStatus() : null;
-  let shouldShowMainWindow = false;
-
-  if (autoLoginAccount && tokenStatus?.hasValidToken) {
-    console.log('[Lifecycle] Auto-login account found, restoring desktop auth session');
-    await authService.initialize();
-    const autoLoginResult = await authService.autoLogin();
-    shouldShowMainWindow = autoLoginResult.authenticated;
-  }
-
   let win: BrowserWindow;
-
-  if (shouldShowMainWindow) {
-    // PowerSync is already initialized by authService.initialize() →
-    // initializePowerSyncAsync(), which handles online/offline modes.
-    // No need to call connectPowerSync()/openPowerSyncLocalOnly() here.
-
-    // 直接进入主窗口
-    win = windowManager.createMainWindow();
-    mainWindow = win;
-    startScheduleRuntime();
-    console.log('[Lifecycle] Created main window (auto-login)');
-  } else {
-    // 显示登录窗口
-    stopScheduleRuntime();
-    win = windowManager.createLoginWindow({
-      hasQuickLoginAccounts: quickLoginAccounts.length > 0,
-      quickLoginAccounts,
-    });
-    console.log('[Lifecycle] Created login window');
-  }
+  stopScheduleRuntime();
+  win = windowManager.createLoginWindow({
+    hasQuickLoginAccounts: quickLoginAccounts.length > 0,
+    quickLoginAccounts,
+  });
+  console.log('[Lifecycle] Created login window');
 
   // Initialize notification service (requires window to be created)
   if (win) {

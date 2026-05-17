@@ -11,6 +11,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import type { IAuthApiClient } from '../ports/auth-api-client.port';
 import type {
+  AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
   LoginByPhoneReq,
@@ -30,6 +31,7 @@ import type {
   RevokeSessionReq,
   GuestModeRes,
   RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 
 // ─── Client Application Port ────────────────────────────────────────────────
@@ -50,7 +52,11 @@ export interface AuthenticationClientPort {
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
   enterGuestMode(): Promise<Result<GuestModeRes>>;
+  autoLoginDesktop(): Promise<Result<AutoLoginResult>>;
   listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
+  loginRememberedDesktopAccount(
+    req: RememberedDesktopAccountLoginReq,
+  ): Promise<Result<LoginByEmailRes>>;
   removeRememberedAccount(identityId: string): Promise<Result<void>>;
 }
 
@@ -70,7 +76,9 @@ export class AuthClientService implements AuthenticationClientPort {
     this.forgotPassword = this.forgotPassword.bind(this);
     this.resetPassword = this.resetPassword.bind(this);
     this.enterGuestMode = this.enterGuestMode.bind(this);
+    this.autoLoginDesktop = this.autoLoginDesktop.bind(this);
     this.listRememberedAccounts = this.listRememberedAccounts.bind(this);
+    this.loginRememberedDesktopAccount = this.loginRememberedDesktopAccount.bind(this);
     this.removeRememberedAccount = this.removeRememberedAccount.bind(this);
   }
 
@@ -144,8 +152,18 @@ export class AuthClientService implements AuthenticationClientPort {
     return this.apiClient.enterGuestMode();
   }
 
+  async autoLoginDesktop(): Promise<Result<AutoLoginResult>> {
+    return this.apiClient.autoLoginDesktop();
+  }
+
   async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
     return this.apiClient.listRememberedAccounts();
+  }
+
+  async loginRememberedDesktopAccount(
+    req: RememberedDesktopAccountLoginReq,
+  ): Promise<Result<LoginByEmailRes>> {
+    return this.apiClient.loginRememberedDesktopAccount(req);
   }
 
   async removeRememberedAccount(identityId: string): Promise<Result<void>> {

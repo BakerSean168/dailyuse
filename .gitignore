@@ -143,3 +143,5 @@ __pycache__/
 reports/**/junit.xml
 test-results/
 apps/web/test-results*/
+
+docs/proto

@@ -23,6 +23,8 @@ export type {
   AuthStatusDTO,
   AuthOperationResult,
   EmailLoginCredentials,
+  RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
   TwoFactorStatus,
   ApiKeyInfo,
   DeviceInfoUI,

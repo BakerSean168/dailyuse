@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { APP_NAME, APP_TAGLINE } from '../constants/app';
-import { MOBILE_API_BASE_URL_HINT } from '../constants/auth';
 import { AnimatedIcon } from '../components/animated-icon';
 import { useAppSession } from '../providers/app-session-provider';
 
@@ -16,11 +15,10 @@ import {
   ThemedView,
 } from '@dailyuse/ui-react-native';
 
-type AuthMode = 'sign-in' | 'register' | 'forgot-password';
+type AuthScene = 'sign-in' | 'register' | 'forgot-password';
 
 export function AuthScreen() {
   const {
-    apiBaseUrl,
     clearError,
     enterGuestMode,
     forgotPassword,
@@ -30,7 +28,7 @@ export function AuthScreen() {
     sessionKind,
   } = useAppSession();
 
-  const [mode, setMode] = useState<AuthMode>('sign-in');
+  const [scene, setScene] = useState<AuthScene>('sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
@@ -40,6 +38,12 @@ export function AuthScreen() {
   const [notice, setNotice] = useState<string | null>(null);
 
   const isSubmitting = sessionKind === 'authenticating';
+
+  function switchScene(next: AuthScene) {
+    clearError();
+    setNotice(null);
+    setScene(next);
+  }
 
   async function handleEmailLogin() {
     setNotice(null);
@@ -81,9 +85,9 @@ export function AuthScreen() {
   }
 
   const activeTitle =
-    mode === 'sign-in'
+    scene === 'sign-in'
       ? 'Sign in'
-      : mode === 'register'
+      : scene === 'register'
         ? 'Create account'
         : 'Recover password';
 
@@ -105,40 +109,10 @@ export function AuthScreen() {
           </ThemedView>
 
           <ThemedView type="backgroundElement" style={styles.panel}>
-            <View style={styles.modeSelector}>
-              <ModeButton
-                active={mode === 'sign-in'}
-                label="Sign in"
-                onPress={() => {
-                  clearError();
-                  setNotice(null);
-                  setMode('sign-in');
-                }}
-              />
-              <ModeButton
-                active={mode === 'register'}
-                label="Register"
-                onPress={() => {
-                  clearError();
-                  setNotice(null);
-                  setMode('register');
-                }}
-              />
-              <ModeButton
-                active={mode === 'forgot-password'}
-                label="Recover"
-                onPress={() => {
-                  clearError();
-                  setNotice(null);
-                  setMode('forgot-password');
-                }}
-              />
-            </View>
-
             <ThemedView style={styles.formSection}>
               <ThemedText type="smallBold">{activeTitle}</ThemedText>
 
-              {mode === 'sign-in' ? (
+              {scene === 'sign-in' ? (
                 <>
                   <PrimaryTextField
                     autoCapitalize="none"
@@ -169,7 +143,7 @@ export function AuthScreen() {
                 </>
               ) : null}
 
-              {mode === 'register' ? (
+              {scene === 'register' ? (
                 <>
                   <PrimaryTextField
                     autoCapitalize="none"
@@ -214,7 +188,7 @@ export function AuthScreen() {
                 </>
               ) : null}
 
-              {mode === 'forgot-password' ? (
+              {scene === 'forgot-password' ? (
                 <>
                   <PrimaryTextField
                     autoCapitalize="none"
@@ -253,17 +227,23 @@ export function AuthScreen() {
               </ThemedView>
             ) : null}
 
-            <View style={styles.actions}>
-              <PrimaryButton fullWidth label="Enter guest mode" onPress={enterGuestMode} variant="ghost" />
-            </View>
-
-            <View style={styles.metaBlock}>
-              <ThemedText type="code">{apiBaseUrl}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {Platform.OS === 'android'
-                  ? 'Android emulator uses 10.0.2.2 for localhost.'
-                  : MOBILE_API_BASE_URL_HINT}
-              </ThemedText>
+            {/* Bottom scene-switch links */}
+            <View style={styles.sceneLinks}>
+              {scene === 'sign-in' ? (
+                <>
+                  <SceneLink label="Create account" onPress={() => switchScene('register')} />
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {' | '}
+                  </ThemedText>
+                  <SceneLink label="Forgot password" onPress={() => switchScene('forgot-password')} />
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {' | '}
+                  </ThemedText>
+                  <SceneLink label="Guest mode" onPress={enterGuestMode} />
+                </>
+              ) : (
+                <SceneLink label="Back to sign in" onPress={() => switchScene('sign-in')} />
+              )}
             </View>
           </ThemedView>
         </ScrollView>
@@ -272,26 +252,12 @@ export function AuthScreen() {
   );
 }
 
-function ModeButton({
-  active,
-  label,
-  onPress,
-}: {
-  active: boolean;
-  label: string;
-  onPress: () => void;
-}) {
+function SceneLink({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.modePressable}>
-      <ThemedView
-        type={active ? 'tint' : 'backgroundSelected'}
-        style={styles.modeButton}>
-        <ThemedText
-          type="smallBold"
-          style={active ? styles.modeLabelActive : undefined}>
-          {label}
-        </ThemedText>
-      </ThemedView>
+    <Pressable onPress={onPress}>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.linkLabel}>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -328,34 +294,18 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     gap: Spacing.three,
   },
-  modeSelector: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    gap: Spacing.two,
-  },
-  modePressable: {
-    flex: 1,
-  },
-  modeButton: {
-    minHeight: 44,
-    borderRadius: 999,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modeLabelActive: {
-    color: '#FFFFFF',
-  },
   formSection: {
     gap: Spacing.three,
   },
-  actions: {
+  sceneLinks: {
     flexDirection: 'row',
-    gap: Spacing.two,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    paddingVertical: Spacing.one,
   },
-  metaBlock: {
-    gap: Spacing.one,
+  linkLabel: {
+    textDecorationLine: 'underline',
   },
   errorBox: {
     borderRadius: Spacing.two,

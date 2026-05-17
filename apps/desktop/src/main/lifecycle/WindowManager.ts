@@ -40,7 +40,7 @@ export interface WindowManagerConfig {
   isDev?: boolean;
 }
 
-export type WindowType = 'login' | 'main';
+export type WindowType = 'login' | 'register' | 'main';
 
 export interface LoginWindowOptions {
   /** 是否有可快速登录的账号 */
@@ -75,6 +75,7 @@ export class WindowManager {
   private static instance: WindowManager | null = null;
 
   private loginWindow: BrowserWindow | null = null;
+  private registerWindow: BrowserWindow | null = null;
   private mainWindow: BrowserWindow | null = null;
 
   private readonly config: Required<WindowManagerConfig>;
@@ -153,7 +154,11 @@ export class WindowManager {
       maximizable: false,
       minimizable: true,
       fullscreenable: false,
-      ...createNativeWindowChromeOptions(),
+      autoHideMenuBar: true,
+      title: '',
+      frame: false,
+      transparent: true,
+      backgroundColor: '#00000000',
       webPreferences: {
         preload: this.config.preloadPath,
         contextIsolation: true,
@@ -187,12 +192,76 @@ export class WindowManager {
     this.loginWindow.on('closed', () => {
       this.loginWindow = null;
       // 如果没有主窗口且不是在切换过程中，退出应用
-      if (!this.mainWindow && !this.isTransitioning) {
+      if (!this.mainWindow && !this.registerWindow && !this.isTransitioning) {
         app.quit();
       }
     });
 
     return this.loginWindow;
+  }
+
+  createRegisterWindow(): BrowserWindow {
+    if (this.registerWindow && !this.registerWindow.isDestroyed()) {
+      this.registerWindow.focus();
+      return this.registerWindow;
+    }
+
+    logger.info('Creating register window');
+
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    const windowWidth = 460;
+    const windowHeight = 680;
+
+    this.registerWindow = new BrowserWindow({
+      width: windowWidth,
+      height: windowHeight,
+      x: Math.round((screenWidth - windowWidth) / 2),
+      y: Math.round((screenHeight - windowHeight) / 2),
+      resizable: false,
+      maximizable: false,
+      minimizable: true,
+      fullscreenable: false,
+      autoHideMenuBar: true,
+      title: '',
+      frame: false,
+      transparent: true,
+      backgroundColor: '#00000000',
+      webPreferences: {
+        preload: this.config.preloadPath,
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: false,
+      },
+      icon: resolveWindowIconPath(),
+      show: false,
+    });
+
+    this.registerWindow.setMenuBarVisibility(false);
+    this.registerWindow.removeMenu();
+
+    this.attachWindowDiagnostics(this.registerWindow, 'register');
+    this.attachWindowControlStateSync(this.registerWindow);
+
+    this.registerWindow.once('ready-to-show', () => {
+      this.registerWindow?.show();
+      logger.info('Register window shown');
+    });
+
+    this.loadWindowContent(this.registerWindow, '/auth/register');
+
+    if (this.config.isDev) {
+      this.registerWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+
+    this.registerWindow.on('closed', () => {
+      this.registerWindow = null;
+      if (!this.mainWindow && !this.loginWindow && !this.isTransitioning) {
+        app.quit();
+      }
+    });
+
+    return this.registerWindow;
   }
 
   /**
@@ -287,6 +356,9 @@ export class WindowManager {
         if (this.loginWindow && !this.loginWindow.isDestroyed()) {
           this.loginWindow.close();
         }
+        if (this.registerWindow && !this.registerWindow.isDestroyed()) {
+          this.registerWindow.close();
+        }
       }, 100);
 
       logger.info('Transition complete');
@@ -330,6 +402,9 @@ export class WindowManager {
         if (this.mainWindow && !this.mainWindow.isDestroyed()) {
           this.mainWindow.close();
         }
+        if (this.registerWindow && !this.registerWindow.isDestroyed()) {
+          this.registerWindow.close();
+        }
       }, 100);
 
       logger.info('Transition complete');
@@ -347,6 +422,10 @@ export class WindowManager {
     return this.loginWindow;
   }
 
+  getRegisterWindow(): BrowserWindow | null {
+    return this.registerWindow;
+  }
+
   /**
    * 获取主窗口
    */
@@ -358,7 +437,34 @@ export class WindowManager {
    * 获取当前活动窗口
    */
   getActiveWindow(): BrowserWindow | null {
-    return this.mainWindow || this.loginWindow;
+    return this.mainWindow || this.registerWindow || this.loginWindow;
+  }
+
+  openOrFocusRegisterWindow(): BrowserWindow {
+    return this.createRegisterWindow();
+  }
+
+  closeRegisterWindow(): boolean {
+    if (!this.registerWindow || this.registerWindow.isDestroyed()) {
+      return false;
+    }
+
+    this.registerWindow.close();
+    return true;
+  }
+
+  focusMainWindow(): boolean {
+    if (!this.mainWindow || this.mainWindow.isDestroyed()) {
+      return false;
+    }
+
+    if (this.mainWindow.isMinimized()) {
+      this.mainWindow.restore();
+    }
+
+    this.mainWindow.show();
+    this.mainWindow.focus();
+    return true;
   }
 
   // ============ Private Methods ============
@@ -495,11 +601,27 @@ export class WindowManager {
       if (this.loginWindow?.webContents === webContents) {
         return 'login';
       }
+      if (this.registerWindow?.webContents === webContents) {
+        return 'register';
+      }
       if (this.mainWindow?.webContents === webContents) {
         return 'main';
       }
       return 'unknown';
     });
+
+    ipcMain.handle(WindowChannels.OPEN_AUTH_REGISTER, async () => {
+      this.openOrFocusRegisterWindow();
+      return { success: true };
+    });
+
+    ipcMain.handle(WindowChannels.CLOSE_AUTH_REGISTER, async () => ({
+      success: this.closeRegisterWindow(),
+    }));
+
+    ipcMain.handle(WindowChannels.FOCUS_MAIN_WINDOW, async () => ({
+      success: this.focusMainWindow(),
+    }));
 
     ipcMain.handle(WindowChannels.SYNC_CHROME_THEME, (event, theme: DesktopChromeTheme) => {
       if (theme !== 'light' && theme !== 'dark') {
@@ -578,8 +700,12 @@ export class WindowManager {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.close();
     }
+    if (this.registerWindow && !this.registerWindow.isDestroyed()) {
+      this.registerWindow.close();
+    }
 
     this.loginWindow = null;
+    this.registerWindow = null;
     this.mainWindow = null;
   }
 }

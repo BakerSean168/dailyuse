@@ -932,6 +932,7 @@ export default {
       CONFIG_ERROR:
         'The desktop app is missing its authentication service URL. Please check the desktop runtime configuration.',
       LOGIN_FAILED: 'Login failed. Please try again.',
+      AUTH_ALREADY_ACTIVE_LOCALLY: 'This account is already open in the desktop app.',
       REGISTER_FAILED: 'Registration failed. Please try again.',
       REGISTER_ERROR: 'Registration failed. Please try again.',
       UNAUTHORIZED: 'Incorrect email or password',

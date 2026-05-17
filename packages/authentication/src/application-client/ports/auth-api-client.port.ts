@@ -10,6 +10,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type {
+  AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
   LoginByPhoneReq,
@@ -29,6 +30,7 @@ import type {
   RevokeSessionReq,
   GuestModeRes,
   RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 
 /**
@@ -62,6 +64,8 @@ export interface IAuthApiClient {
 
   // ========== Guest Mode (Desktop) ==========
   enterGuestMode(): Promise<Result<GuestModeRes>>;
+  autoLoginDesktop(): Promise<Result<AutoLoginResult>>;
   listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
+  loginRememberedDesktopAccount(req: RememberedDesktopAccountLoginReq): Promise<Result<LoginByEmailRes>>;
   removeRememberedAccount(identityId: string): Promise<Result<void>>;
 }

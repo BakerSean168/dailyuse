@@ -55,6 +55,7 @@ import {
   type DeviceInfoUI,
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
+  type RememberedDesktopAccountLoginReq,
   type TokenStorageData,
   type AuthBootstrapSnapshot,
 } from '@dailyuse/contracts/authentication';
@@ -66,12 +67,14 @@ import {
   createSessionManager,
   type SessionStatus,
   getRememberedAccountsService,
+  type RememberedAccountRecord,
 } from '../infrastructure';
 import {
   disconnectPowerSync,
   openPowerSyncLocalOnly,
   ensurePowerSyncSyncMode,
 } from '../../../database/powersync';
+import { getWindowManager } from '../../../lifecycle/WindowManager';
 import { getNetworkStateManager } from '../infrastructure';
 import { registerDesktopAccount } from './registerDesktopAccount';
 import { AuthRemoteGateway, type RegisterApiResponse } from './AuthRemoteGateway';
@@ -295,12 +298,56 @@ export class AuthDesktopApplicationService {
    */
   async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     this.logger.info('Login attempt', { email: credentials.email });
+    return this.executeLogin(credentials);
+  }
 
+  async loginRememberedAccount(
+    request: RememberedDesktopAccountLoginReq,
+  ): Promise<IpcResult<AuthResponseDTO>> {
+    const account = await this.findRememberedAccount(request.identityId);
+    if (!account) {
+      return toIpcResult(
+        fail({
+          code: 'REMEMBERED_ACCOUNT_NOT_FOUND',
+          message: '未找到该记住的账号',
+        }),
+      );
+    }
+
+    const resolvedPassword = this.rememberedAccounts.decryptPassword(account);
+    if (!resolvedPassword) {
+      return toIpcResult(
+        fail({
+          code: 'REMEMBERED_PASSWORD_UNAVAILABLE',
+          message: '该账号没有可用的已保存密码',
+        }),
+      );
+    }
+
+    this.logger.info('Remembered account login attempt', {
+      identityId: String(request.identityId),
+      email: account.identifier,
+    });
+
+    return this.executeLogin({
+      email: account.identifier,
+      password: resolvedPassword,
+      rememberPassword: request.rememberPassword ?? account.rememberPassword,
+      autoLogin: request.autoLogin ?? account.autoLogin,
+    });
+  }
+
+  private async executeLogin(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     if (!this.sessionManager) {
       return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '认证服务未初始化' }));
     }
 
     try {
+      const localConflict = await this.checkActiveLocalConflict(credentials.email);
+      if (localConflict) {
+        return toIpcResult(fail(localConflict));
+      }
+
       const networkManager = getNetworkStateManager();
       const remoteResult = await loginDesktopAccount(
         {
@@ -683,17 +730,47 @@ export class AuthDesktopApplicationService {
   async autoLogin(): Promise<AutoLoginResult> {
     this.logger.info('Auto login attempt');
 
-    if (!this.sessionManager) {
-      return { ok: false, authenticated: false, error: 'Service not initialized' };
-    }
-
     try {
+      if (!this.sessionManager) {
+        return { ok: false, authenticated: false, error: 'Service not initialized' };
+      }
+
       const remembered = await this.rememberedAccounts.getAutoLoginAccount();
       if (!remembered) {
         return { ok: true, authenticated: false };
       }
 
+      if (!this.isInitialized) {
+        const initResult = await this.initialize();
+        if (!initResult.ok) {
+          return {
+            ok: false,
+            authenticated: false,
+            error: initResult.error || 'Failed to initialize auth service',
+          };
+        }
+      }
+
+      const existingSession = this.sessionManager.getCurrentSession();
+      if (existingSession?.isValid()) {
+        return {
+          ok: true,
+          authenticated: true,
+          identityId: existingSession.identityId,
+          sessionId: existingSession.id,
+        };
+      }
+
       const result = await this.sessionManager.autoLogin();
+      if (result.ok && result.session) {
+        const tokenData = await this.tokenManager.loadTokens();
+        this.authMode = this.resolveRestoredAuthMode(result.session.identityId, tokenData);
+        this.runtimeState = AuthRuntimeState.AUTHENTICATED;
+        this.initializePowerSyncAsync(this.authMode);
+      } else {
+        this.authMode = AuthMode.UNAUTHENTICATED;
+        this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      }
 
       return {
         ok: result.ok,
@@ -1140,9 +1217,7 @@ export class AuthDesktopApplicationService {
       autoLogin: account.autoLogin,
       lastUsedAt: account.lastUsedAt,
       lastLoginAt: account.lastLoginAt,
-      savedPassword: account.rememberPassword
-        ? this.rememberedAccounts.decryptPassword(account)
-        : null,
+      hasSavedPassword: account.rememberPassword && Boolean(account.encryptedPassword),
     }));
   }
 
@@ -1193,6 +1268,44 @@ export class AuthDesktopApplicationService {
     return emailIdentifier?.value?.split('@')[0] || null;
   }
 
+  private async checkActiveLocalConflict(email: string): Promise<{
+    code: string;
+    message: string;
+    context: Record<string, unknown>;
+  } | null> {
+    const mainWindow = getWindowManager().getMainWindow();
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      return null;
+    }
+
+    const activeIdentityId = this.getCurrentIdentityId();
+    if (!activeIdentityId || !this.credentialRepository) {
+      return null;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      return null;
+    }
+
+    const existingIdentity = await this.credentialRepository.findByEmail(normalizedEmail);
+    if (!existingIdentity || String(existingIdentity.id) !== activeIdentityId) {
+      return null;
+    }
+
+    const displayName =
+      this.extractNickname(existingIdentity.toClientDTO()) ?? normalizedEmail.split('@')[0];
+
+    return {
+      code: 'AUTH_ALREADY_ACTIVE_LOCALLY',
+      message: '该账号已在本地主窗口中登录',
+      context: {
+        identityId: activeIdentityId,
+        displayName,
+      },
+    };
+  }
+
   private extractIdentityEmail(identity: AuthIdentityClientDTO): string | null {
     const emailIdentifier = identity.identifiers.find((identifier) => identifier.type === 'Email');
     if (!emailIdentifier) {
@@ -1211,6 +1324,11 @@ export class AuthDesktopApplicationService {
     }
 
     return null;
+  }
+
+  private async findRememberedAccount(identityId: string): Promise<RememberedAccountRecord | null> {
+    const accounts = await this.rememberedAccounts.list();
+    return accounts.find((account) => String(account.identityId) === identityId) ?? null;
   }
 
   private resolveRestoredAuthMode(

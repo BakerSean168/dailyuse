@@ -9,6 +9,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { IAuthApiClient, IResultIpcClient } from '../types';
 import type {
+  AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
   LoginByPhoneReq,
@@ -28,6 +29,7 @@ import type {
   RevokeSessionReq,
   GuestModeRes,
   RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 
 export class AuthIpcAdapter implements IAuthApiClient {
@@ -89,8 +91,18 @@ export class AuthIpcAdapter implements IAuthApiClient {
     return this.ipcClient.invoke(AuthChannels.ENTER_GUEST_MODE);
   }
 
+  async autoLoginDesktop(): Promise<Result<AutoLoginResult>> {
+    return this.ipcClient.invoke(AuthChannels.AUTO_LOGIN);
+  }
+
   async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
     return this.ipcClient.invoke(AuthChannels.REMEMBERED_ACCOUNTS_LIST);
+  }
+
+  async loginRememberedDesktopAccount(
+    req: RememberedDesktopAccountLoginReq,
+  ): Promise<Result<LoginByEmailRes>> {
+    return this.ipcClient.invoke(AuthChannels.REMEMBERED_ACCOUNTS_LOGIN, req);
   }
 
   async removeRememberedAccount(identityId: string): Promise<Result<void>> {

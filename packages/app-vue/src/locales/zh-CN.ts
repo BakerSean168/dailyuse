@@ -897,6 +897,7 @@ export default {
       REMOTE_UNREACHABLE: '无法连接到认证服务，请确认服务已部署并可访问',
       CONFIG_ERROR: '桌面端未配置认证服务地址，请检查桌面运行时配置',
       LOGIN_FAILED: '登录失败，请稍后再试',
+      AUTH_ALREADY_ACTIVE_LOCALLY: '该账号已经在本地桌面端打开',
       REGISTER_FAILED: '注册失败，请稍后再试',
       REGISTER_ERROR: '注册失败，请稍后再试',
       UNAUTHORIZED: '邮箱或密码错误',

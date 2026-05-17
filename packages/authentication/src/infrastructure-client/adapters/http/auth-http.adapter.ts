@@ -11,6 +11,7 @@ import { fail } from '@dailyuse/contracts/result';
 import type { IAuthApiClient } from '../types';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
+  AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
   LoginByPhoneReq,
@@ -30,6 +31,7 @@ import type {
   RevokeSessionReq,
   GuestModeRes,
   RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 
 export class AuthHttpAdapter implements IAuthApiClient {
@@ -105,10 +107,24 @@ export class AuthHttpAdapter implements IAuthApiClient {
     return fail({ code: 'NOT_SUPPORTED', message: 'Guest mode is only available on desktop' });
   }
 
+  async autoLoginDesktop(): Promise<Result<AutoLoginResult>> {
+    return fail({ code: 'NOT_SUPPORTED', message: 'Auto login is only available on desktop' });
+  }
+
   async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
     return fail({
       code: 'NOT_SUPPORTED',
       message: 'Remembered accounts are only available on desktop',
+    });
+  }
+
+  async loginRememberedDesktopAccount(
+    req: RememberedDesktopAccountLoginReq,
+  ): Promise<Result<LoginByEmailRes>> {
+    void req;
+    return fail({
+      code: 'NOT_SUPPORTED',
+      message: 'Remembered account login is only available on desktop',
     });
   }
 

@@ -238,7 +238,9 @@ describe('desktop IPC contract alignment', () => {
     await adapter.forgotPassword({} as never);
     await adapter.resetPassword({} as never);
     await adapter.enterGuestMode();
+    await adapter.autoLoginDesktop();
     await adapter.listRememberedAccounts();
+    await adapter.loginRememberedDesktopAccount({ identityId: 'identity-1' } as never);
     await adapter.removeRememberedAccount('identity-1');
 
     expectChannelsRegistered(recorder.channels(), channelSet(AuthChannels));
