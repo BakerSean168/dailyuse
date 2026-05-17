@@ -127,6 +127,13 @@ export default defineConfig(({ command, mode }) => {
     optimizeDeps: {
       exclude: [...nativeModules, ...workspacePkgs],
     },
+    server: {
+      port: 5173,
+      open: false,
+      fs: {
+        allow: [workspaceRoot],
+      },
+    },
     test: {
       globals: true,
       include: ['src/**/*.test.ts'],

@@ -22,6 +22,7 @@ import type { DesktopChromeTheme } from './desktopChrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
 import { resolveWindowIconPath } from '../utils/app-icon';
 import { bindDesktopFeaturesWindow } from '../desktop-features';
+import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,9 +85,8 @@ export class WindowManager {
 
     this.config = {
       preloadPath,
-      devServerUrl:
-        config.devServerUrl || process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173',
-      isDev: config.isDev ?? process.env.NODE_ENV === 'development',
+      devServerUrl: config.devServerUrl || getDesktopDevServerUrlOrDefault(),
+      isDev: config.isDev ?? usesDesktopViteDevServer(),
     };
 
     if (!hasResolvedPreload(__dirname)) {

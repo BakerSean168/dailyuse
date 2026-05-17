@@ -32,6 +32,7 @@ import { resolvePreloadPath } from '../utils/resolve-preload-path';
 import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import { resolveWindowIconPath } from '../utils/app-icon';
 import { createLogger } from '@dailyuse/utils';
+import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -78,10 +79,9 @@ export function createMainWindow(): BrowserWindow {
   });
 
   // Load application
-  if (process.env.NODE_ENV === 'development') {
+  if (usesDesktopViteDevServer()) {
     // Development mode: Load Vite dev server
-    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
-    mainWindow.loadURL(devServerUrl);
+    mainWindow.loadURL(getDesktopDevServerUrlOrDefault());
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     // Production mode: Load bundled HTML

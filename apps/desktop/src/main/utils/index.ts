@@ -46,3 +46,11 @@ export {
 
 // Assets
 export { resolveAssetPath } from './asset-path';
+
+// Dev runtime
+export {
+  getDesktopDevServerUrl,
+  getDesktopDevServerUrlOrDefault,
+  usesDesktopViteDevServer,
+  isDesktopDevelopmentRuntime,
+} from './dev-runtime';
