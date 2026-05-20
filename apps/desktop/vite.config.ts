@@ -5,7 +5,6 @@ import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import {
-  bundledDatabaseSubpaths,
   electronExternalWorkspacePackages,
   electronJsExternalPackages,
   electronNativeModules,
@@ -37,16 +36,11 @@ const nativeModules = electronNativeModules;
 const workspaceExternal = electronExternalWorkspacePackages;
 const electronMainExternalList = [...nativeModules, ...electronJsExternalPackages];
 
-// Keep only the Prisma-backed database runtime external. Pure schema subpaths
-// stay bundled so the main process does not depend on import-only workspace
-// exports at runtime.
 function isElectronMainExternal(id: string): boolean {
   if (electronMainExternalList.includes(id)) return true;
   for (const pkg of workspaceExternal) {
     if (id === pkg) return true;
-    if (pkg === '@dailyuse/database' && id.startsWith(pkg + '/')) {
-      return !bundledDatabaseSubpaths.includes(id);
-    }
+    if (id.startsWith(pkg + '/')) return true;
   }
   return false;
 }
@@ -132,6 +126,13 @@ export default defineConfig(({ command, mode }) => {
     },
     optimizeDeps: {
       exclude: [...nativeModules, ...workspacePkgs],
+    },
+    server: {
+      port: 5173,
+      open: false,
+      fs: {
+        allow: [workspaceRoot],
+      },
     },
     test: {
       globals: true,

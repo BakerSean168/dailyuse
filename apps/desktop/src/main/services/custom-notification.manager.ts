@@ -15,6 +15,7 @@ import { NotificationChannels } from '../../shared/types/ipc-channels';
 import type { NotificationOptions } from './notification.service';
 import { getWindowManager } from '../lifecycle/WindowManager';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
+import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,8 +24,8 @@ const logger = createLogger('CustomNotificationManager');
 export class CustomNotificationManager {
   private static instance: CustomNotificationManager | null = null;
   private notificationWindow: BrowserWindow | null = null;
-  private isDev = process.env.NODE_ENV === 'development';
-  private devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+  private isDev = usesDesktopViteDevServer();
+  private devServerUrl = getDesktopDevServerUrlOrDefault();
   private preloadPath = resolvePreloadPath(__dirname);
 
   private notificationQueue: Array<NotificationOptions & { id: string }> = [];

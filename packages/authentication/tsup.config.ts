@@ -14,7 +14,7 @@ export default defineConfig({
     'src/schema.ts',
   ],
   format: ['esm'],
-  dts: true,
+  dts: false,
   clean: true,
   splitting: false,
   external: [

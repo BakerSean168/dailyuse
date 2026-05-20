@@ -55,6 +55,7 @@ import {
   type DeviceInfoUI,
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
+  type RememberedDesktopAccountLoginReq,
   type TokenStorageData,
   type AuthBootstrapSnapshot,
 } from '@dailyuse/contracts/authentication';
@@ -66,12 +67,9 @@ import {
   createSessionManager,
   type SessionStatus,
   getRememberedAccountsService,
+  type RememberedAccountRecord,
 } from '../infrastructure';
-import {
-  disconnectPowerSync,
-  openPowerSyncLocalOnly,
-  ensurePowerSyncSyncMode,
-} from '../../../database/powersync';
+import { getWindowManager } from '../../../lifecycle/WindowManager';
 import { getNetworkStateManager } from '../infrastructure';
 import { registerDesktopAccount } from './registerDesktopAccount';
 import { AuthRemoteGateway, type RegisterApiResponse } from './AuthRemoteGateway';
@@ -137,9 +135,6 @@ export class AuthDesktopApplicationService {
   private runtimeState: AuthRuntimeState = AuthRuntimeState.UNINITIALIZED;
   private isInitialized = false;
 
-  // Tracked promise for the most recent PowerSync initialization (non-blocking).
-  private powerSyncInitPromise: Promise<void> | null = null;
-
   private getAccessTokenExpiresInSeconds(expiresAt?: number): number {
     if (typeof expiresAt !== 'number') {
       return 3600;
@@ -184,7 +179,7 @@ export class AuthDesktopApplicationService {
   }
 
   /**
-   * 注入离线认证依赖（Phase 2）
+   * 注入离线认证依赖
    * 将 IAuthIdentityRepository + IPasswordHasher 传递给 SessionManager
    */
   setOfflineAuthDependencies(
@@ -255,12 +250,6 @@ export class AuthDesktopApplicationService {
         identityId: result.identityId,
       });
 
-      // Initialize PowerSync in background after session restore
-      // Don't block the initialization return
-      if (result.ok && result.session) {
-        this.initializePowerSyncAsync(this.authMode);
-      }
-
       return {
         ok: true,
         hasValidSession: result.ok ?? false,
@@ -295,12 +284,56 @@ export class AuthDesktopApplicationService {
    */
   async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     this.logger.info('Login attempt', { email: credentials.email });
+    return this.executeLogin(credentials);
+  }
 
+  async loginRememberedAccount(
+    request: RememberedDesktopAccountLoginReq,
+  ): Promise<IpcResult<AuthResponseDTO>> {
+    const account = await this.findRememberedAccount(request.identityId);
+    if (!account) {
+      return toIpcResult(
+        fail({
+          code: 'REMEMBERED_ACCOUNT_NOT_FOUND',
+          message: '未找到该记住的账号',
+        }),
+      );
+    }
+
+    const resolvedPassword = this.rememberedAccounts.decryptPassword(account);
+    if (!resolvedPassword) {
+      return toIpcResult(
+        fail({
+          code: 'REMEMBERED_PASSWORD_UNAVAILABLE',
+          message: '该账号没有可用的已保存密码',
+        }),
+      );
+    }
+
+    this.logger.info('Remembered account login attempt', {
+      identityId: String(request.identityId),
+      email: account.identifier,
+    });
+
+    return this.executeLogin({
+      email: account.identifier,
+      password: resolvedPassword,
+      rememberPassword: request.rememberPassword ?? account.rememberPassword,
+      autoLogin: request.autoLogin ?? account.autoLogin,
+    });
+  }
+
+  private async executeLogin(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     if (!this.sessionManager) {
       return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '认证服务未初始化' }));
     }
 
     try {
+      const localConflict = await this.checkActiveLocalConflict(credentials.email);
+      if (localConflict) {
+        return toIpcResult(fail(localConflict));
+      }
+
       const networkManager = getNetworkStateManager();
       const remoteResult = await loginDesktopAccount(
         {
@@ -425,10 +458,6 @@ export class AuthDesktopApplicationService {
           authMode: this.authMode,
         });
 
-        // Initialize PowerSync in background (don't block login response)
-        // Session state is already established by activateOnlineSession() earlier
-        this.initializePowerSyncAsync(this.authMode);
-
         return toIpcResult(ok(finalResult.response));
       }
 
@@ -526,7 +555,7 @@ export class AuthDesktopApplicationService {
       remoteGateway: this.remoteGateway,
       logger: this.logger,
       onSuccess: async (data) => {
-        await this.handleRegisterSuccess(data, request);
+        await this.completeRegisterSuccess(data, request);
       },
     });
 
@@ -537,17 +566,23 @@ export class AuthDesktopApplicationService {
     return toIpcResult(fail(result.error));
   }
 
-  private async handleRegisterSuccess(
-    data: RegisterApiResponse,
+  async completeRegisterSuccess(
+    data: RegisterApiResponse | AuthResponseDTO,
     request: RegisterRequest,
   ): Promise<void> {
-    const identityId = data.identity?.id || data.identityId || data.user?.id || '';
+    const registerLike = data as RegisterApiResponse & {
+      user?: { id?: string };
+      identityId?: string;
+      sessionId?: string;
+    };
+    const identityId =
+      data.identity?.id || registerLike.identityId || registerLike.user?.id || '';
 
     if (!data.accessToken || !identityId) {
       return;
     }
 
-    const sessionId = data.session?.id || data.sessionId || crypto.randomUUID();
+    const sessionId = data.session?.id || registerLike.sessionId || crypto.randomUUID();
     const accessTokenExpiresIn = this.getAccessTokenExpiresInSeconds(data.session?.expiresAt);
     this.authMode = AuthMode.ONLINE_USER;
     this.runtimeState = AuthRuntimeState.AUTHENTICATED;
@@ -571,10 +606,6 @@ export class AuthDesktopApplicationService {
           error: err,
         }),
       );
-
-    // Connect PowerSync for online registration (background, non-blocking)
-    // Session state is already established by activateOnlineSession() earlier
-    this.initializePowerSyncAsync(AuthMode.ONLINE_USER);
 
     await this.rememberedAccounts.recordLogin({
       identityId: IdentityId.of(identityId),
@@ -611,11 +642,6 @@ export class AuthDesktopApplicationService {
         this.logger.warn('Account projection failed in guest mode (non-blocking)', { error: err }),
       );
 
-      // Open local-only PowerSync for guest data
-      openPowerSyncLocalOnly().catch((err) =>
-        this.logger.error('PowerSync local-only open failed in guest mode', { error: err }),
-      );
-
       this.logger.info('Guest mode activated', { identityId: guestId });
 
       return toIpcResult(
@@ -648,10 +674,6 @@ export class AuthDesktopApplicationService {
       await this.tokenManager.clearTokens();
       this.authMode = AuthMode.UNAUTHENTICATED;
       this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
-      // Disconnect PowerSync and wipe local sync data
-      await disconnectPowerSync().catch((err) =>
-        this.logger.error('PowerSync disconnect failed during logout', { error: err }),
-      );
       return toIpcResult(ok(undefined));
     }
 
@@ -659,11 +681,6 @@ export class AuthDesktopApplicationService {
       const result = await this.sessionManager.logout();
       this.authMode = AuthMode.UNAUTHENTICATED;
       this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
-
-      // Disconnect PowerSync and wipe local sync data regardless of logout result
-      await disconnectPowerSync().catch((err) =>
-        this.logger.error('PowerSync disconnect failed during logout', { error: err }),
-      );
 
       if (result.ok) {
         return toIpcResult(ok(undefined));
@@ -683,17 +700,46 @@ export class AuthDesktopApplicationService {
   async autoLogin(): Promise<AutoLoginResult> {
     this.logger.info('Auto login attempt');
 
-    if (!this.sessionManager) {
-      return { ok: false, authenticated: false, error: 'Service not initialized' };
-    }
-
     try {
+      if (!this.sessionManager) {
+        return { ok: false, authenticated: false, error: 'Service not initialized' };
+      }
+
       const remembered = await this.rememberedAccounts.getAutoLoginAccount();
       if (!remembered) {
         return { ok: true, authenticated: false };
       }
 
+      if (!this.isInitialized) {
+        const initResult = await this.initialize();
+        if (!initResult.ok) {
+          return {
+            ok: false,
+            authenticated: false,
+            error: initResult.error || 'Failed to initialize auth service',
+          };
+        }
+      }
+
+      const existingSession = this.sessionManager.getCurrentSession();
+      if (existingSession?.isValid()) {
+        return {
+          ok: true,
+          authenticated: true,
+          identityId: existingSession.identityId,
+          sessionId: existingSession.id,
+        };
+      }
+
       const result = await this.sessionManager.autoLogin();
+      if (result.ok && result.session) {
+        const tokenData = await this.tokenManager.loadTokens();
+        this.authMode = this.resolveRestoredAuthMode(result.session.identityId, tokenData);
+        this.runtimeState = AuthRuntimeState.AUTHENTICATED;
+      } else {
+        this.authMode = AuthMode.UNAUTHENTICATED;
+        this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      }
 
       return {
         ok: result.ok,
@@ -1140,9 +1186,7 @@ export class AuthDesktopApplicationService {
       autoLogin: account.autoLogin,
       lastUsedAt: account.lastUsedAt,
       lastLoginAt: account.lastLoginAt,
-      savedPassword: account.rememberPassword
-        ? this.rememberedAccounts.decryptPassword(account)
-        : null,
+      hasSavedPassword: account.rememberPassword && Boolean(account.encryptedPassword),
     }));
   }
 
@@ -1157,29 +1201,61 @@ export class AuthDesktopApplicationService {
     }
   }
 
-  /**
-   * 后台初始化 PowerSync（异步，不阻塞主流程）
-   * 在登录/注册/重启后在后台启动数据库同步
-   *
-   * Stores a tracked promise so callers CAN await if needed while
-   * keeping the default usage non-blocking.
-   */
-  private initializePowerSyncAsync(authMode: AuthMode): void {
-    this.powerSyncInitPromise = (async () => {
-      try {
-        if (authMode === AuthMode.ONLINE_USER) {
-          await ensurePowerSyncSyncMode();
-          this.logger.info('PowerSync sync mode ensured in background');
-        } else if (authMode === AuthMode.OFFLINE_USER || authMode === AuthMode.GUEST) {
-          await openPowerSyncLocalOnly();
-          this.logger.info('PowerSync local-only mode initialized in background');
-        }
-      } catch (err) {
-        this.logger.error('Failed to initialize PowerSync in background', { error: err });
-        // Don't throw - PowerSync is not critical for core auth functionality
-        // User can still use the app with local data
-      }
-    })();
+  async completeRemoteLoginSuccess(
+    response: AuthResponseDTO,
+    request: {
+      email: string;
+      password: string;
+      rememberPassword?: boolean;
+      autoLogin?: boolean;
+    },
+  ): Promise<void> {
+    if (!this.sessionManager || !response.accessToken) {
+      throw new Error('Auth service is not initialized for profile login persistence');
+    }
+
+    const sessionId = response.session.id || crypto.randomUUID();
+    const accessTokenExpiresIn = this.getAccessTokenExpiresInSeconds(response.session?.expiresAt);
+
+    if (request.rememberPassword) {
+      await this.sessionManager
+        .saveOfflineCredentials(request.email, request.password, response.identity.id)
+        .catch((err) =>
+          this.logger.warn('Failed to cache offline credentials', { error: err }),
+        );
+    } else {
+      await this.sessionManager
+        .removeOfflineCredentials(request.email)
+        .catch((err) =>
+          this.logger.warn('Failed to clear offline credentials', { error: err }),
+        );
+    }
+
+    await this.sessionManager.activateOnlineSession({
+      identityId: response.identity.id,
+      sessionId,
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken || '',
+      expiresIn: accessTokenExpiresIn,
+    });
+
+    await this.ensureAccountProjection(
+      String(response.identity.id),
+      this.extractIdentityEmail(response.identity) ?? request.email,
+    );
+
+    await this.rememberedAccounts.recordLogin({
+      identityId: response.identity.id,
+      identifier: request.email,
+      nickname: this.extractNickname(response.identity),
+      avatarUrl: null,
+      rememberPassword: request.rememberPassword ?? false,
+      autoLogin: request.autoLogin ?? false,
+      password: request.rememberPassword ? request.password : undefined,
+    });
+
+    this.authMode = AuthMode.ONLINE_USER;
+    this.runtimeState = AuthRuntimeState.AUTHENTICATED;
   }
 
   private extractNickname(identity: AuthIdentityClientDTO): string | null {
@@ -1191,6 +1267,44 @@ export class AuthDesktopApplicationService {
     );
 
     return emailIdentifier?.value?.split('@')[0] || null;
+  }
+
+  private async checkActiveLocalConflict(email: string): Promise<{
+    code: string;
+    message: string;
+    context: Record<string, unknown>;
+  } | null> {
+    const mainWindow = getWindowManager().getMainWindow();
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      return null;
+    }
+
+    const activeIdentityId = this.getCurrentIdentityId();
+    if (!activeIdentityId || !this.credentialRepository) {
+      return null;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      return null;
+    }
+
+    const existingIdentity = await this.credentialRepository.findByEmail(normalizedEmail);
+    if (!existingIdentity || String(existingIdentity.id) !== activeIdentityId) {
+      return null;
+    }
+
+    const displayName =
+      this.extractNickname(existingIdentity.toClientDTO()) ?? normalizedEmail.split('@')[0];
+
+    return {
+      code: 'AUTH_ALREADY_ACTIVE_LOCALLY',
+      message: '该账号已在本地主窗口中登录',
+      context: {
+        identityId: activeIdentityId,
+        displayName,
+      },
+    };
   }
 
   private extractIdentityEmail(identity: AuthIdentityClientDTO): string | null {
@@ -1211,6 +1325,11 @@ export class AuthDesktopApplicationService {
     }
 
     return null;
+  }
+
+  private async findRememberedAccount(identityId: string): Promise<RememberedAccountRecord | null> {
+    const accounts = await this.rememberedAccounts.list();
+    return accounts.find((account) => String(account.identityId) === identityId) ?? null;
   }
 
   private resolveRestoredAuthMode(

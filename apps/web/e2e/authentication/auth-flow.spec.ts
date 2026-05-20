@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { login } from '../helpers/testHelpers';
+import { ensureLoginScene, ensureRegisterScene, login } from '../helpers/testHelpers';
 import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
 const generateTestEmail = () => `e2e-auth-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
@@ -63,13 +63,6 @@ async function gotoAuthPage(page: Page): Promise<void> {
   await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
 }
 
-async function openRegisterTab(page: Page): Promise<void> {
-  await page.getByRole('tab', { name: /sign up|注册/i }).click();
-  await expect(page.locator('#reg-email')).toBeVisible({
-    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-  });
-}
-
 async function fillRegisterForm(page: Page, email: string, password: string): Promise<void> {
   await page.locator('#reg-email').fill(email);
   await page.locator('#reg-password').fill(password);
@@ -77,16 +70,13 @@ async function fillRegisterForm(page: Page, email: string, password: string): Pr
 }
 
 async function registerUser(page: Page, email: string, password: string): Promise<void> {
-  await openRegisterTab(page);
+  await ensureRegisterScene(page);
   await fillRegisterForm(page, email, password);
-  await page.getByRole('button', { name: /sign up|注册/i }).click();
+  await page.getByTestId('register-submit-button').click();
 }
 
 async function fillLoginForm(page: Page, email: string, password: string): Promise<void> {
-  await page.getByRole('tab', { name: /sign in|登录/i }).click();
-  await expect(page.locator('#email')).toBeVisible({
-    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-  });
+  await ensureLoginScene(page);
   await page.locator('#email').fill(email);
   await page.locator('#password').fill(password);
 }
@@ -119,7 +109,8 @@ async function expectOnAuthPage(page: Page): Promise<void> {
   await page.waitForURL((url) => url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
     timeout: TIMEOUT_CONFIG.LOGIN,
   });
-  await expect(page.getByRole('tab', { name: /sign in|登录/i })).toBeVisible({
+  await ensureLoginScene(page);
+  await expect(page.locator('#email')).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
 }

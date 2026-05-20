@@ -469,6 +469,7 @@ export default {
       notifications: 'Notifications',
       experimental: 'Experimental',
       advanced: 'Advanced',
+      userFiles: 'Files',
     },
 
     // ── Appearance ──
@@ -828,6 +829,25 @@ export default {
       exportFailed: 'Failed to export settings',
       importFailed: 'Failed to import settings',
     },
+
+    // ── User Files Directory ──
+    userFiles: {
+      title: 'File Storage',
+      currentDirectory: 'Current Directory',
+      defaultDirectory: 'Default Directory',
+      customBadge: 'Custom',
+      changeDirectory: 'Change Directory',
+      openDirectory: 'Open Folder',
+      resetToDefault: 'Reset to Default',
+      resetConfirm: 'Reset file storage location to default?',
+      description: 'Choose where Memoflow stores your exported files, downloads, and attachments.',
+      loadPathFailed: 'Failed to load file storage path',
+      directoryChanged: 'File storage location updated',
+      pickDirectoryFailed: 'Failed to change directory, please try again',
+      openDirectoryFailed: 'Unable to open folder',
+      resetSuccess: 'File storage location reset to default',
+      resetFailed: 'Failed to reset, please try again',
+    },
   },
   // ── Authentication module ────────────────────────────────
   auth: {
@@ -932,6 +952,7 @@ export default {
       CONFIG_ERROR:
         'The desktop app is missing its authentication service URL. Please check the desktop runtime configuration.',
       LOGIN_FAILED: 'Login failed. Please try again.',
+      AUTH_ALREADY_ACTIVE_LOCALLY: 'This account is already open in the desktop app.',
       REGISTER_FAILED: 'Registration failed. Please try again.',
       REGISTER_ERROR: 'Registration failed. Please try again.',
       UNAUTHORIZED: 'Incorrect email or password',

@@ -93,16 +93,11 @@ export function useWebAuth() {
     }
   }
 
-  function enterGuestMode(): Promise<boolean> {
-    error.value = t('auth.validation.guestModeUnavailable');
-    return Promise.resolve(false);
-  }
 
   return {
     error,
     isLoading,
     loginByEmail,
     registerByEmail,
-    enterGuestMode,
   };
 }

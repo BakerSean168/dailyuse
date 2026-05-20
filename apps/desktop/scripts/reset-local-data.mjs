@@ -4,49 +4,43 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { resolveLikelyUserDataDirs } from './user-data-paths.mjs';
 
-const WINDOW_STATE_PREFIX = 'window-state-';
 const VALID_SCOPES = new Set(['all', 'auth', 'db']);
 
 function collectTargets(userDataDir, scope) {
-  const authDir = path.join(userDataDir, 'auth');
-  const dataDir = path.join(userDataDir, 'data');
-  const repositoryStorageDir = path.join(userDataDir, 'repository-storage');
+  const sharedAuthDir = path.join(userDataDir, 'shared', 'auth');
+  const sharedProfilesDir = path.join(userDataDir, 'shared', 'profiles');
+  const sharedUiDir = path.join(userDataDir, 'shared', 'ui');
+  const profilesDir = path.join(userDataDir, 'profiles');
+  const cacheDir = path.join(userDataDir, 'cache');
 
   const targets = [];
 
   if (scope === 'all' || scope === 'auth') {
     targets.push({
-      label: 'auth directory',
-      path: authDir,
+      label: 'shared auth directory',
+      path: sharedAuthDir,
     });
   }
 
   if (scope === 'all' || scope === 'db') {
     targets.push(
       {
-        label: 'database directory',
-        path: dataDir,
+        label: 'shared profiles directory',
+        path: sharedProfilesDir,
       },
       {
-        label: 'repository storage directory',
-        path: repositoryStorageDir,
+        label: 'shared ui directory',
+        path: sharedUiDir,
+      },
+      {
+        label: 'profiles directory',
+        path: profilesDir,
+      },
+      {
+        label: 'cache directory',
+        path: cacheDir,
       },
     );
-  }
-
-  if ((scope === 'all' || scope === 'db') && fs.existsSync(userDataDir)) {
-    for (const entry of fs.readdirSync(userDataDir, { withFileTypes: true })) {
-      if (
-        entry.isFile() &&
-        entry.name.startsWith(WINDOW_STATE_PREFIX) &&
-        entry.name.endsWith('.json')
-      ) {
-        targets.push({
-          label: 'window state file',
-          path: path.join(userDataDir, entry.name),
-        });
-      }
-    }
   }
 
   return targets;

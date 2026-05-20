@@ -7,11 +7,12 @@
  * @module authentication/composables
  */
 
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import type {
+  AutoLoginResult,
   LoginByEmailReq,
   LoginByPhoneReq,
   RegisterByEmailReq,
@@ -19,9 +20,9 @@ import type {
   SendSmsCodeReq,
   AuthResponseDTO,
   RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
-import { AuthMode } from '@dailyuse/contracts/authentication';
-import { WindowChannels } from '@dailyuse/contracts/electron';
+import type { ResultError } from '@dailyuse/contracts/result';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -36,6 +37,7 @@ export function useAuth() {
   const router = useRouter();
   const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
   const { t } = useI18n();
+  const lastResultError = ref<ResultError | null>(null);
 
   const redirectWithReload = (path: string) => {
     if (typeof window !== 'undefined') {
@@ -58,10 +60,7 @@ export function useAuth() {
     }
     toast.success(title, { description });
 
-    if (isDesktopEnvironment()) {
-      await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
-      return true;
-    }
+    if (isDesktopEnvironment()) return true;
 
     redirectWithReload('/');
     return true;
@@ -72,6 +71,7 @@ export function useAuth() {
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const currentIdentity = computed(() => store.currentIdentity);
+  const resultError = computed(() => lastResultError.value);
 
   // ========== 认证响应统一处理 ==========
   function handleAuthSuccess(data: AuthResponseDTO) {
@@ -94,12 +94,14 @@ export function useAuth() {
     try {
       const result = await service.loginByEmail(req);
       if (result.ok) {
+        lastResultError.value = null;
         return await completeAuthSuccess(
           result.data,
           t('auth.toast.loginSuccess'),
           t('auth.toast.welcomeBack'),
         );
       }
+      lastResultError.value = result.error;
       const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.loginFailed'), { description: message });
@@ -107,6 +109,10 @@ export function useAuth() {
     } catch (e) {
       store.setLoading(false);
       console.error('[auth] loginByEmail failed', e);
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
       const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
       store.setError(description);
       toast.error(t('auth.toast.loginFailed'), { description });
@@ -122,12 +128,14 @@ export function useAuth() {
     try {
       const result = await service.loginByPhone(req);
       if (result.ok) {
+        lastResultError.value = null;
         return await completeAuthSuccess(
           result.data,
           t('auth.toast.loginSuccess'),
           t('auth.toast.welcomeBack'),
         );
       }
+      lastResultError.value = result.error;
       const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.loginFailed'), { description: message });
@@ -135,6 +143,10 @@ export function useAuth() {
     } catch (e) {
       store.setLoading(false);
       console.error('[auth] loginByPhone failed', e);
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
       const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
       store.setError(description);
       toast.error(t('auth.toast.loginFailed'), { description });
@@ -152,12 +164,14 @@ export function useAuth() {
     try {
       const result = await service.registerByEmail(req);
       if (result.ok) {
+        lastResultError.value = null;
         return await completeAuthSuccess(
           result.data,
           t('auth.toast.registerSuccess'),
           t('auth.toast.welcomeJoin'),
         );
       }
+      lastResultError.value = result.error;
       const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.registerFailed'), { description: message });
@@ -165,6 +179,10 @@ export function useAuth() {
     } catch (e) {
       store.setLoading(false);
       console.error('[auth] registerByEmail failed', e);
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
       const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
       store.setError(description);
       toast.error(t('auth.toast.registerFailed'), { description });
@@ -180,12 +198,14 @@ export function useAuth() {
     try {
       const result = await service.registerByPhone(req);
       if (result.ok) {
+        lastResultError.value = null;
         return await completeAuthSuccess(
           result.data,
           t('auth.toast.registerSuccess'),
           t('auth.toast.welcomeJoin'),
         );
       }
+      lastResultError.value = result.error;
       const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.registerFailed'), { description: message });
@@ -193,6 +213,10 @@ export function useAuth() {
     } catch (e) {
       store.setLoading(false);
       console.error('[auth] registerByPhone failed', e);
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
       const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
       store.setError(description);
       toast.error(t('auth.toast.registerFailed'), { description });
@@ -255,9 +279,7 @@ export function useAuth() {
     } finally {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
-      if (isDesktopEnvironment()) {
-        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_LOGIN);
-      } else {
+      if (!isDesktopEnvironment()) {
         redirectWithReload('/auth');
       }
     }
@@ -278,19 +300,24 @@ export function useAuth() {
     try {
       const result = await service.enterGuestMode();
       if (result.ok) {
+        lastResultError.value = null;
         store.reset();
         toast.success(t('auth.toast.guestModeEntered'), {
           description: t('auth.toast.guestModeLocalOnly'),
         });
-        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
         return true;
       }
+      lastResultError.value = result.error;
       const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.guestModeFailed'), { description: message });
       return false;
     } catch (e) {
       console.error('[auth] enterGuestMode failed', e);
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
       const message = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
       store.setError(message);
       toast.error(t('auth.toast.guestModeFailed'), { description: message });
@@ -300,20 +327,97 @@ export function useAuth() {
     }
   }
 
+  async function autoLoginDesktop(): Promise<AutoLoginResult> {
+    if (!isDesktopEnvironment()) {
+      return { ok: false, authenticated: false, error: 'Desktop only' };
+    }
+
+    store.setLoading(true);
+    store.setError(null);
+    lastResultError.value = null;
+
+    try {
+      const result = await service.autoLoginDesktop();
+      if (!result.ok) {
+        lastResultError.value = result.error;
+        const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
+        store.setError(message);
+        return { ok: false, authenticated: false, error: message };
+      }
+
+      if (result.data.authenticated) {
+        store.reset();
+      }
+
+      return result.data;
+    } catch (e) {
+      console.error('[auth] autoLoginDesktop failed', e);
+      const message = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
+      store.setError(message);
+      return { ok: false, authenticated: false, error: message };
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
   async function listRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
     const result = await service.listRememberedAccounts();
     if (result.ok) {
+      lastResultError.value = null;
       return result.data;
     }
+    lastResultError.value = result.error;
     return [];
+  }
+
+  async function loginRememberedDesktopAccount(
+    req: RememberedDesktopAccountLoginReq,
+  ): Promise<boolean> {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const result = await service.loginRememberedDesktopAccount(req);
+      if (result.ok) {
+        lastResultError.value = null;
+        return await completeAuthSuccess(
+          result.data,
+          t('auth.toast.loginSuccess'),
+          t('auth.toast.welcomeBack'),
+        );
+      }
+      lastResultError.value = result.error;
+      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
+      store.setError(message);
+      toast.error(t('auth.toast.loginFailed'), { description: message });
+      return false;
+    } catch (e) {
+      store.setLoading(false);
+      console.error('[auth] loginRememberedDesktopAccount failed', e);
+      lastResultError.value = {
+        code: 'UNKNOWN',
+        message: e instanceof Error ? e.message : 'Unknown error',
+      };
+      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
+      store.setError(description);
+      toast.error(t('auth.toast.loginFailed'), { description });
+      return false;
+    } finally {
+      store.setLoading(false);
+    }
   }
 
   async function removeRememberedAccount(identityId: string): Promise<boolean> {
     const result = await service.removeRememberedAccount(identityId);
     if (result.ok) {
+      lastResultError.value = null;
       return true;
     }
 
+    lastResultError.value = result.error;
     toast.error(t('auth.toast.removeRememberedAccountFailed'), {
       description: getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN'),
     });
@@ -332,10 +436,13 @@ export function useAuth() {
     registerByEmail,
     registerByPhone,
     enterGuestMode,
+    autoLoginDesktop,
     listRememberedAccounts,
+    loginRememberedDesktopAccount,
     removeRememberedAccount,
     sendSmsCode,
     refreshToken,
     logout,
+    resultError,
   };
 }

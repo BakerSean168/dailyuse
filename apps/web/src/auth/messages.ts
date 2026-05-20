@@ -25,10 +25,13 @@ export const zhCNAuthMessages = {
       forgotPassword: '忘记密码？',
       submitting: '登录中...',
       submit: '登录',
+      registerLink: '立即注册',
     },
     register: {
+      description: '创建一个新账户',
       submitting: '注册中...',
       submit: '注册',
+      loginLink: '返回登录',
     },
     field: {
       email: '邮箱',
@@ -89,10 +92,13 @@ export const enUSAuthMessages = {
       forgotPassword: 'Forgot password?',
       submitting: 'Signing in...',
       submit: 'Sign In',
+      registerLink: 'Sign up',
     },
     register: {
+      description: 'Create a new account',
       submitting: 'Signing up...',
       submit: 'Sign Up',
+      loginLink: 'Back to sign in',
     },
     field: {
       email: 'Email',

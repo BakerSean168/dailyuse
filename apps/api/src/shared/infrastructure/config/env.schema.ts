@@ -156,6 +156,21 @@ export const envSchema = z.object({
 
   POWERSYNC_KEY_ID: z.string().default('powersync-key').describe('PowerSync JWKS key ID (kid)'),
 
+  POWERSYNC_SNAPSHOT_DIR: z
+    .preprocess(emptyStringToUndefined, z.string().optional())
+    .describe('Per-user PowerSync SQLite snapshot root directory'),
+
+  SNAPSHOT_REBUILD_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true')
+    .describe('Enable automated snapshot rebuild cron job'),
+
+  SNAPSHOT_REBUILD_SCHEDULE: z
+    .string()
+    .default('0 */4 * * *')
+    .describe('Cron schedule for automated snapshot rebuild'),
+
   // ========== 构建信息（CI 注入）==========
   BUILD_TIMESTAMP: z.string().optional(),
   GIT_COMMIT: z.string().optional(),

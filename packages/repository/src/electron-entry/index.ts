@@ -51,18 +51,26 @@ const channels = Object.values(Ch);
 
 let activeRepositoryModule: RepositoryModuleInstance | null = null;
 
-export const RepositoryElectronModule: IElectronModule = {
-  name: 'Repository',
+export interface RepositoryElectronModuleOptions {
+  storageBaseDir?: string;
+}
 
-  register(ctx: IElectronModuleContext): void {
-    // 1. Composition Root — same factory as API, different adapters
-    //    组合根 — 与 API 相同的工厂，不同的适配器
-    const storageBaseDir = path.join(app.getPath('userData'), 'repository-storage');
-    const storagePort = new FsStorageAdapter(storageBaseDir);
+export function createRepositoryElectronModule(
+  options: RepositoryElectronModuleOptions = {},
+): IElectronModule {
+  return {
+    name: 'Repository',
 
-    const repositoryModule = createRepositoryPowerSyncModule(ctx.db, { storagePort });
-    activeRepositoryModule = repositoryModule;
-    repositoryModule.start();
+    register(ctx: IElectronModuleContext): void {
+      // 1. Composition Root — same factory as API, different adapters
+      //    组合根 — 与 API 相同的工厂，不同的适配器
+      const storageBaseDir =
+        options.storageBaseDir ?? path.join(app.getPath('userData'), 'repository-storage');
+      const storagePort = new FsStorageAdapter(storageBaseDir);
+
+      const repositoryModule = createRepositoryPowerSyncModule(ctx.db, { storagePort });
+      activeRepositoryModule = repositoryModule;
+      repositoryModule.start();
 
     // 2. Extract the application port — transport-neutral facade
     //    提取应用层门面 — 传输层无关的门面
@@ -328,15 +336,18 @@ export const RepositoryElectronModule: IElectronModule = {
       return response;
     });
 
-    logger.info('Repository module registered');
-  },
+      logger.info('Repository module registered', { storageBaseDir });
+    },
 
-  destroy(): void {
-    for (const ch of channels) {
-      ipcMain.removeHandler(ch);
-    }
-    activeRepositoryModule?.dispose();
-    activeRepositoryModule = null;
-    logger.info('Repository module destroyed');
-  },
-};
+    destroy(): void {
+      for (const ch of channels) {
+        ipcMain.removeHandler(ch);
+      }
+      activeRepositoryModule?.dispose();
+      activeRepositoryModule = null;
+      logger.info('Repository module destroyed');
+    },
+  };
+}
+
+export const RepositoryElectronModule: IElectronModule = createRepositoryElectronModule();

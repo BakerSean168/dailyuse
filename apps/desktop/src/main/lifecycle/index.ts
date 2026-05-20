@@ -7,4 +7,4 @@
  * @module lifecycle
  */
 
-export { registerAppLifecycleHandlers, createMainWindow, getMainWindow } from './app-lifecycle';
+export { registerAppLifecycleHandlers } from './app-lifecycle';

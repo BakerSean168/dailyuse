@@ -31,105 +31,10 @@ storage:
 # PowerSync API server port
 port: 8080
 
-# =============================================================================
-# Sync Rules
-# =============================================================================
-# Define which Postgres rows sync to which users.
-# All user-owned tables are filtered by identity_id = request.user_id()
-# All tables include identity_id for direct user-scoped filtering.
-# =============================================================================
-sync_rules:
-  content: |
-    bucket_definitions:
-      # =============================================
-      # User data bucket — per-user data isolation
-      # =============================================
-      user_data:
-        parameters: SELECT request.user_id() as user_id
-        data:
-          # --- Account ---
-          - SELECT * FROM accounts WHERE id = bucket.user_id
-
-          # --- Settings ---
-          - SELECT * FROM user_settings WHERE identity_id = bucket.user_id
-
-          # --- Goals ---
-          - SELECT * FROM goals WHERE identity_id = bucket.user_id
-          - SELECT * FROM goal_folders WHERE identity_id = bucket.user_id
-          - SELECT * FROM goal_statistics WHERE identity_id = bucket.user_id
-          - SELECT * FROM focus_sessions WHERE identity_id = bucket.user_id
-          - SELECT * FROM focus_modes WHERE identity_id = bucket.user_id
-          - SELECT * FROM key_results WHERE identity_id = bucket.user_id
-          - SELECT * FROM goal_records WHERE identity_id = bucket.user_id
-          - SELECT * FROM goal_reviews WHERE identity_id = bucket.user_id
-          - SELECT * FROM key_result_weight_snapshots WHERE identity_id = bucket.user_id
-
-          # --- Tasks ---
-          - SELECT * FROM task_folders WHERE identity_id = bucket.user_id
-          - SELECT * FROM task_templates WHERE identity_id = bucket.user_id
-          - SELECT * FROM task_instances WHERE identity_id = bucket.user_id
-          - SELECT * FROM task_statistics WHERE identity_id = bucket.user_id
-          - SELECT * FROM task_dependencies WHERE identity_id = bucket.user_id
-          - SELECT * FROM task_template_history WHERE identity_id = bucket.user_id
-
-          # --- Schedules ---
-          - SELECT * FROM schedules WHERE identity_id = bucket.user_id
-          - SELECT * FROM schedule_jobs WHERE identity_id = bucket.user_id
-          - SELECT * FROM schedule_tasks WHERE identity_id = bucket.user_id
-          - SELECT * FROM schedule_statistics WHERE identity_id = bucket.user_id
-          - SELECT * FROM schedule_executions WHERE identity_id = bucket.user_id
-
-          # --- Reminders ---
-          - SELECT * FROM reminder_templates WHERE identity_id = bucket.user_id
-          - SELECT * FROM reminder_groups WHERE identity_id = bucket.user_id
-          - SELECT * FROM reminder_instances WHERE identity_id = bucket.user_id
-          - SELECT * FROM reminder_statistics WHERE identity_id = bucket.user_id
-          - SELECT * FROM user_reminder_preferences WHERE identity_id = bucket.user_id
-          - SELECT * FROM reminder_history WHERE identity_id = bucket.user_id
-          - SELECT * FROM reminder_responses WHERE identity_id = bucket.user_id
-
-          # --- Notifications ---
-          - SELECT * FROM notifications WHERE identity_id = bucket.user_id
-          - SELECT * FROM notification_preferences WHERE identity_id = bucket.user_id
-          - SELECT * FROM notification_channels WHERE identity_id = bucket.user_id
-          - SELECT * FROM notification_history WHERE identity_id = bucket.user_id
-
-          # --- Editor ---
-          - SELECT * FROM editor_workspaces WHERE identity_id = bucket.user_id
-          - SELECT * FROM editor_workspace_sessions WHERE identity_id = bucket.user_id
-          - SELECT * FROM editor_workspace_session_groups WHERE identity_id = bucket.user_id
-          - SELECT * FROM editor_workspace_session_group_tabs WHERE identity_id = bucket.user_id
-
-          # --- Documents ---
-          - SELECT * FROM documents WHERE identity_id = bucket.user_id
-          - SELECT * FROM document_versions WHERE identity_id = bucket.user_id
-          - SELECT * FROM document_links WHERE identity_id = bucket.user_id
-
-          # --- AI ---
-          - SELECT * FROM ai_conversations WHERE identity_id = bucket.user_id
-          - SELECT * FROM ai_generation_tasks WHERE identity_id = bucket.user_id
-          - SELECT * FROM ai_usage_quotas WHERE identity_id = bucket.user_id
-          - SELECT * FROM ai_provider_configs WHERE identity_id = bucket.user_id
-          - SELECT * FROM dashboard_configs WHERE identity_id = bucket.user_id
-          - SELECT * FROM ai_messages WHERE identity_id = bucket.user_id
-
-          # --- Repository ---
-          - SELECT * FROM repositories WHERE identity_id = bucket.user_id
-          - SELECT * FROM repository_explorers WHERE identity_id = bucket.user_id
-          - SELECT * FROM repository_statistics WHERE identity_id = bucket.user_id
-          - SELECT * FROM folders WHERE identity_id = bucket.user_id
-          - SELECT * FROM resources WHERE identity_id = bucket.user_id
-          - SELECT * FROM repository_resources WHERE identity_id = bucket.user_id
-
-      # =============================================
-      # System bucket — shared/global data
-      # =============================================
-      system:
-        data:
-          - SELECT * FROM notification_templates
-
-    config:
-      edition: 2
+# Sync Streams live in a separate file, which is the recommended self-hosted
+# layout in current PowerSync docs.
+sync_config:
+  path: sync-config.yaml
 
 # =============================================================================
 # Client Authentication (JWKS)

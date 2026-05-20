@@ -8,12 +8,55 @@
  * @module ipc/system-handlers
  */
 
-import { app, ipcMain } from 'electron';
+import { app, dialog, ipcMain, shell } from 'electron';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import type { TrayManager } from '../modules/tray';
 import type { ShortcutManager } from '../modules/shortcuts';
 import type { AutoLaunchManager } from '../modules/autolaunch';
 import { getLazyModuleStats } from '../di';
 import { getIpcCache } from '../utils';
+import { getSharedPathResolver, updateUserFilesRootPath } from '../runtime-init';
+import { resolveDesktopUserFilesPath } from '../user-data-path';
+
+type UserFilesSubdirectory = 'exports' | 'downloads' | 'attachments';
+
+interface SaveTextFileRequest {
+  subdirectory?: UserFilesSubdirectory;
+  defaultFileName: string;
+  content: string;
+  filters?: Array<{ name: string; extensions: string[] }>;
+}
+
+interface SaveTextFileResult {
+  canceled: boolean;
+  filePath: string | null;
+}
+
+interface OpenTextFileRequest {
+  subdirectory?: UserFilesSubdirectory;
+  filters?: Array<{ name: string; extensions: string[] }>;
+}
+
+interface OpenTextFileResult {
+  canceled: boolean;
+  filePath: string | null;
+  content: string | null;
+}
+
+function resolveUserFilesDirectory(subdirectory: UserFilesSubdirectory | undefined): string {
+  const sharedResolver = getSharedPathResolver();
+
+  switch (subdirectory) {
+    case 'downloads':
+      return sharedResolver.userFilesDownloadsDir;
+    case 'attachments':
+      return sharedResolver.userFilesAttachmentsDir;
+    case 'exports':
+    default:
+      return sharedResolver.userFilesExportsDir;
+  }
+}
 
 /**
  * @function registerSystemHandlers
@@ -70,6 +113,92 @@ function registerSystemHandlers(): void {
    */
   ipcMain.handle('system:getIpcCacheStats', async () => {
     return getIpcCache().getStats();
+  });
+
+  ipcMain.handle(
+    'system:userFiles:saveText',
+    async (_event, request: SaveTextFileRequest): Promise<SaveTextFileResult> => {
+      const targetDir = resolveUserFilesDirectory(request?.subdirectory);
+      await fs.mkdir(targetDir, { recursive: true });
+
+      const result = await dialog.showSaveDialog({
+        defaultPath: path.join(targetDir, request.defaultFileName),
+        filters: request.filters,
+      });
+
+      if (result.canceled || !result.filePath) {
+        return { canceled: true, filePath: null };
+      }
+
+      await fs.mkdir(path.dirname(result.filePath), { recursive: true });
+      await fs.writeFile(result.filePath, request.content, 'utf8');
+      return { canceled: false, filePath: result.filePath };
+    },
+  );
+
+  ipcMain.handle(
+    'system:userFiles:openText',
+    async (_event, request?: OpenTextFileRequest): Promise<OpenTextFileResult> => {
+      const defaultPath = resolveUserFilesDirectory(request?.subdirectory);
+      await fs.mkdir(defaultPath, { recursive: true });
+
+      const result = await dialog.showOpenDialog({
+        defaultPath,
+        properties: ['openFile'],
+        filters: request?.filters,
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { canceled: true, filePath: null, content: null };
+      }
+
+      const filePath = result.filePaths[0]!;
+      const content = await fs.readFile(filePath, 'utf8');
+      return { canceled: false, filePath, content };
+    },
+  );
+
+  // ========== User Files Directory Management ==========
+
+  ipcMain.handle('system:userFiles:getPath', async () => {
+    const resolver = getSharedPathResolver();
+    const defaultPath = resolveDesktopUserFilesPath();
+    return {
+      currentPath: resolver.userFilesRootDir,
+      defaultPath,
+      isCustom: resolver.userFilesRootDir !== defaultPath,
+    };
+  });
+
+  ipcMain.handle('system:userFiles:pickDirectory', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory', 'createDirectory'],
+      title: 'Select User Files Directory',
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return { canceled: true, path: null };
+    }
+
+    const selectedPath = result.filePaths[0]!;
+    updateUserFilesRootPath(selectedPath);
+
+    return { canceled: false, path: selectedPath };
+  });
+
+  ipcMain.handle('system:userFiles:openDirectory', async () => {
+    const resolver = getSharedPathResolver();
+    await fs.mkdir(resolver.userFilesRootDir, { recursive: true });
+    const error = await shell.openPath(resolver.userFilesRootDir);
+    if (error) {
+      console.error('[UserFiles] Failed to open directory:', error);
+    }
+  });
+
+  ipcMain.handle('system:userFiles:resetPath', async () => {
+    updateUserFilesRootPath(null);
+    const defaultPath = resolveDesktopUserFilesPath();
+    return { path: defaultPath };
   });
 }
 

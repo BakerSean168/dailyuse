@@ -309,8 +309,14 @@ export interface RememberedDesktopAccountDTO {
   autoLogin: boolean;
   lastUsedAt: number;
   lastLoginAt: number;
-  /** Decrypted password (only present when rememberPassword is true) */
-  savedPassword?: string | null;
+  /** Whether a secure stored password is available for direct login. */
+  hasSavedPassword: boolean;
+}
+
+export interface RememberedDesktopAccountLoginReq {
+  identityId: IdentityId;
+  rememberPassword?: boolean;
+  autoLogin?: boolean;
 }
 
 // ============================================================================

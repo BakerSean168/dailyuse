@@ -23,4 +23,7 @@ export * from './dtos';
 export * from './network';
 
 // ============ Re-exports ============
-export type { RememberedDesktopAccountDTO } from './protocol/desktop-auth.types';
+export type {
+  RememberedDesktopAccountDTO,
+  RememberedDesktopAccountLoginReq,
+} from './protocol/desktop-auth.types';

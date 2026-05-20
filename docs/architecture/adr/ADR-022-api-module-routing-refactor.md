@@ -212,7 +212,7 @@ api.use('/goals', authMiddleware, registerGoalRoutes());
 
 ## 实施细节
 
-### Phase 1: 核心模块重构 (已完成)
+### Core Module Refactoring (已完成)
 
 - ✅ Authentication 模块: 6 个文件 (689 行)
 - ✅ Account 模块: 4 个文件 (487 行)
@@ -221,7 +221,7 @@ api.use('/goals', authMiddleware, registerGoalRoutes());
 
 **总计**: 18 个新文件，2,120 行代码，0 个编译错误
 
-### Phase 2: P1 模块重构 (计划中)
+### Priority-1 Module Refactoring (计划中)
 
 - [ ] Task 模块
 - [ ] Reminder 模块
@@ -229,13 +229,13 @@ api.use('/goals', authMiddleware, registerGoalRoutes());
 
 预计工作量: 2-3 天
 
-### Phase 3: P2/P3 模块重构 (计划中)
+### Priority-2/3 Module Refactoring (计划中)
 
 - [ ] Notification, Setting, Editor, Repository, Metrics, AI, Dashboard
 
 预计工作量: 3-5 天
 
-### Phase 4: 完整测试和优化 (计划中)
+### Full Test Suite & Optimization (计划中)
 
 - [ ] e2e 测试验证
 - [ ] 性能基准测试

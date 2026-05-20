@@ -285,7 +285,7 @@ Renderer Process:
 
 ## 实现计划
 
-### Phase 1: 基础设施 (STORY-002/003/004)
+### Infrastructure Setup (STORY-002/003/004)
 
 1. **主进程 DI** (STORY-002)
    - 创建 `desktop-main.composition-root.ts`
@@ -303,7 +303,7 @@ Renderer Process:
    - 调用 `configureDesktopDependencies`
    - 验证端到端通信
 
-### Phase 2: 验证
+### Validation & POC
 
 - 选择 Goal 模块作为 POC
 - 完成 CRUD 全流程验证

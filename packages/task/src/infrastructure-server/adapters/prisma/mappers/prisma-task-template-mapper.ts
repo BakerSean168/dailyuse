@@ -6,7 +6,7 @@
  */
 
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
-import { toDateOrNull } from '@dailyuse/database';
+import { toDateOrNull } from '@dailyuse/utils/shared';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';

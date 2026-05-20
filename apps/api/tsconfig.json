@@ -1,6 +1,6 @@
 {
   // 继承基础配置
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.workspace-src.json",
 
   "compilerOptions": {
     // ============================================================
@@ -96,6 +96,7 @@
         "../../packages/repository/src/*/index.ts",
         "../../packages/repository/src/*.ts"
       ],
+      "@dailyuse/powersync-schema": ["../../packages/powersync-schema/src/index.ts"],
       "@dailyuse/schedule": ["../../packages/schedule/src/index.ts"],
       "@dailyuse/schedule/*": [
         "../../packages/schedule/src/*/index.ts",

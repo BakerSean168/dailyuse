@@ -1,0 +1,31 @@
+{
+  "name": "powersync-schema",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "packages/powersync-schema/src",
+  "tags": ["scope:shared", "type:lib", "layer:shared"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/packages/powersync-schema/dist"],
+      "options": {
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+        "cwd": "packages/powersync-schema"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/powersync-schema/**/*.{ts,js}"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/powersync-schema"
+      }
+    }
+  }
+}

@@ -12,7 +12,7 @@
       "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/database",
-        "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node -e \"const fs=require('fs');fs.cpSync('src/generated','dist/generated',{recursive:true})\""
+        "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated',{recursive:true});fs.cpSync('src/generated/prisma','dist/generated/prisma',{recursive:true})\""
       },
       "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts", "{projectRoot}/src/**/*.ts"],
       "cache": true
@@ -20,10 +20,10 @@
     "compile": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
-      "dependsOn": ["build"],
+      "dependsOn": ["prisma-generate"],
       "options": {
         "cwd": "packages/database",
-        "command": "tsc --build"
+        "command": "tsc --build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated',{recursive:true});fs.cpSync('src/generated/prisma','dist/generated/prisma',{recursive:true})\""
       }
     },
     "prisma-generate": {

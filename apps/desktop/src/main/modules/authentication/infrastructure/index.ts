@@ -30,7 +30,7 @@ export type {
 
 // Export managers
 export { TokenManager, getTokenManager } from './TokenManager';
-export { SessionManager, createSessionManager } from './SessionManager';
+export { SessionManager, createSessionManager, getSessionManager } from './SessionManager';
 export { NetworkStateManager, getNetworkStateManager } from './NetworkStateManager';
 export {
   RememberedAccountsService,

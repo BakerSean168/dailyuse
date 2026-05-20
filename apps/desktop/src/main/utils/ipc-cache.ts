@@ -9,6 +9,7 @@
 
 import { ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
+import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============
 
@@ -190,7 +191,7 @@ export class IpcCache {
     const {
       maxSize = 100,
       defaultTTL = 5000,
-      debug = process.env.NODE_ENV === 'development',
+      debug = isDesktopDevelopmentRuntime(),
     } = options;
 
     this.cache = new LRUCache(maxSize);

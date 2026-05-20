@@ -28,6 +28,7 @@
         "packages/notification/src/*/index.ts",
         "packages/notification/src/*.ts"
       ],
+      "@dailyuse/powersync-schema": ["packages/powersync-schema/src/index.ts"],
       "@dailyuse/repository": ["packages/repository/src/index.ts"],
       "@dailyuse/repository/*": [
         "packages/repository/src/*/index.ts",

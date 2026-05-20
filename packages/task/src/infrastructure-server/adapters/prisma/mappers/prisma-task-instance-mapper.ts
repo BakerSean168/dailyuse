@@ -6,7 +6,7 @@
  */
 
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
-import { toDateOrNull } from '@dailyuse/database';
+import { toDateOrNull } from '@dailyuse/utils/shared';
 import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { TaskInstanceId } from '@/domain-shared/value-objects/task-instance-id';

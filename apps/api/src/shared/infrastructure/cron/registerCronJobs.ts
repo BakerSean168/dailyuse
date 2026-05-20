@@ -8,6 +8,7 @@ import { CronSchedulerManager } from './CronSchedulerManager';
 // import { DailyAnalysisCronJob } from '@/modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
 import { createLogger } from '@dailyuse/utils';
 import { env } from '@/shared/infrastructure/config/env.js';
+import { rebuildAllProfileSnapshots } from './jobs/snapshot-rebuild.job.js';
 
 const logger = createLogger('CronJobRegistration');
 
@@ -40,6 +41,19 @@ export function registerAllCronJobs(): void {
   //   enabled: env.ENABLE_DAILY_ANALYSIS,
   //   timezone: env.TZ,
   // });
+
+  // ===== Snapshot Rebuild Job =====
+
+  const snapshotRootDir = env.POWERSYNC_SNAPSHOT_DIR;
+  if (snapshotRootDir) {
+    scheduler.register({
+      name: 'powersync:snapshot-rebuild',
+      schedule: env.SNAPSHOT_REBUILD_SCHEDULE,
+      task: () => rebuildAllProfileSnapshots(snapshotRootDir),
+      enabled: env.SNAPSHOT_REBUILD_ENABLED,
+      timezone: env.TZ,
+    });
+  }
 
   // ===== 未来可以在这里添加更多 Jobs =====
 

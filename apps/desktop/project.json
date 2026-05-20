@@ -29,7 +29,28 @@
     "serve": {
       "executor": "nx:run-commands",
       "defaultConfiguration": "development",
+      "dependsOn": [],
+      "options": {
+        "command": "vite",
+        "cwd": "apps/desktop"
+      },
+      "configurations": {
+        "development": {
+          "command": "vite --mode development",
+          "cwd": "apps/desktop"
+        }
+      }
+    },
+    "prepare-dev": {
+      "executor": "nx:noop",
+      "outputs": [],
       "dependsOn": ["^build", "native-rebuild"],
+      "cache": false
+    },
+    "serve:full": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "dependsOn": ["prepare-dev"],
       "options": {
         "command": "vite",
         "cwd": "apps/desktop"

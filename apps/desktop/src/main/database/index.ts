@@ -1,1 +1,9 @@
-export { getUnifiedDatabasePath as getDatabasePath } from './paths';
+export {
+  connectPowerSync,
+  openPowerSyncLocalOnly,
+  ensurePowerSyncSyncMode,
+  promotePowerSyncToSync,
+  disconnectPowerSync,
+  shutdownPowerSync,
+  getPowerSyncDatabase,
+} from './powersync';

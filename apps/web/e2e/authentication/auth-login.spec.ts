@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { ensureLoginScene, ensureRegisterScene } from '../helpers/testHelpers';
 import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
 const generateTestEmail = () =>
@@ -48,12 +49,12 @@ test.describe('Authentication - 登录页基础验证', () => {
   });
 
   test('[P1] 可以在登录和注册表单间切换', async ({ page }) => {
-    await page.getByRole('tab', { name: /sign up|注册/i }).click();
+    await ensureRegisterScene(page);
     await expect(page.locator('#reg-email')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
 
-    await page.getByRole('tab', { name: /sign in|登录/i }).click();
+    await ensureLoginScene(page);
     await expect(page.locator('#email')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
@@ -75,7 +76,7 @@ async function gotoAuthPage(page: Page): Promise<void> {
 }
 
 async function openLoginTab(page: Page): Promise<void> {
-  await page.getByRole('tab', { name: /sign in|登录/i }).click();
+  await ensureLoginScene(page);
   await expect(page.locator('#email')).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
@@ -87,18 +88,18 @@ async function fillLoginForm(page: Page, email: string, password: string): Promi
 }
 
 async function submitLoginForm(page: Page): Promise<void> {
-  await page.getByRole('button', { name: /sign in|登录/i }).click();
+  await page.getByTestId('login-submit-button').click();
 }
 
 async function registerUser(page: Page, email: string, password: string): Promise<void> {
-  await page.getByRole('tab', { name: /sign up|注册/i }).click();
+  await ensureRegisterScene(page);
   await expect(page.locator('#reg-email')).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
   await page.locator('#reg-email').fill(email);
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
-  await page.getByRole('button', { name: /sign up|注册/i }).click();
+  await page.getByTestId('register-submit-button').click();
 }
 
 async function expectAuthenticated(page: Page): Promise<void> {

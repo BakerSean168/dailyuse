@@ -10,7 +10,7 @@
  * - 打包速度快，适合频繁修改
  */
 
-import { baseLibraryConfig } from '../../tools/build/tsup.base.config.ts';
+import { baseLibraryConfig, createLocalOnlyDtsPaths } from '../../tools/build/tsup.base.config.ts';
 
 const config = baseLibraryConfig('@dailyuse/utils');
 
@@ -34,5 +34,5 @@ export default {
     '@dailyuse/contracts',
     'zod',
   ],
-  dts: true, // ✅ 启用 DTS 生成，让 @dailyuse/contracts 作为外部依赖
+  dts: createLocalOnlyDtsPaths(),
 };

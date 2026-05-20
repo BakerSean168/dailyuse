@@ -1,6 +1,6 @@
 {
   // 继承基础配置
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.workspace-src.json",
 
   "compilerOptions": {
     // ============================================================

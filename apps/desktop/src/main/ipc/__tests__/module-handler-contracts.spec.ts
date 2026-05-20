@@ -30,7 +30,7 @@ function expectChannelsInSource(source: string, channels: Record<string, string>
 describe('desktop main handler contracts', () => {
   it('auth main module covers all shared auth channels', () => {
     const source = readWorkspaceFile(
-      'apps/desktop/src/main/modules/authentication/desktop-auth.electron-module.ts',
+      'apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts',
     );
     expectChannelsInSource(source, AuthChannels);
   });

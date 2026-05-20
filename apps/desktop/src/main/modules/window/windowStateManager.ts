@@ -7,9 +7,9 @@
  * @module modules/window/windowStateManager
  */
 
-import { app, BrowserWindow, screen } from 'electron';
-import path from 'path';
+import { BrowserWindow, screen } from 'electron';
 import fs from 'fs';
+import path from 'path';
 
 /**
  * @interface WindowState
@@ -37,6 +37,8 @@ export interface WindowStateManagerOptions {
   defaultWidth: number;
   /** Default height if no state is saved. */
   defaultHeight: number;
+  /** Explicit path for the persisted window state file. */
+  stateFilePath: string;
 }
 
 /**
@@ -61,7 +63,7 @@ export class WindowStateManager {
   constructor(windowName: string, options: WindowStateManagerOptions) {
     this.windowName = windowName;
     this.options = options;
-    this.configPath = path.join(app.getPath('userData'), `window-state-${windowName}.json`);
+    this.configPath = options.stateFilePath;
     this.state = this.loadState();
   }
 
@@ -179,7 +181,7 @@ export class WindowStateManager {
       }
 
       this.saveState();
-    } catch (err) {
+    } catch (_error) {
       // Window might be destroyed
     }
   }
@@ -190,8 +192,9 @@ export class WindowStateManager {
    */
   private saveState(): void {
     try {
+      fs.mkdirSync(path.dirname(this.configPath), { recursive: true });
       fs.writeFileSync(this.configPath, JSON.stringify(this.state));
-    } catch (err) {
+    } catch (_error) {
       // Ignore write errors
     }
   }
@@ -213,7 +216,7 @@ export class WindowStateManager {
           return state;
         }
       }
-    } catch (err) {
+    } catch (_error) {
       // Ignore read errors
     }
 

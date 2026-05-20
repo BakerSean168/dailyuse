@@ -111,7 +111,7 @@ export class SessionManager {
   private readonly tokenManager: TokenManager;
   private readonly sessionRepository: IAuthSessionRepository;
 
-  // Offline credential infrastructure (Phase 2)
+  // Offline credential infrastructure
   private identityRepository: IAuthIdentityRepository | null = null;
   private passwordHasher: IPasswordHasher | null = null;
   // Maps email → server-side identityId for offline session creation
@@ -121,6 +121,7 @@ export class SessionManager {
   private deviceInfo: DeviceInfoClientDTO | null = null;
   private isInitialized = false;
   private activityTimer: NodeJS.Timeout | null = null;
+  private sharedAuthDir: string = path.join(app.getPath('userData'), 'auth');
 
   // API callbacks (for communicating with the backend)
   private apiRefreshToken:
@@ -158,6 +159,23 @@ export class SessionManager {
       SessionManager.instance.cleanup();
       SessionManager.instance = null;
     }
+  }
+
+  /** Get the existing singleton, throwing if not yet initialized. */
+  static getExistingInstance(): SessionManager {
+    if (!SessionManager.instance) {
+      throw new Error('SessionManager not yet initialized — call createSessionManager first');
+    }
+    return SessionManager.instance;
+  }
+
+  /**
+   * Set the shared auth directory for device-id storage.
+   * Must be called before initialize() when using the multi-profile architecture.
+   */
+  setSharedAuthDir(dir: string): void {
+    this.sharedAuthDir = dir;
+    this.logger.info('Shared auth directory set', { sharedAuthDir: dir });
   }
 
   // ============ Initialization ============
@@ -210,6 +228,32 @@ export class SessionManager {
     this.stopActivityTracking();
     this.currentSession = null;
     this.isInitialized = false;
+  }
+
+  /**
+   * Deactivate the current profile runtime.
+   * Stops timers and clears session reference, but does NOT delete tokens or session data.
+   */
+  async deactivateProfile(): Promise<void> {
+    this.logger.info('Deactivating profile runtime');
+    this.stopAutoRefresh();
+    this.stopActivityTracking();
+    this.currentSession = null;
+    this.isInitialized = false;
+    this.deviceInfo = null;
+  }
+
+  /**
+   * Activate a profile runtime.
+   * Re-initializes session state for the new profile.
+   */
+  async activateProfile(): Promise<void> {
+    this.logger.info('Activating profile runtime');
+    this.currentSession = null;
+    this.deviceInfo = null;
+    this.isInitialized = false;
+    // Re-initialize — next call to restoreSession/autoLogin will work with
+    // the profile's tokens (TokenManager.switchToProfile has already been called)
   }
 
   // ============ Session Restore ============
@@ -768,7 +812,7 @@ export class SessionManager {
     this.logger.info('Offline auth dependencies injected');
   }
 
-  // ============ Offline Credential Management (Phase 2) ============
+  // ============ Offline Credential Management ============
 
   /**
    * Save offline credentials.
@@ -906,7 +950,7 @@ export class SessionManager {
     return { ok: true, identityId: identity.id.toString() };
   }
 
-  // ============ Guest Identity Management (Phase 4) ============
+  // ============ Guest Identity Management ============
 
   /**
    * Get or create a persistent guest identity ID.
@@ -1073,7 +1117,7 @@ export class SessionManager {
   }
 
   private getOrCreateInstallationDeviceId(): string {
-    const authDir = path.join(app.getPath('userData'), 'auth');
+    const authDir = this.sharedAuthDir;
     const deviceIdPath = path.join(authDir, 'device-id');
 
     try {
@@ -1182,4 +1226,9 @@ export function createSessionManager(
   logger?: ILogger,
 ): SessionManager {
   return SessionManager.getInstance(sessionRepository, identityRepository, logger);
+}
+
+/** Get the existing SessionManager singleton. Throws if not yet initialized. */
+export function getSessionManager(): SessionManager {
+  return SessionManager.getExistingInstance();
 }

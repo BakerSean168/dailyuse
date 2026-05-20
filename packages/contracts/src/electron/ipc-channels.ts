@@ -143,6 +143,7 @@ export const AuthChannels = {
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
+  REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
   REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
   VERIFY_TOKEN: 'auth:verify-token',
   TOKEN_STATUS: 'auth:token-status',
@@ -292,6 +293,12 @@ export const SystemChannels = {
   GET_LAZY_MODULE_STATS: 'system:getLazyModuleStats',
   GET_MEMORY_USAGE: 'system:getMemoryUsage',
   GET_IPC_CACHE_STATS: 'system:getIpcCacheStats',
+  USER_FILES_SAVE_TEXT: 'system:userFiles:saveText',
+  USER_FILES_OPEN_TEXT: 'system:userFiles:openText',
+  USER_FILES_GET_PATH: 'system:userFiles:getPath',
+  USER_FILES_PICK_DIRECTORY: 'system:userFiles:pickDirectory',
+  USER_FILES_OPEN_DIRECTORY: 'system:userFiles:openDirectory',
+  USER_FILES_RESET_PATH: 'system:userFiles:resetPath',
 } as const;
 
 export const DesktopFeatureChannels = {
@@ -332,4 +339,7 @@ export const WindowChannels = {
   TOGGLE_MAXIMIZE: 'window:toggle-maximize',
   CLOSE: 'window:close',
   GET_CONTROLS_STATE: 'window:get-controls-state',
+  OPEN_AUTH_REGISTER: 'window:open-auth-register',
+  CLOSE_AUTH_REGISTER: 'window:close-auth-register',
+  FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;

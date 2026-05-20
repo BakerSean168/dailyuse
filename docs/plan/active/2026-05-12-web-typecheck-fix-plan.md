@@ -97,7 +97,7 @@ status: active
 
 ## 实施方案
 
-### Phase 1：修复 web mocks 与 branded DTO 边界
+### 修复 web mocks 与 branded DTO 边界
 
 修改文件：
 
@@ -132,7 +132,7 @@ status: active
 - 所有 `params.id`、`params.taskId`、`params.templateId`、默认手写 task id 都统一走 helper
 - `createMockDependencyChain()` 的 `taskId` 也必须是 `DependencyChainClientDTO['taskId']`
 
-### Phase 2：恢复 app-vue 的真实服务边界
+### 恢复 app-vue 的真实服务边界
 
 修改文件：
 
@@ -163,7 +163,7 @@ status: active
 - 不要保留一半手写、一半结构化的混合状态
 - 不新增 wrapper type，直接让注入键看到真实 public method surface
 
-## Phase 3：修复 Task composables 的 Result<T> 漂移
+## 修复 Task composables 的 Result<T> 漂移
 
 修改文件：
 
@@ -191,7 +191,7 @@ status: active
   - `result.data.keyResults`
 - `mapGoalOption()`、`mapKeyResultOption()` 保留“兼容 domain entity / plain DTO”的思路，但类型基线不再从 `{}` / `unknown` 开始
 
-## Phase 4：修复 AIChatView 的类型与模板漏项
+## 修复 AIChatView 的类型与模板漏项
 
 修改文件：
 
@@ -221,7 +221,7 @@ status: active
 - 传给 `useAIKnowledgeNoteWorkflow`
 都应在不额外断言的情况下通过类型检查
 
-## Phase 5：同步测试断言与验证
+## 同步测试断言与验证
 
 ### 需要同步的测试
 
@@ -254,7 +254,7 @@ status: active
 2. 全量验收
 - `pnpm nx run web:typecheck`
 
-如果 Phase 2 收紧 DI 后暴露同链路新增错误，原则是：
+如果 DI 收紧后暴露同链路新增错误，原则是：
 
 - 只修与 `AI / Task / Goal` 真实边界直接相关的问题
 - 不扩展到无关 service

@@ -131,10 +131,6 @@ export function installDesktopAppServices(app: App): void {
       const authStore = useAuthenticationStore();
       console.info('[Desktop Logout] Resetting auth store');
       authStore.reset();
-
-      console.info('[Desktop Logout] Invoking window:transition-to-login');
-      const transitionResult = await window.electronAPI?.invoke('window:transition-to-login');
-      console.info('[Desktop Logout] window:transition-to-login result', transitionResult);
     } catch (error) {
       console.error('[Desktop Logout] Failed to logout/transition', error);
       toast.error('退出登录失败', {

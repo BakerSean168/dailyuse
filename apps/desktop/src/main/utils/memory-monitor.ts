@@ -8,6 +8,7 @@
  */
 
 import { ipcMain } from 'electron';
+import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============
 
@@ -260,7 +261,7 @@ export function getMemoryMonitor(): MemoryMonitor {
  * Only active in development mode.
  */
 export function registerMemoryMonitorIpcHandlers(): void {
-  if (process.env.NODE_ENV !== 'development') {
+  if (!isDesktopDevelopmentRuntime()) {
     return;
   }
 
@@ -289,7 +290,7 @@ export function registerMemoryMonitorIpcHandlers(): void {
  * Also registers the necessary IPC handlers.
  */
 export function initMemoryMonitorForDev(): void {
-  if (process.env.NODE_ENV !== 'development') {
+  if (!isDesktopDevelopmentRuntime()) {
     return;
   }
 

@@ -29,6 +29,7 @@
     "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
     "@dailyuse/notification-runtime": "workspace:*",
+    "@dailyuse/powersync-schema": "workspace:*",
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/schedule": "workspace:*",

@@ -10,6 +10,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Loader2 } from 'lucide-vue-next';
+import { SystemChannels } from '@dailyuse/contracts/electron';
 
 import AppearanceSettings from '../components/AppearanceSettings.vue';
 import AISettings from '../components/AISettings.vue';
@@ -19,12 +20,14 @@ import ShortcutSettings from '../components/ShortcutSettings.vue';
 import NotificationSettings from '../components/NotificationSettings.vue';
 import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
+import UserFilesSettings from '../components/UserFilesSettings.vue';
 
 import { useUserSetting } from '../composables/useUserSetting';
 import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
+import { getDesktopAuthApi } from '../../../shared/utils/desktopAuthRecovery';
 
 const { t } = useI18n();
 const presentationStore = usePresentationPreferenceStore();
@@ -51,6 +54,11 @@ type LocaleSettingsInput = {
   timeFormat?: string;
   weekStartsOn?: number;
   currency?: string;
+};
+
+type OpenTextResult = {
+  canceled: boolean;
+  content: string | null;
 };
 
 // ── Section models — local reactive copies for v-model ──
@@ -103,7 +111,59 @@ function normalizeTimeFormat(
 
 /** Wrap importSettings for the @import event (which has no payload). */
 async function handleImport() {
+  const electronApi = getDesktopAuthApi();
+  if (electronApi?.invoke) {
+    try {
+      const result = (await electronApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
+        subdirectory: 'exports',
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      })) as OpenTextResult;
+
+      if (!result.canceled && result.content) {
+        await importSettings(JSON.parse(result.content));
+      }
+    } catch (err) {
+      console.error('Failed to import settings JSON from desktop file dialog:', err);
+    }
+    return;
+  }
+
   fileInput.value?.click();
+}
+
+function createSettingsExportFilename(): string {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return `memoflow-settings-${timestamp}.json`;
+}
+
+async function handleExportJson() {
+  const exported = await exportSettings();
+  if (!exported) {
+    return;
+  }
+
+  const electronApi = getDesktopAuthApi();
+  if (electronApi?.invoke) {
+    try {
+      await electronApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
+        subdirectory: 'exports',
+        defaultFileName: createSettingsExportFilename(),
+        content: exported,
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+      return;
+    } catch (err) {
+      console.error('Failed to export settings JSON via desktop file dialog:', err);
+    }
+  }
+
+  const blob = new Blob([exported], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = createSettingsExportFilename();
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 /** Handle file selection and read JSON content. */
@@ -209,6 +269,7 @@ const tabs = computed(() => [
   { value: 'shortcuts', label: t('setting.tabs.shortcuts') },
   { value: 'notifications', label: t('setting.tabs.notifications') },
   { value: 'experimental', label: t('setting.tabs.experimental') },
+  { value: 'userFiles', label: t('setting.tabs.userFiles') },
   { value: 'advanced', label: t('setting.tabs.advanced') },
 ]);
 </script>
@@ -282,12 +343,16 @@ const tabs = computed(() => [
             <ExperimentalSettings v-model="experimental" />
           </TabsContent>
 
+          <TabsContent value="userFiles">
+            <UserFilesSettings />
+          </TabsContent>
+
           <TabsContent value="advanced">
             <SettingAdvancedActions
               :backups="backups"
               :sync-status="syncStatus"
               :syncing="syncing"
-              @export-j-s-o-n="exportSettings"
+              @export-j-s-o-n="handleExportJson"
               @import="handleImport"
             />
           </TabsContent>

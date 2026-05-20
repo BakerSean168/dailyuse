@@ -222,7 +222,7 @@ export function useAuthentication() {
 
 ## 实施方案
 
-### 阶段 1: 简单模块试点（account）
+### Pilot with Simple Modules (account)
 
 **修改范围：**
 
@@ -242,7 +242,7 @@ export function useAuthentication() {
 - 单元测试通过
 - 功能测试通过
 
-### 阶段 2: 推广到其他模块
+### Roll Out to Remaining Modules
 
 **优先级顺序：**
 
@@ -250,7 +250,7 @@ export function useAuthentication() {
 2. Goal（GoalSyncApplicationService）- 作为中等复杂度
 3. 其他模块（Reminder, Task, Setting等）
 
-### 阶段 3: 提取到 Packages
+### Extract to Packages
 
 **验证清单：**
 

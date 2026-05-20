@@ -181,6 +181,9 @@ services:
       POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
       POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
+      SNAPSHOT_REBUILD_ENABLED: ${SNAPSHOT_REBUILD_ENABLED:-false}
+      SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
       TZ: ${TZ:-Asia/Shanghai}
     ports:
       - '3000:3000'
@@ -188,6 +191,7 @@ services:
       - api-local-logs:/app/apps/api/logs
       - api-local-uploads:/app/uploads
       - repository-local-storage:/tmp/dailyuse-repository-storage
+      - powersync-profile-snapshots-local:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
     networks:
       - dailyuse-local-network
     healthcheck:
@@ -229,6 +233,7 @@ services:
       - '${POWERSYNC_HOST_PORT:-8081}:8080'
     volumes:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+      - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
     networks:
       - dailyuse-local-network
     healthcheck:
@@ -277,3 +282,4 @@ volumes:
   api-local-logs:
   api-local-uploads:
   repository-local-storage:
+  powersync-profile-snapshots-local:

@@ -13,7 +13,7 @@ export { default as ResourceList } from './ResourceList.vue';
 export { default as SearchPanel } from './SearchPanel.vue';
 export { default as TagsPanel } from './TagsPanel.vue';
 
-// Newly extracted components (Phase 4 completion)
+// Extracted panel/editor/dialog components
 export { default as BookmarksPanel } from './BookmarksPanel.vue';
 export { default as FileExplorer } from './FileExplorer.vue';
 export { default as FileTreeItem } from './FileTreeItem.vue';

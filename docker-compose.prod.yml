@@ -169,11 +169,15 @@ services:
       POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
       POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
+      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
+      SNAPSHOT_REBUILD_ENABLED: ${SNAPSHOT_REBUILD_ENABLED:-false}
+      SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - api-logs:/app/apps/api/logs
       - api-uploads:/app/uploads
       - repository-storage:/tmp/dailyuse-repository-storage
+      - powersync-profile-snapshots:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
     networks:
       - dailyuse-network
     healthcheck:
@@ -297,5 +301,6 @@ volumes:
   api-logs:
   api-uploads:
   repository-storage:
+  powersync-profile-snapshots:
   caddy-data:
   caddy-config:

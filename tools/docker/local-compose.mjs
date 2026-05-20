@@ -39,7 +39,12 @@ function readEnvFileKeys(path) {
 }
 
 function run(bin, args, env) {
-  const result = spawnSync(bin, args, {
+  const shouldUseCmdShim =
+    process.platform === 'win32' && /\.(cmd|bat)$/iu.test(bin);
+  const spawnCommand = shouldUseCmdShim ? 'cmd.exe' : bin;
+  const spawnArgs = shouldUseCmdShim ? ['/d', '/s', '/c', bin, ...args] : args;
+
+  const result = spawnSync(spawnCommand, spawnArgs, {
     stdio: 'inherit',
     env,
   });

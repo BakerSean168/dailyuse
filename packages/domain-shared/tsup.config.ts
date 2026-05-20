@@ -10,7 +10,7 @@
  * - 支持 tree-shaking 和代码分割
  */
 
-import { createTsupConfig } from '../../tools/build/tsup.base.config.ts';
+import { createLocalOnlyDtsPaths, createTsupConfig } from '../../tools/build/tsup.base.config.ts';
 
 export default createTsupConfig({
   packageName: '@dailyuse/domain-shared',
@@ -34,7 +34,6 @@ export default createTsupConfig({
   ],
   external: ['@dailyuse/contracts', '@dailyuse/utils'],
   extraOptions: {
-    // 启用 DTS 生成类型声明文件
-    dts: true,
+    dts: createLocalOnlyDtsPaths(),
   },
 });

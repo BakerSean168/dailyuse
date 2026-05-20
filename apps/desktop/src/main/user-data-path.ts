@@ -1,11 +1,19 @@
 import { app } from 'electron';
 import path from 'node:path';
-import { DESKTOP_PRODUCT_NAME } from '@dailyuse/assets';
+
+const DESKTOP_LOCAL_ROOT = 'Memoflow';
+const DESKTOP_USER_FILES_ROOT = 'Memoflow Files';
 
 export const DESKTOP_USER_DATA_DIRS = Object.freeze({
-  production: DESKTOP_PRODUCT_NAME,
-  development: `${DESKTOP_PRODUCT_NAME}-Dev`,
-  test: `${DESKTOP_PRODUCT_NAME}-Test`,
+  production: DESKTOP_LOCAL_ROOT,
+  development: `${DESKTOP_LOCAL_ROOT}-Dev`,
+  test: `${DESKTOP_LOCAL_ROOT}-Test`,
+});
+
+export const DESKTOP_USER_FILES_DIRS = Object.freeze({
+  production: DESKTOP_USER_FILES_ROOT,
+  development: `${DESKTOP_USER_FILES_ROOT} Dev`,
+  test: `${DESKTOP_USER_FILES_ROOT} Test`,
 });
 
 export type DesktopRuntimeChannel = keyof typeof DESKTOP_USER_DATA_DIRS;
@@ -29,6 +37,28 @@ export function getDesktopUserDataDirName(
   return DESKTOP_USER_DATA_DIRS[channel];
 }
 
+export function getDesktopUserFilesDirName(
+  channel: DesktopRuntimeChannel = getDesktopRuntimeChannel(),
+): string {
+  return DESKTOP_USER_FILES_DIRS[channel];
+}
+
+/**
+ * Get the LocalAppData directory path.
+ *
+ * Electron doesn't expose `localAppData` via `app.getPath()`.
+ * On Windows: derives Local from Roaming (sibling directories).
+ * On macOS/Linux: falls back to `app.getPath('userData')`.
+ */
+function getLocalAppDataPath(): string {
+  if (process.platform === 'win32') {
+    const appData = app.getPath('appData'); // C:\Users\<user>\AppData\Roaming
+    return path.join(path.dirname(appData), 'Local');
+  }
+  // macOS / Linux: userData is already local
+  return app.getPath('userData');
+}
+
 export function resolveDesktopUserDataPath(
   channel: DesktopRuntimeChannel = getDesktopRuntimeChannel(),
 ): string {
@@ -37,13 +67,24 @@ export function resolveDesktopUserDataPath(
     return explicitPath;
   }
 
-  return path.join(app.getPath('appData'), getDesktopUserDataDirName(channel));
+  return path.join(getLocalAppDataPath(), getDesktopUserDataDirName(channel));
+}
+
+export function resolveDesktopUserFilesPath(
+  channel: DesktopRuntimeChannel = getDesktopRuntimeChannel(),
+): string {
+  const explicitPath = process.env.DAILYUSE_DESKTOP_USER_FILES_PATH?.trim();
+  if (explicitPath) {
+    return explicitPath;
+  }
+
+  return path.join(app.getPath('documents'), getDesktopUserFilesDirName(channel));
 }
 
 export function configureDesktopUserDataPath(): string {
   const userDataPath = resolveDesktopUserDataPath();
 
-  app.setName(DESKTOP_PRODUCT_NAME);
+  app.setName(DESKTOP_LOCAL_ROOT);
   app.setPath('userData', userDataPath);
 
   return userDataPath;

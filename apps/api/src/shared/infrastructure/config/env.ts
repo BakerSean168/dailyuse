@@ -180,6 +180,7 @@ export function getPowerSyncConfig() {
     publicKeyN: env.POWERSYNC_PUBLIC_KEY_N,
     publicKeyE: env.POWERSYNC_PUBLIC_KEY_E,
     keyId: env.POWERSYNC_KEY_ID,
+    snapshotDir: env.POWERSYNC_SNAPSHOT_DIR,
   };
 }
 

@@ -108,9 +108,10 @@ dailyuse/
 }
 ```
 
-**tsconfig.base.json**:
+**tsconfig.workspace-src.json**:
 ```json
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
       "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
@@ -149,5 +150,4 @@ dailyuse/
 ---
 
 **教训**: Monorepo 对于包含多个相关应用的项目是正确选择，Nx 提供的工具链大大提升了开发体验。
-
 

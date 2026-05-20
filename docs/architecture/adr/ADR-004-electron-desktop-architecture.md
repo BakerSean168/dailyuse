@@ -18,7 +18,14 @@ updated: 2025-12-03
 **日期**: 2025-12-03  
 **决策者**: @BakerSean168
 
-> 更新说明（2026-03）：本文档保留历史演进上下文，部分 SQLite/Prisma-for-desktop 描述已被 PowerSync-only desktop runtime 取代。
+> 更新说明（2026-05-19）：本文档保留历史演进上下文，不再反映当前 desktop 的本地存储真值。
+> 当前实现请优先查看：
+> - `apps/desktop/src/main/profile/`
+> - `apps/desktop/src/main/paths/`
+> - `apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts`
+> - [桌面端多账号本地存储架构实现状态](../../plan/active/2026-05-17-desktop-multi-account-local-storage-architecture.md)
+>
+> 本文下方关于 Prisma-for-desktop、单 SQLite、本地 DB 初始化等描述仅作为历史记录保留。
 
 ## 背景
 
@@ -777,9 +784,9 @@ const aiService = navigator.onLine
   : new LocalAIService('./models/llama-3.2');
 ```
 
-## 实施阶段
+## 实施阶段 (historical roadmap — all phases completed)
 
-### Phase 1: 包提取 (2-3 周)
+### Shared Package Extraction (2-3 周)
 
 1. 提取 `app-client` 从 `apps/web/src/modules/*/application/`
    - 重构为 Use Case 模式
@@ -791,7 +798,7 @@ const aiService = navigator.onLine
 4. 迁移现有 Repository 实现为 Adapters
 5. 提取 `ui/tokens/v1` 从现有 Vuetify 主题
 
-### Phase 2: Desktop MVP (3-4 周)
+### Desktop MVP (3-4 周)
 
 1. 搭建 Electron + React + shadcn 基础框架
 2. 配置 Prisma + SQLite 环境
@@ -800,14 +807,14 @@ const aiService = navigator.onLine
 3. 实现 IPC 通信层
 4. 复刻核心功能 UI (目标、任务、文档)
 
-### Phase 3: 数据同步 (2-3 周)
+### Data Synchronization (2-3 周)
 
 1. API 端 sync 模块开发
 2. Desktop 端 sync 集成
 3. 冲突解决策略实现
 4. 同步配置 UI
 
-### Phase 4: 迭代优化 (持续)
+### Iterative Optimization (持续)
 
 1. UI V2 设计和实现
 2. 本地大模型集成
@@ -884,4 +891,3 @@ const aiService = navigator.onLine
 ---
 
 **教训**: Local-First 架构需要预先设计好数据同步策略。使用 Prisma 统一 ORM 可以大幅减少维护成本，但需要注意 Electron 打包配置。UI 框架变更应该与架构提取分开进行，降低风险。
-

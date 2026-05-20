@@ -14,7 +14,7 @@ export default defineConfig({
     'src/electron-entry/index.ts',
   ],
   format: ['esm'],
-  dts: true,
+  dts: false,
   clean: true,
   sourcemap: true,
   external: [

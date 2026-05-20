@@ -8,28 +8,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./prisma": {
-      "types": "./src/generated/prisma/client.d.ts",
-      "import": "./src/generated/prisma/client.js",
-      "require": "./src/generated/prisma/client.js",
-      "default": "./src/generated/prisma/client.js"
-    },
-    "./powersync": {
-      "types": "./dist/powersync-schema.d.ts",
-      "import": "./dist/powersync-schema.js"
-    },
-    "./dashboard-schema": {
-      "types": "./dist/dashboard-schema.d.ts",
-      "import": "./dist/dashboard-schema.js"
+      "types": "./dist/generated/prisma/client.d.ts",
+      "import": "./dist/generated/prisma/client.js",
+      "default": "./dist/generated/prisma/client.js"
     }
   },
   "scripts": {
     "postinstall": "prisma generate --config ./prisma/prisma.config.ts"
   },
   "dependencies": {
-    "@powersync/common": "^1.47.0",
     "@prisma/adapter-pg": "7.4.2",
     "@prisma/client": "^7.4.2",
     "@prisma/client-runtime-utils": "7.4.2",
@@ -43,7 +34,7 @@
     "typescript": "^5.9.3"
   },
   "files": [
-    "src"
+    "dist"
   ],
   "sideEffects": false
 }

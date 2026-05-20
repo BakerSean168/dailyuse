@@ -44,6 +44,9 @@ export default defineConfig({
     // ✅ Prisma Client（必须外部化，包含二进制引擎）
     '@prisma/client',
 
+    // ✅ PowerSync runtime（依赖 undici / Node builtins，不能打进单文件 bundle）
+    '@powersync/node',
+
     // All @nestjs packages
     /^@nestjs\//,
 

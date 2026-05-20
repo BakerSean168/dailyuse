@@ -1,7 +1,4 @@
-import * as path from 'node:path';
 import { createHash } from 'node:crypto';
-
-import { app } from 'electron';
 import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/application-server';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
@@ -46,8 +43,7 @@ function scoreResource(resource: ResourceClientDTO, query: string): number {
 export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
   private readonly repositoryModule: RepositoryModuleInstance;
 
-  constructor(db: IElectronDatabase) {
-    const storageBaseDir = path.join(app.getPath('userData'), 'repository-storage');
+  constructor(db: IElectronDatabase, storageBaseDir: string) {
     this.repositoryModule = createRepositoryPowerSyncModule(db, {
       storagePort: new FsStorageAdapter(storageBaseDir),
     });
