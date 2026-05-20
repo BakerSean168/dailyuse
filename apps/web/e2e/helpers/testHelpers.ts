@@ -54,6 +54,11 @@ export type RegisterAndLoginOptions = {
   landingPath?: string;
 };
 
+const AUTH_SCENE_LINK_TEXT = {
+  register: /sign up|立即注册|注册/i,
+  login: /back to sign in|返回登录/i,
+} as const;
+
 function resolveLoginEmail(identityOrEmail: string): string {
   if (identityOrEmail.includes('@')) {
     return identityOrEmail;
@@ -98,6 +103,56 @@ async function prepareAuthPage(page: Page): Promise<void> {
   await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
 }
 
+async function isVisible(locator: ReturnType<Page['locator']>): Promise<boolean> {
+  return await locator.isVisible().catch(() => false);
+}
+
+export async function ensureRegisterScene(page: Page): Promise<void> {
+  const registerEmailField = page.locator('#reg-email');
+  if (await isVisible(registerEmailField)) {
+    return;
+  }
+
+  await registerEmailField
+    .waitFor({
+      state: 'visible',
+      timeout: TIMEOUT_CONFIG.SHORT_WAIT,
+    })
+    .catch(() => undefined);
+  if (await isVisible(registerEmailField)) {
+    return;
+  }
+
+  await page.getByRole('button', { name: AUTH_SCENE_LINK_TEXT.register }).click();
+  await registerEmailField.waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
+export async function ensureLoginScene(page: Page): Promise<void> {
+  const loginEmailField = page.locator('#email');
+  if (await isVisible(loginEmailField)) {
+    return;
+  }
+
+  await loginEmailField
+    .waitFor({
+      state: 'visible',
+      timeout: TIMEOUT_CONFIG.SHORT_WAIT,
+    })
+    .catch(() => undefined);
+  if (await isVisible(loginEmailField)) {
+    return;
+  }
+
+  await page.getByRole('button', { name: AUTH_SCENE_LINK_TEXT.login }).click();
+  await loginEmailField.waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
 async function navigateAfterAuth(page: Page, landingPath?: string): Promise<void> {
   if (!landingPath) {
     await page.waitForLoadState('networkidle');
@@ -115,14 +170,12 @@ async function navigateAfterAuth(page: Page, landingPath?: string): Promise<void
 }
 
 async function registerViaAuth(page: Page, email: string, password: string): Promise<void> {
-  const registerTab = page.getByRole('tab', { name: /sign up|注册/i });
-  await registerTab.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  await registerTab.click();
+  await ensureRegisterScene(page);
 
   await page.locator('#reg-email').fill(email);
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
-  await page.getByRole('button', { name: /sign up|注册/i }).click();
+  await page.getByTestId('register-submit-button').click();
 
   await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
     timeout: TIMEOUT_CONFIG.LOGIN,
@@ -196,13 +249,8 @@ export async function login(
 
   await prepareAuthPage(page);
 
-  // 显式切回登录 tab，避免 auth 页面默认停在注册态时造成误判。
-  const loginTab = page.getByRole('tab', { name: /sign in|登录/i });
-  await loginTab.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  await loginTab.click();
-
-  // 等待表单出现
-  await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
+  // 显式切回登录 scene，避免 auth 页面默认停在注册态时造成误判。
+  await ensureLoginScene(page);
 
   // ===== 填写用户名 =====
   console.log('[Auth] 查找用户名输入框...');
@@ -224,7 +272,7 @@ export async function login(
 
   // ===== 点击登录按钮 =====
   console.log('[Auth] 点击登录按钮...');
-  const loginButton = page.getByRole('button', { name: /sign in|登录/i });
+  const loginButton = page.getByTestId('login-submit-button');
   await loginButton.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await loginButton.click();
 
