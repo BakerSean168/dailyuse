@@ -96,6 +96,7 @@
         "../../packages/repository/src/*/index.ts",
         "../../packages/repository/src/*.ts"
       ],
+      "@dailyuse/powersync-schema": ["../../packages/powersync-schema/src/index.ts"],
       "@dailyuse/schedule": ["../../packages/schedule/src/index.ts"],
       "@dailyuse/schedule/*": [
         "../../packages/schedule/src/*/index.ts",

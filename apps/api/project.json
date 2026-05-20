@@ -113,6 +113,22 @@
         "cwd": "apps/api"
       }
     },
+    "powersync:snapshot:publish": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ../../node_modules/tsx/dist/cli.mjs scripts/publish-powersync-profile-snapshot.ts",
+        "cwd": "apps/api"
+      }
+    },
+    "powersync:snapshot:build": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ../../node_modules/tsx/dist/cli.mjs scripts/build-powersync-profile-snapshot.ts",
+        "cwd": "apps/api"
+      }
+    },
     "test:coverage": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

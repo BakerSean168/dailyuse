@@ -18,6 +18,7 @@ import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-m
 import { getPowerSyncConfig } from '../../shared/infrastructure/config/env.js';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/authMiddleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
+import { readStoredProfileSnapshotManifest } from './snapshot-storage.js';
 
 const logger = createLogger('PowerSync');
 
@@ -279,8 +280,9 @@ export const PowerSyncApiModule: IApiModule = {
     // The client calls this after authenticating with the main API (HS256).
     // Returns a short-lived RS256 JWT that PowerSync Service verifies via JWKS.
     // =========================================================================
-    psRouter.get('/token', middleware.auth, (req: AuthenticatedRequest, res) => {
-      const responseBuilder = createApiResponseBuilder(req);
+    psRouter.get('/token', middleware.auth, (req, res) => {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const responseBuilder = createApiResponseBuilder(authenticatedReq);
 
       try {
         if (!config.privateKey) {
@@ -295,14 +297,14 @@ export const PowerSyncApiModule: IApiModule = {
             );
         }
 
-        if (!req.identityId) {
+        if (!authenticatedReq.identityId) {
           return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
         }
 
         // Sign a short-lived RS256 JWT for PowerSync
         const token = jwt.sign(
           {
-            sub: req.identityId,
+            sub: authenticatedReq.identityId,
             aud: 'powersync-dev',
           },
           config.privateKey,
@@ -314,7 +316,7 @@ export const PowerSyncApiModule: IApiModule = {
         );
 
         logger.info('Issued PowerSync token', {
-          identityId: req.identityId,
+          identityId: authenticatedReq.identityId,
           audience: 'powersync-dev',
           expiresInSec: 300,
         });
@@ -333,15 +335,116 @@ export const PowerSyncApiModule: IApiModule = {
     });
 
     // =========================================================================
+    // GET /powersync/profile-snapshot — Return manifest for the current identity
+    // =========================================================================
+    psRouter.get('/profile-snapshot', middleware.auth, async (req, res) => {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const responseBuilder = createApiResponseBuilder(authenticatedReq);
+
+      try {
+        if (!authenticatedReq.identityId) {
+          return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
+        }
+
+        const snapshot = await readStoredProfileSnapshotManifest(
+          config.snapshotDir,
+          authenticatedReq.identityId,
+        );
+
+        if (!snapshot) {
+          return res.json(
+            responseBuilder.success({
+              available: false,
+              version: null,
+              downloadUrl: null,
+              checksumSha256: null,
+              generatedAt: null,
+            }),
+          );
+        }
+
+        return res.json(
+          responseBuilder.success({
+            available: true,
+            version: snapshot.manifest.version,
+            checksumSha256: snapshot.manifest.checksumSha256,
+            generatedAt: snapshot.manifest.generatedAt,
+            downloadUrl: `/api/v1/powersync/profile-snapshot/download/${snapshot.snapshotKey}/${encodeURIComponent(snapshot.manifest.version)}`,
+          }),
+        );
+      } catch (error) {
+        logger.error('Failed to resolve PowerSync profile snapshot manifest', {
+          error,
+          identityId: authenticatedReq.identityId,
+        });
+        return res
+          .status(500)
+          .json(responseBuilder.internalError('Failed to resolve PowerSync profile snapshot'));
+      }
+    });
+
+    // =========================================================================
+    // GET /powersync/profile-snapshot/download/:snapshotKey/:version
+    // =========================================================================
+    psRouter.get(
+      '/profile-snapshot/download/:snapshotKey/:version',
+      middleware.auth,
+      async (req, res) => {
+        const authenticatedReq = req as AuthenticatedRequest;
+        const responseBuilder = createApiResponseBuilder(authenticatedReq);
+
+        try {
+          if (!authenticatedReq.identityId) {
+            return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
+          }
+
+          const snapshot = await readStoredProfileSnapshotManifest(
+            config.snapshotDir,
+            authenticatedReq.identityId,
+          );
+
+          if (!snapshot) {
+            return res.status(404).json(responseBuilder.notFound('Profile snapshot not found'));
+          }
+
+          if (
+            req.params.snapshotKey !== snapshot.snapshotKey ||
+            decodeURIComponent(req.params.version) !== snapshot.manifest.version
+          ) {
+            return res.status(404).json(responseBuilder.notFound('Profile snapshot not found'));
+          }
+
+          return res.sendFile(snapshot.databasePath, {
+            headers: {
+              'Content-Type': 'application/vnd.sqlite3',
+              'Cache-Control': 'private, max-age=60',
+              'X-PowerSync-Snapshot-Version': snapshot.manifest.version,
+              'X-PowerSync-Snapshot-Checksum': snapshot.manifest.checksumSha256,
+            },
+          });
+        } catch (error) {
+          logger.error('Failed to stream PowerSync profile snapshot', {
+            error,
+            identityId: authenticatedReq.identityId,
+          });
+          return res
+            .status(500)
+            .json(responseBuilder.internalError('Failed to stream PowerSync profile snapshot'));
+        }
+      },
+    );
+
+    // =========================================================================
     // PUT /powersync/crud — Receive CRUD batches from PowerSync clients
     // =========================================================================
     // PowerSync clients call uploadData() which sends batched CRUD operations.
     // Each operation contains: { op: 'PUT'|'PATCH'|'DELETE', type: table, id, data }
     // We apply them to Postgres via Prisma inside a transaction.
     // =========================================================================
-    psRouter.put('/crud', middleware.auth, async (req: AuthenticatedRequest, res) => {
+    psRouter.put('/crud', middleware.auth, async (req, res) => {
+      const authenticatedReq = req as AuthenticatedRequest;
       try {
-        const { transactions } = req.body;
+        const { transactions } = authenticatedReq.body;
 
         if (!transactions || !Array.isArray(transactions)) {
           return res.status(400).json({
@@ -351,7 +454,7 @@ export const PowerSyncApiModule: IApiModule = {
           });
         }
 
-        const identityId = req.identityId!;
+        const identityId = authenticatedReq.identityId!;
         const txCount = Array.isArray(transactions) ? transactions.length : 0;
         const opCount = transactions.reduce(
           (count: number, tx: any) => count + (tx?.ops?.length ?? tx?.crud?.length ?? 0),
@@ -427,7 +530,7 @@ export const PowerSyncApiModule: IApiModule = {
       } catch (error) {
         logger.error('PowerSync CRUD processing failed', {
           error,
-          identityId: req.identityId,
+          identityId: authenticatedReq.identityId,
         });
         return res.status(500).json({
           ok: false,
@@ -454,7 +557,7 @@ export const PowerSyncApiModule: IApiModule = {
     router.use('/powersync', psRouter);
 
     logger.info(
-      'PowerSync routes registered: /powersync/token, /powersync/crud, /powersync/schema',
+      'PowerSync routes registered: /powersync/token, /powersync/profile-snapshot, /powersync/crud, /powersync/schema',
     );
   },
 };

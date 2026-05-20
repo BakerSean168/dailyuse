@@ -4,7 +4,7 @@
  * @date 2025-01-22
  */
 
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import { getJwtConfig } from '../../config/env.js';
 import { createApiResponseBuilder } from '../response-builder.js';
@@ -75,19 +75,24 @@ function sendInternalError(
  * @param res - Express 响应对象
  * @param next - 下一个中间件函数
  */
-export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const authMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
     // 从 Authorization header 中提取 token
-    const authHeader = req.headers.authorization;
+    const authHeader = authenticatedReq.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return sendUnauthorized(req, res, '缺少认证令牌，请提供有效的Authorization header');
+      return sendUnauthorized(
+        authenticatedReq,
+        res,
+        '缺少认证令牌，请提供有效的Authorization header',
+      );
     }
 
     const token = authHeader.substring(7); // 移除 "Bearer " 前缀
 
     if (!token) {
-      return sendUnauthorized(req, res, '认证令牌不能为空');
+      return sendUnauthorized(authenticatedReq, res, '认证令牌不能为空');
     }
 
     // 验证 JWT token
@@ -98,21 +103,21 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 
       // 验证必要字段
       if (!decoded.identityId) {
-        return sendUnauthorized(req, res, '无效的认证令牌：缺少用户信息');
+        return sendUnauthorized(authenticatedReq, res, '无效的认证令牌：缺少用户信息');
       }
 
       // 验证 identityId 格式（支持带前缀的品牌化 ID）
       if (!isValidIdentityId(decoded.identityId)) {
-        return sendUnauthorized(req, res, '无效的认证令牌：身份ID 格式不符合要求');
+        return sendUnauthorized(authenticatedReq, res, '无效的认证令牌：身份ID 格式不符合要求');
       }
 
       // 检查token是否过期
       if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-        return sendUnauthorized(req, res, '认证令牌已过期，请重新登录');
+        return sendUnauthorized(authenticatedReq, res, '认证令牌已过期，请重新登录');
       }
 
       // 将用户信息添加到请求对象
-      req.user = {
+      authenticatedReq.user = {
         identityId: decoded.identityId,
         sessionId: decoded.sessionId,
         tokenType: decoded.type,
@@ -120,17 +125,17 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       };
 
       // 向后兼容：直接提供 identityId 和 sessionId
-      req.identityId = decoded.identityId;
-      req.sessionId = decoded.sessionId;
+      authenticatedReq.identityId = decoded.identityId;
+      authenticatedReq.sessionId = decoded.sessionId;
 
       return next();
     } catch (jwtError) {
       console.error('JWT验证失败:', jwtError);
-      return sendUnauthorized(req, res, '无效的认证令牌，请重新登录');
+      return sendUnauthorized(authenticatedReq, res, '无效的认证令牌，请重新登录');
     }
   } catch (error) {
     console.error('认证中间件错误:', error);
-    return sendInternalError(req, res, 'Internal server error');
+    return sendInternalError(authenticatedReq, res, 'Internal server error');
   }
 };
 
@@ -146,7 +151,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
  * @param next - 下一个中间件函数
  */
 export const optionalAuthMiddleware = (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {

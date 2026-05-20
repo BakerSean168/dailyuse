@@ -63,6 +63,11 @@ import { ControlledAnalyticsReadAdapter } from './modules/ai/controlled-analytic
 import { BackendAutomationToolExecutorAdapter } from './modules/ai/backend-automation-tool-executor.adapter';
 import { RepositoryKnowledgeNotePersistenceAdapter } from './modules/ai/repository-knowledge-note-persistence.adapter';
 import { RepositoryKnowledgeSourceAdapter } from './modules/ai/repository-knowledge-source.adapter';
+import {
+  registerAllCronJobs,
+  startCronScheduler,
+  stopCronScheduler,
+} from './shared/infrastructure/cron/index.js';
 
 // 初始化日志系统
 initializeLogger();
@@ -334,6 +339,10 @@ async function bootstrap(): Promise<void> {
   app.listen(env.API_PORT, env.API_HOST, () => {
     logger.info(`✅ API server listening on http://${env.API_HOST}:${env.API_PORT}`);
   });
+
+  // 5. 注册并启动 Cron Jobs
+  registerAllCronJobs();
+  startCronScheduler();
 }
 
 bootstrap().catch((err) => {
@@ -344,6 +353,8 @@ bootstrap().catch((err) => {
 // === 优雅关闭 ===
 async function gracefulShutdown(signal: string): Promise<void> {
   logger.info(`Received ${signal}, shutting down gracefully...`);
+
+  stopCronScheduler();
 
   if (bootstrapper) {
     await bootstrapper.destroy();

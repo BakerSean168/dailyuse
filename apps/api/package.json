@@ -18,6 +18,8 @@
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
+    "@dailyuse/powersync-schema": "workspace:*",
+    "@powersync/node": "^0.17.1",
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/schedule": "workspace:*",

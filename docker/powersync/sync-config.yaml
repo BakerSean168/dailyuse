@@ -1,0 +1,67 @@
+config:
+  edition: 3
+
+streams:
+  # Preserve the current offline-first behavior during migration by keeping
+  # all profile-owned data auto-subscribed on connect.
+  user_data:
+    auto_subscribe: true
+    priority: 1
+    queries:
+      - SELECT * FROM accounts WHERE id = auth.user_id()
+      - SELECT * FROM user_settings WHERE identity_id = auth.user_id()
+      - SELECT * FROM goals WHERE identity_id = auth.user_id()
+      - SELECT * FROM goal_folders WHERE identity_id = auth.user_id()
+      - SELECT * FROM goal_statistics WHERE identity_id = auth.user_id()
+      - SELECT * FROM focus_sessions WHERE identity_id = auth.user_id()
+      - SELECT * FROM focus_modes WHERE identity_id = auth.user_id()
+      - SELECT * FROM key_results WHERE identity_id = auth.user_id()
+      - SELECT * FROM goal_records WHERE identity_id = auth.user_id()
+      - SELECT * FROM goal_reviews WHERE identity_id = auth.user_id()
+      - SELECT * FROM key_result_weight_snapshots WHERE identity_id = auth.user_id()
+      - SELECT * FROM task_folders WHERE identity_id = auth.user_id()
+      - SELECT * FROM task_templates WHERE identity_id = auth.user_id()
+      - SELECT * FROM task_instances WHERE identity_id = auth.user_id()
+      - SELECT * FROM task_statistics WHERE identity_id = auth.user_id()
+      - SELECT * FROM task_dependencies WHERE identity_id = auth.user_id()
+      - SELECT * FROM task_template_history WHERE identity_id = auth.user_id()
+      - SELECT * FROM schedules WHERE identity_id = auth.user_id()
+      - SELECT * FROM schedule_jobs WHERE identity_id = auth.user_id()
+      - SELECT * FROM schedule_tasks WHERE identity_id = auth.user_id()
+      - SELECT * FROM schedule_statistics WHERE identity_id = auth.user_id()
+      - SELECT * FROM schedule_executions WHERE identity_id = auth.user_id()
+      - SELECT * FROM reminder_templates WHERE identity_id = auth.user_id()
+      - SELECT * FROM reminder_groups WHERE identity_id = auth.user_id()
+      - SELECT * FROM reminder_instances WHERE identity_id = auth.user_id()
+      - SELECT * FROM reminder_statistics WHERE identity_id = auth.user_id()
+      - SELECT * FROM user_reminder_preferences WHERE identity_id = auth.user_id()
+      - SELECT * FROM reminder_history WHERE identity_id = auth.user_id()
+      - SELECT * FROM reminder_responses WHERE identity_id = auth.user_id()
+      - SELECT * FROM notifications WHERE identity_id = auth.user_id()
+      - SELECT * FROM notification_preferences WHERE identity_id = auth.user_id()
+      - SELECT * FROM notification_channels WHERE identity_id = auth.user_id()
+      - SELECT * FROM notification_history WHERE identity_id = auth.user_id()
+      - SELECT * FROM editor_workspaces WHERE identity_id = auth.user_id()
+      - SELECT * FROM editor_workspace_sessions WHERE identity_id = auth.user_id()
+      - SELECT * FROM editor_workspace_session_groups WHERE identity_id = auth.user_id()
+      - SELECT * FROM editor_workspace_session_group_tabs WHERE identity_id = auth.user_id()
+      - SELECT * FROM documents WHERE identity_id = auth.user_id()
+      - SELECT * FROM document_versions WHERE identity_id = auth.user_id()
+      - SELECT * FROM document_links WHERE identity_id = auth.user_id()
+      - SELECT * FROM ai_conversations WHERE identity_id = auth.user_id()
+      - SELECT * FROM ai_generation_tasks WHERE identity_id = auth.user_id()
+      - SELECT * FROM ai_usage_quotas WHERE identity_id = auth.user_id()
+      - SELECT * FROM ai_provider_configs WHERE identity_id = auth.user_id()
+      - SELECT * FROM dashboard_configs WHERE identity_id = auth.user_id()
+      - SELECT * FROM ai_messages WHERE identity_id = auth.user_id()
+      - SELECT * FROM repositories WHERE identity_id = auth.user_id()
+      - SELECT * FROM repository_explorers WHERE identity_id = auth.user_id()
+      - SELECT * FROM repository_statistics WHERE identity_id = auth.user_id()
+      - SELECT * FROM folders WHERE identity_id = auth.user_id()
+      - SELECT * FROM resources WHERE identity_id = auth.user_id()
+      - SELECT * FROM repository_resources WHERE identity_id = auth.user_id()
+
+  system_data:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM notification_templates

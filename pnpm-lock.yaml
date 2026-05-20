@@ -333,6 +333,12 @@ importers:
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../../packages/patterns
+      '@dailyuse/powersync-schema':
+        specifier: workspace:*
+        version: link:../../packages/powersync-schema
+      '@powersync/node':
+        specifier: ^0.17.1
+        version: 0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.6.2)
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
