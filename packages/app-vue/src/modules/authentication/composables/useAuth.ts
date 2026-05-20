@@ -23,7 +23,6 @@ import type {
   RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 import type { ResultError } from '@dailyuse/contracts/result';
-import { WindowChannels } from '@dailyuse/contracts/electron';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -61,10 +60,7 @@ export function useAuth() {
     }
     toast.success(title, { description });
 
-    if (isDesktopEnvironment()) {
-      await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
-      return true;
-    }
+    if (isDesktopEnvironment()) return true;
 
     redirectWithReload('/');
     return true;
@@ -283,9 +279,7 @@ export function useAuth() {
     } finally {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
-      if (isDesktopEnvironment()) {
-        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_LOGIN);
-      } else {
+      if (!isDesktopEnvironment()) {
         redirectWithReload('/auth');
       }
     }
@@ -311,7 +305,6 @@ export function useAuth() {
         toast.success(t('auth.toast.guestModeEntered'), {
           description: t('auth.toast.guestModeLocalOnly'),
         });
-        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
         return true;
       }
       lastResultError.value = result.error;
@@ -354,7 +347,6 @@ export function useAuth() {
 
       if (result.data.authenticated) {
         store.reset();
-        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
       }
 
       return result.data;

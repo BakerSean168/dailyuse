@@ -4,19 +4,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { resolveLikelyUserDataDirs } from './user-data-paths.mjs';
 
-const DB_FILE = 'dailyuse-sync.sqlite';
-const DB_DIR_NAME = 'data';
+const DB_FILE = 'powersync.sqlite';
+const PROFILES_DIR_NAME = 'profiles';
 
 function collectDbCandidates() {
   const dirs = resolveLikelyUserDataDirs();
   const files = [];
 
   for (const userDataDir of dirs) {
-    const dataDir = path.join(userDataDir, DB_DIR_NAME);
-    const primary = path.join(dataDir, DB_FILE);
-    const wal = `${primary}-wal`;
-    const shm = `${primary}-shm`;
-    files.push(primary, wal, shm);
+    const profilesDir = path.join(userDataDir, PROFILES_DIR_NAME);
+    if (!fs.existsSync(profilesDir)) {
+      continue;
+    }
+
+    for (const entry of fs.readdirSync(profilesDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+
+      const primary = path.join(profilesDir, entry.name, 'db', DB_FILE);
+      files.push(primary, `${primary}-wal`, `${primary}-shm`);
+    }
   }
 
   return [...new Set(files)];

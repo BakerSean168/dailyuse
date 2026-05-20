@@ -46,7 +46,7 @@ export class TokenManager {
   private static instance: TokenManager | null = null;
 
   private readonly logger: ILogger;
-  private readonly tokenPath: string;
+  private tokenPath: string;
   private cachedTokenData: TokenData | null = null;
   private refreshTimer: NodeJS.Timeout | null = null;
   private refreshCallback: (() => Promise<TokenRefreshResult>) | null = null;
@@ -354,6 +354,27 @@ export class TokenManager {
    */
   getTokenPath(): string {
     return this.tokenPath;
+  }
+
+  /**
+   * Switch to a profile's token storage.
+   * Stops auto-refresh, clears cache, and updates the token path.
+   */
+  switchToProfile(tokenPath: string): void {
+    this.logger.info('Switching to profile token path', { tokenPath });
+    this.stopAutoRefresh();
+    this.cachedTokenData = null;
+    this.tokenPath = tokenPath;
+  }
+
+  /**
+   * Clear state for a profile switch without deleting the token file.
+   * Used during deactivation (not logout).
+   */
+  async clearForProfileSwitch(): Promise<void> {
+    this.logger.info('Clearing for profile switch');
+    this.stopAutoRefresh();
+    this.cachedTokenData = null;
   }
 
   getCachedTokenData(): TokenData | null {

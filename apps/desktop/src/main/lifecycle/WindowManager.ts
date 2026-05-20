@@ -11,7 +11,7 @@
  * 3. 否 → 显示登录窗口，登录成功后切换到主窗口
  */
 
-import { BrowserWindow, screen, ipcMain, app } from 'electron';
+import { BrowserWindow, ipcMain, app } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
@@ -23,6 +23,9 @@ import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload
 import { resolveWindowIconPath } from '../utils/app-icon';
 import { bindDesktopFeaturesWindow } from '../desktop-features';
 import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
+import { WindowStateManager } from '../modules/window';
+import { getSharedPathResolver } from '../runtime-init';
+import { getDesktopProfileRuntimeManager } from '../profile';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,6 +83,10 @@ export class WindowManager {
 
   private readonly config: Required<WindowManagerConfig>;
   private isTransitioning = false;
+  private activeMainProfileId: string | null = null;
+  private loginWindowStateManager: WindowStateManager | null = null;
+  private registerWindowStateManager: WindowStateManager | null = null;
+  private mainWindowStateManager: WindowStateManager | null = null;
 
   private constructor(config: WindowManagerConfig = {}) {
     const preloadPath = config.preloadPath || resolvePreloadPath(__dirname);
@@ -136,20 +143,19 @@ export class WindowManager {
     }
 
     logger.info('Creating login window');
+    this.loginWindowStateManager = new WindowStateManager('login', {
+      defaultWidth: 420,
+      defaultHeight: 580,
+      stateFilePath: getSharedPathResolver().loginWindowStatePath,
+    });
 
-    // 获取主显示器尺寸用于居中
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-
-    // 登录窗口尺寸
-    const windowWidth = 420;
-    const windowHeight = 580;
+    const loginState = this.loginWindowStateManager;
 
     this.loginWindow = new BrowserWindow({
-      width: windowWidth,
-      height: windowHeight,
-      x: Math.round((screenWidth - windowWidth) / 2),
-      y: Math.round((screenHeight - windowHeight) / 2),
+      width: loginState.width,
+      height: loginState.height,
+      x: loginState.x,
+      y: loginState.y,
       resizable: false,
       maximizable: false,
       minimizable: true,
@@ -164,6 +170,7 @@ export class WindowManager {
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
+        partition: this.getShellPartition(),
       },
       icon: resolveWindowIconPath(),
       show: false,
@@ -174,6 +181,7 @@ export class WindowManager {
 
     this.attachWindowDiagnostics(this.loginWindow, 'login');
     this.attachWindowControlStateSync(this.loginWindow);
+    this.loginWindowStateManager.manage(this.loginWindow);
 
     // 准备好后显示
     this.loginWindow.once('ready-to-show', () => {
@@ -190,6 +198,8 @@ export class WindowManager {
 
     // 窗口关闭事件
     this.loginWindow.on('closed', () => {
+      this.loginWindowStateManager?.unmanage();
+      this.loginWindowStateManager = null;
       this.loginWindow = null;
       // 如果没有主窗口且不是在切换过程中，退出应用
       if (!this.mainWindow && !this.registerWindow && !this.isTransitioning) {
@@ -207,17 +217,19 @@ export class WindowManager {
     }
 
     logger.info('Creating register window');
+    this.registerWindowStateManager = new WindowStateManager('register', {
+      defaultWidth: 460,
+      defaultHeight: 680,
+      stateFilePath: getSharedPathResolver().registerWindowStatePath,
+    });
 
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-    const windowWidth = 460;
-    const windowHeight = 680;
+    const registerState = this.registerWindowStateManager;
 
     this.registerWindow = new BrowserWindow({
-      width: windowWidth,
-      height: windowHeight,
-      x: Math.round((screenWidth - windowWidth) / 2),
-      y: Math.round((screenHeight - windowHeight) / 2),
+      width: registerState.width,
+      height: registerState.height,
+      x: registerState.x,
+      y: registerState.y,
       resizable: false,
       maximizable: false,
       minimizable: true,
@@ -232,6 +244,7 @@ export class WindowManager {
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
+        partition: this.getShellPartition(),
       },
       icon: resolveWindowIconPath(),
       show: false,
@@ -242,6 +255,7 @@ export class WindowManager {
 
     this.attachWindowDiagnostics(this.registerWindow, 'register');
     this.attachWindowControlStateSync(this.registerWindow);
+    this.registerWindowStateManager.manage(this.registerWindow);
 
     this.registerWindow.once('ready-to-show', () => {
       this.registerWindow?.show();
@@ -255,6 +269,8 @@ export class WindowManager {
     }
 
     this.registerWindow.on('closed', () => {
+      this.registerWindowStateManager?.unmanage();
+      this.registerWindowStateManager = null;
       this.registerWindow = null;
       if (!this.mainWindow && !this.loginWindow && !this.isTransitioning) {
         app.quit();
@@ -267,25 +283,35 @@ export class WindowManager {
   /**
    * 创建主窗口
    */
-  createMainWindow(): BrowserWindow {
+  createMainWindow(profileId: string, stateFilePath: string): BrowserWindow {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.focus();
       return this.mainWindow;
     }
 
     logger.info('Creating main window');
+    this.activeMainProfileId = profileId;
+    this.mainWindowStateManager = new WindowStateManager('main', {
+      defaultWidth: 1200,
+      defaultHeight: 800,
+      stateFilePath,
+    });
+    const mainState = this.mainWindowStateManager;
 
     this.mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 800,
+      width: mainState.width,
+      height: mainState.height,
       minWidth: 900,
       minHeight: 600,
+      x: mainState.x,
+      y: mainState.y,
       ...createNativeWindowChromeOptions(),
       webPreferences: {
         preload: this.config.preloadPath,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
+        partition: this.getProfilePartition(profileId),
       },
       icon: resolveWindowIconPath(),
       show: false,
@@ -296,6 +322,7 @@ export class WindowManager {
 
     this.attachWindowDiagnostics(this.mainWindow, 'main');
     this.attachWindowControlStateSync(this.mainWindow);
+    this.mainWindowStateManager.manage(this.mainWindow);
 
     // 准备好后显示
     this.mainWindow.once('ready-to-show', () => {
@@ -313,7 +340,10 @@ export class WindowManager {
 
     // 窗口关闭事件
     this.mainWindow.on('closed', () => {
+      this.mainWindowStateManager?.unmanage();
+      this.mainWindowStateManager = null;
       this.mainWindow = null;
+      this.activeMainProfileId = null;
     });
 
     return this.mainWindow;
@@ -324,7 +354,7 @@ export class WindowManager {
   /**
    * 登录成功后切换到主窗口
    */
-  async transitionToMainWindow(): Promise<void> {
+  async transitionToMainWindow(profileId: string, stateFilePath: string): Promise<void> {
     if (this.isTransitioning) {
       logger.warn('Already transitioning');
       return;
@@ -335,7 +365,7 @@ export class WindowManager {
 
     try {
       // 1. 创建主窗口（先不显示）
-      const mainWin = this.createMainWindow();
+      const mainWin = this.createMainWindow(profileId, stateFilePath);
 
       // 2. 等待主窗口准备好
       await new Promise<void>((resolve) => {
@@ -406,7 +436,6 @@ export class WindowManager {
           this.registerWindow.close();
         }
       }, 100);
-
       logger.info('Transition complete');
     } finally {
       this.isTransitioning = false;
@@ -584,7 +613,13 @@ export class WindowManager {
     // 登录成功 → 切换到主窗口
     ipcMain.handle(WindowChannels.TRANSITION_TO_MAIN, async () => {
       logger.info('IPC window:transition-to-main received');
-      await this.transitionToMainWindow();
+      const runtimeManager = getDesktopProfileRuntimeManager();
+      const profileId = runtimeManager.getActiveProfileId();
+      const profileResolver = runtimeManager.getActiveProfileResolver();
+      if (!profileId || !profileResolver) {
+        throw new Error('No active profile available for main window transition');
+      }
+      await this.transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
       return { success: true };
     });
 
@@ -707,6 +742,17 @@ export class WindowManager {
     this.loginWindow = null;
     this.registerWindow = null;
     this.mainWindow = null;
+    this.loginWindowStateManager = null;
+    this.registerWindowStateManager = null;
+    this.mainWindowStateManager = null;
+  }
+
+  private getShellPartition(): string {
+    return 'persist:desktop-shell';
+  }
+
+  private getProfilePartition(profileId: string): string {
+    return `persist:profile-${profileId}`;
   }
 }
 

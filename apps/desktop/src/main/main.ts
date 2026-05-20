@@ -1,23 +1,20 @@
 /**
- * @file Electron Main Process Entry Point
- * @description
+ * Electron Main Process Entry Point
  *
- * Clean entry point — delegates all module wiring to the ElectronBootstrapper.
- * Each business module registers itself (repos, services, IPC handlers) via its
- * own `electron-entry` Composition Root, mirroring the API-side pattern.
+ * Two-phase startup for multi-profile architecture:
  *
- * Responsibilities of this file:
- *   1. Initialize the PowerSync-backed business database runtime
- *   2. Bootstrap all business modules via ElectronBootstrapper
- *   3. Start ancillary services (dev tools)
- *   4. Hand off to the lifecycle manager (window creation, shutdown)
+ * Phase A — Shell Runtime (runs at app start):
+ *   - Shared paths, ProfileRegistry, DesktopProfileRuntimeManager
+ *   - Login window and shared auth IPC
+ *
+ * Phase B — Profile Runtime (runs after successful login):
+ *   - Per-profile PowerSync database
+ *   - Per-profile ElectronBootstrapper with all business modules
+ *   - Main window and schedule runtime
  */
 
 import './runtime-init';
-import path from 'node:path';
-import { app } from 'electron';
 import type { IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { openPowerSyncLocalOnly } from './database/powersync';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
@@ -37,11 +34,11 @@ import { ReminderElectronModule } from '@dailyuse/reminder/electron-entry';
 import { NotificationElectronModule } from '@dailyuse/notification/electron-entry';
 import { SettingElectronModule } from '@dailyuse/setting/electron-entry';
 import { createAIElectronModule } from '@dailyuse/ai/electron-entry';
-import { RepositoryElectronModule } from '@dailyuse/repository/electron-entry';
+import { createRepositoryElectronModule } from '@dailyuse/repository/electron-entry';
 import { createRepositoryPowerSyncModule, FsStorageAdapter } from '@dailyuse/repository';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
-import { DesktopAuthElectronModule } from './modules/authentication/desktop-auth.electron-module';
+import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
@@ -68,25 +65,16 @@ import { SourceModule } from '@dailyuse/contracts/schedule';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
 import { getDesktopAuthService } from './auth/desktop-auth-context';
-import { getConfiguredDesktopUserDataPath } from './runtime-init';
+import { getSharedPathResolver } from './runtime-init';
+import type { ProfilePathResolver } from './paths';
+import { ProfileRegistry } from './profile/ProfileRegistry';
+import { DesktopProfileRuntimeManager } from './profile/DesktopProfileRuntimeManager';
+import type { PowerSyncDatabase } from '@powersync/node';
 
-const configuredUserDataPath = getConfiguredDesktopUserDataPath();
 configureDesktopShellIdentity();
-
-const AIElectronModule = createAIElectronModule({
-  createKnowledgeNotePersistence: (context: IElectronModuleContext) =>
-    new DesktopKnowledgeNotePersistenceAdapter(context.db),
-  createKnowledgeSourcePort: (context: IElectronModuleContext) =>
-    new DesktopKnowledgeSourceAdapter(context.db),
-  createAnalyticsReadPort: () => new DesktopAnalyticsReadAdapter(),
-  createAutomationToolExecutor: (context: IElectronModuleContext) =>
-    new DesktopAutomationToolExecutorAdapter(context.db),
-});
 
 type RepositorySearchItem = RepositorySearchResponse['results'][number];
 
-/** Kept as module-level for graceful shutdown access. */
-let bootstrapper: ElectronBootstrapper | null = null;
 const logger = createLogger('DesktopMain');
 
 function mapReminderChannels(channels: readonly string[]): NotificationChannelType[] {
@@ -116,22 +104,35 @@ function mapReminderChannels(channels: readonly string[]): NotificationChannelTy
 }
 
 /**
- * Application initialisation sequence.
+ * Register all business modules on a bootstrapper for the active profile.
+ * Called by DesktopProfileRuntimeManager during profile activation.
  */
-async function initializeApp(): Promise<void> {
+async function registerBusinessModules(
+  bootstrapper: ElectronBootstrapper,
+  db: PowerSyncDatabase,
+  profilePaths: ProfilePathResolver,
+): Promise<void> {
   const startTime = performance.now();
-  console.log('[App] Initializing...');
-  console.log(`[App] userData path: ${configuredUserDataPath}`);
 
-  // 1. PowerSync-backed business database runtime
-  const db = await openPowerSyncLocalOnly();
-  console.log('[App] PowerSync business database initialized');
-
-  // 2. Bootstrap business modules
-  const repositoryStorageDir = path.join(app.getPath('userData'), 'repository-storage');
+  const repositoryStorageDir = profilePaths.repositoryStorageDir;
   const editorRepositoryModule = createRepositoryPowerSyncModule(db, {
     storagePort: new FsStorageAdapter(repositoryStorageDir),
   });
+
+  const AIElectronModule = createAIElectronModule({
+    createKnowledgeNotePersistence: (context: IElectronModuleContext) =>
+      new DesktopKnowledgeNotePersistenceAdapter(context.db, repositoryStorageDir),
+    createKnowledgeSourcePort: (context: IElectronModuleContext) =>
+      new DesktopKnowledgeSourceAdapter(context.db, repositoryStorageDir),
+    createAnalyticsReadPort: () => new DesktopAnalyticsReadAdapter(),
+    createAutomationToolExecutor: (context: IElectronModuleContext) =>
+      new DesktopAutomationToolExecutorAdapter(context.db, repositoryStorageDir),
+  });
+
+  const repositoryElectronModule = createRepositoryElectronModule({
+    storageBaseDir: repositoryStorageDir,
+  });
+
   const scheduleElectronModule = createScheduleElectronModule({
     shouldScheduleTask: (task) => {
       const identityId = getDesktopAuthService().getCurrentIdentityId();
@@ -388,11 +389,9 @@ async function initializeApp(): Promise<void> {
     };
   };
 
-  bootstrapper = new ElectronBootstrapper(db);
   await bootstrapper
     // Core services
     .register(AccountElectronModule)
-    .register(DesktopAuthElectronModule)
     .register(SettingElectronModule)
     .register(NotificationElectronModule)
     // Feature modules
@@ -403,7 +402,7 @@ async function initializeApp(): Promise<void> {
     .register(AIElectronModule)
     .register(GovernanceElectronModule)
     // Repository must precede Editor (cross-module dep)
-    .register(RepositoryElectronModule)
+    .register(repositoryElectronModule)
     .register(
       createEditorElectronModule({
         contentPort: {
@@ -457,33 +456,75 @@ async function initializeApp(): Promise<void> {
           },
         },
       }),
-    )
-    .init();
-  console.log('[App] All modules bootstrapped');
+    );
 
-  // 3. Cross-module event listeners
+  const initTime = performance.now() - startTime;
+  logger.info(`Business modules registered in ${initTime.toFixed(2)}ms`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Shell Runtime Initialization
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Initialize the shell runtime — shared infrastructure that runs before
+ * any profile is selected. This is what runs at app startup.
+ */
+async function initializeShellRuntime(): Promise<void> {
+  const startTime = performance.now();
+  console.log('[Shell] Initializing shell runtime...');
+
+  const sharedResolver = getSharedPathResolver();
+  console.log(`[Shell] Root path: ${sharedResolver.rootDir}`);
+
+  // Initialize ProfileRegistry
+  const profileRegistry = ProfileRegistry.getInstance(sharedResolver);
+  await profileRegistry.load();
+  console.log('[Shell] ProfileRegistry initialized');
+
+  // Initialize DesktopProfileRuntimeManager
+  const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+
+  // Set up module registration — this closure captures the business module
+  // creation logic and provides it to the runtime manager for profile activation
+  runtimeManager.setModuleRegistration(async (bootstrapper, db, profilePaths) => {
+    await registerBusinessModules(bootstrapper, db, profilePaths);
+  });
+
+  // Initialize shared auth infrastructure
+  const { getRememberedAccountsService } = await import(
+    './modules/authentication/infrastructure'
+  );
+  getRememberedAccountsService().setFilePath(sharedResolver.rememberedAccountsPath);
+  registerDesktopAuthShellHandlers();
+
+  // SessionManager.sharedAuthDir will be set during profile activation
+  // (DesktopProfileRuntimeManager.prepareProfile + activatePreparedProfile), not during shell init,
+  // because SessionManager is created fresh per profile.
+
+  // Cross-module event listeners
   await initializeEventListeners();
-  console.log('[App] Event listeners initialized');
+  console.log('[Shell] Event listeners initialized');
 
-  // 4. Ancillary
+  // Ancillary
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
   registerDashboardIpcHandler();
 
   const initTime = performance.now() - startTime;
-  console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);
-
-  if (process.env.BENCHMARK_MODE === 'true') {
-    console.log('[BENCHMARK] READY');
-  }
+  console.log(`[Shell] Shell runtime initialized in ${initTime.toFixed(2)}ms`);
 }
 
-// ── Lifecycle ────────────────────────────────────────────────────────
-registerAppLifecycleHandlers(initializeApp);
+// ═══════════════════════════════════════════════════════════════════════
+// Lifecycle
+// ═══════════════════════════════════════════════════════════════════════
+
+registerAppLifecycleHandlers(initializeShellRuntime);
 
 /**
- * Expose bootstrapper for graceful shutdown from lifecycle manager.
+ * Expose bootstrapper for backward compatibility (graceful shutdown from lifecycle manager).
  */
 export function getBootstrapper(): ElectronBootstrapper | null {
-  return bootstrapper;
+  const runtimeManager = DesktopProfileRuntimeManager.getInstance();
+  return runtimeManager.getBootstrapper();
 }

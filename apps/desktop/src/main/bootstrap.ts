@@ -25,7 +25,7 @@ const logger = createLogger('ElectronBootstrapper');
 
 export class ElectronBootstrapper {
   private readonly modules: IElectronModule[] = [];
-  private readonly db: IElectronModuleContext['db'];
+  readonly db: IElectronModuleContext['db'];
 
   constructor(db: PowerSyncDatabase) {
     this.db = db as unknown as IElectronModuleContext['db'];

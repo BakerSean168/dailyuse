@@ -6,9 +6,6 @@ const mocks = vi.hoisted(() => ({
   getRememberedAccountsService: vi.fn(),
   getNetworkStateManager: vi.fn(),
   getWindowManager: vi.fn(),
-  ensurePowerSyncSyncMode: vi.fn(),
-  openPowerSyncLocalOnly: vi.fn(),
-  disconnectPowerSync: vi.fn(),
 }));
 
 vi.mock('../loginDesktopAccount', () => ({
@@ -22,12 +19,6 @@ vi.mock('../../infrastructure', () => ({
   createSessionManager: vi.fn(),
   TokenManager: class {},
   SessionManager: class {},
-}));
-
-vi.mock('../../../../database/powersync', () => ({
-  ensurePowerSyncSyncMode: mocks.ensurePowerSyncSyncMode,
-  openPowerSyncLocalOnly: mocks.openPowerSyncLocalOnly,
-  disconnectPowerSync: mocks.disconnectPowerSync,
 }));
 
 vi.mock('../../../../lifecycle/WindowManager', () => ({
@@ -74,10 +65,6 @@ describe('AuthDesktopApplicationService', () => {
     mocks.getWindowManager.mockReturnValue({
       getMainWindow: vi.fn(() => null),
     });
-
-    mocks.ensurePowerSyncSyncMode.mockResolvedValue(undefined);
-    mocks.openPowerSyncLocalOnly.mockResolvedValue(undefined);
-    mocks.disconnectPowerSync.mockResolvedValue(undefined);
   });
 
   it('falls back to loginOffline without re-entering remote login orchestration', async () => {
@@ -117,16 +104,6 @@ describe('AuthDesktopApplicationService', () => {
     if (result.ok) {
       expect(result.data.authMode).toBe('OFFLINE_USER');
     }
-  });
-
-  it('ensures sync mode directly for online PowerSync initialization', async () => {
-    const service = new AuthDesktopApplicationService(createLogger() as never);
-
-    (service as any).initializePowerSyncAsync('ONLINE_USER');
-    await (service as any).powerSyncInitPromise;
-
-    expect(mocks.ensurePowerSyncSyncMode).toHaveBeenCalledOnce();
-    expect(mocks.openPowerSyncLocalOnly).not.toHaveBeenCalled();
   });
 
   it('returns a local conflict when the requested account is already open in the main window', async () => {

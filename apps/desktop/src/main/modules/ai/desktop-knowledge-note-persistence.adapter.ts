@@ -1,5 +1,3 @@
-import * as path from 'node:path';
-import { app } from 'electron';
 import { ResourceType } from '@dailyuse/contracts/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type {
@@ -24,8 +22,7 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 export class DesktopKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
   private readonly repositoryModule: RepositoryModuleInstance;
 
-  constructor(db: IElectronDatabase) {
-    const storageBaseDir = path.join(app.getPath('userData'), 'repository-storage');
+  constructor(db: IElectronDatabase, storageBaseDir: string) {
     const storagePort = new FsStorageAdapter(storageBaseDir);
 
     this.repositoryModule = createRepositoryPowerSyncModule(db, { storagePort });

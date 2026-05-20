@@ -39,6 +39,7 @@ import {
   DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { useAuth } from '../modules/authentication/composables/useAuth';
+import { getDesktopAuthApi } from '../shared/utils/desktopAuthRecovery';
 
 interface RememberedAccountItem {
   identityId: RememberedDesktopAccountDTO['identityId'];
@@ -391,16 +392,18 @@ function handlePasswordFieldFocus() {
 }
 
 function openRegister() {
-  if (window.electronAPI) {
-    void window.electronAPI.invoke(WindowChannels.OPEN_AUTH_REGISTER);
+  const electronApi = getDesktopAuthApi();
+  if (electronApi?.invoke) {
+    void electronApi.invoke(WindowChannels.OPEN_AUTH_REGISTER);
   } else {
     window.location.hash = '#/auth/register';
   }
 }
 
 async function handleCloseWindow() {
-  if (window.electronAPI) {
-    await window.electronAPI.invoke(WindowChannels.CLOSE);
+  const electronApi = getDesktopAuthApi();
+  if (electronApi?.invoke) {
+    await electronApi.invoke(WindowChannels.CLOSE);
   }
 }
 
@@ -409,8 +412,9 @@ function handlePlaceholderMenu() {
 }
 
 async function handleFocusMainWindow() {
-  if (window.electronAPI) {
-    await window.electronAPI.invoke(WindowChannels.FOCUS_MAIN_WINDOW);
+  const electronApi = getDesktopAuthApi();
+  if (electronApi?.invoke) {
+    await electronApi.invoke(WindowChannels.FOCUS_MAIN_WINDOW);
     syncDefaultScene();
   }
 }
@@ -421,8 +425,9 @@ function handleReturnFromConflict() {
 }
 
 async function handleReturnToLogin() {
-  if (window.electronAPI && isRegisterRoute.value) {
-    await window.electronAPI.invoke(WindowChannels.CLOSE_AUTH_REGISTER);
+  const electronApi = getDesktopAuthApi();
+  if (electronApi?.invoke && isRegisterRoute.value) {
+    await electronApi.invoke(WindowChannels.CLOSE_AUTH_REGISTER);
     return;
   }
 

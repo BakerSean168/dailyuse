@@ -16,91 +16,15 @@
  */
 
 import { app, BrowserWindow } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-features';
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { initNotificationService } from '../services';
-import { shutdownPowerSync } from '../database/powersync';
-import { getBootstrapper } from '../main';
+import { getDesktopProfileRuntimeManager } from '../profile';
 import { getWindowManager } from './WindowManager';
-import { createNativeWindowChromeOptions } from './desktopChrome';
 import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
-import { resolvePreloadPath } from '../utils/resolve-preload-path';
 import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
-import { resolveWindowIconPath } from '../utils/app-icon';
 import { createLogger } from '@dailyuse/utils';
-import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
-
-// ESM compatibility for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-let mainWindow: BrowserWindow | null = null;
 const logger = createLogger('AppLifecycle');
-
-/**
- * Creates the main application window.
- *
- * Configures window dimensions, web preferences, preload script, and title bar style.
- * In development, loads the Vite dev server URL.
- * In production, loads the bundled index.html.
- *
- * @returns {BrowserWindow} The created BrowserWindow instance.
- */
-export function createMainWindow(): BrowserWindow {
-  // Resolve preload script path correctly in both dev and production
-  const preloadPath = resolvePreloadPath(__dirname);
-
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
-    ...createNativeWindowChromeOptions(),
-    webPreferences: {
-      preload: preloadPath,
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false,
-    },
-    icon: resolveWindowIconPath(),
-    show: false,
-  });
-
-  mainWindow.setMenuBarVisibility(false);
-  mainWindow.removeMenu();
-
-  // Show window only when ready to avoid white screen
-  mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
-  });
-
-  // Load application
-  if (usesDesktopViteDevServer()) {
-    // Development mode: Load Vite dev server
-    mainWindow.loadURL(getDesktopDevServerUrlOrDefault());
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
-  } else {
-    // Production mode: Load bundled HTML
-    mainWindow.loadFile(path.join(__dirname, '../dist-renderer/index.html'));
-  }
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  return mainWindow;
-}
-
-/**
- * Retrieves the main application window instance.
- *
- * @returns {BrowserWindow | null} The main BrowserWindow instance, or null if it's not created or closed.
- */
-export function getMainWindow(): BrowserWindow | null {
-  return mainWindow;
-}
 
 /**
  * Handles the application 'ready' event.
@@ -133,9 +57,9 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     lastLoginAt: account.lastLoginAt,
   }));
 
-  let win: BrowserWindow;
+  // Defensive: stop any stale schedule runtime from a previous crash recovery
   stopScheduleRuntime();
-  win = windowManager.createLoginWindow({
+  const win = windowManager.createLoginWindow({
     hasQuickLoginAccounts: quickLoginAccounts.length > 0,
     quickLoginAccounts,
   });
@@ -191,27 +115,44 @@ function handleWindowAllClosed(): void {
  * Performs cleanup tasks such as cleaning up desktop features,
  * shutting down modules, and shutting down the PowerSync runtime.
  *
- * @returns {Promise<void>} A promise that resolves when cleanup is complete.
+ * Uses preventDefault to ensure cleanup completes before the app exits.
  */
-async function handleBeforeQuit(): Promise<void> {
+let isQuitting = false;
+
+async function handleBeforeQuit(event: Electron.Event): Promise<void> {
+  if (isQuitting) return; // Already handling quit — let it proceed
+  isQuitting = true;
+  event.preventDefault();
+
   console.log('[Lifecycle] Cleaning up before quit...');
 
-  // Gracefully shut down PowerSync (preserves local sync cache for next cold start).
-  // On logout, disconnectPowerSync() is called instead, which wipes the data.
-  await shutdownPowerSync().catch((err) =>
-    console.error('[Lifecycle] PowerSync shutdown failed during quit:', err),
-  );
+  const cleanup = (async () => {
+    try {
+      // Deactivate the active profile runtime (shuts down PowerSync, destroys bootstrapper)
+      const runtimeManager = getDesktopProfileRuntimeManager();
+      await runtimeManager.deactivateProfile().catch((err) =>
+        console.error('[Lifecycle] Profile deactivation failed during quit:', err),
+      );
 
-  // Cleanup desktop feature resources
-  await cleanupDesktopFeatures();
+      // Cleanup desktop feature resources
+      await cleanupDesktopFeatures();
+    } catch (err) {
+      console.error('[Lifecycle] Cleanup failed:', err);
+    }
+  })();
 
-  // Shutdown all modules via bootstrapper (graceful shutdown)
-  const bootstrapper = getBootstrapper();
-  if (bootstrapper) {
-    await bootstrapper.destroy();
-  }
+  // Safety timeout: if cleanup hangs, force quit after 10 seconds
+  const timeout = new Promise<void>((resolve) => {
+    setTimeout(() => {
+      console.warn('[Lifecycle] Cleanup timed out after 10s, forcing quit');
+      resolve();
+    }, 10_000);
+  });
 
-  console.log('[Lifecycle] Cleanup complete');
+  await Promise.race([cleanup, timeout]);
+
+  console.log('[Lifecycle] Cleanup complete, quitting...');
+  app.quit();
 }
 
 /**
@@ -247,9 +188,10 @@ export function registerAppLifecycleHandlers(initializeApp: () => Promise<void>)
   app.on('window-all-closed', handleWindowAllClosed);
 
   // Cleanup before quit
-  app.on('before-quit', () => {
-    void handleBeforeQuit().catch((error) => {
+  app.on('before-quit', (event) => {
+    void handleBeforeQuit(event).catch((error) => {
       logger.error('Before-quit cleanup failed', error);
+      app.quit();
     });
   });
 

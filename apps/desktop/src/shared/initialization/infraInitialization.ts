@@ -1,5 +1,4 @@
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import type { InitializationTask } from '@dailyuse/utils';
 
 /**
  * Registers infrastructure initialization tasks with the InitializationManager.
@@ -28,17 +27,14 @@ export function registerInfrastructureInitializationTasks(): void {
     priority: 5,
     dependencies: [],
     initialize: async () => {
-      console.log('[Infrastructure] Initializing PowerSync business database...');
+      console.log('[Infrastructure] Shell runtime no longer initializes a business database at startup');
       const startTime = performance.now();
 
       try {
-        // Dynamic import for main process only module
-        const { openPowerSyncLocalOnly } = await import('../../main/database/powersync');
-        await openPowerSyncLocalOnly();
         const duration = performance.now() - startTime;
 
         console.log(
-          `[Infrastructure] PowerSync business database initialized successfully in ${duration.toFixed(2)}ms`,
+          `[Infrastructure] Database initialization deferred to profile runtime (${duration.toFixed(2)}ms)`,
         );
       } catch (error) {
         console.error('[Infrastructure] Database initialization failed:', error);

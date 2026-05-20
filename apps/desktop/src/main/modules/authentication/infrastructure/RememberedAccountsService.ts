@@ -60,7 +60,7 @@ export class RememberedAccountsService {
   private static instance: RememberedAccountsService | null = null;
 
   private readonly logger: ILogger;
-  private readonly filePath: string;
+  private filePath: string;
   private cache: RememberedAccountsFile | null = null;
 
   private constructor(logger?: ILogger) {
@@ -77,6 +77,17 @@ export class RememberedAccountsService {
 
   static resetInstance(): void {
     RememberedAccountsService.instance = null;
+  }
+
+  /**
+   * Set the file path for remembered accounts storage.
+   * Clears the cache so the next read loads from the new path.
+   * Must be called before any read/write operations when using multi-profile architecture.
+   */
+  setFilePath(filePath: string): void {
+    this.filePath = filePath;
+    this.cache = null;
+    this.logger.info('Remembered accounts file path updated', { filePath });
   }
 
   async list(): Promise<RememberedAccountRecord[]> {

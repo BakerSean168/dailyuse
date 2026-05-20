@@ -46,14 +46,14 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly knowledgeSource;
   private readonly analyticsRead;
 
-  constructor(db: IElectronDatabase) {
+  constructor(db: IElectronDatabase, repositoryStorageDir: string) {
     this.goalModule = createGoalPowerSyncModule(db);
     this.taskModule = createTaskModule({
       taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
       taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
       taskDependencyRepository: new PowerSyncTaskDependencyRepository(db),
     });
-    this.knowledgeSource = new DesktopKnowledgeSourceAdapter(db);
+    this.knowledgeSource = new DesktopKnowledgeSourceAdapter(db, repositoryStorageDir);
     this.analyticsRead = new DesktopAnalyticsReadAdapter();
   }
 

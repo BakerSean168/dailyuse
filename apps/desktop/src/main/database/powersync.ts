@@ -33,7 +33,6 @@ import { Worker } from 'node:worker_threads';
 import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
 import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
-import { getUnifiedDatabasePath } from './paths';
 import { serializeCrudTransaction } from './powersync-crud';
 
 const NON_SYNCABLE_LOCAL_TABLES = [
@@ -59,6 +58,7 @@ const PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES = [
 
 let powerSyncDb: PowerSyncDatabase | null = null;
 let syncConnected = false;
+let currentDbPath: string | null = null;
 
 // Concurrency guards — prevent duplicate instances when two callers race.
 let connectingPromise: Promise<PowerSyncDatabase> | null = null;
@@ -68,13 +68,20 @@ let openingPromise: Promise<PowerSyncDatabase> | null = null;
 // Helpers
 // ──────────────────────────────────────────────
 
-function getSyncDatabasePath(): string {
-  const dbPath = getUnifiedDatabasePath();
+function ensureDbDirectory(dbPath: string): string {
   const dbDir = path.dirname(dbPath);
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
   return dbPath;
+}
+
+function assertCompatibleDbPath(dbPath: string): void {
+  if (powerSyncDb && currentDbPath && currentDbPath !== dbPath) {
+    throw new Error(
+      `PowerSync database is already open for another profile: ${currentDbPath} != ${dbPath}`,
+    );
+  }
 }
 
 function resolvePackagedWorkerPath(workerPath: string): string {
@@ -362,7 +369,9 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
  * Guarded against concurrent calls — if a connection is already in
  * progress the same promise is returned.
  */
-export async function connectPowerSync(): Promise<PowerSyncDatabase> {
+export async function connectPowerSync(dbPath: string): Promise<PowerSyncDatabase> {
+  assertCompatibleDbPath(dbPath);
+
   if (connectingPromise) {
     console.log('[PowerSync] Connection already in progress, waiting…');
     return connectingPromise;
@@ -393,10 +402,10 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
   }
 
   connectingPromise = (async () => {
-    const dbPath = getSyncDatabasePath();
-    console.log(`[PowerSync] Initializing sync database: ${dbPath}`);
+    const resolvedDbPath = ensureDbDirectory(dbPath);
+    console.log(`[PowerSync] Initializing sync database: ${resolvedDbPath}`);
 
-    const db = createPowerSyncDatabase(dbPath);
+    const db = createPowerSyncDatabase(resolvedDbPath);
     await db.waitForReady();
     await purgeNonSyncableLocalCrud(db);
     await purgePreHydrationBootstrapCrud(db);
@@ -406,6 +415,7 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
 
     powerSyncDb = db;
     syncConnected = true;
+    currentDbPath = resolvedDbPath;
 
     // Start broadcasting table changes to renderer windows
     startChangeBroadcast(db);
@@ -425,13 +435,13 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
  * Opens the PowerSync database in local-only mode (no sync).
  *
  * Used for OFFLINE_USER and GUEST auth modes where no auth token is available
- * or cloud sync is not desired. Data is read/written locally to dailyuse-sync.sqlite
- * without connecting to the PowerSync Service.
+ * or cloud sync is not desired.
  *
- * If PowerSync is already connected (sync mode), returns the existing instance.
- * Guarded against concurrent calls.
+ * @param dbPath - Required per-profile database path.
  */
-export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
+export async function openPowerSyncLocalOnly(dbPath: string): Promise<PowerSyncDatabase> {
+  assertCompatibleDbPath(dbPath);
+
   if (powerSyncDb) {
     console.log('[PowerSync] Already open (reusing existing instance)');
     return powerSyncDb;
@@ -442,16 +452,18 @@ export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
   }
 
   openingPromise = (async () => {
-    const dbPath = getSyncDatabasePath();
-    console.log(`[PowerSync] Opening local-only database: ${dbPath}`);
+    const resolvedDbPath = ensureDbDirectory(dbPath);
 
-    const db = createPowerSyncDatabase(dbPath);
+    console.log(`[PowerSync] Opening local-only database: ${resolvedDbPath}`);
+
+    const db = createPowerSyncDatabase(resolvedDbPath);
     console.log('[PowerSync] Waiting for local-only database to become ready...');
     await db.waitForReady();
     console.log('[PowerSync] Local-only database is ready');
 
     powerSyncDb = db;
     syncConnected = false;
+    currentDbPath = resolvedDbPath;
 
     // Do NOT call db.connect(connector) — local-only mode
     // Just initialize the database and start change broadcast
@@ -476,8 +488,7 @@ export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
  */
 export async function ensurePowerSyncSyncMode(): Promise<PowerSyncDatabase> {
   if (!powerSyncDb) {
-    console.log('[PowerSync] No local instance open, establishing sync mode directly');
-    return await connectPowerSync();
+    throw new Error('PowerSync sync mode requires an already prepared profile-local database');
   }
 
   if (syncConnected) {
@@ -518,6 +529,10 @@ export async function disconnectPowerSync(): Promise<void> {
   } finally {
     syncConnected = false;
     powerSyncDb = null;
+    currentDbPath = null;
+    // Clear concurrency guards to prevent stale in-flight opens from restoring old instances
+    openingPromise = null;
+    connectingPromise = null;
   }
 }
 
@@ -537,6 +552,10 @@ export async function shutdownPowerSync(): Promise<void> {
   } finally {
     syncConnected = false;
     powerSyncDb = null;
+    currentDbPath = null;
+    // Clear concurrency guards to prevent stale in-flight opens from restoring old instances
+    openingPromise = null;
+    connectingPromise = null;
   }
 }
 
