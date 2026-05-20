@@ -17,9 +17,22 @@
 - 优先使用 `pnpm` 而非 `npm`
 - 所有 Nx 命令统一使用 `pnpm nx ...`。
 - 需要 build、lint、test、e2e 时，优先运行离改动最近的 Nx target。
+- 涉及 Docker、运行时、env 注入、部署链路或生产镜像的改动，默认先用 `docker-compose.local.yml` 做本地 prod-like 验证，再进入 PR。
 - 复杂任务先写计划，再实施。计划统一放在 [`docs/plan/active/README.md`](docs/plan/active/README.md) 说明的目录下。
 - 如果在 plan 模式下已经生成了可执行方案，那么在开始实施前，必须先把该方案写入 `docs/plan/active`，再进入执行阶段。
 - 已完成或只保留历史参考价值的计划移到 [`docs/plan/archive/README.md`](docs/plan/archive/README.md)。
+
+## 本地验证与发布主线
+
+- 本地容器验证入口：[`docs/guides/development/local.docker.md`](docs/guides/development/local.docker.md)
+- 标准发布链路入口：[`docs/guides/development/release-workflow.md`](docs/guides/development/release-workflow.md)
+- 默认顺序固定为：
+  1. 本地用 `docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build` 验证
+  2. 发起 PR，合并到 `main`
+  3. 等待 `release-please` 更新或创建 release PR
+  4. 合并 release PR，触发正式 tag / release
+  5. 由 `docker-deploy.yml` 构建并推送生产镜像
+- 不把“手工替换生产镜像 tag”“手工改生产 compose”“直接在生产机试错”当成默认开发流程；这些只属于例外的 rollout、回滚或故障处理动作。
 
 ## 变更策略
 
@@ -44,6 +57,13 @@
 - `.github/copilot-instructions.md`：只补 GitHub/Copilot 特有约束，不复制仓库规范。
 - `.github/prompts/*.md`：只保留轻量入口，引用 canonical docs，不维护过时项目结构说明。
 - 旧的辅助工作区和历史计划目录已退役，不再作为协作入口。
+
+## Repository Skills
+
+- 项目专属 agent skills 统一放在 `tools/agent-skills/`。
+- 当前本地部署验证 skill 位于 `tools/agent-skills/validate-local-deploy/`。
+- 需要给其他开发者或 agent 安装时，从仓库内 skill 目录复制或软链接到本机 `$CODEX_HOME/skills`；若未设置 `CODEX_HOME`，则使用 `~/.codex/skills`。
+- 安装示例与目录约定见 `tools/agent-skills/README.md`。
 
 ## 最小验证
 

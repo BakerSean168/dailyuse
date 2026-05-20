@@ -1,35 +1,93 @@
-为了方便调试，可以在本地运行docker，部署项目。 
-配置docker file：docker-compose.local.yml
+---
+tags:
+  - guide
+  - development
+  - docker
+  - local
+description: 使用 docker-compose.local.yml 做 prod-like 本地验证的统一入口
+created: 2026-05-19T00:00:00
+updated: 2026-05-19T00:00:00
+---
 
-在这个本地配置文件中，所有业务服务（api, web, ai-service）都被强制设置为 本地构建：
+# Local Docker 验证
 
-```yaml
-image: dailyuse-api:local
-pull_policy: never
-build:
-  context: .
-``` 
+`docker-compose.local.yml` 是当前仓库做容器化改动、本地联调和发布前验收的默认入口。
 
-`pull_policy: never` 意味着本地开发环境压根不会去 ACR 拉取镜像，它永远只使用名为 `:local` 的本地构建镜像。
+它的定位不是“随便起一下服务”，而是：
 
-如果你想让本地环境与最新的代码/功能保持一致，你有两种做法：
+- 尽量贴近生产拓扑：`postgres + redis + ai-service + api + powersync + web`
+- 强制本地构建 `api` / `web` / `ai-service` 镜像
+- 在进入 PR 和 release 链路前，先验证本地容器运行结果
 
-推荐方案：直接拉取最新代码并重新构建
-既然代码有更新且在 ACR 打包了新镜像，那么最标准的本地更新方式是把最新代码拉下来自己构建一次，这和 ACR 的结果是一样的。 在项目根目录下执行以下命令：
+## 适用场景
+
+以下变更默认先走本地 Docker 验证：
+
+- Dockerfile
+- `docker-compose.local.yml`
+- `docker-compose.prod.yml`
+- API / Web / AI Service 启动链路
+- PowerSync / snapshot / cron / runtime path / env 注入
+- “只在容器里会出问题”的依赖、bundling、入口脚本问题
+
+## 启动命令
+
+首次或代码有改动时：
 
 ```bash
-# 1. 拉取最新代码
-git pull
-
-# 2. 强制重新构建并启动本地环境
 docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
 ```
 
-加上 `--build` 参数后，Docker 会根据最新代码重新构建 `dailyuse-api:local` 等镜像并平滑重启容器。
-
-### 如果想看日志，直接用下命令
+仅重启已有容器：
 
 ```bash
 docker compose -f docker-compose.local.yml --env-file .env.production.local up -d
-docker compose -f docker-compose.local.yml logs -f
 ```
+
+查看日志：
+
+```bash
+docker compose -f docker-compose.local.yml --env-file .env.production.local logs -f
+```
+
+停止并移除容器：
+
+```bash
+docker compose -f docker-compose.local.yml --env-file .env.production.local down
+```
+
+## 本地验证最低要求
+
+进入 PR 前，至少确认：
+
+- `api` healthy
+- `web` healthy
+- `ai-service` healthy
+- `powersync` healthy
+- 关键改动相关的 env / volume 已在本地 compose 中接通
+- 关键用户链路在本地容器环境下能跑通
+
+如果改动涉及 snapshot / PowerSync / cron，额外确认：
+
+- `POWERSYNC_SNAPSHOT_DIR` 已挂到本地 volume
+- `SNAPSHOT_REBUILD_ENABLED` / `SNAPSHOT_REBUILD_SCHEDULE` 注入到了 `api`
+- 本地容器里对应脚本、路由或日志路径能工作
+
+## 与发布链路的关系
+
+本地 Docker 验证通过后，才进入后续工作流：
+
+1. 在短生命周期分支上提交改动并发起 PR
+2. PR 合并到 `main`
+3. `release-please` 工作流更新或创建 release PR
+4. release PR 合并后生成正式 tag / release
+5. `docker-deploy.yml` 基于正式 tag 构建并推送生产镜像
+
+不要把“直接改生产 compose / 直接换线上 tag / 手工试 production 镜像”当作默认开发流程。  
+这些只应作为例外的生产验收或故障处理动作，并且应晚于本地 Docker 验证。
+
+相关入口：
+
+- 发布链路说明见 [release-workflow.md](./release-workflow.md)
+- Git/PR 约定见 [git-workflow.md](./git-workflow.md)
+- 生产部署说明见 [deployment README](../../deployment/README.md)
