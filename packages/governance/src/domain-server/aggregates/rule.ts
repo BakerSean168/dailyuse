@@ -429,7 +429,7 @@ export class Rule extends AggregateRoot<RuleId> {
    * Emits: governance:rule-updated event
    */
   update(props: UpdateRuleProps): Result<void> {
-    // ---- Phase 1: Validate all fields (no mutations) ----
+    // ---- Validate all fields (no mutations) ----
 
     const changedFields: string[] = [];
     let validatedTitle: string | undefined;
@@ -475,7 +475,7 @@ export class Rule extends AggregateRoot<RuleId> {
       changedFields.push('liveReferenceLocation');
     }
 
-    // ---- Phase 2: Apply all mutations (all validations passed) ----
+    // ---- Apply all mutations (all validations passed) ----
 
     if (changedFields.length === 0) {
       return ok(undefined);

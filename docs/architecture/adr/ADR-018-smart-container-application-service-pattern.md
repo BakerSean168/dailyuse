@@ -273,25 +273,25 @@ export function useGoal() {
 
 ## Migration Path
 
-### Phase 1: Prepare packages/application-client
+### Prepare packages/application-client
 
 - [ ] Audit all modules - ensure ApplicationService exists and is complete
 - [ ] Standardize the pattern across all modules
 - [ ] Add comprehensive JSDoc
 
-### Phase 2: Update Composables/Hooks
+### Update Composables/Hooks
 
 - [ ] Modify imports: `from '../../application/services'` → `from '@dailyuse/application-client/goal'`
 - [ ] Test in Web app first
 - [ ] Port logic to React hooks in Desktop
 
-### Phase 3: Remove Duplication
+### Remove Duplication
 
 - [ ] Delete `apps/web/src/modules/*/application/` directories
 - [ ] Delete `apps/desktop/src/renderer/modules/*/application/` directories
 - [ ] Update module barrel exports
 
-### Phase 4: Validation
+### Validation
 
 - [ ] All tests pass
 - [ ] No broken imports

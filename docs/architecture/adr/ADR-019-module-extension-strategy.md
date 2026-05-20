@@ -256,7 +256,7 @@ async createHabit(habitData: CreateHabitInput): Promise<Habit> {
 
 ## 🏗️ 实施计划
 
-### Phase 1: 重构 Story 定义（已完成）
+### Story Definition Refactoring (已完成)
 
 - ✅ STORY-032: 番茄钟计时器（Goal 模块扩展）
 - ✅ STORY-033: 专注模式 UI（Goal 模块视图）
@@ -264,7 +264,7 @@ async createHabit(habitData: CreateHabitInput): Promise<Habit> {
 - ✅ STORY-041: 习惯提醒系统（Reminder 模块扩展）
 - ✅ STORY-037: 习惯管理（独立 Habit 模块）
 
-### Phase 2: 模块扩展实施（待开发）
+### Module Extension Implementation (待开发)
 
 ```
 Week 1-2: Goal 模块扩展
@@ -356,4 +356,4 @@ Week 5: Habit 模块独立实现
 ---
 
 **决策状态**: ✅ **已接受并执行**  
-**下一步**: 开始 Phase 2 实施（模块扩展开发）
+**下一步**: 开始模块扩展实施（Module Extension Implementation）

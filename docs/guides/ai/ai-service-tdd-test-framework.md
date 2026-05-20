@@ -552,7 +552,7 @@ tests/fixtures/
 
 ### 5.1 P0-1 澄清工作流的 TDD 步骤
 
-#### Phase 1：设计 Schema（1 小时）
+#### Step 1: Schema Design（1 小时）
 
 ```python
 # Step 1：写单元测试
@@ -568,7 +568,7 @@ class ClarificationResponse(BaseModel):
     draft: GoalPlanningResponse | None = None
 ```
 
-#### Phase 2：确定性逻辑（2 小时）
+#### Step 2: Deterministic Logic（2 小时）
 
 ```python
 # Step 1：写单元测试
@@ -589,7 +589,7 @@ def validate_and_normalize_clarification(response: dict) -> ClarificationRespons
     )
 ```
 
-#### Phase 3：LLM 集成（2 小时）
+#### Step 3: LLM Integration（2 小时）
 
 ```python
 # Step 1：写集成测试
@@ -610,7 +610,7 @@ async def clarify(self, *, idea: str, provider_config: ProviderConfig) -> Clarif
     return validate_and_normalize_clarification(response)
 ```
 
-#### Phase 4：状态管理（1 小时）
+#### Step 4: State Management（1 小时）
 
 ```python
 # Step 1：写单元测试
@@ -624,7 +624,7 @@ def merge_context(idea: str, answers: dict[str, str]) -> str:
     ...
 ```
 
-#### Phase 5：完整工作流测试（1 小时）
+#### Step 5: Full Workflow Testing（1 小时）
 
 ```python
 # Step 1：写集成测试
@@ -707,15 +707,15 @@ pytest --cov=src --cov-report=html --cov-report=xml
 ### 7.2 逐步迁移现有测试
 
 ```
-阶段 1（第 1 周）：
+Week 1 — Improve test fixtures:
 - [ ] 改进 conftest.py，添加 LLM mocking fixtures
 - [ ] 保持所有现有测试可运行
 
-阶段 2（第 2 周）：
+Week 2 — Add unit & integration structure:
 - [ ] 创建 tests/unit/ 目录，添加确定性逻辑测试
 - [ ] 创建 tests/integration/ 目录，添加工作流测试
 
-阶段 3（P0-1 实现）：
+Week 3+ — TDD implementation of P0-1:
 - [ ] 按 TDD 开发 clarify() 和 plan_with_clarifications()
 - [ ] 完整测试覆盖
 ```

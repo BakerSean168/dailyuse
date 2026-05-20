@@ -301,25 +301,25 @@ This makes development use source while letting build mode validate package outp
 
 ## Migration Plan
 
-### Phase 1: Document and normalize the rule set
+### Document and normalize the rule set
 
 - adopt this ADR
 - stop treating `tsconfig`, Vite alias, and `exports` as interchangeable
 - require explicit dependency declarations for app runtime imports
 
-### Phase 2: Audit app dependencies and aliases
+### Audit app dependencies and aliases
 
 - identify workspace packages used by `apps/web` and `apps/desktop`
 - ensure each app declares all runtime workspace dependencies explicitly
 - align Vite aliases with the intended development-source whitelist
 
-### Phase 3: Prefer conditional dev-only aliasing where practical
+### Prefer conditional dev-only aliasing where practical
 
 - keep development ergonomics for selected packages
 - reduce accidental reliance on source aliasing during build
 - use build failures as package contract validation signals
 
-### Phase 4: Keep package `exports` authoritative
+### Keep package `exports` authoritative
 
 - ensure every supported subpath has a matching built file
 - reject undocumented or accidental deep imports

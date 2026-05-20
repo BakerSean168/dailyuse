@@ -267,26 +267,26 @@ async function createGoal(request: CreateGoalRequest) {
 
 ### 迁移步骤
 
-#### Phase 1: 统一 contracts 定义 (Week 1)
+#### Unify Contracts Definitions (Week 1)
 
 1. 审查所有模块的 API Client 接口
 2. 统一命名规范
 3. 添加缺失的方法定义
 4. 导出完整的接口类型
 
-#### Phase 2: 更新 infrastructure-client (Week 2)
+#### Update infrastructure-client (Week 2)
 
 1. 从 contracts 导入接口定义
 2. 实现所有方法
 3. 统一参数和返回类型
 
-#### Phase 3: 更新应用层 (Week 3)
+#### Update Application Layer (Week 3)
 
 1. Desktop: 更新调用方式匹配接口
 2. Web: 更新调用方式匹配接口
 3. API: 确保 Controller 实现匹配接口
 
-#### Phase 4: 添加自动化检查 (Week 4)
+#### Add Automated Checks (Week 4)
 
 1. 添加 TypeScript 编译检查到 CI
 2. 添加接口一致性测试

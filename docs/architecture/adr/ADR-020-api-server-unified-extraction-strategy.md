@@ -138,13 +138,13 @@ const goal = await applicationService.createGoal(accountUuid, data);
 
 ## 实现步骤
 
-### Phase 1: 创建基础架构（同步进行）
+### Create Base Infrastructure（同步进行）
 
 1. ✅ 检查现有 packages 结构
 2. ⏳ 创建统一 module composition root 装配模式
 3. ⏳ 定义 HTTP routes 文件结构规范
 
-### Phase 2: 模块逐个提取（优先级：复杂 → 简单）
+### Incremental Module Extraction（优先级：复杂 → 简单）
 
 **优先级顺序**:
 
@@ -158,7 +158,7 @@ const goal = await applicationService.createGoal(accountUuid, data);
 8. **Notification** - 通知系统
 9. **Editor** - 编辑器（如果有）
 
-### Phase 3: 验证与清理
+### Verification & Cleanup
 
 - 运行完整测试套件
 - 验证 TypeScript 编译零错误
