@@ -469,6 +469,7 @@ export default {
       notifications: 'Notifications',
       experimental: 'Experimental',
       advanced: 'Advanced',
+      userFiles: 'Files',
     },
 
     // ── Appearance ──
@@ -827,6 +828,25 @@ export default {
       resetFailed: 'Failed to reset settings',
       exportFailed: 'Failed to export settings',
       importFailed: 'Failed to import settings',
+    },
+
+    // ── User Files Directory ──
+    userFiles: {
+      title: 'File Storage',
+      currentDirectory: 'Current Directory',
+      defaultDirectory: 'Default Directory',
+      customBadge: 'Custom',
+      changeDirectory: 'Change Directory',
+      openDirectory: 'Open Folder',
+      resetToDefault: 'Reset to Default',
+      resetConfirm: 'Reset file storage location to default?',
+      description: 'Choose where Memoflow stores your exported files, downloads, and attachments.',
+      loadPathFailed: 'Failed to load file storage path',
+      directoryChanged: 'File storage location updated',
+      pickDirectoryFailed: 'Failed to change directory, please try again',
+      openDirectoryFailed: 'Unable to open folder',
+      resetSuccess: 'File storage location reset to default',
+      resetFailed: 'Failed to reset, please try again',
     },
   },
   // ── Authentication module ────────────────────────────────

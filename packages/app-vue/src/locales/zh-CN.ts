@@ -447,6 +447,7 @@ export default {
       notifications: '通知',
       experimental: '实验性',
       advanced: '高级',
+      userFiles: '文件',
     },
 
     // ── Appearance ──
@@ -796,6 +797,25 @@ export default {
       resetFailed: '重置设置失败',
       exportFailed: '导出设置失败',
       importFailed: '导入设置失败',
+    },
+
+    // ── User Files Directory ──
+    userFiles: {
+      title: '文件存储',
+      currentDirectory: '当前目录',
+      defaultDirectory: '默认目录',
+      customBadge: '自定义',
+      changeDirectory: '更改目录',
+      openDirectory: '打开文件夹',
+      resetToDefault: '恢复默认',
+      resetConfirm: '是否将文件存储位置恢复为默认？',
+      description: '选择 Memoflow 存储导出文件、下载和附件的位置。',
+      loadPathFailed: '无法加载文件存储路径',
+      directoryChanged: '文件存储位置已更新',
+      pickDirectoryFailed: '更改目录失败，请重试',
+      openDirectoryFailed: '无法打开文件夹',
+      resetSuccess: '已恢复默认文件存储位置',
+      resetFailed: '恢复默认失败，请重试',
     },
   },
   // ── Authentication module ────────────────────────────────

@@ -293,6 +293,12 @@ export const SystemChannels = {
   GET_LAZY_MODULE_STATS: 'system:getLazyModuleStats',
   GET_MEMORY_USAGE: 'system:getMemoryUsage',
   GET_IPC_CACHE_STATS: 'system:getIpcCacheStats',
+  USER_FILES_SAVE_TEXT: 'system:userFiles:saveText',
+  USER_FILES_OPEN_TEXT: 'system:userFiles:openText',
+  USER_FILES_GET_PATH: 'system:userFiles:getPath',
+  USER_FILES_PICK_DIRECTORY: 'system:userFiles:pickDirectory',
+  USER_FILES_OPEN_DIRECTORY: 'system:userFiles:openDirectory',
+  USER_FILES_RESET_PATH: 'system:userFiles:resetPath',
 } as const;
 
 export const DesktopFeatureChannels = {

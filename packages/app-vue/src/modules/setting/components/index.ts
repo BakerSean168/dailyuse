@@ -6,3 +6,4 @@ export { default as NotificationSettings } from './NotificationSettings.vue';
 export { default as PrivacySettings } from './PrivacySettings.vue';
 export { default as SettingAdvancedActions } from './SettingAdvancedActions.vue';
 export { default as ShortcutSettings } from './ShortcutSettings.vue';
+export { default as UserFilesSettings } from './UserFilesSettings.vue';
