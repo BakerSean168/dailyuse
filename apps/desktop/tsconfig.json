@@ -16,7 +16,6 @@
 
       // 开发态源码白名单：仅保留当前桌面渲染进程需要深度联调的包入口。
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
-      "@dailyuse/notification-runtime": ["../../packages/notification-runtime/src/index.ts"],
       "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
       "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
       "@dailyuse/ai/infrastructure-client": [

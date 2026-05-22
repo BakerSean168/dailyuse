@@ -67,7 +67,6 @@
       "@dailyuse/app-vue/web-bootstrap": ["../../packages/app-vue/src/web-bootstrap.ts"],
       "@dailyuse/app-vue/web-entry": ["../../packages/app-vue/src/web-entry.ts"],
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
-      "@dailyuse/notification-runtime": ["../../packages/notification-runtime/src/index.ts"],
       "@dailyuse/ui-vue-shadcn/components/ui/*": [
         "../../packages/ui-vue-shadcn/dist/components/ui/*/index.d.ts"
       ],

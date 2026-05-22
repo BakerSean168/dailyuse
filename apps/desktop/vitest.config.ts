@@ -78,7 +78,6 @@ const desktopTestWorkspaceEntries = [
   ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
   ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
   ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
-  ['@dailyuse/notification-runtime', 'packages/notification-runtime/src/index.ts'],
   ['@dailyuse/dashboard', 'packages/dashboard/src/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
 ] as const;

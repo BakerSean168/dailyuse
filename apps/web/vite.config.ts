@@ -67,7 +67,6 @@ export default defineConfig(({ mode, command }) => {
   const sharedWorkspaceAliases = [
     ...createAssetsAliasEntries(workspaceRoot),
     ...createWorkspaceSourceAliasEntries(workspaceRoot, [
-      ['@dailyuse/notification-runtime', 'packages/notification-runtime/src/index.ts'],
     ]),
     ...(isDev ? createUiVueSourceAliasEntries(workspaceRoot) : []),
   ];

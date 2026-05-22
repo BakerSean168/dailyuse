@@ -1,72 +1,112 @@
 {
   "graph": {
     "nodes": {
-      "notification-runtime": {
-        "name": "notification-runtime",
+      "powersync-schema": {
+        "name": "powersync-schema",
         "type": "lib",
         "data": {
-          "root": "packages/notification-runtime",
+          "root": "packages/powersync-schema",
           "targets": {
             "lint": {
-              "cache": true,
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
               "options": {
-                "cwd": "packages/notification-runtime",
-                "command": "eslint ."
+                "lintFilePatterns": [
+                  "packages/powersync-schema/**/*.{ts,js}"
+                ]
               },
+              "configurations": {},
+              "parallelism": true,
               "inputs": [
                 "default",
                 "{workspaceRoot}/eslint.config.ts"
               ],
-              "outputs": [
-                "{options.outputFile}"
+              "cache": true,
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
               ],
-              "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
-                "description": "Runs ESLint on project",
-                "help": {
-                  "command": "pnpm exec eslint --help",
-                  "example": {
-                    "options": {
-                      "max-warnings": 0
-                    }
-                  }
-                }
-              },
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
               "executor": "nx:run-commands",
+              "outputs": [
+                "{workspaceRoot}/packages/powersync-schema/dist"
+              ],
+              "options": {
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "cwd": "packages/powersync-schema"
+              },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
+            },
+            "typecheck": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsc --noEmit",
+                "cwd": "packages/powersync-schema"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
             }
           },
-          "name": "notification-runtime",
+          "name": "powersync-schema",
           "tags": [
-            "npm:private",
-            "scope:notification",
+            "npm:public",
+            "scope:shared",
             "type:lib",
-            "layer:ui"
+            "layer:shared"
           ],
           "metadata": {
             "targetGroups": {},
+            "description": "Pure PowerSync schema definitions for desktop and sync consumers",
             "js": {
-              "packageName": "@dailyuse/notification-runtime",
+              "packageName": "@dailyuse/powersync-schema",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
-                  "types": "./src/index.ts",
-                  "import": "./src/index.ts"
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js"
                 }
               },
-              "packageMain": "./src/index.ts",
+              "packageMain": "./dist/index.js",
               "isInPackageManagerWorkspaces": true
             }
           },
           "$schema": "../../node_modules/nx/schemas/project-schema.json",
           "projectType": "library",
-          "sourceRoot": "packages/notification-runtime/src",
+          "sourceRoot": "packages/powersync-schema/src",
           "implicitDependencies": []
         }
       },
@@ -122,6 +162,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -308,6 +356,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -406,12 +462,7 @@
               "cache": true,
               "inputs": [
                 "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
+                "^production"
               ],
               "options": {
                 "cwd": "packages/authentication",
@@ -434,6 +485,9 @@
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -502,7 +556,7 @@
             "build": {
               "executor": "nx:run-commands",
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/authentication"
               },
               "dependsOn": [
@@ -684,6 +738,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -1018,6 +1080,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -1203,6 +1273,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -1283,7 +1361,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/notification"
               },
               "dependsOn": [
@@ -1576,35 +1654,22 @@
           "root": "packages/test-utils",
           "targets": {
             "lint": {
-              "cache": true,
+              "executor": "@nx/eslint:lint",
+              "outputs": [
+                "{options.outputFile}"
+              ],
               "options": {
-                "cwd": "packages/test-utils",
-                "command": "eslint ."
+                "lintFilePatterns": [
+                  "packages/test-utils/**/*.{ts,js}"
+                ]
               },
+              "configurations": {},
+              "parallelism": true,
               "inputs": [
                 "default",
                 "{workspaceRoot}/eslint.config.ts"
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
-              "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
-                "description": "Runs ESLint on project",
-                "help": {
-                  "command": "pnpm exec eslint --help",
-                  "example": {
-                    "options": {
-                      "max-warnings": 0
-                    }
-                  }
-                }
-              },
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true,
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -1617,11 +1682,50 @@
               "options": {},
               "configurations": {},
               "parallelism": true
+            },
+            "build": {
+              "executor": "nx:noop",
+              "outputs": [],
+              "dependsOn": [],
+              "cache": false,
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
+            },
+            "typecheck": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsc --noEmit",
+                "cwd": "packages/test-utils"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
             }
           },
           "name": "@dailyuse/test-utils",
           "tags": [
-            "npm:public"
+            "npm:public",
+            "scope:test-utils",
+            "type:lib",
+            "layer:testing"
           ],
           "metadata": {
             "targetGroups": {},
@@ -1643,6 +1747,9 @@
               "isInPackageManagerWorkspaces": true
             }
           },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/test-utils/src",
+          "projectType": "library",
           "implicitDependencies": []
         }
       },
@@ -1701,6 +1808,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -1781,7 +1896,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/governance"
               },
               "dependsOn": [
@@ -2062,6 +2177,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -2142,7 +2265,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/repository"
               },
               "dependsOn": [
@@ -2280,6 +2403,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -2369,6 +2500,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -2662,6 +2801,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -2760,25 +2907,42 @@
             "build": {
               "executor": "nx:run-commands",
               "outputs": [
-                "{projectRoot}/src/generated/prisma"
+                "{projectRoot}/src/generated/prisma",
+                "{projectRoot}/dist"
+              ],
+              "dependsOn": [
+                "^build"
               ],
               "options": {
                 "cwd": "packages/database",
-                "command": "prisma generate --config ./prisma/prisma.config.ts"
+                "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated',{recursive:true});fs.cpSync('src/generated/prisma','dist/generated/prisma',{recursive:true})\""
               },
               "inputs": [
                 "{projectRoot}/prisma/schema/**/*",
-                "{projectRoot}/prisma/prisma.config.ts"
+                "{projectRoot}/prisma/prisma.config.ts",
+                "{projectRoot}/src/**/*.ts"
               ],
               "cache": true,
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
+            },
+            "compile": {
+              "executor": "nx:run-commands",
+              "outputs": [
+                "{projectRoot}/dist"
+              ],
+              "dependsOn": [
+                "prisma-generate"
+              ],
+              "options": {
+                "cwd": "packages/database",
+                "command": "tsc --build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated',{recursive:true});fs.cpSync('src/generated/prisma','dist/generated/prisma',{recursive:true})\""
+              },
+              "configurations": {},
+              "parallelism": true
             },
             "prisma-generate": {
               "executor": "nx:run-commands",
@@ -2888,25 +3052,17 @@
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
-                  "types": "./src/index.ts",
-                  "import": "./src/index.ts"
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
                 },
                 "./prisma": {
-                  "types": "./src/generated/prisma/client.d.ts",
-                  "import": "./src/generated/prisma/client.js",
-                  "require": "./src/generated/prisma/client.js",
-                  "default": "./src/generated/prisma/client.js"
-                },
-                "./powersync": {
-                  "types": "./src/powersync-schema.ts",
-                  "import": "./src/powersync-schema.ts"
-                },
-                "./dashboard-schema": {
-                  "types": "./src/dashboard-schema.ts",
-                  "import": "./src/dashboard-schema.ts"
+                  "types": "./dist/generated/prisma/client.d.ts",
+                  "import": "./dist/generated/prisma/client.js",
+                  "default": "./dist/generated/prisma/client.js"
                 }
               },
-              "packageMain": "./src/index.ts",
+              "packageMain": "./dist/index.js",
               "isInPackageManagerWorkspaces": true
             }
           },
@@ -2980,12 +3136,7 @@
               "cache": true,
               "inputs": [
                 "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
+                "^production"
               ],
               "metadata": {
                 "description": "Runs type-checking for the project.",
@@ -3010,6 +3161,9 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -3225,6 +3379,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -3305,7 +3467,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/reminder"
               },
               "dependsOn": [
@@ -3351,7 +3513,7 @@
                 "cwd": "packages/reminder"
               },
               "configurations": {},
-              "parallelism": true
+              "parallelism": false
             },
             "test:coverage": {
               "executor": "nx:run-commands",
@@ -3534,6 +3696,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -3614,7 +3784,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/schedule"
               },
               "dependsOn": [
@@ -3660,7 +3830,7 @@
                 "cwd": "packages/schedule"
               },
               "configurations": {},
-              "parallelism": true
+              "parallelism": false
             },
             "test:coverage": {
               "executor": "nx:run-commands",
@@ -3843,6 +4013,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -3923,7 +4101,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/account"
               },
               "dependsOn": [
@@ -4210,6 +4388,11 @@
               },
               "configurations": {},
               "parallelism": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -4442,6 +4625,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -4522,7 +4713,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/setting"
               },
               "dependsOn": [
@@ -4672,6 +4863,121 @@
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
             },
+            "test": {
+              "executor": "nx:run-commands",
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "inputs": [
+                "default",
+                "^production"
+              ],
+              "cache": true,
+              "options": {
+                "command": "vitest run --config vitest.config.ts",
+                "cwd": "packages/ui-core"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
+            },
+            "typecheck": {
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "options": {
+                "cwd": "packages/ui-core",
+                "command": "tsc --noEmit -p tsconfig.json"
+              },
+              "metadata": {
+                "description": "Runs type-checking for the project.",
+                "technologies": [
+                  "typescript"
+                ],
+                "help": {
+                  "command": "pnpm exec tsc -p tsconfig.json --help",
+                  "example": {
+                    "options": {
+                      "noEmit": true
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
+            },
+            "build-deps": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": [
+                "build-deps"
+              ],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "pnpm exec nx watch --projects ui-core --includeDependentProjects -- pnpm exec nx build-deps ui-core"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "vitest:test": {
+              "options": {
+                "cwd": "packages/ui-core",
+                "command": "vitest"
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                {
+                  "externalDependencies": [
+                    "vitest"
+                  ]
+                },
+                {
+                  "env": "CI"
+                }
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/{projectRoot}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "vitest"
+                ],
+                "description": "Run Vitest tests",
+                "help": {
+                  "command": "pnpm exec vitest --help",
+                  "example": {
+                    "options": {
+                      "bail": 1,
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
               "dependsOn": [
@@ -4728,33 +5034,24 @@
               ],
               "cache": false
             },
-            "test": {
+            "test:watch": {
               "executor": "nx:run-commands",
+              "cache": false,
               "options": {
-                "command": "pnpm test",
+                "command": "vitest --config vitest.config.ts",
                 "cwd": "packages/ui-core"
               },
               "configurations": {},
               "parallelism": true,
-              "inputs": [
-                "default",
-                "^production"
-              ],
-              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
             }
           },
-          "name": "ui-core",
-          "tags": [
-            "npm:public",
-            "scope:ui",
-            "type:core",
-            "layer:ui"
-          ],
           "metadata": {
-            "targetGroups": {},
+            "targetGroups": {
+              "TEST (CI)": []
+            },
             "description": "Framework-agnostic headless UI logic for Memoflow applications",
             "js": {
               "packageName": "@dailyuse/ui-core",
@@ -4771,8 +5068,15 @@
               "isInPackageManagerWorkspaces": true
             }
           },
-          "$schema": "../../node_modules/nx/schemas/project-schema.json",
           "projectType": "library",
+          "name": "ui-core",
+          "tags": [
+            "npm:public",
+            "scope:ui",
+            "type:core",
+            "layer:ui"
+          ],
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "packages/ui-core/src",
           "implicitDependencies": []
         }
@@ -4946,6 +5250,32 @@
               "configurations": {},
               "parallelism": true
             },
+            "goal-workflow-eval": {
+              "executor": "@nxlv/python:run-commands",
+              "outputs": [
+                "{workspaceRoot}/reports/{projectRoot}/evals"
+              ],
+              "options": {
+                "command": "uv run python -m ai_service.evals.runner --cases evals/goal_workflow_cases.json --policy evals/goal_workflow_policy.json --baseline evals/goal_workflow_baseline.json --output ../../reports/apps/ai-service/evals/goal-workflow-latest.json --archive-dir ../../reports/apps/ai-service/evals/goal-workflow-history",
+                "cwd": "apps/ai-service"
+              },
+              "cache": true,
+              "configurations": {},
+              "parallelism": true
+            },
+            "goal-workflow-eval-live": {
+              "executor": "@nxlv/python:run-commands",
+              "outputs": [
+                "{workspaceRoot}/reports/{projectRoot}/evals"
+              ],
+              "options": {
+                "command": "uv run python -m ai_service.evals.runner --mode live --cases evals/goal_workflow_live_cases.json --policy evals/goal_workflow_live_policy.json --baseline evals/goal_workflow_live_baseline.json --output ../../reports/apps/ai-service/evals/goal-workflow-live-latest.json --archive-dir ../../reports/apps/ai-service/evals/goal-workflow-live-history",
+                "cwd": "apps/ai-service"
+              },
+              "cache": false,
+              "configurations": {},
+              "parallelism": true
+            },
             "typecheck": {
               "executor": "@nxlv/python:run-commands",
               "options": {
@@ -4955,6 +5285,13 @@
               "cache": true,
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -5168,12 +5505,7 @@
               "cache": true,
               "inputs": [
                 "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
+                "^production"
               ],
               "metadata": {
                 "description": "Runs type-checking for the project.",
@@ -5197,6 +5529,9 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -5417,6 +5752,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -5497,7 +5840,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/editor"
               },
               "dependsOn": [
@@ -5667,12 +6010,7 @@
               "cache": true,
               "inputs": [
                 "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
+                "^production"
               ],
               "options": {
                 "cwd": "packages/utils",
@@ -5695,6 +6033,9 @@
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -5936,6 +6277,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -6016,7 +6365,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/goal"
               },
               "dependsOn": [
@@ -6062,7 +6411,7 @@
                 "cwd": "packages/goal"
               },
               "configurations": {},
-              "parallelism": true
+              "parallelism": false
             },
             "test:coverage": {
               "executor": "nx:run-commands",
@@ -6241,6 +6590,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -6321,7 +6678,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/task"
               },
               "dependsOn": [
@@ -6367,7 +6724,7 @@
                 "cwd": "packages/task"
               },
               "configurations": {},
-              "parallelism": true
+              "parallelism": false
             },
             "test:bench": {
               "executor": "nx:run-commands",
@@ -6486,6 +6843,10 @@
                   "types": "./dist/api/index.d.ts",
                   "import": "./dist/api/index.js"
                 },
+                "./testing": {
+                  "types": "./dist/testing/index.d.ts",
+                  "import": "./dist/testing/index.js"
+                },
                 "./electron-entry": {
                   "types": "./dist/electron-entry/index.d.ts",
                   "import": "./dist/electron-entry/index.js"
@@ -6558,6 +6919,47 @@
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
             },
+            "typecheck": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "command": "tsc --noEmit",
+                "cwd": "apps/desktop"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
+              "syncGenerators": [
+                "@dailyuse/nx-test-system:sync-test-targets"
+              ]
+            },
+            "build-deps": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": [
+                "build-deps"
+              ],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "pnpm exec nx watch --projects desktop --includeDependentProjects -- pnpm exec nx build-deps desktop"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
             "vite:build": {
               "options": {
                 "cwd": "apps/desktop",
@@ -6617,10 +7019,7 @@
               },
               "executor": "nx:run-commands",
               "defaultConfiguration": "development",
-              "dependsOn": [
-                "^build",
-                "native-rebuild"
-              ],
+              "dependsOn": [],
               "options": {
                 "cwd": "apps/desktop",
                 "command": "vite"
@@ -6691,42 +7090,6 @@
               "options": {
                 "buildTarget": "vite:build",
                 "spa": true
-              },
-              "configurations": {},
-              "parallelism": true
-            },
-            "typecheck": {
-              "executor": "nx:run-commands",
-              "dependsOn": [
-                "^build"
-              ],
-              "options": {
-                "command": "tsc --noEmit",
-                "cwd": "apps/desktop"
-              },
-              "configurations": {},
-              "parallelism": true,
-              "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
-              ]
-            },
-            "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
-              "configurations": {},
-              "options": {},
-              "parallelism": true,
-              "executor": "nx:noop"
-            },
-            "watch-deps": {
-              "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
-              "executor": "nx:run-commands",
-              "options": {
-                "command": "pnpm exec nx watch --projects desktop --includeDependentProjects -- pnpm exec nx build-deps desktop"
               },
               "configurations": {},
               "parallelism": true
@@ -6813,6 +7176,36 @@
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
+            },
+            "prepare-dev": {
+              "executor": "nx:noop",
+              "outputs": [],
+              "dependsOn": [
+                "^build",
+                "native-rebuild"
+              ],
+              "cache": false,
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            },
+            "serve:full": {
+              "executor": "nx:run-commands",
+              "defaultConfiguration": "development",
+              "dependsOn": [
+                "prepare-dev"
+              ],
+              "options": {
+                "command": "vite",
+                "cwd": "apps/desktop"
+              },
+              "configurations": {
+                "development": {
+                  "command": "vite --mode development",
+                  "cwd": "apps/desktop"
+                }
+              },
+              "parallelism": true
             },
             "package": {
               "executor": "nx:run-commands",
@@ -7018,7 +7411,6 @@
               "parallelism": true
             }
           },
-          "projectType": "application",
           "metadata": {
             "targetGroups": {
               "TEST (CI)": []
@@ -7026,11 +7418,12 @@
             "description": "知行 (Memoflow) desktop application",
             "js": {
               "packageName": "@dailyuse/desktop",
-              "packageVersion": "0.6.0",
+              "packageVersion": "0.7.0",
               "packageMain": "dist-electron/main.cjs",
               "isInPackageManagerWorkspaces": true
             }
           },
+          "projectType": "application",
           "name": "desktop",
           "tags": [
             "npm:public",
@@ -7099,6 +7492,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -7179,7 +7580,7 @@
                 "{projectRoot}/dist"
               ],
               "options": {
-                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+                "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
                 "cwd": "packages/ai"
               },
               "dependsOn": [
@@ -7369,6 +7770,14 @@
               },
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -7475,6 +7884,11 @@
               },
               "configurations": {},
               "parallelism": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -7556,7 +7970,7 @@
             "build": {
               "executor": "nx:run-commands",
               "outputs": [
-                "{workspaceRoot}/dist/apps/api"
+                "{workspaceRoot}/apps/api/dist"
               ],
               "dependsOn": [
                 "^build"
@@ -7669,6 +8083,26 @@
               "executor": "nx:run-commands",
               "options": {
                 "command": "echo API 文档访问地址: http://localhost:3888/api-docs",
+                "cwd": "apps/api"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "powersync:snapshot:publish": {
+              "executor": "nx:run-commands",
+              "cache": false,
+              "options": {
+                "command": "node ../../node_modules/tsx/dist/cli.mjs scripts/publish-powersync-profile-snapshot.ts",
+                "cwd": "apps/api"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "powersync:snapshot:build": {
+              "executor": "nx:run-commands",
+              "cache": false,
+              "options": {
+                "command": "node ../../node_modules/tsx/dist/cli.mjs scripts/build-powersync-profile-snapshot.ts",
                 "cwd": "apps/api"
               },
               "configurations": {},
@@ -7916,6 +8350,11 @@
               },
               "configurations": {},
               "parallelism": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true,
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -8176,7 +8615,7 @@
             "description": "Memoflow Nx monorepo for desktop, web, api, and shared domain packages",
             "js": {
               "packageName": "daily-use",
-              "packageVersion": "0.6.0",
+              "packageVersion": "0.7.0",
               "isInPackageManagerWorkspaces": true
             }
           },
@@ -8220,12 +8659,7 @@
               "cache": true,
               "inputs": [
                 "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
+                "^production"
               ],
               "options": {
                 "cwd": ".",
@@ -8248,6 +8682,9 @@
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
               "syncGenerators": [
                 "@dailyuse/nx-test-system:sync-test-targets"
               ]
@@ -8349,23 +8786,7 @@
       }
     },
     "dependencies": {
-      "notification-runtime": [
-        {
-          "source": "notification-runtime",
-          "target": "app-vue",
-          "type": "static"
-        },
-        {
-          "source": "notification-runtime",
-          "target": "contracts",
-          "type": "static"
-        },
-        {
-          "source": "notification-runtime",
-          "target": "utils",
-          "type": "static"
-        }
-      ],
+      "powersync-schema": [],
       "scheduler-server": [
         {
           "source": "scheduler-server",
@@ -8483,17 +8904,7 @@
       "@dailyuse/test-utils": [
         {
           "source": "@dailyuse/test-utils",
-          "target": "contracts",
-          "type": "static"
-        },
-        {
-          "source": "@dailyuse/test-utils",
           "target": "domain-shared",
-          "type": "static"
-        },
-        {
-          "source": "@dailyuse/test-utils",
-          "target": "task",
           "type": "static"
         }
       ],
@@ -8922,6 +9333,11 @@
         },
         {
           "source": "editor",
+          "target": "patterns",
+          "type": "static"
+        },
+        {
+          "source": "editor",
           "target": "repository",
           "type": "static"
         },
@@ -9008,11 +9424,6 @@
         },
         {
           "source": "task",
-          "target": "goal",
-          "type": "static"
-        },
-        {
-          "source": "task",
           "target": "http-client",
           "type": "static"
         },
@@ -9085,6 +9496,11 @@
         },
         {
           "source": "desktop",
+          "target": "domain-shared",
+          "type": "static"
+        },
+        {
+          "source": "desktop",
           "target": "goal",
           "type": "static"
         },
@@ -9105,7 +9521,7 @@
         },
         {
           "source": "desktop",
-          "target": "notification-runtime",
+          "target": "powersync-schema",
           "type": "static"
         },
         {
@@ -9178,6 +9594,11 @@
         {
           "source": "ai",
           "target": "utils",
+          "type": "static"
+        },
+        {
+          "source": "ai",
+          "target": "@dailyuse/test-utils",
           "type": "static"
         }
       ],
@@ -9261,6 +9682,11 @@
         },
         {
           "source": "api",
+          "target": "powersync-schema",
+          "type": "static"
+        },
+        {
+          "source": "api",
           "target": "reminder",
           "type": "static"
         },
@@ -9296,6 +9722,11 @@
         }
       ],
       "web": [
+        {
+          "source": "web",
+          "target": "@dailyuse/test-utils",
+          "type": "static"
+        },
         {
           "source": "web",
           "target": "account",
@@ -9383,16 +9814,6 @@
         },
         {
           "source": "web",
-          "target": "notification-runtime",
-          "type": "static"
-        },
-        {
-          "source": "web",
-          "target": "notification-runtime",
-          "type": "dynamic"
-        },
-        {
-          "source": "web",
           "target": "reminder",
           "type": "static"
         },
@@ -9460,11 +9881,6 @@
           "source": "web",
           "target": "editor",
           "type": "dynamic"
-        },
-        {
-          "source": "web",
-          "target": "@dailyuse/test-utils",
-          "type": "static"
         }
       ],
       "daily-use": []
