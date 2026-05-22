@@ -17,7 +17,6 @@ const sharedConfig = createSharedConfig({
     '@dailyuse/app-vue/web-overlays': '../../packages/app-vue/src/web-overlays.ts',
     '@dailyuse/app-vue/web-bootstrap': '../../packages/app-vue/src/web-bootstrap.ts',
     '@dailyuse/app-vue/web-i18n': '../../packages/app-vue/src/web-i18n.ts',
-    '@dailyuse/notification-runtime': '../../packages/notification-runtime/src/index.ts',
     '@dailyuse/authentication/application-client':
       '../../packages/authentication/src/application-client/index.ts',
     '@dailyuse/authentication/infrastructure-client':

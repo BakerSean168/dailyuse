@@ -6,6 +6,7 @@ import { APP_TITLE_NAME } from '@dailyuse/assets';
 import {
   createAppRouter,
   useAuthenticationStore,
+  registerNotificationInitializationTasks,
   applyThemeMode,
   usePresentationPreferenceStore,
 } from '@dailyuse/app-vue/web-bootstrap';
@@ -46,8 +47,6 @@ export async function bootstrapMainApp() {
   app.mount('#app');
 
   const runStartupPhase = async () => {
-    const { registerNotificationInitializationTasks } =
-      await import('@dailyuse/notification-runtime');
     registerNotificationInitializationTasks();
 
     await InitializationManager.getInstance()

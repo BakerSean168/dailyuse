@@ -336,9 +336,6 @@ importers:
       '@dailyuse/powersync-schema':
         specifier: workspace:*
         version: link:../../packages/powersync-schema
-      '@powersync/node':
-        specifier: ^0.17.1
-        version: 0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.6.2)
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
@@ -357,6 +354,9 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@powersync/node':
+        specifier: ^0.17.1
+        version: 0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.6.2)
       '@types/swagger-jsdoc':
         specifier: ^6.0.4
         version: 6.0.4
@@ -499,9 +499,6 @@ importers:
       '@dailyuse/notification':
         specifier: workspace:*
         version: link:../../packages/notification
-      '@dailyuse/notification-runtime':
-        specifier: workspace:*
-        version: link:../../packages/notification-runtime
       '@dailyuse/powersync-schema':
         specifier: workspace:*
         version: link:../../packages/powersync-schema
@@ -885,9 +882,6 @@ importers:
       '@dailyuse/notification':
         specifier: workspace:*
         version: link:../../packages/notification
-      '@dailyuse/notification-runtime':
-        specifier: workspace:*
-        version: link:../../packages/notification-runtime
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
@@ -1552,22 +1546,6 @@ importers:
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
-
-  packages/notification-runtime:
-    dependencies:
-      '@dailyuse/app-vue':
-        specifier: workspace:*
-        version: link:../app-vue
-      '@dailyuse/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@dailyuse/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
   packages/patterns:
     dependencies:
@@ -14724,8 +14702,8 @@ packages:
   vue-component-type-helpers@2.2.12:
     resolution: {integrity: sha512-YbGqHZ5/eW4SnkPNR44mKVc6ZKQoRs/Rux1sxC6rdwXb4qpbOSYfDr9DsTHolOTGmIKgM9j141mZbBeg05R1pw==}
 
-  vue-component-type-helpers@3.2.8:
-    resolution: {integrity: sha512-9689efAXhN/EV86plgkL/XFiJSXhGtWPG6JDboZ+QnjlUWUUQrQ0ILKQtw4iQsuwIwu5k6Aw+JnehDe7161e7A==}
+  vue-component-type-helpers@3.3.1:
+    resolution: {integrity: sha512-pu58kqxmVyEH6VfNYW1UyEfR3XAnJ27ZXT3yzXxxpjLxVzAbyC35Zk/nm/RMs7ijWnJNSd9fWkeex2OhUsx3MA==}
 
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
@@ -19466,7 +19444,7 @@ snapshots:
       storybook: 10.2.8(@testing-library/dom@9.3.4)(prettier@3.7.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       type-fest: 2.19.0
       vue: 3.5.25(typescript@5.9.3)
-      vue-component-type-helpers: 3.2.8
+      vue-component-type-helpers: 3.3.1
 
   '@swc-node/core@1.14.1(@swc/core@1.15.18(@swc/helpers@0.5.17))(@swc/types@0.1.25)':
     dependencies:
@@ -31179,7 +31157,7 @@ snapshots:
 
   vue-component-type-helpers@2.2.12: {}
 
-  vue-component-type-helpers@3.2.8: {}
+  vue-component-type-helpers@3.3.1: {}
 
   vue-demi@0.14.10(vue@3.5.25(typescript@5.9.3)):
     dependencies:

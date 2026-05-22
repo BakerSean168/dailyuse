@@ -72,7 +72,6 @@ export default defineConfig(({ command, mode }) => {
   const rendererAliases = [
     ...devWorkspaceAliases,
     ...createWorkspaceSourceAliasEntries(workspaceRoot, [
-      ['@dailyuse/notification-runtime', 'packages/notification-runtime/src/index.ts'],
     ]),
     {
       find: '@main',
