@@ -70,7 +70,7 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
-import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
+import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import { format } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';

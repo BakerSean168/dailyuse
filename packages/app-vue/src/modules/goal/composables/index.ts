@@ -4,5 +4,7 @@
 
 export { useGoal } from './useGoal';
 export { useGoalTimeline } from './useGoalTimeline';
-export type { TimelineData, TimelineSnapshot } from './types';
-export { formatTimelineTimestamp } from './types';
+export { useAutoStatusRules } from './useAutoStatusRules';
+export { useWeightSnapshot } from './useWeightSnapshot';
+export type { TimelineData, TimelineSnapshot } from '../utils/goal-timeline';
+export { formatTimelineTimestamp } from '../utils/goal-timeline';

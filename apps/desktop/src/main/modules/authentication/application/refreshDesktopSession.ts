@@ -69,7 +69,17 @@ export async function refreshDesktopSession(
     }
 
     if (onSuccess) {
-      await onSuccess(response.data, request);
+      try {
+        await onSuccess(response.data, request);
+      } catch (error) {
+        logger.error('Remote refresh succeeded but local persistence failed', {
+          error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+        });
+        return {
+          ok: false,
+          error: createTerminalAuthError('REFRESH_FAILED', '本地持久化失败'),
+        };
+      }
     }
 
     return {

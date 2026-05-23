@@ -138,8 +138,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { TimelineSnapshot } from '../../application/services/GoalTimelineService';
-import { formatTimelineTimestamp } from '../../application/services/GoalTimelineService';
+import type { TimelineSnapshot } from '../../utils/goal-timeline';
+import { formatTimelineTimestamp } from '../../utils/goal-timeline';
 
 const { t } = useI18n();
 

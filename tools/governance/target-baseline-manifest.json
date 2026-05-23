@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "description": "Workspace target baseline and exemption manifest for governance audit",
+
+  "projectCategories": {
+    "app": {
+      "description": "Deployable applications",
+      "requiredTargets": ["build", "lint", "typecheck", "test"]
+    },
+    "runtime-lib": {
+      "description": "Libraries with runtime code consumed by apps or other business libraries",
+      "requiredTargets": ["build", "lint", "typecheck", "test"]
+    },
+    "ui-lib": {
+      "description": "UI component and presentation libraries",
+      "requiredTargets": ["build", "lint", "typecheck", "test"]
+    },
+    "tooling-lib": {
+      "description": "Tooling, scaffolding, test helpers, config projects",
+      "requiredTargets": ["build"]
+    },
+    "meta-project": {
+      "description": "Root/workspace-level governance project",
+      "requiredTargets": []
+    }
+  },
+
+  "projectRules": {
+    "daily-use": "meta-project",
+    "web": "app",
+    "desktop": "app",
+    "mobile": "app",
+    "api": "app",
+    "ai-service": "app",
+    "account": "runtime-lib",
+    "ai": "runtime-lib",
+    "authentication": "runtime-lib",
+    "editor": "runtime-lib",
+    "goal": "runtime-lib",
+    "governance": "runtime-lib",
+    "notification": "runtime-lib",
+    "reminder": "runtime-lib",
+    "schedule": "runtime-lib",
+    "setting": "runtime-lib",
+    "task": "runtime-lib",
+    "domain-shared": "runtime-lib",
+    "contracts": "runtime-lib",
+    "scheduler-server": "runtime-lib",
+    "repository": "runtime-lib",
+    "database": "runtime-lib",
+    "http-client": "runtime-lib",
+    "ipc-client": "runtime-lib",
+    "powersync-schema": "runtime-lib",
+    "utils": "runtime-lib",
+    "patterns": "runtime-lib",
+    "app-vue": "ui-lib",
+    "ui-vue-shadcn": "ui-lib",
+    "ui-react-native": "ui-lib",
+    "ui-core": "ui-lib",
+    "app-react": "ui-lib",
+    "dashboard": "ui-lib",
+    "assets": "ui-lib",
+    "@dailyuse/test-utils": "tooling-lib",
+    "nx-test-system": "tooling-lib"
+  },
+
+  "exemptions": [
+    {
+      "project": "mobile",
+      "target": "build",
+      "reason": "React Native: build is handled by Expo/Metro bundler, not a standalone Nx build target"
+    },
+    {
+      "project": "mobile",
+      "target": "test",
+      "reason": "Mobile test infrastructure not yet set up; Expo test runner integration pending"
+    },
+    {
+      "project": "database",
+      "target": "lint",
+      "reason": "Infrastructure package with minimal source; lint coverage deferred"
+    },
+    {
+      "project": "database",
+      "target": "typecheck",
+      "reason": "Infrastructure package: types validated at build time via tsup"
+    },
+    {
+      "project": "database",
+      "target": "test",
+      "reason": "Infrastructure package: integration tests deferred; validated through downstream consumers"
+    },
+    {
+      "project": "authentication",
+      "target": "lint",
+      "reason": "Domain lib: lint coverage deferred; code style enforced via shared eslint config in consuming projects"
+    },
+    {
+      "project": "authentication",
+      "target": "typecheck",
+      "reason": "Domain lib: types validated at build time via tsup"
+    },
+    {
+      "project": "http-client",
+      "target": "typecheck",
+      "reason": "Infrastructure lib: types validated at build time; dedicated typecheck target deferred"
+    },
+    {
+      "project": "http-client",
+      "target": "test",
+      "reason": "Infrastructure lib: tested via integration with consuming apps"
+    },
+    {
+      "project": "ipc-client",
+      "target": "typecheck",
+      "reason": "Infrastructure lib: types validated at build time; dedicated typecheck target deferred"
+    },
+    {
+      "project": "ipc-client",
+      "target": "test",
+      "reason": "Infrastructure lib: tested via desktop IPC test targets"
+    },
+    {
+      "project": "dashboard",
+      "target": "test",
+      "reason": "UI lib: component tests deferred; validated through app-vue integration"
+    },
+    {
+      "project": "ui-vue-shadcn",
+      "target": "test",
+      "reason": "UI component lib: component tests deferred; validated through app-vue integration"
+    },
+    {
+      "project": "app-react",
+      "target": "build",
+      "reason": "React lib: build handled by React Native bundler; no standalone tsup build"
+    },
+    {
+      "project": "app-react",
+      "target": "test",
+      "reason": "React lib: test infrastructure not yet set up"
+    },
+    {
+      "project": "ui-react-native",
+      "target": "build",
+      "reason": "React Native lib: build handled by Expo/Metro bundler"
+    },
+    {
+      "project": "ui-react-native",
+      "target": "test",
+      "reason": "React Native lib: test infrastructure not yet set up"
+    },
+    {
+      "project": "ui-core",
+      "target": "typecheck",
+      "reason": "UI core lib: types validated at build time via tsup"
+    },
+    {
+      "project": "powersync-schema",
+      "target": "test",
+      "reason": "Schema definition lib: declarative schema with no business logic to test"
+    },
+    {
+      "project": "assets",
+      "target": "lint",
+      "reason": "Static asset lib: no source code to lint; contains only image/font/media files"
+    },
+    {
+      "project": "assets",
+      "target": "typecheck",
+      "reason": "Static asset lib: no TypeScript source to type-check"
+    },
+    {
+      "project": "patterns",
+      "target": "lint",
+      "reason": "Shared pattern lib: lint coverage deferred; validated via consuming projects"
+    },
+    {
+      "project": "patterns",
+      "target": "typecheck",
+      "reason": "Shared pattern lib: types validated at build time via tsup"
+    },
+    {
+      "project": "utils",
+      "target": "typecheck",
+      "reason": "Shared utils lib: types validated at build time; dedicated typecheck target deferred"
+    },
+    {
+      "project": "nx-test-system",
+      "target": "build",
+      "reason": "Nx plugin: consumed directly by Nx devkit at runtime; no separate build artifact needed"
+    }
+  ]
+}

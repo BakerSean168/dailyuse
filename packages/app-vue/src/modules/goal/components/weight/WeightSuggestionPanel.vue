@@ -152,7 +152,7 @@ import { Bot, Check, Circle, Lightbulb, List } from 'lucide-vue-next';
 import {
   weightRecommendationService,
   type WeightStrategy,
-} from '../../application/services/WeightRecommendationService';
+} from '../../utils/weight-recommendation';
 
 const props = defineProps<{
   keyResults: KeyResultClientDTO[];

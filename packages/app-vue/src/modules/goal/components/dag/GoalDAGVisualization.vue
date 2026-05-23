@@ -165,7 +165,7 @@ import type {
 import { useGoal } from '../../composables/useGoal';
 import { useResizeObserver } from '@vueuse/core';
 import ExportDialog from './ExportDialog.vue';
-import { dagExportService, type ExportOptions } from '../../application/services/DAGExportService';
+import { dagExportService, type ExportOptions } from '../../utils/dag-export';
 import { translateResultError } from '../../../../shared/utils/translateResultError';
 
 use([TitleComponent, TooltipComponent, LegendComponent, GraphChart, CanvasRenderer]);
