@@ -5,9 +5,9 @@ tags:
   - architecture
   - consistency
   - refactor
-description: 剩余架构优化项的总计划，供后续 agent 按工作包拆分执行
+description: 剩余架构优化项的总计划与执行状态，供后续 agent 按工作包拆分执行
 created: 2026-05-22T00:00:00
-updated: 2026-05-22T00:00:00
+updated: 2026-05-23T15:00:00
 status: active
 ---
 
@@ -25,6 +25,42 @@ status: active
   - Desktop 主进程认证模块职责塌缩
   - `goal` 客户端 seam 已集中，但 `app-vue` 仍残留误命名的 `application/` 层
   - Nx target 治理缺少基线与显式豁免机制
+
+## 执行状态（2026-05-23）
+
+- Workpack A 已完成实现收口，状态可视为 `ready_for_pr`
+  - 已提取：
+    - `DesktopAuthAccountProjectionService`
+    - `DesktopRememberedAccountService`
+    - `DesktopCredentialAuthCoordinator`
+    - `DesktopAuthLifecycleCoordinator`
+    - `DesktopAuthSecurityAdminService`
+    - `authCoordinatorHelpers`（共享 helper 模块）
+  - `AuthDesktopApplicationService` 已收口为 facade
+  - A1 review fixes 已完成：
+    - `getCurrentUser()` token-cache fallback 已修复
+    - restoring-state 测试已修正为操作 `authState.runtimeState`
+    - 已补 wiring 测试（走真实 `setRepositories()` / `setAccountRepository()`）
+  - test split 已完成：
+    - 78-test 单体 spec 已拆分为 5 个 focused spec（当前 121 tests）
+  - A4 seam hardening 已完成：
+    - facade 的 test-only mutable setter 已移除
+    - facade spec 已收口到公共装配与公共行为
+    - remembered-account `identityId` 传递约定已统一为 raw string -> service 内部包装
+  - Code quality fixes 已完成：
+    - `refreshToken()` authState 更新 bug 已修复
+    - `registerDesktopAccount.ts` validation order 已修复（validate before onSuccess）
+    - `refreshDesktopSession.ts` onSuccess try/catch 已添加
+    - 3 个重复 helper 提取到 `authCoordinatorHelpers.ts`
+    - `DesktopRememberedAccountService` service locator 改为 constructor injection
+    - fallback DTO 与 repository id 转换已收口到 `authCoordinatorHelpers.ts`
+  - 已跑通：
+    - `pnpm nx run desktop:test:main`（121 tests passed）
+    - `pnpm nx run desktop:typecheck`
+    - `pnpm nx run desktop:lint`（通过，当前 106 warnings）
+    - `pnpm nx run daily-use:governance-check`
+- Workpack B 未开始
+- Workpack C 未开始
 
 ## 约束与架构基线
 
@@ -45,12 +81,40 @@ status: active
 
 ## 分支策略
 
-- 本分支 `refactor/architecture-consistency-workpacks` 只承载 planning 文档
-- 不在本分支实现业务代码、脚本或 project target 改动
+- 当前分支 `refactor/architecture-consistency-workpacks` 已承载 Workpack A 的进行中实现与计划文档
+- Workpack A 已在当前分支完成 seam hardening，不继续在该分支叠加 Workpack B/C 的实现
 - 后续每个工作包单独开分支、单独提 PR：
   - `refactor/desktop-auth-decomposition`
   - `refactor/goal-app-vue-seam-cleanup`
   - `refactor/nx-target-governance`
+
+## 统一执行规则
+
+所有后续 agent 都按下面规则执行，避免同一 workpack 被不同实现者理解成不同任务：
+
+- 每个 workpack 只解决一个架构问题，不顺手做横向清理
+- 每个提交都必须保持：
+  - 类型检查通过
+  - 目标测试通过
+  - 外部 import surface 不出现无计划破坏
+- 若需要新增 helper/interface，优先新增在当前 workpack 内部，不扩大成新的公共抽象
+- 若某段代码同时符合“业务规则”和“UI helper”两种解释，按以下顺序判断：
+  - 是否依赖 Vue/React/Pinia/DOM/i18n
+  - 是否需要跨 app/web/desktop 共享
+  - 是否直接表达领域规则或应用编排
+- 若依赖 Vue/DOM/i18n，则默认留在 `app-vue`
+- 若可跨 app 共享且不依赖框架，则默认收口到 `packages/*`
+- 计划中未明确要求的 public export，不新增
+
+## 完成定义
+
+每个 workpack 只有同时满足以下条件，才允许标记完成：
+
+- 目标代码已按计划收口到指定 seam
+- 旧 caller 已切走，或旧实现已删除
+- 计划中要求的验证命令已实际执行
+- review 中没有已知 contract 回归
+- 没有“暂时靠测试注入私有字段”的过渡测试残留
 
 ## 执行顺序
 
@@ -65,6 +129,143 @@ status: active
 - Nx governance 应在前两项代码形态稳定后收口，避免把过渡态写死成基线
 
 ## Workpack A: Desktop Auth Decomposition
+
+### 当前进度
+
+- 状态：`ready_for_pr`
+- 完成情况：
+  - 步骤 2 至步骤 6 已落地
+  - facade 已具备稳定行为和可运行验证
+  - A4 seam hardening 已完成
+
+### 当前阻塞项
+
+- 当前没有实现阻塞项
+- 后续仅保留提交流水和 review 反馈处理
+
+### 输入 / 输出边界
+
+#### 输入
+
+- 现有 facade：
+  - `AuthDesktopApplicationService`
+- 现有 composition root：
+  - `createDesktopProfileAuthService(db)`
+- 新提取的协作者：
+  - `DesktopAuthAccountProjectionService`
+  - `DesktopRememberedAccountService`
+  - `DesktopCredentialAuthCoordinator`
+  - `DesktopAuthLifecycleCoordinator`
+  - `DesktopAuthSecurityAdminService`
+
+#### 输出
+
+- `AuthDesktopApplicationService` 只保留：
+  - 依赖装配
+  - facade method delegation
+  - shared auth state bridge
+  - identity/context getter
+- 所有具体业务编排留在协作者中
+- 不新增新的 app-level domain object
+
+### 协作者职责的硬边界
+
+为避免后续 agent 再把复杂度搬回来，职责划分必须按下面硬边界执行：
+
+- `DesktopCredentialAuthCoordinator`
+  - 只处理登录、注册、guest mode、logout、远程登录成功后状态落地
+  - 不处理 session list / device list / 2FA / API key
+- `DesktopAuthLifecycleCoordinator`
+  - 只处理 initialize、auto login、refresh、bootstrap snapshot、cleanup、status
+  - 不处理 remembered account CRUD
+- `DesktopRememberedAccountService`
+  - 只处理 remembered-account 读写、查找、密码解密
+  - 不处理 login 编排
+- `DesktopAuthAccountProjectionService`
+  - 只处理 projection、identity 字段提取、local conflict 判断
+  - 不管理 auth mode/runtime state
+- `DesktopAuthSecurityAdminService`
+  - 只处理安全管理与只读用户/session/device 视图
+  - 不处理 login/register/bootstrap
+
+### 禁止事项
+
+- 不把 `WindowManager`、`NetworkStateManager`、PowerSync repository 再重新注入回 facade 逻辑体内
+- 不新增一个“super coordinator”把 5 个协作者再包成新的 god object
+- 不用 `setXxxService()` 这类测试专用 setter 作为生产路径依赖
+- 不把 facade 的委派逻辑做成条件分支森林；若某协作者不存在，只允许返回既有 contract 允许的 fallback，不能随意抛新类型错误
+
+### 更细的提交计划
+
+#### A1. Review fixes
+
+- 修 `DesktopAuthSecurityAdminService.getCurrentUser()`：
+  - 与 facade 旧行为对齐
+  - 当没有 current session 但 token cache 有 identityId 时，仍返回该 identity 的 fallback 视图
+- 修 restoring-state 测试：
+  - 不再写旧私有字段
+  - 改为写 `authState.runtimeState`
+- 补 1 组真实 wiring 测试：
+  - `new AuthDesktopApplicationService()`
+  - `setRepositories()`
+  - `setAccountRepository()`
+  - 断言 coordinator/lifecycle/security admin 真实可用
+
+#### A2. Facade slimming
+
+- 清理 facade 中残留的非委派逻辑
+- 删除仅为过渡存在、但已不再需要的私有 helper
+- 保留：
+  - `getCurrentIdentityId`
+  - `getCurrentSessionId`
+  - `getCurrentRequestContext`
+  - `getRuntimeState`
+
+#### A3. Test normalization
+
+- 把现有大体量 spec 分成：
+  - facade wiring/spec
+  - credential coordinator/spec
+  - lifecycle coordinator/spec
+  - security admin/spec
+  - remembered account/spec
+- 允许保留一个 facade 总体回归 spec，但不再让它承担所有实现细节测试
+
+#### A4. Seam hardening
+
+- 已移除 facade 的 test-only public setter：
+  - `setCredentialCoordinator`
+  - `setLifecycleCoordinator`
+  - `setSecurityAdminService`
+- facade spec 现仅验证：
+  - `setRepositories()` 后公共方法可用
+  - `setAccountRepository()` 后装配仍可运行
+  - `getCurrentIdentityId` / `getCurrentSessionId` / `getCurrentRequestContext`
+  - `logout()` 的 facade fallback
+- 已不再断言：
+  - 私有 coordinator 字段
+  - `authState` 共享引用地址
+  - 直接注入私有 `sessionManager`
+- remembered-account 的入参约定已统一：
+  - `DesktopRememberedAccountService.recordLogin()` 接受 raw `string identityId`
+  - 所有 caller 传 raw string
+  - `IdentityId.of(...)` 仅在 `DesktopRememberedAccountService` 内部执行一次
+- lint 结果记录为：
+  - `desktop:lint` 通过，但仍有 existing warnings（当前 106）
+  - 不再把“0 errors”表述成“优雅完成”
+
+### Agent 验收清单
+
+Workpack A 的执行 agent 在结束前必须逐项确认：
+
+- `createDesktopProfileAuthService(db)` 仍是唯一主装配入口
+- `DesktopProfileRuntimeManager` 不需要改调用方式
+- `desktop-auth-shell` 不需要改 handler contract
+- `getCurrentUser()` 不丢 token fallback
+- `cleanup()` 在 prepared runtime / active runtime 路径都不会额外抛错
+- facade 不再公开 test-only setter
+- facade spec 不再通过私有字段断言 coordinator 形状
+- remembered-account `identityId` 传递约定在所有调用点一致
 
 ### 问题定义
 
@@ -144,6 +345,14 @@ status: active
 - `pnpm nx run desktop:typecheck`
 - `pnpm nx run desktop:lint`
 
+### 下一步要求
+
+- 先单独提交一轮“review fixes”：
+  - 修复 `DesktopAuthSecurityAdminService.getCurrentUser()` 的 fallback 语义
+  - 补 facade wiring 测试
+  - 修正失真的 restoring-state 测试
+- 只有在这轮 review fixes 合格后，才继续压缩 facade 或拆下一步小提交
+
 ## Workpack B: Goal Seam Cleanup
 
 ### 问题定义
@@ -168,6 +377,108 @@ status: active
 - `WeightSuggestionPanel.vue`
 - `TimelineControls.vue`
 - `GoalTimelineView.vue`
+
+### 输入 / 输出边界
+
+#### 输入
+
+- `packages/goal/src/application-client/index.ts`
+- `packages/goal/src/application-client/BuiltInRules.ts`
+- `packages/goal/src/application-client/GoalTemplates.ts`
+- `packages/app-vue/src/modules/goal/application/*`
+- 现有 `app-vue` 组件和 composables caller
+
+#### 输出
+
+- 所有可共享的 rules/templates 数据与 helper 只从 `@dailyuse/goal/application-client` 暴露
+- `app-vue` 内只保留：
+  - Vue composables
+  - DOM/export helper
+  - i18n 绑定 helper
+  - 纯 presentation formatting/filtering helper
+- `modules/goal/application/` 目录不再承载任何“看起来像业务应用层”的代码
+
+### 分类规则
+
+为避免执行时再次争论“该留哪里”，直接按下表判断：
+
+- 若代码依赖 `ref` / `computed` / `watch`：
+  - 归 `composables`
+- 若代码依赖 `document` / `Blob` / `URL.createObjectURL` / 浏览器导出行为：
+  - 归 `utils`
+- 若代码依赖 i18n 文案或仅提供展示建议：
+  - 归 `utils`
+- 若代码只是在模板/规则数据上做纯函数查询且可跨 app 共享：
+  - 迁到 `packages/goal/application-client`
+- 若代码操作 store 或响应式状态：
+  - 留在 `app-vue`
+
+### 目标重分类表
+
+- `application/services/DAGExportService.ts`
+  - 目标：`utils/dag-export.ts`
+  - 说明：浏览器导出 helper，不是 application service
+- `application/services/GoalTimelineService.ts`
+  - 目标：`utils/goal-timeline.ts`
+  - 说明：timeline 类型与格式化 helper
+- `application/services/TemplateRecommendationService.ts`
+  - 目标：`utils/template-recommendation.ts`
+  - 说明：UI 筛选逻辑，改为消费 package templates
+- `application/services/WeightRecommendationService.ts`
+  - 目标：`utils/weight-recommendation.ts`
+  - 说明：i18n + 展示建议 helper
+- `application/composables/useAutoStatusRules.ts`
+  - 目标：`composables/useAutoStatusRules.ts`
+  - 说明：Vue composable，不应放在 application 目录
+- `application/composables/useWeightSnapshot.ts`
+  - 目标：`composables/useWeightSnapshot.ts`
+  - 说明：Vue composable，不应放在 application 目录
+- `application/rules/BuiltInRules.ts`
+  - 目标：删除本地使用，caller 改为 `@dailyuse/goal/application-client`
+- `application/templates/GoalTemplates.ts`
+  - 目标：删除本地使用，caller 改为 `@dailyuse/goal/application-client`
+
+### 禁止事项
+
+- 不把 `template recommendation` 误迁成 package application service
+- 不为了复用而把 `fetch` / `Blob` / DOM API 移进 `packages/goal`
+- 不在这轮把 `goalStore`、`useGoal`、router、views 大改
+- 不新增第二套 rules/templates export surface
+
+### 更细的提交计划
+
+#### B1. Canonical import switch
+
+- `StatusRuleEditor.vue` 改从 package import `BUILT_IN_RULES` / `sortRulesByPriority`
+- `TemplateBrowser.vue` 改从 package import `GoalTemplate` / `BUILT_IN_TEMPLATES`
+- 若有本地 wrapper，仅保留极薄 re-export，随后删除
+
+#### B2. UI helper relocation
+
+- 把 export/timeline/template/weight helper 移到 `utils/`
+- 把 Vue 响应式 helper 移到 `composables/`
+- 所有 caller import 路径同步更新
+
+#### B3. Duplicate deletion
+
+- 删除本地 `application/rules/BuiltInRules.ts`
+- 删除本地 `application/templates/GoalTemplates.ts`
+- 删除空的 `application/services` / `application/rules` / `application/templates` 子路径
+- 若 `application/` 目录只剩纯 Vue composable，也继续迁出直至目录可删
+
+#### B4. Barrel normalization
+
+- 更新 `modules/goal/index.ts`
+- 更新 `modules/goal/composables/index.ts`
+- 若新增 `utils/index.ts`，只导出真实复用 helper，不做全量星号导出
+
+### Agent 验收清单
+
+- 组件不再从 `modules/goal/application/rules/*` 导入
+- 组件不再从 `modules/goal/application/templates/*` 导入
+- `app-vue` 中不再存在名义上的 goal application layer 残留
+- package 侧 rules/templates 是唯一 canonical source
+- 所有 Vue-only helper 仍留在 `app-vue`
 
 ### 目标结构
 
@@ -258,6 +569,139 @@ status: active
   - Nx 插件包
   - 非本仓库拥有的 vendor/tooling definitions
 
+### 输入 / 输出边界
+
+#### 输入
+
+- 根 `project.json`
+- `apps/**/project.json`
+- `packages/**/project.json`
+- `tools/**/project.json`
+- `docs/standards/monorepo-build-standard.md`
+
+#### 输出
+
+- 一个可执行的 target audit 脚本
+- 一份 committed baseline/exemption manifest
+- 一个稳定的 workspace-level governance target
+- 一份更新后的文档说明如何维护基线
+
+### manifest 形态要求
+
+为了减少实现者自行设计格式的歧义，manifest 至少包含以下字段：
+
+- `projectCategories`
+  - category -> required targets
+- `projectRules`
+  - project name -> category
+- `exemptions`
+  - project name
+  - target name
+  - reason
+  - optional expiry/revisit note
+
+允许 JSON 或 YAML，但必须：
+
+- 机器可读
+- 能被脚本稳定解析
+- 变更 diff 易读
+
+### 分类规则
+
+执行 agent 不要自行发明分类。统一按下列最小类别：
+
+- `app`
+  - 典型：`web`, `desktop`, `mobile`, `app-react`
+- `runtime-lib`
+  - 有运行时代码，会被应用或其他业务库消费
+- `ui-lib`
+  - UI 组件/展示库
+- `tooling-lib`
+  - 工具、脚手架、测试辅助、配置型项目
+- `meta-project`
+  - root/workspace 级治理项目
+
+默认 target 基线：
+
+- `app`
+  - `build`
+  - `lint`
+  - `typecheck`
+  - `test`
+- `runtime-lib`
+  - `build`
+  - `lint`
+  - `typecheck`
+  - `test`
+- `ui-lib`
+  - `build`
+  - `lint`
+  - `typecheck`
+  - `test`
+- `tooling-lib`
+  - 至少 `build`
+  - `lint` / `typecheck` / `test` 可豁免，但必须写明理由
+- `meta-project`
+  - 不强制套用业务 target 基线，但必须在 manifest 中显式登记
+
+### Audit 脚本行为要求
+
+脚本必须输出两类结果：
+
+- `undocumented gaps`
+  - 应有 target 但缺失，且未登记 exemption
+- `documented exemptions`
+  - 已登记，且理由存在
+
+脚本退出规则：
+
+- 有 undocumented gaps -> 非零退出
+- 仅有 documented exemptions -> 零退出
+- manifest 缺字段或 project 未分类 -> 非零退出
+
+### 禁止事项
+
+- 不把 `node_modules/@nx/*/project.json` 扫进治理结果
+- 不把“项目没有某 target”直接视作允许状态
+- 不边写 audit 边顺手给 10+ 个项目补 target
+- 不把 exemption 写成无理由白名单
+
+### 更细的提交计划
+
+#### C1. Snapshot the current drift
+
+- 先实现只读 audit
+- 输出当前 repo-owned 项目的缺口清单
+- 与已知分析结果对齐，确认 `notification-runtime` 不再出现
+
+#### C2. Introduce baseline manifest
+
+- 提交分类
+- 提交 required target baseline
+- 提交第一版 exemption
+
+#### C3. Wire governance target
+
+- 把 audit 接到 root `daily-use` project
+- 若复用 `governance-check`，则保留其现有职责，并把 target audit 纳入同一命令链
+- 若新增 target，则命名保持直观，例如 `target-baseline-check`
+
+#### C4. Document maintenance flow
+
+- 文档写清：
+  - 新项目如何分类
+  - target 缺失如何补
+  - 何时允许 exemption
+  - exemption 如何回收
+
+### Agent 验收清单
+
+- repo-owned project 全部能被分类
+- 没有未分类 project 默默跳过
+- `notification-runtime` 不再出现在治理数据里
+- `node_modules` 项目不在治理结果中
+- 对每个 exemption 都能回答“为什么不需要这个 target”
+
 ### 基线策略
 
 建立一份 committed baseline/exemption manifest，至少包含：
@@ -301,9 +745,25 @@ status: active
 ## 对其他 Agent 的执行要求
 
 - 每个工作包单独分支、单独 PR
-- 不得把 planning 文档提交和代码实现混在同一个 PR
+- 若当前分支已同时承载计划与实现，则在最终提交中明确标注该偏差
 - 重构期间优先保持外部 contract、bootstrap 入口和 app wiring 稳定
 - 新增测试优先验证外部行为，不测试重构后的内部私有实现细节
+- 若 review 发现 contract 回归或测试失真，先修 review 问题，再继续拆分
+- 提交信息建议按 workpack 和意图拆分：
+  - `test(auth): add wiring regression coverage`
+  - `refactor(auth): extract lifecycle coordinator`
+  - `refactor(goal): move vue-only helpers out of application layer`
+  - `chore(nx): add target baseline audit`
+
+## 交付模板
+
+每个 workpack 的执行 agent 在最终汇报时至少应包含：
+
+- 已完成的提交序列
+- 实际运行过的验证命令
+- 与计划相比的偏差
+- 未完成项和原因
+- 是否需要新的 follow-up 分支
 
 ## Out Of Scope
 

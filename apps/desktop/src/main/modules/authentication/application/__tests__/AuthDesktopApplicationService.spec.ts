@@ -1,28 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  loginDesktopAccount: vi.fn(),
   getTokenManager: vi.fn(),
   getRememberedAccountsService: vi.fn(),
   getNetworkStateManager: vi.fn(),
-  getWindowManager: vi.fn(),
-}));
-
-vi.mock('../loginDesktopAccount', () => ({
-  loginDesktopAccount: mocks.loginDesktopAccount,
+  createSessionManager: vi.fn(),
 }));
 
 vi.mock('../../infrastructure', () => ({
   getTokenManager: mocks.getTokenManager,
   getRememberedAccountsService: mocks.getRememberedAccountsService,
   getNetworkStateManager: mocks.getNetworkStateManager,
-  createSessionManager: vi.fn(),
+  createSessionManager: mocks.createSessionManager,
   TokenManager: class {},
   SessionManager: class {},
 }));
 
 vi.mock('../../../../lifecycle/WindowManager', () => ({
-  getWindowManager: mocks.getWindowManager,
+  getWindowManager: vi.fn(() => ({
+    getMainWindow: vi.fn(() => null),
+  })),
 }));
 
 import { AuthDesktopApplicationService } from '../AuthDesktopApplicationService';
@@ -36,200 +33,186 @@ function createLogger() {
   };
 }
 
+function createMockSessionManager() {
+  return {
+    initialize: vi.fn().mockResolvedValue({ ok: false }),
+    getCurrentSession: vi.fn(() => null),
+    loginOffline: vi.fn(),
+    logout: vi.fn().mockResolvedValue({ ok: true }),
+    autoLogin: vi.fn().mockResolvedValue({ ok: false }),
+    refreshSession: vi.fn(),
+    activateOnlineSession: vi.fn(),
+    getOrCreateGuestIdentity: vi.fn().mockResolvedValue('guest-id-1'),
+    saveOfflineCredentials: vi.fn().mockResolvedValue(undefined),
+    removeOfflineCredentials: vi.fn().mockResolvedValue(undefined),
+    cleanupExpiredSessions: vi.fn().mockResolvedValue(0),
+    cleanupOtherSessions: vi.fn().mockResolvedValue(0),
+    cleanup: vi.fn(),
+    getStatus: vi.fn(),
+    getDeviceInfo: vi.fn().mockReturnValue({
+      deviceId: 'device-1',
+      deviceName: 'Test Desktop',
+      deviceType: 'DESKTOP',
+      deviceFingerprint: 'fp-123',
+      os: 'Windows',
+    }),
+    ensureCurrentSession: vi.fn(),
+    syncCurrentSessionExpiry: vi.fn(),
+    setApiCallbacks: vi.fn(),
+    setOfflineAuthDependencies: vi.fn(),
+  };
+}
+
+function createMockTokenManager() {
+  return {
+    loadTokens: vi.fn().mockResolvedValue(null),
+    updateAccessToken: vi.fn(),
+    updateRefreshToken: vi.fn(),
+    getCachedTokenData: vi.fn().mockReturnValue(null),
+    getStatus: vi.fn().mockResolvedValue({
+      isRefreshTokenExpired: false,
+      isAccessTokenExpired: false,
+    }),
+    getAccessToken: vi.fn().mockResolvedValue(null),
+    clearTokens: vi.fn(),
+  };
+}
+
+function createSessionRepo() {
+  return {
+    findById: vi.fn(),
+    findByIdentityId: vi.fn(),
+    save: vi.fn(),
+  };
+}
+
+function createCredentialRepo() {
+  return {
+    findById: vi.fn(),
+    findByIdentifier: vi.fn(),
+  };
+}
+
+function createService() {
+  return new AuthDesktopApplicationService(createLogger() as never);
+}
+
 describe('AuthDesktopApplicationService', () => {
+  let mockTokenManager: ReturnType<typeof createMockTokenManager>;
+  let mockSessionManager: ReturnType<typeof createMockSessionManager>;
+
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mocks.getTokenManager.mockReturnValue({
-      loadTokens: vi.fn(),
-      updateAccessToken: vi.fn(),
-      updateRefreshToken: vi.fn(),
-      getCachedTokenData: vi.fn(),
-      getStatus: vi.fn().mockResolvedValue({
-        isRefreshTokenExpired: false,
-      }),
-      getAccessToken: vi.fn(),
-    });
+    mockTokenManager = createMockTokenManager();
+    mocks.getTokenManager.mockReturnValue(mockTokenManager);
 
-    mocks.getRememberedAccountsService.mockReturnValue({
-      recordLogin: vi.fn(),
-      list: vi.fn().mockResolvedValue([]),
-      getAutoLoginAccount: vi.fn().mockResolvedValue(null),
-      remove: vi.fn(),
-      decryptPassword: vi.fn(),
-    });
+    mockSessionManager = createMockSessionManager();
+    mocks.createSessionManager.mockReturnValue(mockSessionManager);
 
     mocks.getNetworkStateManager.mockReturnValue({
       isOnline: vi.fn(() => true),
     });
-    mocks.getWindowManager.mockReturnValue({
-      getMainWindow: vi.fn(() => null),
-    });
-  });
-
-  it('falls back to loginOffline without re-entering remote login orchestration', async () => {
-    mocks.loginDesktopAccount.mockResolvedValue({
-      ok: false,
-      error: {
-        code: 'OFFLINE',
-        message: 'OFFLINE',
-        shouldFallbackToOffline: true,
-      },
-    });
-
-    const loginOffline = vi.fn().mockResolvedValue({
-      ok: true,
-      identityId: 'user-1',
-      sessionId: 'session-1',
-      accessToken: 'local-token',
-      expiresIn: 3600,
-    });
-
-    const service = new AuthDesktopApplicationService(createLogger() as never);
-    (service as any).sessionManager = {
-      loginOffline,
-      getCurrentSession: vi.fn(() => null),
-    };
-
-    const result = await service.login({
-      email: 'offline@example.com',
-      password: 'secret123',
-      rememberPassword: false,
-      autoLogin: false,
-    });
-
-    expect(mocks.loginDesktopAccount).toHaveBeenCalledOnce();
-    expect(loginOffline).toHaveBeenCalledOnce();
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.data.authMode).toBe('OFFLINE_USER');
-    }
-  });
-
-  it('returns a local conflict when the requested account is already open in the main window', async () => {
-    mocks.loginDesktopAccount.mockResolvedValue({
-      ok: true,
-      response: {} as never,
-    });
-
-    const service = new AuthDesktopApplicationService(createLogger() as never);
-    (service as any).credentialRepository = {
-      findByEmail: vi.fn().mockResolvedValue({
-        id: 'user-1',
-        toClientDTO: () => ({
-          identifiers: [{ type: 'Email', value: 'active@example.com' }],
-        }),
-      }),
-    };
-    (service as any).sessionManager = {
-      getCurrentSession: vi.fn(() => ({ identityId: 'user-1' })),
-    };
-    (service as any).runtimeState = 'AUTHENTICATED';
-    mocks.getWindowManager.mockReturnValue({
-      getMainWindow: vi.fn(() => ({ isDestroyed: () => false })),
-    });
-
-    const result = await service.login({
-      email: 'active@example.com',
-      password: 'secret123',
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.code).toBe('AUTH_ALREADY_ACTIVE_LOCALLY');
-      expect(result.error.context?.displayName).toBe('active');
-    }
-    expect(mocks.loginDesktopAccount).not.toHaveBeenCalled();
-  });
-
-  it('returns remembered accounts without exposing plaintext passwords', async () => {
     mocks.getRememberedAccountsService.mockReturnValue({
-      recordLogin: vi.fn(),
-      list: vi.fn().mockResolvedValue([
-        {
-          identityId: 'user-1',
-          identifier: 'saved@example.com',
-          nickname: 'saved',
-          avatarUrl: null,
-          rememberPassword: true,
-          autoLogin: false,
-          lastUsedAt: 11,
-          lastLoginAt: 10,
-          encryptedPassword: 'ciphertext',
-        },
-      ]),
+      list: vi.fn().mockResolvedValue([]),
       getAutoLoginAccount: vi.fn().mockResolvedValue(null),
       remove: vi.fn(),
-      decryptPassword: vi.fn().mockReturnValue('secret123'),
+      decryptPassword: vi.fn(),
+      recordLogin: vi.fn(),
+    });
+  });
+
+  describe('assembly guards', () => {
+    it('throws for coordinator-backed methods before repositories are injected', async () => {
+      const service = createService();
+
+      await expect(service.login({ email: 'a@b.com', password: 'x' })).rejects.toThrow(
+        'Credential coordinator not initialized',
+      );
+      await expect(service.initialize()).rejects.toThrow(
+        'Lifecycle coordinator not initialized',
+      );
+      await expect(service.enable2FA('totp')).rejects.toThrow(
+        'Security admin service not initialized',
+      );
     });
 
-    const service = new AuthDesktopApplicationService(createLogger() as never);
-    const accounts = await service.getRememberedAccounts();
+    it('wires the session refresh callback when repositories are injected', () => {
+      const service = createService();
 
-    expect(accounts).toEqual([
-      expect.objectContaining({
+      service.setRepositories(createSessionRepo() as never, createCredentialRepo() as never);
+
+      expect(mocks.createSessionManager).toHaveBeenCalledOnce();
+      expect(mockSessionManager.setApiCallbacks).toHaveBeenCalledWith(
+        expect.objectContaining({ refreshToken: expect.any(Function) }),
+      );
+    });
+
+    it('keeps lifecycle methods callable after account repository injection', async () => {
+      const service = createService();
+      mockSessionManager.initialize.mockResolvedValue({ ok: false });
+
+      service.setRepositories(createSessionRepo() as never, createCredentialRepo() as never);
+      service.setAccountRepository({ findById: vi.fn() } as never);
+
+      const result = await service.initialize();
+
+      expect(result.ok).toBe(true);
+      expect(service.getRuntimeState()).toBe('UNAUTHENTICATED');
+    });
+  });
+
+  describe('identity and context helpers', () => {
+    it('reads the current identity from the current session', () => {
+      const service = createService();
+      mockSessionManager.getCurrentSession.mockReturnValue({
         identityId: 'user-1',
-        identifier: 'saved@example.com',
-        hasSavedPassword: true,
-      }),
-    ]);
-    expect('savedPassword' in accounts[0]!).toBe(false);
+        id: 'session-1',
+        deviceInfo: { deviceId: 'dev-1' },
+      });
+
+      service.setRepositories(createSessionRepo() as never, createCredentialRepo() as never);
+
+      expect(service.getCurrentIdentityId()).toBe('user-1');
+      expect(service.getCurrentSessionId()).toBe('session-1');
+      expect(service.getCurrentRequestContext()).toEqual({
+        identityId: 'user-1',
+        deviceId: 'dev-1',
+      });
+    });
+
+    it('falls back to token cache when no session exists', async () => {
+      const service = createService();
+      mockTokenManager.getCachedTokenData.mockReturnValue({
+        identityId: 'cached-user',
+        sessionId: 'cached-session',
+      });
+
+      service.setRepositories(createSessionRepo() as never, createCredentialRepo() as never);
+
+      expect(service.getCurrentIdentityId()).toBe('cached-user');
+      expect(service.getCurrentSessionId()).toBe('cached-session');
+      expect(service.getCurrentRequestContext()).toEqual({
+        identityId: 'cached-user',
+        deviceId: 'desktop-app',
+      });
+
+      const currentUser = await service.getCurrentUser();
+
+      expect(currentUser.identity.id).toBe('cached-user');
+      expect(currentUser.session).toBeNull();
+    });
   });
 
-  it('logs in remembered accounts through main-process password decryption only', async () => {
-    mocks.loginDesktopAccount.mockResolvedValue({
-      ok: false,
-      error: {
-        code: 'AUTH_FAILED',
-        message: 'Bad credentials',
-        shouldFallbackToOffline: false,
-      },
+  describe('facade-only fallback behavior', () => {
+    it('clears tokens and returns ok when logout runs before assembly', async () => {
+      const service = createService();
+
+      const result = await service.logout();
+
+      expect(result.ok).toBe(true);
+      expect(mockTokenManager.clearTokens).toHaveBeenCalledOnce();
+      expect(service.getRuntimeState()).toBe('UNAUTHENTICATED');
     });
-
-    mocks.getRememberedAccountsService.mockReturnValue({
-      recordLogin: vi.fn(),
-      list: vi.fn().mockResolvedValue([
-        {
-          identityId: 'user-1',
-          identifier: 'saved@example.com',
-          nickname: 'saved',
-          avatarUrl: null,
-          rememberPassword: true,
-          autoLogin: false,
-          lastUsedAt: 11,
-          lastLoginAt: 10,
-          encryptedPassword: 'ciphertext',
-        },
-      ]),
-      getAutoLoginAccount: vi.fn().mockResolvedValue(null),
-      remove: vi.fn(),
-      decryptPassword: vi.fn().mockReturnValue('secret123'),
-    });
-
-    const service = new AuthDesktopApplicationService(createLogger() as never);
-    (service as any).sessionManager = {
-      getCurrentSession: vi.fn(() => null),
-    };
-
-    const result = await service.loginRememberedAccount({
-      identityId: 'user-1',
-      rememberPassword: true,
-      autoLogin: false,
-    });
-
-    expect(mocks.loginDesktopAccount).toHaveBeenCalledOnce();
-    expect(mocks.loginDesktopAccount).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: 'saved@example.com',
-        password: 'secret123',
-        rememberPassword: true,
-        autoLogin: false,
-      }),
-      expect.any(Object),
-    );
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.code).toBe('AUTH_FAILED');
-    }
   });
 });

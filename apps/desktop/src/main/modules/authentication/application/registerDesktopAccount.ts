@@ -87,10 +87,6 @@ export async function registerDesktopAccount(
 
     logger.info('Registration successful', { email: request.email });
 
-    if (onSuccess) {
-      await onSuccess(data, request);
-    }
-
     if (!data.accessToken || !data.identity || !data.session) {
       logger.error('Registration succeeded but auth payload is incomplete', { data });
 
@@ -98,6 +94,20 @@ export async function registerDesktopAccount(
         ok: false,
         error: createTerminalAuthError('REGISTER_FAILED', '注册成功，但认证数据不完整'),
       };
+    }
+
+    if (onSuccess) {
+      try {
+        await onSuccess(data, request);
+      } catch (error) {
+        logger.error('Remote registration succeeded but local persistence failed', {
+          error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+        });
+        return {
+          ok: false,
+          error: createTerminalAuthError('REGISTER_ERROR', '本地持久化失败'),
+        };
+      }
     }
 
     return {

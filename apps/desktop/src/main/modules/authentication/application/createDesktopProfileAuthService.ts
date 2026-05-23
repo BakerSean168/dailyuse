@@ -10,9 +10,10 @@ import { AuthDesktopApplicationService } from './AuthDesktopApplicationService';
 
 export function createDesktopProfileAuthService(db: PowerSyncDatabase): AuthDesktopApplicationService {
   const logger = createLogger('DesktopProfileAuthService');
-  const identityRepository = new PowerSyncAuthIdentityRepository(db as any);
-  const sessionRepository = new PowerSyncAuthSessionRepository(db as any);
-  const accountRepository = new PowerSyncAccountRepository(db as any);
+  const repositoryDb = db as ConstructorParameters<typeof PowerSyncAuthIdentityRepository>[0];
+  const identityRepository = new PowerSyncAuthIdentityRepository(repositoryDb);
+  const sessionRepository = new PowerSyncAuthSessionRepository(repositoryDb);
+  const accountRepository = new PowerSyncAccountRepository(repositoryDb);
   const passwordHasher = new Argon2Hasher();
 
   const service = new AuthDesktopApplicationService(logger);
