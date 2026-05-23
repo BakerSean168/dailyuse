@@ -1,5 +1,5 @@
 import { computed, ref, watch, type Ref } from 'vue';
-import type { TimelineData, TimelineSnapshot } from './types';
+import type { TimelineData, TimelineSnapshot } from '../utils/goal-timeline';
 
 export const useGoalTimeline = (goalRef: Ref<any>) => {
   const loadingSnapshots = ref(false);

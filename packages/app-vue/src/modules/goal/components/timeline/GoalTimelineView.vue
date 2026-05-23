@@ -102,7 +102,7 @@ const { t } = useI18n();
 import type { ECharts } from 'echarts';
 import TimelineControls from './TimelineControls.vue';
 import { useGoalTimeline } from '../../composables/useGoalTimeline';
-import type { TimelineSnapshot } from '../../composables/types';
+import type { TimelineSnapshot } from '../../utils/goal-timeline';
 
 // ==================== Props ====================
 

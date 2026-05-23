@@ -7,7 +7,7 @@ tags:
   - refactor
 description: 剩余架构优化项的总计划与执行状态，供后续 agent 按工作包拆分执行
 created: 2026-05-22T00:00:00
-updated: 2026-05-23T15:00:00
+updated: 2026-05-23T17:00:00
 status: active
 ---
 
@@ -70,10 +70,12 @@ status: active
     - B2: `WeightRecommendationService` → `utils/weight-recommendation.ts`
     - B2: `useAutoStatusRules` → `composables/useAutoStatusRules.ts`
     - B2: `useWeightSnapshot` → `composables/useWeightSnapshot.ts`
-    - B2: `TimelineControls.vue` 和 `GoalTimelineView.vue` 改从 `composables/types` 导入 timeline 类型
+    - B2: `TimelineControls.vue` 和 `GoalTimelineView.vue` 改从 `utils/goal-timeline` 导入 timeline 类型
     - B3: 删除 `application/` 目录（`rules/BuiltInRules.ts`、`templates/GoalTemplates.ts`、`services/*`、`composables/*`）
     - B4: 新增 `utils/index.ts` barrel export
     - B4: 更新 `composables/index.ts` barrel 包含新迁入的 composables
+    - B5: 删除重复的 `composables/types.ts`，timeline 类型与 `formatTimelineTimestamp` 已收口到 `utils/goal-timeline.ts`
+    - B5: `composables/index.ts` 改为对 `utils/goal-timeline.ts` 做薄 re-export，保持 `modules/goal` public API 稳定
   - 已跑通：
     - `pnpm nx run app-vue:typecheck`
     - `pnpm nx run app-vue:test`（46 files, 136 tests）
@@ -96,6 +98,9 @@ status: active
     - C3: 将 audit 链入 `governance-check`（与 docs-config check 并行执行）
     - C4: 新增 `docs/governance/target-baseline-governance.md` 维护文档
     - C4: 更新 `docs/governance/README.md` 添加新检查命令和文档链接
+    - C5: audit 范围已收紧到 root `project.json`、`apps/**`、`packages/**`、`tools/**`
+    - C5: `projectRules` 中的孤儿项目名现在会触发失败，不再被静默接受
+    - C5: `exemptions` 现在必须引用真实存在的 repo-owned 项目，且 target 必须属于该类别的 required target
   - 已跑通：
     - `pnpm nx run daily-use:target-baseline-check`
     - `pnpm nx run daily-use:governance-check`

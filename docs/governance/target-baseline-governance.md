@@ -14,6 +14,15 @@ updated: 2026-05-23T00:00:00
 
 每个 repo-owned 项目必须按其分类具备对应的 target 基线。未达标且未登记豁免的项目会导致 `target-baseline-check` 失败。
 
+审计范围固定为：
+
+- root `project.json`
+- `apps/**/project.json`
+- `packages/**/project.json`
+- `tools/**/project.json`
+
+除此之外的 `project.json` 不属于 target 基线治理输入。
+
 ## 项目分类
 
 | 类别 | 典型项目 | 必需 target |
@@ -36,6 +45,8 @@ updated: 2026-05-23T00:00:00
 
 新增项目时，必须在 manifest 的 `projectRules` 中显式登记分类。
 
+`projectRules` 中保留失效项目名会导致审计失败；manifest 必须与真实项目集合保持同步。
+
 ## 新增项目流程
 
 1. 在 `project.json` 中添加正确的 `scope:*`、`type:*`、`layer:*` tags
@@ -52,7 +63,10 @@ updated: 2026-05-23T00:00:00
    - `project`：项目名称
    - `target`：豁免的 target 名称
    - `reason`：豁免理由（必须说明为什么不需要这个 target）
-3. 理由应说明是"永久不需要"还是"暂时推迟"
+3. 豁免必须引用：
+   - 审计范围内真实存在的项目
+   - 该项目所属类别本来就要求的 target
+4. 理由应说明是"永久不需要"还是"暂时推迟"
 
 ### 豁免理由示例
 

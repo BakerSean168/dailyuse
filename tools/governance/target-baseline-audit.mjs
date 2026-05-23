@@ -14,10 +14,10 @@
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const MANIFEST_PATH = join(import.meta.dirname, 'target-baseline-manifest.json');
+const PROJECT_DIRECTORIES = ['apps', 'packages', 'tools'];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,6 +51,16 @@ function findProjectJsonFiles(dir) {
     }
   };
   walk(dir);
+  return results;
+}
+
+function collectProjectJsonFiles() {
+  const results = [join(ROOT, 'project.json')];
+
+  for (const directory of PROJECT_DIRECTORIES) {
+    results.push(...findProjectJsonFiles(join(ROOT, directory)));
+  }
+
   return results;
 }
 
@@ -88,11 +98,12 @@ function main() {
   }
 
   // Scan project.json files
-  const projectFiles = findProjectJsonFiles(ROOT);
+  const projectFiles = collectProjectJsonFiles();
 
   const gaps = [];
   const documentedExemptions = [];
   const unclassifiedProjects = [];
+  const invalidExemptions = [];
   const seen = new Set();
 
   for (const filePath of projectFiles) {
@@ -144,11 +155,26 @@ function main() {
     }
   }
 
-  // Check for unclassified projects in manifest that weren't found
-  for (const name of Object.keys(projectRules)) {
-    if (!seen.has(name)) {
-      // Project in manifest but no project.json found - this is OK for now
-      // (could be a naming convention difference)
+  const manifestOnlyProjects = Object.keys(projectRules).filter((name) => !seen.has(name));
+
+  for (const entry of exemptions) {
+    if (!seen.has(entry.project)) {
+      invalidExemptions.push({
+        project: entry.project,
+        target: entry.target,
+        reason: `project not found in audit scope (root project.json, ${PROJECT_DIRECTORIES.join(', ')})`,
+      });
+      continue;
+    }
+
+    const category = projectRules[entry.project];
+    const requiredTargets = projectCategories[category]?.requiredTargets ?? [];
+    if (!requiredTargets.includes(entry.target)) {
+      invalidExemptions.push({
+        project: entry.project,
+        target: entry.target,
+        reason: `target is not required for category "${category}"`,
+      });
     }
   }
 
@@ -164,6 +190,26 @@ function main() {
     console.warn('');
     // Unclassified projects are a manifest error
     console.error('[target-baseline-audit] FAIL: Unclassified projects found. Add them to projectRules in the manifest.');
+    process.exit(2);
+  }
+
+  if (manifestOnlyProjects.length > 0) {
+    console.error('--- Manifest Entries Without Matching Projects ---');
+    for (const project of manifestOnlyProjects) {
+      console.error(`  ${project}`);
+    }
+    console.error('');
+    console.error('[target-baseline-audit] FAIL: projectRules contains project(s) outside the repo-owned audit scope.');
+    process.exit(2);
+  }
+
+  if (invalidExemptions.length > 0) {
+    console.error('--- Invalid Exemptions ---');
+    for (const exemption of invalidExemptions) {
+      console.error(`  ${exemption.project}: "${exemption.target}" — ${exemption.reason}`);
+    }
+    console.error('');
+    console.error('[target-baseline-audit] FAIL: exemptions must reference an existing repo-owned project and one of that category\'s required targets.');
     process.exit(2);
   }
 
