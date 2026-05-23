@@ -59,8 +59,47 @@ status: active
     - `pnpm nx run desktop:typecheck`
     - `pnpm nx run desktop:lint`（通过，当前 106 warnings）
     - `pnpm nx run daily-use:governance-check`
-- Workpack B 未开始
-- Workpack C 未开始
+- Workpack B 已完成实现收口，状态可视为 `ready_for_pr`
+  - 已完成：
+    - B1: `StatusRuleEditor.vue` 改从 `@dailyuse/goal/application-client` 导入 `sortRulesByPriority`
+    - B1: `TemplateBrowser.vue` 改从 `@dailyuse/goal/application-client` 导入 `GoalTemplate` 类型
+    - B1: `TemplateRecommendationService` 改为消费 package 的 `BUILT_IN_TEMPLATES`（原来用空数组）
+    - B2: `DAGExportService` → `utils/dag-export.ts`
+    - B2: `GoalTimelineService` → `utils/goal-timeline.ts`
+    - B2: `TemplateRecommendationService` → `utils/template-recommendation.ts`
+    - B2: `WeightRecommendationService` → `utils/weight-recommendation.ts`
+    - B2: `useAutoStatusRules` → `composables/useAutoStatusRules.ts`
+    - B2: `useWeightSnapshot` → `composables/useWeightSnapshot.ts`
+    - B2: `TimelineControls.vue` 和 `GoalTimelineView.vue` 改从 `composables/types` 导入 timeline 类型
+    - B3: 删除 `application/` 目录（`rules/BuiltInRules.ts`、`templates/GoalTemplates.ts`、`services/*`、`composables/*`）
+    - B4: 新增 `utils/index.ts` barrel export
+    - B4: 更新 `composables/index.ts` barrel 包含新迁入的 composables
+  - 已跑通：
+    - `pnpm nx run app-vue:typecheck`
+    - `pnpm nx run app-vue:test`（46 files, 136 tests）
+    - `pnpm nx run goal:test`（54 files, 297 tests）
+    - `pnpm nx run goal:typecheck`
+    - `pnpm exec vue-tsc -p apps/web/tsconfig.json --noEmit`
+    - `pnpm exec vue-tsc -p apps/desktop/tsconfig.json --noEmit`
+    - `pnpm nx run daily-use:governance-check`
+  - 分支：`refactor/goal-app-vue-seam-cleanup`
+- Workpack C 已完成实现收口，状态可视为 `ready_for_pr`
+  - 已完成：
+    - C1: 实现只读 audit 脚本 `tools/governance/target-baseline-audit.mjs`
+    - C1: 扫描全部 36 个 repo-owned project，输出缺口清单
+    - C1: 确认 `notification-runtime` 不再出现在治理数据中
+    - C2: 提交分类 manifest `tools/governance/target-baseline-manifest.json`
+    - C2: 定义 5 个类别（app、runtime-lib、ui-lib、tooling-lib、meta-project）
+    - C2: 提交 required target baseline
+    - C2: 提交 25 条 documented exemption（每条附理由）
+    - C3: 新增 `target-baseline-check` target 到 root `daily-use` project
+    - C3: 将 audit 链入 `governance-check`（与 docs-config check 并行执行）
+    - C4: 新增 `docs/governance/target-baseline-governance.md` 维护文档
+    - C4: 更新 `docs/governance/README.md` 添加新检查命令和文档链接
+  - 已跑通：
+    - `pnpm nx run daily-use:target-baseline-check`
+    - `pnpm nx run daily-use:governance-check`
+  - 分支：`refactor/nx-target-governance`
 
 ## 约束与架构基线
 
