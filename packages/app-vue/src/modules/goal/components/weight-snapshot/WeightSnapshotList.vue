@@ -186,7 +186,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
+import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
 import { format } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';

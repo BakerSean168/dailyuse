@@ -1,3 +1,5 @@
+import { BUILT_IN_TEMPLATES, type GoalTemplate } from '@dailyuse/goal/application-client';
+
 export type RecommendationFilters = {
   searchQuery?: string;
   category?: string;
@@ -5,35 +7,34 @@ export type RecommendationFilters = {
 };
 
 type TemplateResult = {
-  template: {
-    id: string;
-    title: string;
-    description: string;
-    category: string;
-    tags: string[];
-    roles: string[];
-    industries: string[];
-    suggestedDuration: number;
-    keyResults: Array<{
-      title: string;
-      suggestedWeight: number;
-      metrics: string[];
-      suggestedStartValue?: number;
-      suggestedTargetValue?: number;
-      unit?: string;
-    }>;
-  };
+  template: GoalTemplate;
   score: number;
   reasons: string[];
 };
 
-const templates: TemplateResult[] = [];
+const scoreTemplate = (template: GoalTemplate, filters: RecommendationFilters): number => {
+  let score = 0;
+  if (filters.category && template.category === filters.category) score += 3;
+  if (filters.role && template.roles.includes(filters.role)) score += 2;
+  const keyword = filters.searchQuery?.trim().toLowerCase();
+  if (keyword) {
+    const haystack = [template.title, template.description, ...template.tags]
+      .join(' ')
+      .toLowerCase();
+    if (haystack.includes(keyword)) score += 1;
+  }
+  return score;
+};
 
 const service = {
   recommendTemplates(filters: RecommendationFilters): TemplateResult[] {
     const keyword = filters.searchQuery?.trim().toLowerCase();
 
-    return templates
+    return BUILT_IN_TEMPLATES.map((template) => ({
+      template,
+      score: scoreTemplate(template, filters),
+      reasons: [],
+    }))
       .filter((result) => {
         if (filters.category && result.template.category !== filters.category) return false;
         if (filters.role && !result.template.roles.includes(filters.role)) return false;

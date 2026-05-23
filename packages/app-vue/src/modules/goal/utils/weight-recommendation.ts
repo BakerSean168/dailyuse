@@ -1,4 +1,4 @@
-import { getI18nGlobal } from '../../../../plugins/i18n';
+import { getI18nGlobal } from '../../../plugins/i18n';
 
 type KeyResultLike = {
   title: string;

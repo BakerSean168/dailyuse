@@ -306,12 +306,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useAutoStatusRules } from '../../application/composables/useAutoStatusRules';
+import { useAutoStatusRules } from '../../composables/useAutoStatusRules';
 
 const { t } = useI18n();
 import type { StatusRule, RuleCondition } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import { sortRulesByPriority } from '../../application/rules/BuiltInRules';
+import { sortRulesByPriority } from '@dailyuse/goal/application-client';
 import {
   Card,
   CardHeader,

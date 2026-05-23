@@ -280,9 +280,9 @@ import { useI18n } from 'vue-i18n';
 import type { Component } from 'vue';
 
 const { t } = useI18n();
-import type { GoalTemplate } from '../../application/templates/GoalTemplates';
-import templateRecommendationService from '../../application/services/TemplateRecommendationService';
-import type { RecommendationFilters } from '../../application/services/TemplateRecommendationService';
+import type { GoalTemplate } from '@dailyuse/goal/application-client';
+import templateRecommendationService from '../../utils/template-recommendation';
+import type { RecommendationFilters } from '../../utils/template-recommendation';
 
 import {
   Dialog,
