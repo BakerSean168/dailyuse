@@ -19,22 +19,22 @@ updated: 2026-05-23T00:00:00
 | 类别 | 典型项目 | 必需 target |
 |------|---------|------------|
 | `app` | web, desktop, mobile, api, ai-service | build, lint, typecheck, test |
-| `runtime-lib` | domain 包、infra 包、shared 包 | build, lint, typecheck, test |
-| `ui-lib` | app-vue, ui-vue-shadcn, ui-react-native, dashboard | build, lint, typecheck, test |
-| `tooling-lib` | nx-test-system, test-utils, patterns, utils | build |
+| `runtime-lib` | domain 包、infra 包、shared 包（含 patterns、utils） | build, lint, typecheck, test |
+| `ui-lib` | app-vue, ui-vue-shadcn, ui-react-native, dashboard, assets | build, lint, typecheck, test |
+| `tooling-lib` | nx-test-system, test-utils | build |
 | `meta-project` | daily-use (root) | 无强制要求 |
 
 ## 分类规则
 
-分类依据 `project.json` 中的 tags：
+分类的唯一权威来源是 `tools/governance/target-baseline-manifest.json` 中的 `projectRules` 字段。以下 tag 规则仅作为分类时的参考指南：
 
 - 有 `type:app` → `app`
-- 有 `layer:domain` 或 `layer:infra` 或 `layer:shared`（且不是 UI）→ `runtime-lib`
+- 有 `layer:domain` 或 `layer:infra` 或 `layer:shared` → `runtime-lib`
 - 有 `layer:ui` → `ui-lib`
 - 有 `type:plugin` 或 `layer:testing` → `tooling-lib`
 - 是 workspace root → `meta-project`
 
-如有歧义，以 `target-baseline-manifest.json` 中的 `projectRules` 为准。
+新增项目时，必须在 manifest 的 `projectRules` 中显式登记分类。
 
 ## 新增项目流程
 

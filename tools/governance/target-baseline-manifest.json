@@ -1,5 +1,4 @@
 {
-  "$schema": "./target-baseline-manifest.schema.json",
   "version": 1,
   "description": "Workspace target baseline and exemption manifest for governance audit",
 
@@ -67,26 +66,6 @@
 
   "exemptions": [
     {
-      "project": "daily-use",
-      "target": "build",
-      "reason": "Meta-project: root governance target, not a deployable or buildable artifact"
-    },
-    {
-      "project": "daily-use",
-      "target": "lint",
-      "reason": "Meta-project: no source code to lint; governance scripts are validated via execution"
-    },
-    {
-      "project": "daily-use",
-      "target": "typecheck",
-      "reason": "Meta-project: no TypeScript source; governance scripts are plain .mjs"
-    },
-    {
-      "project": "daily-use",
-      "target": "test",
-      "reason": "Meta-project: governance correctness is verified by governance-check target itself"
-    },
-    {
       "project": "mobile",
       "target": "build",
       "reason": "React Native: build is handled by Expo/Metro bundler, not a standalone Nx build target"
@@ -95,21 +74,6 @@
       "project": "mobile",
       "target": "test",
       "reason": "Mobile test infrastructure not yet set up; Expo test runner integration pending"
-    },
-    {
-      "project": "nx-test-system",
-      "target": "lint",
-      "reason": "Nx plugin with no standalone source; validated via sync generator execution"
-    },
-    {
-      "project": "nx-test-system",
-      "target": "typecheck",
-      "reason": "Nx plugin: types are validated when the plugin is loaded by Nx"
-    },
-    {
-      "project": "nx-test-system",
-      "target": "test",
-      "reason": "Nx plugin: behavior is validated through the test-target-governance.mjs standalone script"
     },
     {
       "project": "database",
@@ -190,11 +154,6 @@
       "project": "ui-core",
       "target": "typecheck",
       "reason": "UI core lib: types validated at build time via tsup"
-    },
-    {
-      "project": "@dailyuse/test-utils",
-      "target": "test",
-      "reason": "Test utility lib: the library itself is test infrastructure; testing it would be meta-circular"
     },
     {
       "project": "powersync-schema",
