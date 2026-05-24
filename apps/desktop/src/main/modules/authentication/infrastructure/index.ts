@@ -29,21 +29,21 @@ export type {
 } from '@dailyuse/contracts/authentication';
 
 // Export managers
-export { TokenManager, getTokenManager } from './TokenManager';
-export { SessionManager, createSessionManager, getSessionManager } from './SessionManager';
-export { NetworkStateManager, getNetworkStateManager } from './NetworkStateManager';
+export { TokenManager, getTokenManager } from './token-manager';
+export { SessionManager, createSessionManager, getSessionManager } from './session-manager';
+export { NetworkStateManager, getNetworkStateManager } from './network-state-manager';
 export {
   RememberedAccountsService,
   getRememberedAccountsService,
-} from './RememberedAccountsService';
+} from './remembered-accounts-service';
 export type {
   NetworkStatus,
   NetworkStateChangeEvent,
   NetworkStateManagerConfig,
-} from './NetworkStateManager';
+} from './network-state-manager';
 
 // Export local types
-export type { TokenData } from './TokenManager';
+export type { TokenData } from './token-manager';
 
-export type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './SessionManager';
-export type { RememberedAccountRecord } from './RememberedAccountsService';
+export type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './session-manager';
+export type { RememberedAccountRecord } from './remembered-accounts-service';

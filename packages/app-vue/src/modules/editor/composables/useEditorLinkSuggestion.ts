@@ -1,8 +1,8 @@
 import { ref, type Ref } from 'vue';
 import { toast } from 'vue-sonner';
 import type { ComposerTranslation } from 'vue-i18n';
-import { formatWikiLink } from '../utils/wikiLinks';
-import type { LinkIndexNote } from '../utils/linkIndex';
+import { formatWikiLink } from '../utils/wiki-links';
+import type { LinkIndexNote } from '../utils/link-index';
 
 export interface LinkSuggestionState {
   visible: boolean;

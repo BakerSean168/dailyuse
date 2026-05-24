@@ -6,9 +6,9 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import type { IRepositoryRepository } from '../../domain-server/repositories/i-repository-repository';
+import type { IResourceRepository } from '../../domain-server/repositories/i-resource-repository';
+import type { IFolderRepository } from '../../domain-server/repositories/i-folder-repository';
 
 import {
   RepositoryPrismaRepository,

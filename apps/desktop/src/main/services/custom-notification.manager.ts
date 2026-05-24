@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 import { createLogger } from '@dailyuse/utils';
 import { NotificationChannels } from '../../shared/types/ipc-channels';
 import type { NotificationOptions } from './notification.service';
-import { getWindowManager } from '../lifecycle/WindowManager';
+import { getWindowManager } from '../lifecycle/window-manager';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
 import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 

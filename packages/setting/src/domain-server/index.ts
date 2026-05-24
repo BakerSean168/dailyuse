@@ -34,5 +34,5 @@ export {
 } from './errors';
 
 // ============ 仓储接口 ============
-export type { IUserSettingRepository } from './repositories/IUserSettingRepository';
+export type { IUserSettingRepository } from './repositories/i-user-setting-repository';
 

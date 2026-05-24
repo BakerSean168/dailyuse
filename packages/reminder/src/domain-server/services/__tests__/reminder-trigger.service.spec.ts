@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TriggerResult, ReminderType } from '@dailyuse/contracts/reminder';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderTemplate } from '../../aggregates/reminder-template';
-import { ReminderTriggerService } from '../ReminderTriggerService';
+import { ReminderTriggerService } from '../reminder-trigger-service';
 
 function createTemplate() {
   return ReminderTemplate.create({

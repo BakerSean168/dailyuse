@@ -7,4 +7,4 @@
  * @module modules/autolaunch
  */
 
-export { AutoLaunchManager, type AutoLaunchConfig } from './autoLaunchManager';
+export { AutoLaunchManager, type AutoLaunchConfig } from './auto-launch-manager';

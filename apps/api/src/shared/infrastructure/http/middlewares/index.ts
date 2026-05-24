@@ -1,4 +1,4 @@
-export * from './authMiddleware';
+export * from './auth-middleware';
 export * from './device-info.middleware';
 export * from './performance.middleware';
-export * from './rbacMiddleware';
+export * from './rbac-middleware';

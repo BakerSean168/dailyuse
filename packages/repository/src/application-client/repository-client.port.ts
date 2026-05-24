@@ -18,7 +18,7 @@ import type {
   UpdateResourceRequest,
   UploadResourcesRequest,
 } from './ports/repository-api-client.port';
-import type { Repository } from '../domain-client/aggregates/Repository';
+import type { Repository } from '../domain-client/aggregates/repository';
 
 export interface RepositoryClientPort {
   getCurrentRepository(): Promise<Result<Repository | null>>;

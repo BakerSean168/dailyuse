@@ -6,7 +6,7 @@ import type {
   AuthSessionClientDTO,
 } from '@dailyuse/contracts/authentication';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useAuthenticationStore } from './authenticationStore';
+import { useAuthenticationStore } from './authentication-store';
 
 function createIdentity(
   overrides: Partial<AuthIdentityClientDTO> = {},

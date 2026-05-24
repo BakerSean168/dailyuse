@@ -4,9 +4,9 @@
  * Get folder tree
  */
 
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
 import { Folder } from '../../../domain-server/entities/folder';
-import { FolderHierarchyService } from '../../../domain-server/services/FolderHierarchyService';
+import { FolderHierarchyService } from '../../../domain-server/services/folder-hierarchy-service';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

@@ -1,7 +1,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { QueryTaskTemplateGraphRes, QueryTaskTemplatesInternal } from '@dailyuse/contracts/task';
-import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/i-task-dependency-repository';
 import type { ListTaskTemplatesUseCase } from './list-task-templates.use-case';
 
 /**

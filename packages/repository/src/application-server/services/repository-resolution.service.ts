@@ -3,7 +3,7 @@
  *
  * Responsible for canonical repository resolution with active fallback and auto-create.
  */
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../domain-server/repositories/i-repository-repository';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';

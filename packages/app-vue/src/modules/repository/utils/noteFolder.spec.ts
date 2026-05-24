@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TreeNode } from '@dailyuse/contracts/repository';
-import { __test__, findNotesFolderId } from './noteFolder';
+import { __test__, findNotesFolderId } from './note-folder';
 
 function createFolder(overrides: Partial<TreeNode> = {}): TreeNode {
   return {

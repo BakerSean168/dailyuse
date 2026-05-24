@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import type { PropsWithChildren } from 'react';
 
 import { getNavigationTheme } from '../constants/theme';
-import { useColorScheme } from '../hooks/use-color-scheme';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 export function AppThemeProvider({ children }: PropsWithChildren) {
   const colorScheme = useColorScheme();

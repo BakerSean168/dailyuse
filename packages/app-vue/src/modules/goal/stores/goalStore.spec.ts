@@ -8,7 +8,7 @@ import type {
   KeyResultClientDTO,
 } from '@dailyuse/contracts/goal';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useGoalStore } from './goalStore';
+import { useGoalStore } from './goal-store';
 
 function createGoal(overrides: Partial<GoalClientDTO> = {}): GoalClientDTO {
   return {

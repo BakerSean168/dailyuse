@@ -1,4 +1,4 @@
-import { NotificationTemplateConfig } from '../NotificationTemplateConfig';
+import { NotificationTemplateConfig } from '../notification-template-config';
 
 describe('NotificationTemplateConfig', () => {
   it('renders variables, validates requirements, and exposes enabled channels', () => {

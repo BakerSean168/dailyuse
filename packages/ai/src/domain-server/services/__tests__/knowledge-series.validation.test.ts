@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { AIGenerationValidationService } from '../AIGenerationValidationService';
-import { AIValidationError } from '../../errors/AIErrors';
+import { AIGenerationValidationService } from '../ai-generation-validation-service';
+import { AIValidationError } from '../../errors/ai-errors';
 
 interface KnowledgeSeriesTestDocument {
   title: string;

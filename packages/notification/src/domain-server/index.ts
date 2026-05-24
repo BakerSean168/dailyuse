@@ -48,9 +48,9 @@ export { NotificationHistory } from './entities/notification-history';
 export type { NotificationHistoryState } from './entities/notification-history';
 
 // Repositories
-export type { INotificationRepository } from './repositories/INotificationRepository';
-export type { INotificationTemplateRepository } from './repositories/INotificationTemplateRepository';
-export type { INotificationPreferenceRepository } from './repositories/INotificationPreferenceRepository';
+export type { INotificationRepository } from './repositories/i-notification-repository';
+export type { INotificationTemplateRepository } from './repositories/i-notification-template-repository';
+export type { INotificationPreferenceRepository } from './repositories/i-notification-preference-repository';
 
 // Services
 export * from './services';

@@ -5,13 +5,13 @@ import { useRepository } from '../../repository/composables/useRepository';
 import { useRepositoryBookmarksPanel } from '../../repository/composables/useRepositoryBookmarksPanel';
 import { useRepositoryResourceCommands } from '../../repository/composables/useRepositoryResourceCommands';
 import { useRepositorySearchPanel } from '../../repository/composables/useRepositorySearchPanel';
-import type { EditorWorkspaceSidebarMode } from '../stores/editorWorkspaceUiStore';
-import { useEditorWorkspaceUiStore } from '../stores/editorWorkspaceUiStore';
+import type { EditorWorkspaceSidebarMode } from '../stores/editor-workspace-ui-store';
+import { useEditorWorkspaceUiStore } from '../stores/editor-workspace-ui-store';
 import { useEditorScene } from './useEditorScene';
 import { useEditorWorkspaceBootstrap } from './useEditorWorkspaceBootstrap';
 import { useEditorWorkspaceTabs } from './useEditorWorkspaceTabs';
 import { useWindowUnsavedChangesGuard } from './useWindowUnsavedChangesGuard';
-import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
+import { useEditorWorkspaceStore } from '../stores/editor-workspace-store';
 
 interface WorkspaceSceneTabItem {
   id: string;

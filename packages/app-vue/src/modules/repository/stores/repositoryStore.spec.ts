@@ -6,7 +6,7 @@ import type {
   TreeNode,
 } from '@dailyuse/contracts/repository';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { __test__, useRepositoryStore } from './repositoryStore';
+import { __test__, useRepositoryStore } from './repository-store';
 
 function createRepository(
   overrides: Partial<RepositoryClientDTO> = {},

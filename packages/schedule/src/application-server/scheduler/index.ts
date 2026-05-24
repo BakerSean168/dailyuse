@@ -28,5 +28,5 @@ export type {
   IScheduleTaskLoader,
   IScheduleLogger,
   MissedTasksResult,
-} from './ScheduleTaskQueue';
-export { ScheduleTaskQueue, ConsoleScheduleLogger } from './ScheduleTaskQueue';
+} from './schedule-task-queue';
+export { ScheduleTaskQueue, ConsoleScheduleLogger } from './schedule-task-queue';

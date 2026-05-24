@@ -184,8 +184,8 @@ import { Button, Badge } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceClientDTO, TreeNode } from '@dailyuse/contracts/repository';
-import { findNotesFolderId } from '../utils/noteFolder';
-import { getResourceDisplayName } from '../utils/resourcePresentation';
+import { findNotesFolderId } from '../utils/note-folder';
+import { getResourceDisplayName } from '../utils/resource-presentation';
 
 const props = withDefaults(
   defineProps<{

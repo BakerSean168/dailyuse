@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AIConversation } from '../../../../domain-server/aggregates/ai-conversation';
 import { AIProviderType } from '@dailyuse/contracts/ai';
-import type { IAIConversationRepository } from '../../../../domain-server/repositories/IAIConversationRepository';
-import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIConversationRepository } from '../../../../domain-server/repositories/i-ai-conversation-repository';
+import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/i-ai-provider-config-repository';
 import { SendAIMessageUseCase } from '../send-ai-message.use-case';
 import { StreamAIMessageUseCase } from '../stream-ai-message.use-case';
 import type {

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '../../../domain-server/repositories/i-task-dependency-repository';
 import type { DependencyType, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import {

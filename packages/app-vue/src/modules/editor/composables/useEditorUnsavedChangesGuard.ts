@@ -2,8 +2,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
 
 export function useEditorUnsavedChangesGuard() {
   const { t } = useI18n();

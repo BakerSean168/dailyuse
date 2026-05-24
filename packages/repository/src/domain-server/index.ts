@@ -9,12 +9,12 @@ export * from './entities/folder';
 export * from './entities/resource';
 
 // Domain Services
-export * from './services/FolderHierarchyService';
-export * from './services/StoragePolicy';
-export * from './services/PathCalculator';
+export * from './services/folder-hierarchy-service';
+export * from './services/storage-policy';
+export * from './services/path-calculator';
 
 // Repository Interfaces
-export * from './repositories/IRepositoryRepository';
-export * from './repositories/IFolderRepository';
-export * from './repositories/IResourceRepository';
-export * from './repositories/IResourceBookmarkRepository';
+export * from './repositories/i-repository-repository';
+export * from './repositories/i-folder-repository';
+export * from './repositories/i-resource-repository';
+export * from './repositories/i-resource-bookmark-repository';

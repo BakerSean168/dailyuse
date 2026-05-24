@@ -3,8 +3,8 @@ import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import {
   type IResourceBookmarkRepository,
   toBookmarkClientDTO,
-} from '../../../domain-server/repositories/IResourceBookmarkRepository';
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+} from '../../../domain-server/repositories/i-resource-bookmark-repository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 

@@ -17,8 +17,8 @@ vi.mock('electron', () => ({
   },
 }));
 
-import { SessionManager, createSessionManager } from '../SessionManager';
-import { TokenManager } from '../TokenManager';
+import { SessionManager, createSessionManager } from '../session-manager';
+import { TokenManager } from '../token-manager';
 
 function createLogger() {
   return {

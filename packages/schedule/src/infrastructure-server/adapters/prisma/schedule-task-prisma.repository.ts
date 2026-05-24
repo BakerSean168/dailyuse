@@ -16,7 +16,7 @@ import type {
   ScheduleExecution as PrismaScheduleExecution,
   Prisma,
 } from '@dailyuse/database';
-import type { IScheduleTaskRepository } from '../../../domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleTaskRepository } from '../../../domain-server/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';

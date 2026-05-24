@@ -4,7 +4,7 @@
  * Update repository stats
  */
 
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
 import type {
   RepositoryClientDTO,
   RepositoryStatsDTO,

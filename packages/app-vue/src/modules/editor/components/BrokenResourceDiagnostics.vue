@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import type { ResourceReferenceUsage } from '../utils/resourceReferenceIndex';
+import type { ResourceReferenceUsage } from '../utils/resource-reference-index';
 
 defineProps<{
   diagnostics: ResourceReferenceUsage[];

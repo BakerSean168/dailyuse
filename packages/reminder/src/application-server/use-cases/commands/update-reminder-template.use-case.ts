@@ -6,13 +6,13 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '@/domain-server/repositories/IReminderGroupRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
+import type { IReminderGroupRepository } from '@/domain-server/repositories/i-reminder-group-repository';
 import type {
   ReminderTemplateClientDTO,
   UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
-import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
+import { ReminderPolicy } from '@/domain-server/services/index';
 
 /**
  * Update Reminder Template Service

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { NotificationPolicy } from '../NotificationPolicy';
+import { NotificationPolicy } from '../notification-policy';
 import { NotificationPreference } from '../../aggregates/notification-preference';
 import { DoNotDisturbConfig } from '../../../domain-shared/value-objects/do-not-disturb-config';
 import { RateLimit } from '../../../domain-shared/value-objects/rate-limit';

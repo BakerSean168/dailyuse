@@ -1,12 +1,12 @@
-import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
-import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
-import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import type { EditorSessionClientDTO, TabViewStateDTO, TabType } from '@dailyuse/contracts/editor';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { EditorPolicy } from '../../../domain-server/services/EditorPolicy';
-import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
-import type { IRepositoryContentPort } from '../../ports/IRepositoryContentPort';
+import { EditorPolicy } from '../../../domain-server/services/editor-policy';
+import { SessionRestorer } from '../../../domain-server/services/session-restorer';
+import type { IRepositoryContentPort } from '../../ports/i-repository-content-port';
 import { loadSessionWithGroups, persistSessionState, countOpenTabs } from './editor-session-helpers';
 
 export interface OpenEditorTabParams {

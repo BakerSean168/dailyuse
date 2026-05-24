@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { setEditorRuntimeService } from './editorServiceRuntime';
+import { setEditorRuntimeService } from './editor-service-runtime';
 
 const editorService = {
   listWorkspaces: vi.fn(),
@@ -28,7 +28,7 @@ describe('editor client gateway', () => {
     editorService.createWorkspace.mockResolvedValueOnce({ ok: true, data: { id: 'repository-1' } });
     editorService.listSessions.mockResolvedValueOnce({ ok: true, data: [{ workspaceId: 'repository-1' }] });
 
-    const service = await import('./editorClientGateway');
+    const service = await import('./editor-client-gateway');
     const workspace = await service.ensureEditorWorkspace('repository-1');
     const sessions = await service.listEditorSessions('repository-1');
 
@@ -44,7 +44,7 @@ describe('editor client gateway', () => {
     });
     editorService.saveContent.mockResolvedValue({ ok: true, data: null });
 
-    const service = await import('./editorClientGateway');
+    const service = await import('./editor-client-gateway');
     const content = await service.getEditorContent('resource-1');
     const saved = await service.saveEditorContent({ resourceId: 'resource-1', content: '# Updated' });
 

@@ -11,15 +11,15 @@ const mocks = vi.hoisted(() => ({
   createSessionManager: vi.fn(),
 }));
 
-vi.mock('../loginDesktopAccount', () => ({
+vi.mock('../login-desktop-account', () => ({
   loginDesktopAccount: mocks.loginDesktopAccount,
 }));
 
-vi.mock('../registerDesktopAccount', () => ({
+vi.mock('../register-desktop-account', () => ({
   registerDesktopAccount: mocks.registerDesktopAccount,
 }));
 
-vi.mock('../refreshDesktopSession', () => ({
+vi.mock('../refresh-desktop-session', () => ({
   refreshDesktopSession: mocks.refreshDesktopSession,
 }));
 
@@ -32,12 +32,12 @@ vi.mock('../../infrastructure', () => ({
   SessionManager: class {},
 }));
 
-vi.mock('../../../../lifecycle/WindowManager', () => ({
+vi.mock('../../../../lifecycle/window-manager', () => ({
   getWindowManager: mocks.getWindowManager,
 }));
 
-import { DesktopCredentialAuthCoordinator } from '../DesktopCredentialAuthCoordinator';
-import type { AuthState } from '../DesktopCredentialAuthCoordinator';
+import { DesktopCredentialAuthCoordinator } from '../desktop-credential-auth-coordinator';
+import type { AuthState } from '../desktop-credential-auth-coordinator';
 
 function createLogger() {
   return {

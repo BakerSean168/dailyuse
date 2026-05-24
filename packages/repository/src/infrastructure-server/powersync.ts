@@ -9,7 +9,7 @@
  */
 
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { IStoragePort } from '../application-server/ports/IStoragePort';
+import type { IStoragePort } from '../application-server/ports/i-storage-port';
 import {
   PowerSyncRepositoryRepository,
   PowerSyncResourceRepository,

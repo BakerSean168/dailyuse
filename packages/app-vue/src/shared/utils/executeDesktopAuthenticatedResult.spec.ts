@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AuthChannels } from '@dailyuse/contracts/electron';
-import { executeDesktopAuthenticatedResult } from './executeDesktopAuthenticatedResult';
+import { executeDesktopAuthenticatedResult } from './execute-desktop-authenticated-result';
 
 describe('executeDesktopAuthenticatedResult', () => {
   afterEach(() => {

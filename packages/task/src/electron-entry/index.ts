@@ -22,8 +22,8 @@ import { TaskInstanceController } from '../controllers/task-instance.controller'
 import { TaskDependencyController } from '../controllers/task-dependency.controller';
 import { createLogger } from '@dailyuse/utils';
 import type { TaskModuleInstance } from '../infrastructure-server';
-import type { ITaskTemplateRepository } from '../domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '../domain-server/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import {
   PowerSyncTaskTemplateRepository,

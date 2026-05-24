@@ -7,7 +7,7 @@
  */
 
 import type { PrismaClient, Schedule as PrismaSchedule } from '@dailyuse/database';
-import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
+import type { IScheduleRepository } from '../../../domain-server/repositories/i-schedule-repository';
 import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
 import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';

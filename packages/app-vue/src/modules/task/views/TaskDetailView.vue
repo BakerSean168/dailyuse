@@ -285,7 +285,7 @@ import {
   getTaskTimeValueDisplay,
   mapTaskTemplateDtoToViewModel,
   toTaskTimeConfigPayload,
-} from '../utils/taskTemplatePresentation';
+} from '../utils/task-template-presentation';
 import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { buildTaskGraphData } from '../types/task-dag.types';
 

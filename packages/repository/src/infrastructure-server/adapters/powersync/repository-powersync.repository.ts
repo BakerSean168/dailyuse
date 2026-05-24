@@ -1,6 +1,6 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import { Repository } from '../../../domain-server/aggregates/repository';
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 import {
   PowerSyncRepositoryMapper,

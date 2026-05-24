@@ -20,7 +20,7 @@ import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-fe
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { initNotificationService } from '../services';
 import { getDesktopProfileRuntimeManager } from '../profile';
-import { getWindowManager } from './WindowManager';
+import { getWindowManager } from './window-manager';
 import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
 import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import { createLogger } from '@dailyuse/utils';

@@ -109,7 +109,7 @@ import {
 import { CheckCircle, Clock, Plus } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
 import { useI18n } from 'vue-i18n';
-import { getTaskTimeValueDisplay } from '../../utils/taskTemplatePresentation';
+import { getTaskTimeValueDisplay } from '../../utils/task-template-presentation';
 
 const { t } = useI18n();
 

@@ -116,7 +116,7 @@ import type { TaskTemplateFormProps, TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useI18n } from 'vue-i18n';
 import { ColorPickerField } from '../../../../../shared/components';
-import { defaultNamedColor } from '../../../../../shared/constants/colorPalette';
+import { defaultNamedColor } from '../../../../../shared/constants/color-palette';
 
 const { t } = useI18n();
 const NO_PARENT_VALUE = '__none__';

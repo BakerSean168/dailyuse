@@ -6,7 +6,7 @@
  */
 
 import type { PrismaClient, ReminderGroup as PrismaReminderGroup, Prisma } from '@dailyuse/database';
-import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
+import type { IReminderGroupRepository } from '../../../domain-server/repositories/i-reminder-group-repository';
 import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';

@@ -4,7 +4,7 @@
  * 创建任务依赖关系
  */
 
-import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/i-task-dependency-repository';
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import { dependencyServerToClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';

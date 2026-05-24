@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SharedPathResolver } from '../paths';
-import { ProfileRegistry } from './ProfileRegistry';
+import { ProfileRegistry } from './profile-registry';
 
 function createSharedResolver(rootDir: string): SharedPathResolver {
   return {

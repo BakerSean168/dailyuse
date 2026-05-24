@@ -19,4 +19,4 @@ export {
 export {
   NotificationTemplateConfig,
   type NotificationTemplateConfigServer,
-} from './NotificationTemplateConfig';
+} from './notification-template-config';

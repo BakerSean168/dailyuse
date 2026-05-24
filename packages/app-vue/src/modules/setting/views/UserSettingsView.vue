@@ -24,10 +24,10 @@ import UserFilesSettings from '../components/UserFilesSettings.vue';
 
 import { useUserSetting } from '../composables/useUserSetting';
 import { applyThemeMode } from '../composables';
-import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
+import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
-import { getDesktopAuthApi } from '../../../shared/utils/desktopAuthRecovery';
+import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
 const { t } = useI18n();
 const presentationStore = usePresentationPreferenceStore();

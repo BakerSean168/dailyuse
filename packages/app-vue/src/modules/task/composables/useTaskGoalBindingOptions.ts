@@ -4,7 +4,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { GoalBindingOption, KeyResultBindingOption } from '../components/types';
-import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 
 type GoalOptionDTO = {
   id: string;

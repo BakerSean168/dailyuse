@@ -11,10 +11,10 @@ import type {
   CreateEditorTabRequest,
   UpdateEditorTabRequest,
 } from '@dailyuse/contracts/editor';
-import type { IEditorWorkspaceRepository } from '../domain-server/repositories/IEditorWorkspaceRepository';
-import type { IEditorSessionRepository } from '../domain-server/repositories/IEditorSessionRepository';
-import type { IEditorGroupRepository } from '../domain-server/repositories/IEditorGroupRepository';
-import type { IEditorTabRepository } from '../domain-server/repositories/IEditorTabRepository';
+import type { IEditorWorkspaceRepository } from '../domain-server/repositories/i-editor-workspace-repository';
+import type { IEditorSessionRepository } from '../domain-server/repositories/i-editor-session-repository';
+import type { IEditorGroupRepository } from '../domain-server/repositories/i-editor-group-repository';
+import type { IEditorTabRepository } from '../domain-server/repositories/i-editor-tab-repository';
 import type { IRepositoryContentPort, IRepositorySearchPort } from '../application-server';
 import {
   CreateEditorWorkspaceUseCase,

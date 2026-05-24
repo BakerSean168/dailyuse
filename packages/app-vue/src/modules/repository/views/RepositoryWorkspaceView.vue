@@ -348,14 +348,14 @@ import SelfContainedExportDialog from '../../editor/components/SelfContainedExpo
 import MediaViewer from '../../editor/components/MediaViewer.vue';
 import ActiveDocumentPane from '../../editor/components/ActiveDocumentPane.vue';
 import { useRepositoryWorkspaceScene } from '../../editor/composables';
-import type { EditorWorkspaceSidebarMode } from '../../editor/stores/editorWorkspaceUiStore';
+import type { EditorWorkspaceSidebarMode } from '../../editor/stores/editor-workspace-ui-store';
 import {
   getResourceDisplayName,
   getResourceFormattedSize,
   getResourceIcon,
   getResourceMediaType,
   isMarkdownResource,
-} from '../utils/resourcePresentation';
+} from '../utils/resource-presentation';
 
 const props = withDefaults(
   defineProps<{

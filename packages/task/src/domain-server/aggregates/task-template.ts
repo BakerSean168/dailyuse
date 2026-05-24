@@ -43,7 +43,7 @@ import {
   InvalidGoalBindingError,
   InvalidDateRangeError,
   InstanceGenerationFailedError,
-} from '../value-objects/TaskErrors';
+} from '../value-objects/task-errors';
 
 /**
  * Internal state interface - all fields are required

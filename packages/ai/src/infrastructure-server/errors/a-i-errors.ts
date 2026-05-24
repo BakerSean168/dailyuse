@@ -8,4 +8,4 @@ export {
   AIQuotaExceededError,
   AIProviderError,
   AIValidationError,
-} from '../../domain-server/errors/AIErrors';
+} from '../../domain-server/errors/ai-errors';

@@ -8,12 +8,12 @@
 export type * from './types';
 
 // Store
-export { useGovernanceStore } from './stores/governanceStore';
-export type { GovernanceStoreType } from './stores/governanceStore';
+export { useGovernanceStore } from './stores/governance-store';
+export type { GovernanceStoreType } from './stores/governance-store';
 
 // Composables
 export { useGovernance } from './composables/useGovernance';
-export { usePerformanceMonitor } from './composables/use-performance-monitor';
+export { usePerformanceMonitor } from './composables/usePerformanceMonitor';
 
 // Routes
 export { governanceRoutes } from './router';

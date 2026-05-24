@@ -1,4 +1,4 @@
-import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '../../../domain-server/repositories/i-reminder-template-repository';
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';

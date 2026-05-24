@@ -5,7 +5,7 @@ import type {
   UserReminderPreferencesClientDTO,
 } from '@dailyuse/contracts/reminder';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useReminderStore } from './reminderStore';
+import { useReminderStore } from './reminder-store';
 
 function createTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},

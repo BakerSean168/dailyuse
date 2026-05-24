@@ -16,7 +16,7 @@ import { ResultCode } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
 import { getPowerSyncConfig } from '../../shared/infrastructure/config/env.js';
-import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/authMiddleware.js';
+import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/auth-middleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
 import { readStoredProfileSnapshotManifest } from './snapshot-storage.js';
 

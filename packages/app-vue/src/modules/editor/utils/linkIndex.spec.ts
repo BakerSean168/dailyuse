@@ -4,7 +4,7 @@ import {
   getBacklinksForNote,
   getLinkGraphForNote,
   searchLinkIndexNotes,
-} from './linkIndex';
+} from './link-index';
 import { ResourceStatus } from '@dailyuse/contracts/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';

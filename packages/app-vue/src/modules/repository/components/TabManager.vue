@@ -84,7 +84,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { logEditorIssue } from '../../../shared/utils/editorIssueDebug';
+import { logEditorIssue } from '../../../shared/utils/editor-issue-debug';
 
 export interface ResourceTab {
   id: string;

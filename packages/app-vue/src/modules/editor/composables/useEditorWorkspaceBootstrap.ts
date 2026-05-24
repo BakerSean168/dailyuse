@@ -1,5 +1,5 @@
 import { watch, type Ref } from 'vue';
-import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
+import { useEditorWorkspaceStore } from '../stores/editor-workspace-store';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
 import { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 

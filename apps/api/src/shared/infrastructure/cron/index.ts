@@ -9,6 +9,6 @@
  * 3. 在应用关闭时调用 stopCronScheduler() 停止调度器
  */
 
-export { CronSchedulerManager } from './CronSchedulerManager';
-export type { CronJobConfig } from './CronSchedulerManager';
-export { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './registerCronJobs';
+export { CronSchedulerManager } from './cron-scheduler-manager';
+export type { CronJobConfig } from './cron-scheduler-manager';
+export { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './register-cron-jobs';

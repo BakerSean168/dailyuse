@@ -4,10 +4,10 @@
  * Centralizes resource create / update / move / delete workflow with
  * path availability checks, storage move, and mutation event emission.
  */
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
-import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
-import type { IStoragePort } from '../ports/IStoragePort';
+import type { IResourceRepository } from '../../domain-server/repositories/i-resource-repository';
+import type { IRepositoryRepository } from '../../domain-server/repositories/i-repository-repository';
+import type { IFolderRepository } from '../../domain-server/repositories/i-folder-repository';
+import type { IStoragePort } from '../ports/i-storage-port';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import {
@@ -20,7 +20,7 @@ import {
   type UploadResourcesRequestDTO,
 } from '@dailyuse/contracts/repository';
 import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
-import { PathCalculator } from '../../domain-server/services/PathCalculator';
+import { PathCalculator } from '../../domain-server/services/path-calculator';
 import { eventBus } from '@dailyuse/utils';
 import type { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import type { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';

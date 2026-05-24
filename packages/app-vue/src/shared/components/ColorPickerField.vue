@@ -47,7 +47,7 @@ import {
   findNamedColor,
   namedColorOptions,
   type NamedColorOption,
-} from '../constants/colorPalette';
+} from '../constants/color-palette';
 
 const { t } = useI18n();
 

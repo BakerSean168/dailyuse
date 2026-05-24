@@ -14,7 +14,7 @@
 
 import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useGovernanceStore } from '../stores/governanceStore';
+import { useGovernanceStore } from '../stores/governance-store';
 import { RULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
@@ -25,7 +25,7 @@ import type {
   RuleStatus,
   UpdateRuleReq,
 } from '../types';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 type HydratedRule = RuleClientDTO & {
   readonly createdAt: Date;

@@ -3,7 +3,7 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { AIProviderConfigClientDTO, AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import type { IAIProviderModelCatalogPort } from '../../ports';
 import { toClientDTO } from './ai-provider-config-helpers';
 

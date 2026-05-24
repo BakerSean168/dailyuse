@@ -5,7 +5,7 @@ import type {
   SearchResponse,
   SearchResultItem,
 } from '@dailyuse/contracts/repository';
-import { getResourceDisplayName } from '../utils/resourcePresentation';
+import { getResourceDisplayName } from '../utils/resource-presentation';
 
 export interface HighlightOptions {
   caseSensitive?: boolean;

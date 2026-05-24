@@ -7,8 +7,8 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
-import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
+import { ReminderPolicy } from '@/domain-server/services/index';
 
 /**
  * Delete Reminder Template Service

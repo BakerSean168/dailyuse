@@ -5,13 +5,13 @@
  */
 
 // Store
-export { usePresentationPreferenceStore } from './stores/presentationPreferenceStore';
+export { usePresentationPreferenceStore } from './stores/presentation-preference-store';
 export type {
   PresentationPreferenceState,
   PresentationThemeMode,
-} from './stores/presentationPreferenceStore';
-export { useUserSettingStore } from './stores/userSettingStore';
-export type { UserSettingStoreType } from './stores/userSettingStore';
+} from './stores/presentation-preference-store';
+export { useUserSettingStore } from './stores/user-setting-store';
+export type { UserSettingStoreType } from './stores/user-setting-store';
 
 // Composables
 export {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { __test__, getEditableResourceName, normalizeRenamedResourceName } from './resourceName';
+import { __test__, getEditableResourceName, normalizeRenamedResourceName } from './resource-name';
 
 describe('resourceName', () => {
   it('preserves the existing extension when omitted', () => {

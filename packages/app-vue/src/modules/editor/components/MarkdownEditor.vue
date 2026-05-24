@@ -27,13 +27,13 @@
 import { getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { EditorState } from '@codemirror/state';
 import { EditorView, type ViewUpdate } from '@codemirror/view';
-import { createMarkdownEditorExtensions } from '../codemirror/createMarkdownEditorExtensions';
-import { markdownLivePreview } from '../codemirror/markdownLivePreview';
-import { findActiveWikiLinkRange } from '../utils/wikiLinks';
-import { resolveMarkdownResourceReferences } from '../utils/markdownResourceReferences';
+import { createMarkdownEditorExtensions } from '../codemirror/create-markdown-editor-extensions';
+import { markdownLivePreview } from '../codemirror/markdown-live-preview';
+import { findActiveWikiLinkRange } from '../utils/wiki-links';
+import { resolveMarkdownResourceReferences } from '../utils/markdown-resource-references';
 import type { EditorSelectionRange } from '../composables/useResourceInsertion';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
-import { logEditorIssue } from '../../../shared/utils/editorIssueDebug';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
+import { logEditorIssue } from '../../../shared/utils/editor-issue-debug';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 
 const props = withDefaults(

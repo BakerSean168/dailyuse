@@ -3,7 +3,7 @@ import { ControlMode, ReminderStatus, ReminderType } from '@dailyuse/contracts/r
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderGroup } from '../../aggregates/reminder-group';
 import { ReminderTemplate } from '../../aggregates/reminder-template';
-import { ReminderGroupBusinessService } from '../ReminderGroupBusinessService';
+import { ReminderGroupBusinessService } from '../reminder-group-business-service';
 
 function createTemplate(overrides: {
   identityId?: IdentityId;

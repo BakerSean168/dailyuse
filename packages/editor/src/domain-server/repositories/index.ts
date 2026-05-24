@@ -23,10 +23,10 @@
  *
  */
 
-export * from './IEditorWorkspaceRepository';
-export * from './IEditorSessionRepository';
-export * from './IEditorGroupRepository';
-export * from './IEditorTabRepository';
-export * from './IResourceVersionRepository';
-export * from './ILinkedResourceRepository';
-export * from './ISearchEngineRepository';
+export * from './i-editor-workspace-repository';
+export * from './i-editor-session-repository';
+export * from './i-editor-group-repository';
+export * from './i-editor-tab-repository';
+export * from './i-resource-version-repository';
+export * from './i-linked-resource-repository';
+export * from './i-search-engine-repository';

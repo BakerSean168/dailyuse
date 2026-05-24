@@ -5,7 +5,7 @@
  */
 
 import { computed, ref } from 'vue';
-import { useRepositoryStore } from '../stores/repositoryStore';
+import { useRepositoryStore } from '../stores/repository-store';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
@@ -19,14 +19,14 @@ import type {
 import type { Repository } from '@dailyuse/repository/domain-client';
 import type { Result } from '@dailyuse/contracts/result';
 import { searchRepositoryResources } from './repositorySearch';
-import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editor-issue-debug';
 import {
   recoverDesktopAuthIfNeeded,
   type DesktopAuthApi,
-} from '../../../shared/utils/desktopAuthRecovery';
+} from '../../../shared/utils/desktop-auth-recovery';
 import { getI18nGlobal } from '../../../plugins/i18n';
-import { translateResultError } from '../../../shared/utils/translateResultError';
-import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 
 export interface RepositoryUploadFailure {
   fileName: string;

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-case';
 import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';
 
 const mockMarkExpiredInstances = vi.fn();
-vi.mock('@/domain-server/services/TaskExpirationService', () => {
+vi.mock('@/domain-server/services/index', () => {
   return {
     TaskExpirationService: class {
       markExpiredInstances = mockMarkExpiredInstances;
@@ -16,7 +16,7 @@ vi.mock('@/domain-server/services/TaskExpirationService', () => {
 });
 
 const mockGenerateInstances = vi.fn();
-vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
+vi.mock('@/domain-server/services/index', () => {
   return {
     TaskInstanceGenerationService: class {
       generateInstances = mockGenerateInstances;

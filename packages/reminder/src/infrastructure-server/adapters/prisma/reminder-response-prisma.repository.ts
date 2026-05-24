@@ -10,7 +10,7 @@ import type {
   ReminderResponse as PrismaReminderResponse,
   Prisma,
 } from '@dailyuse/database';
-import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
+import type { IReminderResponseRepository } from '../../../domain-server/repositories/i-reminder-response-repository';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
 import { PrismaReminderResponseMapper } from './mappers/prisma-reminder-response-mapper';

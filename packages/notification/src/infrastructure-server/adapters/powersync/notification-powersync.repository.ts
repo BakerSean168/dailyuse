@@ -7,7 +7,7 @@ import type {
 } from '@dailyuse/contracts/notification';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { INotificationRepository } from '../../../domain-server/repositories/INotificationRepository';
+import type { INotificationRepository } from '../../../domain-server/repositories/i-notification-repository';
 import { Notification } from '../../../domain-server/aggregates/notification';
 import { NotificationId, NotificationAction, NotificationMetadata } from '../../../domain-shared/value-objects';
 import { eventBus } from '@dailyuse/utils';

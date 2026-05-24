@@ -22,7 +22,7 @@ vi.mock('../../profile', () => ({
   getDesktopProfileRuntimeManager: mocks.getDesktopProfileRuntimeManager,
 }));
 
-vi.mock('../../lifecycle/WindowManager', () => ({
+vi.mock('../../lifecycle/window-manager', () => ({
   getWindowManager: mocks.getWindowManager,
 }));
 
@@ -31,15 +31,15 @@ vi.mock('./infrastructure', () => ({
   getNetworkStateManager: mocks.getNetworkStateManager,
 }));
 
-vi.mock('./application/loginDesktopAccount', () => ({
+vi.mock('./application/login-desktop-account', () => ({
   loginDesktopAccount: mocks.loginDesktopAccount,
 }));
 
-vi.mock('./application/registerDesktopAccount', () => ({
+vi.mock('./application/register-desktop-account', () => ({
   registerDesktopAccount: mocks.registerDesktopAccount,
 }));
 
-vi.mock('./application/AuthRemoteGateway', () => ({
+vi.mock('./application/auth-remote-gateway', () => ({
   AuthRemoteGateway: class {},
 }));
 

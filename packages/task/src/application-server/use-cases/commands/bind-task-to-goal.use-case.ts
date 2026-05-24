@@ -4,7 +4,7 @@
  * 将任务模板绑定至目标
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { TaskTemplateClientDTO, BindToGoalReq } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

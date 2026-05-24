@@ -5,7 +5,7 @@ import type {
   ScheduleTaskClientDTO,
 } from '@dailyuse/contracts/schedule';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useScheduleStore } from './scheduleStore';
+import { useScheduleStore } from './schedule-store';
 
 function createTask(
   overrides: Partial<ScheduleTaskClientDTO> = {},

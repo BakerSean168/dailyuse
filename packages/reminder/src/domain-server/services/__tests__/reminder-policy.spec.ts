@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ReminderPolicy } from '../ReminderPolicy';
+import { ReminderPolicy } from '../reminder-policy';
 import { ReminderTemplate } from '../../aggregates/reminder-template';
 import type { ReminderTemplateState } from '../../aggregates/reminder-template';
 import { ReminderGroup } from '../../aggregates/reminder-group';

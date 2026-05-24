@@ -4,7 +4,7 @@
  * In-memory implementation of IRepositoryRepository for testing.
  */
 
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
 import type { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 

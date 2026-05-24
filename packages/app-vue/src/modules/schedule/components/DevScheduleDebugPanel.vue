@@ -88,7 +88,7 @@ import {
   getExecutionSummary,
   getHealthStatusLabel,
   computeHealthStatus,
-} from '../utils/schedulePresentation';
+} from '../utils/schedule-presentation';
 
 interface Props {
   tasks: ScheduleTaskClientDTO[];

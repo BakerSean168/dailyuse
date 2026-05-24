@@ -4,11 +4,11 @@
  * 获取通知偏好设置的应用服务
  */
 
-import { NotificationPreferenceDomainService } from '../../../domain-server/services/NotificationPreferenceDomainService';
+import { NotificationPreferenceDomainService } from '../../../domain-server/services/notification-preference-domain-service';
 import type { NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { INotificationPreferenceRepository } from '../../../domain-server/repositories/INotificationPreferenceRepository';
+import type { INotificationPreferenceRepository } from '../../../domain-server/repositories/i-notification-preference-repository';
 import { toNotificationPreferenceClientDTO } from '../commands/notification-dto-converters';
 
 /**

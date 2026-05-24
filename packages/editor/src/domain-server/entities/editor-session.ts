@@ -27,7 +27,7 @@ import type {
   IdentityId,
 } from '@dailyuse/contracts/primitives';
 import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/value-objects/editor-session-id';
-import { SessionLayout } from '../value-objects/SessionLayout';
+import { SessionLayout } from '../value-objects/session-layout';
 import { EditorGroup } from './editor-group';
 import { EditorTab } from './editor-tab';
 import { BusinessRuleViolationError } from '@dailyuse/utils';

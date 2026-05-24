@@ -1,8 +1,8 @@
 import { generateUUID } from '@dailyuse/utils';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { INotificationTemplateRepository } from '../../../domain-server/repositories/INotificationTemplateRepository';
+import type { INotificationTemplateRepository } from '../../../domain-server/repositories/i-notification-template-repository';
 import { NotificationTemplate } from '../../../domain-server/aggregates/notification-template';
-import { NotificationTemplateConfig } from '../../../domain-server/value-objects/NotificationTemplateConfig';
+import { NotificationTemplateConfig } from '../../../domain-server/value-objects/notification-template-config';
 import type { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 
 interface NotificationTemplateRow {

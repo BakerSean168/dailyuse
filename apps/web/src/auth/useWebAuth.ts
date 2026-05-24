@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { AuthResponseDTO, LoginByEmailReq, RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 
-import { translateAuthResultError } from './resultError';
+import { translateAuthResultError } from './result-error';
 import { useAuthService } from './service';
 
 const AUTH_STORAGE_KEY = 'authentication';

@@ -320,7 +320,7 @@ import {
   getTemplateTriggerLabel,
   getTemplateSelfSwitchLabel,
   getTemplateSelfSwitchShortLabel,
-} from '../presentation/lifecyclePresentation';
+} from '../presentation/lifecycle-presentation';
 
 const props = defineProps<{
   template?: ReminderTemplateClientDTO | null;

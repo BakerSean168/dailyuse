@@ -88,7 +88,7 @@ import type { MenuAction } from '../../../components/shared';
 import {
   getTemplateLifecycleBadgeText,
   getTemplateLifecycleSummary,
-} from '../presentation/lifecyclePresentation';
+} from '../presentation/lifecycle-presentation';
 
 const props = defineProps<{
   item: ReminderTemplateClientDTO;

@@ -7,7 +7,7 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import type {
   KnowledgeExpansionResult,
   IAIExecutionLogPort,

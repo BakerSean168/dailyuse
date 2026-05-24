@@ -20,7 +20,7 @@
  * - 用户偏好业冡：检查用户偏好、日时途樛
  */
 
-export { NotificationDomainService } from './NotificationDomainService';
-export { NotificationPolicy } from './NotificationPolicy';
-export { NotificationTemplateDomainService } from './NotificationTemplateDomainService';
-export { NotificationPreferenceDomainService } from './NotificationPreferenceDomainService';
+export { NotificationDomainService } from './notification-domain-service';
+export { NotificationPolicy } from './notification-policy';
+export { NotificationTemplateDomainService } from './notification-template-domain-service';
+export { NotificationPreferenceDomainService } from './notification-preference-domain-service';

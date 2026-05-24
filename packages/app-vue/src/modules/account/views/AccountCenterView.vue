@@ -21,7 +21,7 @@ import { LogOut } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { useAccount } from '../composables/useAccount';
 import { LOGOUT_HANDLER_KEY } from '../../../di/keys';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 const { t } = useI18n();
 const logout = inject(LOGOUT_HANDLER_KEY);

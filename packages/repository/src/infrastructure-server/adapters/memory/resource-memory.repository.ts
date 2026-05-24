@@ -4,7 +4,7 @@
  * In-memory implementation of IResourceRepository for testing.
  */
 
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
 import type { Resource } from '../../../domain-server/entities/resource';
 
 /**

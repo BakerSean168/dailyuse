@@ -6,7 +6,7 @@
 
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useScheduleStore } from '../stores/scheduleStore';
+import { useScheduleStore } from '../stores/schedule-store';
 import { SCHEDULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
@@ -17,7 +17,7 @@ import type {
   CreateScheduleRequest,
 } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useSchedule() {
   const { t } = useI18n();

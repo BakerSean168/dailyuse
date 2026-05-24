@@ -78,10 +78,10 @@ import {
   Input,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
 import { File, FileImage } from 'lucide-vue-next';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
+import type { ResolvedMarkdownResourceReference } from '../utils/markdown-resource-references';
 
 const props = withDefaults(
   defineProps<{

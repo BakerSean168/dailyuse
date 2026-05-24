@@ -1,6 +1,6 @@
 import { AIProviderType, type AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import type { ChatExecutionProviderConfig } from '../../ports';
 
 /**

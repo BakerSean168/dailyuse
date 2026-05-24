@@ -1,5 +1,5 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
-import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
 import { EditorGroup } from '../../../domain-server/entities/editor-group';
 
 type GroupRow = {

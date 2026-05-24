@@ -5,8 +5,8 @@
  */
 
 // Store
-export { useRepositoryStore } from './stores/repositoryStore';
-export type { RepositoryStoreType } from './stores/repositoryStore';
+export { useRepositoryStore } from './stores/repository-store';
+export type { RepositoryStoreType } from './stores/repository-store';
 
 // Composables
 export { useRepository } from './composables/useRepository';

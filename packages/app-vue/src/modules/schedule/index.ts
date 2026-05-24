@@ -5,8 +5,8 @@
  */
 
 // Store
-export { useScheduleStore } from './stores/scheduleStore';
-export type { ScheduleStoreType } from './stores/scheduleStore';
+export { useScheduleStore } from './stores/schedule-store';
+export type { ScheduleStoreType } from './stores/schedule-store';
 
 // Composables
 export { useSchedule, useCalendarView } from './composables';

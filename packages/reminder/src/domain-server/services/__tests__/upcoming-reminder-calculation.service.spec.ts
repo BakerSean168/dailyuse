@@ -7,7 +7,7 @@ import {
   TriggerType,
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { UpcomingReminderCalculationService } from '../UpcomingReminderCalculationService';
+import { UpcomingReminderCalculationService } from '../upcoming-reminder-calculation-service';
 
 function createReminder(
   overrides: Partial<ReminderTemplateServerDTO>,

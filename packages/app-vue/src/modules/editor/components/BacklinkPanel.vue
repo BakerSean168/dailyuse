@@ -107,7 +107,7 @@ import {
   AlertCircle,
 } from 'lucide-vue-next';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
-import type { BacklinkItem } from '../utils/linkIndex';
+import type { BacklinkItem } from '../utils/link-index';
 
 const { t, locale } = useI18n();
 

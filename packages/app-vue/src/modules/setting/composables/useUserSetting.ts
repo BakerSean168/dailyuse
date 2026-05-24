@@ -9,8 +9,8 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { useUserSettingStore } from '../stores/userSettingStore';
-import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
+import { useUserSettingStore } from '../stores/user-setting-store';
+import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
@@ -19,7 +19,7 @@ import type {
   UserSettingClientDTO,
   UserSettingPreferences,
 } from '@dailyuse/contracts/setting';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useUserSetting() {
   const { t } = useI18n();

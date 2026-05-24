@@ -1,12 +1,12 @@
 import { computed, ref, type ComputedRef, type Ref } from 'vue';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
-import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
+import { useEditorWorkspaceStore } from '../stores/editor-workspace-store';
 import {
   autoSaveEditorContent,
   getEditorContent,
   saveEditorContent,
-} from '../services/editorClientGateway';
+} from '../services/editor-client-gateway';
 
 export interface EditorDocumentSession {
   resourceId: string;

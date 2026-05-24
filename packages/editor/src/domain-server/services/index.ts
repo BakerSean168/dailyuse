@@ -3,5 +3,5 @@
  * 编辑器领域服务
  */
 
-export * from './EditorPolicy';
-export * from './SessionRestorer';
+export * from './editor-policy';
+export * from './session-restorer';

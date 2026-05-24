@@ -4,11 +4,11 @@ import { toast } from 'vue-sonner';
 import { useConfirm } from '@dailyuse/ui-vue-shadcn';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { useEditorWorkspaceActions } from '../../editor/composables/useEditorWorkspaceActions';
-import { useEditorWorkspaceStore } from '../../editor/stores/editorWorkspaceStore';
+import { useEditorWorkspaceStore } from '../../editor/stores/editor-workspace-store';
 import { useResourceReferenceIndex } from '../../editor/composables/useResourceReferenceIndex';
-import { findNotesFolderId } from '../utils/noteFolder';
-import { getEditableResourceName, normalizeRenamedResourceName } from '../utils/resourceName';
-import { getResourceDisplayName, isMarkdownResource } from '../utils/resourcePresentation';
+import { findNotesFolderId } from '../utils/note-folder';
+import { getEditableResourceName, normalizeRenamedResourceName } from '../utils/resource-name';
+import { getResourceDisplayName, isMarkdownResource } from '../utils/resource-presentation';
 import { useRepository } from './useRepository';
 
 export function useRepositoryResourceCommands(activeResource: Ref<ResourceClientDTO | null>) {

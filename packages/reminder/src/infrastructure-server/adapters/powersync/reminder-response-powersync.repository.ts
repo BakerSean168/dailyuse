@@ -1,5 +1,5 @@
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
-import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
+import type { IReminderResponseRepository } from '../../../domain-server/repositories/i-reminder-response-repository';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
 import {
   PowerSyncReminderResponseMapper,

@@ -19,4 +19,4 @@ export {
 
 export { defaultMainNavigation, defaultBottomNavigation } from './di/navigation';
 
-export { useAuthenticationStore } from './modules/authentication/stores/authenticationStore';
+export { useAuthenticationStore } from './modules/authentication/stores/authentication-store';

@@ -14,23 +14,23 @@
  * 模式：每个模块一个组合根，仅使用构造函数注入，无隐藏的服务定位器。
  */
 
-import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '../domain-server/repositories/IReminderGroupRepository';
-import type { IReminderResponseRepository } from '../domain-server/repositories/IReminderResponseRepository';
-import type { IUserReminderPreferenceRepository } from '../domain-server/repositories/IUserReminderPreferenceRepository';
+import type { IReminderTemplateRepository } from '../domain-server/repositories/i-reminder-template-repository';
+import type { IReminderGroupRepository } from '../domain-server/repositories/i-reminder-group-repository';
+import type { IReminderResponseRepository } from '../domain-server/repositories/i-reminder-response-repository';
+import type { IUserReminderPreferenceRepository } from '../domain-server/repositories/i-user-reminder-preference-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { ok, fail } from '@dailyuse/contracts/result';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
 import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
-import { ReminderDomainService } from '../domain-server/services/ReminderDomainService';
-import { UpcomingReminderCalculationService } from '../domain-server/services/UpcomingReminderCalculationService';
+import { ReminderDomainService } from '../domain-server/services/reminder-domain-service';
+import { UpcomingReminderCalculationService } from '../domain-server/services/upcoming-reminder-calculation-service';
 import { RecordReminderResponseUseCase } from '../application-server/use-cases/commands/record-reminder-response.use-case';
 import { AnalyzeReminderFrequencyUseCase } from '../application-server/use-cases/queries/analyze-reminder-frequency.use-case';
 import { AdjustReminderFrequencyUseCase } from '../application-server/use-cases/commands/adjust-reminder-frequency.use-case';
 import { UserReminderPreferences } from '../domain-server/aggregates/user-reminder-preferences';
-import type { ITemplateEffectiveStatus } from '../domain-server/services/ReminderTemplateControlService';
+import type { ITemplateEffectiveStatus } from '../domain-server/services/reminder-template-control-service';
 import type {
   ReminderTemplateListRes,
   ReminderGroupListRes,

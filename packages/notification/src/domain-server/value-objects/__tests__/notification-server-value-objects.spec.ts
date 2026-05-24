@@ -1,10 +1,10 @@
-import { CategoryPreference } from '../CategoryPreference';
-import { ChannelError } from '../ChannelError';
-import { ChannelResponse } from '../ChannelResponse';
-import { DoNotDisturbConfig } from '../DoNotDisturbConfig';
-import { NotificationAction } from '../NotificationAction';
-import { NotificationMetadata } from '../NotificationMetadata';
-import { RateLimit } from '../RateLimit';
+import { CategoryPreference } from '../category-preference';
+import { ChannelError } from '../channel-error';
+import { ChannelResponse } from '../channel-response';
+import { DoNotDisturbConfig } from '../do-not-disturb-config';
+import { NotificationAction } from '../notification-action';
+import { NotificationMetadata } from '../notification-metadata';
+import { RateLimit } from '../rate-limit';
 import { NotificationActionType } from '../../../domain-shared/value-objects';
 
 describe('notification server value object re-exports', () => {

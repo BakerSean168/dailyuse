@@ -4,7 +4,7 @@
  * 获取任务完整依赖链
  */
 
-import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/i-task-dependency-repository';
 import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';

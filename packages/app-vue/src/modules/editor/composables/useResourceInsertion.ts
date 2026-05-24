@@ -4,9 +4,9 @@ import type {
   RepositoryUploadFailure,
   RepositoryUploadResult,
 } from '../../repository/composables/useRepository';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
-import { serializeMarkdownResourceReference } from '../utils/markdownResourceReferences';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
+import { serializeMarkdownResourceReference } from '../utils/markdown-resource-references';
 
 export interface EditorSelectionRange {
   from: number;
@@ -245,7 +245,7 @@ export function createResourceInsertion(
     options: ExportMarkdownAsSelfContainedOptions,
   ): Promise<SelfContainedExportResult> {
     const { resolveMarkdownResourceReferences, replaceMarkdownReferences } =
-      await import('../utils/markdownResourceReferences');
+      await import('../utils/markdown-resource-references');
 
     const references = resolveMarkdownResourceReferences(options.markdown, resources.value).filter(
       (reference) => reference.kind === 'image' && reference.isRepositoryReference,

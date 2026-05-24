@@ -7,7 +7,7 @@
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { useTaskStore } from '../stores/taskStore';
+import { useTaskStore } from '../stores/task-store';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
@@ -19,8 +19,8 @@ import type {
 } from '@dailyuse/contracts/task';
 import type { GoalId, TaskFolderId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
-import { translateResultError } from '../../../shared/utils/translateResultError';
-import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 
 type TaskTemplateListParams = {
   page?: number;

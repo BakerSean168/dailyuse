@@ -4,13 +4,13 @@
  * Rename folder
  */
 
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
-import { FolderHierarchyService } from '../../../domain-server/services/FolderHierarchyService';
-import { PathCalculator } from '../../../domain-server/services/PathCalculator';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
+import { FolderHierarchyService } from '../../../domain-server/services/folder-hierarchy-service';
+import { PathCalculator } from '../../../domain-server/services/path-calculator';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
-import type { IStoragePort } from '../../ports/IStoragePort';
+import type { IStoragePort } from '../../ports/i-storage-port';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 

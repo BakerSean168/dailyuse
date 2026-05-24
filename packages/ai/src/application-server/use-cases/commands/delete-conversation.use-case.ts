@@ -7,7 +7,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/i-ai-conversation-repository';
 
 /**
  * Delete Conversation Use Case

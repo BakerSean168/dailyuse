@@ -2,7 +2,7 @@
  * 前端工具函数
  */
 
-export * from './apiUtils';
+export * from './api-utils';
 
 // 高级防抖节流功能（避免与 apiUtils 中的简单版本冲突）
 export {
@@ -21,4 +21,4 @@ export {
 } from './throttle';
 
 // 加载状态管理
-export * from './loadingState';
+export * from './loading-state';

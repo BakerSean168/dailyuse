@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
-import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '@/domain-server/repositories/i-user-setting-repository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import { getDefaultPreferences } from '@dailyuse/contracts/setting';
 import { GetUserSetting } from '../get-user-setting';

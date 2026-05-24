@@ -4,7 +4,7 @@
  * Get folder detail
  */
 
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EditorPolicy } from '../EditorPolicy';
+import { EditorPolicy } from '../editor-policy';
 
 describe('EditorPolicy', () => {
   const policy = new EditorPolicy();

@@ -4,7 +4,7 @@
  * 按分类更新用户设置 — 使用 patchCategory() 单一方法
  */
 
-import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 

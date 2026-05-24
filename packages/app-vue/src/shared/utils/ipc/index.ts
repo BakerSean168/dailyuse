@@ -1,1 +1,1 @@
-export { sanitizeForIpc } from './sanitizeForIpc';
+export { sanitizeForIpc } from './sanitize-for-ipc';

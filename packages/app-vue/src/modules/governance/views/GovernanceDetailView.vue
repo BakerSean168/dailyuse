@@ -266,7 +266,7 @@ import {
   History,
 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
-import { usePerformanceMonitor } from '../composables/use-performance-monitor';
+import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
 import { RuleStatusBadge, CodeSnippetView } from '../components';
 
 const props = defineProps<{

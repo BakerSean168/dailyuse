@@ -5,8 +5,8 @@
  */
 
 // Store
-export { useNotificationStore } from './stores/notificationStore';
-export type { NotificationStoreType } from './stores/notificationStore';
+export { useNotificationStore } from './stores/notification-store';
+export type { NotificationStoreType } from './stores/notification-store';
 
 // Composables
 export { useNotification } from './composables/useNotification';

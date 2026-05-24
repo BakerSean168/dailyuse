@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ResourceBookmarkClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { __test__ as composableTest } from './useRepository';
-import { __test__ as storeTest } from '../stores/repositoryStore';
+import { __test__ as storeTest } from '../stores/repository-store';
 
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {

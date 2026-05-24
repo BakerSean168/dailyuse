@@ -1,8 +1,8 @@
-import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
-import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
-import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
-import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
+import { SessionRestorer } from '../../../domain-server/services/session-restorer';
 
 const restorer = new SessionRestorer();
 

@@ -12,34 +12,34 @@
  * 【业务逻辑服务（推荐使用）】
  * 纯业务逻辑服务（推荐使用）
  */
-export { ReminderTemplateBusinessService } from './ReminderTemplateBusinessService';
+export { ReminderTemplateBusinessService } from './reminder-template-business-service';
 export type {
   TemplateEffectiveStatus,
   GroupAssignmentValidation,
-} from './ReminderTemplateBusinessService';
+} from './reminder-template-business-service';
 
-export { ReminderPolicy } from './ReminderPolicy';
-export { ReminderRecurrenceCalculator } from './ReminderRecurrenceCalculator';
+export { ReminderPolicy } from './reminder-policy';
+export { ReminderRecurrenceCalculator } from './reminder-recurrence-calculator';
 
-export { ReminderGroupBusinessService } from './ReminderGroupBusinessService';
+export { ReminderGroupBusinessService } from './reminder-group-business-service';
 export type {
   GroupStatistics,
   GroupDeletionValidation,
   GroupNameValidation,
-} from './ReminderGroupBusinessService';
+} from './reminder-group-business-service';
 
 // 即将到来的提醒计算服务
-export { UpcomingReminderCalculationService } from './UpcomingReminderCalculationService';
-export type { UpcomingReminderDTO } from './UpcomingReminderCalculationService';
+export { UpcomingReminderCalculationService } from './upcoming-reminder-calculation-service';
+export type { UpcomingReminderDTO } from './upcoming-reminder-calculation-service';
 
 // 旧的服务（待废弃）
-export { ReminderTemplateControlService } from './ReminderTemplateControlService';
-export type { ITemplateEffectiveStatus } from './ReminderTemplateControlService';
+export { ReminderTemplateControlService } from './reminder-template-control-service';
+export type { ITemplateEffectiveStatus } from './reminder-template-control-service';
 
-export { ReminderTriggerService } from './ReminderTriggerService';
-export type { ITriggerReminderParams, ITriggerReminderResult } from './ReminderTriggerService';
+export { ReminderTriggerService } from './reminder-trigger-service';
+export type { ITriggerReminderParams, ITriggerReminderResult } from './reminder-trigger-service';
 
-export { ReminderSchedulerService } from './ReminderSchedulerService';
-export type { IScheduleResult, IScheduleOptions } from './ReminderSchedulerService';
+export { ReminderSchedulerService } from './reminder-scheduler-service';
+export type { IScheduleResult, IScheduleOptions } from './reminder-scheduler-service';
 
-export * from './ReminderDomainService';
+export * from './reminder-domain-service';

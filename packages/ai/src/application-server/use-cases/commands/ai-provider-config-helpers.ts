@@ -4,7 +4,7 @@ import {
   type AIProviderConfigServerDTO,
   type TestAIProviderReq,
 } from '@dailyuse/contracts/ai';
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import { toChatExecutionProviderConfig } from './ai-provider-resolution';
 
 export function toClientDTO(provider: AIProviderConfigServerDTO): AIProviderConfigClientDTO {

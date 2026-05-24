@@ -13,7 +13,7 @@ import type {
   KnowledgeNoteGenerationInput,
   KnowledgeNoteGenerationResult,
 } from '../../../ports';
-import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/i-ai-provider-config-repository';
 import { ManageAIKnowledgeNoteUseCase } from '../manage-ai-knowledge-note.use-case';
 import { AIKnowledgeNotePathResolver } from '../../../../infrastructure-server/services/ai-knowledge-note-path-resolver';
 

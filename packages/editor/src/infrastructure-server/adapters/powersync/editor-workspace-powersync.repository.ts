@@ -1,5 +1,5 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
-import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/i-editor-workspace-repository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import {
   PowerSyncEditorWorkspaceMapper,

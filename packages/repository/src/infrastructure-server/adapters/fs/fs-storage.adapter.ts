@@ -6,7 +6,7 @@ import type {
   StorageWriteRequest,
   StorageMoveRequest,
   StorageDeleteRequest,
-} from '../../../application-server/ports/IStoragePort';
+} from '../../../application-server/ports/i-storage-port';
 
 /**
  * File System Storage Adapter

@@ -2,7 +2,7 @@ import { toResultErrorException } from '@dailyuse/contracts/result';
 import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import type { IdentityId } from '@dailyuse/domain-shared';
 import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
-import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
+import type { IScheduleRepository } from '../../domain-server/repositories/i-schedule-repository';
 import { ScheduleConflictCacheService } from './schedule-conflict-cache-service';
 
 /**

@@ -1,4 +1,4 @@
-import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/i-editor-workspace-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { EditorWorkspaceServerDTO } from '@dailyuse/contracts/editor';

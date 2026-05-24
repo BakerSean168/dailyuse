@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { getI18nGlobal } from '../../plugins/i18n';
-import { translateResultError } from './translateResultError';
+import { translateResultError } from './translate-result-error';
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { message?: string } };
 

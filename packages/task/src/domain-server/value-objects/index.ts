@@ -34,7 +34,7 @@ export {
 } from '../../domain-shared/value-objects';
 
 // Server-specific Value Objects
-export { SkipRecord } from './SkipRecord';
+export { SkipRecord } from './skip-record';
 
 // ============ 领域服务器特有的错误类 ============
-export * from './TaskErrors';
+export * from './task-errors';

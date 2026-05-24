@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { __test__ } from './markdownLivePreview';
+import { __test__ } from './markdown-live-preview';
 
 describe('markdownLivePreview', () => {
   it('finds fenced code block ranges from markdown text', () => {

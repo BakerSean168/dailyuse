@@ -11,7 +11,7 @@
 
 import { watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
+import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import { setMenuLocale } from '../../../components/shared/menu-labels';
 import type { SupportedLocale } from '../../../components/shared/menu-labels';
 import { setI18nLocale } from '../../../plugins/i18n';

@@ -63,13 +63,13 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import type { ResourceReferenceUsage } from '../../editor/utils/resourceReferenceIndex';
+import type { ResourceReferenceUsage } from '../../editor/utils/resource-reference-index';
 import {
   getResourceCreatedAtText,
   getResourceDisplayName,
   getResourceFormattedSize,
   getResourceUpdatedAtText,
-} from '../utils/resourcePresentation';
+} from '../utils/resource-presentation';
 
 const props = defineProps<{
   resource: ResourceClientDTO | null;

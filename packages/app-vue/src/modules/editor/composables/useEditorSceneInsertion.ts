@@ -2,14 +2,14 @@ import { computed, type ComputedRef } from 'vue';
 import { toast } from 'vue-sonner';
 import type { ComposerTranslation } from 'vue-i18n';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
 import {
   getResourceInsertionFeedback,
   type EditorSelectionRange,
   type ResourceInsertionItem,
   type ResourceInsertionResult,
 } from './useResourceInsertion';
-import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editor-issue-debug';
 
 interface RecentResourceEntry {
   resource: ResourceClientDTO;

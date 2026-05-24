@@ -5,12 +5,12 @@
  * generates initial instances upon creation.
  */
 
-import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '@/domain-server/value-objects';
 import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
-import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
+import { TaskInstanceGenerationService } from '@/domain-server/services/index';
 import type { TaskTemplateClientDTO, CreateTaskTemplateInput } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';

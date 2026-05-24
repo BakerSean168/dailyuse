@@ -6,5 +6,5 @@
 export * from './uuid';
 export * from './date';
 export * from './time';
-export * from './envConfig';
+export * from './env-config';
 export * from './persistence';

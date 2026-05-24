@@ -17,7 +17,7 @@ import type {
   IKnowledgeSourcePort,
   KnowledgeSourceResource,
 } from '../../../ports';
-import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/i-ai-provider-config-repository';
 import { GenerateAIGoalUseCase } from '../generate-ai-goal.use-case';
 
 class StubProviderConfigRepository {

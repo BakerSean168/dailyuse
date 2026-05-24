@@ -89,7 +89,7 @@ import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
 import type { TaskForDAGViewModel, TaskTemplateViewModel } from '../types';
 import { TaskType, type DependencyType, type TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
-import { defaultNamedColor } from '../../../../shared/constants/colorPalette';
+import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
 
 const { t } = useI18n();

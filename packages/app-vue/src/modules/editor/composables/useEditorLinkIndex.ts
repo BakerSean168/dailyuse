@@ -1,6 +1,6 @@
 import { computed } from 'vue';
-import { useRepositoryStore } from '../../repository/stores/repositoryStore';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
+import { useRepositoryStore } from '../../repository/stores/repository-store';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
 import {
   buildEditorLinkIndex,
   getBacklinksForNote,
@@ -10,7 +10,7 @@ import {
   type LinkGraphData,
   type LinkIndexNote,
   type SearchNotesOptions,
-} from '../utils/linkIndex';
+} from '../utils/link-index';
 import { useResourceInsertion } from './useResourceInsertion';
 
 export function useEditorLinkIndex() {

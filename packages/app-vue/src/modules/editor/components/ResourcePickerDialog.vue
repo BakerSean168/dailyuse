@@ -153,7 +153,7 @@ import {
   Input,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
 import { File, FileImage, FileText, Film, Link2 } from 'lucide-vue-next';
 import type {
   ResourceInsertionItem,

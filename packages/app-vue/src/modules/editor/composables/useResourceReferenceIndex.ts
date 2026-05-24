@@ -1,6 +1,6 @@
 import { computed } from 'vue';
-import { useRepositoryStore } from '../../repository/stores/repositoryStore';
-import { buildResourceReferenceIndex } from '../utils/resourceReferenceIndex';
+import { useRepositoryStore } from '../../repository/stores/repository-store';
+import { buildResourceReferenceIndex } from '../utils/resource-reference-index';
 
 export function useResourceReferenceIndex() {
   const store = useRepositoryStore();

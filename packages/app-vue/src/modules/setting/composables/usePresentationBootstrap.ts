@@ -1,12 +1,12 @@
 import { watch } from 'vue';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { useAuthenticationStore } from '../../authentication/stores/authenticationStore';
+import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
-import { useUserSettingStore } from '../stores/userSettingStore';
+import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
+import { useUserSettingStore } from '../stores/user-setting-store';
 import { getI18nGlobal } from '../../../plugins/i18n';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 export function usePresentationBootstrap() {

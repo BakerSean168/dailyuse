@@ -1,4 +1,4 @@
-import type { IResourceBookmarkRepository } from '../../../domain-server/repositories/IResourceBookmarkRepository';
+import type { IResourceBookmarkRepository } from '../../../domain-server/repositories/i-resource-bookmark-repository';
 import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

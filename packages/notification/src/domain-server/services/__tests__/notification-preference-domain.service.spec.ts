@@ -1,4 +1,4 @@
-import { NotificationPreferenceDomainService } from '../NotificationPreferenceDomainService';
+import { NotificationPreferenceDomainService } from '../notification-preference-domain-service';
 
 function createRepository() {
   return {

@@ -12,10 +12,10 @@
 
 import type {
   IScheduleExecutionRepository,
-} from '../../domain-server/repositories/IScheduleExecutionRepository';
+} from '../../domain-server/repositories/i-schedule-execution-repository';
 import type {
   IScheduleTaskRepository,
-} from '../../domain-server/repositories/IScheduleTaskRepository';
+} from '../../domain-server/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
 
 /**

@@ -52,4 +52,4 @@ export * from './services';
 export * from './events';
 
 // 错误类
-export * from './value-objects/TaskErrors';
+export * from './value-objects/task-errors';

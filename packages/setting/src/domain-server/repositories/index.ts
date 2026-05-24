@@ -7,4 +7,4 @@
  * - findByIdentityId / save / delete
  */
 
-export type { IUserSettingRepository } from './IUserSettingRepository';
+export type { IUserSettingRepository } from './i-user-setting-repository';

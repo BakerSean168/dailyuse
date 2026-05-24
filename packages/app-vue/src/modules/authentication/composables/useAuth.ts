@@ -23,11 +23,11 @@ import type {
   RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 import type { ResultError } from '@dailyuse/contracts/result';
-import { useAuthenticationStore } from '../stores/authenticationStore';
+import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { translateResultError } from '../../../shared/utils/translateResultError';
-import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktopBootstrapAuth';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktop-bootstrap-auth';
 
 const isDesktopEnvironment = () =>
   typeof window !== 'undefined' && typeof (window as any).electronAPI?.invoke === 'function';

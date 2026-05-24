@@ -4,8 +4,8 @@
  * 鑾峰彇浠诲鑾峰彇浠诲姟妯℃澘璇︽儏
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import { TaskInstanceStatus } from '@/domain-shared/value-objects';
 import type { GetTaskTemplateRes } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';

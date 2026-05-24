@@ -20,6 +20,6 @@
  * - 日程执行记录持久化：日程实际执行情况统计
  */
 
-export * from './IScheduleTaskRepository';
-export * from './IScheduleExecutionRepository';
-export * from './IScheduleRepository';
+export * from './i-schedule-task-repository';
+export * from './i-schedule-execution-repository';
+export * from './i-schedule-repository';

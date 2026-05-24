@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TaskExpirationService } from './TaskExpirationService';
+import { TaskExpirationService } from './task-expiration-service';
 import { TaskInstance } from '../aggregates';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';

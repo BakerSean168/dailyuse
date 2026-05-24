@@ -9,7 +9,7 @@
  * - 聚合内的实体不直接拥有仓储：需要通过聚合根访问
  */
 
-export type { ITaskInstanceRepository } from './ITaskInstanceRepository';
-export type { ITaskTemplateRepository, TaskFilters } from './ITaskTemplateRepository';
-export type { ITaskDependencyRepository } from './ITaskDependencyRepository';
-export type { ITaskFolderRepository } from './ITaskFolderRepository';
+export type { ITaskInstanceRepository } from './i-task-instance-repository';
+export type { ITaskTemplateRepository, TaskFilters } from './i-task-template-repository';
+export type { ITaskDependencyRepository } from './i-task-dependency-repository';
+export type { ITaskFolderRepository } from './i-task-folder-repository';

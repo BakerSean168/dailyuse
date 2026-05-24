@@ -20,7 +20,7 @@ import {
   getTemplateSelfSwitchLabel,
   getTemplateSelfSwitchShortLabel,
   getTemplateTriggerLabel,
-} from './lifecyclePresentation';
+} from './lifecycle-presentation';
 
 const i18n = createI18n({
   legacy: false,
