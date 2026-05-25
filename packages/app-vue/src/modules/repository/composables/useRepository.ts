@@ -27,6 +27,7 @@ import {
 import { getI18nGlobal } from '../../../plugins/i18n';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
+import { useRepositoryBookmarks } from './useRepositoryBookmarks';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -113,16 +114,8 @@ export function useRepository() {
   const resources = computed(() => store.resources);
   const treeNodes = computed(() => store.treeNodes);
   const resourcesByType = computed(() => store.resourcesByType);
-  const bookmarks = computed(() => store.bookmarks);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
-  const bookmarkCapabilities = computed(() => ({
-    canList: typeof service.listBookmarks === 'function',
-    canRename: typeof service.updateBookmark === 'function',
-    canReorder: typeof service.reorderBookmarks === 'function',
-    canRemove: typeof service.deleteBookmark === 'function',
-  }));
-  const bookmarkPersistenceAvailable = computed(() => bookmarkCapabilities.value.canRename);
 
   function handleError(msg: string): void {
     store.setError(msg);
@@ -365,38 +358,6 @@ export function useRepository() {
     return searchRepositoryResources(store.resources, request);
   }
 
-  async function fetchBookmarks(): Promise<void> {
-    if (!store.currentRepositoryId || !bookmarkCapabilities.value.canList) {
-      return;
-    }
-
-    const repositoryId = store.currentRepositoryId;
-
-    const listBookmarks = service.listBookmarks;
-    if (!listBookmarks) {
-      return;
-    }
-
-    const result = await executeRepositoryOperation(
-      () => listBookmarks(repositoryId),
-      '加载书签失败',
-    );
-    if (result.ok) {
-      store.setPersistedBookmarks(result.data ?? []);
-      store.resetBookmarkUiState();
-      return;
-    }
-  }
-
-  async function resyncBookmarks(): Promise<void> {
-    if (!store.currentRepositoryId || !bookmarkCapabilities.value.canList) {
-      store.resetBookmarkUiState();
-      return;
-    }
-
-    await fetchBookmarks();
-  }
-
   async function uploadResources(
     files: File[],
     tags: string[] = [],
@@ -527,127 +488,9 @@ export function useRepository() {
     }
   }
 
-  async function renameBookmark(
-    bookmark: ResourceBookmarkClientDTO,
-    aliasName: string,
-  ): Promise<{ bookmark: ResourceBookmarkClientDTO; persisted: boolean } | null> {
-    if (!store.currentRepositoryId) {
-      return null;
-    }
+  // ── Sub-composables ──
 
-    const repositoryId = store.currentRepositoryId;
-
-    const normalizedAlias = aliasName.trim() || null;
-
-    if (bookmarkCapabilities.value.canRename) {
-      const updateBookmark = service.updateBookmark;
-      if (!updateBookmark) {
-        return null;
-      }
-
-      const result = await executeRepositoryOperation(
-        () =>
-          updateBookmark(repositoryId, bookmark.id, {
-            aliasName: normalizedAlias,
-          }),
-        '重命名书签失败',
-      );
-      if (result.ok && result.data) {
-        store.upsertPersistedBookmark(result.data);
-        store.clearTransientBookmarkAlias(bookmark.id);
-        return { bookmark: result.data, persisted: true };
-      }
-
-      if (!result.ok) {
-        handleError(getResultErrorMessage(result, '重命名书签失败'));
-      } else {
-        handleError('重命名书签失败');
-      }
-      await resyncBookmarks();
-      return null;
-    }
-
-    store.setTransientBookmarkAlias(bookmark.id, normalizedAlias);
-    const fallbackBookmark = store.bookmarks.find((item) => item.id === bookmark.id) ?? bookmark;
-    return { bookmark: fallbackBookmark, persisted: false };
-  }
-
-  async function reorderBookmarks(
-    bookmarkIds: Array<ResourceBookmarkClientDTO['id']>,
-  ): Promise<boolean> {
-    if (!store.currentRepositoryId) {
-      return false;
-    }
-
-    const repositoryId = store.currentRepositoryId;
-
-    if (!bookmarkCapabilities.value.canReorder) {
-      return false;
-    }
-
-    const previousOrder = store.bookmarkUiState.orderedIds;
-    store.setTransientBookmarkOrder(bookmarkIds);
-
-    const reorderBookmarks = service.reorderBookmarks;
-    if (!reorderBookmarks) {
-      store.setTransientBookmarkOrder(previousOrder);
-      return false;
-    }
-
-    const result = await executeRepositoryOperation(
-      () => reorderBookmarks(repositoryId, { bookmarkIds }),
-      '更新书签顺序失败',
-    );
-    if (result.ok) {
-      if (result.data) {
-        store.setPersistedBookmarks(result.data);
-      } else {
-        store.setPersistedBookmarks(
-          reorderBookmarkCollection(store.persistedBookmarks, bookmarkIds),
-        );
-      }
-      store.resetBookmarkUiState();
-      return true;
-    }
-
-    store.setTransientBookmarkOrder(previousOrder);
-    await resyncBookmarks();
-    return false;
-  }
-
-  async function removeBookmark(bookmarkId: ResourceBookmarkClientDTO['id']): Promise<boolean> {
-    if (!store.currentRepositoryId) {
-      return false;
-    }
-
-    const repositoryId = store.currentRepositoryId;
-
-    if (!bookmarkCapabilities.value.canRemove) {
-      return false;
-    }
-
-    store.markTransientBookmarkRemoved(bookmarkId);
-
-    const deleteBookmark = service.deleteBookmark;
-    if (!deleteBookmark) {
-      store.unmarkTransientBookmarkRemoved(bookmarkId);
-      return false;
-    }
-
-    const result = await executeRepositoryOperation(
-      () => deleteBookmark(repositoryId, bookmarkId),
-      '删除书签失败',
-    );
-    if (result.ok) {
-      store.removePersistedBookmark(bookmarkId);
-      store.unmarkTransientBookmarkRemoved(bookmarkId);
-      return true;
-    }
-
-    store.unmarkTransientBookmarkRemoved(bookmarkId);
-    await resyncBookmarks();
-    return false;
-  }
+  const bookmarkComposable = useRepositoryBookmarks();
 
   // ── Tabs convenience ──
   async function fetchTreeNodes(): Promise<TreeNode[]> {
@@ -707,18 +550,13 @@ export function useRepository() {
     resources,
     treeNodes,
     resourcesByType,
-    bookmarks,
     isLoading,
     isSaving,
     isUploading,
     uploadProgress,
-    bookmarkCapabilities,
-    bookmarkPersistenceAvailable,
     error,
     initRepository,
     fetchResources,
-    fetchBookmarks,
-    resyncBookmarks,
     createResource,
     createMarkdownNote,
     deleteResource,
@@ -729,9 +567,8 @@ export function useRepository() {
     searchResources,
     fetchTreeNodes,
     renameResource,
-    renameBookmark,
-    reorderBookmarks,
-    removeBookmark,
+    // Bookmarks (delegated)
+    ...bookmarkComposable,
   };
 }
 
@@ -830,22 +667,8 @@ function getResultErrorMessage(
   return translated === t('common.operationFailed') ? fallbackMessage : translated;
 }
 
-function reorderBookmarkCollection(
-  bookmarks: ResourceBookmarkClientDTO[],
-  bookmarkIds: Array<ResourceBookmarkClientDTO['id']>,
-): ResourceBookmarkClientDTO[] {
-  const bookmarkById = new Map(bookmarks.map((bookmark) => [bookmark.id, bookmark]));
-  const ordered = bookmarkIds
-    .map((bookmarkId) => bookmarkById.get(bookmarkId) ?? null)
-    .filter((bookmark): bookmark is ResourceBookmarkClientDTO => bookmark !== null);
-  const includedIds = new Set(ordered.map((bookmark) => bookmark.id));
-
-  return [...ordered, ...bookmarks.filter((bookmark) => !includedIds.has(bookmark.id))];
-}
-
 export const __test__ = {
   isUploadResponse,
-  reorderBookmarkCollection,
   ensureUniqueNoteName,
   executeAuthRecovery: async (
     operation: () => Promise<ResultLike>,
