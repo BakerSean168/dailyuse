@@ -6,12 +6,11 @@ import { APP_TITLE_NAME } from '@dailyuse/assets';
 import {
   createAppRouter,
   useAuthenticationStore,
-  registerNotificationInitializationTasks,
   applyThemeMode,
   usePresentationPreferenceStore,
 } from '@dailyuse/app-vue/web-bootstrap';
+import { createNotificationStartupHook } from '@dailyuse/app-vue';
 import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue/web-i18n';
-import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
@@ -46,14 +45,11 @@ export async function bootstrapMainApp() {
   app.use(installAppServices);
   app.mount('#app');
 
-  const runStartupPhase = async () => {
-    registerNotificationInitializationTasks();
+  // Startup hooks — explicit composition, no global phase registry
+  const notificationHook = createNotificationStartupHook();
 
-    await InitializationManager.getInstance()
-      .executePhase(InitializationPhase.APP_STARTUP)
-      .catch((error) => {
-        console.error('[web] APP_STARTUP phase failed', error);
-      });
+  const runStartupPhase = async () => {
+    notificationHook.start();
   };
 
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {

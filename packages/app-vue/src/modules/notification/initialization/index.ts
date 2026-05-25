@@ -1,26 +1,28 @@
 /**
- * Notification module initialization tasks
+ * Notification module startup hook
+ *
+ * Replaces the old `registerNotificationInitializationTasks()` pattern.
+ * Each runtime (web, desktop renderer) explicitly calls this during startup.
  */
 
-import {
-  InitializationManager,
-  InitializationPhase,
-  type InitializationTask,
-  createLogger,
-  eventBus,
-} from '@dailyuse/utils';
+import { createLogger, eventBus } from '@dailyuse/utils';
 import type { NotificationDispatchInAppEvent } from '@dailyuse/contracts/notification';
 import { useNotificationStore } from '../stores/notification-store';
+
 const logger = createLogger('notification:init');
 
-export function registerNotificationInitializationTasks(): void {
-  const manager = InitializationManager.getInstance();
+/**
+ * Creates a startup hook that subscribes to in-app notification events.
+ * Call this in the runtime composition root, not via global InitializationManager.
+ */
+export function createNotificationStartupHook(): { start(): void; stop(): void } {
+  let started = false;
 
-  const notificationEventHandlersInitTask: InitializationTask = {
-    name: 'notification:event-handlers',
-    phase: InitializationPhase.APP_STARTUP,
-    priority: 30,
-    initialize: async () => {
+  return {
+    start() {
+      if (started) return;
+      started = true;
+
       eventBus.on(
         'notification:dispatch_in_app' as any,
         (event: NotificationDispatchInAppEvent) => {
@@ -51,8 +53,17 @@ export function registerNotificationInitializationTasks(): void {
 
       logger.info('Notification event handlers initialized');
     },
-  };
 
-  manager.registerTask(notificationEventHandlersInitTask);
-  logger.info('Notification initialization tasks registered');
+    stop() {
+      if (!started) return;
+      started = false;
+      // eventBus cleanup would go here if eventBus supported off()
+    },
+  };
+}
+
+/** @deprecated Use createNotificationStartupHook() instead */
+export function registerNotificationInitializationTasks(): void {
+  const hook = createNotificationStartupHook();
+  hook.start();
 }
