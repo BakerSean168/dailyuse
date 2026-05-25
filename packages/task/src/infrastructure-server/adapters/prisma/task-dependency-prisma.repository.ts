@@ -7,7 +7,7 @@
 
 import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
 import type { IdentityId } from '@dailyuse/domain-shared';
-import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/i-task-dependency-repository';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
 import { TaskDependency } from '@/domain-server/aggregates/task-dependency';

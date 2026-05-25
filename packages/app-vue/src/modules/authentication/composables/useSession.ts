@@ -10,10 +10,10 @@
 import { computed } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { useAuthenticationStore } from '../stores/authenticationStore';
+import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useSession() {
   const store = useAuthenticationStore();

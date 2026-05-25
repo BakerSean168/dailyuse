@@ -1,5 +1,5 @@
 import type { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
-import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
+import type { IScheduleRepository } from '../../domain-server/repositories/i-schedule-repository';
 import { ScheduleConflictDetectionService } from './schedule-conflict-detection-service';
 
 export class ScheduleConflictCacheService {

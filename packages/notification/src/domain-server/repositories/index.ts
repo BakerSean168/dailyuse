@@ -19,6 +19,6 @@
  * - 用户通知偏好持久化：管理用户的通知接收配置
  */
 
-export type { INotificationRepository } from './INotificationRepository';
-export type { INotificationTemplateRepository } from './INotificationTemplateRepository';
-export type { INotificationPreferenceRepository } from './INotificationPreferenceRepository';
+export type { INotificationRepository } from './i-notification-repository';
+export type { INotificationTemplateRepository } from './i-notification-template-repository';
+export type { INotificationPreferenceRepository } from './i-notification-preference-repository';

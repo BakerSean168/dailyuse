@@ -3,16 +3,16 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { AuthMode, AuthRuntimeState } from '@dailyuse/contracts/authentication';
 import { ok, fail, toIpcResult, type IpcResult } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
-import { getWindowManager } from '../../lifecycle/WindowManager';
+import { getWindowManager } from '../../lifecycle/window-manager';
 import { getDesktopProfileRuntimeManager } from '../../profile';
 import { getRememberedAccountsService, getNetworkStateManager } from './infrastructure';
-import type { AuthDesktopApplicationService } from './application/AuthDesktopApplicationService';
-import { loginDesktopAccount } from './application/loginDesktopAccount';
+import type { AuthDesktopApplicationService } from './application/auth-desktop-application-service';
+import { loginDesktopAccount } from './application/login-desktop-account';
 import {
   registerDesktopAccount,
   type RegisterRequest,
-} from './application/registerDesktopAccount';
-import { AuthRemoteGateway } from './application/AuthRemoteGateway';
+} from './application/register-desktop-account';
+import { AuthRemoteGateway } from './application/auth-remote-gateway';
 
 const logger = createLogger('DesktopAuthShell');
 const remoteGateway = new AuthRemoteGateway();

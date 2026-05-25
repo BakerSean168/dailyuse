@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FolderHierarchyService } from '../FolderHierarchyService';
+import { FolderHierarchyService } from '../folder-hierarchy-service';
 import { Folder } from '../../entities/folder';
-import type { IFolderRepository } from '../../repositories/IFolderRepository';
+import type { IFolderRepository } from '../../repositories/i-folder-repository';
 
 describe('FolderHierarchyService', () => {
   let service: FolderHierarchyService;

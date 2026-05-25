@@ -3,7 +3,7 @@
  *
  * Responsible for hydrating stored resource content (text vs binary).
  */
-import type { IStoragePort } from '../ports/IStoragePort';
+import type { IStoragePort } from '../ports/i-storage-port';
 
 export interface StoredResourceHydrationServiceDependencies {
   storagePort: IStoragePort;

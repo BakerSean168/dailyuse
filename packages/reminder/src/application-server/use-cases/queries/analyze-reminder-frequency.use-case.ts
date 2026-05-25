@@ -6,8 +6,8 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderResponseRepository } from '@/domain-server/repositories/IReminderResponseRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
+import type { IReminderResponseRepository } from '@/domain-server/repositories/i-reminder-response-repository';
 import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 import { ResponseMetrics } from '@/domain-server/value-objects';
 

@@ -1,7 +1,7 @@
 import type {
   IScheduleTaskQueryOptions,
   IScheduleTaskRepository,
-} from '../../../domain-server/repositories/IScheduleTaskRepository';
+} from '../../../domain-server/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleTaskStatus, type SourceModule } from '@dailyuse/contracts/schedule';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';

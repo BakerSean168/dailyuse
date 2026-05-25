@@ -7,4 +7,4 @@
  * @module modules/tray
  */
 
-export { TrayManager } from './trayManager';
+export { TrayManager } from './tray-manager';

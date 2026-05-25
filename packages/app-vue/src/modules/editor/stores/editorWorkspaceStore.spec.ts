@@ -22,7 +22,7 @@ const {
   firstGroup: vi.fn(),
 }));
 
-vi.mock('../services/editorClientGateway', () => ({
+vi.mock('../services/editor-client-gateway', () => ({
   ensureEditorWorkspace,
   listEditorSessions,
   createEditorSession,
@@ -33,7 +33,7 @@ vi.mock('../services/editorClientGateway', () => ({
   firstGroup,
 }));
 
-import { useEditorWorkspaceStore } from './editorWorkspaceStore';
+import { useEditorWorkspaceStore } from './editor-workspace-store';
 
 function createSession(overrides: Record<string, unknown> = {}): EditorSessionClientDTO {
   return {

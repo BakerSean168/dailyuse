@@ -4,7 +4,7 @@
  * List all resources in a repository
  */
 
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

@@ -14,8 +14,8 @@ import { nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
 import type Token from 'markdown-it/lib/token.mjs';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
-import { resolveMarkdownResourceReferences } from '../utils/markdownResourceReferences';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
+import { resolveMarkdownResourceReferences } from '../utils/markdown-resource-references';
 
 const { t } = useI18n();
 const repository = useRepositoryResourceGateway();

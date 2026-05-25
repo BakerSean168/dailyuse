@@ -1,6 +1,6 @@
 import { AppProviders } from './providers/app-providers';
-import { AnimatedSplashOverlay } from './components/animated-icon';
-import { AppShell } from './components/app-shell';
+import { AnimatedSplashOverlay } from './components/AnimatedIcon';
+import { AppShell } from './components/AppShell';
 
 export function RootLayout() {
   return (

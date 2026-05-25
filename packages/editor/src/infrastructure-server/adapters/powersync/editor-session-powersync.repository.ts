@@ -1,5 +1,5 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
-import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
 import { parseSessionLayoutFromPersistence } from '../shared/session-layout.persistence';
 

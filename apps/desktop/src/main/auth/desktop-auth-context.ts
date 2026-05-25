@@ -3,7 +3,7 @@ import { AuthRuntimeState } from '@dailyuse/contracts/authentication';
 import { ElectronAuthResolutionError } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils';
 
-import type { AuthDesktopApplicationService } from '../modules/authentication/application/AuthDesktopApplicationService';
+import type { AuthDesktopApplicationService } from '../modules/authentication/application/auth-desktop-application-service';
 
 let authService: AuthDesktopApplicationService | null = null;
 const logger = createLogger('DesktopAuthContextProvider');

@@ -7,7 +7,7 @@ import type {
 import { DependencyType } from '@dailyuse/contracts/task';
 import type { TaskTemplateId, TaskInstanceId, TaskDependencyId } from '@dailyuse/contracts/primitives';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useTaskStore } from './taskStore';
+import { useTaskStore } from './task-store';
 
 function createTemplate(
   overrides: Partial<TaskTemplateClientDTO> = {},

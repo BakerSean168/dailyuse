@@ -2,7 +2,7 @@ import { generateUUID } from '@dailyuse/utils';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
-import type { INotificationPreferenceRepository } from '../../../domain-server/repositories/INotificationPreferenceRepository';
+import type { INotificationPreferenceRepository } from '../../../domain-server/repositories/i-notification-preference-repository';
 
 interface NotificationPreferenceRow {
   id: string;

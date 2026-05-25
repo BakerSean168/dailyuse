@@ -1,2 +1,2 @@
 // Reminder errors - business-specific error classes
-export * from './ReminderErrors';
+export * from './reminder-errors';

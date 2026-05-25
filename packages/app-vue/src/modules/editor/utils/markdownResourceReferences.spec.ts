@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { __test__ } from './markdownResourceReferences';
+import { __test__ } from './markdown-resource-references';
 
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {

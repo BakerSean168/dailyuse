@@ -17,15 +17,15 @@ export {
   getTemplatesByRole,
   getTemplatesByIndustry,
   getTemplateById,
-} from './GoalTemplates';
+} from './goal-templates';
 export {
   BUILT_IN_RULES,
   sortRulesByPriority,
   getEnabledRules,
   findRuleById,
   RULE_TEMPLATES,
-} from './BuiltInRules';
-export type { GoalTemplate, KeyResultTemplate } from './GoalTemplates';
+} from './built-in-rules';
+export type { GoalTemplate, KeyResultTemplate } from './goal-templates';
 
 // ===== Constructor-Injected Service (Result-based) =====
 export { GoalClientService, createGoalClientService } from './goal-client-service';

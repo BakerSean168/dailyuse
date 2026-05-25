@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import type { IReminderTemplateRepository } from '../../repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '../../repositories/IReminderGroupRepository';
-import { ReminderDomainService } from '../ReminderDomainService';
+import type { IReminderTemplateRepository } from '../../repositories/i-reminder-template-repository';
+import type { IReminderGroupRepository } from '../../repositories/i-reminder-group-repository';
+import { ReminderDomainService } from '../reminder-domain-service';
 import { ReminderTemplate } from '../../aggregates/reminder-template';
 import type { ReminderTemplateState } from '../../aggregates/reminder-template';
 import { ReminderGroup } from '../../aggregates/reminder-group';

@@ -1,6 +1,6 @@
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { NotificationTemplate } from '../../aggregates/notification-template';
-import { NotificationTemplateDomainService } from '../NotificationTemplateDomainService';
+import { NotificationTemplateDomainService } from '../notification-template-domain-service';
 
 function createTemplateConfig() {
   return {

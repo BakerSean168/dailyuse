@@ -7,7 +7,7 @@ import type {
   ChatExecutionCompleteResult,
   IAIChatExecutionPort,
 } from '../../../ports';
-import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../../domain-server/repositories/i-ai-provider-config-repository';
 import { TestAIProviderConnectionUseCase } from '../test-ai-provider-connection.use-case';
 
 class StubProviderConfigRepository {

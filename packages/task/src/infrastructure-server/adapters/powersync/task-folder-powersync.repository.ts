@@ -1,4 +1,4 @@
-import type { ITaskFolderRepository } from '../../../domain-server/repositories/ITaskFolderRepository';
+import type { ITaskFolderRepository } from '../../../domain-server/repositories/i-task-folder-repository';
 import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
 import {
   PowerSyncTaskFolderMapper,

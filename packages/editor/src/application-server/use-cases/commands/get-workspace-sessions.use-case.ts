@@ -1,6 +1,6 @@
-import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
-import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
-import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { EditorSessionServerDTO } from '@dailyuse/contracts/editor';

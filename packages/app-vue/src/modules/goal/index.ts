@@ -12,14 +12,14 @@ export type { TimelineData, TimelineSnapshot } from './composables';
 export { formatTimelineTimestamp } from './composables';
 
 // ===== Stores =====
-export { useGoalStore } from './stores/goalStore';
-export type { GoalState, GoalStoreType } from './stores/goalStore';
+export { useGoalStore } from './stores/goal-store';
+export type { GoalState, GoalStoreType } from './stores/goal-store';
 
 // ===== Router =====
 export { goalRoutes } from './router';
 
 // ===== Widgets =====
-// export { registerGoalWidgets } from './widgets/registerGoalWidgets';
+// export { registerGoalWidgets } from './widgets/register-goal-widgets';
 
 // ===== Components =====
 export * from './components';

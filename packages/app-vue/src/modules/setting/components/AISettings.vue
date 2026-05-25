@@ -376,7 +376,7 @@ import {
 import { KnowledgeNoteSubpathSchema } from '@dailyuse/contracts/setting';
 import { useUserSetting } from '../composables/useUserSetting';
 import { useAI } from '../../ai/composables/useAI';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 interface AIFormState {
   knowledgeNoteSubpath: string;

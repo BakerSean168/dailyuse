@@ -53,4 +53,4 @@ export * from './repositories';
 export * from './services';
 
 // ===== Domain Errors =====
-export * from './errors/AIErrors';
+export * from './errors/ai-errors';

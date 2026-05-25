@@ -4,8 +4,8 @@
  * 检查并标记过期的任务实例
  */
 
-import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { TaskExpirationService } from '@/domain-server/services/TaskExpirationService';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
+import { TaskExpirationService } from '@/domain-server/services/index';
 import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

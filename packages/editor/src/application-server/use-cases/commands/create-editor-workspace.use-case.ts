@@ -1,4 +1,4 @@
-import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/i-editor-workspace-repository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import type { Result } from '@dailyuse/contracts/result';

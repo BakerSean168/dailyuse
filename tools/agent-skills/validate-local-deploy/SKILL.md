@@ -11,11 +11,13 @@ Use this skill after implementation is complete and the task has entered verific
 
 1. Confirm the repo root and run from there.
 2. Read `AGENT.md` plus the repository deployment workflow docs named in [references/validation-policy.md](./references/validation-policy.md) if the current repo is unfamiliar.
-3. Run the helper script:
+3. Run the helper script from the repo root:
 
 ```bash
-node ./scripts/run-validation.mjs --workspace <repo-root>
+node ./tools/agent-skills/validate-local-deploy/scripts/run-validation.mjs --workspace <repo-root>
 ```
+
+> If the repo stores the skill elsewhere, locate `run-validation.mjs` with `find . -name run-validation.mjs` first.
 
 4. Let the script inspect the current working tree and compare against `main`.
 5. Let the script choose the minimum required repository command set:
@@ -65,4 +67,4 @@ node ./scripts/run-validation.mjs --workspace <repo-root>
 ## Resources
 
 - Use [references/validation-policy.md](./references/validation-policy.md) when the repo's local deployment standard must be reloaded into context.
-- Use [scripts/run-validation.mjs](./scripts/run-validation.mjs) as the default executor instead of rewriting the validation logic inline.
+- Use `tools/agent-skills/validate-local-deploy/scripts/run-validation.mjs` (repo-relative) as the default executor instead of rewriting the validation logic inline.

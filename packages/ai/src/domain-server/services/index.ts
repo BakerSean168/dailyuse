@@ -16,4 +16,4 @@
  * - 额度管理：检查 Token 额度、处理超额
  */
 
-export { AIGenerationValidationService } from './AIGenerationValidationService';
+export { AIGenerationValidationService } from './ai-generation-validation-service';

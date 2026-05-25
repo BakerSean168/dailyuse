@@ -2,5 +2,5 @@
  * AI Repositories
  */
 
-export * from './IAIConversationRepository';
-export * from './IAIProviderConfigRepository';
+export * from './i-ai-conversation-repository';
+export * from './i-ai-provider-config-repository';

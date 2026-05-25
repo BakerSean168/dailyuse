@@ -1,5 +1,5 @@
 import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
-import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
+import type { IReminderGroupRepository } from '../../../domain-server/repositories/i-reminder-group-repository';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
 import {
   PowerSyncReminderGroupMapper,

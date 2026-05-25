@@ -7,4 +7,4 @@
  * @module modules/shortcuts
  */
 
-export { ShortcutManager, type ShortcutConfig } from './shortcutManager';
+export { ShortcutManager, type ShortcutConfig } from './shortcut-manager';

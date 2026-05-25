@@ -2,7 +2,7 @@ import type {
   PrismaClient,
   EditorWorkspaceSessionGroupTab as PrismaEditorWorkspaceSessionGroupTab,
 } from '@dailyuse/database';
-import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import { EditorTab } from '../../../domain-server/entities/editor-tab';
 
 function toDomain(row: PrismaEditorWorkspaceSessionGroupTab): EditorTab {

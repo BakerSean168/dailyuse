@@ -1,7 +1,7 @@
 import type {
   ITaskInstanceRepository,
   TaskTemplateInstanceStats,
-} from '../../../domain-server/repositories/ITaskInstanceRepository';
+} from '../../../domain-server/repositories/i-task-instance-repository';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';

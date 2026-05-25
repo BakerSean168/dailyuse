@@ -38,7 +38,7 @@ import {
   FrequencyAdjustment,
 } from '../value-objects';
 import { ReminderHistory } from '../entities';
-import { ReminderRecurrenceCalculator } from '../services/ReminderRecurrenceCalculator';
+import { ReminderRecurrenceCalculator } from '../services/reminder-recurrence-calculator';
 
 /**
  * ReminderTemplate 内部状态接口

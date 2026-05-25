@@ -5,7 +5,7 @@ import {
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
 import { createLogger, eventBus } from '@dailyuse/utils';
-import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../domain-server/repositories/i-ai-provider-config-repository';
 
 import type { AIModuleRuntimeContribution } from '../ai.module';
 import type { AIKnowledgeIndexServices } from '../ai.module';

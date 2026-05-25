@@ -31,8 +31,8 @@ export * from './result/index';
 export * from './frontend/index';
 
 // 初始化管理器
-export * from './initializationManager';
-export * from './webInitializationManager';
+export * from './initialization-manager';
+export * from './web-initialization-manager';
 
 // 日志系统（仅导出跨平台安全入口；Node 专属实现走 '@dailyuse/utils/winston'）
 export * from './logger/index';

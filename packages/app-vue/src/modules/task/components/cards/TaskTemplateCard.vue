@@ -283,7 +283,7 @@ import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { useI18n } from 'vue-i18n';
-import { getTaskTimeValueDisplay } from '../../utils/taskTemplatePresentation';
+import { getTaskTimeValueDisplay } from '../../utils/task-template-presentation';
 
 const { t } = useI18n();
 import {

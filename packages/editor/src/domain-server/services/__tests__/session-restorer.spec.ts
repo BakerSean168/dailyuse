@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SessionRestorer } from '../SessionRestorer';
+import { SessionRestorer } from '../session-restorer';
 import { EditorSession } from '../../entities/editor-session';
 import { EditorWorkspaceId } from '../../../domain-shared/value-objects/editor-workspace-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';

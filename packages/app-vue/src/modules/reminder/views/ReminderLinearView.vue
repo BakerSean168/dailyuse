@@ -291,7 +291,7 @@ import {
   getGroupPolicyText,
   getGroupSidebarSummary,
   getGroupTemplateCountLabel,
-} from '../presentation/lifecyclePresentation';
+} from '../presentation/lifecycle-presentation';
 import type {
   ControlMode,
   CreateReminderGroupReq,

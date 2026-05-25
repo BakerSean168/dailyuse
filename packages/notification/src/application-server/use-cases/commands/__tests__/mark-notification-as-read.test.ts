@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
-import type { INotificationRepository } from '@/domain-server/repositories/INotificationRepository';
+import type { INotificationRepository } from '@/domain-server/repositories/i-notification-preference-repository';
 import { MarkNotificationAsReadUseCase } from '../mark-notification-as-read.use-case';
 import { Notification } from '@/domain-server/aggregates/notification';
 import {

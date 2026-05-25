@@ -12,7 +12,7 @@ vi.mock('vue-i18n', () => ({
   }),
 }));
 
-vi.mock('../../repository/services/repositoryResourceGateway', () => ({
+vi.mock('../../repository/services/repository-resource-gateway', () => ({
   useRepositoryResourceGateway: () => ({
     ensureReady: vi.fn(async () => undefined),
     resources: computed(() => [

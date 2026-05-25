@@ -4,10 +4,10 @@
  * Deletes a folder tree from storage and persistence.
  */
 
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
-import type { IStoragePort } from '../../ports/IStoragePort';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
+import type { IStoragePort } from '../../ports/i-storage-port';
 import type { Folder } from '../../../domain-server/entities/folder';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

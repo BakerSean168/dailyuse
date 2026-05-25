@@ -60,11 +60,12 @@
         "{workspaceRoot}/package.json",
         "{workspaceRoot}/project.json",
         "{workspaceRoot}/tools/docs/check-docs-config.mjs",
+        "{workspaceRoot}/tools/governance/file-naming-audit.mjs",
         "{workspaceRoot}/tools/governance/target-baseline-manifest.json",
         "{workspaceRoot}/tools/governance/target-baseline-audit.mjs"
       ],
       "options": {
-        "command": "node ./tools/docs/check-docs-config.mjs && node ./tools/governance/target-baseline-audit.mjs"
+        "command": "node ./tools/docs/check-docs-config.mjs && node ./tools/governance/target-baseline-audit.mjs && node ./tools/governance/file-naming-audit.mjs"
       }
     },
     "local-registry": {

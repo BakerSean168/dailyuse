@@ -2,9 +2,9 @@ import { computed, ref, type ComputedRef, type WritableComputedRef } from 'vue';
 import { toast } from 'vue-sonner';
 import type { ComposerTranslation } from 'vue-i18n';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
-import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
-import { repairBrokenMarkdownReference } from '../utils/resourceReferenceIndex';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
+import type { ResolvedMarkdownResourceReference } from '../utils/markdown-resource-references';
+import { repairBrokenMarkdownReference } from '../utils/resource-reference-index';
 import type {
   EditorSelectionRange,
   ResourceInsertionItem,

@@ -12,7 +12,7 @@
 import { AIKnowledgeNotePathResolver } from '../../infrastructure-server/services/ai-knowledge-note-path-resolver';
 import { ManageAIKnowledgeNoteUseCase } from '../../application-server/use-cases/commands/manage-ai-knowledge-note.use-case';
 import type { IKnowledgeNotePersistencePort } from '../../application-server/ports';
-import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../domain-server/repositories/i-ai-provider-config-repository';
 import { DirectProviderKnowledgeNoteGenerationAdapter } from '../../infrastructure-server/chat-execution';
 
 /**

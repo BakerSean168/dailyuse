@@ -7,7 +7,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
 import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 

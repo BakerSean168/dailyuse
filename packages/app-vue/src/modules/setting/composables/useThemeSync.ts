@@ -1,6 +1,6 @@
 import { onScopeDispose, watch } from 'vue';
 import { WindowChannels } from '@dailyuse/contracts/electron';
-import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
+import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 

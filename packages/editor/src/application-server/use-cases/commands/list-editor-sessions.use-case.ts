@@ -1,4 +1,4 @@
-import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
 import type { EditorSessionClientDTO } from '@dailyuse/contracts/editor';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

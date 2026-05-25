@@ -6,7 +6,7 @@
  */
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
 import { Folder } from '../../../domain-server/entities/folder';
 import { FolderPrismaMapper } from './mappers/folder-prisma.mapper';
 

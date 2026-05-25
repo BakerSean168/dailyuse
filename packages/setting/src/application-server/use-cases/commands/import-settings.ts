@@ -4,7 +4,7 @@
  * 导入用户设置 — 支持合并或覆盖模式
  */
 
-import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO, UserSettingPreferences } from '@dailyuse/contracts/setting';
 

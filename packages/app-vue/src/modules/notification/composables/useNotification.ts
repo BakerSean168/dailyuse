@@ -6,12 +6,12 @@
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useNotificationStore } from '../stores/notificationStore';
+import { useNotificationStore } from '../stores/notification-store';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useNotification() {
   const service = useStrictInject(NOTIFICATION_SERVICE_KEY, 'NotificationService');

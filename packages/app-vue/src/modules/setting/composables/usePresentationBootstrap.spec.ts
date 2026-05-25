@@ -5,9 +5,9 @@ import { ok } from '@dailyuse/contracts/result';
 import type { UserSettingClientDTO, UserSettingPreferences } from '@dailyuse/contracts/setting';
 import { createTestPinia } from '@dailyuse/test-utils';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
-import { useAuthenticationStore } from '../../authentication/stores/authenticationStore';
-import { usePresentationPreferenceStore } from '../stores/presentationPreferenceStore';
-import { useUserSettingStore } from '../stores/userSettingStore';
+import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
+import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
+import { useUserSettingStore } from '../stores/user-setting-store';
 import { usePresentationBootstrap } from './usePresentationBootstrap';
 
 function createSetting(): UserSettingClientDTO {

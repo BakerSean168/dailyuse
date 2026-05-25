@@ -170,7 +170,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@dailyuse/ui-vue-shadcn';
-import { getGroupPolicyText as getGroupPolicySummary } from '../presentation/lifecyclePresentation';
+import { getGroupPolicyText as getGroupPolicySummary } from '../presentation/lifecycle-presentation';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';

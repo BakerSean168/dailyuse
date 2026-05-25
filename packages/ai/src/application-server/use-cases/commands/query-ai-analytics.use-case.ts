@@ -4,7 +4,7 @@ import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { QueryAnalyticsReq, QueryAnalyticsRes } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import type {
   IAIExecutionLogPort,
   IAnalyticsQueryPort,

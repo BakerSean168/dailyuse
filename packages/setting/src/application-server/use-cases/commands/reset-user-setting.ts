@@ -5,7 +5,7 @@
  * 支持重置全部或指定分类。
  */
 
-import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/i-user-setting-repository';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 
 export class ResetUserSetting {

@@ -8,8 +8,8 @@
 export * from './types/task-dag.types';
 
 // Store
-export { useTaskStore } from './stores/taskStore';
-export type { TaskStoreType } from './stores/taskStore';
+export { useTaskStore } from './stores/task-store';
+export type { TaskStoreType } from './stores/task-store';
 
 // Composables
 export { useTask } from './composables/useTask';

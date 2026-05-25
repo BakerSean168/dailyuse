@@ -5,7 +5,7 @@ import { Message } from '../../../domain-server/entities/message';
 import type {
   AIConversationQueryOptions,
   IAIConversationRepository,
-} from '../../../domain-server/repositories/IAIConversationRepository';
+} from '../../../domain-server/repositories/i-ai-conversation-repository';
 import { eventBus } from '@dailyuse/utils';
 import {
   PowerSyncAIConversationMapper,

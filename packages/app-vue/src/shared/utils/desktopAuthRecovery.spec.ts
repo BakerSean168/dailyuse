@@ -3,7 +3,7 @@ import {
   ensureDesktopAuthReadyWithApi,
   isDesktopAuthRecoverable,
   recoverDesktopAuthIfNeeded,
-} from './desktopAuthRecovery';
+} from './desktop-auth-recovery';
 
 describe('desktopAuthRecovery', () => {
   it('recognizes recoverable desktop auth errors', () => {

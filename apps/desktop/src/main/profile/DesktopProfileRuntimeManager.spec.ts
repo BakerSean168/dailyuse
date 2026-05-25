@@ -3,8 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SharedPathResolver } from '../paths';
-import { ProfileRegistry } from './ProfileRegistry';
-import { DesktopProfileRuntimeManager } from './DesktopProfileRuntimeManager';
+import { ProfileRegistry } from './profile-registry';
+import { DesktopProfileRuntimeManager } from './desktop-profile-runtime-manager';
 
 const mocks = vi.hoisted(() => {
   const bootstrapInstances: Array<{ init: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> }> = [];
@@ -31,7 +31,7 @@ vi.mock('../database/powersync', () => ({
   shutdownPowerSync: mocks.shutdownPowerSync,
 }));
 
-vi.mock('./ProfileSnapshotService', () => ({
+vi.mock('./profile-snapshot-service', () => ({
   ProfileSnapshotService: class {
     hydrateIfNeeded = mocks.hydrateIfNeeded;
   },
@@ -50,7 +50,7 @@ vi.mock('../modules/authentication/infrastructure', () => ({
   },
 }));
 
-vi.mock('../modules/authentication/application/createDesktopProfileAuthService', () => ({
+vi.mock('../modules/authentication/application/create-desktop-profile-auth-service', () => ({
   createDesktopProfileAuthService: mocks.createDesktopProfileAuthService,
 }));
 

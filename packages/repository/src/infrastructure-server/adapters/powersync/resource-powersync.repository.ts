@@ -1,6 +1,6 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import { Resource } from '../../../domain-server/entities/resource';
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
 import {
   PowerSyncResourceMapper,
   type PowerSyncResourceRow,

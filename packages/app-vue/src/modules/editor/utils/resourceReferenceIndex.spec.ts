@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { __test__ } from './resourceReferenceIndex';
+import { __test__ } from './resource-reference-index';
 
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {

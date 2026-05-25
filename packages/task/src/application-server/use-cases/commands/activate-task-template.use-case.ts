@@ -8,9 +8,9 @@
  * 3. 鍙戝竷鎭㈠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽仮锟?
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
+import { TaskInstanceGenerationService } from '@/domain-server/services/index';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

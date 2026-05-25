@@ -101,7 +101,7 @@ import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Network, RotateCw, X, AlertCircle } from 'lucide-vue-next';
 import * as echarts from 'echarts';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
-import type { LinkGraphData, LinkGraphEdge, LinkGraphNode } from '../utils/linkIndex';
+import type { LinkGraphData, LinkGraphEdge, LinkGraphNode } from '../utils/link-index';
 
 const { t } = useI18n();
 

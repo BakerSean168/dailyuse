@@ -356,7 +356,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ColorPickerField } from '../../../shared/components';
-import { defaultNamedColor } from '../../../shared/constants/colorPalette';
+import { defaultNamedColor } from '../../../shared/constants/color-palette';
 
 const { t } = useI18n();
 

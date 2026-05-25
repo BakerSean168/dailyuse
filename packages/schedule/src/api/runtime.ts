@@ -1,8 +1,8 @@
 import { createLogger, eventBus } from '@dailyuse/utils';
 import { ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '../domain-server/aggregates/schedule-task';
-import type { IScheduleTaskRepository } from '../domain-server/repositories/IScheduleTaskRepository';
-import { ScheduleTaskQueue, type ScheduledItem } from '../application-server/scheduler/ScheduleTaskQueue';
+import type { IScheduleTaskRepository } from '../domain-server/repositories/i-schedule-task-repository';
+import { ScheduleTaskQueue, type ScheduledItem } from '../application-server/scheduler/schedule-task-queue';
 import type { ScheduleModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('ScheduleRuntime');

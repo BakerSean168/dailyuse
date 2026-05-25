@@ -1,4 +1,4 @@
-import type { IUserSettingRepository } from '../domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '../domain-server/repositories/i-user-setting-repository';
 
 import {
   GetUserSetting,

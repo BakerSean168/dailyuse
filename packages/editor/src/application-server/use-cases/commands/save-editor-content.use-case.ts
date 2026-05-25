@@ -1,6 +1,6 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { IRepositoryContentPort } from '../../ports/IRepositoryContentPort';
+import type { IRepositoryContentPort } from '../../ports/i-repository-content-port';
 
 /**
  * SaveEditorContentUseCase

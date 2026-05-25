@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('./CronSchedulerManager', () => ({
+vi.mock('./cron-scheduler-manager', () => ({
   CronSchedulerManager: {
     getInstance: vi.fn(() => ({
       register: mocks.register,
@@ -45,7 +45,7 @@ describe('registerAllCronJobs', () => {
   });
 
   it('registers the snapshot rebuild job when a snapshot root is configured', async () => {
-    const { registerAllCronJobs } = await import('./registerCronJobs.js');
+    const { registerAllCronJobs } = await import('./register-cron-jobs.js');
 
     registerAllCronJobs();
 
@@ -69,7 +69,7 @@ describe('registerAllCronJobs', () => {
   it('does not register the snapshot rebuild job when no snapshot root is configured', async () => {
     mocks.env.POWERSYNC_SNAPSHOT_DIR = undefined as unknown as string;
 
-    const { registerAllCronJobs } = await import('./registerCronJobs.js');
+    const { registerAllCronJobs } = await import('./register-cron-jobs.js');
     registerAllCronJobs();
 
     expect(mocks.register).not.toHaveBeenCalled();

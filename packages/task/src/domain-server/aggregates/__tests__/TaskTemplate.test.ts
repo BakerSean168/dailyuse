@@ -42,7 +42,7 @@ import {
   TaskTemplateArchivedError,
   InvalidGoalBindingError,
   InvalidDateRangeError,
-} from '../../value-objects/TaskErrors';
+} from '../../value-objects/task-errors';
 
 // ─── Helpers ───────────────────────────────────────────────────────
 

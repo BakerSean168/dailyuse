@@ -5,7 +5,7 @@ import { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 import { useWindowUnsavedChangesGuard } from './useWindowUnsavedChangesGuard';
 import { useEditorScene } from './useEditorScene';
 import { useEditorLinkSuggestion } from './useEditorLinkSuggestion';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
 
 export function useEditorLinearScene() {
   const { t } = useI18n();

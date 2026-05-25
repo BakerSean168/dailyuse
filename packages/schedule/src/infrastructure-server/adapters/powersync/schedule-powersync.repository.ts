@@ -1,4 +1,4 @@
-import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
+import type { IScheduleRepository } from '../../../domain-server/repositories/i-schedule-repository';
 import type { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
 import {
   PowerSyncScheduleMapper,

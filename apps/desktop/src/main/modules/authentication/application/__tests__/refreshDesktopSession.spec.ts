@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AuthRemoteGateway } from '../AuthRemoteGateway';
-import { refreshDesktopSession } from '../refreshDesktopSession';
+import { AuthRemoteGateway } from '../auth-remote-gateway';
+import { refreshDesktopSession } from '../refresh-desktop-session';
 
 function createLogger() {
   return {

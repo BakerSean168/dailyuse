@@ -26,7 +26,7 @@ import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../infrastructure-server';
-import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '../domain-server/repositories/i-reminder-template-repository';
 import { createReminderScheduleRuntimeContribution } from '../api/schedule-runtime';
 
 const logger = createLogger('ReminderElectron');

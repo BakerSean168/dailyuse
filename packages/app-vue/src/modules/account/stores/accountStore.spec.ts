@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { AccountStatus } from '@dailyuse/contracts/account';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useAccountStore } from './accountStore';
+import { useAccountStore } from './account-store';
 
 function createAccount(
   overrides: Partial<AccountClientDTO> = {},

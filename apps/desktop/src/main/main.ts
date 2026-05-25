@@ -67,8 +67,8 @@ import { createLogger } from '@dailyuse/utils';
 import { getDesktopAuthService } from './auth/desktop-auth-context';
 import { getSharedPathResolver } from './runtime-init';
 import type { ProfilePathResolver } from './paths';
-import { ProfileRegistry } from './profile/ProfileRegistry';
-import { DesktopProfileRuntimeManager } from './profile/DesktopProfileRuntimeManager';
+import { ProfileRegistry } from './profile/profile-registry';
+import { DesktopProfileRuntimeManager } from './profile/desktop-profile-runtime-manager';
 import type { PowerSyncDatabase } from '@powersync/node';
 
 configureDesktopShellIdentity();

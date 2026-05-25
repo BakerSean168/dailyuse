@@ -29,7 +29,7 @@ export {
   createLoadingStore,
   type LoadingState,
   type LoadingStore,
-} from './loading/createLoading';
+} from './loading/create-loading';
 
 // Message/Snackbar
 export {
@@ -38,14 +38,14 @@ export {
   type MessageOptions,
   type MessageState,
   type MessageStore,
-} from './message/createMessage';
+} from './message/create-message';
 
 // Dialog
 export {
   createDialogStore,
   type DialogState,
   type DialogStore,
-} from './dialog/createDialog';
+} from './dialog/create-dialog';
 
 // Color picker
 export {
@@ -56,4 +56,4 @@ export {
   type ColorPickerState,
   type ColorPickerStore,
   type UseColorPickerOptions,
-} from './color-picker/createColorPicker';
+} from './color-picker/create-color-picker';

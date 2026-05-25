@@ -1,6 +1,6 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import { Folder } from '../../../domain-server/entities/folder';
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
 import { PowerSyncFolderMapper, type PowerSyncFolderRow } from './mappers/powersync-folder.mapper';
 
 export class PowerSyncFolderRepository implements IFolderRepository {

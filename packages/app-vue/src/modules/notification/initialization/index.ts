@@ -10,7 +10,7 @@ import {
   eventBus,
 } from '@dailyuse/utils';
 import type { NotificationDispatchInAppEvent } from '@dailyuse/contracts/notification';
-import { useNotificationStore } from '../stores/notificationStore';
+import { useNotificationStore } from '../stores/notification-store';
 const logger = createLogger('notification:init');
 
 export function registerNotificationInitializationTasks(): void {

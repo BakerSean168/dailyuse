@@ -238,7 +238,7 @@ import {
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
 import { Calendar as CalendarIcon } from 'lucide-vue-next';
-import { translateResultError } from '../../../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 
 const { t } = useI18n();
 

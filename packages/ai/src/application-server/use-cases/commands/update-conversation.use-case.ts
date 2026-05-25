@@ -1,6 +1,6 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/i-ai-conversation-repository';
 import type { AIConversationClientDTO, UpdateConversationReq } from '@dailyuse/contracts/ai';
 
 export class UpdateConversationUseCase {

@@ -65,8 +65,8 @@ import BrokenResourceDiagnostics from './BrokenResourceDiagnostics.vue';
 import EditorToolbar from './EditorToolbar.vue';
 import EditorSplitView from './EditorSplitView.vue';
 import EditorPreview from './EditorPreview.vue';
-import type { ResourceReferenceUsage } from '../utils/resourceReferenceIndex';
-import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
+import type { ResourceReferenceUsage } from '../utils/resource-reference-index';
+import type { ResolvedMarkdownResourceReference } from '../utils/markdown-resource-references';
 import type { EditorSelectionRange } from '../composables/useResourceInsertion';
 
 defineProps<{

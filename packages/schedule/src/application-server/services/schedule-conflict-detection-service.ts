@@ -5,7 +5,7 @@ import type {
 } from '@dailyuse/contracts/schedule';
 import type { CalendarEntryState } from '../../domain-server/aggregates/calendar-entry';
 import { CalendarEntry as DomainCalendarEntry } from '../../domain-server/aggregates/calendar-entry';
-import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
+import type { IScheduleRepository } from '../../domain-server/repositories/i-schedule-repository';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 import type { IdentityId } from '@dailyuse/domain-shared';
 

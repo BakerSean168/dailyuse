@@ -5,7 +5,7 @@ import type {
   UpdateAIProviderConfigReq,
   AIProviderConfigClientDTO,
 } from '@dailyuse/contracts/ai';
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';
 
 export class UpdateAIProviderUseCase {

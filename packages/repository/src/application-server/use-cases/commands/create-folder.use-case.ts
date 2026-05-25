@@ -4,11 +4,11 @@
  * Create folder
  */
 
-import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
 import { Folder } from '../../../domain-server/entities/folder';
 import type { FolderClientDTO, FolderMetadataDTO } from '@dailyuse/contracts/repository';
-import type { IStoragePort } from '../../ports/IStoragePort';
+import type { IStoragePort } from '../../ports/i-storage-port';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useEditorWorkspaceUiStore } from './editorWorkspaceUiStore';
+import { useEditorWorkspaceUiStore } from './editor-workspace-ui-store';
 
 describe('useEditorWorkspaceUiStore', () => {
   beforeEach(() => {

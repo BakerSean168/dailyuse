@@ -20,7 +20,7 @@ import type { IApiModule, IApiModuleContext, IApiMiddleware, DatabaseClient } fr
 import { applyGlobalMiddleware, applyErrorHandlers } from './shared/infrastructure/middleware';
 import { authMiddleware, requireRole } from './shared/infrastructure/http/middlewares';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
-import infrastructureRouter from './shared/infrastructure/http/routes/infrastructureRoutes';
+import infrastructureRouter from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
 import { createLogger } from '@dailyuse/utils';
 

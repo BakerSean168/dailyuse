@@ -8,7 +8,7 @@
 
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useReminderStore } from '../stores/reminderStore';
+import { useReminderStore } from '../stores/reminder-store';
 import { REMINDER_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
@@ -25,8 +25,8 @@ import type {
   UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
 import type { Result } from '@dailyuse/contracts/result';
-import { translateResultError } from '../../../shared/utils/translateResultError';
-import { executeDesktopAuthenticatedResult } from '../../../shared/utils/executeDesktopAuthenticatedResult';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 
 type ReminderPreferencesCapableService = {
   getPreferences?: () => Promise<Result<UserReminderPreferencesClientDTO>>;

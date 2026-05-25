@@ -1,4 +1,4 @@
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function getAIErrorMessage(
   error: unknown,

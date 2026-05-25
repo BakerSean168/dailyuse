@@ -9,7 +9,7 @@
  * - 聚合内的实体不直接拥有仓储：需要通过聚合根访问
  */
 
-export type { IReminderTemplateRepository } from './IReminderTemplateRepository';
-export type { IReminderGroupRepository } from './IReminderGroupRepository';
-export type { IReminderResponseRepository } from './IReminderResponseRepository';
-export type { IUserReminderPreferenceRepository } from './IUserReminderPreferenceRepository';
+export type { IReminderTemplateRepository } from './i-reminder-template-repository';
+export type { IReminderGroupRepository } from './i-reminder-group-repository';
+export type { IReminderResponseRepository } from './i-reminder-response-repository';
+export type { IUserReminderPreferenceRepository } from './i-user-reminder-preference-repository';

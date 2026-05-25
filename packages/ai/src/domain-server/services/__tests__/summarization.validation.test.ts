@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AIGenerationValidationService } from '../AIGenerationValidationService';
+import { AIGenerationValidationService } from '../ai-generation-validation-service';
 
 interface SummaryTestCandidate {
   core: string;

@@ -3,4 +3,4 @@
  * 仅限 Node.js 环境使用
  */
 
-export { WinstonLogger } from './logger/WinstonLogger';
+export { WinstonLogger } from './logger/winston-logger';

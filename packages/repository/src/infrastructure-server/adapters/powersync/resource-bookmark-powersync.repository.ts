@@ -7,7 +7,7 @@ import type {
   IResourceBookmarkRepository,
   ReorderResourceBookmarksInput,
   UpdateResourceBookmarkInput,
-} from '../../../domain-server/repositories/IResourceBookmarkRepository';
+} from '../../../domain-server/repositories/i-resource-bookmark-repository';
 
 interface RepositoryExplorerRow {
   id: string;

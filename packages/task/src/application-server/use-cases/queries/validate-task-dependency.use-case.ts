@@ -4,7 +4,7 @@
  * 验证依赖关系（检查循环依赖等）
  */
 
-import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/i-task-dependency-repository';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { ValidateDependencyResponse } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';

@@ -5,7 +5,7 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
 } from '@dailyuse/contracts/ai';
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import type { IAIChatExecutionPort } from '../../ports';
 import { resolveProviderConfigForConnectionTest } from './ai-provider-config-helpers';
 

@@ -23,7 +23,7 @@
  * - 优先级计算：根据多个条件加算优先级
  */
 
-export { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
-export { TaskExpirationService } from './TaskExpirationService';
+export { TaskInstanceGenerationService } from './task-instance-generation-service';
+export { TaskExpirationService } from './task-expiration-service';
 export { TaskDependencyPolicy } from './task-dependency-policy';
 export { calculateTaskPriority } from './priority-calculator.service';

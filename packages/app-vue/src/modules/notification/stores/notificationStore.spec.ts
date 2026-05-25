@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useNotificationStore } from './notificationStore';
+import { useNotificationStore } from './notification-store';
 
 function createNotification(
   overrides: Partial<NotificationClientDTO> = {},

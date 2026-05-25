@@ -16,13 +16,13 @@ vi.mock('../../infrastructure', () => ({
   SessionManager: class {},
 }));
 
-vi.mock('../../../../lifecycle/WindowManager', () => ({
+vi.mock('../../../../lifecycle/window-manager', () => ({
   getWindowManager: vi.fn(() => ({
     getMainWindow: vi.fn(() => null),
   })),
 }));
 
-import { AuthDesktopApplicationService } from '../AuthDesktopApplicationService';
+import { AuthDesktopApplicationService } from '../auth-desktop-application-service';
 
 function createLogger() {
   return {

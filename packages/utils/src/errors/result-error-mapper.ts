@@ -1,6 +1,6 @@
 import type { ResultError } from '@dailyuse/contracts/result';
 import { extractStructuredResultError } from '@dailyuse/contracts/result';
-import { isDomainError } from './DomainError';
+import { isDomainError } from './domain-error';
 import { mapPrismaError } from './prisma-error-mapper';
 
 /**

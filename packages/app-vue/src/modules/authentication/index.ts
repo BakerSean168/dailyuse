@@ -4,8 +4,8 @@
  * @module modules/authentication
  */
 
-export { useAuthenticationStore } from './stores/authenticationStore';
-export type { AuthenticationState } from './stores/authenticationStore';
+export { useAuthenticationStore } from './stores/authentication-store';
+export type { AuthenticationState } from './stores/authentication-store';
 export { useAuth } from './composables/useAuth';
 export { useSession } from './composables/useSession';
 export { usePassword } from './composables/usePassword';

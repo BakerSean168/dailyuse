@@ -1,7 +1,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 
 export class SetDefaultAIProviderUseCase {
   constructor(private readonly providerConfigRepository: IAIProviderConfigRepository) {}

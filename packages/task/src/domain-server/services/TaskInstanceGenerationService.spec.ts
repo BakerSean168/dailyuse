@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
+import { TaskInstanceGenerationService } from './task-instance-generation-service';
 import { TaskTemplate } from '../aggregates';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';

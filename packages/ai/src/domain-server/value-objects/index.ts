@@ -12,4 +12,4 @@ export {
   AiProviderConfigId,
 } from '../../domain-shared/value-objects';
 
-export * from './TokenUsage';
+export * from './token-usage';

@@ -14,7 +14,7 @@ export { default as DesktopAuthView } from './views/DesktopAuthView.vue';
 
 // ── Shared ──
 export * from './shared/utils/result-helpers';
-export * from './shared/utils/desktopBootstrapAuth';
+export * from './shared/utils/desktop-bootstrap-auth';
 export * from './shared/components';
 
 // ── Modules ──

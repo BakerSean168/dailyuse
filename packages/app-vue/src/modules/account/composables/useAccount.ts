@@ -16,12 +16,12 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
 } from '@dailyuse/contracts/account';
-import { useAccountStore } from '../stores/accountStore';
-import { useAuthenticationStore } from '../../authentication/stores/authenticationStore';
+import { useAccountStore } from '../stores/account-store';
+import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { AuthMode } from '@dailyuse/contracts/authentication';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useAccount() {
   const accountStore = useAccountStore();

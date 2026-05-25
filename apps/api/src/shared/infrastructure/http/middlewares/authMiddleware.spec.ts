@@ -1,6 +1,6 @@
 import type { NextFunction, Response } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import { authMiddleware, type AuthenticatedRequest } from './authMiddleware';
+import { authMiddleware, type AuthenticatedRequest } from './auth-middleware';
 
 describe('authMiddleware', () => {
   it('returns a structured unauthorized response when the bearer token is missing', () => {

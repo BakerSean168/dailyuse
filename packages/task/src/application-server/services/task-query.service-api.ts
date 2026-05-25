@@ -5,7 +5,7 @@
  * priority calculation, and multiple sort/filter strategies.
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import {
   TaskTemplateStatus,

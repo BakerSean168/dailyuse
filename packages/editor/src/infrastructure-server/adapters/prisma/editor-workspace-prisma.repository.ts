@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
-import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/i-editor-workspace-repository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { PrismaEditorWorkspaceMapper } from './mappers/prisma-editor-workspace-mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';

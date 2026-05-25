@@ -7,7 +7,7 @@
 
 import { ref, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export interface AutoSaveConfig {
   /** 自动保存间隔（毫秒） */

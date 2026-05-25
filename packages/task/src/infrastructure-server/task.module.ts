@@ -18,10 +18,10 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   ITaskTemplateRepository,
   TaskFilters,
-} from '../domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
-import type { ITaskDependencyRepository } from '../domain-server/repositories/ITaskDependencyRepository';
-import type { ITaskFolderRepository } from '../domain-server/repositories/ITaskFolderRepository';
+} from '../domain-server/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';
+import type { ITaskDependencyRepository } from '../domain-server/repositories/i-task-dependency-repository';
+import type { ITaskFolderRepository } from '../domain-server/repositories/i-task-folder-repository';
 import type {
   CreateTaskTemplateReq,
   UpdateTaskTemplateReq,

@@ -3,8 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SharedPathResolver, ProfilePathResolver } from '../paths';
-import { ProfileSnapshotService } from './ProfileSnapshotService';
-import type { ProfileDescriptor } from './ProfileRegistry';
+import { ProfileSnapshotService } from './profile-snapshot-service';
+import type { ProfileDescriptor } from './profile-registry';
 
 function createSqliteBuffer(): Buffer {
   return Buffer.concat([Buffer.from('SQLite format 3\u0000', 'utf8'), Buffer.alloc(256)]);

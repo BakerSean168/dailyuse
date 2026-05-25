@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AuthRemoteGateway } from '../AuthRemoteGateway';
+import { AuthRemoteGateway } from '../auth-remote-gateway';
 
 describe('AuthRemoteGateway', () => {
   it('posts registration requests to the auth register endpoint', async () => {

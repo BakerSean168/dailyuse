@@ -6,7 +6,7 @@
  */
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
 import { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 import { RepositoryPrismaMapper } from './mappers/repository-prisma.mapper';

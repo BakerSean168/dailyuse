@@ -39,7 +39,7 @@ import {
   DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { useAuth } from '../modules/authentication/composables/useAuth';
-import { getDesktopAuthApi } from '../shared/utils/desktopAuthRecovery';
+import { getDesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 
 interface RememberedAccountItem {
   identityId: RememberedDesktopAccountDTO['identityId'];

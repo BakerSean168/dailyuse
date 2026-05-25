@@ -1,6 +1,6 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/i-ai-conversation-repository';
 import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
 import { createLogger } from '@dailyuse/utils';
 

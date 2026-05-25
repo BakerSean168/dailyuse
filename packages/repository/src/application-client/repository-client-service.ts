@@ -29,7 +29,7 @@ import type {
   UpdateResourceRequest,
   UploadResourcesRequest,
 } from './ports/repository-api-client.port';
-import { Repository } from '../domain-client/aggregates/Repository';
+import { Repository } from '../domain-client/aggregates/repository';
 import { RepositoryId } from '../domain-shared/value-objects/repository-id';
 import { RepositoryConfig } from '../domain-shared/value-objects/repository-config';
 import { RepositoryStats } from '../domain-shared/value-objects/repository-stats';

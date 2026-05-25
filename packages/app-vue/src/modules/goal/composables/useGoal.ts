@@ -8,7 +8,7 @@
 
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useGoalStore } from '../stores/goalStore';
+import { useGoalStore } from '../stores/goal-store';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
@@ -26,7 +26,7 @@ import type {
   CreateGoalRecordReq,
   CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 type GoalEntityLike = { toDTO(): GoalClientDTO };
 type GoalFolderEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalFolders'][number] };

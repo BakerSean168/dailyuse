@@ -8,8 +8,8 @@ import {
   TaskInstanceNotFoundError,
   TaskTemplateArchivedError,
   TaskTemplateNotFoundError,
-} from '../TaskErrors';
-import { SkipRecord } from '../SkipRecord';
+} from '../task-errors';
+import { SkipRecord } from '../skip-record';
 
 describe('task server value objects', () => {
   it('serializes skip records across dto formats', () => {

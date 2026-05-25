@@ -4,9 +4,9 @@
  * Delete asset
  */
 
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
-import type { IStoragePort } from '../../ports/IStoragePort';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
+import type { IStoragePort } from '../../ports/i-storage-port';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 

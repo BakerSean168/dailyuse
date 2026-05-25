@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { DashboardData } from '../types';
-import { translateResultError } from '../../../shared/utils/translateResultError';
+import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 // ── Default empty state ──
 

@@ -84,7 +84,7 @@ import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Label } from '@dailyuse/ui-vue-shadcn';
 import { FolderOpen, FolderInput, ExternalLink, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-vue-next';
 import { SystemChannels } from '@dailyuse/contracts/electron';
-import { getDesktopAuthApi } from '../../../shared/utils/desktopAuthRecovery';
+import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
 const { t } = useI18n();
 

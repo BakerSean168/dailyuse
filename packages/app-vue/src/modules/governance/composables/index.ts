@@ -1,2 +1,2 @@
 export { useGovernance } from './useGovernance';
-export { usePerformanceMonitor } from './use-performance-monitor';
+export { usePerformanceMonitor } from './usePerformanceMonitor';

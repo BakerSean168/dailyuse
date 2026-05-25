@@ -1,0 +1,578 @@
+import { useState } from 'react';
+import { RefreshControl, StyleSheet, View } from 'react-native';
+
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
+import { useTaskInstances } from '../hooks/useTaskInstances';
+import { useTaskTemplateDetail } from '../hooks/useTaskTemplateDetail';
+import { useTaskDependencies } from '../hooks/useTaskDependencies';
+import { useAppSession } from '../hooks/useAppSession';
+import { useTaskService } from '../hooks/useTaskService';
+
+import {
+  PageShell,
+  PrimaryButton,
+  SectionCard,
+  Spacing,
+  StatusPill,
+  ThemedText,
+  ThemedView,
+} from '@dailyuse/ui-react-native';
+
+function formatDate(timestamp: number | null) {
+  if (!timestamp) {
+    return 'Not set';
+  }
+
+  return new Date(timestamp).toLocaleString();
+}
+
+function formatTimeConfig(input: {
+  timeType: string;
+  timePoint: number | null;
+  timeRange?: { start: number; end: number } | null;
+}) {
+  if (input.timeType === 'AllDay') {
+    return 'All day';
+  }
+
+  if (input.timeType === 'TimePoint' && input.timePoint !== null) {
+    const date = new Date(input.timePoint);
+    return `At ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  if (input.timeType === 'TimeRange' && input.timeRange) {
+    const start = new Date(input.timeRange.start).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const end = new Date(input.timeRange.end).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${start} - ${end}`;
+  }
+
+  return input.timeType;
+}
+
+export function TaskDetailScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const taskId =
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : null;
+  const { signOut } = useAppSession();
+  const service = useTaskService();
+  const { error, isLoading, refresh, template } = useTaskTemplateDetail(taskId);
+  const {
+    completeInstance,
+    error: instancesError,
+    instances,
+    isLoading: instancesLoading,
+    refresh: refreshInstances,
+    skipInstance,
+    startInstance,
+  } = useTaskInstances(taskId);
+  const {
+    dependencies,
+    dependents,
+    depth,
+    error: dependenciesError,
+    hasDependencies,
+    hasDependents,
+    isOnCriticalPath,
+    refresh: refreshDependencies,
+  } = useTaskDependencies(taskId);
+  const [isMutating, setIsMutating] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
+
+  async function refreshAll() {
+    await Promise.all([refresh(), refreshInstances(), refreshDependencies()]);
+  }
+
+  async function handlePause() {
+    if (!taskId) {
+      return;
+    }
+
+    setIsMutating(true);
+    setActionError(null);
+    const result = await service.pauseTemplate(taskId);
+    setIsMutating(false);
+
+    if (!result.ok) {
+      setActionError(result.error.message);
+      return;
+    }
+
+    await refreshAll();
+  }
+
+  async function handleActivate() {
+    if (!taskId) {
+      return;
+    }
+
+    setIsMutating(true);
+    setActionError(null);
+    const result = await service.activateTemplate(taskId);
+    setIsMutating(false);
+
+    if (!result.ok) {
+      setActionError(result.error.message);
+      return;
+    }
+
+    await refreshAll();
+  }
+
+  async function handleArchive() {
+    if (!taskId) {
+      return;
+    }
+
+    setIsMutating(true);
+    setActionError(null);
+    const result = await service.archiveTemplate(taskId);
+    setIsMutating(false);
+
+    if (!result.ok) {
+      setActionError(result.error.message);
+      return;
+    }
+
+    await refreshAll();
+  }
+
+  async function runInstanceAction(instanceId: string, action: 'start' | 'complete' | 'skip') {
+    setActiveInstanceId(instanceId);
+    setActionError(null);
+
+    const ok =
+      action === 'start'
+        ? await startInstance(instanceId)
+        : action === 'complete'
+          ? await completeInstance(instanceId)
+          : await skipInstance(instanceId);
+
+    setActiveInstanceId(null);
+
+    if (!ok) {
+      setActionError('Task instance action failed.');
+      return;
+    }
+
+    await refresh();
+  }
+
+  const actionSections = [
+    {
+      title: 'Navigation',
+      description: '详情页的返回和编辑入口收进这里。',
+      items: [
+        {
+          label: 'Back to list',
+          description: '返回任务列表。',
+          onPress: () => router.back(),
+        },
+        ...(taskId
+          ? [
+              {
+                label: 'Edit template',
+                description: '打开模板编辑页。',
+                onPress: () => router.push(`../editor?id=${taskId}`),
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
+  return (
+    <PageShell
+      actionMenuSubtitle="任务详情的跳转入口已集中到左上角。"
+      actionSections={actionSections}
+      eyebrow="Tasks"
+      title={template ? template.name : 'Task detail'}
+      subtitle="移动端详情页先聚焦关键信息和实例流，复杂关系图和高级编辑不会直接照搬桌面布局。"
+      refreshControl={
+        <RefreshControl refreshing={isLoading || instancesLoading} onRefresh={refreshAll} />
+      }
+    >
+      {!taskId ? (
+        <SectionCard title="Missing task id" description="当前路由没有携带任务标识，无法加载详情。">
+          <PrimaryButton
+            label="Return to tasks"
+            onPress={() => router.replace('../')}
+            variant="secondary"
+          />
+        </SectionCard>
+      ) : null}
+
+      {error ? (
+        <SectionCard
+          title="Task detail failed"
+          description="详情请求失败时直接展示错误，不做桌面式 fallback。"
+        >
+          <ThemedText type="small" themeColor="warning">
+            {error}
+          </ThemedText>
+          <View style={styles.actionRow}>
+            <PrimaryButton label="Retry" onPress={refreshAll} variant="secondary" />
+            <PrimaryButton label="Sign out" onPress={signOut} variant="ghost" />
+          </View>
+        </SectionCard>
+      ) : null}
+
+      {!isLoading && !error && !template ? (
+        <SectionCard
+          title="Task not found"
+          description="这个模板不存在，或者当前账号没有访问权限。"
+        >
+          <PrimaryButton
+            label="Back to tasks"
+            onPress={() => router.replace('../')}
+            variant="secondary"
+          />
+        </SectionCard>
+      ) : null}
+
+      {template ? (
+        <>
+          <SectionCard title="Status" description="移动端详情先保留最关键的执行和结构信息。">
+            <View style={styles.pillRow}>
+              <StatusPill
+                label={template.status}
+                tone={template.status === 'Active' ? 'success' : 'warning'}
+              />
+              <StatusPill label={template.importance} tone="tint" />
+              {template.isBlocked ? <StatusPill label="Blocked" tone="warning" /> : null}
+            </View>
+            {template.blockingReason ? (
+              <ThemedText type="small" themeColor="warning">
+                {template.blockingReason}
+              </ThemedText>
+            ) : null}
+            <View style={styles.actionRow}>
+              {template.status === 'Active' ? (
+                <PrimaryButton
+                  label={isMutating ? 'Pausing…' : 'Pause'}
+                  onPress={handlePause}
+                  disabled={isMutating}
+                />
+              ) : null}
+              {template.status === 'Paused' ? (
+                <PrimaryButton
+                  label={isMutating ? 'Activating…' : 'Activate'}
+                  onPress={handleActivate}
+                  disabled={isMutating}
+                />
+              ) : null}
+              {template.status !== 'Archived' ? (
+                <PrimaryButton
+                  label={isMutating ? 'Archiving…' : 'Archive'}
+                  onPress={handleArchive}
+                  disabled={isMutating}
+                  variant="ghost"
+                />
+              ) : null}
+            </View>
+            {actionError ? (
+              <ThemedText type="small" themeColor="warning">
+                {actionError}
+              </ThemedText>
+            ) : null}
+          </SectionCard>
+
+          <SectionCard title="Schedule" description="桌面端细分区域先收敛成移动端可读的摘要。">
+            <MetricRow label="Time mode" value={formatTimeConfig(template.timeConfig)} />
+            <MetricRow
+              label="Start date"
+              value={formatDate(template.startDate ?? template.timeConfig.startDate)}
+            />
+            <MetricRow label="Due date" value={formatDate(template.dueDate)} />
+            <MetricRow label="Created" value={formatDate(template.createdAt)} />
+            <MetricRow label="Updated" value={formatDate(template.updatedAt)} />
+          </SectionCard>
+
+          <SectionCard
+            title="Execution"
+            description="执行统计后续还会继续接实例详情，这里先给摘要。"
+          >
+            <View style={styles.metricGrid}>
+              <MetricBox label="Instances" value={String(template.instanceCount)} />
+              <MetricBox label="Pending" value={String(template.pendingInstanceCount)} />
+              <MetricBox label="Completed" value={String(template.completedInstanceCount)} />
+              <MetricBox label="Completion" value={`${Math.round(template.completionRate)}%`} />
+            </View>
+          </SectionCard>
+
+          <SectionCard
+            title="Dependencies"
+            description="任务依赖关系展示前置和后续任务，支持跳转到相关任务详情。"
+          >
+            {dependenciesError ? (
+              <ThemedText type="small" themeColor="warning">
+                {dependenciesError}
+              </ThemedText>
+            ) : null}
+            <View style={styles.pillRow}>
+              <StatusPill label={`${dependencies.length} predecessors`} tone="tint" />
+              <StatusPill label={`${dependents.length} successors`} tone="textSecondary" />
+              {isOnCriticalPath ? <StatusPill label="Critical path" tone="warning" /> : null}
+              {depth > 0 ? <StatusPill label={`Depth: ${depth}`} tone="textSecondary" /> : null}
+            </View>
+            {hasDependencies ? (
+              <View style={styles.dependencySection}>
+                <ThemedText type="smallBold">Blocked by (predecessors)</ThemedText>
+                <View style={styles.listColumn}>
+                  {dependencies.map((dep) => (
+                    <ThemedView
+                      key={dep.id}
+                      type="backgroundSelected"
+                      style={styles.dependencyCard}
+                    >
+                      <View style={styles.dependencyHeader}>
+                        <ThemedText type="smallBold">
+                          {dep.predecessorTaskTitle ?? `Task ${dep.predecessorTaskId.slice(0, 8)}…`}
+                        </ThemedText>
+                        <StatusPill label={dep.dependencyType} tone="tint" />
+                      </View>
+                      {dep.lagDays !== undefined && dep.lagDays > 0 ? (
+                        <ThemedText type="small" themeColor="textSecondary">
+                          +{dep.lagDays} day{dep.lagDays > 1 ? 's' : ''} lag
+                        </ThemedText>
+                      ) : null}
+                      <PrimaryButton
+                        label="View task"
+                        onPress={() => router.push(`./${dep.predecessorTaskId}`)}
+                        variant="ghost"
+                      />
+                    </ThemedView>
+                  ))}
+                </View>
+              </View>
+            ) : (
+              <ThemedText type="small" themeColor="textSecondary">
+                No predecessor tasks. This task can start immediately.
+              </ThemedText>
+            )}
+            {hasDependents ? (
+              <View style={styles.dependencySection}>
+                <ThemedText type="smallBold">Blocking (successors)</ThemedText>
+                <View style={styles.listColumn}>
+                  {dependents.map((dep) => (
+                    <ThemedView
+                      key={dep.id}
+                      type="backgroundSelected"
+                      style={styles.dependencyCard}
+                    >
+                      <View style={styles.dependencyHeader}>
+                        <ThemedText type="smallBold">
+                          {dep.successorTaskTitle ?? `Task ${dep.successorTaskId.slice(0, 8)}…`}
+                        </ThemedText>
+                        <StatusPill label={dep.dependencyType} tone="tint" />
+                      </View>
+                      {dep.lagDays !== undefined && dep.lagDays > 0 ? (
+                        <ThemedText type="small" themeColor="textSecondary">
+                          +{dep.lagDays} day{dep.lagDays > 1 ? 's' : ''} lag
+                        </ThemedText>
+                      ) : null}
+                      <PrimaryButton
+                        label="View task"
+                        onPress={() => router.push(`./${dep.successorTaskId}`)}
+                        variant="ghost"
+                      />
+                    </ThemedView>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+          </SectionCard>
+
+          <SectionCard
+            title="Recent instances"
+            description="任务详情现在会直接展示最近实例并允许开始、完成、跳过。"
+          >
+            {instancesError ? (
+              <ThemedText type="small" themeColor="warning">
+                {instancesError}
+              </ThemedText>
+            ) : null}
+            <View style={styles.listColumn}>
+              {instances.length > 0 ? (
+                instances.map((instance) => (
+                  <ThemedView
+                    key={instance.id}
+                    type="backgroundSelected"
+                    style={styles.instanceCard}
+                  >
+                    <View style={styles.instanceHeader}>
+                      <ThemedText type="smallBold">{formatDate(instance.instanceDate)}</ThemedText>
+                      <StatusPill
+                        label={instance.status}
+                        tone={
+                          instance.status === 'Completed'
+                            ? 'success'
+                            : instance.status === 'InProgress'
+                              ? 'tint'
+                              : 'textSecondary'
+                        }
+                      />
+                    </View>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {formatTimeConfig(instance.timeConfig)}
+                    </ThemedText>
+                    {instance.comment ? (
+                      <ThemedText type="small">{instance.comment}</ThemedText>
+                    ) : null}
+                    <View style={styles.actionRow}>
+                      {instance.status === 'Pending' ? (
+                        <PrimaryButton
+                          label={activeInstanceId === instance.id ? 'Starting…' : 'Start'}
+                          onPress={() => runInstanceAction(instance.id, 'start')}
+                          disabled={activeInstanceId === instance.id}
+                          variant="secondary"
+                        />
+                      ) : null}
+                      {instance.status === 'InProgress' || instance.status === 'Pending' ? (
+                        <PrimaryButton
+                          label={activeInstanceId === instance.id ? 'Completing…' : 'Complete'}
+                          onPress={() => runInstanceAction(instance.id, 'complete')}
+                          disabled={activeInstanceId === instance.id}
+                        />
+                      ) : null}
+                      {instance.status === 'Pending' || instance.status === 'InProgress' ? (
+                        <PrimaryButton
+                          label={activeInstanceId === instance.id ? 'Skipping…' : 'Skip'}
+                          onPress={() => runInstanceAction(instance.id, 'skip')}
+                          disabled={activeInstanceId === instance.id}
+                          variant="ghost"
+                        />
+                      ) : null}
+                    </View>
+                  </ThemedView>
+                ))
+              ) : (
+                <ThemedText type="small" themeColor="textSecondary">
+                  当前没有已生成实例。
+                </ThemedText>
+              )}
+            </View>
+          </SectionCard>
+
+          <SectionCard
+            title="Notes"
+            description={template.description ?? 'No description provided yet.'}
+          >
+            <MetricRow
+              label="Estimated minutes"
+              value={template.estimatedMinutes ? String(template.estimatedMinutes) : 'Not set'}
+            />
+            <MetricRow
+              label="Actual minutes"
+              value={template.actualMinutes ? String(template.actualMinutes) : 'Not set'}
+            />
+            <MetricRow label="Comment" value={template.comment ?? 'No comment'} />
+            <View style={styles.tagRow}>
+              {template.tags.length > 0 ? (
+                template.tags.map((tag) => (
+                  <StatusPill key={tag} label={`#${tag}`} tone="textSecondary" />
+                ))
+              ) : (
+                <ThemedText type="small" themeColor="textSecondary">
+                  No tags
+                </ThemedText>
+              )}
+            </View>
+          </SectionCard>
+        </>
+      ) : null}
+    </PageShell>
+  );
+}
+
+function MetricRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.metricRow}>
+      <ThemedText type="small" themeColor="textSecondary">
+        {label}
+      </ThemedText>
+      <ThemedText type="smallBold">{value}</ThemedText>
+    </View>
+  );
+}
+
+function MetricBox({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.metricBox}>
+      <ThemedText type="small" themeColor="textSecondary">
+        {label}
+      </ThemedText>
+      <ThemedText type="smallBold">{value}</ThemedText>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  metricGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  metricRow: {
+    gap: Spacing.one,
+  },
+  metricBox: {
+    minWidth: 120,
+    borderRadius: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    backgroundColor: 'transparent',
+    gap: Spacing.half,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  listColumn: {
+    gap: Spacing.three,
+  },
+  instanceCard: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  instanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  dependencySection: {
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  dependencyCard: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  dependencyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+});

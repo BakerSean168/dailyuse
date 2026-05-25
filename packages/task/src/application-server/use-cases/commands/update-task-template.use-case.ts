@@ -2,7 +2,7 @@
  * Update Task Template Service
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import { RecurrenceRule } from '../../../domain-shared/value-objects/recurrence-rule';
 import { TaskTimeConfig } from '../../../domain-shared/value-objects/task-time-config';
 import { TaskReminderConfig } from '../../../domain-shared/value-objects/task-reminder-config';

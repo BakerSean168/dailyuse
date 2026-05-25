@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DesktopRememberedAccountService } from '../DesktopRememberedAccountService';
+import { DesktopRememberedAccountService } from '../desktop-remembered-account-service';
 
 function createLogger() {
   return {

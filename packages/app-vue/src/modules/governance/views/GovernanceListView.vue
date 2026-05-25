@@ -157,7 +157,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Plus, Shield } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
-import { usePerformanceMonitor } from '../composables/use-performance-monitor';
+import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
 import type { RuleClientDTO, RuleStatus, RuleSeverity } from '../types';
 import { RuleCard, SearchBar, TagFilterChips } from '../components';
 

@@ -17,11 +17,11 @@
  * 仅使用构造函数注入，不使用隐藏的服务定位器。
  */
 
-import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
-import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
-import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
-import type { IResourceBookmarkRepository } from '../domain-server/repositories/IResourceBookmarkRepository';
-import type { IStoragePort } from '../application-server/ports/IStoragePort';
+import type { IRepositoryRepository } from '../domain-server/repositories/i-repository-repository';
+import type { IResourceRepository } from '../domain-server/repositories/i-resource-repository';
+import type { IFolderRepository } from '../domain-server/repositories/i-folder-repository';
+import type { IResourceBookmarkRepository } from '../domain-server/repositories/i-resource-bookmark-repository';
+import type { IStoragePort } from '../application-server/ports/i-storage-port';
 import {
   CreateRepositoryUseCase,
   UpdateRepositoryStatsUseCase,

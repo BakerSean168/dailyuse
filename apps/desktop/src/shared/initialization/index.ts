@@ -8,9 +8,9 @@
  * @module shared/initialization
  */
 
-export { registerInfrastructureInitializationTasks } from './infraInitialization';
+export { registerInfrastructureInitializationTasks } from './infra-initialization';
 
-import { registerInfrastructureInitializationTasks } from './infraInitialization';
+import { registerInfrastructureInitializationTasks } from './infra-initialization';
 
 /**
  * Registers all initialization tasks from various modules.

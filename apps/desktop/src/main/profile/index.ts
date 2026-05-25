@@ -1,6 +1,6 @@
-export { ProfileRegistry } from './ProfileRegistry';
-export type { ProfileDescriptor } from './ProfileRegistry';
+export { ProfileRegistry } from './profile-registry';
+export type { ProfileDescriptor } from './profile-registry';
 export {
   DesktopProfileRuntimeManager,
   getDesktopProfileRuntimeManager,
-} from './DesktopProfileRuntimeManager';
+} from './desktop-profile-runtime-manager';

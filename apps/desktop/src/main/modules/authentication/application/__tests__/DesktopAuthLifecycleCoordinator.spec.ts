@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   getNetworkStateManager: vi.fn(),
 }));
 
-vi.mock('../refreshDesktopSession', () => ({
+vi.mock('../refresh-desktop-session', () => ({
   refreshDesktopSession: mocks.refreshDesktopSession,
 }));
 
@@ -18,7 +18,7 @@ vi.mock('../../infrastructure', () => ({
   SessionManager: class {},
 }));
 
-import { DesktopAuthLifecycleCoordinator } from '../DesktopAuthLifecycleCoordinator';
+import { DesktopAuthLifecycleCoordinator } from '../desktop-auth-lifecycle-coordinator';
 
 function createLogger() {
   return {

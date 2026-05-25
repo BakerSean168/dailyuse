@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TokenUsage } from '../TokenUsage';
+import { TokenUsage } from '../token-usage';
 
 describe('TokenUsage Value Object', () => {
   describe('创建与初始化', () => {

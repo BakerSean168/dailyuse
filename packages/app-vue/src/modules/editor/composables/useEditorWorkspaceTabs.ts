@@ -1,9 +1,9 @@
 import { computed } from 'vue';
-import { useRepositoryStore } from '../../repository/stores/repositoryStore';
-import { getResourceIcon } from '../../repository/utils/resourcePresentation';
+import { useRepositoryStore } from '../../repository/stores/repository-store';
+import { getResourceIcon } from '../../repository/utils/resource-presentation';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
 import { useEditorWorkspaceActions } from './useEditorWorkspaceActions';
-import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
+import { useEditorWorkspaceStore } from '../stores/editor-workspace-store';
 
 interface ResourceTabViewModel {
   id: string;

@@ -4,8 +4,8 @@
  * 鍒犻櫎浠诲姟妯℃澘
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 

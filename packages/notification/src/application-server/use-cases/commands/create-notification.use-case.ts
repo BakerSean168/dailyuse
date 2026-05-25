@@ -4,7 +4,7 @@
  * 创建通知的应用服务
  */
 
-import { NotificationPolicy } from '../../../domain-server/services/NotificationPolicy';
+import { NotificationPolicy } from '../../../domain-server/services/notification-policy';
 import { createLogger, eventBus, BusinessRuleViolationError } from '@dailyuse/utils';
 import type {
   NotificationClientDTO,

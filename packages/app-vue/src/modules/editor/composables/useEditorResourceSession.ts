@@ -1,9 +1,9 @@
-import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
+import { useEditorWorkspaceStore } from '../stores/editor-workspace-store';
 import { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
-import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
-import { getResourceDisplayName } from '../../repository/utils/resourcePresentation';
-import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
+import { useRepositoryResourceGateway } from '../../repository/services/repository-resource-gateway';
+import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editor-issue-debug';
 
 export function useEditorResourceSession() {
   const editorWorkspaceStore = useEditorWorkspaceStore();

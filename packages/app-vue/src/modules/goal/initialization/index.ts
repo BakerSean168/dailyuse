@@ -10,7 +10,7 @@ import {
   createLogger,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useGoalStore } from '../stores/goalStore';
+import { useGoalStore } from '../stores/goal-store';
 
 const logger = createLogger('goal:init');
 
@@ -23,7 +23,7 @@ export function registerGoalInitializationTasks(): void {
   // TODO: Re-enable when dashboard module is migrated to app-vue
   // Widget registration requires @/modules/dashboard infrastructure and @dailyuse/contracts/dashboard
   // which are not yet available in the shared app-vue package.
-  // import('../widgets/registerGoalWidgets').then(({ registerGoalWidgets }) => {
+  // import('../widgets/register-goal-widgets').then(({ registerGoalWidgets }) => {
   //   registerGoalWidgets();
   // });
 

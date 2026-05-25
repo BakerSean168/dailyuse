@@ -1,4 +1,4 @@
-import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { EditorGroupServerDTO } from '@dailyuse/contracts/editor';

@@ -3,7 +3,7 @@ import type {
   EditorWorkspaceSessionGroup as PrismaEditorWorkspaceSessionGroup,
 } from '@dailyuse/database';
 import { SplitDirection } from '@dailyuse/contracts/editor';
-import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
 import { EditorGroup } from '../../../domain-server/entities/editor-group';
 
 function toDomain(row: PrismaEditorWorkspaceSessionGroup): EditorGroup {

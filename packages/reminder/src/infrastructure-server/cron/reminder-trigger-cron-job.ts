@@ -16,11 +16,11 @@
  */
 
 import * as cron from 'node-cron';
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
-import { ReminderSchedulerService } from '../../domain-server/services/ReminderSchedulerService';
-import { ReminderTriggerService } from '../../domain-server/services/ReminderTriggerService';
-import { ReminderTemplateControlService } from '../../domain-server/services/ReminderTemplateControlService';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/i-reminder-template-repository';
+import type { IReminderGroupRepository } from '../../domain-server/repositories/i-reminder-group-repository';
+import { ReminderSchedulerService } from '../../domain-server/services/reminder-scheduler-service';
+import { ReminderTriggerService } from '../../domain-server/services/reminder-trigger-service';
+import { ReminderTemplateControlService } from '../../domain-server/services/reminder-template-control-service';
 import { createLogger } from '@dailyuse/utils';
 import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 

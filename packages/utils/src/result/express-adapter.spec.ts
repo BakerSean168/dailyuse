@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { expressAdapter, expressAdapterWithValidation, formatZodErrors } from './express-adapter';
 import { ok, fail, ResultErrorException } from '@dailyuse/contracts/result';
-import { ConflictError } from '../errors/DomainError';
+import { ConflictError } from '../errors/domain-error';
 
 // ============================================================================
 // Mock helpers

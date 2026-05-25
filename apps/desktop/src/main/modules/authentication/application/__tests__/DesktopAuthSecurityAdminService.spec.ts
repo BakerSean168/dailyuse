@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DesktopAuthSecurityAdminService } from '../DesktopAuthSecurityAdminService';
+import { DesktopAuthSecurityAdminService } from '../desktop-auth-security-admin-service';
 
 // =============================================
 // Helpers

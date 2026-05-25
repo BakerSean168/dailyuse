@@ -1,4 +1,4 @@
-import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { EditorTabServerDTO, TabViewStateDTO } from '@dailyuse/contracts/editor';

@@ -3,7 +3,7 @@ import { ReminderType, type ReminderEventMap } from '@dailyuse/contracts/reminde
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTask, type IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
 import { ScheduleConfig, ScheduleTaskMetadata, Timezone } from '@dailyuse/schedule/domain-shared';
-import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '../domain-server/repositories/i-reminder-template-repository';
 import type { ReminderModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('ReminderScheduleRuntime');

@@ -4,7 +4,7 @@
  * Create repository
  */
 
-import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/i-repository-repository';
 import { Repository } from '../../../domain-server/aggregates/repository';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { RepositoryClientDTO, RepositoryConfigDTO } from '@dailyuse/contracts/repository';

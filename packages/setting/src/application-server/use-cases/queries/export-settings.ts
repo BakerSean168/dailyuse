@@ -4,7 +4,7 @@
  * 导出用户设置为可传输的 JSON 对象
  */
 
-import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/i-user-setting-repository';
 
 export class ExportSettings {
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}

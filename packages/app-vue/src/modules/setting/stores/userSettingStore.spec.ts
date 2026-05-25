@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { UserSettingClientDTO, LocalePreferences, UserSettingPreferences } from '@dailyuse/contracts/setting';
 import { createTestPinia } from '@dailyuse/test-utils';
-import { useUserSettingStore } from './userSettingStore';
+import { useUserSettingStore } from './user-setting-store';
 
 function createSetting(
   overrides: Partial<UserSettingClientDTO> = {},

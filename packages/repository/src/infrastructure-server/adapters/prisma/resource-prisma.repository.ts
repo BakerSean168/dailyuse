@@ -6,7 +6,7 @@
  */
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
-import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/i-resource-repository';
 import { Resource } from '../../../domain-server/entities/resource';
 import { ResourcePrismaMapper } from './mappers/resource-prisma.mapper';
 

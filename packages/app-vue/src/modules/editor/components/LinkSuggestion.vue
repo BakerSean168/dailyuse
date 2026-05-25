@@ -73,7 +73,7 @@ import {
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { FileText, Keyboard } from 'lucide-vue-next';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
-import type { LinkIndexNote } from '../utils/linkIndex';
+import type { LinkIndexNote } from '../utils/link-index';
 
 const { t } = useI18n();
 
