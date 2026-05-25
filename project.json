@@ -62,10 +62,12 @@
         "{workspaceRoot}/tools/docs/check-docs-config.mjs",
         "{workspaceRoot}/tools/governance/file-naming-audit.mjs",
         "{workspaceRoot}/tools/governance/target-baseline-manifest.json",
-        "{workspaceRoot}/tools/governance/target-baseline-audit.mjs"
+        "{workspaceRoot}/tools/governance/target-baseline-audit.mjs",
+        "{workspaceRoot}/tools/governance/platform-leakage-audit.mjs",
+        "{workspaceRoot}/tools/governance/singleton-audit.mjs"
       ],
       "options": {
-        "command": "node ./tools/docs/check-docs-config.mjs && node ./tools/governance/target-baseline-audit.mjs && node ./tools/governance/file-naming-audit.mjs"
+        "command": "node ./tools/docs/check-docs-config.mjs && node ./tools/governance/target-baseline-audit.mjs && node ./tools/governance/file-naming-audit.mjs && node ./tools/governance/platform-leakage-audit.mjs && node ./tools/governance/singleton-audit.mjs"
       }
     },
     "local-registry": {

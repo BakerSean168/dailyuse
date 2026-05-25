@@ -15,7 +15,7 @@ We define a standard hierarchy and structure for tests.
 ### 1. Test Organization
 Tests sit alongside code or in `__tests__` folders.
 *   `*.test.ts`: Unit tests (Mock dependencies).
-*   `*.integration.ts`: Integration tests (Real DB/Modules).
+*   `*.integration.test.ts`: Integration tests (Real DB/Modules).
 
 ### 2. Pattern: AAA
 All tests must follow **Arrange, Act, Assert**.

@@ -17,11 +17,23 @@ contracts/domain-shared -> 最底层共享依赖
 
 ## 规则
 
-- Domain 层不能依赖基础设施实现、UI 框架或运行时容器。
+- Domain 业务逻辑（`domain-server`）不能依赖基础设施实现、UI 框架或运行时容器。
 - Application 层负责编排 use case，不直接触碰 Express、Electron、Pinia、Vue 组件等框架对象。
 - Infrastructure 层实现仓储、传输、数据库、文件系统等技术细节。
 - UI / Presentation 层只负责展示、交互和状态编排，不承载核心业务规则。
 - 新功能优先以领域包为单位落地，不再把业务逻辑长期堆积在 `apps/*`。
+
+### 包内分层说明
+
+当前采用"单包多层"模式：每个领域包（`packages/*`）内部同时包含 `domain-server`、`application-server`、`infrastructure-server`、`api` 等子目录，它们在 Nx 中共享同一个 `layer:domain` tag。
+
+- `domain-server`：纯业务逻辑，不得依赖 infra 或 framework。
+- `application-server`：编排 use case，依赖 domain-server。
+- `infrastructure-server`：技术实现（Prisma、外部 API），依赖 domain-server 接口。
+- `api/module.ts`：组合根（composition root），负责将 infra 实现注入 domain 接口。组合根位于领域包内是当前架构的务实选择，lint 规则允许 `layer:domain -> layer:infra` 以支持此模式。
+- `controllers`：传输层适配器，依赖 application-server。
+
+理想目标是通过 package-internal lint rule 约束 `domain-server` 不得导入 `infrastructure-server`，当前暂以文档约束为主。
 
 ## 仓库约定
 

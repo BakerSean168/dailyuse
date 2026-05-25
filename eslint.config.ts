@@ -19,7 +19,11 @@ const moduleBoundaryDepConstraints = [
     onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra'],
   },
   {
-    // domain: business logic, depends on shared + infra (for repos/db)
+    // domain: business logic + composition root (api/module.ts)
+    // domain-server must NOT import infra; this rule allows domain -> infra
+    // because composition roots (api/module.ts, electron-entry) live inside
+    // domain-tagged packages and need to wire infra implementations.
+    // See docs/standards/architecture.md "包内分层说明".
     sourceTag: 'layer:domain',
     onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:domain'],
   },
@@ -145,6 +149,10 @@ export default tseslint.config(
       },
     },
     {
+      // Test files are exempt from module boundaries because they legitimately
+      // import from multiple packages for mocking, setup, and fixture purposes.
+      // TODO: Tighten to controlled exemption — allow test-utils/test-setup imports
+      // but still block cross-feature production imports in tests.
       files: [
         '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
