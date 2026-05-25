@@ -7,17 +7,12 @@ import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-cas
 import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';
 
 const mockMarkExpiredInstances = vi.fn();
+const mockGenerateInstances = vi.fn();
 vi.mock('@/domain-server/services/index', () => {
   return {
     TaskExpirationService: class {
       markExpiredInstances = mockMarkExpiredInstances;
     },
-  };
-});
-
-const mockGenerateInstances = vi.fn();
-vi.mock('@/domain-server/services/index', () => {
-  return {
     TaskInstanceGenerationService: class {
       generateInstances = mockGenerateInstances;
     },
