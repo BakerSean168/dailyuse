@@ -4,6 +4,8 @@
  * 编排 GoalClientService 调用 + Store 更新 + 错误处理。
  * 通过 inject(GOAL_SERVICE_KEY) 获取服务实例，
  * 使用 Result<T> 模式替代 try/catch。
+ *
+ * Focus mode 和 filter/search 已拆分到独立 composable。
  */
 
 import { computed, ref } from 'vue';
@@ -18,7 +20,6 @@ import type {
   CreateGoalReq,
   UpdateGoalReq,
   GetGoalAggregateRes,
-  GoalSystemView,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
   AddKeyResultReq,
@@ -27,6 +28,8 @@ import type {
   CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { useFocusMode } from './useFocusMode';
+import { useGoalFilters } from './useGoalFilters';
 
 type GoalEntityLike = { toDTO(): GoalClientDTO };
 type GoalFolderEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalFolders'][number] };
@@ -46,13 +49,8 @@ export function useGoal() {
   const goalFolders = computed(() => store.goalFolders);
   const goalReviews = computed(() => store.goalReviews);
   const goalRecords = computed(() => store.goalRecords);
-  const systemView = computed(() => store.systemView);
-  const selectedFolderId = computed(() => store.selectedFolderId);
-  const currentFocusMode = computed(() => store.currentFocusMode);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
-  const pagination = computed(() => store.pagination);
-  const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
 
   function handleError(error: unknown, fallbackKey: string, scope?: string): void {
@@ -80,6 +78,8 @@ export function useGoal() {
       translatedMessage: message,
     });
   }
+
+  // ── Goal CRUD ────────────────────────────────────────────────────────
 
   async function fetchGoals() {
     store.setLoading(true);
@@ -115,7 +115,6 @@ export function useGoal() {
   async function fetchGoal(id: string): Promise<GoalClientDTO | null> {
     store.setLoading(true);
     store.setError(null);
-    // Clear key results when switching goals to prevent stale data
     store.setKeyResults([]);
     store.setGoalRecords([]);
     store.setGoalReviews([]);
@@ -187,6 +186,8 @@ export function useGoal() {
     }
   }
 
+  // ── Folder CRUD ──────────────────────────────────────────────────────
+
   async function fetchFolders() {
     const result = await service.listGoalFolders();
     if (result.ok) {
@@ -230,6 +231,8 @@ export function useGoal() {
       return false;
     }
   }
+
+  // ── Key Result CRUD ──────────────────────────────────────────────────
 
   async function fetchKeyResults(goalId: string) {
     const result = await service.getKeyResults(goalId);
@@ -277,6 +280,8 @@ export function useGoal() {
     }
   }
 
+  // ── Records ──────────────────────────────────────────────────────────
+
   async function fetchRecords(goalId: string) {
     const result = await service.getGoalRecordsByGoal(goalId);
     if (result.ok) {
@@ -301,10 +306,6 @@ export function useGoal() {
     }
   }
 
-  /**
-   * createGoalRecord - 便捷别名，接收 (goalId, keyResultId, data) 三参数
-   * 供 GoalRecordDialog 等组件调用
-   */
   async function createGoalRecord(
     goalId: string,
     keyResultId: string,
@@ -313,10 +314,8 @@ export function useGoal() {
     return createRecord(goalId, { keyResultId, ...data } as CreateGoalRecordReq);
   }
 
-  /**
-   * getGoalAggregateView - 获取单个目标聚合视图（含关键结果等）
-   * 供 GoalDAGVisualization 等组件调用
-   */
+  // ── Aggregate View ───────────────────────────────────────────────────
+
   async function getGoalAggregateView(goalId: string): Promise<GetGoalAggregateRes | null> {
     store.setLoading(true);
     store.setError(null);
@@ -337,6 +336,8 @@ export function useGoal() {
     }
   }
 
+  // ── Reviews ──────────────────────────────────────────────────────────
+
   async function fetchReviews(goalId: string) {
     const result = await service.getGoalReviews(goalId);
     if (result.ok) {
@@ -346,42 +347,6 @@ export function useGoal() {
     } else {
       handleError(result.error, 'goal.error.loadReviewsFailed', 'fetchReviews');
     }
-  }
-
-  async function getCurrentFocusMode() {
-    const result = await service.getCurrentFocusMode();
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function activateFocusMode(request: {
-    focusedGoalIds: string[];
-    hiddenGoalsMode?: string;
-  }) {
-    const sanitizedRequest = sanitizeForIpc(request);
-    const result = await service.activateFocusMode(sanitizedRequest as never);
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function deactivateFocusMode() {
-    const result = await service.deactivateFocusMode();
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function extendFocusMode(newEndTime: number) {
-    const result = await service.extendFocusMode(newEndTime);
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
   }
 
   async function createReview(goalId: string, req: CreateGoalReviewReq) {
@@ -396,69 +361,50 @@ export function useGoal() {
     }
   }
 
-  function setSystemView(v: GoalSystemView) {
-    store.setSystemView(v);
-    fetchGoals();
-  }
-  function setPage(p: number) {
-    store.setPage(p);
-    fetchGoals();
-  }
-  function clearFilters() {
-    store.clearFilters();
-    fetchGoals();
-  }
-  function search(q: string) {
-    store.setSearchQuery(q);
-    fetchGoals();
-  }
+  // ── Sub-composables ──────────────────────────────────────────────────
 
-  function setSelectedFolderId(folderId: string | null) {
-    store.setSelectedFolderId(folderId);
-  }
+  const focusMode = useFocusMode();
+  const filters = useGoalFilters(fetchGoals);
 
   return {
+    // View state
     goals,
     currentGoal,
     keyResults,
     goalFolders,
     goalReviews,
     goalRecords,
-    systemView,
-    selectedFolderId,
-    currentFocusMode,
     isLoading,
     isSaving,
     error,
-    pagination,
-    hasActiveFilter,
+    // Goal CRUD
     fetchGoals,
     fetchGoal,
     createGoal,
     updateGoal,
     deleteGoal,
+    // Folder CRUD
     fetchFolders,
     createFolder,
     updateFolder,
     deleteFolder,
+    // Key Result CRUD
     fetchKeyResults,
     addKeyResult,
     updateKeyResult,
     deleteKeyResult,
+    // Records
     fetchRecords,
     createRecord,
     createGoalRecord,
+    // Aggregate view
     getGoalAggregateView,
+    // Reviews
     fetchReviews,
     createReview,
-    getCurrentFocusMode,
-    activateFocusMode,
-    deactivateFocusMode,
-    extendFocusMode,
-    setSystemView,
-    setPage,
-    clearFilters,
-    search,
-    setSelectedFolderId,
+    // Focus mode (delegated)
+    ...focusMode,
+    // Filters (delegated)
+    ...filters,
   };
 }

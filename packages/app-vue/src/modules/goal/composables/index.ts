@@ -3,6 +3,8 @@
  */
 
 export { useGoal } from './useGoal';
+export { useFocusMode } from './useFocusMode';
+export { useGoalFilters } from './useGoalFilters';
 export { useGoalTimeline } from './useGoalTimeline';
 export { useAutoStatusRules } from './useAutoStatusRules';
 export { useWeightSnapshot } from './useWeightSnapshot';
