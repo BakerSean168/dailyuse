@@ -13,9 +13,11 @@ Undefined testing structures lead to "flaky" tests or implementation-detail test
 We define a standard hierarchy and structure for tests.
 
 ### 1. Test Organization
-Tests sit alongside code or in `__tests__` folders.
-*   `*.test.ts`: Unit tests (Mock dependencies).
-*   `*.integration.test.ts`: Integration tests (Real DB/Modules).
+Tests sit alongside code or in `__tests__` folders（新代码优先同目录，已有 `__tests__/` 保留不迁移）。
+*   `*.test.ts` / `*.spec.ts`：快测试（TDD 默认），mock 依赖。
+*   `*.integration.test.ts`：集成测试（Real DB/Modules）。
+
+详见 [测试文档](../../../docs/test/README.md) 的类型总览和目录约定。
 
 ### 2. Pattern: AAA
 All tests must follow **Arrange, Act, Assert**.

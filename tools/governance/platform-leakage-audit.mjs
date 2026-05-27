@@ -39,8 +39,6 @@ const FORBIDDEN_PATTERNS = [
 const ALLOWLIST = new Set([
   // contracts: Electron IPC channel types — will be moved to runtime-specific subpackage (Batch 5.5)
   'packages/contracts/src/result/ipc.ts',
-  // ipc-client: implicit bridge fallback — will require explicit bridge param (Batch 5.5)
-  'packages/ipc-client/src/types.ts',
 ]);
 
 const SKIP_DIRS = new Set([
@@ -72,6 +70,18 @@ if (errors.length > 0) {
   console.log('[platform-leakage-audit] passed: no platform leakage in shared packages');
 }
 
+/**
+ * Strip block comments (/* ... *​/) and line comments (// ...) from source code.
+ * Preserves string literals to avoid stripping content inside strings.
+ */
+function stripComments(source) {
+  // Remove block comments (non-greedy, handles nested *​/ inside JSDoc)
+  let result = source.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Remove line comments (but not URLs like https:// which contain //)
+  result = result.replace(/(?<![:"'])\/\/(?!\/\/).*/g, '');
+  return result;
+}
+
 function walkDir(dir, pkgRelPath) {
   let entries;
   try {
@@ -96,10 +106,13 @@ function walkDir(dir, pkgRelPath) {
       const fileRel = `${pkgRelPath}/${entry}`;
       if (ALLOWLIST.has(fileRel)) continue;
       const content = readFileSync(full, 'utf-8');
+      // Strip comments before scanning — JSDoc examples and block comments
+      // are documentation, not implementation code.
+      const codeOnly = stripComments(content);
       for (const { pattern, label } of FORBIDDEN_PATTERNS) {
         // Reset regex lastIndex for global patterns
         pattern.lastIndex = 0;
-        if (pattern.test(content)) {
+        if (pattern.test(codeOnly)) {
           const relPath = path.relative(ROOT, full).replace(/\\/g, '/');
           errors.push(`${relPath}: contains ${label}`);
         }

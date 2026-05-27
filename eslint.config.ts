@@ -85,6 +85,23 @@ export default tseslint.config(
         'vue/multi-word-component-names': 'off',
       },
     },
+    // ============ Subpath Import Preference ============
+    {
+      rules: {
+        'no-restricted-imports': [
+          'warn',
+          {
+            paths: [
+              {
+                name: '@dailyuse/utils',
+                message:
+                  'Import from a specific subpath instead: @dailyuse/utils/logger, @dailyuse/utils/domain, @dailyuse/utils/errors, @dailyuse/utils/shared, @dailyuse/utils/result, @dailyuse/utils/frontend, @dailyuse/utils/validation, @dailyuse/utils/lifecycle.',
+              },
+            ],
+          },
+        ],
+      },
+    },
     {
       rules: {
         '@typescript-eslint/no-explicit-any': 'warn',

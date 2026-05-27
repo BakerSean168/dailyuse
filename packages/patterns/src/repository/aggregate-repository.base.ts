@@ -14,9 +14,9 @@
  * - AggregateRoot.clearDomainEvents() clears published events
  */
 
-import type { AggregateRoot } from '@dailyuse/utils';
+import type { AggregateRoot } from '@dailyuse/utils/domain';
 import type { IEventBus } from '../events';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AggregateRepository');
 

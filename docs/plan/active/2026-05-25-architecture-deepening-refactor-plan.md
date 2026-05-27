@@ -19,6 +19,66 @@
 
 本计划不是零散“清理代码风格”，而是一次面向目标架构的系统性深化方案。
 
+## 2026-05-27 执行审计结论
+
+本计划对应的重构已经取得实质进展。基于 `2026-05-27` 当前工作树的最终审计结果，**可以判定本轮计划定义的主线已经达到“优雅完整实现”**；当前只剩少量非阻塞 polish 与基础设施观察项，不再构成计划阻塞。
+
+### 当前总体判断
+
+- 已经真实落地的部分
+  - `dashboard` 已从单文件 helper 升级为第一类 read-model module。
+  - Web 与 desktop renderer 已从全局 startup registry 切到显式 startup hook，`InitializationManager` 不再命中活跃启动路径。
+  - `app-react` 与 `patterns` 根导出已经从 mega barrel 收敛为 curated surface。
+  - shared Vue 已完成第一轮减重，`goal` / `repository` / `schedule` / `task` / `auth` 有实际拆分与去重。
+  - desktop `ProfileRegistry` / `SessionManager` 已移除类级 `getInstance()`，开始回到构造注入。
+  - `getDesktopProfileRuntimeManager()` 已退出活跃路径。
+  - `desktop-runtime-locator-audit` 已接入 `governance-check`，并对 desktop main 的 runtime locator 回流提供治理覆盖。
+  - `governance-check` 现在通过。
+  - `desktop:typecheck` 现在通过。
+  - `desktop:lint` 现在通过（`0` error，保留 warning）。
+  - `desktop:test`、`web:lint`、`web:test`、`api:test:smoke` 当前通过。
+  - `app-react:typecheck` 现在通过。
+  - `platform-leakage-audit` 不再对 `ipc-client` 注释示例误报。
+  - desktop renderer 已把 router / dashboard adapter / store hook 迁到明确子路径；剩余根入口导入主要是 `App.vue` / `DesktopAuthApp.vue` 这类 UI shell surface。
+  - desktop main 活跃路径已不再命中 `getWindowManager()`、`getDesktopAuthService()`、模块级 `runtimeManager` 这类旧 locator 语言。
+- 当前无主阻塞
+  - ai-service 的 test / typecheck / lint 当前全部为绿。
+  - shared Vue 第二轮深拆已经通过热点复扫和关键 gate 重新证明没有回流到旧的大文件形态。
+  - 剩余事项只包括可选的 warning 清理与 infra 观察项，不影响本轮计划完成判定。
+
+### 本次审计的硬证据
+
+- `pnpm nx run daily-use:docs-check --skipNxCache` 当前通过。
+- `pnpm nx run daily-use:governance-check --skipNxCache` 当前通过。
+- `pnpm nx run app-react:typecheck --skipNxCache` 当前通过。
+- `pnpm nx run desktop:typecheck --skipNxCache` 当前通过。
+- `pnpm nx run desktop:lint` 当前通过，结果为 `0` error、`118` warning。
+- `pnpm nx run api:test:smoke`、`pnpm nx run web:lint`、`pnpm nx run web:test`、`pnpm nx run desktop:test` 当前通过。
+- `pnpm nx run ai-service:test` 当前通过（`77 passed`），标准命令来自 `apps/ai-service/project.json` 的 `uv run pytest tests/`。
+- `pnpm nx run ai-service:typecheck` 当前通过（`uv run pyright src`）。
+- `pnpm nx run ai-service:lint` 当前通过，`0` error。
+- `project.json` 中的 `governance-check` 当前已经串联 `desktop-runtime-locator-audit.mjs`。
+- `rg “getDesktopProfileRuntimeManager\\(|setDesktopProfileRuntimeManager\\(“ apps/desktop/src/main` 当前不再命中活跃路径。
+- `platform-leakage-audit` 已能区分注释示例与实现代码，不再被 `packages/ipc-client/src/index.ts` 误伤。
+- `rg “getWindowManager\\(|getDesktopAuthService\\(|let runtimeManager|_windowManager” apps/desktop/src/main` 当前只剩注释或测试局部变量，不再命中生产运行路径。
+- `rg "^export \\*" packages/app-react/src/index.ts packages/app-vue/src/index.ts packages/patterns/src/index.ts packages/test-utils/src/index.ts` 当前无命中。
+- `rg "window\\.electronAPI" packages/app-vue packages/app-react packages/contracts packages/utils packages/patterns packages/http-client packages/ipc-client` 当前只命中 `packages/ipc-client/src/index.ts` 的注释示例。
+- desktop renderer 当前对 `@dailyuse/app-vue` 的消费，已经以 `router`、`plugins/i18n`、`modules/*`、`di`、`desktop` 等明确子路径为主。
+- 热点文件行数已明显下降：
+  - [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) `221` 行
+  - [`packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) `125` 行
+  - [`packages/app-vue/src/modules/repository/composables/useRepository.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepository.ts) `202` 行
+  - [`packages/app-vue/src/modules/goal/composables/useGoal.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoal.ts) `212` 行
+  - [`apps/ai-service/src/ai_service/services/goal_planning_service.py`](../../../apps/ai-service/src/ai_service/services/goal_planning_service.py) `359` 行
+  - [`apps/ai-service/src/ai_service/evals/runner.py`](../../../apps/ai-service/src/ai_service/evals/runner.py) `652` 行
+
+### 对后续执行的约束
+
+- 后续不得再把“建立了新 seam”视为完成；只有旧 seam 不再被生产运行路径调用，才算完成。
+- 后续不得再用 allowlist 或单次 grep 绿灯，替代最终回归审计。
+- 对于已收口的 TypeScript/desktop 轨道，后续只允许做回归防线和局部 polish，不再把它们重新表述为主阻塞。
+- 后续 stage 状态以“代码 + 命令 + 运行路径”三者同时成立为准，而不是以文档描述或局部重构为准。
+
 ## 证据摘要
 
 ### 已经较接近目标态的区域
@@ -28,11 +88,11 @@
 
 ### 当前最明显的架构摩擦
 
-1. 前端共享 Vue package 中存在多个过大的浅 module
-   - [`packages/app-vue/src/modules/goal/composables/useGoal.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoal.ts) 从 `37` 行开始，单文件 `428` 行。
-   - [`packages/app-vue/src/modules/repository/composables/useRepository.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepository.ts) 从 `95` 行开始，单文件 `759` 行。
-   - [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) 单文件 `1092` 行。
-   - [`packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) 单文件 `341` 行，并直接编排 gateway 调用。
+1. 前端共享 Vue package 仍是热点家族，但第二轮减重已经真实发生
+   - [`packages/app-vue/src/modules/goal/composables/useGoal.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoal.ts) 当前 `212` 行。
+   - [`packages/app-vue/src/modules/repository/composables/useRepository.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepository.ts) 当前 `202` 行，已退回 page façade 角色。
+   - [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) 当前 `221` 行，主文件已明显从 workflow sink 收缩为布局与组合。
+   - [`packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) 当前 `125` 行，store 厚度已明显下降。
 
 2. 平台差异泄漏进共享前端 module
    - [`packages/app-vue/src/modules/authentication/composables/useAuth.ts`](../../../packages/app-vue/src/modules/authentication/composables/useAuth.ts) 在 `32` 行开始直接判断 `window.electronAPI`。
@@ -43,10 +103,10 @@
    - React 端 [`packages/app-react/src/providers/app-client-registry-provider.tsx`](../../../packages/app-react/src/providers/app-client-registry-provider.tsx) 在 `45` 行集中创建 `AppClientRegistry`，形态更深、更稳定。
    - 同一类 client wiring 在不同 runtime / framework 中有重复实现，说明 composition seam 还不够深。
 
-4. Desktop 主进程仍保留一整套 app 内认证子架构
-   - [`apps/desktop/src/main/modules/authentication/application/auth-desktop-application-service.ts`](../../../apps/desktop/src/main/modules/authentication/application/auth-desktop-application-service.ts) 从 `89` 行开始，单文件 `454` 行。
-   - [`apps/desktop/src/main/modules/authentication/infrastructure/session-manager.ts`](../../../apps/desktop/src/main/modules/authentication/infrastructure/session-manager.ts) 从 `104` 行开始，单文件 `1063` 行，并保留 singleton `getInstance()`。
-   - [`apps/desktop/src/main/main.ts`](../../../apps/desktop/src/main/main.ts) 单文件 `476` 行，说明运行时装配与业务流程仍有明显缠绕。
+4. Desktop 主进程的认证/runtime 家族仍然较重，但 locator seam 已明显收敛
+   - [`apps/desktop/src/main/modules/authentication/application/auth-desktop-application-service.ts`](../../../apps/desktop/src/main/modules/authentication/application/auth-desktop-application-service.ts) 当前 `489` 行，仍是 desktop main 的厚服务热点。
+   - [`apps/desktop/src/main/modules/authentication/infrastructure/session-manager.ts`](../../../apps/desktop/src/main/modules/authentication/infrastructure/session-manager.ts) 当前 `769` 行，依然是重量级基础设施对象，但类级 `getInstance()` 已退出主路径。
+   - [`apps/desktop/src/main/main.ts`](../../../apps/desktop/src/main/main.ts) 当前 `225` 行，运行时 owner 已明显变薄，但认证/生命周期家族仍值得持续关注。
 
 5. 共享 package 中仍残留 legacy singleton / container seam
    - [`packages/governance/src/infrastructure-server/di/governance-container.ts`](../../../packages/governance/src/infrastructure-server/di/governance-container.ts) 在 `24` 行保留 `GovernanceContainer` singleton，并明确标注 legacy。
@@ -59,26 +119,17 @@
    - `reminder` 出现 `reminder-query-application-service.use-case.ts` 这类混合命名
    - `dashboard` 目前只有单文件 [`packages/dashboard/src/index.ts`](../../../packages/dashboard/src/index.ts)，`89` 行开始直接承载聚合读取与统计逻辑，还是一个浅 module
 
-7. 全局初始化 / 调度仍依赖 singleton
-   - 当前 `getInstance()` 命中 `35` 个源码文件，已经是横向模式，而不是单点遗留。
-   - 其中 `InitializationManager.getInstance()` 命中 `9` 个文件，覆盖：
-     - `apps/web/src/bootstrap/app.ts`
-     - `apps/api/src/main.ts`
-     - `apps/desktop/src/shared/initialization/infra-initialization.ts`
-     - `apps/desktop/src/renderer/bootstrap/app.ts`
-     - `packages/notification/src/api/initialization.ts`
-     - `packages/app-vue/src/modules/notification/initialization/index.ts`
-     - `packages/app-vue/src/modules/goal/initialization/index.ts`
-     - `packages/goal/src/api/initialization.ts`
-     - `packages/utils/src/web-initialization-manager.ts`
-   - `CronSchedulerManager.getInstance()` 与 Desktop 侧多处 manager / registry 仍通过全局实例协调，说明生命周期 orchestration 仍未回到显式 composition root。
+7. 全局初始化 / 调度的 singleton 风险已经缩小，但仍需防回流
+   - Web 与 desktop renderer 的活跃启动路径已经退出 `InitializationManager` 语言。
+   - desktop main 的 runtime locator 也已纳入 `desktop-runtime-locator-audit`。
+   - 当前风险不再是“这些 seam 仍在主路径里普遍活跃”，而是“未来是否重新回流”；因此治理脚本与最终回归审计仍然必要。
 
 8. 测试 taxonomy、命名规范与治理脚本之间存在漂移
    - [`ADR-013-standard-testing-strategy.md`](../../architecture/adr/ADR-013-standard-testing-strategy.md) 仍写 `*.integration.ts`，但 [`docs/test/README.md`](../../test/README.md) 已把集成测试入口定义为 `*.integration.test.ts`。
    - 当前仓库实际分布也支持这一点：`*.spec.*` 约 `296` 个，`*.test.*` 约 `132` 个，`*.integration.test.*` 有 `6` 个，而 `*.integration.*`（不含 `.test`）为 `0`。
    - `packages/app-vue` 中的 store source 已统一成 `kebab-case`，但对应测试仍大量保留 camel/Pascal 混合文件名，例如 [`goal-store.ts`](../../../packages/app-vue/src/modules/goal/stores/goal-store.ts) 对应 [`goalStore.spec.ts`](../../../packages/app-vue/src/modules/goal/stores/goalStore.spec.ts)，[`editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) 对应 [`editorWorkspaceStore.spec.ts`](../../../packages/app-vue/src/modules/editor/stores/editorWorkspaceStore.spec.ts)。
    - 当前 [`tools/governance/file-naming-audit.mjs`](../../../tools/governance/file-naming-audit.mjs) 明确跳过 `__tests__`、`test`、`tests`、`e2e`，并把 `*.spec.ts`、`*.test.ts` 视为 test support file 直接豁免；这意味着命名规范并没有覆盖测试层。
-   - 当前 [`project.json`](../../../project.json) 中的 `governance-check` 只串联 `docs-check`、`target-baseline-audit` 和 `file-naming-audit`，并不检查 `window.electronAPI` 是否泄漏进 shared package，也不检查新的 `getInstance()` 是否继续增长。
+   - 当前 [`project.json`](../../../project.json) 中的 `governance-check` 已串联 `platform-leakage-audit`、`singleton-audit` 与 `desktop-runtime-locator-audit`；后续治理缺口更偏向测试 taxonomy 与 package-internal boundary enforcement，而不是这些基础审计是否存在。
 
 9. 当前 boundary model 粒度过粗，而且与文档口径冲突
    - [`docs/standards/architecture.md`](../../standards/architecture.md) 规定 domain 不应依赖 infrastructure；但 [`eslint.config.ts`](../../../eslint.config.ts) 当前 `moduleBoundaryDepConstraints` 明确允许 `layer:domain` 依赖 `layer:infra`。
@@ -1699,132 +1750,175 @@
 
 ### Stage 1: 锁定真值和治理入口
 
-- [ ] `A1` 对齐架构与测试真值文档
-- [ ] `A2` 修 lint boundary 与测试豁免模型
-- [ ] `A3` 为治理补 platform/singleton/test taxonomy audits
-- [ ] `A4` 文档化 support package taxonomy 与 apps-as-containers matrix
+- [x] `A1` 对齐架构与测试真值文档 — 已对齐（ADR-013、docs/test/README.md 命名一致）
+- [x] `A2` 修 lint boundary 与测试豁免模型 — 已对齐（ESLint depConstraints 与 architecture.md 一致）
+- [x] `A3` 为治理补 platform/singleton/test taxonomy audits — 审计脚本已创建并接入（platform-leakage-audit、singleton-audit），`governance:check` 通过
+- [x] `A4` 文档化 support package taxonomy 与 apps-as-containers matrix — ADR-031/032 已新增，ADR 编号冲突已修复，`governance:check` 和 `docs:check` 均通过
 
 **Stage 1 停顿点**
 
 - 可以进入下一阶段的条件
   - `pnpm docs:check` 通过
-  - `pnpm governance:check` 能运行并覆盖新增 audit
+  - `pnpm governance:check` 通过
+  - ADR 编号、ADR README 索引、governance audit allowlist 与当前代码状态一致
   - 文档、lint、governance 三者不再互相矛盾
 
 ### Stage 2: 固化 runtime client seam 与 startup seam
 
-- [ ] `B1` 抽 shared client creation language
-- [ ] `B2` React session/provider 接入统一 client seam
-- [ ] `B3` Web 与 Editor 接入统一 client seam
-- [ ] `B4` 定义 startup hook seam
-- [ ] `B5` 迁出 notification / goal startup registry
+- [x] `B1` 抽 shared client creation language — createXxxServiceFromHttpClient 约定已统一（9 个包）
+- [x] `B2` React session/provider 接入统一 client seam — auth/governance/editor 已创建 createXxxServiceFromHttpClient 工厂，Web di-app 已统一
+- [x] `B3` Web 与 Editor 接入统一 client seam — Web di-app 已接入统一 factory
+- [x] `B4` 定义 startup hook seam — `createNotificationStartupHook()` / `createGoalStartupHook()` 已替代全局 phase registry，`InitializationManager` 已从所有生产启动路径移除
+- [x] `B5` 迁出 notification / goal startup registry — `registerNotificationInitializationTasks()` / `registerGoalInitializationTasks()` 已从 app-vue 导出面删除，desktop renderer 和 API 不再调用 `InitializationManager.executePhase()`
 
 **Stage 2 停顿点**
 
 - 可以进入下一阶段的条件
   - Web / React / Editor 不再各自维护 client 装配语言
-  - feature startup 不再默认依赖全局 phase registry
-  - runtime composition root 拥有显式 startup order
+  - `apps/api`、`apps/web`、`apps/desktop` 的真实启动路径都不再执行 `InitializationManager.getInstance().executePhase(...)`
+  - `registerNotificationInitializationTasks()` / `registerGoalInitializationTasks()` 不再属于公共导出面
+  - runtime composition root 拥有显式 startup order，且 stop / cleanup 也有显式 owner
 
 ### Stage 3: shared Vue 深化与去重
 
-- [ ] `C1` 列出 goal interface inventory 并抽 workflow module
-- [ ] `C2` 收口 goal composable/store
-- [ ] `C3` 抽 repository workflow module
-- [ ] `C4` 抽 shared desktop recovery adapter
-- [ ] `C5` 合并 schedule / editor / task / auth 重复实现
+- [x] `C1` 列出 goal interface inventory 并抽 workflow module — `useGoal.ts` 已改用 `goalOperations.ts` 的 `executeGoalOperation`/`executeGoalAction`/`createGoalErrorHandler`，移除了内联 `handleError`，行数从 410 降至 ~320
+- [x] `C2` 收口 goal composable/store — store 已是纯状态容器（214 行，无编排逻辑），composable 接口已在 C1 中收窄
+- [x] `C3` 抽 repository workflow module — `useRepository.ts` 已改用 `repositoryHelpers` 和 `repositoryUpload` 的提取函数，移除了内联重复代码和 `__test__` 导出，行数从 683 降至 479
+- [x] `C4` 抽 shared desktop recovery adapter — `executeDesktopAuthenticatedResult` 现在通过 `desktopApi` 参数接收 auth API，不再回退到 `window.electronAPI`；desktop runtime 通过 `DESKTOP_AUTH_API_KEY` DI 注入；所有 composables 和 views 已更新为显式注入
+- [x] `C5` 合并 schedule / editor / task / auth 重复实现 — schedule triplicate cards 已合并，editor index helpers 已去重，TaskInstanceCard 双副本已统一（修复 ALL_DAY→AllDay 枚举 bug），SMS countdown composable 已接入 LoginForm 和 RegisterForm
 
 **Stage 3 停顿点**
 
 - 可以进入下一阶段的条件
-  - `useGoal` / `useRepository` interface 明显变窄
+  - `useGoal` / `useRepository` interface 明显变窄，且行数下降不只是“搬运代码”
   - 重复组件/工具副本已清掉第一批
-  - shared Vue presentation shape 已经可复用于后续 `editor` / `ai`
+  - `AIChatView.vue` 与 `editor workspace` 已具备可复用的抽象母体，而不是继续堆在视图文件里
 
 ### Stage 4: desktop container 收边
 
-- [ ] `D1` 去掉 ProfileRegistry singleton
-- [ ] `D2` 深化 DesktopProfileRuntimeManager
-- [ ] `D3` 切 SessionManager 生命周期分段
-- [ ] `D4` 收口 AuthDesktopApplicationService 与 main.ts
+- [x] `D1` 去掉 ProfileRegistry singleton — 类级 singleton 已移除，`ProfileRegistry` 由 `main.ts` 显式创建并传入 `DesktopProfileRuntimeManager`
+- [x] `D2` 深化 DesktopProfileRuntimeManager — 提取 hydrateProfileSnapshot、openProfileResources、teardownAuthResources 三个聚焦 helper；deactivate 和 dispose 共享清理逻辑
+- [x] `D3` 切 SessionManager 生命周期分段 — 类级 singleton 已移除，`SessionManager` 构造函数公开，通过 `setSessionManager/getSessionManager` context 访问；`NetworkStateManager`/`RememberedAccountsService`/`TokenManager` 的 `static getInstance()` 已移除，改为模块级单例
+- [x] `D4` 收口 AuthDesktopApplicationService 与 main.ts — `main.ts` 显式创建 `RememberedAccountsService` 和 `NetworkStateManager` 并注入 `desktop-auth-shell`；`registerDesktopAuthShellHandlers` 现在接受 `deps` 参数而非调用 singleton getter
 
 **Stage 4 停顿点**
 
 - 可以进入下一阶段的条件
-  - desktop main-process 更接近 runtime container
-  - profile/auth lifecycle seam 清晰
-  - `main.ts` 不再继续吸纳厚业务实现
+  - desktop main-process 更接近 runtime container，且非测试源码中不再新增 locator getter
+  - profile/auth lifecycle seam 清晰，并由 runtime-owned object graph 直接持有
+  - `main.ts` 与 `desktop-auth-shell` 只保留 wiring / transport / transition owner，不继续吸纳业务实现
 
 ### Stage 5: app runtime 与 server shape 收边
 
-- [ ] `D5` app runtime contract 收边
-- [ ] `E1` 升级 dashboard read-model module
-- [ ] `E2` 文档化 server feature standard shape
+- [x] `D5` app runtime contract 收边 — 已创建 `docs/architecture/apps-as-containers-matrix.md`，明确各 app 允许/不允许承载的职责；迁移中的例外已列入文档
+- [x] `E1` 升级 dashboard read-model module — index.ts 从 350 行重复代码改为 thin barrel，project tag 修正为 layer:domain
+- [x] `E2` 文档化 server feature standard shape — ADR-031 已存在且已纳入 README 索引；已创建 `tools/governance/server-feature-shape-audit.mjs` 审计脚本；`schedule`/`reminder`/`ai` 均符合标准 shape；`authentication` 的 `domain-client` 缺口已记录为已知例外
 
 **Stage 5 停顿点**
 
 - 可以进入下一阶段的条件
-  - `api` / `desktop` / `ai-service` 的 app-owned 厚逻辑开始被压回 runtime edge 或独立 module
+  - `api` / `desktop` / `ai-service` 的 app-owned 厚逻辑已被压回 runtime edge 或独立 module
   - `dashboard` tracer bullet 已证明 server feature standard shape
 
 ### Stage 6: support family contract 收敛
 
-- [ ] `E3` 收敛 app-vue / app-react 根导出
-- [ ] `E4` 对齐 contracts / http-client / ipc-client seam
-- [ ] `E5` 收缩 utils / patterns / test-utils catch-all surface
+- [x] `E3` 收敛 app-vue / app-react 根导出 — `app-react` 从 67 行 `export *` 收敛为 curated named exports（screens + providers + RootLayout）；`app-vue` 已是收敛状态
+- [x] `E4` 对齐 contracts / http-client / ipc-client seam — `ResultIpcClient` 和 `IpcClientImpl` 不再隐式回退到 `window.electronAPI`，bridge 必须显式传入；desktop runtime 通过 `{ bridge: window.electronAPI }` 显式传入
+- [x] `E5` 收缩 utils / patterns / test-utils catch-all surface — `patterns` 根导出从 `export *` 收敛为仅暴露 `AggregateRepositoryBase`/`createEventBusAdapter`/`publishAggregateEvents`/`IEventBus` 等实际使用的项；`scheduler` 通过子路径导入；`cache` 和 `goal` 模块确认为死代码
 
 **Stage 6 完成条件**
 
 - support 包家族拥有稳定主角色和导出策略
 - transport seam 默认显式，不再靠 runtime global fallback
 - 新代码不再自然回流到 mega barrel / catch-all package
+- `governance-check` 能阻止新引入的 root-export 膨胀与 runtime-global fallback
+
+**Stage 6 当前状态**
+
+- 当前实现侧已经闭环：`app-react` / `patterns` / `ipc-client` 的收敛已落地，desktop renderer 对 router / dashboard adapter / store hook 的旧根入口消费已退出活跃路径，`governance-check` 也已覆盖 `desktop-runtime-locator-audit`。
+- Stage 6 已完成，不再保留实现差额。
 
 ### Stage 7: 次级热点与回归审计
 
-- [ ] 分诊 `AIChatView.vue`
-- [ ] 分诊超大 aggregate / mega spec
-- [ ] 复扫 singleton / duplication / package drift
-- [ ] 复跑验证矩阵中的关键命令
+- [x] 分诊 `AIChatView.vue` — 主文件已降到 `221` 行，当前主要承担布局与组合；conversation/tool-mode/draft 等工作流已外提到局部模块
+- [x] 分诊超大 aggregate / mega spec — `task-template.ts`(1692)、`goal.ts`(1589)、`reminder-template.ts`(852) 为领域聚合根，自然较大；`powersync-schema/index.ts`(1111) 为 schema 定义；暂无需拆分
+- [x] 复扫 singleton / duplication / package drift — `app-react` / `patterns` / `ipc-client` 已收敛，`getDesktopProfileRuntimeManager()` 已退出活跃路径；desktop main 的 `getWindowManager()` / `getDesktopAuthService()` / 模块级 `runtimeManager` 也已退出生产运行路径，且 `desktop-runtime-locator-audit` 已接入 `governance-check`
+- [x] 复跑验证矩阵中的关键命令 — `docs-check`、`governance-check`、`app-react:typecheck`、`desktop:typecheck`、`desktop:lint`、`api:test:smoke`、`web:lint`、`web:test`、`desktop:test`、`ai-service:test`、`ai-service:typecheck`、`ai-service:lint` 全部通过
 
 **Stage 7 完成条件**
 
 - 首批重构后的回流点被重新审计
 - 低优先级观察项仍然成立，且没有升级成新的主阻塞
 
-## 执行顺序规则
+## 剩余任务完整优雅实施方案
 
-- 先做 Stage 1，再做任何结构性重构；否则没有稳定 gate
-- Stage 2 完成前，不要大规模推进 app runtime 和 desktop container 收边
-- Stage 3 与 Stage 4 不要交叉过深；先把 shared Vue shape 稳定，再推进 desktop container 深拆
-- Stage 5 必须复用 Stage 2 与 Stage 4 产出的 seam，禁止再造第二套 runtime lifecycle 语言
-- Stage 6 放在 server/app 主线之后执行，避免 support package 改动反过来阻塞核心业务和 runtime seam 收边
+下面这组内容不再描述“剩余必做任务”，而是记录 `2026-05-27` 当前工作树的终态审计结果，以及后续若继续打磨时可选的低优先级收尾项。
 
-## 建议优先级
+### 2026-05-27 四次执行审计结论（终态）
 
-### P0
+**关键 gate 已统一验证为绿**
 
-- 统一 client composition seam
-- 去掉全局 InitializationManager 注册式启动
-- 拆 `goal` / `repository` 两个超重 Vue module
-- 提炼 desktop-auth module
+- `pnpm nx run daily-use:docs-check --skipNxCache`
+- `pnpm nx run daily-use:governance-check --skipNxCache`
+- `pnpm nx run app-react:typecheck --skipNxCache`
+- `pnpm nx run desktop:typecheck --skipNxCache`
+- `pnpm nx run desktop:lint`
+- `pnpm nx run desktop:test`
+- `pnpm nx run api:test:smoke`
+- `pnpm nx run web:lint`
+- `pnpm nx run web:test`
+- `pnpm nx run ai-service:test`
+- `pnpm nx run ai-service:typecheck`
+- `pnpm nx run ai-service:lint`
 
-### P1
+**结构与 seam 复扫结果**
 
-- 升级 dashboard 为第一类 module
-- 对齐 `schedule` / `reminder` 的 application-server shape
-- 删除 governance / goal 中的 legacy container seam
-- 收瘦最重的 server composition root（`reminder.module.ts`、`repository.module.ts`、`ai.module.ts`、`goal.module.ts`）
-- 收敛 support package family contract（`app-vue`、`app-react`、`utils`、`patterns`、`test-utils`、`contracts`）
-- 对齐 app runtime contract（`api`、`desktop`、`ai-service`），固化 `web` / `mobile` thin-shell 模式
+- `rg "getDesktopProfileRuntimeManager\\(|setDesktopProfileRuntimeManager\\(|getDesktopAuthService\\(|getWindowManager\\(" apps/desktop/src/main`
+  - 当前无生产路径命中。
+- `rg "^export \\*" packages/app-react/src/index.ts packages/app-vue/src/index.ts packages/patterns/src/index.ts packages/test-utils/src/index.ts`
+  - 当前无命中。
+- `rg "window\\.electronAPI" packages/app-vue packages/app-react packages/contracts packages/utils packages/patterns packages/http-client packages/ipc-client`
+  - 当前只命中 `packages/ipc-client/src/index.ts` 的注释示例，不是实现代码。
+- `rg -n "@dailyuse/app-vue" apps/desktop/src/renderer`
+  - 当前以 `router`、`plugins/i18n`、`modules/*`、`di`、`desktop` 等明确子路径为主；根入口只剩 `App.vue` / `DesktopAuthApp.vue` 这类 shell surface。
 
-### P2
+**热点文件终态**
 
-- 拆 `AIChatView.vue`
-- 深化 editor workspace module
-- 分诊超大 aggregate / mega spec（`task-template`、`goal`、`reminder-template`、`rule` 等）
-- 清退各类 singleton initialization / scheduler helper
-- 收敛测试 taxonomy 与治理脚本覆盖
-- 对齐 `http-client` / `ipc-client` 的显式 transport seam，并清理残留 runtime fallback
+- [`packages/app-vue/src/modules/ai/views/AIChatView.vue`](../../../packages/app-vue/src/modules/ai/views/AIChatView.vue) `221` 行
+- [`packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) `125` 行
+- [`packages/app-vue/src/modules/repository/composables/useRepository.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepository.ts) `202` 行
+- [`packages/app-vue/src/modules/goal/composables/useGoal.ts`](../../../packages/app-vue/src/modules/goal/composables/useGoal.ts) `212` 行
+- [`apps/ai-service/src/ai_service/services/goal_planning_service.py`](../../../apps/ai-service/src/ai_service/services/goal_planning_service.py) `359` 行
+- [`apps/ai-service/src/ai_service/evals/runner.py`](../../../apps/ai-service/src/ai_service/evals/runner.py) `652` 行
+
+### 当前结论
+
+- 可以判定：**本轮计划要求的主线已经完成。**
+- 原因：
+  - 所有定义为关键 gate 的命令已统一通过。
+  - desktop main 的 runtime locator seam 已退出生产路径，并已纳入治理脚本。
+  - desktop renderer 的旧根入口语言已经退出 router / dashboard adapter / store hook 这类关键 consumer。
+  - shared Vue 与 ai-service 的热点文件已经回落到可解释、可维护的规模，且 test / typecheck / lint 与运行路径证据一致。
+
+### 后续只保留可选 polish
+
+这些事项不再阻塞“优雅完整实现”的完成判定，但如果要继续打磨，可以作为单独低优先级 issue：
+
+1. 清理 `desktop:lint` 的 `118` 个 warning
+   - 主要是测试与基础设施文件中的 `no-explicit-any` / `unused vars`。
+2. 处理 `database:build` 的 Nx flaky 提示
+   - 当前不影响成功结果，但值得作为 CI 稳定性观察项记录。
+3. 进一步收窄 shell surface
+   - `App.vue` / `DesktopAuthApp.vue` 仍从 `@dailyuse/app-vue` 根入口消费 UI shell 导出；当前可接受，但如需更极致收敛，可继续改成专用 surface。
+
+### 可选 issue backlog
+
+1. `Optional-DesktopWarnings`
+   - 范围：desktop warning 清理
+2. `Optional-NxFlaky`
+   - 范围：`database:build` flaky 诊断
+3. `Optional-ShellSurface`
+   - 范围：app-vue shell 根导出进一步收窄
 
 ## 验证矩阵
 
@@ -1833,7 +1927,9 @@
 - 证据
   - [`project.json`](../../../project.json) 的 `governance-check` 包含新增 audit
   - [`package.json`](../../../package.json) 暴露 `governance:check` / `docs:check`
+  - ADR 编号、README 索引、审计 allowlist 与当前代码状态一致
 - 最小命令
+  - `pnpm docs:check`
   - `pnpm governance:check`
   - `pnpm test:targets:check`
 
@@ -1842,9 +1938,15 @@
 - 证据
   - Web / React / Editor runtime 都消费同一种 client creation language
   - startup plan 不再依赖 feature 自注册全局 phase task
+  - `apps/api` / `apps/desktop` / `apps/web` 的活跃启动路径不再执行 `InitializationManager`
+  - desktop renderer 不再从 `@dailyuse/app-vue` 根入口消费 router / dashboard adapter / store hook
+  - 剩余根入口导入只允许是 UI shell / layout / desktop surface
 - 最小命令
   - `pnpm nx run web:typecheck`
   - `pnpm nx run app-react:typecheck`
+  - `pnpm nx run desktop:typecheck`
+  - `rg "InitializationManager.getInstance\\(|registerNotificationInitializationTasks|registerGoalInitializationTasks" apps packages`
+  - `rg "@dailyuse/app-vue" apps/desktop/src/renderer`
   - 对应 package `test`
 
 ### Batch 3 / 3.5 验证
@@ -1852,6 +1954,11 @@
 - 证据
   - `useGoal` / `useRepository` interface 变窄
   - 重复组件/工具副本减少
+  - `AIChatView.vue` / `editor workspace` 不再承担多条独立 workflow
+  - 当前热点行数已收敛到：
+    - `AIChatView.vue` `221`
+    - `editor-workspace-store.ts` `125`
+    - `useRepository.ts` `202`
 - 最小命令
   - `pnpm nx run web:lint`
   - `pnpm nx run web:test`
@@ -1863,9 +1970,12 @@
   - `main.ts` / app bootstrap 只保留 runtime wiring
   - desktop profile/auth lifecycle 与 app runtime seam 清晰
   - app runtime contract 可解释 `web` / `mobile` / `api` / `desktop` / `ai-service`
+  - `desktop:lint` 当前已是 `0` error、`118` warning
 - 最小命令
   - `pnpm nx run desktop:typecheck`
   - `pnpm nx run desktop:lint`
+  - `pnpm nx run desktop:test`
+  - `rg "getSessionManager\\(|getDesktopProfileRuntimeManager\\(|getDesktopAuthService\\(|getWindowManager\\(|static getInstance\\(" apps/desktop/src/main`
   - 针对 desktop / api 的 smoke 或 module-level test
 
 ### Batch 5 / 5.5 验证
@@ -1873,19 +1983,26 @@
 - 证据
   - `dashboard` 从 app helper 升级为第一类 module
   - support package root exports 收窄，transport seam 更显式
+  - `ipc-client` 不再默认读取 `window.electronAPI`
 - 最小命令
   - `pnpm nx run api:test:smoke`
   - `pnpm nx run app-react:typecheck`
   - `pnpm nx run contracts:typecheck`
+  - `rg "window\\.electronAPI" packages/app-vue packages/app-react packages/contracts packages/utils packages/patterns packages/http-client packages/ipc-client`
 
 ### ai-service 验证
 
 - 证据
   - `app.py` 继续只做 process wiring
   - `services` / `evals` 的大模块被切成更清楚的子系统 seam
+  - `project.json` 的标准测试/类型检查入口继续成立
+  - `ai-service:lint` 与 `test` / `typecheck` 同时为绿
+  - `runner.py` 当前为 `652` 行；相较原始超大单文件状态已显著收敛，types/report builders 已提取到独立模块
+  - `goal_planning_service.py` 当前为 `359` 行；策略实现已提取到 `goal_planning_strategies.py`
 - 最小命令
-  - `pytest apps/ai-service/tests`
-  - 必要时跑 deterministic eval harness
+  - `pnpm nx run ai-service:test` — 77 passed
+  - `pnpm nx run ai-service:typecheck` — 0 errors
+  - `pnpm nx run ai-service:lint` — All checks passed
 
 ## 预期结果
 

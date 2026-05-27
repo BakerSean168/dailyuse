@@ -16,7 +16,7 @@
  * ```ts
  * import { createResultIpcClient } from '@dailyuse/ipc-client';
  *
- * const ipc = createResultIpcClient();
+ * const ipc = createResultIpcClient({ bridge: window.electronAPI });
  * const result = await ipc.invoke<Goal[]>('goal:list');
  *
  * if (result.ok) {
@@ -36,8 +36,6 @@ export type {
 export {
   IpcClientError,
   DEFAULT_IPC_CLIENT_CONFIG,
-  getElectronBridge,
-  getElectronAPI,
 } from './types';
 
 // ── Result IPC Client ──
@@ -53,6 +51,6 @@ import { ResultIpcClient } from './result-ipc-client';
  * 返回的实例所有方法都返回 `Promise<Result<T>>`，永不抛出异常。
  * 等价于 HTTP 侧的 `createResultHttpClient()`。
  */
-export function createResultIpcClient(config?: IpcClientConfig): ResultIpcClient {
+export function createResultIpcClient(config: IpcClientConfig): ResultIpcClient {
   return new ResultIpcClient(config);
 }

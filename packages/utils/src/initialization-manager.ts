@@ -18,19 +18,9 @@ export interface InitializationTask {
 }
 
 export class InitializationManager {
-  private static instance: InitializationManager;
   private tasks: Map<string, InitializationTask> = new Map();
   private completedTasks: Set<string> = new Set();
   private runningTasks: Set<string> = new Set();
-
-  private constructor() {}
-
-  static getInstance(): InitializationManager {
-    if (!InitializationManager.instance) {
-      InitializationManager.instance = new InitializationManager();
-    }
-    return InitializationManager.instance;
-  }
 
   /**
    * 注册任务，返回 unregister 函数

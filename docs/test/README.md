@@ -16,7 +16,7 @@
 
 | 类型 | 主要位置 | 常用入口 |
 | --- | --- | --- |
-| 快测试（TDD 默认） | `packages/*`、`apps/*` 下的 `*.test.ts` / `*.spec.ts` | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch` |
+| 快测试（TDD 默认） | 与源码同目录的 `*.test.ts` / `*.spec.ts`，或 `__tests__/` 子目录 | `pnpm nx run <project>:test`、`pnpm nx run <project>:test:watch` |
 | 覆盖率门禁 | 领域包与 `domain-shared` 的快测试集合 | `pnpm nx run <project>:test:coverage`、`pnpm test:coverage:domain`、`pnpm test:coverage:affected` |
 | 集成测试 | `packages/{task,goal,schedule,reminder}/src/**/*.integration.test.ts` | `pnpm test:integration`、`pnpm nx run <project>:test:integration` |
 | API 冒烟测试 | `apps/api/src/__tests__/smoke/**` | `pnpm nx run api:test:smoke` |
@@ -33,6 +33,20 @@
 - [running-tests.md](./running-tests.md)：日常开发、回归排查、CI 对应命令
 - [configuration.md](./configuration.md)：测试配置、setup、helper 的入口位置
 - [contract-tests.md](./contract-tests.md)：Web mock handler 契约测试约定
+
+## 覆盖率目标
+
+| 层 | 目标 | 说明 |
+|----|------|------|
+| Domain（核心业务逻辑） | 80% | 必须稳固 |
+| Application（用例编排） | 70% | |
+| 关键路径 | 90% | 登录、支付、数据同步等 |
+
+详见 [ADR-013: Standard Testing Strategy](../architecture/adr/ADR-013-standard-testing-strategy.md)。
+
+## 测试目录约定
+
+新代码优先使用与源码同目录的 `*.test.ts` / `*.spec.ts`。已有的 `__tests__/` 子目录继续保留，不要求迁移。两种方式均受 eslint module-boundaries 豁免。
 
 ## 使用原则
 

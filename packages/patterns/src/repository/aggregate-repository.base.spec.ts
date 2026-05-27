@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type { IEventBus } from '../events';
 import { publishAggregateEvents } from './aggregate-repository.base';
 

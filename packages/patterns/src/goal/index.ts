@@ -94,7 +94,7 @@ export interface IEventSender {
  *
  * @example
  * ```typescript
- * import { eventBus } from '@dailyuse/utils';
+ * import { eventBus } from '@dailyuse/utils/domain';
  * import { createEventBusAdapter } from '@dailyuse/patterns';
  *
  * const eventBusAdapter = createEventBusAdapter(eventBus);
