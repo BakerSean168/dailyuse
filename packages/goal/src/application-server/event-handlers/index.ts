@@ -6,7 +6,7 @@
  * such as goal-completion notifications, progress tracking, etc.
  */
 
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { IGoalRepository } from '../../domain-server';
 
 const logger = createLogger('GoalEventListeners');

@@ -8,7 +8,7 @@
  * - Ensures consistency within the aggregate
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { ScheduleEventMap, ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';

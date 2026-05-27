@@ -3,7 +3,7 @@
  * 目标模块领域错误
  */
 
-import { DomainError } from '@dailyuse/utils';
+import { DomainError } from '@dailyuse/utils/errors';
 import type { GoalId } from '@/domain-shared';
 
 /**

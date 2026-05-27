@@ -2,7 +2,8 @@ import type { IReminderTemplateRepository } from '../../../domain-server/reposit
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import {
   PowerSyncReminderTemplateMapper,
   type PowerSyncReminderTemplateRow,

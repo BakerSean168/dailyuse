@@ -25,7 +25,7 @@ import type { Rule } from '../../../domain-server/aggregates/rule';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import type { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils';
+import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import {
   PowerSyncRuleMapper,
   type PowerSyncRuleRow,

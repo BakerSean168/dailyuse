@@ -10,7 +10,8 @@ import type {
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
 import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GroupStats } from '../value-objects';
 

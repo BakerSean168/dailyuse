@@ -1,4 +1,5 @@
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '../domain-server/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../domain-server/repositories/i-schedule-task-repository';

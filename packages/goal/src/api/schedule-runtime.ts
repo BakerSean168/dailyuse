@@ -1,4 +1,5 @@
-import { eventBus, createLogger } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   GoalEventMap,
   GoalServerDTO,

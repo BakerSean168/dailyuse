@@ -1,4 +1,5 @@
-import { eventBus, createLogger } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { ReminderType, type ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTask, type IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';

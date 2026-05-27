@@ -18,7 +18,7 @@ import {
   ResourceType,
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const tempDirs: string[] = [];
 

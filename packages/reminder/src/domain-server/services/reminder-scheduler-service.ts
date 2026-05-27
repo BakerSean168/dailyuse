@@ -17,7 +17,7 @@ import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../repositories/i-reminder-template-repository';
 import type { ReminderTriggerService, ITriggerReminderResult } from './reminder-trigger-service';
 import { TriggerResult } from '@dailyuse/contracts/reminder';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('ReminderSchedulerService');
 

@@ -14,7 +14,7 @@
  */
 
 import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revision-client';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';

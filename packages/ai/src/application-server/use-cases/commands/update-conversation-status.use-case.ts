@@ -2,7 +2,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IAIConversationRepository } from '../../../domain-server/repositories/i-ai-conversation-repository';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('UpdateConversationStatusUseCase');
 

@@ -28,7 +28,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
   NotificationConfig,
   TriggerConfig,

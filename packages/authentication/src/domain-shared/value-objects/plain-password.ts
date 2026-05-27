@@ -1,4 +1,4 @@
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   PlainPasswordDTO,
   PlainPassword as IPlainPassword,

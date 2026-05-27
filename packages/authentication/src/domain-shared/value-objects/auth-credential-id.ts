@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { AuthCredentialId as IAuthCredentialId } from '@dailyuse/contracts/authentication';
 

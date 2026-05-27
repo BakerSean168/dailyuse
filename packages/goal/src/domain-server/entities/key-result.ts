@@ -28,7 +28,7 @@
  * - title 不能为空
  */
 
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { KeyResultId } from '../../domain-shared';
 import type { KeyResultServerDTO } from '@dailyuse/contracts/goal';
 

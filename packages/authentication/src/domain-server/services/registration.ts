@@ -1,4 +1,4 @@
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { ConflictError } from '@dailyuse/utils/errors';
 import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';

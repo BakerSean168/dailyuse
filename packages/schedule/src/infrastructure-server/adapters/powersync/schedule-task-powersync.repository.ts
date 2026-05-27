@@ -5,7 +5,8 @@ import type {
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleTaskStatus, type SourceModule } from '@dailyuse/contracts/schedule';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import {
   PowerSyncScheduleTaskMapper,
   type PowerSyncScheduleTaskRow,

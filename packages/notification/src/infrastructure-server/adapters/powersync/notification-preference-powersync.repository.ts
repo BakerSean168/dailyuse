@@ -1,4 +1,4 @@
-import { generateUUID } from '@dailyuse/utils';
+import { generateUUID } from '@dailyuse/utils/shared';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';

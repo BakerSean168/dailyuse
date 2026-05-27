@@ -18,7 +18,7 @@ import type {
   ISessionLayout,
 } from '@dailyuse/contracts/editor';
 import type { EditorSessionId as IEditorSessionId } from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId } from '@dailyuse/domain-shared';

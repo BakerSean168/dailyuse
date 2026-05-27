@@ -9,7 +9,8 @@ import type {
   IdentityId,
   TransferDate,
 } from '@dailyuse/contracts/primitives';
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 
 /**
  * SearchEngine 状态接口（domain types）

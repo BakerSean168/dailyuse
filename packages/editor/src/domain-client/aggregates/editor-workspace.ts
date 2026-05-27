@@ -15,7 +15,7 @@ import type {
   IWorkspaceSettings,
   ProjectType,
 } from '@dailyuse/contracts/editor';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId } from '@dailyuse/domain-shared';

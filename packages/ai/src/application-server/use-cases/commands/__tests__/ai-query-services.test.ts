@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { REPOSITORY_RESOURCE_MUTATED_EVENT, RepositoryResourceMutationType } from '@dailyuse/contracts/repository';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 import {
   AIProviderType,

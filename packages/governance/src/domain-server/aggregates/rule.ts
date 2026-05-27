@@ -35,7 +35,7 @@
  * @see {@link RuleStatus} 状态转换规则
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';

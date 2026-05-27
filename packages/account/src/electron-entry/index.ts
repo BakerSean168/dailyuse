@@ -21,7 +21,7 @@ import {
   type AccountModuleInstance,
 } from '../infrastructure-server';
 import { createAccountEventListenerRuntime } from '../application-server/handlers';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 const logger = createLogger('AccountElectron');

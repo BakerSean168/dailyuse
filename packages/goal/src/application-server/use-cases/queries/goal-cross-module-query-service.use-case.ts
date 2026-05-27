@@ -7,7 +7,7 @@
 
 import type { IGoalRepository } from '@/domain-server';
 import type { GoalStatus } from '@dailyuse/contracts/goal';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 

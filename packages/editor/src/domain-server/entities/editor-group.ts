@@ -16,10 +16,11 @@ import type {
   IdentityId,
   TransferDate,
 } from '@dailyuse/contracts/primitives';
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 import { EditorGroupId as EditorGroupIdType } from '../../domain-shared/value-objects/editor-group-id';
 import { EditorTab } from './editor-tab';
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 /**
  * EditorGroup 状态接口（domain types）

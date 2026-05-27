@@ -7,7 +7,7 @@ import {
   type CreateAIProviderConfigReq,
   type AIProviderConfigClientDTO,
 } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { AiProviderConfigId } from '../../../domain-shared/value-objects/ai-provider-config-id';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';

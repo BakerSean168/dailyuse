@@ -3,7 +3,7 @@ import type {
   GoalAutomationPlanningResult,
   IGoalAutomationPlanningPort,
 } from '../../application-server/ports';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
 

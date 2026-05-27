@@ -10,7 +10,7 @@ import {
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
 import { createSettingPowerSyncModule } from '../infrastructure-server/powersync';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { SettingModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 

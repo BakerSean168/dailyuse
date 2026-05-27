@@ -8,7 +8,7 @@ import {
 } from './mappers/powersync-task-dependency.mapper';
 import { TaskDependency } from '../../../domain-server/aggregates/task-dependency';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

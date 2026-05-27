@@ -21,7 +21,7 @@ import {
 } from '@dailyuse/contracts/repository';
 import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
 import { PathCalculator } from '../../domain-server/services/path-calculator';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import type { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import type { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
 import type { UpdateResourceContentUseCase } from '../use-cases/commands/update-resource-content.use-case';

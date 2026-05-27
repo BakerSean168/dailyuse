@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { KeyResultId as IKeyResultId } from '@dailyuse/contracts/primitives';
 

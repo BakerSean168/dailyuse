@@ -20,7 +20,7 @@ import { createTaskScheduleRuntimeContribution } from '../api/schedule-runtime';
 import { TaskTemplateController } from '../controllers/task-template.controller';
 import { TaskInstanceController } from '../controllers/task-instance.controller';
 import { TaskDependencyController } from '../controllers/task-dependency.controller';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { TaskModuleInstance } from '../infrastructure-server';
 import type { ITaskTemplateRepository } from '../domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';

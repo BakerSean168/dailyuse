@@ -27,7 +27,7 @@ import {
   type ScheduleTaskSourceExecutor,
 } from '../api/runtime';
 import { createScheduleEventTransportHandlers } from '../api/transport-handlers';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { IScheduleRepository, IScheduleTaskRepository } from '../domain-server';
 

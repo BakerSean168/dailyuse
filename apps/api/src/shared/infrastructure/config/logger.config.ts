@@ -4,7 +4,7 @@
  * @date 2025-01-22
  */
 
-import { LoggerFactory } from '@dailyuse/utils';
+import { LoggerFactory } from '@dailyuse/utils/logger';
 import { WinstonLogger } from '@dailyuse/utils/winston';
 import { env, isProduction } from './env.js';
 

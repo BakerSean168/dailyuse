@@ -1,7 +1,7 @@
 /** Account Aggregate Root - Server-side implementation. */
 
 import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 
 // IdentityId from shared primitives (cross-module shared type)
 import { IdentityId } from '@dailyuse/domain-shared/shared';

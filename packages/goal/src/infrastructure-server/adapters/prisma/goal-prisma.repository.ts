@@ -19,7 +19,7 @@ import type {
   KeyResultServerDTO,
 } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
 import { rawDataToGoalState, type RawKeyResultData } from './mappers/goal-state-mapper';
 

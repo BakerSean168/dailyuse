@@ -11,7 +11,7 @@ import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IAuthIdentityRepository } from '../../../domain-server';
 import { AuthIdentity } from '../../../domain-server';
 import type { OAuthProvider } from '../../../domain-shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { PrismaAuthIdentityMapper } from './mappers';
 import type { PrismaAuthIdentityWithRelations } from '../../types';

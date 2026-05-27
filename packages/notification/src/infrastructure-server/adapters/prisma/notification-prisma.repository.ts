@@ -14,7 +14,7 @@ import type {
   NotificationStatus,
 } from '@dailyuse/contracts/notification';
 import { Notification } from '../../../domain-server/aggregates/notification';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   NotificationPrismaMapper,
   type PrismaNotificationWithRelations,

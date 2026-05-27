@@ -8,7 +8,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import type { IGoalFocusApiClient, IResultIpcClient } from '../types';
 import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   private readonly channel = 'goal:focus-mode';

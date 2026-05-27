@@ -18,7 +18,7 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { createEventBusAdapter } from '@dailyuse/patterns';
 import {
   createAuthenticationModule,

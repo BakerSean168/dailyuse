@@ -5,7 +5,9 @@
  */
 
 import { NotificationPolicy } from '../../../domain-server/services/notification-policy';
-import { createLogger, eventBus, BusinessRuleViolationError } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   NotificationClientDTO,
   NotificationDispatchDesktopEvent,

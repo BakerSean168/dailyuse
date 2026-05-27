@@ -10,7 +10,7 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { INotificationPreferenceRepository } from '../../../domain-server';
 import { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
-import { generateUUID } from '@dailyuse/utils';
+import { generateUUID } from '@dailyuse/utils/shared';
 import {
   NotificationPreferencePrismaMapper,
   type PrismaNotificationPreferenceRow,

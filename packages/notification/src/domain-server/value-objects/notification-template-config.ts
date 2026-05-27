@@ -9,7 +9,7 @@
  * 尚未在 @dailyuse/contracts/notification 中定义。
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   TemplateContent,
   EmailTemplateContent,

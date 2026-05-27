@@ -23,7 +23,7 @@ import type { IRuleRevisionRepository } from '../../../domain-server/repositorie
 import { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils';
+import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
 
 /**

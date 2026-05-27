@@ -2,7 +2,7 @@ import type {
   DeviceInfoDTO,
   DeviceInfo as IDeviceInfo,
 } from '@dailyuse/contracts/authentication';
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import { DeviceType } from './device-type';
 
 /**

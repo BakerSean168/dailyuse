@@ -1,7 +1,7 @@
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   AccountPowerSyncMapper,
   type PowerSyncAccountRow,

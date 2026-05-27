@@ -11,7 +11,8 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { GovernanceEventMap } from '../contracts/protocol/governance-event-map';
 import type { GovernanceModuleRuntimeContribution } from '../infrastructure-server';
 

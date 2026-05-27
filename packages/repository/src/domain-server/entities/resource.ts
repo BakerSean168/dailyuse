@@ -10,10 +10,10 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type { ResourceId, RepositoryId, FolderId, IdentityId } from '@dailyuse/contracts/primitives';
 import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { ResourceId as ResourceIdType } from '../../domain-shared/value-objects/resource-id';
 import { ResourceMetadata, ResourceStats } from '../value-objects';
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 /** Domain state interface for Resource */
 export interface ResourceState {

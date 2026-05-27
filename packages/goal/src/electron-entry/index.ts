@@ -23,7 +23,7 @@ import {
 } from '../api/transport-handlers';
 import { createGoalRuntimeContribution } from '../api/runtime';
 import { createGoalScheduleRuntimeContribution } from '../api/schedule-runtime';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { IGoalRecordRepository, IGoalRepository } from '../domain-server';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { GoalModuleInstance } from '../infrastructure-server';

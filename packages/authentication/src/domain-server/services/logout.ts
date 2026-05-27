@@ -1,4 +1,4 @@
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import type { LogoutReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';

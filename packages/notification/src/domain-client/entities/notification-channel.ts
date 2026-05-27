@@ -15,7 +15,7 @@ import type {
   NotificationChannelType,
   ChannelStatus,
 } from '@dailyuse/contracts/notification';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import {
   NotificationChannelId,
   NotificationId,

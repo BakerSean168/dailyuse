@@ -18,7 +18,7 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type { RuleStatus } from '../../contracts/value-objects/rule-status';
 import type { RuleSeverity } from '../../contracts/value-objects/rule-severity';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';

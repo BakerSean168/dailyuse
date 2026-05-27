@@ -12,7 +12,7 @@
 import type { GoalClientDTO, GoalReminderConfig } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { GoalId, GoalFolderId } from '../../domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { KeyResult, GoalReview } from '../entities';

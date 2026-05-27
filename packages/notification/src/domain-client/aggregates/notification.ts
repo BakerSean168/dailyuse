@@ -17,7 +17,7 @@ import type {
   NotificationStatus,
 } from '@dailyuse/contracts/notification';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
   NotificationId,
   NotificationAction,

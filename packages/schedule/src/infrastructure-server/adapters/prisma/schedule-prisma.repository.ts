@@ -11,7 +11,7 @@ import type { IScheduleRepository } from '../../../domain-server/repositories/i-
 import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
 import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

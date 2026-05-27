@@ -14,7 +14,7 @@ import {
 import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { AuthSessionId } from '../../../domain-shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('RefreshToken');
 

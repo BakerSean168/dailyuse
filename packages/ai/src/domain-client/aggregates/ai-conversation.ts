@@ -9,7 +9,7 @@
  * - Instance toDTO(): AIConversationClientDTO
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';

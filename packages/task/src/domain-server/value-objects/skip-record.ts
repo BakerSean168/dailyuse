@@ -3,7 +3,7 @@
  * 表示任务跳过记录
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 
 // Local DTO types (not yet defined in contracts)
 interface SkipRecordServerDTO {

@@ -1,6 +1,6 @@
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { GoalPowerSyncDatabase } from './shared';
 import { toDbDateTime, parseJsonArray } from './shared';
 import { PowerSyncFocusModeMapper } from './mappers/powersync-focus-mode.mapper';

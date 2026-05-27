@@ -5,7 +5,8 @@
  */
 
 import type { Express, Request, Response, NextFunction } from 'express';
-import { createLogger, mapPrismaError } from '@dailyuse/utils';
+import { mapPrismaError } from '@dailyuse/utils/errors';
+import { createLogger } from '@dailyuse/utils/logger';
 import { errorCodeToHttpStatus, extractStructuredResultError } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ErrorHandler');

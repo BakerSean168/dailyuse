@@ -17,7 +17,7 @@ import {
   RepositoryResourceMutationType,
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 describe('Repository resource mutations', () => {
   it('renames a resource in both storage and metadata', async () => {

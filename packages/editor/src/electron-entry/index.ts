@@ -40,7 +40,7 @@ import type { IRepositoryContentPort } from '../application-server';
 import type { IRepositorySearchPort } from '../application-server';
 import { createEditorPowerSyncModule } from '../infrastructure-server/powersync';
 import type { EditorModuleInstance } from '../infrastructure-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { fail } from '@dailyuse/contracts/result';
 import { withAuthenticatedValue } from './authenticated-ipc';
 

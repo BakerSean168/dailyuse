@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { FocusSessionId as IFocusSessionId } from '@dailyuse/contracts/primitives';
 

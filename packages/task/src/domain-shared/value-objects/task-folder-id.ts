@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { TaskFolderId as ITaskFolderId } from '@dailyuse/contracts/primitives';
 

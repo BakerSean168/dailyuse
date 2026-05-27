@@ -3,7 +3,7 @@
  * 通知历史记录
  */
 
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { NotificationHistoryId } from '../../domain-shared/value-objects/notification-history-id';
 import type {
   NotificationId,

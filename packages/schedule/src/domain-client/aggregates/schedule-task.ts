@@ -21,7 +21,7 @@ import type {
   TaskPriority,
   ExecutionStatus,
 } from '@dailyuse/contracts/schedule';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ScheduleExecution } from '../entities/schedule-execution.js';

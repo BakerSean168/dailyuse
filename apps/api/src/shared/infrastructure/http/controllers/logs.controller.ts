@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('ClientLogs');
 

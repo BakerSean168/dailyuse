@@ -42,7 +42,7 @@ import type {
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   CreateGoalUseCase,
   GetGoalUseCase,

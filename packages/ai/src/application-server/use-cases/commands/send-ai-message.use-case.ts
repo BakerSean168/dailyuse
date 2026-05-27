@@ -9,7 +9,7 @@ import type {
   IAIExecutionLogPort,
   IAIChatExecutionPort,
 } from '../../ports';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import {
   resolveActiveProviderConfig,
   toChatExecutionProviderConfig,

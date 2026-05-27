@@ -32,7 +32,7 @@ import {
   AIServiceKnowledgeQueryAdapter,
   AIServiceKnowledgeNoteGenerationAdapter,
 } from '../infrastructure-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,

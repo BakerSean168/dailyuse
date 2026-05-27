@@ -8,7 +8,8 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IReminderResponseRepository } from '@/domain-server/repositories/i-reminder-response-repository';
 import type { ReminderEventMap, ReminderResponseAction } from '@dailyuse/contracts/reminder';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { ReminderResponse } from '@/domain-server/entities/reminder-response';
 
 const logger = createLogger('RecordReminderResponseUseCase');

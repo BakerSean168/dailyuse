@@ -10,7 +10,7 @@
  * - 消除循环依赖
  */
 
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { ExecuteScheduleTaskByIdUseCase } from './execute-schedule-task-by-id.use-case';
 
 const logger = createLogger('ScheduleTaskExecutorAdapter');

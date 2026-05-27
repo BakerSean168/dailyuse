@@ -8,7 +8,8 @@
  * - 错误信息管理
  */
 
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 import type {
   ScheduleExecutionClientDTO,
   ScheduleExecutionServerDTO,

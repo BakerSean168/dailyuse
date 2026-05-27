@@ -1,4 +1,4 @@
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 export interface EditorPolicyOptions {
   maxOpenTabs?: number | null;

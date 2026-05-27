@@ -23,7 +23,7 @@ import {
 import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
 import { ReminderController } from '../controllers/reminder.controller';
 import { createReminderTransportHandlers } from '../api/transport-handlers';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../infrastructure-server';
 import type { IReminderTemplateRepository } from '../domain-server/repositories/i-reminder-template-repository';

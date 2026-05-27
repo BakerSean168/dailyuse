@@ -17,7 +17,7 @@ import type { NotificationActionDTO, NotificationMetadataDTO } from '@dailyuse/c
 import { NotificationCategory, NotificationType, NotificationChannelType } from '@dailyuse/contracts/notification';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('NotificationDomainService');
 

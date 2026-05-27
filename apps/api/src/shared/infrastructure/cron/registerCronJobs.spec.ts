@@ -14,16 +14,15 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('./cron-scheduler-manager', () => ({
-  CronSchedulerManager: {
-    getInstance: vi.fn(() => ({
-      register: mocks.register,
-      getStatus: mocks.getStatus,
-      start: mocks.start,
-      stop: mocks.stop,
-    })),
-  },
-}));
+vi.mock('./cron-scheduler-manager', () => {
+  class MockCronSchedulerManager {
+    register = mocks.register;
+    getStatus = mocks.getStatus;
+    start = mocks.start;
+    stop = mocks.stop;
+  }
+  return { CronSchedulerManager: MockCronSchedulerManager };
+});
 
 vi.mock('@/shared/infrastructure/config/env.js', () => ({
   env: mocks.env,
@@ -33,7 +32,7 @@ vi.mock('./jobs/snapshot-rebuild.job.js', () => ({
   rebuildAllProfileSnapshots: mocks.rebuildAllProfileSnapshots,
 }));
 
-describe('registerAllCronJobs', () => {
+describe('createCronScheduler', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getStatus.mockReturnValue([]);
@@ -45,9 +44,9 @@ describe('registerAllCronJobs', () => {
   });
 
   it('registers the snapshot rebuild job when a snapshot root is configured', async () => {
-    const { registerAllCronJobs } = await import('./register-cron-jobs.js');
+    const { createCronScheduler } = await import('./register-cron-jobs.js');
 
-    registerAllCronJobs();
+    const scheduler = createCronScheduler();
 
     expect(mocks.register).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -64,13 +63,14 @@ describe('registerAllCronJobs', () => {
     };
     await jobConfig.task();
     expect(mocks.rebuildAllProfileSnapshots).toHaveBeenCalledWith('/tmp/powersync-snapshots');
+    expect(scheduler).toBeDefined();
   });
 
   it('does not register the snapshot rebuild job when no snapshot root is configured', async () => {
     mocks.env.POWERSYNC_SNAPSHOT_DIR = undefined as unknown as string;
 
-    const { registerAllCronJobs } = await import('./register-cron-jobs.js');
-    registerAllCronJobs();
+    const { createCronScheduler } = await import('./register-cron-jobs.js');
+    createCronScheduler();
 
     expect(mocks.register).not.toHaveBeenCalled();
   });

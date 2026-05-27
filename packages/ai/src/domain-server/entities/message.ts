@@ -1,4 +1,4 @@
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import type { MessageClientDTO, MessageServerDTO } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';

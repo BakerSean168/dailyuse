@@ -17,7 +17,7 @@ import type { LoginByEmailReq, LoginByEmailRes } from '@dailyuse/contracts/authe
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IPasswordHasher } from '../../../domain-shared';
 import { UserNotFoundError, InvalidPasswordError } from '../../../domain-server/services/login';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Login');
 

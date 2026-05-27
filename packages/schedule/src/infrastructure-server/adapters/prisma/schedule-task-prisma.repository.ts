@@ -21,7 +21,7 @@ import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PrismaScheduleTaskMapper,
   type PrismaScheduleTaskWithExecutions,

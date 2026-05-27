@@ -6,7 +6,7 @@ import {
   type PowerSyncEditorWorkspaceRow,
 } from './mappers/powersync-editor-workspace.mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

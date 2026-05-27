@@ -22,7 +22,7 @@ import { authMiddleware, requireRole } from './shared/infrastructure/http/middle
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import infrastructureRouter from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Bootstrapper');
 

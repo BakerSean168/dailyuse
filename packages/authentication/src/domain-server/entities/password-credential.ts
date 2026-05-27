@@ -7,7 +7,7 @@
  */
 
 import type { PasswordCredentialServerDTO } from '@dailyuse/contracts/authentication';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 
 import { CredentialStatus, HashedPassword, type AuthCredentialId } from '../../domain-shared';
 

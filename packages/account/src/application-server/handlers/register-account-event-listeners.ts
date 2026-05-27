@@ -6,7 +6,8 @@
 
 import type { IAccountRepository } from '../../domain-server';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { IdentityCreatedHandler } from './identity-created.handler';
 
 const logger = createLogger('AccountEventListeners');

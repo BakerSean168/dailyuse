@@ -20,7 +20,7 @@ import {
   TaskType,
 } from '@dailyuse/contracts/task';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adapter';
 import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';

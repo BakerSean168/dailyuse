@@ -1,7 +1,7 @@
 import type { IFocusModeRepository, IGoalRepository } from '@/domain-server';
 import { GoalPolicy, FocusSessionPolicy, FocusMode, Goal } from '@/domain-server';
 import { FocusModeId } from '@/domain-shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ActivateFocusModeRequest, FocusModeDTO } from '@dailyuse/contracts/goal';

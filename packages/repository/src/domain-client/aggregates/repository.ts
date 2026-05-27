@@ -12,7 +12,7 @@
 
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import type { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
 import { RepositoryConfig } from '../../domain-shared/value-objects/repository-config';
 import { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';

@@ -29,7 +29,7 @@ import type { Rule } from '../../../domain-server/aggregates/rule';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils';
+import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
 

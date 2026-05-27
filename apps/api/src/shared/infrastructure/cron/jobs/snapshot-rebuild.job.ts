@@ -1,5 +1,5 @@
 import { prisma } from '@dailyuse/database';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { buildProfileSnapshot } from '../../../../modules/powersync/snapshot-builder.js';
 import { getPowerSyncConfig } from '../../config/env.js';
 

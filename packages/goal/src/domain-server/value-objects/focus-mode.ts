@@ -5,7 +5,7 @@
  * 用于管理专注周期的创建和查询
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   FocusMode as IFocusMode,
   FocusModeDTO,

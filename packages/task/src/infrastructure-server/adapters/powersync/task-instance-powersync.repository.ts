@@ -5,7 +5,7 @@ import type {
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PowerSyncTaskInstanceMapper,
   type PowerSyncTaskInstanceRow,

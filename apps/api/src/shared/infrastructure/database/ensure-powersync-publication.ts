@@ -1,5 +1,5 @@
 import { prisma } from '@dailyuse/database';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('PowerSyncPublication');
 const PUBLICATION_NAME = 'powersync';

@@ -11,7 +11,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain-server';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 /**
  * Delete Schedule Task Use Case

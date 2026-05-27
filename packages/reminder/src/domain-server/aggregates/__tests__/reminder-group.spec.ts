@@ -4,7 +4,7 @@ import type { ReminderGroupState } from '../reminder-group';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GroupStats } from '../../value-objects';
-import { generateUUID } from '@dailyuse/utils';
+import { generateUUID } from '@dailyuse/utils/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

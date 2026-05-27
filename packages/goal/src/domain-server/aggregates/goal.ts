@@ -27,7 +27,7 @@
  * - 目标进度在 0-100 之间
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';

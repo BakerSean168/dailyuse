@@ -24,7 +24,7 @@
  * - 软删除后不能再修改属性（只能恢复）
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalFolderId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';

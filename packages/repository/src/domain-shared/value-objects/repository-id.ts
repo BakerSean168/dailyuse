@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { RepositoryId as IRepositoryId } from '@dailyuse/contracts/primitives';
 

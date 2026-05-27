@@ -9,7 +9,7 @@ import { ok } from '@dailyuse/contracts/result';
 import type { IAuthSessionRepository } from '../../../domain-server';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Logout');
 

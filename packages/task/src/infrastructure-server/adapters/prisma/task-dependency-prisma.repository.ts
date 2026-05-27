@@ -13,7 +13,7 @@ import type { DependencyType } from '@dailyuse/contracts/task';
 import { TaskDependency } from '@/domain-server/aggregates/task-dependency';
 import { PrismaTaskDependencyMapper } from './mappers/prisma-task-dependency-mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

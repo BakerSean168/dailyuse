@@ -4,7 +4,7 @@ import type { IAIConversationRepository } from '../../../domain-server/repositor
 import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AddConversationMessageUseCase');
 

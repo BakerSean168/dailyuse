@@ -4,7 +4,7 @@ import { NotificationPreference } from '../../aggregates/notification-preference
 import { DoNotDisturbConfig } from '../../../domain-shared/value-objects/do-not-disturb-config';
 import { RateLimit } from '../../../domain-shared/value-objects/rate-limit';
 import { NotificationChannelType, NotificationCategory } from '@dailyuse/contracts/notification';
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 describe('NotificationPolicy', () => {
   const policy = new NotificationPolicy();

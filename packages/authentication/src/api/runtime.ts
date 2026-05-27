@@ -11,7 +11,8 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
 import type { AuthenticationModuleRuntimeContribution } from '../infrastructure-server';
 

@@ -12,7 +12,7 @@
  * 而是通过一个轻量的 runtime 对象管理自身容器的生命周期。
  */
 
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { RepositoryModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('RepositoryRuntime');

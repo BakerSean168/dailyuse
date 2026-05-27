@@ -23,7 +23,7 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 import { differenceInCalendarDays, differenceInCalendarWeeks, startOfDay } from 'date-fns';
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { addDays } from 'date-fns';
 import { calculateTaskPriority } from '../services/priority-calculator.service';
 import {

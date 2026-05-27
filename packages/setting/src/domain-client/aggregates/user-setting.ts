@@ -5,7 +5,7 @@
  * Client is read-only — changes go through API to server.
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type {
   SettingId as ISettingId,
   IdentityId as IIdentityId,

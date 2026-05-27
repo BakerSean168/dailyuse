@@ -5,7 +5,7 @@ import type {
   QueryKnowledgeReq,
   QueryKnowledgeRes,
 } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
 import type {

@@ -3,7 +3,7 @@
  * 任务模块领域错误
  */
 
-import { DomainError } from '@dailyuse/utils';
+import { DomainError } from '@dailyuse/utils/errors';
 
 /**
  * 任务模板未找到错误

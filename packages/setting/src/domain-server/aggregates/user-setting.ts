@@ -19,7 +19,7 @@
  * 添加新分类：创建新 schema + 添加到 UserPreferencesSchema + CATEGORY_SCHEMAS
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type {
   SettingId as ISettingId,
   IdentityId,

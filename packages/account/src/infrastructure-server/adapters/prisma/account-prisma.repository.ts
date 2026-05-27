@@ -12,7 +12,8 @@ import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
 import { AggregateRepositoryBase, createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('PrismaAccountRepository');
 const eventBusAdapter = createEventBusAdapter(eventBus);

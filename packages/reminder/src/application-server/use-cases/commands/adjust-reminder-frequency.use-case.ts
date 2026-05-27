@@ -8,7 +8,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
 import type { ReminderEventMap } from '@dailyuse/contracts/reminder';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 /**
  * 调整结果

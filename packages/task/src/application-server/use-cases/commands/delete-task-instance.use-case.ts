@@ -5,7 +5,7 @@
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 export class DeleteTaskInstanceUseCase {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}

@@ -3,7 +3,7 @@
  * 任务依赖关系聚合
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { TaskDependencyServerDTO, TaskDependencyClientDTO, TaskEventMap } from '@dailyuse/contracts/task';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
