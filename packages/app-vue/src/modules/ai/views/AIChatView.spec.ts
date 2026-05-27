@@ -220,6 +220,92 @@ const SelectItemStub = defineComponent({
   },
 });
 
+const AIFooterComposerStub = defineComponent({
+  name: 'AIFooterComposerStub',
+  setup(_, { slots }) {
+    return () => h('div', { 'data-testid': 'ai-footer-composer-stub' }, [
+      slots.default?.(),
+      slots['action-rail']?.(),
+    ]);
+  },
+});
+
+const AIMessagePanelStub = defineComponent({
+  name: 'AIMessagePanelStub',
+  setup(_, { slots }) {
+    return () => h('div', { 'data-testid': 'ai-message-panel-stub' }, [
+      slots.default?.(),
+      slots.panels?.(),
+    ]);
+  },
+});
+
+const AIGoalWorkflowPanelStub = defineComponent({
+  name: 'AIGoalWorkflowPanelStub',
+  props: [
+    'toolMode', 'goalClarification', 'goalDraft', 'goalAutomationResult',
+    'clarificationAnswers', 'editableGoal', 'editableKeyResults',
+    'showGoalDraftEditor', 'creatingGoal', 'goalExecutedActions',
+    'goalExecutionSummary', 'goalExecutionRecovery',
+  ],
+  emits: ['update:clarification-answers'],
+  setup(props, { emit }) {
+    return () => {
+      const fragments = [];
+      if (props.toolMode === 'goal') {
+        if (props.goalDraft) {
+          fragments.push(h('div', { 'data-testid': 'goal-draft-panel' }, [
+            h('h3', 'Goal draft'),
+            h('p', props.goalDraft.goal?.title ?? ''),
+            h('p', props.goalDraft.goal?.description ?? ''),
+          ]));
+        }
+        if (props.goalClarification) {
+          const answers = [...(props.clarificationAnswers ?? [])];
+          fragments.push(h('div', { 'data-testid': 'goal-clarification-panel' }, [
+            h('h3', 'Goal clarification'),
+            h('p', props.goalClarification.rationale ?? ''),
+            ...(props.goalClarification.questions ?? []).map((q: any, i: number) =>
+              h('div', [
+                h('p', q.question),
+                h('textarea', {
+                  placeholder: 'Answer here',
+                  value: answers[i] ?? '',
+                  onInput: (e: Event) => {
+                    const next = [...answers];
+                    next[i] = (e.target as HTMLTextAreaElement).value;
+                    emit('update:clarification-answers', next);
+                  },
+                }),
+              ]),
+            ),
+          ]));
+        }
+        if (props.goalAutomationResult) {
+          const result = props.goalAutomationResult;
+          fragments.push(h('div', { 'data-testid': 'goal-automation-panel' }, [
+            h('h3', 'Summary'),
+            h('p', result.summary ?? ''),
+            ...(result.actions ?? []).map((a: any) => h('p', a.rationale ?? '')),
+            h('h3', 'Execution Status'),
+            ...(result.executedActions ?? []).map((a: any) => h('p', a.message ?? '')),
+            ...(props.goalExecutionSummary ? [
+              h('p', `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`),
+            ] : []),
+            h('h3', 'Execution Timeline'),
+            ...(result.executedActions ?? []).map((a: any) => h('p', a.message ?? '')),
+            ...(result.recovery ? [
+              h('h3', 'Recovery'),
+              ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
+            ] : []),
+          ]));
+        }
+      }
+      return h('div', { 'data-testid': 'goal-workflow-stub' }, fragments);
+    };
+  },
+});
+
 const DivStub = defineComponent({
   name: 'DivStub',
   setup(_, { attrs, slots }) {
@@ -293,6 +379,9 @@ function mountView() {
         SelectTrigger: DivStub,
         SelectValue: DivStub,
         AIGoalDraftEditor: DivStub,
+        AIMessagePanel: AIMessagePanelStub,
+        AIGoalWorkflowPanel: AIGoalWorkflowPanelStub,
+        AIFooterComposer: AIFooterComposerStub,
       },
     },
   });
