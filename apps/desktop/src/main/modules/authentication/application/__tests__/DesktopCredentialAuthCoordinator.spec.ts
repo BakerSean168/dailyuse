@@ -4,11 +4,6 @@ const mocks = vi.hoisted(() => ({
   loginDesktopAccount: vi.fn(),
   registerDesktopAccount: vi.fn(),
   refreshDesktopSession: vi.fn(),
-  getTokenManager: vi.fn(),
-  getRememberedAccountsService: vi.fn(),
-  getNetworkStateManager: vi.fn(),
-  getWindowManager: vi.fn(),
-  createSessionManager: vi.fn(),
 }));
 
 vi.mock('../login-desktop-account', () => ({
@@ -24,16 +19,9 @@ vi.mock('../refresh-desktop-session', () => ({
 }));
 
 vi.mock('../../infrastructure', () => ({
-  getTokenManager: mocks.getTokenManager,
-  getRememberedAccountsService: mocks.getRememberedAccountsService,
-  getNetworkStateManager: mocks.getNetworkStateManager,
-  createSessionManager: mocks.createSessionManager,
   TokenManager: class {},
   SessionManager: class {},
-}));
-
-vi.mock('../../../../lifecycle/window-manager', () => ({
-  getWindowManager: mocks.getWindowManager,
+  NetworkStateManager: class {},
 }));
 
 import { DesktopCredentialAuthCoordinator } from '../desktop-credential-auth-coordinator';
@@ -159,14 +147,17 @@ function createCoordinator(opts: {
   logger?: any;
   sessionManager?: any;
   tokenManager?: any;
+  networkStateManager?: any;
   projectionService?: any;
   rememberedAccountService?: any;
   credentialRepo?: any;
   sessionRepo?: any;
   authState?: AuthState;
+  windowManager?: any;
 } = {}) {
   const logger = opts.logger ?? createLogger();
   const tokenManager = opts.tokenManager ?? createMockTokenManager();
+  const networkStateManager = opts.networkStateManager ?? { isOnline: vi.fn(() => true) };
   const sessionManager = opts.sessionManager ?? createMockSessionManager();
   const authState = opts.authState ?? { authMode: 'UNAUTHENTICATED', runtimeState: 'UNINITIALIZED' };
   const projectionService = opts.projectionService ?? {
@@ -186,17 +177,23 @@ function createCoordinator(opts: {
     getAutoLoginAccount: vi.fn().mockResolvedValue(null),
   };
 
-  const coordinator = new DesktopCredentialAuthCoordinator(
+  const windowManager = opts.windowManager ?? {
+    getMainWindow: vi.fn(() => null),
+  };
+
+  const coordinator = new DesktopCredentialAuthCoordinator({
     logger,
     tokenManager,
-    mockRemoteGateway as any,
+    networkStateManager,
+    remoteGateway: mockRemoteGateway as any,
     sessionManager,
     projectionService,
     rememberedAccountService,
-    opts.credentialRepo ?? null,
-    opts.sessionRepo ?? null,
+    credentialRepository: opts.credentialRepo ?? null,
+    sessionRepository: opts.sessionRepo ?? null,
     authState,
-  );
+    windowManager: windowManager as any,
+  });
 
   return { coordinator, authState, sessionManager, tokenManager, projectionService, rememberedAccountService };
 }
@@ -212,17 +209,8 @@ describe('DesktopCredentialAuthCoordinator', () => {
     vi.clearAllMocks();
 
     mockTokenManager = createMockTokenManager();
-    mocks.getTokenManager.mockReturnValue(mockTokenManager);
-
-    mocks.getNetworkStateManager.mockReturnValue({
-      isOnline: vi.fn(() => true),
-    });
-    mocks.getWindowManager.mockReturnValue({
-      getMainWindow: vi.fn(() => null),
-    });
 
     mockSessionManager = createMockSessionManager();
-    mocks.createSessionManager.mockReturnValue(mockSessionManager);
 
     authState = { authMode: 'UNAUTHENTICATED', runtimeState: 'UNINITIALIZED' };
 
@@ -335,11 +323,11 @@ describe('DesktopCredentialAuthCoordinator', () => {
         projectionService: conflictProjection,
         authState,
         credentialRepo: credRepo,
+        windowManager: {
+          getMainWindow: vi.fn(() => ({ isDestroyed: () => false })),
+        },
       });
       authState.runtimeState = 'AUTHENTICATED';
-      mocks.getWindowManager.mockReturnValue({
-        getMainWindow: vi.fn(() => ({ isDestroyed: () => false })),
-      });
 
       const result = await coordinator.login({
         email: 'active@example.com',

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import type { SharedPathResolver } from '../paths';
 import { computeProfileId } from '../paths';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('ProfileRegistry');
 
@@ -47,33 +47,16 @@ function normalizeProfileDescriptor(profile: Partial<ProfileDescriptor> & Pick<P
 
 /**
  * Manages the profile registry at shared/profiles/registry.json.
- * Singleton pattern consistent with the rest of the codebase.
  */
 export class ProfileRegistry {
-  private static instance: ProfileRegistry | null = null;
-
   private readonly registryPath: string;
   private readonly registryDir: string;
   private cached: RegistryFile | null = null;
   private loadPromise: Promise<RegistryFile> | null = null;
 
-  private constructor(private readonly sharedResolver: SharedPathResolver) {
+  constructor(private readonly sharedResolver: SharedPathResolver) {
     this.registryPath = sharedResolver.registryPath;
     this.registryDir = sharedResolver.profilesRegistryDir;
-  }
-
-  static getInstance(sharedResolver?: SharedPathResolver): ProfileRegistry {
-    if (!ProfileRegistry.instance) {
-      if (!sharedResolver) {
-        throw new Error('ProfileRegistry requires SharedPathResolver on first init');
-      }
-      ProfileRegistry.instance = new ProfileRegistry(sharedResolver);
-    }
-    return ProfileRegistry.instance;
-  }
-
-  static resetInstance(): void {
-    ProfileRegistry.instance = null;
   }
 
   /**

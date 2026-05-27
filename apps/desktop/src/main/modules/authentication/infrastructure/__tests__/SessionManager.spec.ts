@@ -17,7 +17,7 @@ vi.mock('electron', () => ({
   },
 }));
 
-import { SessionManager, createSessionManager } from '../session-manager';
+import { SessionManager } from '../session-manager';
 import { TokenManager } from '../token-manager';
 
 function createLogger() {
@@ -29,11 +29,28 @@ function createLogger() {
   };
 }
 
+function createMockTokenManager() {
+  return {
+    loadTokens: vi.fn().mockResolvedValue(null),
+    saveTokens: vi.fn(),
+    updateAccessToken: vi.fn(),
+    updateRefreshToken: vi.fn(),
+    getCachedTokenData: vi.fn().mockReturnValue(null),
+    getStatus: vi.fn().mockResolvedValue({
+      isRefreshTokenExpired: false,
+      isAccessTokenExpired: false,
+    }),
+    getAccessToken: vi.fn().mockResolvedValue(null),
+    clearTokens: vi.fn(),
+    switchToProfile: vi.fn(),
+    clearForProfileSwitch: vi.fn(),
+    stopAutoRefresh: vi.fn(),
+  };
+}
+
 describe('SessionManager', () => {
   beforeEach(() => {
     userDataPath = fs.mkdtempSync(path.join(os.tmpdir(), 'dailyuse-session-manager-'));
-    SessionManager.resetInstance();
-    TokenManager.resetInstance();
     vi.clearAllMocks();
   });
 
@@ -52,9 +69,10 @@ describe('SessionManager', () => {
       removeAllByIdentityId: vi.fn(),
     };
     const identityRepository = {};
-    const manager = createSessionManager(
+    const manager = new SessionManager(
       sessionRepository as never,
       identityRepository as never,
+      createMockTokenManager() as never,
       createLogger() as never,
     );
     const loadTokens = vi.fn().mockResolvedValue({
@@ -91,9 +109,10 @@ describe('SessionManager', () => {
       removeAllByIdentityId: vi.fn(),
     };
     const identityRepository = {};
-    const manager = createSessionManager(
+    const manager = new SessionManager(
       sessionRepository as never,
       identityRepository as never,
+      createMockTokenManager() as never,
       createLogger() as never,
     );
     const saveTokens = vi.fn().mockResolvedValue(undefined);
@@ -130,9 +149,10 @@ describe('SessionManager', () => {
       removeAllByIdentityId: vi.fn(),
     };
     const identityRepository = {};
-    const manager = createSessionManager(
+    const manager = new SessionManager(
       sessionRepository as never,
       identityRepository as never,
+      createMockTokenManager() as never,
       createLogger() as never,
     );
     const clearTokens = vi.fn();
@@ -171,9 +191,10 @@ describe('SessionManager', () => {
       removeAllByIdentityId: vi.fn(),
     };
     const identityRepository = {};
-    const manager = createSessionManager(
+    const manager = new SessionManager(
       sessionRepository as never,
       identityRepository as never,
+      createMockTokenManager() as never,
       createLogger() as never,
     );
     const clearTokens = vi.fn();
@@ -211,9 +232,10 @@ describe('SessionManager', () => {
       removeAllByIdentityId: vi.fn(),
     };
     const identityRepository = {};
-    const manager = createSessionManager(
+    const manager = new SessionManager(
       sessionRepository as never,
       identityRepository as never,
+      createMockTokenManager() as never,
       createLogger() as never,
     );
 
@@ -259,9 +281,10 @@ describe('SessionManager', () => {
       removeAllByIdentityId: vi.fn(),
     };
     const identityRepository = {};
-    const manager = createSessionManager(
+    const manager = new SessionManager(
       sessionRepository as never,
       identityRepository as never,
+      createMockTokenManager() as never,
       createLogger() as never,
     );
 

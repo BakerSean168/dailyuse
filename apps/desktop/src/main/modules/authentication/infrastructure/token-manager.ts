@@ -13,7 +13,8 @@
 import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { createLogger, type ILogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   TokenStorageData,
   SaveTokenRequest,
@@ -43,39 +44,18 @@ const DEFAULT_REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60;
  * 单例模式，确保整个应用只有一个 TokenManager 实例
  */
 export class TokenManager {
-  private static instance: TokenManager | null = null;
-
   private readonly logger: ILogger;
   private tokenPath: string;
   private cachedTokenData: TokenData | null = null;
   private refreshTimer: NodeJS.Timeout | null = null;
   private refreshCallback: (() => Promise<TokenRefreshResult>) | null = null;
 
-  private constructor(logger?: ILogger) {
+  constructor(logger?: ILogger) {
     this.logger = logger || createLogger('TokenManager');
     this.tokenPath = path.join(app.getPath('userData'), 'auth', 'tokens.enc');
     this.logger.info('TokenManager initialized', { tokenPath: this.tokenPath });
   }
 
-  /**
-   * 获取单例实例
-   */
-  static getInstance(logger?: ILogger): TokenManager {
-    if (!TokenManager.instance) {
-      TokenManager.instance = new TokenManager(logger);
-    }
-    return TokenManager.instance;
-  }
-
-  /**
-   * 重置单例（仅用于测试）
-   */
-  static resetInstance(): void {
-    if (TokenManager.instance) {
-      TokenManager.instance.stopAutoRefresh();
-      TokenManager.instance = null;
-    }
-  }
 
   // ============ Core Methods ============
 
@@ -482,10 +462,3 @@ export class TokenManager {
 }
 
 // ============ Exports ============
-
-/**
- * 获取 TokenManager 单例
- */
-export function getTokenManager(logger?: ILogger): TokenManager {
-  return TokenManager.getInstance(logger);
-}

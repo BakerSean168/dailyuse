@@ -11,7 +11,8 @@
  */
 
 import { net, powerMonitor } from 'electron';
-import { createLogger, type ILogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@dailyuse/utils/logger';
 import type { 
   NetworkStatus, 
   NetworkStateChangeEvent, 
@@ -42,8 +43,6 @@ const DEFAULT_CONFIG: Required<NetworkStateManagerConfig> = {
  * 提供网络状态监控、模式切换、事件通知功能
  */
 export class NetworkStateManager extends EventEmitter {
-  private static instance: NetworkStateManager | null = null;
-
   private readonly logger: ILogger;
   private readonly config: Required<NetworkStateManagerConfig>;
 
@@ -55,31 +54,12 @@ export class NetworkStateManager extends EventEmitter {
   private onOnlineCallback: (() => Promise<void>) | null = null;
   private onOfflineCallback: (() => Promise<void>) | null = null;
 
-  private constructor(config: NetworkStateManagerConfig = {}, logger?: ILogger) {
+  constructor(config: NetworkStateManagerConfig = {}, logger?: ILogger) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.logger = logger || createLogger('NetworkStateManager');
   }
 
-  /**
-   * 获取单例实例
-   */
-  static getInstance(config?: NetworkStateManagerConfig, logger?: ILogger): NetworkStateManager {
-    if (!NetworkStateManager.instance) {
-      NetworkStateManager.instance = new NetworkStateManager(config, logger);
-    }
-    return NetworkStateManager.instance;
-  }
-
-  /**
-   * 重置单例（仅用于测试）
-   */
-  static resetInstance(): void {
-    if (NetworkStateManager.instance) {
-      NetworkStateManager.instance.cleanup();
-      NetworkStateManager.instance = null;
-    }
-  }
 
   // ============ Initialization ============
 
@@ -285,14 +265,4 @@ export class NetworkStateManager extends EventEmitter {
       this.logger.info('Health check stopped');
     }
   }
-}
-
-/**
- * 获取 NetworkStateManager 单例
- */
-export function getNetworkStateManager(
-  config?: NetworkStateManagerConfig,
-  logger?: ILogger,
-): NetworkStateManager {
-  return NetworkStateManager.getInstance(config, logger);
 }

@@ -2,10 +2,10 @@ import { ipcMain } from 'electron';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { AuthMode, AuthRuntimeState } from '@dailyuse/contracts/authentication';
 import { ok, fail, toIpcResult, type IpcResult } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
-import { getWindowManager } from '../../lifecycle/window-manager';
-import { getDesktopProfileRuntimeManager } from '../../profile';
-import { getRememberedAccountsService, getNetworkStateManager } from './infrastructure';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { WindowManager } from '../../lifecycle/window-manager';
+import type { DesktopProfileRuntimeManager } from '../../profile';
+import type { RememberedAccountsService, NetworkStateManager } from './infrastructure';
 import type { AuthDesktopApplicationService } from './application/auth-desktop-application-service';
 import { loginDesktopAccount } from './application/login-desktop-account';
 import {
@@ -61,21 +61,6 @@ const Ch = {
 
 const allChannels = Object.values(Ch);
 
-function currentAuthService() {
-  return getDesktopProfileRuntimeManager().getCurrentAuthService();
-}
-
-async function transitionToMainWindowForActiveProfile(): Promise<void> {
-  const runtimeManager = getDesktopProfileRuntimeManager();
-  const profileId = runtimeManager.getActiveProfileId();
-  const profileResolver = runtimeManager.getActiveProfileResolver();
-  if (!profileId || !profileResolver) {
-    throw new Error('No active profile available for main window transition');
-  }
-
-  await getWindowManager().transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
-}
-
 function unauthenticatedStatus() {
   return {
     authenticated: false,
@@ -98,11 +83,11 @@ function unauthenticatedStatus() {
 }
 
 async function withPreparedProfile<T>(
+  runtimeManager: DesktopProfileRuntimeManager,
   identityId: string,
   options: { displayName?: string; identifier?: string | null; snapshotAccessToken?: string | null },
   callback: (service: AuthDesktopApplicationService) => Promise<T>,
 ): Promise<T> {
-  const runtimeManager = getDesktopProfileRuntimeManager();
   const prepared = await runtimeManager.prepareProfile(identityId, options);
 
   try {
@@ -117,20 +102,29 @@ async function withPreparedProfile<T>(
   }
 }
 
-async function activatePreparedProfileForCurrentMode(): Promise<void> {
-  const service = currentAuthService();
+async function activatePreparedProfileForCurrentMode(
+  runtimeManager: DesktopProfileRuntimeManager,
+  windowManager: WindowManager,
+): Promise<void> {
+  const service = runtimeManager.getCurrentAuthService();
   if (!service) {
     throw new Error('No prepared auth service is available for activation');
   }
 
   const status = await service.getStatus();
   const syncMode = status.mode === AuthMode.ONLINE_USER ? 'online' : 'local';
-  await getDesktopProfileRuntimeManager().activatePreparedProfile({ syncMode });
-  await transitionToMainWindowForActiveProfile();
+  await runtimeManager.activatePreparedProfile({ syncMode });
+
+  const profileId = runtimeManager.getActiveProfileId();
+  const profileResolver = runtimeManager.getActiveProfileResolver();
+  if (!profileId || !profileResolver) {
+    throw new Error('No active profile available for main window transition');
+  }
+  await windowManager.transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
 }
 
 function mapRememberedAccounts(
-  records: Awaited<ReturnType<ReturnType<typeof getRememberedAccountsService>['list']>>,
+  records: Awaited<ReturnType<RememberedAccountsService['list']>>,
 ) {
   return records.map((account) => ({
     identityId: account.identityId,
@@ -145,19 +139,28 @@ function mapRememberedAccounts(
   }));
 }
 
-export function registerDesktopAuthShellHandlers(): void {
-  const networkManager = getNetworkStateManager({}, logger);
-  networkManager.initialize().catch((error) =>
+export function registerDesktopAuthShellHandlers(
+  runtimeManager: DesktopProfileRuntimeManager,
+  deps: {
+    rememberedAccountsService: RememberedAccountsService;
+    networkStateManager: NetworkStateManager;
+    windowManager: WindowManager;
+  },
+): void {
+  const { rememberedAccountsService, networkStateManager, windowManager } = deps;
+  networkStateManager.initialize().catch((error) =>
     logger.error('NetworkStateManager init failed', { error }),
   );
 
+  const currentAuthService = () => runtimeManager.getCurrentAuthService();
+
   ipcMain.handle(Ch.LOGIN, async (_event, data) => {
-    const runtimeManager = getDesktopProfileRuntimeManager();
     const existingProfile = await runtimeManager.findRegisteredProfileByIdentifier(String(data.email));
 
     try {
       if (existingProfile) {
         const result = await withPreparedProfile(
+          runtimeManager,
           existingProfile.identityId,
           {
             displayName: existingProfile.displayName,
@@ -171,12 +174,12 @@ export function registerDesktopAuthShellHandlers(): void {
           return result;
         }
 
-        await activatePreparedProfileForCurrentMode();
+        await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
         return result;
       }
 
       const remoteResult = await loginDesktopAccount(data, {
-        isOnline: () => networkManager.isOnline(),
+        isOnline: () => networkStateManager.isOnline(),
         remoteGateway,
         logger,
       });
@@ -191,6 +194,7 @@ export function registerDesktopAuthShellHandlers(): void {
       }
 
       await withPreparedProfile(
+        runtimeManager,
         String(remoteResult.response.identity.id),
         {
           displayName: data.email,
@@ -207,8 +211,7 @@ export function registerDesktopAuthShellHandlers(): void {
         },
       );
 
-      await getDesktopProfileRuntimeManager().activatePreparedProfile({ syncMode: 'online' });
-      await transitionToMainWindowForActiveProfile();
+      await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
       return toIpcResult(ok(remoteResult.response));
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
@@ -223,11 +226,9 @@ export function registerDesktopAuthShellHandlers(): void {
   });
 
   ipcMain.handle(Ch.REGISTER, async (_event, request: RegisterRequest) => {
-    const runtimeManager = getDesktopProfileRuntimeManager();
-
     try {
       const result = await registerDesktopAccount(request, {
-        isOnline: () => networkManager.isOnline(),
+        isOnline: () => networkStateManager.isOnline(),
         remoteGateway,
         logger,
       });
@@ -237,6 +238,7 @@ export function registerDesktopAuthShellHandlers(): void {
       }
 
       await withPreparedProfile(
+        runtimeManager,
         String(result.response.identity.id),
         {
           displayName: request.username ?? request.email,
@@ -256,8 +258,7 @@ export function registerDesktopAuthShellHandlers(): void {
         },
       );
 
-      await runtimeManager.activatePreparedProfile({ syncMode: 'online' });
-      await transitionToMainWindowForActiveProfile();
+      await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
       return toIpcResult(ok(result.response));
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
@@ -272,12 +273,11 @@ export function registerDesktopAuthShellHandlers(): void {
   });
 
   ipcMain.handle(Ch.LOGOUT, async () => {
-    const runtimeManager = getDesktopProfileRuntimeManager();
     const service = runtimeManager.getActiveAuthService();
     const result: IpcResult<void> = service ? await service.logout() : toIpcResult(ok(undefined));
 
     await runtimeManager.deactivateProfile();
-    await getWindowManager().transitionToLoginWindow();
+    await windowManager.transitionToLoginWindow();
 
     return result;
   });
@@ -291,8 +291,6 @@ export function registerDesktopAuthShellHandlers(): void {
   });
 
   ipcMain.handle(Ch.ENTER_GUEST_MODE, async () => {
-    const runtimeManager = getDesktopProfileRuntimeManager();
-
     try {
       await runtimeManager.prepareGuestProfile();
       const service = runtimeManager.getPreparedAuthService();
@@ -307,7 +305,12 @@ export function registerDesktopAuthShellHandlers(): void {
       }
 
       await runtimeManager.activatePreparedProfile({ syncMode: 'local' });
-      await transitionToMainWindowForActiveProfile();
+      const profileId = runtimeManager.getActiveProfileId();
+      const profileResolver = runtimeManager.getActiveProfileResolver();
+      if (!profileId || !profileResolver) {
+        throw new Error('No active profile available for main window transition');
+      }
+      await windowManager.transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
       return result;
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
@@ -349,8 +352,7 @@ export function registerDesktopAuthShellHandlers(): void {
   });
 
   ipcMain.handle(Ch.AUTO_LOGIN, async () => {
-    const runtimeManager = getDesktopProfileRuntimeManager();
-    const remembered = await getRememberedAccountsService().getAutoLoginAccount();
+    const remembered = await rememberedAccountsService.getAutoLoginAccount();
     if (!remembered) {
       return { ok: true, authenticated: false };
     }
@@ -372,7 +374,7 @@ export function registerDesktopAuthShellHandlers(): void {
         return result;
       }
 
-      await activatePreparedProfileForCurrentMode();
+      await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
       return result;
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
@@ -382,13 +384,11 @@ export function registerDesktopAuthShellHandlers(): void {
   });
 
   ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LIST, async () => {
-    const accounts = await getRememberedAccountsService().list();
+    const accounts = await rememberedAccountsService.list();
     return mapRememberedAccounts(accounts);
   });
 
   ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LOGIN, async (_event, request) => {
-    const runtimeManager = getDesktopProfileRuntimeManager();
-
     try {
       await runtimeManager.prepareProfile(String(request.identityId), {
         displayName: request.identifier,
@@ -406,7 +406,7 @@ export function registerDesktopAuthShellHandlers(): void {
         return result;
       }
 
-      await activatePreparedProfileForCurrentMode();
+      await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
       return result;
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
@@ -422,8 +422,8 @@ export function registerDesktopAuthShellHandlers(): void {
 
   ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_REMOVE, async (_event, identityId: string) => {
     try {
-      await getRememberedAccountsService().remove(IdentityId.of(identityId));
-      await getDesktopProfileRuntimeManager().removeProfile(identityId);
+      await rememberedAccountsService.remove(IdentityId.of(identityId));
+      await runtimeManager.removeProfile(identityId);
       return toIpcResult(ok(undefined));
     } catch (error) {
       logger.error('Failed to remove remembered account/profile', { error, identityId });

@@ -11,9 +11,11 @@
 import { Notification, nativeImage, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { NotificationDispatchDesktopEvent } from '@dailyuse/contracts/notification';
-import { getCustomNotificationManager } from './custom-notification.manager';
+import { CustomNotificationManager } from './custom-notification.manager';
+import type { WindowManager } from '../lifecycle/window-manager';
 import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
 import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
 
@@ -44,7 +46,6 @@ export interface NotificationOptions {
  * Implements the Singleton pattern.
  */
 export class NotificationService {
-  private static instance: NotificationService;
   private mainWindow: BrowserWindow | null = null;
   private defaultIcon: Electron.NativeImage | null = null;
 
@@ -57,21 +58,9 @@ export class NotificationService {
   // Custom Notification Setting
   private useCustomNotification: boolean = true; // Default to custom for now
 
-  private constructor() {
+  constructor(private readonly customNotificationManager: CustomNotificationManager) {
     this.initDefaultIcon();
     this.initEventListeners();
-  }
-
-  /**
-   * Retrieves the singleton instance of the NotificationService.
-   *
-   * @returns {NotificationService} The singleton instance.
-   */
-  static getInstance(): NotificationService {
-    if (!NotificationService.instance) {
-      NotificationService.instance = new NotificationService();
-    }
-    return NotificationService.instance;
   }
 
   /**
@@ -311,8 +300,7 @@ export class NotificationService {
       logger.info('[Desktop][NotificationFlow] Routing notification to custom manager', {
         title: options.title,
       });
-      const customManager = getCustomNotificationManager();
-      customManager.dispatch(options);
+      this.customNotificationManager.dispatch(options);
       return null; // Custom notifications don't return an Electron.Notification instance
     } else {
       logger.info('[Desktop][NotificationFlow] Routing notification to native Electron notification', {
@@ -505,8 +493,9 @@ export class NotificationService {
  * @param {BrowserWindow} mainWindow - The main application window.
  * @returns {NotificationService} The initialized service instance.
  */
-export function initNotificationService(mainWindow: BrowserWindow): NotificationService {
-  const service = NotificationService.getInstance();
+export function initNotificationService(mainWindow: BrowserWindow, windowManager: WindowManager): NotificationService {
+  const customManager = new CustomNotificationManager(windowManager);
+  const service = new NotificationService(customManager);
   service.setMainWindow(mainWindow);
   return service;
 }

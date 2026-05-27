@@ -36,16 +36,14 @@ describe('ProfileRegistry', () => {
 
   beforeEach(async () => {
     rootDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'desktop-profile-registry-'));
-    ProfileRegistry.resetInstance();
   });
 
   afterEach(async () => {
-    ProfileRegistry.resetInstance();
     await fs.promises.rm(rootDir, { recursive: true, force: true });
   });
 
   it('tracks snapshot metadata and profile status', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const descriptor = await registry.register('identity-1', 'Test User', 'test@example.com');
     expect(descriptor.status).toBe('pending');
@@ -66,7 +64,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('returns existing descriptor when registering the same identityId twice', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const first = await registry.register('identity-1', 'Alice', 'alice@example.com');
     const second = await registry.register('identity-1', 'Alice Updated', 'alice@example.com');
@@ -76,7 +74,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('assigns different profileIds for different identityIds', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const a = await registry.register('identity-a', 'Alice', 'alice@example.com');
     const b = await registry.register('identity-b', 'Bob', 'bob@example.com');
@@ -85,7 +83,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('lists profiles sorted by lastActiveAt descending', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const a = await registry.register('identity-a', 'Alice');
     const b = await registry.register('identity-b', 'Bob');
@@ -98,7 +96,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('removes a profile from registry and clears activeProfileId if it was active', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const descriptor = await registry.register('identity-1', 'Alice');
     await registry.setActiveProfile(descriptor.profileId);
@@ -111,7 +109,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('findByIdentifier performs case-insensitive lookup', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     await registry.register('identity-1', 'Alice', 'Alice@Example.com');
 
@@ -121,7 +119,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('findByIdentifier returns null for empty or whitespace-only input', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     await registry.register('identity-1', 'Alice', 'alice@example.com');
 
@@ -130,7 +128,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('markError sets profile status to error', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const descriptor = await registry.register('identity-1', 'Alice');
     await registry.markError(descriptor.profileId);
@@ -140,7 +138,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('clearSnapshotState resets snapshot fields', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const descriptor = await registry.register('identity-1', 'Alice');
     await registry.recordSnapshotHydration(descriptor.profileId, {
@@ -164,7 +162,7 @@ describe('ProfileRegistry', () => {
     await fs.promises.mkdir(registryDir, { recursive: true });
     await fs.promises.writeFile(resolver.registryPath, '{invalid json!!!', 'utf8');
 
-    const registry = ProfileRegistry.getInstance(resolver);
+    const registry = new ProfileRegistry(resolver);
     const list = await registry.list();
     expect(list).toEqual([]);
 
@@ -177,7 +175,7 @@ describe('ProfileRegistry', () => {
   it('creates registry file on first run when it does not exist', async () => {
     const resolver = createSharedResolver(rootDir);
 
-    const registry = ProfileRegistry.getInstance(resolver);
+    const registry = new ProfileRegistry(resolver);
     const list = await registry.list();
     expect(list).toEqual([]);
 
@@ -185,7 +183,7 @@ describe('ProfileRegistry', () => {
   });
 
   it('setActiveProfile throws when profileId does not exist', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     await expect(registry.setActiveProfile('nonexistent')).rejects.toThrow(
       'Profile not found',
@@ -193,13 +191,13 @@ describe('ProfileRegistry', () => {
   });
 
   it('getActiveProfile returns null when no profile is active', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     expect(await registry.getActiveProfile()).toBeNull();
   });
 
   it('register updates identifier when it changes for existing profile', async () => {
-    const registry = ProfileRegistry.getInstance(createSharedResolver(rootDir));
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const first = await registry.register('identity-1', 'Alice', 'alice@old.com');
     const updated = await registry.register('identity-1', 'Alice', 'alice@new.com');

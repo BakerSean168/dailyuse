@@ -8,7 +8,7 @@
  * @module events/initialize-event-listeners
  */
 
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { CreateGoalRecordUseCase } from '@dailyuse/goal';
 import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
 import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron-entry';

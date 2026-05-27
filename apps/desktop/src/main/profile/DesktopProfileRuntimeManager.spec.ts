@@ -13,11 +13,6 @@ const mocks = vi.hoisted(() => {
     ensurePowerSyncSyncMode: vi.fn(),
     shutdownPowerSync: vi.fn(),
     hydrateIfNeeded: vi.fn(),
-    registerDesktopAuthService: vi.fn(),
-    clearDesktopAuthService: vi.fn(),
-    getTokenManager: vi.fn(),
-    getSessionManager: vi.fn(),
-    resetSessionManager: vi.fn(),
     createDesktopProfileAuthService: vi.fn(),
     stopScheduleRuntime: vi.fn(),
     bootstrapRegisterModules: vi.fn(),
@@ -34,19 +29,6 @@ vi.mock('../database/powersync', () => ({
 vi.mock('./profile-snapshot-service', () => ({
   ProfileSnapshotService: class {
     hydrateIfNeeded = mocks.hydrateIfNeeded;
-  },
-}));
-
-vi.mock('../auth/desktop-auth-context', () => ({
-  registerDesktopAuthService: mocks.registerDesktopAuthService,
-  clearDesktopAuthService: mocks.clearDesktopAuthService,
-}));
-
-vi.mock('../modules/authentication/infrastructure', () => ({
-  getTokenManager: mocks.getTokenManager,
-  getSessionManager: mocks.getSessionManager,
-  SessionManager: {
-    resetInstance: mocks.resetSessionManager,
   },
 }));
 
@@ -100,10 +82,40 @@ function createSharedResolver(rootDir: string): SharedPathResolver {
 describe('DesktopProfileRuntimeManager', () => {
   let rootDir: string;
 
+  function createMockTokenManager() {
+    return {
+      switchToProfile: vi.fn(),
+      clearForProfileSwitch: vi.fn().mockResolvedValue(undefined),
+    };
+  }
+
+  function createMockRememberedAccountsService() {
+    return { list: vi.fn().mockResolvedValue([]) };
+  }
+
+  function createMockNetworkStateManager() {
+    return { isOnline: vi.fn(() => true) };
+  }
+
+  function createMockWindowManager() {
+    return {
+      getMainWindow: vi.fn(() => null),
+      setRuntimeManager: vi.fn(),
+    };
+  }
+
+  function createRuntimeManager() {
+    const sharedResolver = createSharedResolver(rootDir);
+    const profileRegistry = new ProfileRegistry(sharedResolver);
+    const tokenManager = createMockTokenManager() as never;
+    const rememberedAccountsService = createMockRememberedAccountsService() as never;
+    const networkStateManager = createMockNetworkStateManager() as never;
+    const windowManager = createMockWindowManager() as never;
+    return new DesktopProfileRuntimeManager(sharedResolver, profileRegistry, tokenManager, rememberedAccountsService, networkStateManager, windowManager);
+  }
+
   beforeEach(async () => {
     rootDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'desktop-profile-runtime-'));
-    ProfileRegistry.resetInstance();
-    DesktopProfileRuntimeManager.resetInstance();
     mocks.bootstrapInstances.length = 0;
     vi.clearAllMocks();
 
@@ -115,28 +127,19 @@ describe('DesktopProfileRuntimeManager', () => {
       skippedReason: 'snapshot-unavailable',
       metadata: null,
     });
-    mocks.getTokenManager.mockReturnValue({
-      switchToProfile: vi.fn(),
-      clearForProfileSwitch: vi.fn().mockResolvedValue(undefined),
-    });
-    mocks.getSessionManager.mockReturnValue({
-      setSharedAuthDir: vi.fn(),
-      activateProfile: vi.fn().mockResolvedValue(undefined),
-    });
     mocks.createDesktopProfileAuthService.mockImplementation(() => ({
       cleanup: vi.fn(),
+      cleanupSessionManager: vi.fn(),
+      configureAndActivateProfile: vi.fn().mockResolvedValue(undefined),
     }));
   });
 
   afterEach(async () => {
-    ProfileRegistry.resetInstance();
-    DesktopProfileRuntimeManager.resetInstance();
     await fs.promises.rm(rootDir, { recursive: true, force: true });
   });
 
   it('prepares and activates a profile through the profile-scoped runtime seam', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
     runtimeManager.setModuleRegistration(mocks.bootstrapRegisterModules);
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
@@ -147,7 +150,7 @@ describe('DesktopProfileRuntimeManager', () => {
     expect(prepared.descriptor.identityId).toBe('identity-a');
     expect(fs.existsSync(prepared.profileResolver.profileDir)).toBe(true);
     expect(mocks.openPowerSyncLocalOnly).toHaveBeenCalledWith(prepared.profileResolver.dbPath);
-    expect(mocks.getTokenManager().switchToProfile).toHaveBeenCalledWith(prepared.profileResolver.tokensPath);
+    expect(mocks.createDesktopProfileAuthService).toHaveBeenCalled();
     expect(runtimeManager.getPreparedAuthService()).toBe(prepared.authService);
 
     await runtimeManager.activatePreparedProfile({ syncMode: 'online' });
@@ -169,8 +172,7 @@ describe('DesktopProfileRuntimeManager', () => {
   });
 
   it('deactivates the active runtime before preparing a different profile', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const preparedA = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -178,10 +180,7 @@ describe('DesktopProfileRuntimeManager', () => {
     });
     await runtimeManager.activatePreparedProfile({ syncMode: 'local' });
 
-    const authServiceA = preparedA.authService as { cleanup: ReturnType<typeof vi.fn> };
-    const tokenManager = mocks.getTokenManager.mock.results[0]!.value as {
-      clearForProfileSwitch: ReturnType<typeof vi.fn>;
-    };
+    const authServiceA = preparedA.authService as { cleanup: ReturnType<typeof vi.fn>; cleanupSessionManager: ReturnType<typeof vi.fn> };
 
     const preparedB = await runtimeManager.prepareProfile('identity-b', {
       displayName: 'Bob',
@@ -189,10 +188,11 @@ describe('DesktopProfileRuntimeManager', () => {
     });
 
     expect(mocks.bootstrapInstances[0]!.destroy).toHaveBeenCalledOnce();
+    expect(authServiceA.cleanupSessionManager).toHaveBeenCalled();
     expect(authServiceA.cleanup).toHaveBeenCalledOnce();
     expect(mocks.shutdownPowerSync).toHaveBeenCalled();
-    expect(tokenManager.clearForProfileSwitch).toHaveBeenCalled();
-    expect(mocks.clearDesktopAuthService).toHaveBeenCalled();
+    // Auth service teardown is handled via onAuthServiceChanged callback
+    expect(authServiceA.cleanup).toHaveBeenCalledOnce();
     expect(runtimeManager.getActiveProfileId()).toBeNull();
     expect(preparedB.descriptor.identityId).toBe('identity-b');
     expect(preparedB.profileResolver.dbPath).not.toBe(preparedA.profileResolver.dbPath);
@@ -200,8 +200,7 @@ describe('DesktopProfileRuntimeManager', () => {
   });
 
   it('deactivateProfile clears the active profile registration without removing prepared state', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -220,8 +219,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('logout (deactivateProfile) preserves per-profile directory and DB files', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -246,8 +244,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('removeProfile deletes profile directory and registry entry', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -266,13 +263,12 @@ describe('DesktopProfileRuntimeManager', () => {
     expect(fs.existsSync(prepared.profileResolver.profileDir)).toBe(false);
 
     // Registry should no longer contain the profile
-    const registry = ProfileRegistry.getInstance();
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
     expect(await registry.find('identity-a')).toBeNull();
   });
 
   it('removeProfile throws when trying to remove the active profile', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     await runtimeManager.prepareProfile('identity-a', { displayName: 'Alice' });
     await runtimeManager.activatePreparedProfile({ syncMode: 'local' });
@@ -287,8 +283,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('switching between two accounts preserves both profile directories', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     // Activate profile A
     const preparedA = await runtimeManager.prepareProfile('identity-a', {
@@ -321,8 +316,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('prepareProfile returns same prepared runtime when called with same identityId', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const first = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -337,8 +331,7 @@ describe('DesktopProfileRuntimeManager', () => {
   });
 
   it('prepareProfile returns active runtime when called with the active identityId', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -359,8 +352,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('discardPreparedProfile cleans up without affecting the filesystem', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -379,8 +371,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('activatePreparedProfile throws when no profile is prepared', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     await expect(
       runtimeManager.activatePreparedProfile({ syncMode: 'local' }),
@@ -392,8 +383,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('ensures per-profile directory structure is created during prepare', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const prepared = await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
@@ -415,8 +405,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('prepareGuestProfile creates a guest profile with deterministic identity', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     const guestA = await runtimeManager.prepareGuestProfile();
     expect(guestA.descriptor.displayName).toBe('Guest');
@@ -432,8 +421,7 @@ describe('DesktopProfileRuntimeManager', () => {
   // ──────────────────────────────────────────────────────────────────
 
   it('marks profile as error and discards prepared runtime on activation failure', async () => {
-    const sharedResolver = createSharedResolver(rootDir);
-    const runtimeManager = DesktopProfileRuntimeManager.getInstance(sharedResolver);
+    const runtimeManager = createRuntimeManager();
 
     mocks.ensurePowerSyncSyncMode.mockRejectedValueOnce(new Error('sync-failed'));
 
@@ -448,7 +436,7 @@ describe('DesktopProfileRuntimeManager', () => {
     expect(runtimeManager.getActiveProfileId()).toBeNull();
     expect(runtimeManager.getPreparedAuthService()).toBeNull();
 
-    const registry = ProfileRegistry.getInstance();
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
     const descriptor = await registry.find('identity-a');
     expect(descriptor?.status).toBe('error');
   });

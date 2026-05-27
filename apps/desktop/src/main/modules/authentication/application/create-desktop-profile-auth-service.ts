@@ -5,10 +5,18 @@ import {
   Argon2Hasher,
 } from '@dailyuse/authentication/infrastructure-server';
 import { PowerSyncAccountRepository } from '@dailyuse/account/infrastructure-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { AuthDesktopApplicationService } from './auth-desktop-application-service';
+import type { TokenManager, RememberedAccountsService, NetworkStateManager } from '../infrastructure';
+import type { WindowManager } from '../../../lifecycle/window-manager';
 
-export function createDesktopProfileAuthService(db: PowerSyncDatabase): AuthDesktopApplicationService {
+export function createDesktopProfileAuthService(
+  db: PowerSyncDatabase,
+  tokenManager: TokenManager,
+  rememberedAccountsService: RememberedAccountsService,
+  networkStateManager: NetworkStateManager,
+  windowManager: WindowManager,
+): AuthDesktopApplicationService {
   const logger = createLogger('DesktopProfileAuthService');
   const repositoryDb = db as ConstructorParameters<typeof PowerSyncAuthIdentityRepository>[0];
   const identityRepository = new PowerSyncAuthIdentityRepository(repositoryDb);
@@ -16,7 +24,7 @@ export function createDesktopProfileAuthService(db: PowerSyncDatabase): AuthDesk
   const accountRepository = new PowerSyncAccountRepository(repositoryDb);
   const passwordHasher = new Argon2Hasher();
 
-  const service = new AuthDesktopApplicationService(logger);
+  const service = new AuthDesktopApplicationService(tokenManager, rememberedAccountsService, networkStateManager, windowManager, logger);
   service.setRepositories(sessionRepository, identityRepository);
   service.setAccountRepository(accountRepository);
   service.setOfflineAuthDependencies(identityRepository, passwordHasher);

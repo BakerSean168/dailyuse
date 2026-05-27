@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   refreshDesktopSession: vi.fn(),
-  getNetworkStateManager: vi.fn(),
 }));
 
 vi.mock('../refresh-desktop-session', () => ({
@@ -10,12 +9,9 @@ vi.mock('../refresh-desktop-session', () => ({
 }));
 
 vi.mock('../../infrastructure', () => ({
-  getTokenManager: vi.fn(),
-  getRememberedAccountsService: vi.fn(),
-  getNetworkStateManager: mocks.getNetworkStateManager,
-  createSessionManager: vi.fn(),
   TokenManager: class {},
   SessionManager: class {},
+  NetworkStateManager: class {},
 }));
 
 import { DesktopAuthLifecycleCoordinator } from '../desktop-auth-lifecycle-coordinator';
@@ -139,6 +135,7 @@ const mockRemoteGateway = {
 function createCoordinator(
   logger: any,
   tokenManager: any,
+  networkStateManager: any,
   sessionManager: any,
   projectionService: any,
   rememberedAccountService: any,
@@ -150,6 +147,7 @@ function createCoordinator(
   return new DesktopAuthLifecycleCoordinator(
     logger,
     tokenManager,
+    networkStateManager,
     mockRemoteGateway as any,
     sessionManager,
     projectionService,
@@ -164,6 +162,7 @@ function createCoordinator(
 describe('DesktopAuthLifecycleCoordinator', () => {
   let mockTokenManager: ReturnType<typeof createMockTokenManager>;
   let mockSessionManager: ReturnType<typeof createMockSessionManager>;
+  let mockNetworkStateManager: any;
   let mockRememberedAccountService: any;
   let mockProjectionService: any;
   let authState: { authMode: string; runtimeState: string };
@@ -174,10 +173,9 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     mockTokenManager = createMockTokenManager();
     mockSessionManager = createMockSessionManager();
-
-    mocks.getNetworkStateManager.mockReturnValue({
+    mockNetworkStateManager = {
       isOnline: vi.fn(() => true),
-    });
+    };
 
     authState = { authMode: 'UNAUTHENTICATED', runtimeState: 'UNINITIALIZED' };
     isInitializedRef = { value: false };
@@ -220,7 +218,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       });
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -235,7 +233,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockSessionManager.initialize.mockResolvedValue({ ok: false });
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -251,7 +249,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       authState.runtimeState = 'AUTHENTICATED';
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -263,7 +261,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     it('runs in minimal mode when no session manager is available', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, null,
+        createLogger(), mockTokenManager, mockNetworkStateManager, null,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -278,7 +276,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockSessionManager.initialize.mockRejectedValue(new Error('DB failure'));
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -297,7 +295,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
   describe('autoLogin', () => {
     it('returns not authenticated when no auto-login account is remembered', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -320,7 +318,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       isInitializedRef.value = true;
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -348,7 +346,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       isInitializedRef.value = true;
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -361,7 +359,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     it('returns not authenticated when sessionManager is null', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, null,
+        createLogger(), mockTokenManager, mockNetworkStateManager, null,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -391,7 +389,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       });
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -437,7 +435,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       };
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
         credRepo, sessRepo,
       );
@@ -454,7 +452,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockTokenManager.loadTokens.mockResolvedValue(null);
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -468,7 +466,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     it('returns NOT_INITIALIZED when session manager is missing', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, null,
+        createLogger(), mockTokenManager, mockNetworkStateManager, null,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -499,7 +497,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       });
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -514,7 +512,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     it('returns unauthenticated status when no session exists', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -554,7 +552,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       };
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
         credRepo,
       );
@@ -576,7 +574,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockTokenManager.getAccessToken.mockResolvedValue('current-token');
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -589,7 +587,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockTokenManager.getAccessToken.mockResolvedValue('current-token');
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -602,7 +600,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockTokenManager.getAccessToken.mockResolvedValue(null);
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -622,7 +620,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
       mockSessionManager.cleanupExpiredSessions.mockResolvedValue(5);
 
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -633,7 +631,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     it('cleanup resets state and calls session manager cleanup', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, mockSessionManager,
+        createLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 
@@ -645,7 +643,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
     it('cleanupExpiredSessions returns 0 when no session manager', async () => {
       const coordinator = createCoordinator(
-        createLogger(), mockTokenManager, null,
+        createLogger(), mockTokenManager, mockNetworkStateManager, null,
         mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
       );
 

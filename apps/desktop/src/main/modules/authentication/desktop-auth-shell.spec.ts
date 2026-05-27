@@ -4,10 +4,6 @@ import { AuthChannels } from '@dailyuse/contracts/electron';
 
 const mocks = vi.hoisted(() => ({
   ipcHandle: vi.fn(),
-  getDesktopProfileRuntimeManager: vi.fn(),
-  getWindowManager: vi.fn(),
-  getRememberedAccountsService: vi.fn(),
-  getNetworkStateManager: vi.fn(),
   loginDesktopAccount: vi.fn(),
   registerDesktopAccount: vi.fn(),
 }));
@@ -16,19 +12,6 @@ vi.mock('electron', () => ({
   ipcMain: {
     handle: mocks.ipcHandle,
   },
-}));
-
-vi.mock('../../profile', () => ({
-  getDesktopProfileRuntimeManager: mocks.getDesktopProfileRuntimeManager,
-}));
-
-vi.mock('../../lifecycle/window-manager', () => ({
-  getWindowManager: mocks.getWindowManager,
-}));
-
-vi.mock('./infrastructure', () => ({
-  getRememberedAccountsService: mocks.getRememberedAccountsService,
-  getNetworkStateManager: mocks.getNetworkStateManager,
 }));
 
 vi.mock('./application/login-desktop-account', () => ({
@@ -130,10 +113,6 @@ describe('desktop-auth-shell', () => {
       isOnline: vi.fn(() => true),
     };
 
-    mocks.getDesktopProfileRuntimeManager.mockReturnValue(runtimeManager);
-    mocks.getWindowManager.mockReturnValue(windowManager);
-    mocks.getRememberedAccountsService.mockReturnValue(rememberedAccountsService);
-    mocks.getNetworkStateManager.mockReturnValue(networkStateManager);
     mocks.loginDesktopAccount.mockResolvedValue({
       ok: false,
       error: { code: 'NOT_USED', message: 'not used in this test' },
@@ -146,7 +125,7 @@ describe('desktop-auth-shell', () => {
 
   it('auth:logout logs out, deactivates the profile, and transitions back to login', async () => {
     const { registerDesktopAuthShellHandlers } = await import('./desktop-auth-shell');
-    registerDesktopAuthShellHandlers();
+    registerDesktopAuthShellHandlers(runtimeManager, { rememberedAccountsService, networkStateManager, windowManager });
 
     const handler = getRegisteredHandler(AuthChannels.LOGOUT);
     const result = await handler({});
@@ -167,7 +146,7 @@ describe('desktop-auth-shell', () => {
     authService.getStatus.mockResolvedValue({ mode: AuthMode.GUEST });
 
     const { registerDesktopAuthShellHandlers } = await import('./desktop-auth-shell');
-    registerDesktopAuthShellHandlers();
+    registerDesktopAuthShellHandlers(runtimeManager, { rememberedAccountsService, networkStateManager, windowManager });
 
     const handler = getRegisteredHandler(AuthChannels.ENTER_GUEST_MODE);
     const result = await handler({});
@@ -193,7 +172,7 @@ describe('desktop-auth-shell', () => {
     authService.getStatus.mockResolvedValue({ mode: AuthMode.ONLINE_USER });
 
     const { registerDesktopAuthShellHandlers } = await import('./desktop-auth-shell');
-    registerDesktopAuthShellHandlers();
+    registerDesktopAuthShellHandlers(runtimeManager, { rememberedAccountsService, networkStateManager, windowManager });
 
     const handler = getRegisteredHandler(AuthChannels.AUTO_LOGIN);
     const result = await handler({});
@@ -216,7 +195,7 @@ describe('desktop-auth-shell', () => {
     authService.getStatus.mockResolvedValue({ mode: AuthMode.OFFLINE_USER });
 
     const { registerDesktopAuthShellHandlers } = await import('./desktop-auth-shell');
-    registerDesktopAuthShellHandlers();
+    registerDesktopAuthShellHandlers(runtimeManager, { rememberedAccountsService, networkStateManager, windowManager });
 
     const handler = getRegisteredHandler(AuthChannels.REMEMBERED_ACCOUNTS_LOGIN);
     const request = { identityId: 'identity-a', identifier: 'alice@example.com' };
@@ -242,7 +221,7 @@ describe('desktop-auth-shell', () => {
     });
 
     const { registerDesktopAuthShellHandlers } = await import('./desktop-auth-shell');
-    registerDesktopAuthShellHandlers();
+    registerDesktopAuthShellHandlers(runtimeManager, { rememberedAccountsService, networkStateManager, windowManager });
 
     const handler = getRegisteredHandler(AuthChannels.REMEMBERED_ACCOUNTS_LOGIN);
     const request = { identityId: 'identity-a', identifier: 'alice@example.com' };

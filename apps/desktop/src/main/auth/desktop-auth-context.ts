@@ -1,37 +1,16 @@
 import type { Context } from '@dailyuse/contracts/shared';
 import { AuthRuntimeState } from '@dailyuse/contracts/authentication';
 import { ElectronAuthResolutionError } from '@dailyuse/contracts/electron';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 import type { AuthDesktopApplicationService } from '../modules/authentication/application/auth-desktop-application-service';
 
-let authService: AuthDesktopApplicationService | null = null;
 const logger = createLogger('DesktopAuthContextProvider');
-
-export function registerDesktopAuthService(service: AuthDesktopApplicationService): void {
-  authService = service;
-}
-
-export function clearDesktopAuthService(): void {
-  authService = null;
-}
-
-function getRegisteredService(): AuthDesktopApplicationService {
-  if (!authService) {
-    throw new Error('Desktop auth service is not registered');
-  }
-
-  return authService;
-}
 
 function createAuthResolutionError(
   code: 'AUTH_REQUIRED' | 'AUTH_RESTORING',
 ): ElectronAuthResolutionError {
   return new ElectronAuthResolutionError(code);
-}
-
-export function getDesktopAuthService(): AuthDesktopApplicationService {
-  return getRegisteredService();
 }
 
 async function resolveRequestContext(
@@ -57,13 +36,14 @@ async function resolveRequestContext(
 }
 
 export class DesktopAuthContextProvider {
+  constructor(private readonly authService: AuthDesktopApplicationService) {}
+
   async getIdentityId(): Promise<string | null> {
-    return getRegisteredService().getCurrentIdentityId();
+    return this.authService.getCurrentIdentityId();
   }
 
   async requireIdentityId(): Promise<string> {
-    const service = getRegisteredService();
-    if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
+    if (this.authService.getRuntimeState() === AuthRuntimeState.RESTORING) {
       throw createAuthResolutionError('AUTH_RESTORING');
     }
 
@@ -76,31 +56,29 @@ export class DesktopAuthContextProvider {
   }
 
   async getSessionId(): Promise<string | null> {
-    return getRegisteredService().getCurrentSessionId();
+    return this.authService.getCurrentSessionId();
   }
 
   async getRequestContext(): Promise<Context | null> {
-    const service = getRegisteredService();
-    if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
+    if (this.authService.getRuntimeState() === AuthRuntimeState.RESTORING) {
       return null;
     }
 
-    return resolveRequestContext(service);
+    return resolveRequestContext(this.authService);
   }
 
   async requireRequestContext(): Promise<Context> {
-    const service = getRegisteredService();
-    if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
+    if (this.authService.getRuntimeState() === AuthRuntimeState.RESTORING) {
       logger.warn('requireRequestContext rejected: auth restoring');
       throw createAuthResolutionError('AUTH_RESTORING');
     }
 
-    const context = await resolveRequestContext(service);
+    const context = await resolveRequestContext(this.authService);
     if (!context) {
       logger.warn('requireRequestContext rejected: no active request context', {
-        runtimeState: service.getRuntimeState(),
-        identityId: service.getCurrentIdentityId(),
-        sessionId: service.getCurrentSessionId(),
+        runtimeState: this.authService.getRuntimeState(),
+        identityId: this.authService.getCurrentIdentityId(),
+        sessionId: this.authService.getCurrentSessionId(),
       });
       throw createAuthResolutionError('AUTH_REQUIRED');
     }

@@ -1,24 +1,25 @@
 /**
- * SessionManager - Session lifecycle manager.
+ * SessionManager - Session lifecycle coordinator.
  *
- * Coordinates TokenManager and Repository to provide full session lifecycle management.
+ * Coordinates TokenManager, repositories, and extracted helpers to provide
+ * full session lifecycle management.
  *
  * Core features:
  * - Restore the previous session on application startup
  * - Auto-login via Remember-Me / Refresh Token
  * - Session state monitoring and automatic token refresh
  * - Expired session cleanup
- * - Device fingerprint management
+ * - Device fingerprint management (delegated to DeviceIdentityHelper)
+ * - Guest identity management (delegated to GuestIdentityHelper)
+ * - Offline credential management (delegated to OfflineAuthHelper)
  */
 
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
 import { app } from 'electron';
-import * as os from 'os';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
-import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
-import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@dailyuse/utils/logger';
+import { generateUUID } from '@dailyuse/utils/shared';
+import { AuthSession } from '@dailyuse/authentication/domain-server';
 import type { IdentityId, AuthSessionId } from '@dailyuse/contracts/authentication';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
 import type {
@@ -38,7 +39,10 @@ import {
   type LoginRequest,
   type DeviceInfoClientDTO,
 } from '@dailyuse/contracts/authentication';
-import { TokenManager, getTokenManager, type TokenData } from './token-manager';
+import { TokenManager, type TokenData } from './token-manager';
+import { DeviceIdentityHelper } from './device-identity-helper';
+import { GuestIdentityHelper } from './guest-identity-helper';
+import { OfflineAuthHelper } from './offline-auth-helper';
 
 // ============ Internal Types ============
 
@@ -90,83 +94,64 @@ function toErrorLog(error: unknown): unknown {
   return error;
 }
 
+// ============ Constants ============
+
+const LOCAL_ACCESS_TOKEN = 'local-token';
+const GUEST_ACCESS_TOKEN = 'guest-local-token';
+
 // ============ SessionManager ============
 
 /**
- * Session manager.
+ * Session lifecycle coordinator.
  *
  * Provides full session lifecycle management including:
  * - Session restore and auto-login
  * - Token refresh and status monitoring
- * - Device info management
+ * - Device info management (via DeviceIdentityHelper)
+ * - Guest identity management (via GuestIdentityHelper)
+ * - Offline credential management (via OfflineAuthHelper)
  * - Session cleanup
  */
 export class SessionManager {
-  private static instance: SessionManager | null = null;
-  private static readonly GUEST_ID_PREFIX = 'IdentityId';
-  private static readonly LOCAL_ACCESS_TOKEN = 'local-token';
-  private static readonly GUEST_ACCESS_TOKEN = 'guest-local-token';
-
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
   private readonly sessionRepository: IAuthSessionRepository;
 
-  // Offline credential infrastructure
-  private identityRepository: IAuthIdentityRepository | null = null;
-  private passwordHasher: IPasswordHasher | null = null;
-  // Maps email → server-side identityId for offline session creation
-  // (No longer needed — local AuthIdentity is now stored with the server ID directly)
+  readonly deviceIdentityHelper: DeviceIdentityHelper;
+  readonly guestIdentityHelper: GuestIdentityHelper;
+  readonly offlineAuthHelper: OfflineAuthHelper;
 
   private currentSession: AuthSession | null = null;
-  private deviceInfo: DeviceInfoClientDTO | null = null;
   private isInitialized = false;
   private activityTimer: NodeJS.Timeout | null = null;
-  private sharedAuthDir: string = path.join(app.getPath('userData'), 'auth');
 
   // API callbacks (for communicating with the backend)
   private apiRefreshToken:
     | ((request: RefreshSessionRequest) => Promise<RefreshSessionResponse>)
     | null = null;
 
-  private constructor(
+  constructor(
     sessionRepository: IAuthSessionRepository,
     identityRepository: IAuthIdentityRepository,
+    tokenManager: TokenManager,
     logger?: ILogger,
   ) {
     this.logger = logger || createLogger('SessionManager');
-    this.tokenManager = getTokenManager(this.logger);
+    this.tokenManager = tokenManager;
     this.sessionRepository = sessionRepository;
-    this.identityRepository = identityRepository;
+
+    this.deviceIdentityHelper = new DeviceIdentityHelper(
+      app.getPath('userData') + '/auth',
+      this.logger,
+    );
+    this.guestIdentityHelper = new GuestIdentityHelper(
+      () => this.tokenManager,
+      sessionRepository,
+      this.logger,
+    );
+    this.offlineAuthHelper = new OfflineAuthHelper(this.logger);
 
     this.logger.info('SessionManager created');
-  }
-
-  /** Get the singleton instance. */
-  static getInstance(
-    sessionRepository: IAuthSessionRepository,
-    identityRepository: IAuthIdentityRepository,
-    logger?: ILogger,
-  ): SessionManager {
-    if (!SessionManager.instance) {
-      SessionManager.instance = new SessionManager(sessionRepository, identityRepository, logger);
-    }
-    return SessionManager.instance;
-  }
-
-  /** Reset the singleton instance (for testing only). */
-  static resetInstance(): void {
-    if (SessionManager.instance) {
-      SessionManager.instance.cleanup();
-      SessionManager.instance = null;
-    }
-  }
-
-  /** Get the existing singleton, throwing if not yet initialized. */
-  static getExistingInstance(): SessionManager {
-    if (!SessionManager.instance) {
-      throw new Error('SessionManager not yet initialized — call createSessionManager first');
-    }
-    return SessionManager.instance;
   }
 
   /**
@@ -174,8 +159,7 @@ export class SessionManager {
    * Must be called before initialize() when using the multi-profile architecture.
    */
   setSharedAuthDir(dir: string): void {
-    this.sharedAuthDir = dir;
-    this.logger.info('Shared auth directory set', { sharedAuthDir: dir });
+    this.deviceIdentityHelper.setSharedAuthDir(dir);
   }
 
   // ============ Initialization ============
@@ -201,8 +185,8 @@ export class SessionManager {
     this.logger.info('Initializing SessionManager');
 
     // 1. Generate device info
-    this.deviceInfo = this.generateDeviceInfo();
-    this.logger.debug('Device info generated', { deviceId: this.deviceInfo.deviceId });
+    this.deviceIdentityHelper.generateDeviceInfo();
+    this.logger.debug('Device info generated');
 
     // 2. Attempt to restore session
     const restoreResult = await this.restoreSession();
@@ -240,7 +224,6 @@ export class SessionManager {
     this.stopActivityTracking();
     this.currentSession = null;
     this.isInitialized = false;
-    this.deviceInfo = null;
   }
 
   /**
@@ -250,10 +233,7 @@ export class SessionManager {
   async activateProfile(): Promise<void> {
     this.logger.info('Activating profile runtime');
     this.currentSession = null;
-    this.deviceInfo = null;
     this.isInitialized = false;
-    // Re-initialize — next call to restoreSession/autoLogin will work with
-    // the profile's tokens (TokenManager.switchToProfile has already been called)
   }
 
   // ============ Session Restore ============
@@ -277,8 +257,8 @@ export class SessionManager {
         return { ok: false, needsReLogin: true };
       }
 
-      if (this.isGuestToken(tokenData)) {
-        const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
+      if (this.guestIdentityHelper.isGuestToken(tokenData)) {
+        const expectedIdentityPrefix = 'IdentityId_';
         if (!tokenData.identityId.startsWith(expectedIdentityPrefix)) {
           this.logger.warn('Discarding stale guest token with unsupported identity prefix', {
             identityId: tokenData.identityId,
@@ -311,11 +291,14 @@ export class SessionManager {
 
         if (validActiveSession) {
           this.currentSession = validActiveSession;
-        } else if (this.isGuestToken(tokenData)) {
+        } else if (this.guestIdentityHelper.isGuestToken(tokenData)) {
           this.logger.info(
             'No persisted guest session found, reconstructing runtime session from token',
           );
-          this.currentSession = await this.restoreRuntimeSessionFromToken(tokenData);
+          const result = await this.guestIdentityHelper.getOrCreateGuestIdentity(
+            () => this.getDeviceInfo(),
+          );
+          this.currentSession = result.session;
         } else {
           this.logger.info('No valid persisted session found for identity, clearing tokens');
           await this.tokenManager.clearTokens();
@@ -437,7 +420,7 @@ export class SessionManager {
       // Local-only and guest sessions must never hit the remote refresh API.
       if (
         this.isLocalOnlyToken(tokenData) ||
-        this.isGuestToken(tokenData) ||
+        this.guestIdentityHelper.isGuestToken(tokenData) ||
         !this.apiRefreshToken
       ) {
         return await this.localRefresh(tokenData);
@@ -488,7 +471,7 @@ export class SessionManager {
 
     return {
       ok: true,
-      accessToken: 'local-token',
+      accessToken: LOCAL_ACCESS_TOKEN,
       expiresIn: newExpiresIn,
     };
   }
@@ -517,7 +500,10 @@ export class SessionManager {
     this.logger.info('Attempting local login', { identifier: request.identifier });
 
     // Verify password against locally cached credentials
-    const verification = await this.verifyOfflineCredentials(request.identifier, request.password);
+    const verification = await this.offlineAuthHelper.verifyCredentials(
+      request.identifier,
+      request.password,
+    );
 
     if (!verification.ok) {
       const errorMessages: Record<string, string> = {
@@ -551,8 +537,8 @@ export class SessionManager {
     this.currentSession = session;
 
     await this.tokenManager.saveTokens({
-      accessToken: SessionManager.LOCAL_ACCESS_TOKEN,
-      refreshToken: SessionManager.LOCAL_ACCESS_TOKEN,
+      accessToken: LOCAL_ACCESS_TOKEN,
+      refreshToken: LOCAL_ACCESS_TOKEN,
       accessTokenExpiresIn: 3600,
       refreshTokenExpiresIn: 30 * 24 * 3600,
       identityId: toIdentityId(session.identityId),
@@ -569,7 +555,7 @@ export class SessionManager {
     return {
       ok: true,
       sessionId: session?.id,
-      accessToken: SessionManager.LOCAL_ACCESS_TOKEN,
+      accessToken: LOCAL_ACCESS_TOKEN,
       identityId: session?.identityId,
       expiresIn: 3600,
       authMode: AuthMode.OFFLINE_USER,
@@ -692,7 +678,7 @@ export class SessionManager {
     this.startActivityTracking();
 
     const tokenData = this.tokenManager.getCachedTokenData();
-    if (tokenData && !this.isLocalOnlyToken(tokenData) && !this.isGuestToken(tokenData)) {
+    if (tokenData && !this.isLocalOnlyToken(tokenData) && !this.guestIdentityHelper.isGuestToken(tokenData)) {
       this.startAutoRefresh();
     }
   }
@@ -733,10 +719,7 @@ export class SessionManager {
 
   /** Get device info. */
   getDeviceInfo(): DeviceInfoClientDTO {
-    if (!this.deviceInfo) {
-      this.deviceInfo = this.generateDeviceInfo();
-    }
-    return this.deviceInfo;
+    return this.deviceIdentityHelper.generateDeviceInfo();
   }
 
   // ============ Cleanup ============
@@ -807,9 +790,7 @@ export class SessionManager {
     identityRepository: IAuthIdentityRepository,
     passwordHasher: IPasswordHasher,
   ): void {
-    this.identityRepository = identityRepository;
-    this.passwordHasher = passwordHasher;
-    this.logger.info('Offline auth dependencies injected');
+    this.offlineAuthHelper.setDependencies(identityRepository, passwordHasher);
   }
 
   // ============ Offline Credential Management ============
@@ -820,134 +801,17 @@ export class SessionManager {
    * Called after a successful online login/registration. Persists the user's email
    * and password hash to local SQLite for subsequent offline login verification.
    * Uses the server-side identityId for data consistency.
-   *
-   * @param email - User email
-   * @param plainPassword - Plain-text password (hashed locally with Argon2 before storage)
-   * @param identityId - Server-assigned identity ID
    */
   async saveOfflineCredentials(
     email: string,
     plainPassword: string,
     identityId: string,
   ): Promise<void> {
-    if (!this.identityRepository || !this.passwordHasher) {
-      this.logger.warn('Offline auth dependencies not available, skipping credential cache');
-      return;
-    }
-
-    try {
-      // Check if identity already exists locally
-      const existing = await this.identityRepository.findByEmail(email);
-
-      if (existing) {
-        if (existing.id.toString() === identityId) {
-          this.logger.debug('Offline credentials already cached with correct server ID', { email });
-          return;
-        }
-        // Existing entry has wrong (locally-generated) ID — remove and recreate with server ID
-        this.logger.info('Replacing offline credentials with correct server ID', {
-          email,
-          oldId: existing.id.toString(),
-          newId: identityId,
-        });
-        await this.identityRepository.delete(existing);
-      }
-
-      // Create identity using the server's identity ID so local tables stay consistent
-      const identity = await AuthIdentity.createWithEmailAndPassword({
-        id: toIdentityId(identityId),
-        email,
-        plainPassword,
-        hasher: this.passwordHasher,
-      });
-
-      await this.identityRepository.save(identity);
-
-      this.logger.info('Offline credentials cached successfully', { email, identityId });
-    } catch (error) {
-      this.logger.error('Failed to cache offline credentials', { error, email });
-      throw error;
-    }
+    return this.offlineAuthHelper.saveCredentials(email, plainPassword, identityId);
   }
 
   async removeOfflineCredentials(email: string): Promise<void> {
-    if (!this.identityRepository) {
-      return;
-    }
-
-    const identity = await this.identityRepository.findByEmail(email);
-    if (!identity) {
-      return;
-    }
-
-    await this.identityRepository.delete(identity);
-  }
-
-  /**
-   * Verify credentials offline.
-   *
-   * Validates the user's password against a locally stored AuthIdentity.
-   * Includes failed-attempt counting and lockout (managed by the AuthIdentity aggregate).
-   * Returns the server-side identityId when available, otherwise the local ID.
-   */
-  private async verifyOfflineCredentials(
-    email: string,
-    plainPassword: string,
-  ): Promise<{ ok: boolean; identityId?: string; error?: string }> {
-    if (!this.identityRepository || !this.passwordHasher) {
-      return { ok: false, error: 'OFFLINE_AUTH_UNAVAILABLE' };
-    }
-
-    let identity: AuthIdentity | null;
-    try {
-      identity = await this.identityRepository.findByEmail(email);
-    } catch (error) {
-      this.logger.error('Offline credential lookup failed', {
-        email,
-        error,
-      });
-      return { ok: false, error: 'OFFLINE_STORAGE_ERROR' };
-    }
-
-    if (!identity) {
-      return { ok: false, error: 'NO_LOCAL_CREDENTIALS' };
-    }
-
-    // Check lockout
-    if (identity.isLocked()) {
-      return { ok: false, error: 'ACCOUNT_LOCKED' };
-    }
-
-    const verified = await identity.verifyPassword(plainPassword, this.passwordHasher);
-    if (!verified) {
-      identity.recordFailedLogin();
-      try {
-        await this.identityRepository.save(identity);
-      } catch (error) {
-        this.logger.error('Failed to persist failed-login state for offline identity', {
-          identityId: identity.id.toString(),
-          error,
-        });
-      }
-      return { ok: false, error: 'INVALID_PASSWORD' };
-    }
-
-    // Success — reset failed attempts
-    identity.resetFailedAttempts();
-    try {
-      await this.identityRepository.save(identity);
-    } catch (error) {
-      this.logger.error('Failed to persist reset-failed-attempts state for offline identity', {
-        identityId: identity.id.toString(),
-        error,
-      });
-      return { ok: false, error: 'OFFLINE_STORAGE_ERROR' };
-    }
-
-    // Use the identity's own ID for session creation.
-    // Since saveOfflineCredentials now stores AuthIdentity with the server's ID,
-    // identity.id IS the server ID — consistent with tokens, sessions, and accounts.
-    return { ok: true, identityId: identity.id.toString() };
+    return this.offlineAuthHelper.removeCredentials(email);
   }
 
   // ============ Guest Identity Management ============
@@ -956,96 +820,12 @@ export class SessionManager {
    * Get or create a persistent guest identity ID.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
-    const tokenData =
-      this.tokenManager.getCachedTokenData() ?? (await this.tokenManager.loadTokens());
-    const cachedGuestId = tokenData?.identityId;
-    const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
-
-    if (cachedGuestId && this.isGuestToken(tokenData)) {
-      if (!cachedGuestId.startsWith(expectedIdentityPrefix)) {
-        this.logger.warn('Discarding stale guest token with unsupported identity prefix', {
-          identityId: cachedGuestId,
-          expectedPrefix: expectedIdentityPrefix,
-        });
-        await this.tokenManager.clearTokens();
-      } else {
-        const existingGuestSessions = await this.sessionRepository.findByIdentityId(
-          toIdentityId(cachedGuestId),
-        );
-        if (existingGuestSessions.length > 0) {
-          const guestSession = existingGuestSessions[0];
-          this.currentSession = guestSession;
-          this.logger.info('Restored existing guest identity', {
-            guestId: cachedGuestId,
-            sessionId: guestSession.id,
-          });
-          return guestSession.identityId;
-        }
-
-        this.currentSession = await this.restoreRuntimeSessionFromToken({
-          ...(tokenData as any),
-          identityId: cachedGuestId,
-        });
-        this.logger.info('Reused cached guest identity with reconstructed session', {
-          guestId: cachedGuestId,
-          sessionId: this.currentSession.id,
-        });
-        return cachedGuestId;
-      }
-    }
-
-    // Create new persistent guest identity
-    const guestId = `${SessionManager.GUEST_ID_PREFIX}_${generateUUID()}`;
-
-    const deviceInfo = this.getDeviceInfo();
-    const device = DeviceInfo.create(deviceInfo as any);
-
-    const session = AuthSession.create({
-      id: generateUUID() as unknown as AuthSessionId,
-      identityId: toIdentityId(guestId),
-      refreshTokenHash: generateUUID(),
-      expiresAt: Date.now() + 3600 * 1000,
-
-      deviceInfo: device.toDTO(),
-    });
-
-    this.logger.info('Persisting new guest session locally', {
-      guestId,
-      sessionId: session.id,
-    });
-    await this.sessionRepository.save(session);
-
-    try {
-      // Save guest tokens locally
-      this.logger.info('Persisting guest tokens locally', {
-        guestId,
-        sessionId: session.id,
-      });
-      await this.tokenManager.saveTokens({
-        accessToken: SessionManager.GUEST_ACCESS_TOKEN,
-        refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
-        accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
-        refreshTokenExpiresIn: 365 * 24 * 3600,
-        identityId: toIdentityId(guestId),
-        sessionId: session.id,
-      });
-    } catch (error) {
-      session.revoke();
-      await this.sessionRepository.save(session).catch((cleanupError) => {
-        this.logger.warn('Failed to roll back guest session after token persistence failure', {
-          cleanupError,
-          guestId,
-          sessionId: session.id,
-        });
-      });
-      throw error;
-    }
-
-    this.currentSession = session;
+    const result = await this.guestIdentityHelper.getOrCreateGuestIdentity(
+      () => this.getDeviceInfo(),
+    );
+    this.currentSession = result.session;
     this.startCurrentSessionLifecycle();
-
-    this.logger.info('Created new guest identity', { guestId, sessionId: session?.id });
-    return guestId;
+    return result.guestId;
   }
 
   async ensureCurrentSession(): Promise<AuthSession | null> {
@@ -1059,119 +839,19 @@ export class SessionManager {
 
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
-    const tokenData =
-      this.tokenManager.getCachedTokenData() ?? (await this.tokenManager.loadTokens());
-    const cachedGuestId = tokenData?.identityId;
-
-    if (cachedGuestId && this.isGuestToken(tokenData)) {
-      const guestSessions = await this.sessionRepository.findByIdentityId(
-        toIdentityId(cachedGuestId),
-      );
-      for (const session of guestSessions) {
-        session.revoke();
-        await this.sessionRepository.save(session);
-      }
-    }
-    this.logger.info('Guest identity cleared');
+    return this.guestIdentityHelper.clearGuestIdentity();
   }
 
-  private isGuestToken(tokenData: { accessToken?: string; refreshToken?: string } | null): boolean {
-    if (!tokenData) return false;
-    return (
-      tokenData.accessToken === SessionManager.GUEST_ACCESS_TOKEN &&
-      tokenData.refreshToken === SessionManager.GUEST_ACCESS_TOKEN
-    );
-  }
+  // ============ Private Methods ============
 
   private isLocalOnlyToken(
     tokenData: { accessToken?: string; refreshToken?: string } | null,
   ): boolean {
     if (!tokenData) return false;
     return (
-      tokenData.accessToken === SessionManager.LOCAL_ACCESS_TOKEN &&
-      tokenData.refreshToken === SessionManager.LOCAL_ACCESS_TOKEN
+      tokenData.accessToken === LOCAL_ACCESS_TOKEN &&
+      tokenData.refreshToken === LOCAL_ACCESS_TOKEN
     );
-  }
-
-  // ============ Private Methods ============
-
-  /** Generate device info. */
-  private generateDeviceInfo(): DeviceInfoClientDTO {
-    const machineId = this.getOrCreateInstallationDeviceId();
-    const platform = os.platform();
-    const release = os.release();
-    const hostname = os.hostname();
-    const now = Date.now();
-
-    return {
-      deviceId: machineId,
-      deviceFingerprint: this.generateFingerprint(machineId, platform, hostname),
-      deviceType: 'Desktop',
-      deviceName: hostname,
-      os: platform,
-      osVersion: release as string | undefined,
-      appVersion: (app.getVersion() || null) as any,
-      firstSeenAt: now,
-      lastSeenAt: now,
-    };
-  }
-
-  private getOrCreateInstallationDeviceId(): string {
-    const authDir = this.sharedAuthDir;
-    const deviceIdPath = path.join(authDir, 'device-id');
-
-    try {
-      if (fs.existsSync(deviceIdPath)) {
-        const persistedId = fs.readFileSync(deviceIdPath, 'utf8').trim();
-        if (persistedId.length > 0) {
-          return persistedId;
-        }
-      }
-    } catch (error) {
-      this.logger.warn('Failed to read persisted desktop device id, regenerating', { error });
-    }
-
-    const generatedId = crypto.randomUUID();
-
-    try {
-      fs.mkdirSync(authDir, { recursive: true });
-      fs.writeFileSync(deviceIdPath, generatedId, 'utf8');
-    } catch (error) {
-      this.logger.warn('Failed to persist desktop device id, using in-memory fallback', { error });
-    }
-
-    return generatedId;
-  }
-
-  /** Generate a device fingerprint. */
-  private generateFingerprint(machineId: string, platform: string, hostname: string): string {
-    const data = `${machineId}-${platform}-${hostname}`;
-    return crypto.createHash('sha256').update(data).digest('hex');
-  }
-
-  private async restoreRuntimeSessionFromToken(tokenData: TokenData): Promise<AuthSession> {
-    const deviceInfo = this.getDeviceInfo();
-    const device = DeviceInfo.create(deviceInfo as any);
-    const expiresAt = Math.max(tokenData.accessTokenExpiresAt, tokenData.refreshTokenExpiresAt);
-
-    const session = AuthSession.create({
-      id: tokenData.sessionId as unknown as AuthSessionId,
-      identityId: toIdentityId(tokenData.identityId),
-      refreshTokenHash: generateUUID(),
-      expiresAt,
-      deviceInfo: device.toDTO(),
-    });
-
-    try {
-      await this.sessionRepository.save(session);
-    } catch (error) {
-      this.logger.warn('Failed to persist reconstructed session, keeping runtime-only session', {
-        error,
-        sessionId: tokenData.sessionId,
-      });
-    }
-
-    return session;
   }
 
   /** Start auto-refresh. */
@@ -1215,20 +895,4 @@ export class SessionManager {
       this.activityTimer = null;
     }
   }
-}
-
-// ============ Factory Function ============
-
-/** Create a SessionManager instance. */
-export function createSessionManager(
-  sessionRepository: IAuthSessionRepository,
-  identityRepository: IAuthIdentityRepository,
-  logger?: ILogger,
-): SessionManager {
-  return SessionManager.getInstance(sessionRepository, identityRepository, logger);
-}
-
-/** Get the existing SessionManager singleton. Throws if not yet initialized. */
-export function getSessionManager(): SessionManager {
-  return SessionManager.getExistingInstance();
 }
