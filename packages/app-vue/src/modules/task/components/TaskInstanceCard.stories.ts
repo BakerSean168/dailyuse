@@ -64,7 +64,7 @@ export const AllDay: Story = {
   args: {
     task: createMockTask({
       timeConfig: {
-        timeType: 'ALL_DAY',
+        timeType: 'AllDay',
         startDate: now,
         timePoint: null,
         timeRange: null,
@@ -122,7 +122,7 @@ export const TaskList: Story = {
         createMockTask({
           id: '4',
           statusText: 'PENDING',
-          timeConfig: { timeType: 'ALL_DAY', startDate: now, timePoint: null, timeRange: null },
+          timeConfig: { timeType: 'AllDay', startDate: now, timePoint: null, timeRange: null },
         }),
       ];
       return { tasks };

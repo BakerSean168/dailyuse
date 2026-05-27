@@ -12,7 +12,7 @@
  */
 import { ref, onErrorCaptured } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const { t } = useI18n();
 const logger = createLogger('GlobalErrorBoundary');

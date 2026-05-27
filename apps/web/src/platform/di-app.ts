@@ -34,13 +34,10 @@ import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
 
 const authService = createLazyService(async () => {
-  const { createAuthenticationClientService } = await import(
+  const { createAuthenticationServiceFromHttpClient } = await import(
     '@dailyuse/authentication/application-client'
   );
-  const { createAuthHttpAdapter } = await import(
-    '@dailyuse/authentication/infrastructure-client'
-  );
-  return createAuthenticationClientService(createAuthHttpAdapter(resultHttpClient));
+  return createAuthenticationServiceFromHttpClient(resultHttpClient);
 });
 
 const accountService = createLazyService(async () => {
@@ -51,13 +48,10 @@ const accountService = createLazyService(async () => {
 });
 
 const ruleService = createLazyService(async () => {
-  const { createGovernanceClientService } = await import(
+  const { createGovernanceServiceFromHttpClient } = await import(
     '@dailyuse/governance/application-client'
   );
-  const { createRuleHttpAdapter } = await import(
-    '@dailyuse/governance/infrastructure-client'
-  );
-  return createGovernanceClientService(createRuleHttpAdapter(resultHttpClient));
+  return createGovernanceServiceFromHttpClient(resultHttpClient);
 });
 
 const goalService = createLazyService(async () => {
@@ -89,13 +83,10 @@ const repositoryService = createLazyService(async () => {
 });
 
 const editorService = createLazyService(async () => {
-  const { createEditorClientService } = await import(
+  const { createEditorServiceFromHttpClient } = await import(
     '@dailyuse/editor/application-client'
   );
-  const { createEditorHttpAdapter } = await import(
-    '@dailyuse/editor/infrastructure-client'
-  );
-  return createEditorClientService(createEditorHttpAdapter(resultHttpClient));
+  return createEditorServiceFromHttpClient(resultHttpClient);
 });
 
 const scheduleService = createLazyService(async () => {

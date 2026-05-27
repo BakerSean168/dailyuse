@@ -6,6 +6,7 @@ import {
   stripMarkdownExtension,
   type WikiLinkMatch,
 } from './wiki-links';
+import { isMarkdownResource, toTimestamp } from './index-helpers';
 
 export interface LinkIndexNote {
   id: string;
@@ -87,23 +88,6 @@ export interface SearchNotesOptions {
 export interface GraphOptions {
   maxNodes?: number;
   maxEdges?: number;
-}
-
-function isMarkdownResource(resource: ResourceClientDTO): boolean {
-  return resource.mimeType?.startsWith('text/markdown') || resource.extension === '.md';
-}
-
-function toTimestamp(value: string | number | null | undefined): number {
-  if (!value) {
-    return 0;
-  }
-
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  const timestamp = new Date(value).getTime();
-  return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
 function getNoteTitle(resource: ResourceClientDTO): string {

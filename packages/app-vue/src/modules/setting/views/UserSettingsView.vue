@@ -27,10 +27,12 @@ import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
-import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
+import { inject } from 'vue';
+import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();
 const presentationStore = usePresentationPreferenceStore();
+const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 
 const {
   userSetting,
@@ -111,7 +113,7 @@ function normalizeTimeFormat(
 
 /** Wrap importSettings for the @import event (which has no payload). */
 async function handleImport() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     try {
       const result = (await electronApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
@@ -142,7 +144,7 @@ async function handleExportJson() {
     return;
   }
 
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     try {
       await electronApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {

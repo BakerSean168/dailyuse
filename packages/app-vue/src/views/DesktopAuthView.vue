@@ -39,7 +39,8 @@ import {
   DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { useAuth } from '../modules/authentication/composables/useAuth';
-import { getDesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
+import { inject } from 'vue';
+import { DESKTOP_AUTH_API_KEY } from '../di/keys';
 
 interface RememberedAccountItem {
   identityId: RememberedDesktopAccountDTO['identityId'];
@@ -75,6 +76,7 @@ const {
 } = useAuth();
 const { t } = useI18n();
 const route = useRoute();
+const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 
 const scene = ref<Scene>('password-login');
 const rememberedAccounts = ref<RememberedAccountItem[]>([]);
@@ -392,7 +394,7 @@ function handlePasswordFieldFocus() {
 }
 
 function openRegister() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     void electronApi.invoke(WindowChannels.OPEN_AUTH_REGISTER);
   } else {
@@ -401,7 +403,7 @@ function openRegister() {
 }
 
 async function handleCloseWindow() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     await electronApi.invoke(WindowChannels.CLOSE);
   }
@@ -412,7 +414,7 @@ function handlePlaceholderMenu() {
 }
 
 async function handleFocusMainWindow() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     await electronApi.invoke(WindowChannels.FOCUS_MAIN_WINDOW);
     syncDefaultScene();
@@ -425,7 +427,7 @@ function handleReturnFromConflict() {
 }
 
 async function handleReturnToLogin() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke && isRegisterRoute.value) {
     await electronApi.invoke(WindowChannels.CLOSE_AUTH_REGISTER);
     return;

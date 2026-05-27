@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ResourceBookmarkClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { __test__ as composableTest } from './useRepository';
+import { isUploadResponse } from './repositoryHelpers';
+import { __test__ as bookmarkTest } from './useRepositoryBookmarks';
 import { __test__ as storeTest } from '../stores/repository-store';
+import { recoverDesktopAuthIfNeeded } from '../../../shared/utils/desktop-auth-recovery';
 
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {
@@ -59,7 +61,7 @@ describe('useRepository helpers', () => {
       failures: [{ fileName: 'broken.pdf', message: 'Nope', code: 'UPLOAD_FAILED' }],
     };
 
-    expect(composableTest.isUploadResponse(response)).toBe(true);
+    expect(isUploadResponse(response)).toBe(true);
   });
 
   it('rebuilds bookmark display name from linked resource when alias is cleared', () => {
@@ -101,7 +103,7 @@ describe('useRepository helpers', () => {
     const third = createBookmark({ id: 'bookmark-3' as ResourceBookmarkClientDTO['id'] });
 
     expect(
-      composableTest
+      bookmarkTest
         .reorderBookmarkCollection([first, second, third], [third.id, first.id])
         .map((bookmark) => bookmark.id),
     ).toEqual([third.id, first.id, second.id]);
@@ -114,10 +116,10 @@ describe('useRepository helpers', () => {
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce({ authenticated: true });
 
-    const result = await composableTest.executeAuthRecovery(
-      () =>
-        Promise.resolve({ ok: false as const, error: { code: 'AUTH_REQUIRED', message: 'nope' } }),
-      { electronAPI: { invoke } },
+    const result = await recoverDesktopAuthIfNeeded(
+      { code: 'AUTH_REQUIRED' },
+      { invoke },
+      'Repository',
     );
 
     expect(result).toBe(true);
@@ -127,13 +129,10 @@ describe('useRepository helpers', () => {
   it('does not retry non-auth repository errors', async () => {
     const invoke = vi.fn();
 
-    const result = await composableTest.executeAuthRecovery(
-      () =>
-        Promise.resolve({
-          ok: false as const,
-          error: { code: 'INVALID_RESPONSE', message: 'bad dto' },
-        }),
-      { electronAPI: { invoke } },
+    const result = await recoverDesktopAuthIfNeeded(
+      { code: 'INVALID_RESPONSE' },
+      { invoke },
+      'Repository',
     );
 
     expect(result).toBe(false);

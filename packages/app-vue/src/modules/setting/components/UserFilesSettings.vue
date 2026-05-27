@@ -79,14 +79,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, inject, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Label } from '@dailyuse/ui-vue-shadcn';
 import { FolderOpen, FolderInput, ExternalLink, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-vue-next';
 import { SystemChannels } from '@dailyuse/contracts/electron';
-import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
+import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();
+const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 
 const currentPath = ref('');
 const defaultPath = ref('');
@@ -120,7 +121,7 @@ function showFeedback(type: 'success' | 'error', message: string) {
 }
 
 async function loadPath() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (!electronApi?.invoke) return;
   try {
     const result = (await electronApi.invoke(
@@ -136,7 +137,7 @@ async function loadPath() {
 }
 
 async function pickDirectory() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (!electronApi?.invoke) return;
   pickLoading.value = true;
   try {
@@ -156,7 +157,7 @@ async function pickDirectory() {
 }
 
 async function openDirectory() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (!electronApi?.invoke) return;
   openLoading.value = true;
   try {
@@ -170,7 +171,7 @@ async function openDirectory() {
 }
 
 function confirmReset() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (!electronApi?.invoke) return;
   const confirmed = window.confirm(t('setting.userFiles.resetConfirm'));
   if (confirmed) {
@@ -179,7 +180,7 @@ function confirmReset() {
 }
 
 async function resetToDefault() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (!electronApi?.invoke) return;
   resetLoading.value = true;
   try {

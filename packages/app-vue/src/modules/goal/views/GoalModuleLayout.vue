@@ -131,7 +131,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Target, Plus, FolderPlus, LayoutGrid, Folder } from 'lucide-vue-next';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { Badge, Button, Progress, ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';

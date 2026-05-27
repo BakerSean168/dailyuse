@@ -1,7 +1,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 
 import {
-  getDesktopAuthApi,
+  type DesktopAuthApi,
   recoverDesktopAuthIfNeeded,
 } from './desktop-auth-recovery';
 import { translateResultError } from './translate-result-error';
@@ -18,6 +18,8 @@ export interface ExecuteDesktopAuthenticatedResultOptions<T> {
   logScope: string;
   t?: TranslateFn;
   fallbackKey?: string;
+  /** Desktop auth API for automatic recovery. Omit in web runtime. */
+  desktopApi?: DesktopAuthApi;
   onStart?: () => void | Promise<void>;
   onSuccess?: (data: T) => void | Promise<void>;
   onError?: (error: ResultErrorLike, translatedMessage: string) => void | Promise<void>;
@@ -41,6 +43,7 @@ export async function executeDesktopAuthenticatedResult<T>({
   logScope,
   t,
   fallbackKey,
+  desktopApi,
   onStart,
   onSuccess,
   onError,
@@ -51,10 +54,10 @@ export async function executeDesktopAuthenticatedResult<T>({
   try {
     let result = await operation();
 
-    if (!result.ok && result.error) {
+    if (!result.ok && result.error && desktopApi) {
       const recovered = await recoverDesktopAuthIfNeeded(
         result.error,
-        getDesktopAuthApi(),
+        desktopApi,
         logScope,
       );
 

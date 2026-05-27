@@ -4,11 +4,11 @@
  * 从 useRepository 中提取，独立管理书签的持久化、临时 UI 回退态和排序。
  */
 
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import type { ResourceBookmarkClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { useRepositoryStore } from '../stores/repository-store';
-import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
+import { REPOSITORY_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
@@ -33,6 +33,7 @@ export function useRepositoryBookmarks() {
     REPOSITORY_SERVICE_KEY,
     'RepositoryService',
   ) as BookmarkCapableService;
+  const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
   const store = useRepositoryStore();
 
   const bookmarks = computed(() => store.bookmarks);
@@ -71,6 +72,7 @@ export function useRepositoryBookmarks() {
       logScope: 'Repository',
       t: translate,
       fallbackKey: 'common.operationFailed',
+      desktopApi,
       onError: (error, translatedMessage) => {
         handleError(
           translatedMessage === translate?.('common.operationFailed')

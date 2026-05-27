@@ -1,0 +1,53 @@
+import { useI18n } from 'vue-i18n';
+import type { GoalAutomationResult, GoalExecutedAction, ChatItem } from './types';
+
+export function useAIFormatters() {
+  const { t } = useI18n();
+
+  function typingPlaceholder(item: ChatItem): string {
+    return item.role === 'assistant' && item.status === 'generating' ? '...' : '';
+  }
+
+  function getMessageStatusLabel(item: ChatItem): string {
+    if (item.status === 'aborted') return t('aiAssistant.dialogs.chat.aborted');
+    if (item.status === 'error') return item.errorMessage || t('aiAssistant.dialogs.chat.sendFailed');
+    return '';
+  }
+
+  function formatAutomationTool(tool: GoalAutomationResult['actions'][number]['tool']): string {
+    const labels: Record<GoalAutomationResult['actions'][number]['tool'], string> = {
+      create_goal: t('aiAssistant.dialogs.automation.toolLabels.createGoal'),
+      create_key_result: t('aiAssistant.dialogs.automation.toolLabels.createKeyResult'),
+      create_task_template: t('aiAssistant.dialogs.automation.toolLabels.createTaskTemplate'),
+      search_notes: t('aiAssistant.dialogs.automation.toolLabels.searchNotes'),
+      fetch_stats: t('aiAssistant.dialogs.automation.toolLabels.fetchStats'),
+    };
+    return labels[tool];
+  }
+
+  function formatActionStatus(status: GoalExecutedAction['status']): string {
+    const labels = {
+      executed: t('aiAssistant.dialogs.automation.statusLabels.executed'),
+      skipped: t('aiAssistant.dialogs.automation.statusLabels.skipped'),
+      failed: t('aiAssistant.dialogs.automation.statusLabels.failed'),
+    } as const;
+    return labels[status];
+  }
+
+  function formatExecutionOutcome(status: 'success' | 'partial' | 'failed'): string {
+    const labels = {
+      success: t('aiAssistant.dialogs.automation.outcomeLabels.success'),
+      partial: t('aiAssistant.dialogs.automation.outcomeLabels.partial'),
+      failed: t('aiAssistant.dialogs.automation.outcomeLabels.failed'),
+    } as const;
+    return labels[status];
+  }
+
+  return {
+    typingPlaceholder,
+    getMessageStatusLabel,
+    formatAutomationTool,
+    formatActionStatus,
+    formatExecutionOutcome,
+  };
+}

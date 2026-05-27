@@ -30,15 +30,17 @@ import {
   AI_SERVICE_KEY,
   RULE_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
-  createDashboardIpcAdapter,
+  DESKTOP_AUTH_API_KEY,
+  DESKTOP_BRIDGE_KEY,
   MAIN_NAVIGATION_KEY,
   BOTTOM_NAVIGATION_KEY,
   LOGOUT_HANDLER_KEY,
   defaultMainNavigation,
   defaultBottomNavigation,
-  useAuthenticationStore,
-  setEditorRuntimeService,
-} from '@dailyuse/app-vue';
+} from '@dailyuse/app-vue/di';
+import { createDashboardIpcAdapter } from '@dailyuse/app-vue/modules/dashboard/adapters';
+import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
+import { setEditorRuntimeService } from '@dailyuse/app-vue/modules/editor';
 import { createAccountIpcAdapters } from '@dailyuse/account/infrastructure-client';
 import { createAuthIpcAdapters } from '@dailyuse/authentication/infrastructure-client';
 import { createGoalIpcAdapters } from '@dailyuse/goal/infrastructure-client';
@@ -53,7 +55,12 @@ import { createAIIpcAdapters } from '@dailyuse/ai/infrastructure-client';
 import { createGovernanceIpcAdapters } from '@dailyuse/governance/infrastructure-client';
 
 export function installDesktopAppServices(app: App): void {
-  const resultIpcClient = createResultIpcClient();
+  const bridge = window.electronAPI;
+  if (!bridge) {
+    throw new Error('installDesktopAppServices requires window.electronAPI (preload bridge)');
+  }
+
+  const resultIpcClient = createResultIpcClient({ bridge });
 
   const accountAdapters = createAccountIpcAdapters(resultIpcClient);
   app.provide(ACCOUNT_SERVICE_KEY, new AccountClientService(accountAdapters.account));
@@ -121,11 +128,15 @@ export function installDesktopAppServices(app: App): void {
   app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
+
+  // Provide desktop auth API for automatic auth recovery in composables
+  app.provide(DESKTOP_AUTH_API_KEY, bridge);
+  app.provide(DESKTOP_BRIDGE_KEY, bridge);
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     console.info('[Desktop Logout] Handler invoked');
     try {
       console.info('[Desktop Logout] Invoking auth:logout');
-      const logoutResult = await window.electronAPI?.invoke('auth:logout');
+      const logoutResult = await bridge.invoke('auth:logout');
       console.info('[Desktop Logout] auth:logout result', logoutResult);
 
       const authStore = useAuthenticationStore();

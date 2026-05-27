@@ -8,17 +8,15 @@
 import type { App } from 'vue';
 import { RendererEventChannels } from '@dailyuse/contracts/electron';
 
-import {
-  useAccountStore,
-  useGoalStore,
-  useTaskStore,
-  useScheduleStore,
-  useReminderStore,
-  useNotificationStore,
-  useRepositoryStore,
-  useUserSettingStore,
-  useGovernanceStore,
-} from '@dailyuse/app-vue';
+import { useAccountStore } from '@dailyuse/app-vue/modules/account';
+import { useGoalStore } from '@dailyuse/app-vue/modules/goal';
+import { useTaskStore } from '@dailyuse/app-vue/modules/task';
+import { useScheduleStore } from '@dailyuse/app-vue/modules/schedule';
+import { useReminderStore } from '@dailyuse/app-vue/modules/reminder';
+import { useNotificationStore } from '@dailyuse/app-vue/modules/notification';
+import { useRepositoryStore } from '@dailyuse/app-vue/modules/repository';
+import { useUserSettingStore } from '@dailyuse/app-vue/modules/setting';
+import { useGovernanceStore } from '@dailyuse/app-vue/modules/governance';
 
 const api = window.electronAPI;
 

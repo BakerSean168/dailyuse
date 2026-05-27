@@ -3,17 +3,12 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHashHistory } from 'vue-router';
 import { APP_TITLE_NAME } from '@dailyuse/assets';
-import {
-  createAppRouter,
-  useAuthenticationStore,
-  createI18nPlugin,
-  loadLocaleMessages,
-  DesktopAuthView,
-  hydrateDesktopBootstrapAuthState,
-  registerNotificationInitializationTasks,
-  usePresentationPreferenceStore,
-} from '@dailyuse/app-vue';
-import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
+import { createAppRouter } from '@dailyuse/app-vue/router';
+import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
+import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue/plugins/i18n';
+import { DesktopAuthView, hydrateDesktopBootstrapAuthState } from '@dailyuse/app-vue/desktop';
+import { createNotificationStartupHook } from '@dailyuse/app-vue/modules/notification';
+import { usePresentationPreferenceStore } from '@dailyuse/app-vue/modules/setting';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
@@ -75,11 +70,10 @@ export async function bootstrapMainApp() {
   initElectronFeatures(app);
   app.mount('#app');
 
-  const runStartupPhase = async () => {
+  const runStartupPhase = () => {
     try {
-      registerNotificationInitializationTasks();
-
-      await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
+      const notificationHook = createNotificationStartupHook();
+      notificationHook.start();
     } catch (error) {
       console.error('[desktop] APP_STARTUP phase failed', error);
     }

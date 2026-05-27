@@ -13,6 +13,74 @@
     "./web-overlays": {
       "types": "./src/web-overlays.ts",
       "import": "./src/web-overlays.ts"
+    },
+    "./di": {
+      "types": "./src/di/index.ts",
+      "import": "./src/di/index.ts"
+    },
+    "./desktop": {
+      "types": "./src/desktop.ts",
+      "import": "./src/desktop.ts"
+    },
+    "./plugins/i18n": {
+      "types": "./src/plugins/i18n.ts",
+      "import": "./src/plugins/i18n.ts"
+    },
+    "./router": {
+      "types": "./src/router/index.ts",
+      "import": "./src/router/index.ts"
+    },
+    "./modules/authentication": {
+      "types": "./src/modules/authentication/index.ts",
+      "import": "./src/modules/authentication/index.ts"
+    },
+    "./modules/account": {
+      "types": "./src/modules/account/index.ts",
+      "import": "./src/modules/account/index.ts"
+    },
+    "./modules/goal": {
+      "types": "./src/modules/goal/index.ts",
+      "import": "./src/modules/goal/index.ts"
+    },
+    "./modules/task": {
+      "types": "./src/modules/task/index.ts",
+      "import": "./src/modules/task/index.ts"
+    },
+    "./modules/schedule": {
+      "types": "./src/modules/schedule/index.ts",
+      "import": "./src/modules/schedule/index.ts"
+    },
+    "./modules/reminder": {
+      "types": "./src/modules/reminder/index.ts",
+      "import": "./src/modules/reminder/index.ts"
+    },
+    "./modules/notification": {
+      "types": "./src/modules/notification/index.ts",
+      "import": "./src/modules/notification/index.ts"
+    },
+    "./modules/repository": {
+      "types": "./src/modules/repository/index.ts",
+      "import": "./src/modules/repository/index.ts"
+    },
+    "./modules/setting": {
+      "types": "./src/modules/setting/index.ts",
+      "import": "./src/modules/setting/index.ts"
+    },
+    "./modules/governance": {
+      "types": "./src/modules/governance/index.ts",
+      "import": "./src/modules/governance/index.ts"
+    },
+    "./modules/dashboard/adapters": {
+      "types": "./src/modules/dashboard/adapters/index.ts",
+      "import": "./src/modules/dashboard/adapters/index.ts"
+    },
+    "./modules/editor": {
+      "types": "./src/modules/editor/index.ts",
+      "import": "./src/modules/editor/index.ts"
+    },
+    "./modules/ai": {
+      "types": "./src/modules/ai/index.ts",
+      "import": "./src/modules/ai/index.ts"
     }
   },
   "dependencies": {

@@ -1,7 +1,7 @@
-import { ref } from 'vue';
+import { inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Result } from '@dailyuse/contracts/result';
-import { GOAL_SERVICE_KEY } from '../../../di/keys';
+import { GOAL_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { GoalBindingOption, KeyResultBindingOption } from '../components/types';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
@@ -74,6 +74,7 @@ const GOAL_BINDING_PAGE_SIZE = 100;
 
 export function useTaskGoalBindingOptions() {
   const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
+  const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
   const { t } = useI18n();
 
   const goals = ref<GoalBindingOption[]>([]);
@@ -91,6 +92,7 @@ export function useTaskGoalBindingOptions() {
       logScope: 'TaskGoalBindingOptions',
       t,
       fallbackKey,
+      desktopApi,
       onError: (error, translatedMessage) => {
         loadError.value = translatedMessage;
         console.error('[TaskGoalBindingOptions] operation failed', error);

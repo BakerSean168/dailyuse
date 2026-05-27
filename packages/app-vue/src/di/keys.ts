@@ -45,3 +45,16 @@ export const MAIN_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('MainN
 export const BOTTOM_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('BottomNavigation');
 export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
+
+// ── Desktop Platform Keys ──
+export const DESKTOP_AUTH_API_KEY: InjectionKey<{
+  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
+}> = Symbol('DesktopAuthApi');
+
+export interface DesktopBridge {
+  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
+  on: (channel: string, callback: (...args: unknown[]) => void) => void;
+  off: (channel: string, callback: (...args: unknown[]) => void) => void;
+}
+
+export const DESKTOP_BRIDGE_KEY: InjectionKey<DesktopBridge> = Symbol('DesktopBridge');

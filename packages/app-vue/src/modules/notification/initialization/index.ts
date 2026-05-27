@@ -5,7 +5,8 @@
  * Each runtime (web, desktop renderer) explicitly calls this during startup.
  */
 
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { NotificationDispatchInAppEvent } from '@dailyuse/contracts/notification';
 import { useNotificationStore } from '../stores/notification-store';
 
@@ -60,10 +61,4 @@ export function createNotificationStartupHook(): { start(): void; stop(): void }
       // eventBus cleanup would go here if eventBus supported off()
     },
   };
-}
-
-/** @deprecated Use createNotificationStartupHook() instead */
-export function registerNotificationInitializationTasks(): void {
-  const hook = createNotificationStartupHook();
-  hook.start();
 }
