@@ -52,6 +52,16 @@ const moduleBoundaryOptions = {
   depConstraints: moduleBoundaryDepConstraints,
 } as const;
 
+const utilsRootImportRestriction = {
+  paths: [
+    {
+      name: '@dailyuse/utils',
+      message:
+        'Import from a specific subpath instead: @dailyuse/utils/logger, @dailyuse/utils/domain, @dailyuse/utils/errors, @dailyuse/utils/shared, @dailyuse/utils/result, @dailyuse/utils/frontend, @dailyuse/utils/validation, @dailyuse/utils/lifecycle.',
+    },
+  ],
+} as const;
+
 export default tseslint.config(
   [
     {
@@ -87,19 +97,13 @@ export default tseslint.config(
     },
     // ============ Subpath Import Preference ============
     {
+      files: [
+        'apps/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+        'packages/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+        'tools/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+      ],
       rules: {
-        'no-restricted-imports': [
-          'warn',
-          {
-            paths: [
-              {
-                name: '@dailyuse/utils',
-                message:
-                  'Import from a specific subpath instead: @dailyuse/utils/logger, @dailyuse/utils/domain, @dailyuse/utils/errors, @dailyuse/utils/shared, @dailyuse/utils/result, @dailyuse/utils/frontend, @dailyuse/utils/validation, @dailyuse/utils/lifecycle.',
-              },
-            ],
-          },
-        ],
+        'no-restricted-imports': ['error', utilsRootImportRestriction],
       },
     },
     {
@@ -178,6 +182,7 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': 'off',
+        'no-restricted-imports': 'off',
       },
     },
     {
@@ -185,6 +190,7 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': 'off',
+        'no-restricted-imports': 'off',
       },
     },
     {
@@ -192,6 +198,18 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': 'off',
+        'no-restricted-imports': 'off',
+      },
+    },
+    {
+      files: ['apps/api/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
       },
     },
   ],
