@@ -5,7 +5,6 @@
 
 import type { ScheduleExecutionId, ScheduleTaskId } from '../../../primitives';
 import type { ExecutionStatus } from '../value-objects';
-import type { ScheduleExecutionClientDTO } from './schedule-execution-client';
 
 // ============ DTO 定义 ============
 

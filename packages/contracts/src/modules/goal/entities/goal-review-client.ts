@@ -2,9 +2,9 @@
  * GoalReview Entity - Client Interface
  */
 
-import type { DomainDate, TransferDate, GoalReviewId, GoalId } from '../../../primitives';
+import type { TransferDate, GoalReviewId, GoalId } from '../../../primitives';
 import type { ReviewType } from '../value-objects/review-type';
-import type { KeyResultSnapshot, KeyResultSnapshotDTO } from '../value-objects';
+import type { KeyResultSnapshotDTO } from '../value-objects';
 
 export interface GoalReviewClientDTO {
   id: GoalReviewId;

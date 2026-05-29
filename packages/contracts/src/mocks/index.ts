@@ -4,6 +4,8 @@
  * Re-exports all mock factory functions from sub-modules.
  * These are **development-only** helpers — do not import in production code.
  *
+ * Governance mocks live in `@dailyuse/governance/mocks`, not here.
+ *
  * @example
  * ```ts
  * import {
@@ -16,9 +18,11 @@
  *   createMockReminderTemplate,
  *   createMockNotification,
  *   createMockRepository,
- *   createMockRule,
  *   createMockUserSetting,
  * } from '@dailyuse/contracts/mocks';
+ *
+ * // Governance mocks:
+ * import { createMockRule, createMockRuleRevision } from '@dailyuse/governance/mocks';
  * ```
  */
 
@@ -30,5 +34,4 @@ export * from './schedule.mock';
 export * from './reminder.mock';
 export * from './notification.mock';
 export * from './repository.mock';
-export * from './governance.mock';
 export * from './setting.mock';

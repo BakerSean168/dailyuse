@@ -8,10 +8,7 @@ import type {
   EditorWorkspaceId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
-import type { EditorGroupServerDTO } from './editor-group-server';
-
 // Entity imports
 import type { EditorTabClientDTO } from './editor-tab-client';
 

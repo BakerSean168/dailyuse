@@ -6,15 +6,12 @@ import type {
   RepositoryId,
   FolderId,
   IdentityId,
-  DomainDate,
   TransferDate,
 } from '../../../primitives';
 import type { ResourceType } from '../value-objects/resource-type';
 import type { ResourceStatus } from '../value-objects/resource-status';
 import type {
-  ResourceMetadata,
   ResourceMetadataDTO,
-  ResourceStats,
   ResourceStatsDTO,
   ExternalLink,
 } from '../value-objects';

@@ -5,7 +5,7 @@
  * 所属聚合根: EditorWorkspace
  */
 
-import type { EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type { EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate } from '../../../primitives';
 import type { EditorGroupClientDTO } from './editor-group-client';
 import type { SessionLayoutDTO } from '../value-objects/session-layout';
 

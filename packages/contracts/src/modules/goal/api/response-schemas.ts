@@ -26,7 +26,7 @@ import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
 import { HiddenGoalsMode } from '../value-objects/focus-mode';
-import { ProgressCalculationMode } from '../value-objects/progress-breakdown';
+
 import type { GoalClientDTO } from '../aggregates/goal-client';
 import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
 import type { GoalReviewClientDTO } from '../entities/goal-review-client';

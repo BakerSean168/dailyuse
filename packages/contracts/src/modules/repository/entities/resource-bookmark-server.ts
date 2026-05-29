@@ -9,7 +9,7 @@
  * - version: 乐观锁版本号
  * - updatedAt: 最后更新时间（增量同步）
  */
-import type { DomainDate, TransferDate, ResourceId, IdentityId, BookmarkId } from '../../../primitives';
+import type { TransferDate, ResourceId, IdentityId, BookmarkId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

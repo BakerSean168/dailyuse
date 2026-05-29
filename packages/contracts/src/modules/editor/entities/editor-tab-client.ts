@@ -12,8 +12,6 @@ import type {
   TransferDate,
 } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
-import type { EditorTabServerDTO } from './editor-tab-server';
-
 // Value object imports
 import type { TabViewStateDTO } from '../value-objects';
 

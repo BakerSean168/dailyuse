@@ -1,5 +1,3 @@
-import type { IdentityId } from '../../../../primitives';
-
 /**
  * Identity Disabled Event
  * 

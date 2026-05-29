@@ -8,7 +8,7 @@
  */
 
 import type { KeyResultProgressDTO } from '../value-objects';
-import type { TransferDate, DomainDate, KeyResultId } from '../../../primitives';
+import type { TransferDate, KeyResultId } from '../../../primitives';
 
 export interface KeyResultServerDTO {
   id: KeyResultId;

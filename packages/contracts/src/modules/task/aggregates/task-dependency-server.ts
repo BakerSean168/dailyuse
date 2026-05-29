@@ -8,7 +8,6 @@ import type {
   TaskTemplateId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { DependencyType } from '../value-objects/dependency-type';
 import type { DependencyStatus } from '../value-objects/dependency-status';

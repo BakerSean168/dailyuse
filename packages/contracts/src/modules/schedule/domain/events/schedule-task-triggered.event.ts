@@ -16,5 +16,5 @@ export interface ScheduleTaskTriggeredEvent {
   sourceModule: SourceModule;
   sourceEntityId: string;
   executionTime: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }

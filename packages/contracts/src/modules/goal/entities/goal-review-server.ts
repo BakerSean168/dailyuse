@@ -8,7 +8,7 @@
  */
 import type { ReviewType } from '../value-objects/review-type';
 import type { KeyResultSnapshotDTO } from '../value-objects';
-import type { DomainDate, TransferDate, GoalReviewId, GoalId } from '../../../primitives';
+import type { TransferDate, GoalReviewId, GoalId } from '../../../primitives';
 
 export interface GoalReviewServerDTO {
   id: GoalReviewId;

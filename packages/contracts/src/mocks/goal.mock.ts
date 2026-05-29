@@ -224,7 +224,7 @@ export function createMockGoalReview(
     challenges: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     improvements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     keyResultSnapshots: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () => ({
-      keyResultId: `IKeyResultId_${faker.string.uuid()}` as any,
+      keyResultId: `IKeyResultId_${faker.string.uuid()}` as unknown as KeyResultId,
       title: faker.lorem.words({ min: 3, max: 6 }),
       targetValue: faker.number.int({ min: 10, max: 100 }),
       currentValue: faker.number.int({ min: 0, max: 100 }),

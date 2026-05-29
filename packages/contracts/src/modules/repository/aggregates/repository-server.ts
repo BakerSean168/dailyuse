@@ -11,15 +11,12 @@
 import type {
   RepositoryId,
   IdentityId,
-  DomainDate,
   TransferDate,
 } from '../../../primitives';
 import type { RepositoryType } from '../value-objects/repository-type';
 import type { RepositoryStatus } from '../value-objects/repository-status';
 import type {
-  RepositoryConfig,
   RepositoryConfigDTO,
-  RepositoryStats,
   RepositoryStatsDTO,
 } from '../value-objects';
 

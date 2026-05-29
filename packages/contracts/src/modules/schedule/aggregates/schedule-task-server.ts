@@ -4,19 +4,13 @@
  */
 
 import type { ScheduleTaskId, IdentityId } from '../../../primitives';
-import type { ScheduleTaskClientDTO } from './schedule-task-client';
 import type { ScheduleExecutionServerDTO } from '../entities/schedule-execution-server';
 import type {
   ScheduleTaskStatus,
   SourceModule,
-  ExecutionStatus,
-  IScheduleConfig,
   ScheduleConfigDTO,
-  IExecutionInfo,
   ExecutionInfoDTO,
-  IRetryPolicy,
   RetryPolicyDTO,
-  ITaskMetadata,
   TaskMetadataDTO,
 } from '../value-objects';
 

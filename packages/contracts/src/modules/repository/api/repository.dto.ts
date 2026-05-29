@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 import { brandedId, openApiJsonValue } from '../../../primitives';
-import type { RepositoryId, FolderId } from '../../../primitives';
+import type { FolderId } from '../../../primitives';
 
 // ==================== Resource Schemas ====================
 

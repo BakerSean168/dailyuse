@@ -3,15 +3,12 @@
  */
 
 import type {
-  ReminderInstanceId,
   ReminderTemplateId,
   ReminderHistoryId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { TriggerResult } from '../value-objects/trigger-result';
 import type { NotificationChannel } from '../value-objects/notification-channel';
-import type { ReminderHistoryServerDTO } from './reminder-history-server';
 
 // ============ DTO Definitions ============
 

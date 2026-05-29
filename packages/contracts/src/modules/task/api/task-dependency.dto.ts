@@ -10,7 +10,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type {
-  TaskDependencyId,
   TaskTemplateId,
   IdentityId,
 } from '../../../primitives';

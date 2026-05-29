@@ -13,7 +13,7 @@ export interface IResourceMetadata {
   readingTime: number | null; // In seconds
   encoding: string | null;
   language: string | null;
-  customFields?: Record<string, any> | null;
+  customFields?: Record<string, unknown> | null;
 
   // Value object methods
   with(
@@ -39,6 +39,6 @@ export interface ResourceMetadataDTO {
   readingTime: number | null;
   encoding: string | null;
   language: string | null;
-  customFields?: Record<string, any> | null;
+  customFields?: Record<string, unknown> | null;
 }
 

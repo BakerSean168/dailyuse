@@ -8,7 +8,7 @@
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import type { IdentityId, FocusSessionId, GoalId, TransferDate, DomainDate } from '../../../primitives';
+import type { IdentityId, FocusSessionId, GoalId, TransferDate } from '../../../primitives';
 import type { FocusSessionStatus } from '../value-objects/focus-session-status';
 
 /**

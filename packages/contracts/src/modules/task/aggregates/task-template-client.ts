@@ -6,20 +6,15 @@ import type {
   TaskTemplateId,
   IdentityId,
   TaskFolderId,
-  DomainDate,
   TransferDate,
 } from '../../../primitives';
 
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
-  TaskTimeConfig,
   TaskTimeConfigDTO,
-  RecurrenceRule,
   RecurrenceRuleDTO,
-  TaskReminderConfig,
   TaskReminderConfigDTO,
-  TaskGoalBinding,
   TaskGoalBindingDTO,
 } from '../value-objects';
 

@@ -11,13 +11,9 @@ import type { ReminderHistoryServerDTO } from '../entities/reminder-history-serv
 import type {
   ReminderType,
   ReminderStatus,
-  INotificationConfig,
   NotificationConfigDTO,
-  ITriggerConfig,
   TriggerConfigDTO,
-  IActiveTimeConfig,
   ActiveTimeConfigDTO,
-  IActiveHoursConfig,
   ActiveHoursConfigDTO,
 } from '../value-objects';
 
