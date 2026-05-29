@@ -1,18 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+import type { RememberedAccountsService, RememberedAccountRecord } from '../../infrastructure/remembered-accounts-service';
 import { DesktopRememberedAccountService } from '../desktop-remembered-account-service';
-
-function createLogger() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  };
-}
+import { createMockLogger } from '../../__fixtures__/auth-test-fixtures';
 
 describe('DesktopRememberedAccountService', () => {
-  let mockRememberedAccounts: any;
+  let mockRememberedAccounts: RememberedAccountsService;
   let service: DesktopRememberedAccountService;
 
   beforeEach(() => {
@@ -24,9 +16,9 @@ describe('DesktopRememberedAccountService', () => {
       getAutoLoginAccount: vi.fn().mockResolvedValue(null),
       remove: vi.fn(),
       decryptPassword: vi.fn(),
-    };
+    } as unknown as RememberedAccountsService;
 
-    service = new DesktopRememberedAccountService(createLogger() as any, mockRememberedAccounts);
+    service = new DesktopRememberedAccountService(createMockLogger() as never, mockRememberedAccounts);
   });
 
   describe('getRememberedAccounts', () => {
@@ -132,7 +124,7 @@ describe('DesktopRememberedAccountService', () => {
     it('delegates to remembered accounts service', () => {
       mockRememberedAccounts.decryptPassword.mockReturnValue('secret');
 
-      const result = service.decryptPassword({ identityId: 'user-1' } as any);
+      const result = service.decryptPassword({ identityId: 'user-1' } as unknown as RememberedAccountRecord);
 
       expect(result).toBe('secret');
       expect(mockRememberedAccounts.decryptPassword).toHaveBeenCalledWith({ identityId: 'user-1' });

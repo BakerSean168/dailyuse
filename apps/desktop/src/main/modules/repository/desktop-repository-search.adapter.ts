@@ -17,9 +17,11 @@ export function createDesktopRepositorySearchAdapter(
   db: PowerSyncDatabase,
   repositoryStorageDir: string,
 ) {
-  const editorRepositoryModule = createRepositoryPowerSyncModule(db, {
-    storagePort: { getBasePath: () => repositoryStorageDir } as any,
-  });
+  // Search-only adapter: storage port is required by the factory but not used for search operations
+  const editorRepositoryModule = createRepositoryPowerSyncModule(
+    db,
+    { storagePort: { getBasePath: () => repositoryStorageDir } } as unknown as Parameters<typeof createRepositoryPowerSyncModule>[1],
+  );
 
   return {
     editorRepositoryModule,

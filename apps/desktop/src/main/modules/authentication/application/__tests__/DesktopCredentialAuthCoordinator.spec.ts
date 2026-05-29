@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AuthRemoteGateway } from '../auth-remote-gateway';
+import type { DesktopAuthAccountProjectionService } from '../desktop-auth-account-projection-service';
+import type { DesktopRememberedAccountService } from '../desktop-remembered-account-service';
 
 const mocks = vi.hoisted(() => ({
   loginDesktopAccount: vi.fn(),
@@ -25,65 +28,14 @@ vi.mock('../../infrastructure', () => ({
 }));
 
 import { DesktopCredentialAuthCoordinator } from '../desktop-credential-auth-coordinator';
-import type { AuthState } from '../desktop-credential-auth-coordinator';
+import type { AuthState, CredentialAuthCoordinatorDeps } from '../desktop-credential-auth-coordinator';
+import {
+  createMockLogger,
+  createMockSessionManager,
+  createMockTokenManager,
+} from '../../__fixtures__/auth-test-fixtures';
 
-function createLogger() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  };
-}
-
-function createMockSessionManager(overrides: Record<string, any> = {}) {
-  return {
-    initialize: vi.fn().mockResolvedValue({ ok: false }),
-    getCurrentSession: vi.fn(() => null),
-    loginOffline: vi.fn(),
-    logout: vi.fn().mockResolvedValue({ ok: true }),
-    autoLogin: vi.fn().mockResolvedValue({ ok: false }),
-    refreshSession: vi.fn(),
-    activateOnlineSession: vi.fn(),
-    getOrCreateGuestIdentity: vi.fn().mockResolvedValue('guest-id-1'),
-    saveOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    removeOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    cleanupExpiredSessions: vi.fn().mockResolvedValue(0),
-    cleanupOtherSessions: vi.fn().mockResolvedValue(0),
-    cleanup: vi.fn(),
-    getStatus: vi.fn(),
-    getDeviceInfo: vi.fn().mockReturnValue({
-      deviceId: 'device-1',
-      deviceName: 'Test Desktop',
-      deviceType: 'DESKTOP',
-      deviceFingerprint: 'fp-123',
-      os: 'Windows',
-    }),
-    ensureCurrentSession: vi.fn(),
-    syncCurrentSessionExpiry: vi.fn(),
-    setApiCallbacks: vi.fn(),
-    setOfflineAuthDependencies: vi.fn(),
-    ...overrides,
-  };
-}
-
-function createMockTokenManager(overrides: Record<string, any> = {}) {
-  return {
-    loadTokens: vi.fn().mockResolvedValue(null),
-    updateAccessToken: vi.fn(),
-    updateRefreshToken: vi.fn(),
-    getCachedTokenData: vi.fn().mockReturnValue(null),
-    getStatus: vi.fn().mockResolvedValue({
-      isRefreshTokenExpired: false,
-      isAccessTokenExpired: false,
-    }),
-    getAccessToken: vi.fn().mockResolvedValue(null),
-    clearTokens: vi.fn(),
-    ...overrides,
-  };
-}
-
-function createAuthResponseDTO(overrides: Record<string, any> = {}) {
+function createAuthResponseDTO(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     accessToken: 'access-token-123',
     refreshToken: 'refresh-token-456',
@@ -144,18 +96,18 @@ const mockRemoteGateway = {
 };
 
 function createCoordinator(opts: {
-  logger?: any;
-  sessionManager?: any;
-  tokenManager?: any;
-  networkStateManager?: any;
-  projectionService?: any;
-  rememberedAccountService?: any;
-  credentialRepo?: any;
-  sessionRepo?: any;
+  logger?: ReturnType<typeof createMockLogger>;
+  sessionManager?: ReturnType<typeof createMockSessionManager>;
+  tokenManager?: ReturnType<typeof createMockTokenManager>;
+  networkStateManager?: { isOnline: ReturnType<typeof vi.fn> };
+  projectionService?: DesktopAuthAccountProjectionService;
+  rememberedAccountService?: DesktopRememberedAccountService;
+  credentialRepo?: Record<string, unknown> | null;
+  sessionRepo?: Record<string, unknown> | null;
   authState?: AuthState;
-  windowManager?: any;
+  windowManager?: { getMainWindow: ReturnType<typeof vi.fn> };
 } = {}) {
-  const logger = opts.logger ?? createLogger();
+  const logger = opts.logger ?? createMockLogger();
   const tokenManager = opts.tokenManager ?? createMockTokenManager();
   const networkStateManager = opts.networkStateManager ?? { isOnline: vi.fn(() => true) };
   const sessionManager = opts.sessionManager ?? createMockSessionManager();
@@ -185,14 +137,14 @@ function createCoordinator(opts: {
     logger,
     tokenManager,
     networkStateManager,
-    remoteGateway: mockRemoteGateway as any,
+    remoteGateway: mockRemoteGateway as unknown as AuthRemoteGateway,
     sessionManager,
     projectionService,
     rememberedAccountService,
     credentialRepository: opts.credentialRepo ?? null,
     sessionRepository: opts.sessionRepo ?? null,
     authState,
-    windowManager: windowManager as any,
+    windowManager: windowManager as unknown as CredentialAuthCoordinatorDeps['windowManager'],
   });
 
   return { coordinator, authState, sessionManager, tokenManager, projectionService, rememberedAccountService };
@@ -201,8 +153,8 @@ function createCoordinator(opts: {
 describe('DesktopCredentialAuthCoordinator', () => {
   let mockTokenManager: ReturnType<typeof createMockTokenManager>;
   let mockSessionManager: ReturnType<typeof createMockSessionManager>;
-  let mockRememberedAccountService: any;
-  let mockProjectionService: any;
+  let mockRememberedAccountService: DesktopRememberedAccountService;
+  let mockProjectionService: DesktopAuthAccountProjectionService;
   let authState: AuthState;
 
   beforeEach(() => {
@@ -221,7 +173,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       decryptPassword: vi.fn().mockReturnValue(null),
       recordLogin: vi.fn(),
       getAutoLoginAccount: vi.fn().mockResolvedValue(null),
-    };
+    } as unknown as DesktopRememberedAccountService;
 
     mockProjectionService = {
       ensureAccountProjection: vi.fn().mockResolvedValue(undefined),
@@ -230,7 +182,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       extractIdentityEmail: vi.fn().mockReturnValue(null),
       isGuestTokenData: vi.fn().mockReturnValue(false),
       isLocalOnlyTokenData: vi.fn().mockReturnValue(false),
-    };
+    } as unknown as DesktopAuthAccountProjectionService;
   });
 
   describe('login', () => {
@@ -254,7 +206,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
 
       const sm = { ...mockSessionManager, loginOffline, getCurrentSession: vi.fn(() => null) };
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: sm,
         rememberedAccountService: mockRememberedAccountService,
@@ -316,7 +268,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
         }),
       };
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: sm,
         rememberedAccountService: mockRememberedAccountService,
@@ -352,7 +304,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       });
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -377,7 +329,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       });
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -400,7 +352,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
   describe('enterGuestMode', () => {
     it('activates guest mode with guest identity', async () => {
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -424,7 +376,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       );
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -444,7 +396,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
   describe('logout', () => {
     it('delegates to session manager and resets state', async () => {
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -463,7 +415,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       mockSessionManager.logout.mockResolvedValue({ ok: false, error: 'logout error' });
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -485,7 +437,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       const responseDTO = createAuthResponseDTO();
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -514,7 +466,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       const responseDTO = createAuthResponseDTO();
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,
@@ -536,7 +488,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
   describe('login - online success', () => {
     it('returns ONLINE_USER auth mode on successful remote login', async () => {
       const responseDTO = createAuthResponseDTO();
-      mocks.loginDesktopAccount.mockImplementation(async (_req: any, deps: any) => {
+      mocks.loginDesktopAccount.mockImplementation(async (_req: unknown, deps: { onSuccess: (...args: unknown[]) => Promise<void> }) => {
         await deps.onSuccess(responseDTO, {
           email: 'user@example.com',
           password: 'pass123',
@@ -547,7 +499,7 @@ describe('DesktopCredentialAuthCoordinator', () => {
       });
 
       const { coordinator } = createCoordinator({
-        logger: createLogger(),
+        logger: createMockLogger(),
         tokenManager: mockTokenManager,
         sessionManager: mockSessionManager,
         rememberedAccountService: mockRememberedAccountService,

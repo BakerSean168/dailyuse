@@ -1,86 +1,36 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ILogger } from '@dailyuse/utils/logger';
+import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyuse/authentication/domain-server';
+import type { TokenManager } from '../../infrastructure/token-manager';
+import type { SessionManager } from '../../infrastructure/session-manager';
+import type { AuthState } from '../desktop-credential-auth-coordinator';
 import { DesktopAuthSecurityAdminService } from '../desktop-auth-security-admin-service';
+import {
+  createMockLogger,
+  createMockSessionManager,
+  createMockTokenManager,
+} from '../../__fixtures__/auth-test-fixtures';
 
-// =============================================
-// Helpers
-// =============================================
-
-function createLogger() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  };
-}
-
-function createMockSessionManager(overrides: Record<string, any> = {}) {
-  return {
-    initialize: vi.fn().mockResolvedValue({ ok: false }),
-    getCurrentSession: vi.fn(() => null),
-    loginOffline: vi.fn(),
-    logout: vi.fn().mockResolvedValue({ ok: true }),
-    autoLogin: vi.fn().mockResolvedValue({ ok: false }),
-    refreshSession: vi.fn(),
-    activateOnlineSession: vi.fn(),
-    getOrCreateGuestIdentity: vi.fn().mockResolvedValue('guest-id-1'),
-    saveOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    removeOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    cleanupExpiredSessions: vi.fn().mockResolvedValue(0),
-    cleanupOtherSessions: vi.fn().mockResolvedValue(0),
-    cleanup: vi.fn(),
-    getStatus: vi.fn(),
-    getDeviceInfo: vi.fn().mockReturnValue({
-      deviceId: 'device-1',
-      deviceName: 'Test Desktop',
-      deviceType: 'DESKTOP',
-      deviceFingerprint: 'fp-123',
-      os: 'Windows',
-    }),
-    ensureCurrentSession: vi.fn(),
-    syncCurrentSessionExpiry: vi.fn(),
-    setApiCallbacks: vi.fn(),
-    setOfflineAuthDependencies: vi.fn(),
-    ...overrides,
-  };
-}
-
-function createMockTokenManager(overrides: Record<string, any> = {}) {
-  return {
-    loadTokens: vi.fn().mockResolvedValue(null),
-    updateAccessToken: vi.fn(),
-    updateRefreshToken: vi.fn(),
-    getCachedTokenData: vi.fn().mockReturnValue(null),
-    getStatus: vi.fn().mockResolvedValue({
-      isRefreshTokenExpired: false,
-      isAccessTokenExpired: false,
-    }),
-    getAccessToken: vi.fn().mockResolvedValue(null),
-    clearTokens: vi.fn(),
-    ...overrides,
-  };
-}
-
-function createAuthState() {
-  return { authMode: 'UNAUTHENTICATED' as string, runtimeState: 'UNINITIALIZED' as string };
+function createAuthState(): AuthState {
+  return { authMode: 'UNAUTHENTICATED', runtimeState: 'UNINITIALIZED' };
 }
 
 function createService(opts: {
-  logger?: any;
-  sessionManager?: any;
-  tokenManager?: any;
-  credentialRepo?: any;
-  sessionRepo?: any;
-  authState?: any;
+  logger?: ILogger;
+  sessionManager?: SessionManager | null;
+  tokenManager?: TokenManager;
+  credentialRepo?: IAuthCredentialRepository | null;
+  sessionRepo?: IAuthSessionRepository | null;
+  authState?: AuthState;
 } = {}) {
-  const logger = opts.logger ?? createLogger();
+  const logger = opts.logger ?? createMockLogger();
   const tokenManager = opts.tokenManager ?? createMockTokenManager();
   const authState = opts.authState ?? createAuthState();
 
   return new DesktopAuthSecurityAdminService(
-    logger,
-    opts.sessionManager ?? null,
-    tokenManager,
+    logger as ILogger,
+    (opts.sessionManager ?? null) as SessionManager | null,
+    tokenManager as unknown as TokenManager,
     opts.credentialRepo ?? null,
     opts.sessionRepo ?? null,
     authState,
@@ -93,12 +43,10 @@ function createService(opts: {
 
 describe('DesktopAuthSecurityAdminService', () => {
   let mockSessionManager: ReturnType<typeof createMockSessionManager>;
-  let mockTokenManager: ReturnType<typeof createMockTokenManager>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockSessionManager = createMockSessionManager();
-    mockTokenManager = createMockTokenManager();
   });
 
   // =============================================

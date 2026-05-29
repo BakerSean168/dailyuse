@@ -11,7 +11,7 @@
 
 import { BrowserWindow, app } from 'electron';
 import { createLogger } from '@dailyuse/utils/logger';
-import type { AppUpdater, UpdateInfo as ElectronUpdateInfo, ProgressInfo } from 'electron-updater';
+import type { AppUpdater, UpdateInfo as ElectronUpdateInfo } from 'electron-updater';
 
 const logger = createLogger('AutoUpdateManager');
 
@@ -91,7 +91,7 @@ export class AutoUpdateManager {
   private progress: UpdateProgress | null = null;
   private checkIntervalId: ReturnType<typeof setInterval> | null = null;
   private mainWindow: BrowserWindow | null = null;
-  private autoUpdater: any = null; // Will be dynamically loaded
+  private autoUpdater: AppUpdater | null = null;
 
   constructor(config?: Partial<UpdateConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -120,7 +120,7 @@ export class AutoUpdateManager {
       this.autoUpdater.autoInstallOnAppQuit = this.config.autoInstall;
 
       if (this.config.updateServerUrl) {
-        this.autoUpdater.setFeedURL({ url: this.config.updateServerUrl });
+        this.autoUpdater.setFeedURL(this.config.updateServerUrl);
       }
 
       // Set up event listeners
@@ -153,17 +153,19 @@ export class AutoUpdateManager {
       logger.info('Checking for updates...');
     });
 
-    this.autoUpdater.on('update-available', (info: UpdateInfo) => {
+    this.autoUpdater.on('update-available', (info: ElectronUpdateInfo) => {
+      const updateInfo = this.normalizeUpdateInfo(info);
       this.status = UpdateStatus.Available;
-      this.updateInfo = info;
-      this.notifyRenderer('update:available', info);
-      logger.info('Update available', { version: info.version });
+      this.updateInfo = updateInfo;
+      this.notifyRenderer('update:available', updateInfo);
+      logger.info('Update available', { version: updateInfo.version });
     });
 
-    this.autoUpdater.on('update-not-available', (info: UpdateInfo) => {
+    this.autoUpdater.on('update-not-available', (info: ElectronUpdateInfo) => {
+      const updateInfo = this.normalizeUpdateInfo(info);
       this.status = UpdateStatus.NotAvailable;
-      this.updateInfo = info;
-      this.notifyRenderer('update:not-available', info);
+      this.updateInfo = updateInfo;
+      this.notifyRenderer('update:not-available', updateInfo);
       logger.info('Update not available, current version is up-to-date');
     });
 
@@ -174,12 +176,13 @@ export class AutoUpdateManager {
       logger.debug('Download progress', { percent: progress.percent.toFixed(2) });
     });
 
-    this.autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
+    this.autoUpdater.on('update-downloaded', (info: ElectronUpdateInfo) => {
+      const updateInfo = this.normalizeUpdateInfo(info);
       this.status = UpdateStatus.Downloaded;
-      this.updateInfo = info;
+      this.updateInfo = updateInfo;
       this.progress = null;
-      this.notifyRenderer('update:downloaded', info);
-      logger.info('Update downloaded', { version: info.version });
+      this.notifyRenderer('update:downloaded', updateInfo);
+      logger.info('Update downloaded', { version: updateInfo.version });
     });
 
     this.autoUpdater.on('error', (error: Error) => {
@@ -192,7 +195,7 @@ export class AutoUpdateManager {
   /**
    * Send update event to renderer process
    */
-  private notifyRenderer(channel: string, data?: any): void {
+  private notifyRenderer(channel: string, data?: unknown): void {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.webContents.send(channel, data);
     }
@@ -237,7 +240,7 @@ export class AutoUpdateManager {
 
     try {
       const result = await this.autoUpdater.checkForUpdates();
-      return result?.updateInfo || null;
+      return result?.updateInfo ? this.normalizeUpdateInfo(result.updateInfo) : null;
     } catch (error) {
       logger.error('Failed to check for updates', { error });
       return null;
@@ -326,6 +329,19 @@ export class AutoUpdateManager {
     this.mainWindow = window;
   }
 
+  private normalizeUpdateInfo(info: ElectronUpdateInfo): UpdateInfo {
+    const releaseNotes = Array.isArray(info.releaseNotes)
+      ? info.releaseNotes.map((item) => item.note).join('\n')
+      : info.releaseNotes ?? undefined;
+
+    return {
+      version: info.version,
+      releaseDate: info.releaseDate,
+      releaseNotes: releaseNotes ?? undefined,
+      releaseName: info.releaseName ?? undefined,
+    };
+  }
+
   /**
    * Clean up resources
    */
@@ -337,22 +353,6 @@ export class AutoUpdateManager {
   }
 }
 
-// Singleton instance
-let instance: AutoUpdateManager | null = null;
-
-/**
- * Get the singleton AutoUpdateManager instance
- */
-export function getAutoUpdateManager(): AutoUpdateManager {
-  if (!instance) {
-    instance = new AutoUpdateManager();
-  }
-  return instance;
-}
-
-/**
- * Initialize the auto-update manager
- */
-export async function initAutoUpdate(mainWindow?: BrowserWindow): Promise<boolean> {
-  return getAutoUpdateManager().init(mainWindow);
+export function createAutoUpdateManager(config?: Partial<UpdateConfig>): AutoUpdateManager {
+  return new AutoUpdateManager(config);
 }

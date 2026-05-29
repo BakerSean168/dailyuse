@@ -21,7 +21,7 @@ import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './deskt
 import type { DesktopChromeTheme } from './desktop-chrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
 import { resolveWindowIconPath } from '../utils/app-icon';
-import { bindDesktopFeaturesWindow } from '../desktop-features';
+import type { DesktopFeaturesRuntime } from '../desktop-features';
 import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 import { WindowStateManager } from '../modules/window';
 import { getSharedPathResolver } from '../runtime-init';
@@ -86,6 +86,7 @@ export class WindowManager {
   private registerWindowStateManager: WindowStateManager | null = null;
   private mainWindowStateManager: WindowStateManager | null = null;
   private runtimeManager: DesktopProfileRuntimeManager | null = null;
+  private desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
 
   constructor(config: WindowManagerConfig = {}) {
     const preloadPath = config.preloadPath || resolvePreloadPath(__dirname);
@@ -114,6 +115,10 @@ export class WindowManager {
    */
   setRuntimeManager(manager: DesktopProfileRuntimeManager): void {
     this.runtimeManager = manager;
+  }
+
+  setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime | null): void {
+    this.desktopFeaturesRuntime = runtime;
   }
 
   // ============ Window Creation ============
@@ -365,7 +370,7 @@ export class WindowManager {
 
       // 3. 显示主窗口
       mainWin.show();
-      bindDesktopFeaturesWindow(mainWin);
+      this.desktopFeaturesRuntime?.bindWindow(mainWin);
       startScheduleRuntime();
 
       // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
@@ -412,7 +417,7 @@ export class WindowManager {
 
       // 3. 显示登录窗口
       loginWin.show();
-      bindDesktopFeaturesWindow(loginWin);
+      this.desktopFeaturesRuntime?.bindWindow(loginWin);
 
       // 4. 关闭主窗口
       setTimeout(() => {

@@ -203,9 +203,7 @@ export class NotificationService {
    * Initializes internal event listeners for system events (reminders, schedules).
    */
   private initEventListeners(): void {
-    eventBus.on(
-      'notification:dispatch_desktop' as any,
-      (event: NotificationDispatchDesktopEvent) => {
+    eventBus.on('notification:dispatch_desktop', (event: NotificationDispatchDesktopEvent) => {
         logger.info('[Desktop][NotificationFlow] Received desktop dispatch event', {
           title: event.title,
           bodyLength: event.body?.length ?? 0,
@@ -228,8 +226,7 @@ export class NotificationService {
             notificationCategory: event.category,
           },
         });
-      },
-    );
+    });
 
     // Listen for setting changes to dynamically update notification style preference
     eventBus.on(
@@ -245,19 +242,21 @@ export class NotificationService {
     );
 
     // Also listen to full import/reset events where we might receive the full tree
-    eventBus.on('setting:setting-imported' as any, (eventData: any) => {
-      if (eventData?.preferences?.notification?.useCustomNotification !== undefined) {
-        this.useCustomNotification = Boolean(
-          eventData.preferences.notification.useCustomNotification,
-        );
+    eventBus.on('setting:setting-imported', (eventData) => {
+      const data = eventData as unknown as Record<string, unknown>;
+      const prefs = data.preferences as Record<string, Record<string, unknown>> | undefined;
+      if (prefs?.notification?.useCustomNotification !== undefined) {
+        this.useCustomNotification = Boolean(prefs.notification.useCustomNotification);
       }
     });
 
     // Also listen to successful login to fetch initial preferences
-    eventBus.on('auth:login_success' as any, (eventData: any) => {
-      if (eventData?.user?.settings?.notification?.useCustomNotification !== undefined) {
+    eventBus.on('auth:logged-in', (eventData) => {
+      const data = eventData as unknown as Record<string, unknown>;
+      const user = data.user as Record<string, Record<string, Record<string, unknown>>> | undefined;
+      if (user?.settings?.notification?.useCustomNotification !== undefined) {
         this.useCustomNotification = Boolean(
-          eventData.user.settings.notification.useCustomNotification,
+          user.settings.notification.useCustomNotification,
         );
       }
     });

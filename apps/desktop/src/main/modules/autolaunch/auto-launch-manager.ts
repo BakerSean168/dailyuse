@@ -11,7 +11,17 @@ import { app } from 'electron';
 
 // Dynamic import for auto-launch as it's an optional dependency and platform specific
 
-let AutoLaunchClass: any = null;
+interface AutoLaunchInstance {
+  isEnabled(): Promise<boolean>;
+  enable(): Promise<void>;
+  disable(): Promise<void>;
+}
+
+interface AutoLaunchConstructor {
+  new (config: { name: string; path: string; isHidden?: boolean }): AutoLaunchInstance;
+}
+
+let AutoLaunchClass: AutoLaunchConstructor | null = null;
 
 /**
  * Configuration for AutoLaunchManager.
@@ -28,7 +38,7 @@ export interface AutoLaunchConfig {
  */
 export class AutoLaunchManager {
 
-  private autoLauncher: any = null;
+  private autoLauncher: AutoLaunchInstance | null = null;
   private config: AutoLaunchConfig;
   private initialized = false;
 
@@ -60,8 +70,8 @@ export class AutoLaunchManager {
     // Windows/Linux use auto-launch - dynamic import
     if (!AutoLaunchClass) {
       try {
-        const autoLaunchModule = await import('auto-launch');
-        AutoLaunchClass = autoLaunchModule.default || autoLaunchModule;
+        const autoLaunchModule = (await import('auto-launch')) as { default?: AutoLaunchConstructor } & AutoLaunchConstructor;
+        AutoLaunchClass = autoLaunchModule.default ?? autoLaunchModule;
       } catch (error) {
         console.warn('[AutoLaunchManager] auto-launch module not available:', error);
         this.initialized = true;

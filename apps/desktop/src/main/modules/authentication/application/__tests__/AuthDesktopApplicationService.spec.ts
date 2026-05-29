@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  sessionManagerInstance: null as any,
+  sessionManagerInstance: null as unknown,
 }));
 
 vi.mock('../../infrastructure', () => ({
@@ -14,62 +14,11 @@ vi.mock('../../infrastructure', () => ({
 }));
 
 import { AuthDesktopApplicationService } from '../auth-desktop-application-service';
-
-function createLogger() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  };
-}
-
-function createMockSessionManager() {
-  return {
-    initialize: vi.fn().mockResolvedValue({ ok: false }),
-    getCurrentSession: vi.fn(() => null),
-    loginOffline: vi.fn(),
-    logout: vi.fn().mockResolvedValue({ ok: true }),
-    autoLogin: vi.fn().mockResolvedValue({ ok: false }),
-    refreshSession: vi.fn(),
-    activateOnlineSession: vi.fn(),
-    getOrCreateGuestIdentity: vi.fn().mockResolvedValue('guest-id-1'),
-    saveOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    removeOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    cleanupExpiredSessions: vi.fn().mockResolvedValue(0),
-    cleanupOtherSessions: vi.fn().mockResolvedValue(0),
-    cleanup: vi.fn(),
-    getStatus: vi.fn(),
-    getDeviceInfo: vi.fn().mockReturnValue({
-      deviceId: 'device-1',
-      deviceName: 'Test Desktop',
-      deviceType: 'DESKTOP',
-      deviceFingerprint: 'fp-123',
-      os: 'Windows',
-    }),
-    ensureCurrentSession: vi.fn(),
-    syncCurrentSessionExpiry: vi.fn(),
-    setApiCallbacks: vi.fn(),
-    setOfflineAuthDependencies: vi.fn(),
-  };
-}
-
-function createMockTokenManager() {
-  return {
-    loadTokens: vi.fn().mockResolvedValue(null),
-    updateAccessToken: vi.fn(),
-    updateRefreshToken: vi.fn(),
-    getCachedTokenData: vi.fn().mockReturnValue(null),
-    getStatus: vi.fn().mockResolvedValue({
-      isRefreshTokenExpired: false,
-      isAccessTokenExpired: false,
-    }),
-    getAccessToken: vi.fn().mockResolvedValue(null),
-    clearTokens: vi.fn(),
-    switchToProfile: vi.fn(),
-    clearForProfileSwitch: vi.fn().mockResolvedValue(undefined),
-  };
-}
+import {
+  createMockLogger,
+  createMockSessionManager,
+  createMockTokenManager,
+} from '../../__fixtures__/auth-test-fixtures';
 
 function createMockRememberedAccountsService() {
   return {
@@ -115,7 +64,7 @@ function createService(
     (rememberedAccountsService ?? createMockRememberedAccountsService()) as never,
     (networkStateManager ?? createMockNetworkStateManager()) as never,
     windowManager as never,
-    createLogger() as never,
+    createMockLogger() as never,
   );
 }
 

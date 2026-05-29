@@ -6,7 +6,8 @@
 
 import { vi } from 'vitest';
 import { Goal } from '@dailyuse/goal/domain-server';
-import { GoalStatus, type GoalServerDTO } from '@dailyuse/contracts/goal';
+import { GoalStatus, type GoalServerDTO, type GoalId } from '@dailyuse/contracts/goal';
+import type { IdentityId } from '@dailyuse/contracts/authentication';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 // ===== Goal Repository Mock =====
@@ -147,8 +148,8 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
   goalCounter++;
   const now = Date.now();
   return {
-    id: `goal-${goalCounter}-${now}` as any,
-    identityId: 'test-account-uuid' as any,
+    id: `goal-${goalCounter}-${now}` as unknown as GoalId,
+    identityId: 'test-account-uuid' as unknown as IdentityId,
     name: `Test Goal ${goalCounter}`,
     description: 'Test goal description',
     color: '#3B82F6',
@@ -181,8 +182,8 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
 export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
   const dto = createMockGoalDTO(overrides);
   return Goal.load({
-    id: dto.id as any,
-    identityId: dto.identityId as any,
+    id: dto.id,
+    identityId: dto.identityId,
     name: dto.name,
     description: dto.description,
     color: dto.color,
@@ -197,8 +198,8 @@ export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
     targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
     completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
     archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
-    folderId: dto.folderId as any,
-    parentGoalId: dto.parentGoalId as any,
+    folderId: dto.folderId,
+    parentGoalId: dto.parentGoalId,
     sortOrder: dto.sortOrder,
     reminderConfig: null,
     keyResults: [],

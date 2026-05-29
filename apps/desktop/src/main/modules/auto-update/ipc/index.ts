@@ -10,17 +10,18 @@
 
 import { ipcMain, BrowserWindow } from 'electron';
 import { createLogger } from '@dailyuse/utils/logger';
-import { getAutoUpdateManager, type UpdateConfig } from '../auto-update-manager';
+import { type AutoUpdateManager, type UpdateConfig } from '../auto-update-manager';
 
 const logger = createLogger('AutoUpdateIpc');
 
 /**
  * Register all auto-update IPC handlers
  */
-export function registerAutoUpdateIpcHandlers(mainWindow?: BrowserWindow): void {
+export function registerAutoUpdateIpcHandlers(
+  manager: AutoUpdateManager,
+  mainWindow?: BrowserWindow,
+): void {
   logger.info('Registering auto-update IPC handlers...');
-
-  const manager = getAutoUpdateManager();
 
   // Initialize with main window if provided
   if (mainWindow) {

@@ -425,7 +425,7 @@ describe('DesktopProfileRuntimeManager', () => {
 
     mocks.ensurePowerSyncSyncMode.mockRejectedValueOnce(new Error('sync-failed'));
 
-    const prepared = await runtimeManager.prepareProfile('identity-a', {
+    await runtimeManager.prepareProfile('identity-a', {
       displayName: 'Alice',
     });
 

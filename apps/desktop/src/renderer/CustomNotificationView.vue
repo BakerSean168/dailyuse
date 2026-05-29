@@ -3,6 +3,16 @@ import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { notificationSound, reminderSound } from '@dailyuse/assets/audio';
 import { NotificationChannels } from '../shared/types/ipc-channels';
 
+interface ElectronBridge {
+  invoke(channel: string, ...args: unknown[]): Promise<unknown>;
+  on(channel: string, listener: (...args: unknown[]) => void): void;
+  off(channel: string, listener: (...args: unknown[]) => void): void;
+}
+
+function getElectronBridge(): ElectronBridge | undefined {
+  return (window as unknown as { electronAPI?: ElectronBridge }).electronAPI;
+}
+
 interface CustomNotification {
   id: string;
   title: string;
@@ -118,13 +128,13 @@ async function acknowledgeNotification(
 
   if (notificationId) {
     try {
-      await (window as any).electronAPI.invoke(NotificationChannels.MARK_READ, notificationId);
+      await getElectronBridge().invoke(NotificationChannels.MARK_READ, notificationId);
     } catch (error) {
       console.error('[CustomNotificationView] Failed to mark notification as read', error);
     }
   }
 
-  await (window as any).electronAPI.invoke(NotificationChannels.CUSTOM_CLOSE, notification.id);
+  await getElectronBridge().invoke(NotificationChannels.CUSTOM_CLOSE, notification.id);
 }
 
 // Helper to recalculate window bounds after a short delay to account for transitions
@@ -138,7 +148,7 @@ async function updateWindowBounds() {
         notificationCount: notifications.value.length,
         height,
       });
-      (window as any).electronAPI.invoke(NotificationChannels.CUSTOM_RESIZE, height);
+      getElectronBridge().invoke(NotificationChannels.CUSTOM_RESIZE, height);
     }
   }, 50);
 }
@@ -153,11 +163,11 @@ watch(
 );
 
 function handleMouseEnter() {
-  (window as any).electronAPI.invoke(NotificationChannels.CUSTOM_MOUSE_ENTER);
+  getElectronBridge().invoke(NotificationChannels.CUSTOM_MOUSE_ENTER);
 }
 
 function handleMouseLeave() {
-  (window as any).electronAPI.invoke(NotificationChannels.CUSTOM_MOUSE_LEAVE);
+  getElectronBridge().invoke(NotificationChannels.CUSTOM_MOUSE_LEAVE);
 }
 
 onMounted(() => {
@@ -177,11 +187,11 @@ onMounted(() => {
   }, 100);
 
   console.info('[CustomNotificationView] Mounted', {
-    hasElectronApi: !!(window as any).electronAPI,
+    hasElectronApi: !!getElectronBridge(),
   });
-  if ((window as any).electronAPI) {
-    (window as any).electronAPI.on(NotificationChannels.CUSTOM_RECEIVE, handleReceiveNotification);
-    (window as any).electronAPI
+  if (getElectronBridge()) {
+    getElectronBridge().on(NotificationChannels.CUSTOM_RECEIVE, handleReceiveNotification);
+    getElectronBridge()
       .invoke(NotificationChannels.CUSTOM_RENDERER_READY)
       .then(() => {
         console.info('[CustomNotificationView] Renderer ready acknowledged by main process');
@@ -193,8 +203,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if ((window as any).electronAPI) {
-    (window as any).electronAPI.off(
+  if (getElectronBridge()) {
+    getElectronBridge().off(
       NotificationChannels.CUSTOM_RECEIVE,
       handleReceiveNotification,
     );

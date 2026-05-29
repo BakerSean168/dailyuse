@@ -40,7 +40,7 @@ export class DeviceIdentityHelper {
       deviceName: hostname,
       os: platform,
       osVersion: release as string | undefined,
-      appVersion: (app.getVersion() || null) as any,
+      appVersion: app.getVersion() || undefined,
       firstSeenAt: now,
       lastSeenAt: now,
     };

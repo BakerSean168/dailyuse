@@ -86,7 +86,7 @@ describe('ProfileRegistry', () => {
     const registry = new ProfileRegistry(createSharedResolver(rootDir));
 
     const a = await registry.register('identity-a', 'Alice');
-    const b = await registry.register('identity-b', 'Bob');
+    await registry.register('identity-b', 'Bob');
     await registry.touch(a.profileId);
 
     const list = await registry.list();

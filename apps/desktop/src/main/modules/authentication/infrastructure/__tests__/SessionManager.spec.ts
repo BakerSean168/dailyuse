@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { TokenManager } from '../token-manager';
+import type { AuthSession } from '@dailyuse/authentication/domain-server';
+import type { RefreshSessionRequest, RefreshSessionResponse } from '@dailyuse/contracts/authentication';
 
 let userDataPath = '';
 
@@ -18,34 +21,21 @@ vi.mock('electron', () => ({
 }));
 
 import { SessionManager } from '../session-manager';
-import { TokenManager } from '../token-manager';
+import {
+  createMockLogger,
+  createMockTokenManager,
+  createMockSessionRepository,
+} from '../../__fixtures__/auth-test-fixtures';
 
-function createLogger() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  };
+/** Typed access to SessionManager private fields for test assertions. */
+interface SessionManagerPrivates {
+  tokenManager: TokenManager;
+  currentSession: AuthSession | null;
+  apiRefreshToken: ((request: RefreshSessionRequest) => Promise<RefreshSessionResponse>) | null;
 }
 
-function createMockTokenManager() {
-  return {
-    loadTokens: vi.fn().mockResolvedValue(null),
-    saveTokens: vi.fn(),
-    updateAccessToken: vi.fn(),
-    updateRefreshToken: vi.fn(),
-    getCachedTokenData: vi.fn().mockReturnValue(null),
-    getStatus: vi.fn().mockResolvedValue({
-      isRefreshTokenExpired: false,
-      isAccessTokenExpired: false,
-    }),
-    getAccessToken: vi.fn().mockResolvedValue(null),
-    clearTokens: vi.fn(),
-    switchToProfile: vi.fn(),
-    clearForProfileSwitch: vi.fn(),
-    stopAutoRefresh: vi.fn(),
-  };
+function privates(manager: SessionManager): SessionManagerPrivates {
+  return manager as unknown as SessionManagerPrivates;
 }
 
 describe('SessionManager', () => {
@@ -61,19 +51,14 @@ describe('SessionManager', () => {
   it('reuses the persisted guest identity on cold start when token cache is empty', async () => {
     const guestId = 'IdentityId_guest-1';
     const guestSession = { id: 'session-1', identityId: guestId };
-    const sessionRepository = {
+    const sessionRepository = createMockSessionRepository({
       findByIdentityId: vi.fn().mockResolvedValue([guestSession]),
-      save: vi.fn(),
-      findById: vi.fn(),
-      removeExpired: vi.fn(),
-      removeAllByIdentityId: vi.fn(),
-    };
-    const identityRepository = {};
+    });
     const manager = new SessionManager(
-      sessionRepository as never,
-      identityRepository as never,
-      createMockTokenManager() as never,
-      createLogger() as never,
+      sessionRepository as unknown as SessionManager['sessionRepository'],
+      {} as unknown as SessionManager['sessionRepository'],
+      createMockTokenManager() as unknown as TokenManager,
+      createMockLogger() as unknown as SessionManager['logger'],
     );
     const loadTokens = vi.fn().mockResolvedValue({
       accessToken: 'guest-local-token',
@@ -84,46 +69,39 @@ describe('SessionManager', () => {
       sessionId: 'session-1',
     });
 
-    (manager as any).tokenManager = {
+    privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens,
       clearTokens: vi.fn(),
       saveTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
-    };
+    } as unknown as TokenManager;
 
     const result = await manager.getOrCreateGuestIdentity();
 
     expect(loadTokens).toHaveBeenCalledOnce();
     expect(sessionRepository.findByIdentityId).toHaveBeenCalledWith(guestId);
     expect(result).toBe(guestId);
-    expect((manager as any).currentSession).toBe(guestSession);
+    expect(privates(manager).currentSession).toBe(guestSession);
   });
 
   it('creates a persistent guest identity with a local device id on first use', async () => {
-    const sessionRepository = {
-      findByIdentityId: vi.fn().mockResolvedValue([]),
-      save: vi.fn(),
-      findById: vi.fn(),
-      removeExpired: vi.fn(),
-      removeAllByIdentityId: vi.fn(),
-    };
-    const identityRepository = {};
+    const sessionRepository = createMockSessionRepository();
     const manager = new SessionManager(
-      sessionRepository as never,
-      identityRepository as never,
-      createMockTokenManager() as never,
-      createLogger() as never,
+      sessionRepository as unknown as SessionManager['sessionRepository'],
+      {} as unknown as SessionManager['sessionRepository'],
+      createMockTokenManager() as unknown as TokenManager,
+      createMockLogger() as unknown as SessionManager['logger'],
     );
     const saveTokens = vi.fn().mockResolvedValue(undefined);
 
-    (manager as any).tokenManager = {
+    privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens: vi.fn().mockResolvedValue(null),
       clearTokens: vi.fn(),
       saveTokens,
       stopAutoRefresh: vi.fn(),
-    };
+    } as unknown as TokenManager;
 
     const guestId = await manager.getOrCreateGuestIdentity();
     const deviceIdPath = path.join(userDataPath, 'auth', 'device-id');
@@ -141,23 +119,18 @@ describe('SessionManager', () => {
       identityId: 'user-1',
       isValid: vi.fn(() => true),
     };
-    const sessionRepository = {
-      findByIdentityId: vi.fn().mockResolvedValue([]),
-      save: vi.fn(),
+    const sessionRepository = createMockSessionRepository({
       findById: vi.fn().mockResolvedValue(restoredSession),
-      removeExpired: vi.fn(),
-      removeAllByIdentityId: vi.fn(),
-    };
-    const identityRepository = {};
+    });
     const manager = new SessionManager(
-      sessionRepository as never,
-      identityRepository as never,
-      createMockTokenManager() as never,
-      createLogger() as never,
+      sessionRepository as unknown as SessionManager['sessionRepository'],
+      {} as unknown as SessionManager['sessionRepository'],
+      createMockTokenManager() as unknown as TokenManager,
+      createMockLogger() as unknown as SessionManager['logger'],
     );
     const clearTokens = vi.fn();
 
-    (manager as any).tokenManager = {
+    privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens: vi.fn().mockResolvedValue({
         accessToken: 'server-access-token',
@@ -170,7 +143,7 @@ describe('SessionManager', () => {
       clearTokens,
       saveTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
-    };
+    } as unknown as TokenManager;
 
     const result = await manager.restoreSession();
 
@@ -178,28 +151,21 @@ describe('SessionManager', () => {
     expect(result.identityId).toBe('user-1');
     expect(sessionRepository.findById).toHaveBeenCalledWith('session-1');
     expect(clearTokens).not.toHaveBeenCalled();
-    expect((manager as any).currentSession).toBe(restoredSession);
+    expect(privates(manager).currentSession).toBe(restoredSession);
   });
 
   it('reconstructs a guest session when the token is valid but the session row is missing', async () => {
     const guestId = 'IdentityId_guest-1';
-    const sessionRepository = {
-      findByIdentityId: vi.fn().mockResolvedValue([]),
-      save: vi.fn(),
-      findById: vi.fn().mockResolvedValue(null),
-      removeExpired: vi.fn(),
-      removeAllByIdentityId: vi.fn(),
-    };
-    const identityRepository = {};
+    const sessionRepository = createMockSessionRepository();
     const manager = new SessionManager(
-      sessionRepository as never,
-      identityRepository as never,
-      createMockTokenManager() as never,
-      createLogger() as never,
+      sessionRepository as unknown as SessionManager['sessionRepository'],
+      {} as unknown as SessionManager['sessionRepository'],
+      createMockTokenManager() as unknown as TokenManager,
+      createMockLogger() as unknown as SessionManager['logger'],
     );
     const clearTokens = vi.fn();
 
-    (manager as any).tokenManager = {
+    privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens: vi.fn().mockResolvedValue({
         accessToken: 'guest-local-token',
@@ -212,7 +178,7 @@ describe('SessionManager', () => {
       clearTokens,
       saveTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
-    };
+    } as unknown as TokenManager;
 
     const result = await manager.restoreSession();
 
@@ -220,23 +186,16 @@ describe('SessionManager', () => {
     expect(result.identityId).toBe(guestId);
     expect(sessionRepository.save).toHaveBeenCalledOnce();
     expect(clearTokens).not.toHaveBeenCalled();
-    expect((manager as any).currentSession?.identityId).toBe(guestId);
+    expect(privates(manager).currentSession?.identityId).toBe(guestId);
   });
 
   it('uses local refresh for local-only tokens even when API callbacks exist', async () => {
-    const sessionRepository = {
-      findByIdentityId: vi.fn().mockResolvedValue([]),
-      save: vi.fn(),
-      findById: vi.fn(),
-      removeExpired: vi.fn(),
-      removeAllByIdentityId: vi.fn(),
-    };
-    const identityRepository = {};
+    const sessionRepository = createMockSessionRepository();
     const manager = new SessionManager(
-      sessionRepository as never,
-      identityRepository as never,
-      createMockTokenManager() as never,
-      createLogger() as never,
+      sessionRepository as unknown as SessionManager['sessionRepository'],
+      {} as unknown as SessionManager['sessionRepository'],
+      createMockTokenManager() as unknown as TokenManager,
+      createMockLogger() as unknown as SessionManager['logger'],
     );
 
     const updateAccessToken = vi.fn().mockResolvedValue(undefined);
@@ -249,11 +208,11 @@ describe('SessionManager', () => {
       sessionId: 'session-1',
     });
 
-    (manager as any).currentSession = {
+    privates(manager).currentSession = {
       extend: vi.fn(),
       isValid: vi.fn(() => true),
-    };
-    (manager as any).tokenManager = {
+    } as unknown as AuthSession;
+    privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens,
       updateAccessToken,
@@ -262,35 +221,28 @@ describe('SessionManager', () => {
       saveTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
       startAutoRefresh: vi.fn(),
-    };
-    (manager as any).apiRefreshToken = vi.fn();
+    } as unknown as TokenManager;
+    privates(manager).apiRefreshToken = vi.fn() as unknown as (request: RefreshSessionRequest) => Promise<RefreshSessionResponse>;
 
     const result = await manager.refreshSession();
 
     expect(result.ok).toBe(true);
     expect(updateAccessToken).toHaveBeenCalledOnce();
-    expect((manager as any).apiRefreshToken).not.toHaveBeenCalled();
+    expect(privates(manager).apiRefreshToken).not.toHaveBeenCalled();
   });
 
   it('activates online sessions atomically', async () => {
-    const sessionRepository = {
-      findByIdentityId: vi.fn().mockResolvedValue([]),
-      save: vi.fn(),
-      findById: vi.fn(),
-      removeExpired: vi.fn(),
-      removeAllByIdentityId: vi.fn(),
-    };
-    const identityRepository = {};
+    const sessionRepository = createMockSessionRepository();
     const manager = new SessionManager(
-      sessionRepository as never,
-      identityRepository as never,
-      createMockTokenManager() as never,
-      createLogger() as never,
+      sessionRepository as unknown as SessionManager['sessionRepository'],
+      {} as unknown as SessionManager['sessionRepository'],
+      createMockTokenManager() as unknown as TokenManager,
+      createMockLogger() as unknown as SessionManager['logger'],
     );
 
     const saveTokens = vi.fn().mockResolvedValue(undefined);
     const startAutoRefresh = vi.fn();
-    (manager as any).tokenManager = {
+    privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue({
         accessToken: 'server-access-token',
         refreshToken: 'server-refresh-token',
@@ -302,7 +254,7 @@ describe('SessionManager', () => {
       clearTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
       startAutoRefresh,
-    };
+    } as unknown as TokenManager;
 
     await manager.activateOnlineSession({
       identityId: 'user-1',
@@ -321,6 +273,6 @@ describe('SessionManager', () => {
     });
     expect(sessionRepository.save).toHaveBeenCalledOnce();
     expect(startAutoRefresh).toHaveBeenCalledOnce();
-    expect((manager as any).currentSession?.identityId).toBe('user-1');
+    expect(privates(manager).currentSession?.identityId).toBe('user-1');
   });
 });

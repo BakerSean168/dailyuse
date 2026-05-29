@@ -4,7 +4,7 @@
  * Composable for desktop window control operations (minimize, maximize, close).
  * Receives the desktop bridge via Vue inject, falling back to window.electronAPI.
  */
-import { inject, onBeforeUnmount, onMounted, reactive } from 'vue';
+import { inject, reactive } from 'vue';
 import { DESKTOP_BRIDGE_KEY, type DesktopBridge } from '@dailyuse/app-vue/di';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 

@@ -140,13 +140,13 @@ export class TokenManager {
     // 清除缓存
     this.cachedTokenData = null;
 
-    // 删除文件
     try {
       await fs.unlink(this.tokenPath);
       this.logger.info('Token file deleted');
-    } catch (error: any) {
-      if (error.code !== 'ENOENT') {
-        this.logger.warn('Failed to delete token file', { error: error.message });
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'ENOENT') {
+        this.logger.warn('Failed to delete token file', { error: err.message });
       }
     }
   }
@@ -404,8 +404,9 @@ export class TokenManager {
       }
 
       return data;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code === 'ENOENT') {
         this.logger.debug('Token file does not exist');
         return null;
       }
@@ -416,15 +417,18 @@ export class TokenManager {
   /**
    * 验证 Token 数据结构
    */
-  private isValidTokenData(data: any): data is TokenData {
+  private isValidTokenData(data: unknown): data is TokenData {
     return (
       typeof data === 'object' &&
-      typeof data.accessToken === 'string' &&
-      typeof data.refreshToken === 'string' &&
-      typeof data.accessTokenExpiresAt === 'number' &&
-      typeof data.refreshTokenExpiresAt === 'number' &&
-      typeof data.identityId === 'string' &&
-      typeof data.sessionId === 'string'
+      data !== null &&
+      'accessToken' in data &&
+      'refreshToken' in data &&
+      typeof (data as TokenData).accessToken === 'string' &&
+      typeof (data as TokenData).refreshToken === 'string' &&
+      typeof (data as TokenData).accessTokenExpiresAt === 'number' &&
+      typeof (data as TokenData).refreshTokenExpiresAt === 'number' &&
+      typeof (data as TokenData).identityId === 'string' &&
+      typeof (data as TokenData).sessionId === 'string'
     );
   }
 

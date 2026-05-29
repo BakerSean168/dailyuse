@@ -9,9 +9,9 @@
 
 import { AuthSession } from '@dailyuse/authentication/domain-server';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
-import type { IdentityId, AuthSessionId } from '@dailyuse/contracts/authentication';
+import type { IdentityId, AuthSessionId, DeviceInfoClientDTO, DeviceInfoDTO } from '@dailyuse/contracts/authentication';
+import { DeviceType } from '@dailyuse/contracts/authentication';
 import type { IAuthSessionRepository } from '@dailyuse/authentication/domain-server';
-import type { DeviceInfoClientDTO } from '@dailyuse/contracts/authentication';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { generateUUID } from '@dailyuse/utils/shared';
@@ -19,6 +19,25 @@ import type { TokenManager, TokenData } from './token-manager';
 
 function toIdentityId(value: string | IdentityId): IdentityId {
   return IdentityIdValue.of(String(value));
+}
+
+function toDeviceInfoDTO(client: DeviceInfoClientDTO): DeviceInfoDTO {
+  const now = Date.now();
+  return {
+    deviceId: client.deviceId,
+    deviceFingerprint: client.deviceFingerprint ?? '',
+    deviceType: (client.deviceType as DeviceType) || 'Browser',
+    deviceName: client.deviceName ?? null,
+    os: client.os ?? null,
+    osVersion: client.osVersion ?? null,
+    browser: null,
+    appVersion: client.appVersion ?? null,
+    ipAddress: null,
+    userAgent: null,
+    location: null,
+    firstSeenAt: client.firstSeenAt ?? now,
+    lastSeenAt: client.lastSeenAt ?? now,
+  };
 }
 
 const GUEST_ID_PREFIX = 'IdentityId';
@@ -76,7 +95,7 @@ export class GuestIdentityHelper {
         }
 
         const session = await this.restoreRuntimeSessionFromToken(
-          { ...(tokenData as any), identityId: cachedGuestId },
+          { ...tokenData, identityId: toIdentityId(cachedGuestId) },
           getDeviceInfo,
         );
         this.logger.info('Reused cached guest identity with reconstructed session', {
@@ -90,7 +109,7 @@ export class GuestIdentityHelper {
     // Create new persistent guest identity
     const guestId = `${GUEST_ID_PREFIX}_${generateUUID()}`;
     const deviceInfo = getDeviceInfo();
-    const device = DeviceInfo.create(deviceInfo as any);
+    const device = DeviceInfo.create(toDeviceInfoDTO(deviceInfo));
 
     const session = AuthSession.create({
       id: generateUUID() as unknown as AuthSessionId,
@@ -157,7 +176,7 @@ export class GuestIdentityHelper {
     getDeviceInfo: () => DeviceInfoClientDTO,
   ): Promise<AuthSession> {
     const deviceInfo = getDeviceInfo();
-    const device = DeviceInfo.create(deviceInfo as any);
+    const device = DeviceInfo.create(toDeviceInfoDTO(deviceInfo));
     const expiresAt = Math.max(tokenData.accessTokenExpiresAt, tokenData.refreshTokenExpiresAt);
 
     const session = AuthSession.create({

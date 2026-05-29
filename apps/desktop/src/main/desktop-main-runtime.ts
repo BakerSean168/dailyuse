@@ -17,7 +17,7 @@ import { DesktopAuthContextProvider } from './auth/desktop-auth-context';
 import type { DesktopProfileRuntimeManager } from './profile';
 import type { WindowManager } from './lifecycle/window-manager';
 import type { NotificationService } from './services';
-import type { AuthDesktopApplicationService } from './modules/authentication/application/auth-desktop-application-service';
+import type { DesktopFeaturesRuntime } from './desktop-features';
 import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('DesktopMainRuntime');
@@ -25,6 +25,7 @@ const logger = createLogger('DesktopMainRuntime');
 export class DesktopMainRuntime {
   private _notificationService: NotificationService | null = null;
   private _authContextProvider: DesktopAuthContextProvider | null = null;
+  private _desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
 
   constructor(
     readonly windowManager: WindowManager,
@@ -47,6 +48,10 @@ export class DesktopMainRuntime {
     this._notificationService = service;
   }
 
+  setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime): void {
+    this._desktopFeaturesRuntime = runtime;
+  }
+
   /** Convenience accessor for backward-compatible shutdown path. */
   getBootstrapper(): ElectronBootstrapper | null {
     return this.profileRuntimeManager.getBootstrapper() ?? null;
@@ -67,6 +72,11 @@ export class DesktopMainRuntime {
       await this.profileRuntimeManager.deactivateProfile();
     } catch (err) {
       logger.error('Profile deactivation failed during dispose', err);
+    }
+
+    if (this._desktopFeaturesRuntime) {
+      await this._desktopFeaturesRuntime.destroy();
+      this._desktopFeaturesRuntime = null;
     }
 
     this._notificationService = null;

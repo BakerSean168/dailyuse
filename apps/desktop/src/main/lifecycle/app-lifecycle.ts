@@ -16,7 +16,7 @@
  */
 
 import { app, BrowserWindow } from 'electron';
-import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-features';
+import { initializeDesktopFeatures } from '../desktop-features';
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { initNotificationService } from '../services';
 import type { DesktopMainRuntime } from '../desktop-main-runtime';
@@ -47,10 +47,6 @@ async function handleAppReady(
   const mainRuntime = getMainRuntime();
   const runtimeManager = mainRuntime.profileRuntimeManager;
 
-  // Register system IPC handlers BEFORE creating window
-  registerSystemIpcHandlers(null, null, null);
-  console.log('[Lifecycle] System IPC handlers registered (initial)');
-
   // 决定显示哪个窗口
   windowManager.setRuntimeManager(runtimeManager);
   const rememberedAccounts = runtimeManager.getRememberedAccountsService();
@@ -77,11 +73,18 @@ async function handleAppReady(
     mainRuntime.setNotificationService(notificationService);
     console.log('[Lifecycle] Notification service initialized');
 
-    // Initialize desktop features
-    await initializeDesktopFeatures(win);
+    // Initialize desktop features and wire the runtime into the lifecycle owner
+    const desktopFeaturesRuntime = await initializeDesktopFeatures(win);
+    mainRuntime.setDesktopFeaturesRuntime(desktopFeaturesRuntime);
+    windowManager.setDesktopFeaturesRuntime(desktopFeaturesRuntime);
 
-    // Update system handlers with desktop feature managers
-    // Note: Handlers that need these managers will get them lazily
+    registerSystemIpcHandlers(
+      desktopFeaturesRuntime.trayManager,
+      desktopFeaturesRuntime.shortcutManager,
+      desktopFeaturesRuntime.autoLaunchManager,
+    );
+    console.log('[Lifecycle] System IPC handlers registered');
+
     console.log('[Lifecycle] Desktop features initialized');
   }
 
@@ -144,8 +147,6 @@ async function handleBeforeQuit(
         await mainRuntime.dispose();
       }
 
-      // Cleanup desktop feature resources
-      await cleanupDesktopFeatures();
     } catch (err) {
       console.error('[Lifecycle] Cleanup failed:', err);
     }

@@ -9,5 +9,5 @@
  * @module modules/auto-update
  */
 
-export { AutoUpdateManager, type UpdateConfig, type UpdateProgress } from './auto-update-manager';
+export { AutoUpdateManager, createAutoUpdateManager, type UpdateConfig, type UpdateProgress } from './auto-update-manager';
 export { registerAutoUpdateIpcHandlers } from './ipc';
