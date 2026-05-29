@@ -11,8 +11,8 @@
  *   supertest -> Express -> auth MW -> expressAdapter -> controller -> use case -> mock repo
  */
 
-import express, { Router, type Express, type RequestHandler } from 'express';
-import jwt from 'jsonwebtoken';
+import express, { Router, type Express, type Request, type Response, type NextFunction, type RequestHandler } from 'express';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { vi } from 'vitest';
 
 // Use barrel exports — these resolve via `exports` field in package.json
@@ -127,7 +127,7 @@ export function createTestToken(identityId = TEST_IDENTITY_ID): string {
 /**
  * Lightweight auth middleware that verifies JWT using the test secret
  */
-const smokeAuthMiddleware: RequestHandler = (req: any, res, next) => {
+const smokeAuthMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ ok: false, code: 401, message: 'Missing token' });
@@ -135,8 +135,8 @@ const smokeAuthMiddleware: RequestHandler = (req: any, res, next) => {
 
   try {
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    req.user = { identityId: decoded.identityId };
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    (req as Record<string, unknown>).user = { identityId: decoded.identityId };
     return next();
   } catch {
     return res.status(401).json({ ok: false, code: 401, message: 'Invalid token' });
@@ -202,7 +202,7 @@ export function createSmokeApp(): SmokeTestApp {
   app.use('/api/v1', rootRouter);
 
   // Basic error handler
-  app.use((err: any, _req: any, res: any, _next: any) => {
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     res.status(500).json({ ok: false, code: 500, message: err.message || 'Internal error' });
   });
 

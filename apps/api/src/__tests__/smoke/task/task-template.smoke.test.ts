@@ -43,7 +43,7 @@ vi.mock('@dailyuse/utils', async (importOriginal) => {
  */
 function makeFakeTemplate(overrides: Record<string, unknown> = {}): TaskTemplate {
   return TaskTemplate.create({
-    identityId: TEST_IDENTITY_ID as any,
+    identityId: TEST_IDENTITY_ID,
     title: 'Smoke Test Task',
     taskType: TaskType.OneTime,
     timeConfig: TaskTimeConfig.create({
@@ -54,7 +54,7 @@ function makeFakeTemplate(overrides: Record<string, unknown> = {}): TaskTemplate
     }),
     importance: 'Moderate',
     ...overrides,
-  } as any);
+  });
 }
 
 /** Valid HTTP request body for creating a template (uses API field names) */
@@ -170,7 +170,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return templates from repository', async () => {
       const template = makeFakeTemplate();
-      (ctx.templateRepo.findByIdentityId as any).mockResolvedValue([template]);
+      vi.mocked(ctx.templateRepo.findByIdentityId).mockResolvedValue([template]);
 
       const res = await request(ctx.app)
         .get('/api/v1/task-templates')
@@ -184,7 +184,7 @@ describe('Task Template API Smoke Tests', () => {
     });
 
     it('should pass status filter to repository', async () => {
-      (ctx.templateRepo.findByStatus as any).mockResolvedValue([]);
+      vi.mocked(ctx.templateRepo.findByStatus).mockResolvedValue([]);
 
       const res = await request(ctx.app)
         .get('/api/v1/task-templates?status=Active')
@@ -220,7 +220,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 200 with template when found', async () => {
       const template = makeFakeTemplate();
-      (ctx.templateRepo.findById as any).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .get(`/api/v1/task-templates/${template.id}`)
@@ -260,7 +260,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 200 when template updated', async () => {
       const template = makeFakeTemplate();
-      (ctx.templateRepo.findById as any).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .put(`/api/v1/task-templates/${template.id}`)
@@ -309,7 +309,7 @@ describe('Task Template API Smoke Tests', () => {
 
     it('should return 200 when template deleted', async () => {
       const template = makeFakeTemplate();
-      (ctx.templateRepo.findById as any).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .delete(`/api/v1/task-templates/${template.id}`)
@@ -344,7 +344,7 @@ describe('Task Template API Smoke Tests', () => {
       const template = makeFakeTemplate();
       template.pause(); // put it in Paused state first
       template.clearDomainEvents();
-      (ctx.templateRepo.findById as any).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-templates/${template.id}/activate`)
@@ -378,7 +378,7 @@ describe('Task Template API Smoke Tests', () => {
     it('should return 200 and pause template', async () => {
       const template = makeFakeTemplate();
       template.clearDomainEvents();
-      (ctx.templateRepo.findById as any).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-templates/${template.id}/pause`)
@@ -412,7 +412,7 @@ describe('Task Template API Smoke Tests', () => {
     it('should return 200 and archive template', async () => {
       const template = makeFakeTemplate();
       template.clearDomainEvents();
-      (ctx.templateRepo.findById as any).mockResolvedValue(template);
+      vi.mocked(ctx.templateRepo.findById).mockResolvedValue(template);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-templates/${template.id}/archive`)

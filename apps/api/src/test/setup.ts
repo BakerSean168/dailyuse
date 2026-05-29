@@ -4,6 +4,7 @@
  */
 
 import { registerFastTestHooks } from '@dailyuse/test-utils';
+import type { Request, Response, NextFunction } from 'express';
 
 registerFastTestHooks({
   env: {
@@ -36,8 +37,8 @@ export const ApiTestHelpers = {
    * Mock auth middleware for isolated HTTP tests.
    */
   mockAuth: (identityId = 'test-user-123') => {
-    return (req: any, res: any, next: any) => {
-      req.user = { identityId };
+    return (req: Request, res: Response, next: NextFunction) => {
+      (req as unknown as Record<string, unknown>).user = { identityId };
       next();
     };
   },

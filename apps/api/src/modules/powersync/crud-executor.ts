@@ -7,7 +7,11 @@
 
 import { createLogger } from '@dailyuse/utils/logger';
 import { normalizeCrudData } from './crud-normalization.js';
-import { IDENTITY_ID_TABLES, getPrismaDelegate } from './table-mapping.js';
+import {
+  IDENTITY_ID_TABLES,
+  getPrismaDelegate,
+  type CrudDelegateContainer,
+} from './table-mapping.js';
 
 const logger = createLogger('PowerSyncCrudExecutor');
 
@@ -28,11 +32,15 @@ export interface CrudBatchResult {
   operationCount: number;
 }
 
+interface CrudTransactionDatabase {
+  $transaction<T>(callback: (tx: CrudDelegateContainer) => Promise<T>): Promise<T>;
+}
+
 /**
  * Apply a batch of CRUD transactions within a single Prisma transaction.
  */
 export async function executeCrudBatch(
-  db: any,
+  db: CrudTransactionDatabase,
   identityId: string,
   transactions: CrudTransaction[],
 ): Promise<CrudBatchResult> {
@@ -48,7 +56,7 @@ export async function executeCrudBatch(
     operationCount: opCount,
   });
 
-  await db.$transaction(async (tx: any) => {
+  await db.$transaction(async (tx) => {
     for (const transaction of transactions) {
       const ops = transaction.ops || transaction.crud || [];
 

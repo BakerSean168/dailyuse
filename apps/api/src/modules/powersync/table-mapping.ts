@@ -130,14 +130,48 @@ const TABLE_TO_MODEL: Record<string, string> = {
   rule_revisions: 'ruleRevision',
 };
 
+export interface CrudDelegate {
+  upsert(args: {
+    where: { id: string };
+    create: Record<string, unknown>;
+    update: Record<string, unknown>;
+  }): Promise<unknown>;
+  update(args: {
+    where: { id: string };
+    data: Record<string, unknown>;
+  }): Promise<unknown>;
+  deleteMany(args: {
+    where: { id: string };
+  }): Promise<unknown>;
+}
+
+export interface CrudDelegateContainer {
+  [modelName: string]: unknown;
+}
+
+function isCrudDelegate(value: unknown): value is CrudDelegate {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'upsert' in value &&
+    'update' in value &&
+    'deleteMany' in value
+  );
+}
+
 /**
  * Maps a PowerSync SQL table name to the corresponding Prisma model delegate.
  * Returns null if the table name is unknown or the model doesn't exist on the client.
  */
-export function getPrismaDelegate(db: any, tableName: string): any {
+export function getPrismaDelegate(
+  db: CrudDelegateContainer,
+  tableName: string,
+): CrudDelegate | null {
   const modelName = TABLE_TO_MODEL[tableName];
   if (!modelName || !(modelName in db)) {
     return null;
   }
-  return db[modelName];
+
+  const delegate = db[modelName];
+  return isCrudDelegate(delegate) ? delegate : null;
 }

@@ -20,9 +20,10 @@ import type { IApiModule, IApiModuleContext, IApiMiddleware, DatabaseClient } fr
 import { applyGlobalMiddleware, applyErrorHandlers } from './shared/infrastructure/middleware';
 import { authMiddleware, requireRole } from './shared/infrastructure/http/middlewares';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
-import infrastructureRouter from './shared/infrastructure/http/routes/infrastructure-routes';
+import { createInfrastructureRouter } from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
 import { createLogger } from '@dailyuse/utils/logger';
+import { MetricsStore } from './shared/infrastructure/http/middlewares/performance.middleware';
 
 const logger = createLogger('Bootstrapper');
 
@@ -31,11 +32,13 @@ export class ApiBootstrapper {
   private readonly rootRouter: Router;
   private readonly modules: IApiModule[] = [];
   private readonly db: DatabaseClient;
+  private readonly metricsStore: MetricsStore;
 
   constructor(db: DatabaseClient) {
     this.app = express();
     this.rootRouter = Router();
     this.db = db;
+    this.metricsStore = new MetricsStore();
   }
 
   /**
@@ -59,13 +62,13 @@ export class ApiBootstrapper {
    */
   public async init(): Promise<Express> {
     // 1. 全局中间件
-    applyGlobalMiddleware(this.app);
+    applyGlobalMiddleware(this.app, this.metricsStore);
 
     // 2. Swagger
     setupSwagger(this.app);
 
     // 3. 基础设施路由（health, metrics 等 — 无版本前缀）
-    this.app.use('/', infrastructureRouter);
+    this.app.use('/', createInfrastructureRouter(this.metricsStore));
 
     // 4. 准备模块上下文（含平台中间件）
     const platformMiddleware: IApiMiddleware = {

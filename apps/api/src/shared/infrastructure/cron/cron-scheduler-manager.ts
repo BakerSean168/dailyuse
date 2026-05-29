@@ -235,7 +235,7 @@ export class CronSchedulerManager {
    */
   public getStatus(): CronJobStatus[] {
     const status: CronJobStatus[] = [];
-    for (const [name, { task, config }] of Array.from(this.jobs.entries())) {
+    for (const [name, { config }] of Array.from(this.jobs.entries())) {
       status.push({
         name,
         schedule: config.schedule,

@@ -6,9 +6,17 @@
 
 import { LoggerFactory } from '@dailyuse/utils/logger';
 import { WinstonLogger } from '@dailyuse/utils/winston';
-import { env, isProduction } from './env.js';
+import { env } from './env.js';
 
 const logLevel = env.LOG_LEVEL;
+
+type StartupInfo = {
+  environment: string;
+  nodeVersion: string;
+  platform: NodeJS.Platform;
+  logLevel: string;
+  timestamp: string;
+};
 
 /**
  * 初始化日志系统。
@@ -33,9 +41,9 @@ export function initializeLogger(): void {
 /**
  * 获取应用启动信息。
  *
- * @returns {Record<string, any>} 包含环境、Node 版本、平台、日志级别等信息的对象
+ * @returns {StartupInfo} 包含环境、Node 版本、平台、日志级别等信息的对象
  */
-export function getStartupInfo(): Record<string, any> {
+export function getStartupInfo(): StartupInfo {
   return {
     environment: env.NODE_ENV,
     nodeVersion: process.version,

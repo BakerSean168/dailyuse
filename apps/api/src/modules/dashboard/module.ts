@@ -37,7 +37,7 @@ export const DashboardApiModule: IApiModule = {
         const data = await getApiDashboardData(prisma, identityId);
 
         res.json(responseBuilder.success(data, 'Success'));
-      } catch (err) {
+      } catch (_err) {
         res.status(500).json(responseBuilder.internalError('Failed to fetch dashboard stats'));
       }
     });
