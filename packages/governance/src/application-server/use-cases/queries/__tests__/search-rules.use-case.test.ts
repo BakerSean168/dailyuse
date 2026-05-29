@@ -14,7 +14,7 @@ function createRuleFixture(params: {
   tags?: string[];
 }) {
   const tags = (params.tags ?? []).map((value) => ({ value, toDTO: () => ({ value }) }));
-  const fixture: any = {
+  const fixture = {
     id: params.id,
     code: params.code,
     title: params.title,
@@ -41,9 +41,9 @@ function createRuleFixture(params: {
     deprecationReason: fixture.deprecationReason ?? null,
     replacementRuleId: fixture.replacementRuleId ?? null,
     liveReferenceLocation: fixture.liveReferenceLocation ?? null,
-    tags: fixture.tags.map((tag: any) => tag.toDTO()),
-    goodExamples: fixture.goodExamples.map((ex: any) => ex.toDTO()),
-    badExamples: fixture.badExamples.map((ex: any) => ex.toDTO()),
+    tags: fixture.tags.map((tag) => tag.toDTO()),
+    goodExamples: fixture.goodExamples.map((example) => example.toDTO()),
+    badExamples: fixture.badExamples.map((example) => example.toDTO()),
     authorId: fixture.authorId,
     createdAt: fixture.createdAt.getTime(),
     updatedAt: fixture.updatedAt.getTime(),

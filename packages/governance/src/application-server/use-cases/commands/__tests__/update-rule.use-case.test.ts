@@ -15,7 +15,9 @@ import { RuleId } from '@/domain-shared/value-objects/rule-id';
 
 // ============ Helpers ============
 
-const testCx: ExecutionContext = { identityId: 'test-user-123' as any };
+const testCx: ExecutionContext = {
+  identityId: 'test-user-123' as ExecutionContext['identityId'],
+};
 
 function createTestRule(overrides?: Partial<RuleState>): Rule {
   const goodSnippet = CodeSnippet.create({
@@ -42,7 +44,7 @@ function createTestRule(overrides?: Partial<RuleState>): Rule {
       goodSnippet.ok ? goodSnippet.data : null!,
       badSnippet.ok ? badSnippet.data : null!,
     ],
-    authorId: 'test-author' as any,
+    authorId: 'test-author' as RuleState['authorId'],
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

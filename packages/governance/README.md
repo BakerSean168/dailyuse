@@ -134,7 +134,7 @@ src/
 
 > **这个模块即是代码，也是文档。**
 >
-> governance 中的每个文件都包含详细的 JSDoc 注释，解释 DDD 模式和设计决策。
+> governance 中的每个实现文件都必须包含详细的 JSDoc 注释，解释 DDD 模式和设计决策；`pnpm nx run daily-use:governance-check` 会通过 `governance-module-docs-audit.mjs` 审计这一约束。
 > 新模块开发时，可以直接参考本模块的实现模式。
 >
 > 📖 从 [docs/governance/README.md](../../docs/governance/README.md) 开始获取轻量导航、速查卡与变更手册。

@@ -12,6 +12,8 @@
  * 规则治理模块 - 协议导出
  */
 
+import './contracts-shared-augmentation';
+
 // Event Map
 export type { GovernanceEventMap } from './governance-event-map';
 

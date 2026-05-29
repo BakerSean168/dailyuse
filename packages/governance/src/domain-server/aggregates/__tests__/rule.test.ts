@@ -19,7 +19,7 @@ function validCreateProps(overrides?: Partial<CreateRuleProps>): CreateRuleProps
     tags: ['ddd'],
     goodExamples: [{ language: Language.TypeScript, content: 'const x = 1;' }],
     badExamples: [{ language: Language.TypeScript, content: 'let x = 1;' }],
-    authorId: 'author-123' as any,
+    authorId: 'author-123' as CreateRuleProps['authorId'],
     ...overrides,
   };
 }
@@ -31,7 +31,10 @@ function createActiveRule(
 ): Rule {
   const result = Rule.create(validCreateProps({ severity }));
   expect(result.ok).toBe(true);
-  const rule = (result as any).data as Rule;
+  if (!result.ok) {
+    throw new Error('Expected Rule.create() to succeed in test fixture');
+  }
+  const rule = result.data;
   const activateResult = rule.activate();
   expect(activateResult.ok).toBe(true);
   return rule;
@@ -63,7 +66,7 @@ function buildRuleState(overrides?: Partial<RuleState>): RuleState {
       goodSnippetResult.ok ? goodSnippetResult.data : null!,
       badSnippetResult.ok ? badSnippetResult.data : null!,
     ],
-    authorId: 'test-author' as any,
+    authorId: 'test-author' as RuleState['authorId'],
     createdAt: new Date('2025-01-01'),
     updatedAt: new Date('2025-01-01'),
     ...overrides,

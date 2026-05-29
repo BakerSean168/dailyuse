@@ -11,19 +11,36 @@ const TEST_RULE_ID = 'RuleId_550e8400-e29b-41d4-a716-446655440000' as RuleId;
 
 // ============ Helpers ============
 
-function createRevisionFixture(overrides?: Record<string, any>) {
+type RevisionFixture = {
+  id: string;
+  ruleId: RuleId;
+  revisionNumber: number;
+  toClientDTO: ReturnType<typeof vi.fn>;
+};
+
+function createRevisionFixture(
+  overrides: Partial<{
+    id: string;
+    ruleId: RuleId;
+    revisionNumber: number;
+    changedFields: string[];
+    createdAt: number;
+  }> = {},
+): RevisionFixture {
+  const toClientDTO = vi.fn().mockReturnValue({
+    id: overrides.id ?? 'RuleRevisionId_00000000-0000-0000-0000-000000000001',
+    ruleId: overrides.ruleId ?? TEST_RULE_ID,
+    revisionNumber: overrides.revisionNumber ?? 1,
+    changedFields: overrides.changedFields ?? ['title'],
+    createdAt: overrides.createdAt ?? Date.now(),
+  });
+
   return {
     id: overrides?.id ?? 'RuleRevisionId_00000000-0000-0000-0000-000000000001',
     ruleId: overrides?.ruleId ?? TEST_RULE_ID,
     revisionNumber: overrides?.revisionNumber ?? 1,
-    toClientDTO: vi.fn().mockReturnValue({
-      id: overrides?.id ?? 'RuleRevisionId_00000000-0000-0000-0000-000000000001',
-      ruleId: overrides?.ruleId ?? TEST_RULE_ID,
-      revisionNumber: overrides?.revisionNumber ?? 1,
-      changedFields: overrides?.changedFields ?? ['title'],
-      createdAt: overrides?.createdAt ?? Date.now(),
-    }),
-  } as any;
+    toClientDTO,
+  };
 }
 
 // ============ Tests ============

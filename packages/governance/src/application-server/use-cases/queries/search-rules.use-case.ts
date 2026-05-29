@@ -31,7 +31,7 @@ export class SearchRulesUseCase {
    */
   async execute(
     req: SearchRulesQueryInput,
-    cx?: ExecutionContext,
+    _cx?: ExecutionContext,
   ): Promise<Result<SearchRulesRes>> {
     return resultify(async () => {
       const startedAt = Date.now();

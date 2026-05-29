@@ -8,7 +8,9 @@ import type { CreateRuleReq } from '../../../../contracts/api/rules';
 
 // ============ Helpers ============
 
-const testCx: ExecutionContext = { identityId: 'test-user-123' as any };
+const testCx: ExecutionContext = {
+  identityId: 'test-user-123' as ExecutionContext['identityId'],
+};
 
 function validReq(overrides?: Partial<CreateRuleReq>): CreateRuleReq {
   return {
@@ -67,7 +69,7 @@ describe('CreateRuleUseCase', () => {
   });
 
   it('should return DUPLICATE_CODE when code already exists', async () => {
-    const existingRule = {} as any; // non-null means existing
+    const existingRule = {} as NonNullable<Awaited<ReturnType<IRuleRepository['findByCode']>>>;
     const ruleRepo = createMockRepo<IRuleRepository>({
       findByCode: vi.fn().mockResolvedValue(existingRule),
     });
@@ -103,7 +105,10 @@ describe('CreateRuleUseCase', () => {
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
 
-    const result = await useCase.execute(validReq({ severity: 'Invalid' as any }), testCx);
+    const result = await useCase.execute(
+      validReq({ severity: 'Invalid' as unknown as CreateRuleReq['severity'] }),
+      testCx,
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;

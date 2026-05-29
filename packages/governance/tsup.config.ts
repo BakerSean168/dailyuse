@@ -14,6 +14,7 @@ export default defineConfig({
     'src/infrastructure-server/powersync.ts',
     'src/infrastructure-client/index.ts',
     'src/electron-entry/index.ts',
+    'src/mocks/index.ts',
   ],
   format: ['esm'],
   dts: false,

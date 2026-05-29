@@ -10,7 +10,7 @@ function validCreateProps(overrides?: Partial<Omit<RuleRevisionState, 'id' | 'cr
   return {
     ruleId: RuleId.generate(),
     revisionNumber: 1,
-    authorId: 'test-author' as any,
+    authorId: 'test-author' as RuleRevisionState['authorId'],
     changedFields: ['title'],
     previousValues: { title: 'Old Title' },
     newValues: { title: 'New Title' },
@@ -24,7 +24,7 @@ function buildState(overrides?: Partial<RuleRevisionState>): RuleRevisionState {
     id: RuleRevisionId.generate(),
     ruleId: RuleId.generate(),
     revisionNumber: 3,
-    authorId: 'test-author' as any,
+    authorId: 'test-author' as RuleRevisionState['authorId'],
     changedFields: ['description', 'tags'],
     previousValues: { description: 'old desc', tags: ['old-tag'] },
     newValues: { description: 'new desc', tags: ['new-tag'] },
@@ -193,7 +193,7 @@ describe('RuleRevision Entity', () => {
       const result = RuleRevision.create({
         ruleId,
         revisionNumber: 5,
-        authorId: 'user-456' as any,
+        authorId: 'user-456' as RuleRevisionState['authorId'],
         changedFields: ['status'],
         previousValues: { status: 'Active' },
         newValues: { status: 'Deprecated' },

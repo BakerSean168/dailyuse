@@ -1,3 +1,12 @@
+/**
+ * Governance seed data for local examples and demo environments.
+ * 治理模块在本地示例与演示环境中的种子数据。
+ *
+ * Seeds curated rules that mirror the repository's current architectural
+ * conventions, so the module can stay a runnable example instead of a dead README.
+ * 写入一组反映仓库当前架构约定的精选规则，
+ * 让该模块保持“可运行示例”，而不是停留在静态 README。
+ */
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { prisma } from '@dailyuse/database';
@@ -6,6 +15,10 @@ import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
 import { RuleStatus } from '../../contracts/value-objects/rule-status';
 import { SnippetType } from '../../contracts/value-objects/snippet-type';
 
+/**
+ * In-memory seed snippet shape before persistence serialization.
+ * 持久化序列化之前的内存种子代码片段结构。
+ */
 interface SeedCodeSnippet {
   language: string;
   content: string;
@@ -13,6 +26,10 @@ interface SeedCodeSnippet {
   caption: string | null;
 }
 
+/**
+ * In-memory seed rule shape before Prisma upsert.
+ * Prisma upsert 之前的内存种子规则结构。
+ */
 interface SeedRule {
   code: string;
   title: string;
@@ -25,6 +42,10 @@ interface SeedRule {
   badExamples: SeedCodeSnippet[];
 }
 
+/**
+ * Builds one seed code snippet record.
+ * 构造单条种子代码片段记录。
+ */
 const makeSnippet = (
   language: string,
   type: string,
@@ -37,6 +58,10 @@ const makeSnippet = (
   caption,
 });
 
+/**
+ * Canonical rule examples used by the governance demo module.
+ * 治理示范模块使用的规范规则样例。
+ */
 export const GOVERNANCE_SEED_RULES: SeedRule[] = [
   {
     code: 'DDD-001',
@@ -231,6 +256,10 @@ class SearchRulesUseCase {
   },
 ];
 
+/**
+ * Serializes snippet records into the persistence JSON shape.
+ * 将代码片段记录序列化为持久化 JSON 结构。
+ */
 const toPersistenceSnippets = (snippets: SeedCodeSnippet[]): string => JSON.stringify(
   snippets.map((snippet) => ({
     id: randomUUID(),
@@ -241,6 +270,10 @@ const toPersistenceSnippets = (snippets: SeedCodeSnippet[]): string => JSON.stri
   })),
 );
 
+/**
+ * Upserts governance seed rules into the backing database.
+ * 将治理种子规则 upsert 到底层数据库。
+ */
 export async function seedGovernanceRules(authorId = 'governance-seed'): Promise<number> {
   for (const rule of GOVERNANCE_SEED_RULES) {
     await prisma.rule.upsert({
