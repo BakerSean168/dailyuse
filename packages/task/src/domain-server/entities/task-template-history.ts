@@ -13,7 +13,7 @@ export interface TaskTemplateHistoryServerDTO {
   id: string;
   templateId: string;
   action: string;
-  changes: any | null;
+  changes: unknown;
   createdAt: number;
 }
 
@@ -21,7 +21,7 @@ export interface TaskTemplateHistoryClientDTO {
   id: string;
   templateId: string;
   action: string;
-  changes: any | null;
+  changes: unknown;
   createdAt: number;
 }
 
@@ -32,7 +32,7 @@ export interface TaskTemplateHistoryState {
   id: string;
   templateId: string;
   action: string;
-  changes: any | null;
+  changes: unknown;
   createdAt: Date;
 }
 
@@ -47,7 +47,7 @@ export interface TaskTemplateHistoryState {
 export class TaskTemplateHistory extends Entity<string> {
   private _templateId: string;
   private _action: string;
-  private _changes: any | null;
+  private _changes: unknown;
   private _createdAt: Date;
 
   private constructor(state: TaskTemplateHistoryState) {
@@ -69,7 +69,7 @@ export class TaskTemplateHistory extends Entity<string> {
     return this._action;
   }
 
-  public get changes(): any | null {
+  public get changes(): unknown {
     return this._changes;
   }
 
@@ -113,7 +113,7 @@ export class TaskTemplateHistory extends Entity<string> {
   public static create(params: {
     templateId: string;
     action: string;
-    changes?: any | null;
+    changes?: unknown;
   }): TaskTemplateHistory {
     return new TaskTemplateHistory({
       id: generateUUID(),

@@ -34,7 +34,7 @@ const customEventBus = eventBus as any;
  */
 const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
   'task:instance-generated': (event) => {
-    const payload = event.payload ?? event;
+    const payload = (event.payload ?? event) as Record<string, unknown>;
     logger.info(`[Task] Instances generated for template: ${payload.templateId}`, {
       templateId: payload.templateId,
       instanceCount: payload.instanceCount,
@@ -42,18 +42,18 @@ const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
     });
   },
   'task:instance-completed': (event) => {
-    const payload = event.payload ?? event;
-    const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
+    const payload = (event.payload ?? event) as Record<string, unknown>;
+    const instanceId = (payload?.instanceId ?? payload?.taskInstanceId) as string | undefined;
     logger.info(`[Task] Instance completed: ${instanceId}`);
   },
   'task:instance-skipped': (event) => {
-    const payload = event.payload ?? event;
-    const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
+    const payload = (event.payload ?? event) as Record<string, unknown>;
+    const instanceId = (payload?.instanceId ?? payload?.taskInstanceId) as string | undefined;
     logger.info(`[Task] Instance skipped: ${instanceId}`);
   },
   'task:instance-deleted': (event) => {
-    const payload = event.payload ?? event;
-    const instanceId = payload?.instanceId ?? payload?.taskInstanceId;
+    const payload = (event.payload ?? event) as Record<string, unknown>;
+    const instanceId = (payload?.instanceId ?? payload?.taskInstanceId) as string | undefined;
     logger.info(`[Task] Instance deleted: ${instanceId}`);
   },
 };
