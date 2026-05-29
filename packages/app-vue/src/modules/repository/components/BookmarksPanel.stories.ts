@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import BookmarksPanel from './BookmarksPanel.vue';
+import type { ResourceBookmarkClientDTO } from '@dailyuse/contracts/repository';
 
 const now = new Date().toISOString();
 
@@ -19,7 +20,7 @@ function mockBookmark(overrides: Record<string, unknown> = {}) {
     displayName: '书签',
     isOwner: true,
     ...overrides,
-  } as any;
+  } as unknown as ResourceBookmarkClientDTO;
 }
 
 const meta = {

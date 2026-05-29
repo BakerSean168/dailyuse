@@ -3,13 +3,9 @@ import { useGoalStore } from '../stores/goal-store';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
-import { useI18n } from 'vue-i18n';
-
 export function useFocusMode() {
   const store = useGoalStore();
   const service = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
-  const { t } = useI18n();
 
   const currentFocusMode = computed(() => store.currentFocusMode);
 

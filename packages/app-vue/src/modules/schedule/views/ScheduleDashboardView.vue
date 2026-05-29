@@ -106,6 +106,7 @@ import { toLocalDateKey, useCalendarView } from '../composables/useCalendarView'
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { CalendarEventItem } from '../composables/useCalendarView';
+import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 const { t } = useI18n();
 const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
@@ -182,8 +183,8 @@ function switchToDayView(date: Date | null) {
   activeView.value = 'day';
 }
 
-async function handleCreateSchedule(data: Record<string, unknown>) {
-  const result = await createCalendarEntry(data as any);
+async function handleCreateSchedule(data: CreateScheduleRequest) {
+  const result = await createCalendarEntry(data);
   if (result) {
     showCreateDialog.value = false;
     if (windowStart.value && windowEnd.value) {

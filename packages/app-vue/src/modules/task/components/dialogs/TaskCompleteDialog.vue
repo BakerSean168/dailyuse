@@ -248,8 +248,6 @@ import { format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import {
   AggregationMethod,
-  type GoalClientDTO,
-  type KeyResultClientDTO,
 } from '@dailyuse/contracts/goal';
 import {
   Dialog,
@@ -399,8 +397,6 @@ const getInputHint = (method?: AggregationMethod) => {
     return t('task.complete.inputPlaceholder');
   }
 
-  const unit = props.goalBinding.unit || t('task.complete.unitFallback');
-
   switch (method) {
     case AggregationMethod.SUM:
       return t('task.complete.hintSum');
@@ -418,7 +414,7 @@ const getInputHint = (method?: AggregationMethod) => {
 };
 
 // 步长
-const getInputStep = (method?: AggregationMethod) => {
+const getInputStep = (_method?: AggregationMethod) => {
   return 0.01;
 };
 

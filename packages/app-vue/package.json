@@ -95,6 +95,7 @@
     "@dailyuse/authentication": "workspace:*",
     "@dailyuse/assets": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/editor": "workspace:*",
     "@dailyuse/goal": "workspace:*",
     "@dailyuse/governance": "workspace:*",
     "@dailyuse/http-client": "workspace:*",

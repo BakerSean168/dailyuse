@@ -132,13 +132,13 @@ const { t } = useI18n();
 const generateButtonRef = ref();
 const previewListRef = ref();
 const showHint = ref(true);
-const generatedResults = ref<any[]>([]);
+const generatedResults = ref<KeyResultDraft[]>([]);
 const acceptedResults = ref<KeyResultDraft[]>([]);
 const selectedResults = ref<KeyResultDraft[]>([]);
 
 const hasGeneratedResults = computed(() => generatedResults.value.length > 0);
 
-function handleGenerated(result: any) {
+function handleGenerated(result: { keyResults?: KeyResultDraft[] }) {
   if (result.keyResults && Array.isArray(result.keyResults)) {
     generatedResults.value = result.keyResults;
     props.onSuccess?.(t('goal.aiKeyResults.generateSuccess', { n: result.keyResults.length }));

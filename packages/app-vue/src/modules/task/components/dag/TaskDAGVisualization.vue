@@ -63,11 +63,11 @@ import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import type { EChartsOption } from 'echarts';
+import type { ECElementEvent, GraphSeriesOption } from 'echarts';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@dailyuse/ui-vue-shadcn';
 import { Network, AlertTriangle, Download } from 'lucide-vue-next';
 import { TaskGraphEdgeKind } from '@dailyuse/task/application-client';
-import type { TaskForDAGViewModel, TaskGraphDataViewModel } from '../types';
+import type { TaskForDAGViewModel, TaskGraphDataViewModel, TaskGraphEdgeViewModel } from '../types';
 
 use([GraphChart, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
@@ -218,7 +218,7 @@ const hierarchicalPositions = computed(() => {
   return positions;
 });
 
-const dagOption = computed<EChartsOption>(() => {
+const dagOption = computed(() => {
   const criticalSet = new Set(showCriticalPath.value ? criticalPath.value.path : []);
 
   const nodes = props.graphData.nodes.map((task) => {
@@ -279,18 +279,18 @@ const dagOption = computed<EChartsOption>(() => {
   return {
     tooltip: {
       trigger: 'item',
-      formatter: (params: any) => {
-        if (params.dataType === 'node') {
-          const task = params.data.task as TaskForDAGViewModel;
+      formatter: (params: ECElementEvent) => {
+        const data = params.data as Record<string, unknown> | undefined;
+        if (params.dataType === 'node' && data?.task) {
+          const task = data.task as TaskForDAGViewModel;
           const dependencyLine = task.dependencyStatus
             ? `<br/>Dependency ${task.dependencyStatus}`
             : '';
           const blockedLine = task.blockingReason ? `<br/>Blocked ${task.blockingReason}` : '';
           return `<div><b>${task.title}</b><br/>${t('task.dagVisualization.statusTooltip')} ${task.status || 'UNKNOWN'}<br/>${t('task.dagVisualization.durationTooltip')} ${task.estimatedMinutes || 0} ${t('task.dagVisualization.minuteUnit')}${dependencyLine}${blockedLine}</div>`;
         }
-        if (params.dataType === 'edge') {
-          const edge = params.data.edge;
-          if (!edge) return '';
+        if (params.dataType === 'edge' && data?.edge) {
+          const edge = data.edge as TaskGraphEdgeViewModel;
           const relation =
             edge.kind === TaskGraphEdgeKind.Hierarchy
               ? 'Hierarchy'
@@ -319,14 +319,16 @@ const dagOption = computed<EChartsOption>(() => {
           repulsion: 360,
           edgeLength: [80, 180],
         },
-      } as any,
+      } as GraphSeriesOption,
     ],
   };
 });
 
-const handleNodeClick = (params: any) => {
-  if (params?.data?.task) {
-    emit('node-click', params.data.task as TaskForDAGViewModel);
+const handleNodeClick = (params: unknown) => {
+  const event = params as ECElementEvent;
+  const data = event.data as Record<string, unknown> | undefined;
+  if (data?.task) {
+    emit('node-click', data.task as TaskForDAGViewModel);
   }
 };
 

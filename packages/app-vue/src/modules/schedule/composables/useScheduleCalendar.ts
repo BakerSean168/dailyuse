@@ -52,7 +52,7 @@ export function useScheduleCalendar(ctx: ScheduleContext) {
       }
       handleError(result.error, 'schedule.error.createCalendarEntryFailed');
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       handleError(e, 'schedule.error.createCalendarEntryFailed');
       return null;
     }
@@ -68,7 +68,7 @@ export function useScheduleCalendar(ctx: ScheduleContext) {
       }
       handleError(result.error, 'schedule.error.deleteCalendarEntryFailed');
       return false;
-    } catch (e: any) {
+    } catch (e: unknown) {
       handleError(e, 'schedule.error.deleteCalendarEntryFailed');
       return false;
     }

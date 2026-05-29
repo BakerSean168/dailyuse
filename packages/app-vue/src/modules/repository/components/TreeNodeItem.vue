@@ -172,7 +172,7 @@ function getNodeIcon() {
   }
 
   const ext = props.node.extension?.toLowerCase();
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     md: FileText,
     txt: FileText,
     json: FileJson,

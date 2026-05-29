@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorTabBar from './EditorTabBar.vue';
+import type { EditorTab } from '../types';
 
 const mockTabs = [
   { id: 'tab-1', fileName: 'welcome.md', filePath: '/notes/welcome.md', isDirty: false },
@@ -23,13 +24,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { tabs: mockTabs as any, activeTab: 'tab-1' },
+  args: { tabs: mockTabs as unknown as EditorTab[], activeTab: 'tab-1' },
 };
 
 export const WithDirtyTab: Story = {
-  args: { tabs: mockTabs as any, activeTab: 'tab-2' },
+  args: { tabs: mockTabs as unknown as EditorTab[], activeTab: 'tab-2' },
 };
 
 export const SingleTab: Story = {
-  args: { tabs: [mockTabs[0]] as any, activeTab: 'tab-1' },
+  args: { tabs: [mockTabs[0]] as unknown as EditorTab[], activeTab: 'tab-1' },
 };

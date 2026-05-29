@@ -20,7 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { AppearanceSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -34,7 +34,7 @@ export const Default: Story = {
 };
 
 export const DarkTheme: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { AppearanceSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -50,7 +50,7 @@ export const DarkTheme: Story = {
 };
 
 export const CompactMode: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { AppearanceSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -66,7 +66,7 @@ export const CompactMode: Story = {
 };
 
 export const CustomThemeOptions: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { AppearanceSettings },
     setup() {
       const model = ref({ ...args.modelValue });

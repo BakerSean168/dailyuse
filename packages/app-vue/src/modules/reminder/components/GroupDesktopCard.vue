@@ -132,7 +132,7 @@ const menuActions = computed<MenuAction[]>(() => [
 ]);
 
 const getIcon = () => {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     'mdi-folder': Folder,
     'mdi-briefcase': Briefcase,
     'mdi-home': Home,

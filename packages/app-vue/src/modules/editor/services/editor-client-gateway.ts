@@ -1,4 +1,5 @@
 import { ProjectType, type EditorGroupClientDTO, type EditorSessionClientDTO } from '@dailyuse/contracts/editor';
+import type { EditorSessionId, EditorGroupId, EditorWorkspaceId } from '@dailyuse/contracts/primitives';
 import { getEditorRuntimeService } from './editor-service-runtime';
 
 export interface EditorContentReadResult {
@@ -62,7 +63,7 @@ export async function createEditorSession(
   workspaceId: string,
   name: string,
 ): Promise<EditorSessionClientDTO | null> {
-  const result = await getService().createSession({ workspaceId, name });
+  const result = await getService().createSession({ workspaceId: workspaceId as unknown as EditorWorkspaceId, name });
   return result.ok ? (result.data ?? null) : null;
 }
 
@@ -74,9 +75,9 @@ export async function createEditorTab(payload: {
   title: string;
 }) {
   const result = await getService().createTab({
-    workspaceId: payload.workspaceId,
-    sessionId: payload.sessionId,
-    groupId: payload.groupId,
+    workspaceId: payload.workspaceId as unknown as EditorWorkspaceId,
+    sessionId: payload.sessionId as unknown as EditorSessionId,
+    groupId: payload.groupId as unknown as EditorGroupId,
     resourceId: payload.resourceId,
     title: payload.title,
     tabIndex: 0,
@@ -124,9 +125,9 @@ export async function updateEditorTab(payload: {
   isPinned?: boolean;
 }) {
   const result = await getService().updateTab(payload.tabId, {
-    workspaceId: payload.workspaceId,
-    sessionId: payload.sessionId,
-    groupId: payload.groupId,
+    workspaceId: payload.workspaceId as unknown as EditorWorkspaceId,
+    sessionId: payload.sessionId as unknown as EditorSessionId,
+    groupId: payload.groupId as unknown as EditorGroupId,
     title: payload.title,
     isPinned: payload.isPinned,
     isDirty: payload.isDirty,

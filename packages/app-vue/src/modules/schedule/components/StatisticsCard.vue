@@ -189,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -262,8 +262,8 @@ function getModuleName(module: string): string {
   return nameMap[module] || module;
 }
 
-function getModuleIcon(module: string): any {
-  const iconMap: Record<string, any> = {
+function getModuleIcon(module: string): Component {
+  const iconMap: Record<string, Component> = {
     reminder: BellRing,
     task: ListChecks,
     goal: Target,

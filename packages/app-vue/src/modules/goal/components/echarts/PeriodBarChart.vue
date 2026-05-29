@@ -14,6 +14,7 @@ import { use } from 'echarts/core';
 import { BarChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import type { ECElementEvent } from 'echarts';
 import type { GoalClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
@@ -127,7 +128,7 @@ const periodBarOption = computed(() => {
         type: 'bar',
         data: dataArr,
         itemStyle: {
-          color: (params: any) => {
+          color: (params: ECElementEvent) => {
             if (params.dataIndex === maxIdx) return '#52c41a'; // 绿色
             if (params.dataIndex === minIdx) return '#ff4d4f'; // 红色
             return '#5470C6'; // 其他

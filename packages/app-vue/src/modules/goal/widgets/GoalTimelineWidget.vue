@@ -10,7 +10,7 @@
 
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 import { useGoal } from '../composables/useGoal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import {

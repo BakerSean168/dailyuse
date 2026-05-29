@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, type Component } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { ExportOptions } from '../../utils/dag-export';
 import {

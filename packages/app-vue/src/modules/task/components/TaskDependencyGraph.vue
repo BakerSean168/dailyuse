@@ -362,9 +362,10 @@ function updateChart() {
     const option: EChartsOption = {
       tooltip: {
         trigger: 'item',
-        formatter: (params: any) => {
+        formatter: (params: Record<string, unknown>) => {
           if (params.dataType === 'node') {
-            const task = params.data.task as TaskForDAGViewModel | undefined;
+            const data = params.data as Record<string, unknown>;
+            const task = data.task as TaskForDAGViewModel | undefined;
             if (!task) return '';
             return `<div style="padding: 8px;">
               <div style="font-weight: bold;">${task.title}</div>
@@ -379,7 +380,7 @@ function updateChart() {
           type: 'graph',
           layout: layoutType.value,
           data: nodes,
-          links: edges as any,
+          links: edges as unknown as EChartsOption['series'] extends Array<infer S> ? S extends { links?: infer L } ? NonNullable<L> : never : never,
           roam: true,
           label: { show: true, position: 'right' },
           lineStyle: { curveness: 0.3 },
@@ -390,7 +391,7 @@ function updateChart() {
     };
 
     chartInstance.value.setOption(option);
-  } catch (err) {
+  } catch (_err) {
     error.value = t('task.dependencyGraph.renderFailed');
   }
 }

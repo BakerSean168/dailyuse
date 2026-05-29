@@ -304,7 +304,7 @@ function toggleDisplayMode() {
 }
 
 function getResourceIcon(type: string) {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     IMAGE: ImageIcon,
     VIDEO: Video,
     AUDIO: Music,

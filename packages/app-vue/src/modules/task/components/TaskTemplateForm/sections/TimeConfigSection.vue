@@ -410,8 +410,8 @@ const handleDateChange = () => {
       ...props.modelValue,
       timeConfig: {
         ...(props.modelValue.timeConfig || {}),
-        startDate: parsedDate,
-      } as any,
+        startDate: parsedDate ?? undefined,
+      },
     };
     emit('update:modelValue', updated);
     emit('update:validation', true);
@@ -436,9 +436,9 @@ const rebuildTimePoint = () => {
       timeConfig: {
         ...(props.modelValue.timeConfig || {}),
         timeType: TaskTimeType.TimePoint,
-        startDate: parsedStartDate,
+        startDate: parsedStartDate ?? undefined,
         timePoint: parsedTime,
-      } as any,
+      },
     };
     emit('update:modelValue', updated);
     emit('update:validation', true);
@@ -470,12 +470,12 @@ const rebuildTimeRange = () => {
       timeConfig: {
         ...(props.modelValue.timeConfig || {}),
         timeType: TaskTimeType.TimeRange,
-        startDate: parsedStartDate,
+        startDate: parsedStartDate ?? undefined,
         timeRange: {
           start: parsedStart,
           end: parsedEnd,
         },
-      } as any,
+      },
     };
     emit('update:modelValue', updated);
     emit('update:validation', true);
@@ -509,7 +509,7 @@ const handleTimeTypeChange = () => {
       timeConfig: {
         ...(props.modelValue.timeConfig || {}),
         timeType: timeType.value,
-      } as any,
+      },
     };
     emit('update:modelValue', updated);
 

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { h } from 'vue';
 import NotificationDrawer from './NotificationDrawer.vue';
 
 const meta = {

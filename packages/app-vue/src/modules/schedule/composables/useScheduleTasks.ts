@@ -1,7 +1,6 @@
 import { computed } from 'vue';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
-import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 import type { ScheduleContext } from './useScheduleContext';
 
 export function useScheduleTasks(ctx: ScheduleContext) {
@@ -9,14 +8,14 @@ export function useScheduleTasks(ctx: ScheduleContext) {
 
   const isSaving = computed(() => savingId.value !== null);
 
-  async function fetchTasks(query?: Record<string, unknown>) {
+  async function fetchTasks(_query?: Record<string, unknown>) {
     store.setLoading(true);
     store.setError(null);
     try {
       const result = await service.getTasks();
       if (result.ok) {
         store.setTasks(
-          result.data.map((t: ScheduleTask) => t.toDTO()),
+          result.data.map((t) => t.toDTO()),
           result.data.length,
         );
       } else {
@@ -63,7 +62,7 @@ export function useScheduleTasks(ctx: ScheduleContext) {
     }
   }
 
-  async function updateTask(id: string, data: Record<string, unknown>) {
+  async function updateTask(_id: string, _data: Record<string, unknown>) {
     console.warn('[schedule] updateTask not yet available in ScheduleClientService');
     savingId.value = null;
     return null;
@@ -117,7 +116,7 @@ export function useScheduleTasks(ctx: ScheduleContext) {
     return null;
   }
 
-  async function fetchExecutions(taskId: string, query?: Record<string, unknown>) {
+  async function fetchExecutions(_taskId: string, _query?: Record<string, unknown>) {
     console.warn('[schedule] fetchExecutions not yet available in ScheduleClientService');
     store.setExecutions([]);
   }

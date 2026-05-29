@@ -2,6 +2,7 @@ import type {
   AddKeyResultReq,
   CreateGoalReq,
 } from '@dailyuse/contracts/goal';
+import type { Ref } from 'vue';
 import type {
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
@@ -9,6 +10,21 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { IAIService } from '../../../di/types';
+
+/** Options for useAIGoalWorkflow composable. */
+export interface UseAIGoalWorkflowOptions {
+  service: Pick<AIChatService, 'generateGoal'>;
+  selectedModel: Ref<ChatModelOption | null>;
+  chatLoading: Ref<boolean>;
+  chatTimeline: Ref<ChatItem[]>;
+  conversationTitle: Ref<string>;
+  hasWorkflowUserMessages: Ref<boolean>;
+  buildConversationTranscript: () => string;
+  scrollMessagesToBottom: () => void;
+  maybeRenameCurrentConversation: (name: string) => Promise<void>;
+  createGoal: (req: import('@dailyuse/contracts/goal').CreateGoalReq) => Promise<{ id: string } | null>;
+  addKeyResult: (goalId: string, req: import('@dailyuse/contracts/goal').AddKeyResultReq) => Promise<unknown>;
+}
 
 export type WorkflowMode = 'chat' | 'goal' | 'knowledge-note';
 

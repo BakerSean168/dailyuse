@@ -264,6 +264,7 @@ import {
 import { useGoal } from '../composables/useGoal';
 import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
 import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
+import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 const route = useRoute();
 const router = useRouter();
@@ -351,7 +352,7 @@ function getKeyResultTitle(keyResultId: string): string {
   return kr?.title ?? keyResultId;
 }
 
-function calculateKRProgress(kr: any): number {
+function calculateKRProgress(kr: KeyResultClientDTO): number {
   const current = kr.progress?.currentValue || 0;
   const target = kr.progress?.targetValue || 100;
   const initial = kr.progress?.initialValue || 0;

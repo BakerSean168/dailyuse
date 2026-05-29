@@ -4,6 +4,7 @@
 import type {
   GoalClientDTO,
   KeyResultClientDTO,
+  KeyResultProgressDTO,
   GoalRecordClientDTO,
   GoalReviewClientDTO,
 } from '@dailyuse/contracts/goal';
@@ -52,7 +53,7 @@ export function createMockKeyResults(): KeyResultClientDTO[] {
         targetValue: 3,
         currentValue: 2,
         unit: '本',
-      } as any,
+      } as unknown as KeyResultProgressDTO,
       weight: 30,
       order: 1,
     }),
@@ -67,7 +68,7 @@ export function createMockKeyResults(): KeyResultClientDTO[] {
         targetValue: 2,
         currentValue: 0,
         unit: '个',
-      } as any,
+      } as unknown as KeyResultProgressDTO,
       weight: 30,
       order: 2,
     }),
@@ -136,7 +137,7 @@ export function createMockGoals(): GoalClientDTO[] {
             targetValue: 36,
             currentValue: 20,
             unit: '次',
-          } as any,
+          } as unknown as KeyResultProgressDTO,
           weight: 50,
         }),
         createMockKeyResult({
@@ -149,11 +150,11 @@ export function createMockGoals(): GoalClientDTO[] {
             targetValue: 70,
             currentValue: 74,
             unit: 'kg',
-          } as any,
+          } as unknown as KeyResultProgressDTO,
           weight: 50,
         }),
       ],
-    } as any),
+    } as unknown as Partial<GoalClientDTO>),
     createMockGoal({
       id: 'goal-3',
       name: '完成项目重构',
@@ -177,11 +178,11 @@ export function createMockGoals(): GoalClientDTO[] {
             targetValue: 20,
             currentValue: 20,
             unit: '个',
-          } as any,
+          } as unknown as KeyResultProgressDTO,
           weight: 60,
         }),
       ],
-    } as any),
+    } as unknown as Partial<GoalClientDTO>),
   ];
 }
 
@@ -263,7 +264,7 @@ export function createMockReview(
 }
 
 /** Linear-style GoalCard 专用的 mock（带 statusText/overallProgress 等派生属性） */
-export function createLinearGoalCard(overrides: Record<string, any> = {}) {
+export function createLinearGoalCard(overrides: Record<string, unknown> = {}) {
   return {
     id: 'goal-1',
     title: '提升编程能力',

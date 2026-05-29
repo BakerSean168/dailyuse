@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { FileText, Loader2, Circle, Check } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -60,7 +60,7 @@ withDefaults(
   },
 );
 
-const emit = defineEmits<{
+defineEmits<{
   'save-content': [content: string];
 }>();
 

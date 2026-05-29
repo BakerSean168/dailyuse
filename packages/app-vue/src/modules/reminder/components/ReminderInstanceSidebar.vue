@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BellRing, RefreshCw, Settings, AlertCircle, BellOff, Filter } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';

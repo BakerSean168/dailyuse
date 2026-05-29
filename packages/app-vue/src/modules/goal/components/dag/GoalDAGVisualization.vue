@@ -139,7 +139,8 @@ import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import type { EChartsOption } from 'echarts';
+import type { ECElementEvent, DefaultLabelFormatterCallbackParams } from 'echarts';
+import type { ECharts } from 'echarts/core';
 import VChart from 'vue-echarts';
 import {
   Card,
@@ -170,6 +171,26 @@ import { translateResultError } from '../../../../shared/utils/translate-result-
 
 use([TitleComponent, TooltipComponent, LegendComponent, GraphChart, CanvasRenderer]);
 
+/** Position data stored in localStorage for custom node layouts */
+interface LayoutPosition {
+  id: string;
+  x: number;
+  y: number;
+}
+
+/** Shape of graph node data as used in ECharts graph series */
+interface DAGNodeData {
+  id: string;
+  name: string;
+  value?: number;
+  x?: number;
+  y?: number;
+  symbolSize: number;
+  itemStyle: { color: string };
+  category: number;
+  fixed?: boolean;
+}
+
 const props = defineProps<{
   goalId: string;
   syncViewport?: boolean; // 是否启用视口同步
@@ -183,9 +204,9 @@ const emit = defineEmits<{
 
 const { getGoalAggregateView } = useGoal();
 const { t } = useI18n();
-const VChartComponent = VChart as unknown as DefineComponent<Record<string, unknown>, {}, any>;
-const chartRef = ref<unknown>(null);
-const exportDialog = ref<any>(null);
+const VChartComponent = VChart as unknown as DefineComponent<Record<string, unknown>>;
+const chartRef = ref<InstanceType<typeof VChart> | null>(null);
+const exportDialog = ref<InstanceType<typeof ExportDialog> | null>(null);
 const containerRef = ref<HTMLElement>();
 const layoutType = ref<'force' | 'hierarchical'>('force');
 const hasCustomLayout = ref(false);
@@ -251,7 +272,7 @@ const calculateHierarchicalLayout = () => {
 
   // KR 节点均匀分布
   const krSpacing = krs.length > 1 ? containerWidth / (krs.length + 1) : containerWidth / 2;
-  krs.forEach((kr: any, index: number) => {
+  krs.forEach((kr: KeyResultClientDTO, index: number) => {
     nodes.push({
       id: kr.id,
       name: kr.title,
@@ -314,7 +335,7 @@ const calculateForceLayout = () => {
 };
 
 // DAG 图表配置
-const dagOption = computed<EChartsOption>(() => {
+const dagOption = computed(() => {
   if (!aggregateGoal.value || !hasKeyResults.value) return {};
 
   // 从 localStorage 加载保存的布局
@@ -329,8 +350,8 @@ const dagOption = computed<EChartsOption>(() => {
 
   // 应用保存的坐标
   if (savedLayout && layoutType.value === 'force') {
-    graphData.nodes.forEach((node: any) => {
-      const saved = savedLayout.find((s: any) => s.id === node.id);
+    graphData.nodes.forEach((node: DAGNodeData) => {
+      const saved = savedLayout.find((s: LayoutPosition) => s.id === node.id);
       if (saved) {
         node.x = saved.x;
         node.y = saved.y;
@@ -345,33 +366,34 @@ const dagOption = computed<EChartsOption>(() => {
   return {
     tooltip: {
       trigger: 'item',
-      formatter: (params: any) => {
+      formatter: (params: DefaultLabelFormatterCallbackParams) => {
+        const data = params.data as DAGNodeData;
         if (params.dataType === 'node') {
-          const isGoal = params.data.category === 0;
+          const isGoal = data.category === 0;
           if (isGoal) {
             return `
               <div style="padding: 8px;">
                 <div style="font-weight: bold; margin-bottom: 4px;">
                   <span style="color: #2196F3;">●</span> Goal
                 </div>
-                <div>${params.data.name}</div>
+                <div>${data.name}</div>
               </div>
             `;
           } else {
             // 计算权重占比
             const percentage =
               totalWeight.value > 0
-                ? ((params.data.value / totalWeight.value) * 100).toFixed(1)
+                ? (((data.value ?? 0) / totalWeight.value) * 100).toFixed(1)
                 : 0;
             return `
               <div style="padding: 8px;">
                 <div style="font-weight: bold; margin-bottom: 4px;">
-                  <span style="color: ${params.data.itemStyle.color};">●</span> KeyResult
+                  <span style="color: ${data.itemStyle.color};">●</span> KeyResult
                 </div>
-                <div>${params.data.name}</div>
+                <div>${data.name}</div>
                 <div style="margin-top: 4px;">
-                  <span style="color: #666;">${t('goal.dag.tooltipWeight')}</span> 
-                  <span style="font-weight: bold; color: ${params.data.itemStyle.color};">${params.data.value}/10</span>
+                  <span style="color: #666;">${t('goal.dag.tooltipWeight')}</span>
+                  <span style="font-weight: bold; color: ${data.itemStyle.color};">${data.value ?? 0}/10</span>
                   <span style="color: #999; margin-left: 4px;">(${percentage}%)</span>
                 </div>
               </div>
@@ -430,7 +452,7 @@ const dagOption = computed<EChartsOption>(() => {
 });
 
 // 保存布局到 localStorage
-const saveLayout = (goalId: string, positions: any[]) => {
+const saveLayout = (goalId: string, positions: LayoutPosition[]) => {
   try {
     localStorage.setItem(`dag-layout-${goalId}`, JSON.stringify(positions));
     hasCustomLayout.value = true;
@@ -440,10 +462,10 @@ const saveLayout = (goalId: string, positions: any[]) => {
 };
 
 // 从 localStorage 加载布局
-const loadLayout = (goalId: string) => {
+const loadLayout = (goalId: string): LayoutPosition[] | null => {
   try {
     const saved = localStorage.getItem(`dag-layout-${goalId}`);
-    return saved ? JSON.parse(saved) : null;
+    return saved ? (JSON.parse(saved) as LayoutPosition[]) : null;
   } catch (error) {
     console.error('Failed to load layout:', error);
     return null;
@@ -458,7 +480,7 @@ const resetLayout = () => {
     // 强制重新渲染图表
     nextTick(() => {
       if (chartRef.value) {
-        (chartRef.value as any).setOption(dagOption.value, true);
+        chartRef.value.setOption(dagOption.value as Parameters<typeof chartRef.value.setOption>[0], true);
       }
     });
   } catch (error) {
@@ -467,12 +489,12 @@ const resetLayout = () => {
 };
 
 // 处理节点点击
-const handleNodeClick = (params: any) => {
+const handleNodeClick = (params: ECElementEvent) => {
   if (params.dataType === 'node') {
-    const isGoal = params.data.category === 0;
+    const data = params.data as DAGNodeData;
     emit('node-click', {
-      id: params.data.id,
-      type: isGoal ? 'goal' : 'kr',
+      id: data.id,
+      type: data.category === 0 ? 'goal' : 'kr',
     });
   }
 };
@@ -480,21 +502,21 @@ const handleNodeClick = (params: any) => {
 // 监听拖拽事件保存坐标
 watch(chartRef, (chart) => {
   if (chart && layoutType.value === 'force') {
-    const instance = (chart as any).chart as unknown as
-      | { on: (name: string, cb: (params: any) => void) => void; getOption: () => any }
-      | undefined;
+    const instance = chart.chart as unknown as ECharts | undefined;
     if (!instance) return;
-    instance.on('graphRoam', (params: any) => {
-      if (params.type === 'graphRoam') {
+    instance.on('graphRoam', (...args: unknown[]) => {
+      const params = args[0] as { type?: string } | undefined;
+      if (params?.type === 'graphRoam') {
         // 延迟保存以避免频繁写入
         setTimeout(() => {
-          const option = instance.getOption() as any;
-          const series = option.series?.[0] as any;
-          if (series?.data) {
-            const positions = series.data.map((node: any) => ({
+          const option = instance.getOption();
+          const series = Array.isArray(option.series) ? option.series[0] : option.series;
+          const nodeData = series?.data as DAGNodeData[] | undefined;
+          if (nodeData) {
+            const positions: LayoutPosition[] = nodeData.map((node) => ({
               id: node.id,
-              x: node.x,
-              y: node.y,
+              x: node.x ?? 0,
+              y: node.y ?? 0,
             }));
             saveLayout(props.goalId, positions);
           }
@@ -502,18 +524,19 @@ watch(chartRef, (chart) => {
 
         // 视口同步：发送缩放和平移事件
         if (props.syncViewport && !isUpdatingViewport.value) {
-          const option = instance.getOption() as any;
-          const series = option.series?.[0] as any;
+          const option = instance.getOption();
+          const series = Array.isArray(option.series) ? option.series[0] : option.series;
           if (series) {
-            const zoom = series.zoom || 1;
-            const center = series.center || [0, 0];
+            const seriesData = series as Record<string, unknown>;
+            const zoom = (seriesData.zoom as number) || 1;
+            const center = (seriesData.center as [number, number]) || ([0, 0] as [number, number]);
 
             currentZoom.value = zoom;
-            currentCenter.value = center as [number, number];
+            currentCenter.value = center;
 
             emit('viewport-change', {
               zoom,
-              center: center as [number, number],
+              center,
             });
           }
         }
@@ -543,7 +566,7 @@ useResizeObserver(containerRef, (entries) => {
     if (layoutType.value === 'hierarchical') {
       nextTick(() => {
         if (chartRef.value) {
-          (chartRef.value as any).setOption(dagOption.value, true);
+          chartRef.value.setOption(dagOption.value as Parameters<typeof chartRef.value.setOption>[0], true);
         }
       });
     }
@@ -553,7 +576,7 @@ useResizeObserver(containerRef, (entries) => {
 // 导出处理
 const handleExport = async (options: ExportOptions) => {
   try {
-    const chartInstance = (chartRef.value as any)?.chart;
+    const chartInstance = chartRef.value?.chart as unknown as ECharts | undefined;
     if (!chartInstance) {
       console.error('Chart instance not found');
       return;
@@ -615,18 +638,19 @@ const updateViewport = (viewport: { zoom: number; center: [number, number] }) =>
   isUpdatingViewport.value = true;
 
   try {
-    const instance = (chartRef.value as any)?.chart as
-      | { getOption: () => any; setOption: (option: any, opts?: any) => void }
-      | undefined;
+    const instance = chartRef.value?.chart as unknown as ECharts | undefined;
     if (!instance) return;
-    const currentOption = instance.getOption() as any;
+    const currentOption = instance.getOption();
+    const currentSeries = Array.isArray(currentOption.series)
+      ? currentOption.series[0]
+      : currentOption.series;
 
     // 更新图表配置
     instance.setOption(
       {
         series: [
           {
-            ...(currentOption.series?.[0] ?? {}),
+            ...(currentSeries ?? {}),
             zoom: viewport.zoom,
             center: viewport.center,
           },

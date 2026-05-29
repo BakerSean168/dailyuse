@@ -195,7 +195,7 @@ const handleSubmit = async () => {
         handleClose();
       }
     } else {
-      emit('activated', request as any);
+      emit('activated', request as unknown as FocusModeDTO);
       handleClose();
     }
   } catch (err) {

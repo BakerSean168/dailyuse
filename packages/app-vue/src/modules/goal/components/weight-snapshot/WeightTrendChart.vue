@@ -70,8 +70,9 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
+import type { ECElementEvent } from 'echarts';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
-import { format } from 'date-fns';
+import { format, type Locale } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -102,7 +103,7 @@ const {
 
 const { t, locale } = useI18n();
 
-const dateFnsLocaleMap: Record<string, any> = {
+const dateFnsLocaleMap: Record<string, Locale> = {
   'zh-CN': zhCN,
   'en-US': enUS,
 };
@@ -154,7 +155,7 @@ const chartOption = computed(() => {
     emphasis: {
       focus: 'series',
     },
-    data: kr.data.map((point: any) => [point.time, point.weight]),
+    data: kr.data.map((point: { time: number; weight: number }) => [point.time, point.weight]),
     itemStyle: {
       color: krColors[index % krColors.length],
     },
@@ -176,18 +177,20 @@ const chartOption = computed(() => {
           backgroundColor: '#6a7985',
         },
       },
-      formatter: (params: any) => {
-        const time = format(new Date(params[0].value[0]), 'yyyy-MM-dd HH:mm', {
+      formatter: (params: ECElementEvent[]) => {
+        const firstValue = params[0].value as unknown[];
+        const time = format(new Date(firstValue[0] as number), 'yyyy-MM-dd HH:mm', {
           locale: dateFnsLocaleMap[locale.value] || zhCN,
         });
         let html = `<div style="padding: 8px;">
           <div style="font-weight: bold; margin-bottom: 8px;">${time}</div>`;
 
-        params.forEach((param: any) => {
+        params.forEach((param: ECElementEvent) => {
+          const val = param.value as unknown[];
           html += `
             <div style="display: flex; align-items: center; margin-bottom: 4px;">
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${param.color}; margin-right: 8px;"></span>
-              <span>${param.seriesName}: ${param.value[1]}%</span>
+              <span>${param.seriesName}: ${val[1]}%</span>
             </div>`;
         });
 

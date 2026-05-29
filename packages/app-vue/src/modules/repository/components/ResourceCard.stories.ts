@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ResourceCard from './ResourceCard.vue';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 const now = new Date().toISOString();
 
@@ -34,7 +35,7 @@ function mockResource(overrides: Record<string, unknown> = {}) {
     extension: '.md',
     icon: 'file-text',
     ...overrides,
-  } as any;
+  } as unknown as ResourceClientDTO;
 }
 
 const meta = {

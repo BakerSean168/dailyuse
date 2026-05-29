@@ -120,7 +120,11 @@ import {
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { CalendarPlus, Clock, Check, Loader2 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
+import type {
+  ConflictDetectionResult,
+  ConflictSuggestion,
+  CreateScheduleRequest,
+} from '@dailyuse/contracts/schedule';
 
 interface Props {
   loading?: boolean;
@@ -129,7 +133,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'submit', data: any): void;
+  (e: 'submit', data: CreateScheduleRequest): void;
   (e: 'detect-conflicts', startTime: number, endTime: number): void;
   (e: 'apply-suggestion', suggestion: ConflictSuggestion): void;
 }
@@ -210,8 +214,16 @@ function calculateDuration() {
 }
 
 function handleSubmit() {
-  if (!isFormValid.value) return;
-  emit('submit', { ...form });
+  if (!isFormValid.value || !form.startTime || !form.endTime) return;
+  emit('submit', {
+    name: form.title,
+    description: form.description || undefined,
+    startTime: form.startTime,
+    endTime: form.endTime,
+    duration: form.duration,
+    priority: form.priority ? Number(form.priority) : undefined,
+    location: form.location || undefined,
+  });
 }
 
 function handleReset() {

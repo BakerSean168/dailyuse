@@ -18,7 +18,7 @@ export function useReminderTemplates(ctx: ReminderContext) {
     store.setError(null);
     try {
       const result = await executeReminderOperation<ReminderTemplateListRes>(
-        () => service.getReminderTemplates() as Promise<any>,
+        () => service.getReminderTemplates(),
         'reminder.error.loadTemplatesFailed',
       );
 

@@ -77,7 +77,7 @@ function handleTabClose(tab: EditorTab) {
 }
 
 function getFileIcon(fileType: string) {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     markdown: FileText,
     image: Image,
     video: Video,

@@ -43,7 +43,7 @@ import {
   SheetClose,
 } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { CheckCheck, X } from 'lucide-vue-next';
+import { X } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 
 interface Props {

@@ -2,7 +2,7 @@ import { toast } from 'vue-sonner';
 import type { AutoLoginResult } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { isDesktopEnvironment } from './useAuthContext';
-import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktop-bootstrap-auth';
+import { hydrateDesktopBootstrapAuthState, type DesktopBootstrapApi } from '../../../shared/utils/desktop-bootstrap-auth';
 
 export function useGuestMode(ctx: AuthContext) {
   const { store, service, t, lastResultError, getLocalizedAuthError } = ctx;
@@ -11,7 +11,7 @@ export function useGuestMode(ctx: AuthContext) {
     if (!store.isAuthenticated) return false;
 
     if (isDesktopEnvironment()) {
-      const hydrated = await hydrateDesktopBootstrapAuthState((window as any).electronAPI);
+      const hydrated = await hydrateDesktopBootstrapAuthState((window as unknown as { electronAPI?: DesktopBootstrapApi }).electronAPI);
       return hydrated;
     }
 

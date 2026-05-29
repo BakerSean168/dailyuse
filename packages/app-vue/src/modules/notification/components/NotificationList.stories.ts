@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import NotificationList from './NotificationList.vue';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 const now = new Date().toISOString();
 const hourAgo = new Date(Date.now() - 3600_000).toISOString();
@@ -25,7 +26,7 @@ function mockNotification(overrides: Record<string, unknown> = {}) {
     deletedAt: null,
     notificationChannels: null,
     ...overrides,
-  } as any;
+  } as unknown as NotificationClientDTO;
 }
 
 const meta = {

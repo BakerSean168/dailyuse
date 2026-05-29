@@ -103,12 +103,13 @@ import type { ECharts } from 'echarts';
 import TimelineControls from './TimelineControls.vue';
 import { useGoalTimeline } from '../../composables/useGoalTimeline';
 import type { TimelineSnapshot } from '../../utils/goal-timeline';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 // ==================== Props ====================
 
 const props = defineProps<{
   /** 目标数据 */
-  goal: any; // GoalClientDTO
+  goal: GoalClientDTO;
 }>();
 
 // ==================== State ====================
@@ -196,7 +197,7 @@ function updateWeightChart() {
   weightChart.setOption(option);
 }
 
-function handleSnapshotChange(snapshot: TimelineSnapshot) {
+function handleSnapshotChange(_snapshot: TimelineSnapshot) {
   updateWeightChart();
 }
 

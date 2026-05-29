@@ -109,31 +109,31 @@ const menuActions = computed<MenuAction[]>(() => [
 ]);
 
 function getStatusVariant(): 'default' | 'secondary' | 'destructive' | 'outline' {
-  const status = (props.repository as any).status;
+  const status = props.repository.status;
   const map: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-    ACTIVE: 'default',
-    ARCHIVED: 'secondary',
-    DELETED: 'destructive',
+    Active: 'default',
+    Archived: 'secondary',
+    Deleted: 'destructive',
   };
   return map[status] || 'outline';
 }
 
 function getStatusIcon() {
-  const status = (props.repository as any).status;
-  const iconMap: Record<string, any> = {
-    ACTIVE: CheckCircle,
-    ARCHIVED: Archive,
-    DELETED: XCircle,
+  const status = props.repository.status;
+  const iconMap: Record<string, unknown> = {
+    Active: CheckCircle,
+    Archived: Archive,
+    Deleted: XCircle,
   };
   return iconMap[status] || CheckCircle;
 }
 
 function getStatusText(): string {
-  const status = (props.repository as any).status;
+  const status = props.repository.status;
   const textMap: Record<string, string> = {
-    ACTIVE: '活跃',
-    ARCHIVED: '已归档',
-    DELETED: '已删除',
+    Active: '活跃',
+    Archived: '已归档',
+    Deleted: '已删除',
   };
   return textMap[status] || status;
 }

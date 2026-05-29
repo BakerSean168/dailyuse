@@ -15,7 +15,6 @@ import type {
   ResourceBookmarkClientDTO,
   ResourceClientDTO,
   SearchRequest,
-  SearchResponse,
 } from '@dailyuse/contracts/repository';
 import type { Repository } from '@dailyuse/repository/domain-client';
 import type { Result } from '@dailyuse/contracts/result';
@@ -76,7 +75,7 @@ export function useRepository() {
   const service = useStrictInject(
     REPOSITORY_SERVICE_KEY,
     'RepositoryService',
-  ) as RepositoryServiceLike;
+  ) as unknown as RepositoryServiceLike;
   const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
   const store = useRepositoryStore();
 

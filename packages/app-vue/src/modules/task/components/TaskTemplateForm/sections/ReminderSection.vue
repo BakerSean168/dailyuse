@@ -27,7 +27,7 @@
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
           <div class="flex items-center gap-2">
-            <Switch :checked="reminderEnabled" @update:checked="reminderEnabled = $event" />
+            <Switch :checked="reminderEnabled" @update:checked="reminderEnabled = $event as boolean" />
             <Label>{{ t('task.reminderSection.enable') }}</Label>
           </div>
         </div>
@@ -320,10 +320,11 @@ const emit = defineEmits<{
 }>();
 
 const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
+  const currentConfig = props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null;
   const updatedTemplate: TaskTemplateViewModel = {
     ...props.modelValue,
-    reminderConfig: props.modelValue.reminderConfig
-      ? ({ ...(props.modelValue.reminderConfig as TaskReminderConfigDTO) } as any)
+    reminderConfig: currentConfig
+      ? { ...currentConfig }
       : null,
   } as TaskTemplateViewModel;
   updater(updatedTemplate);
@@ -345,15 +346,15 @@ const timeUnitOptions = computed(() => [
 
 // 提醒启用状态
 const reminderEnabled = computed({
-  get: () => props.modelValue.reminderConfig?.enabled ?? false,
+  get: () => (props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null)?.enabled ?? false,
   set: (value: boolean) => {
     updateTemplate((template) => {
-      const currentConfig = template.reminderConfig;
+      const currentConfig = template.reminderConfig as unknown as TaskReminderConfigDTO | null;
       const newConfigDTO: TaskReminderConfigDTO = {
         enabled: value,
         triggers: currentConfig?.triggers ?? [],
       };
-      (template as any).reminderConfig = newConfigDTO;
+      template.reminderConfig = newConfigDTO as unknown as Record<string, unknown>;
     });
   },
 });
@@ -370,7 +371,7 @@ const triggers = ref<
 
 // 初始化触发器
 const initializeTriggers = () => {
-  const config = props.modelValue.reminderConfig as TaskReminderConfigDTO | null | undefined;
+  const config = props.modelValue.reminderConfig as unknown as TaskReminderConfigDTO | null | undefined;
   if (config?.triggers && config.triggers.length > 0) {
     triggers.value = config.triggers.map((t) => ({ ...t }));
   } else if (reminderEnabled.value && triggers.value.length === 0) {
@@ -401,27 +402,6 @@ const removeTrigger = (index: number) => {
   updateTriggers();
 };
 
-// 更新绝对时间
-const updateAbsoluteTime = (index: number, value: string) => {
-  if (value) {
-    triggers.value[index].absoluteTime = new Date(value).getTime();
-  } else {
-    triggers.value[index].absoluteTime = null;
-  }
-  updateTriggers();
-};
-
-// 格式化绝对时间为 datetime-local 格式
-const formatAbsoluteTime = (timestamp?: number | null): string => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
 
 // 更新触发器到模板
 const updateTriggers = () => {
@@ -435,7 +415,7 @@ const updateTriggers = () => {
         relativeUnit: t.relativeUnit ?? null,
       })),
     };
-    (template as any).reminderConfig = newConfigDTO;
+    template.reminderConfig = newConfigDTO as unknown as Record<string, unknown>;
   });
 };
 

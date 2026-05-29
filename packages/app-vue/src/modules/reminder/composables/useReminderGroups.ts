@@ -15,7 +15,7 @@ export function useReminderGroups(ctx: ReminderContext) {
     store.setError(null);
     try {
       const result = await executeReminderOperation<ReminderGroupListRes>(
-        () => service.getReminderGroups() as Promise<any>,
+        () => service.getReminderGroups(),
         'reminder.error.loadGroupsFailed',
       );
 

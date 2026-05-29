@@ -265,7 +265,7 @@ const AIGoalWorkflowPanelStub = defineComponent({
           fragments.push(h('div', { 'data-testid': 'goal-clarification-panel' }, [
             h('h3', 'Goal clarification'),
             h('p', props.goalClarification.rationale ?? ''),
-            ...(props.goalClarification.questions ?? []).map((q: any, i: number) =>
+            ...(props.goalClarification.questions ?? []).map((q: { question: string; context?: string }, i: number) =>
               h('div', [
                 h('p', q.question),
                 h('textarea', {
@@ -286,14 +286,14 @@ const AIGoalWorkflowPanelStub = defineComponent({
           fragments.push(h('div', { 'data-testid': 'goal-automation-panel' }, [
             h('h3', 'Summary'),
             h('p', result.summary ?? ''),
-            ...(result.actions ?? []).map((a: any) => h('p', a.rationale ?? '')),
+            ...(result.actions ?? []).map((a: Record<string, unknown>) => h('p', (a.rationale as string) ?? '')),
             h('h3', 'Execution Status'),
-            ...(result.executedActions ?? []).map((a: any) => h('p', a.message ?? '')),
+            ...(result.executedActions ?? []).map((a: Record<string, unknown>) => h('p', (a.message as string) ?? '')),
             ...(props.goalExecutionSummary ? [
               h('p', `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`),
             ] : []),
             h('h3', 'Execution Timeline'),
-            ...(result.executedActions ?? []).map((a: any) => h('p', a.message ?? '')),
+            ...(result.executedActions ?? []).map((a: Record<string, unknown>) => h('p', (a.message as string) ?? '')),
             ...(result.recovery ? [
               h('h3', 'Recovery'),
               ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
@@ -329,7 +329,19 @@ function createGoalDraft(title: string, description: string) {
   };
 }
 
-function createAutomationResult(overrides?: Partial<any>) {
+interface AutomationResult {
+  summary: string;
+  plan: Record<string, unknown>;
+  actions: Array<{ tool: string; rationale: string }>;
+  executedActions: Array<Record<string, unknown>> | undefined;
+  executionSummary: Record<string, unknown> | undefined;
+  recovery: Record<string, unknown> | undefined;
+  providerId: string;
+  tokenUsage: { promptTokens: number; completionTokens: number; totalTokens: number };
+  processingTimeMs: number;
+}
+
+function createAutomationResult(overrides?: Partial<AutomationResult>) {
   return {
     summary: 'Drafted a practical execution plan.',
     plan: {

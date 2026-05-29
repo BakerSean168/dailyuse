@@ -124,7 +124,7 @@ import { ListTodo, ArrowRight, CheckCircle2, Check, Loader2 } from 'lucide-vue-n
 import { useTask } from '../../composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'view-all'): void;
 }>();
 

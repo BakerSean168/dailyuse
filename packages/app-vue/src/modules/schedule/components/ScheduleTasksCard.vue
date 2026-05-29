@@ -209,7 +209,7 @@ function getBadgeVariant(status: string): BadgeVariants['variant'] {
 }
 
 function getTaskStatusIcon(status: string) {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     Active: PlayCircle,
     Paused: PauseCircle,
     Completed: CheckCircle,

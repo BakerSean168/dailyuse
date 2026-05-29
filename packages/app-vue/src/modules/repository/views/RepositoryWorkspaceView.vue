@@ -110,7 +110,7 @@
           <!-- Tab Bar -->
           <TabManager
             v-if="workspaceScene.main.tabs.items.length > 0"
-            :tabs="workspaceScene.main.tabs.items"
+            :tabs="(workspaceScene.main.tabs.items as import('../components/TabManager.vue').ResourceTab[])"
             :active-tab-id="workspaceScene.main.tabs.activeId"
             @switch-tab="workspaceScene.main.tabs.actions.switch"
             @close-tab="workspaceScene.main.tabs.actions.close"

@@ -306,7 +306,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { MapPin, X, Loader2, Calendar as CalendarIcon } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 interface Props {
   modelValue: boolean;
@@ -316,7 +316,7 @@ interface Props {
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'submit', data: any): void;
+  (e: 'submit', data: CreateScheduleRequest): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {

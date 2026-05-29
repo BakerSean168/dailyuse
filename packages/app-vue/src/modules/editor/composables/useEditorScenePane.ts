@@ -1,4 +1,4 @@
-import { computed, ref, type ComponentPublicInstance, type Ref } from 'vue';
+import { computed, ref, type ComponentPublicInstance } from 'vue';
 import type { EditorSelectionRange } from './useResourceInsertion';
 import type { useActiveEditorDocument } from './useActiveEditorDocument';
 import { logEditorIssue } from '../../../shared/utils/editor-issue-debug';

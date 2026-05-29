@@ -245,7 +245,7 @@ const markdownBody = computed(() => parsedContent.value.body);
 
 const noteTitle = computed(() => {
   return (
-    properties.value.title || props.fileName.replace(/\.md$/, '') || t('repository.editor.untitled')
+    (properties.value.title as string) || props.fileName.replace(/\.md$/, '') || t('repository.editor.untitled')
   );
 });
 
@@ -269,8 +269,8 @@ const wordCount = computed(() => {
   return chineseChars + englishWords;
 });
 
-function parseFrontmatter(str: string): Record<string, any> {
-  const result: Record<string, any> = {};
+function parseFrontmatter(str: string): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
   const lines = str.split('\n');
 
   for (const line of lines) {
@@ -295,7 +295,7 @@ function parseFrontmatter(str: string): Record<string, any> {
 }
 
 function getPropertyIcon(key: string) {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     tags: Tag,
     created: Calendar,
     updated: Calendar,
@@ -309,10 +309,10 @@ function isDateField(key: string): boolean {
   return ['created', 'updated', 'date'].includes(key);
 }
 
-function formatDate(value: any): string {
+function formatDate(value: unknown): string {
   if (!value) return '';
   try {
-    const date = new Date(value);
+    const date = new Date(value as string | number | Date);
     return date.toLocaleString('zh-CN');
   } catch {
     return String(value);

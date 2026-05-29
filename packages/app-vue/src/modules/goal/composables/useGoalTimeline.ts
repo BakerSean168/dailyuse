@@ -1,7 +1,8 @@
 import { computed, ref, watch, type Ref } from 'vue';
 import type { TimelineData, TimelineSnapshot } from '../utils/goal-timeline';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
-export const useGoalTimeline = (goalRef: Ref<any>) => {
+export const useGoalTimeline = (goalRef: Ref<GoalClientDTO | null>) => {
   const loadingSnapshots = ref(false);
   const currentIndex = ref(0);
   const isPlaying = ref(false);
@@ -16,19 +17,19 @@ export const useGoalTimeline = (goalRef: Ref<any>) => {
     const snapshot: TimelineSnapshot = {
       timestamp: Date.now(),
       data: {
-        totalWeight: keyResults.reduce((sum: number, kr: any) => sum + (kr.weight ?? 0), 0),
+        totalWeight: keyResults.reduce((sum: number, kr: KeyResultClientDTO) => sum + (kr.weight ?? 0), 0),
         totalProgress:
           keyResults.length === 0
             ? 0
             : keyResults.reduce(
-                (sum: number, kr: any) =>
+                (sum: number, kr: KeyResultClientDTO) =>
                   sum +
                   ((kr.progress?.targetValue ?? 0) > 0
                     ? ((kr.progress?.currentValue ?? 0) / (kr.progress?.targetValue ?? 1)) * 100
                     : 0),
                 0,
               ) / keyResults.length,
-        keyResults: keyResults.map((kr: any) => ({
+        keyResults: keyResults.map((kr: KeyResultClientDTO) => ({
           id: String(kr.id ?? ''),
           title: kr.title ?? 'KR',
           weight: kr.weight ?? 0,

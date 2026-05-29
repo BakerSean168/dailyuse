@@ -79,7 +79,7 @@ const emit = defineEmits<{
 }>();
 
 function getResourceIcon(type: string) {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     MARKDOWN: FileText,
     IMAGE: Image,
     VIDEO: Video,

@@ -75,7 +75,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ScheduleTaskDetailDialog },
     setup() {
       const show = ref(args.show);
@@ -91,7 +91,7 @@ export const Default: Story = {
 };
 
 export const FailedTask: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ScheduleTaskDetailDialog },
     setup() {
       const show = ref(true);
@@ -110,7 +110,7 @@ export const FailedTask: Story = {
 };
 
 export const Loading: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ScheduleTaskDetailDialog },
     setup() {
       const show = ref(true);
@@ -125,7 +125,7 @@ export const Loading: Story = {
 };
 
 export const WithError: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ScheduleTaskDetailDialog },
     setup() {
       const show = ref(true);

@@ -164,9 +164,9 @@ const props = withDefaults(
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  generated: [result: any];
+  generated: [result: { keyResults?: Array<{ title: string; targetValue: number; unit: string; weight?: number }> }];
   error: [error: string];
-  generate: [data: any];
+  generate: [data: Record<string, unknown>];
   loadQuota: [];
   clearError: [];
 }>();

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import RepoCard from './RepoCard.vue';
+import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 
 const now = new Date().toISOString();
 
@@ -30,7 +31,7 @@ function mockRepository(overrides: Record<string, unknown> = {}) {
     createdAtText: '2024-01-01',
     updatedAtText: '2024-12-01',
     ...overrides,
-  } as any;
+  } as unknown as RepositoryClientDTO;
 }
 
 const meta = {

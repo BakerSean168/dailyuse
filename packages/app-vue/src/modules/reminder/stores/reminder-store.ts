@@ -31,7 +31,7 @@ export const useReminderStore = defineStore('reminder', {
 
   actions: {
     // Templates
-    setTemplates(items: ReminderTemplateClientDTO[], total?: number) {
+    setTemplates(items: ReminderTemplateClientDTO[], _total?: number) {
       this.templates = items;
     },
     addTemplate(t: ReminderTemplateClientDTO) {

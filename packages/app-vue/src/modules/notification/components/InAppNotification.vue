@@ -47,7 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { X } from 'lucide-vue-next';
 import type { NotificationItem } from './types';

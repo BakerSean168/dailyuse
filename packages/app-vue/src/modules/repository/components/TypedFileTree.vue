@@ -184,7 +184,7 @@ import { Button, Badge } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceClientDTO, TreeNode } from '@dailyuse/contracts/repository';
-import { findNotesFolderId } from '../utils/note-folder';
+
 import { getResourceDisplayName } from '../utils/resource-presentation';
 
 const props = withDefaults(
@@ -212,8 +212,6 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const expandedGroups = ref(new Set<string>(['notes']));
-
-const rootNoteFolderId = computed(() => findNotesFolderId(props.treeNodes ?? []));
 
 const totalCount = computed(() =>
   Object.values(props.resourcesByType).reduce((sum, arr) => sum + arr.length, 0),
@@ -339,7 +337,7 @@ function getGroupActions(groupKey: string): MenuAction[] {
 
 function getFileIcon(resource: ResourceClientDTO) {
   const ext = resource.extension?.toLowerCase();
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     '.md': FileText,
     '.txt': FileText,
     '.png': FileImage,

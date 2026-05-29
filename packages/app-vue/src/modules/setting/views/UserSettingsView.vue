@@ -37,7 +37,6 @@ const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 const {
   userSetting,
   isLoading,
-  error,
   getCategory,
   loadSettings,
   exportSettings,
@@ -62,6 +61,19 @@ type OpenTextResult = {
   canceled: boolean;
   content: string | null;
 };
+
+interface ShortcutCategory {
+  name: string;
+  label: string;
+  iconComponent: unknown;
+  shortcuts: { id: string; label: string; description: string; key: string; defaultKey: string }[];
+}
+
+interface Backup {
+  key: string;
+  label: string;
+  time: number;
+}
 
 // ── Section models — local reactive copies for v-model ──
 const appearance = ref({
@@ -91,12 +103,12 @@ const experimental = ref({
 });
 
 // Shortcut state (read-only display for now)
-const shortcutCategories = ref<any[]>([]);
+const shortcutCategories = ref<ShortcutCategory[]>([]);
 const editingShortcut = ref(null);
 const editingKey = ref('');
 
 // Advanced state
-const backups = ref<any[]>([]);
+const backups = ref<Backup[]>([]);
 const syncStatus = ref(null);
 const syncing = ref(false);
 

@@ -12,6 +12,7 @@ import { executeGoalOperation, createGoalErrorHandler } from './goalOperations';
 
 type GoalRecordEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalRecords'][number] };
 type GoalReviewEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalReviews'][number] };
+type KeyResultEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['keyResults'][number] };
 
 export function useGoalRecords() {
   const store = useGoalStore();
@@ -52,7 +53,7 @@ export function useGoalRecords() {
           () => service.getKeyResults(goalId),
           { ...opOpts, fallbackKey: 'goal.error.loadKRFailed', scope: 'fetchKeyResults' },
         ).then((kr) => {
-          if (kr) store.setKeyResults((kr.keyResults ?? []).map((r: any) => r.toDTO()));
+          if (kr) store.setKeyResults((kr.keyResults ?? []).map((r: KeyResultEntityLike) => r.toDTO()));
         }),
         fetchRecords(goalId),
       ]);

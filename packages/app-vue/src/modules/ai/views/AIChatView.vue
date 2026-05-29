@@ -192,10 +192,30 @@ const messagePanelRef = ref<InstanceType<typeof AIMessagePanel> | null>(null);
 const composerRef = ref<InstanceType<typeof AIFooterComposer> | null>(null);
 
 const {
+  session,
+  model,
+  goalWorkflow,
+  noteWorkflow,
+  formatters,
+  common,
+} = useAIChatView({
+  getComposerTextarea: () => composerRef.value?.composerTextarea ?? null,
+});
+
+const {
   chatMessage, chatLoading, chatConversationId, chatTimeline,
   conversationList, conversationListLoading,
   messagesViewport,
+  selectConversation, deleteConversation, loadConversationList,
+  startNewConversation, handleSendChat, stopGenerating,
+} = session;
+
+const {
   selectedModelKey, modelGroups,
+  selectModel,
+} = model;
+
+const {
   goalDraftLoading, goalWorkflowStage, goalDraft, goalClarification,
   goalAutomationResult, clarificationAnswers, showGoalDraftEditor,
   creatingGoal, automationLoading, automationExecuting,
@@ -206,16 +226,26 @@ const {
   openAutomatedGoal, handleCreateGoalFromDraft,
   addKeyResultDraft, removeKeyResultDraft, updateKeyResultDraft, handleUpdateGoalDraft,
   toggleGoalDraftEditor,
+} = goalWorkflow;
+
+const {
   noteCreating, noteSummary, createKnowledgeNoteFromConversation, openCreatedNote,
+} = noteWorkflow;
+
+const {
   formatAutomationTool, formatActionStatus, formatExecutionOutcome,
+} = formatters;
+
+const {
   toolMode, currentConversationLabel, currentToolLabel, currentToolButtonLabel,
-  notePreview, workflowStatusText, canSendMessage, canRunWorkflowActions,
-  selectConversation, deleteConversation, loadConversationList,
-  startNewConversation, exitToolMode, handleSendChat,
-  openSettings, selectModel, stopGenerating,
-} = useAIChatView({
-  getComposerTextarea: () => composerRef.value?.composerTextarea ?? null,
-});
+  notePreview, workflowStatusText, canRunWorkflowActions,
+  exitToolMode, openSettings,
+} = common;
+
+// Note: canSendMessage is not destructured here as it is not used in the <script setup> block, only in <template>.
+// To allow the template to see all variables, we can return/expose them or we can just define them as local constants.
+// Since <script setup> automatically exposes all top-level variables to the template, defining them as local constants exposes them perfectly!
+const { canSendMessage } = model;
 
 function handleClarificationAnswersUpdate(answers: string[]) {
   clarificationAnswers.value = answers;

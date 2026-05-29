@@ -96,8 +96,8 @@ export interface TaskTemplateViewModel {
   tagSummaryText?: string;
   goalBinding?: TaskGoalBindingViewModel | null;
   timeConfig: TaskTimeConfigViewModel;
-  recurrenceRule?: any;
-  reminderConfig?: any;
+  recurrenceRule?: Record<string, unknown> | null;
+  reminderConfig?: Record<string, unknown> | null;
   instanceCount?: number;
   completedInstanceCount?: number;
   pendingInstanceCount?: number;

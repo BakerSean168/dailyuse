@@ -7,7 +7,7 @@
 
 import { eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
-import type { NotificationDispatchInAppEvent } from '@dailyuse/contracts/notification';
+import type { NotificationDispatchInAppEvent, NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { useNotificationStore } from '../stores/notification-store';
 
 const logger = createLogger('notification:init');
@@ -24,9 +24,7 @@ export function createNotificationStartupHook(): { start(): void; stop(): void }
       if (started) return;
       started = true;
 
-      eventBus.on(
-        'notification:dispatch_in_app' as any,
-        (event: NotificationDispatchInAppEvent) => {
+      eventBus.on('notification:dispatch_in_app', (event: NotificationDispatchInAppEvent) => {
           const store = useNotificationStore();
           if (store.notifications.some((n) => n.id === event.id)) {
             return;
@@ -47,10 +45,9 @@ export function createNotificationStartupHook(): { start(): void; stop(): void }
             readAt: null,
             sentAt: null,
             deletedAt: null,
-          } as any);
+          } as unknown as NotificationClientDTO);
           store.incrementUnread();
-        },
-      );
+      });
 
       logger.info('Notification event handlers initialized');
     },

@@ -14,6 +14,7 @@ import { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
 import { getToolLocaleKey } from './types';
+import { adjustComposerHeight as createAdjustComposerHeight, bindChatViewLifecycle, getWorkflowStatusText, initializeChatView, maybeRenameConversation } from './chatViewHelpers';
 import type { ConversationSummary, ProviderListItem, WorkflowMode } from './types';
 
 export interface UseAIChatViewOptions {
@@ -40,23 +41,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   }
 
   const toolMode = ref<WorkflowMode>('chat');
-
-  function adjustComposerHeight() {
-    const textarea = options.getComposerTextarea();
-    if (!textarea) return;
-    const styles = window.getComputedStyle(textarea);
-    const lineHeight = Number.parseFloat(styles.lineHeight) || 24;
-    const verticalPadding =
-      Number.parseFloat(styles.paddingTop) + Number.parseFloat(styles.paddingBottom);
-    const borderWidth =
-      Number.parseFloat(styles.borderTopWidth) + Number.parseFloat(styles.borderBottomWidth);
-    const minHeight = lineHeight * 2 + verticalPadding + borderWidth;
-    const maxHeight = lineHeight * 5 + verticalPadding + borderWidth;
-    textarea.style.height = 'auto';
-    const nextHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
-    textarea.style.height = `${nextHeight}px`;
-    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
-  }
+  const adjustComposerHeight = () => createAdjustComposerHeight(options.getComposerTextarea);
 
   // ─── Composables ───────────────────────────────────────────────────
 
@@ -173,39 +158,22 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     return content.slice(0, 280);
   });
 
-  const workflowStatusText = computed(() => {
-    if (toolMode.value === 'goal') {
-      if (goalWorkflow.goalDraftLoading.value)
-        return t('aiAssistant.dialogs.generateGoal.generating');
-      if (goalWorkflow.goalWorkflowStage.value === 'plan' || goalWorkflow.automationLoading.value)
-        return t('aiAssistant.dialogs.automation.planning');
-      if (goalWorkflow.goalWorkflowStage.value === 'execute' || goalWorkflow.automationExecuting.value)
-        return t('aiAssistant.dialogs.automation.executing');
-      if (goalWorkflow.goalWorkflowStage.value === 'confirm')
-        return t('aiAssistant.dialogs.automation.awaitingConfirmation');
-      if (goalWorkflow.goalWorkflowStage.value === 'result') {
-        if (goalWorkflow.goalExecutionSummary.value?.status === 'partial')
-          return formatters.formatExecutionOutcome('partial');
-        if (goalWorkflow.goalExecutionSummary.value?.status === 'failed')
-          return formatters.formatExecutionOutcome('failed');
-        return t('aiAssistant.dialogs.automation.executionRecorded');
-      }
-      if (goalWorkflow.goalWorkflowStage.value === 'clarification')
-        return t('aiAssistant.chatPage.workflow.goalClarificationHint');
-      if (goalWorkflow.goalWorkflowStage.value === 'draft')
-        return t('aiAssistant.chatPage.workflow.goalDraftReadyHint');
-      return t('aiAssistant.chatPage.workflow.goalCollectingHint');
-    }
-    if (toolMode.value === 'knowledge-note') {
-      if (noteWorkflow.noteCreating.value) return t('aiAssistant.dialogs.note.creating');
-      if (noteWorkflow.noteSummary.value)
-        return t('aiAssistant.chatPage.workflow.noteCreatedHint', {
-          path: noteWorkflow.noteSummary.value.resolvedPath,
-        });
-      return t('aiAssistant.chatPage.workflow.noteCollectingHint');
-    }
-    return '';
-  });
+  const workflowStatusText = computed(() =>
+    getWorkflowStatusText(
+      {
+        toolMode: toolMode.value,
+        goalDraftLoading: goalWorkflow.goalDraftLoading.value,
+        goalWorkflowStage: goalWorkflow.goalWorkflowStage.value,
+        automationLoading: goalWorkflow.automationLoading.value,
+        automationExecuting: goalWorkflow.automationExecuting.value,
+        goalExecutionSummary: goalWorkflow.goalExecutionSummary.value,
+        noteCreating: noteWorkflow.noteCreating.value,
+        noteSummary: noteWorkflow.noteSummary.value,
+      },
+      t,
+      formatters.formatExecutionOutcome,
+    ),
+  );
 
   const canSendMessage = computed(
     () =>
@@ -236,17 +204,18 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     persistence.suspendWorkflowPersistence.value = false;
   }
 
-  async function deleteConversation(id: string) {
-    await chatSession.deleteConversation(
-      id,
+  async function maybeRenameCurrentConversation(name: string) {
+    const nextName = name.trim();
+    const currentTitle = chatSession.conversationTitle.value;
+    if (!nextName || nextName === currentTitle) return;
+    chatSession.conversationTitle.value = nextName;
+    await maybeRenameConversation(
+      nextName,
+      currentTitle,
+      chatConversationId.value,
       service,
-      persistence.clearWorkflowState,
-      modelSelection.clearConversationModelSelection,
+      () => chatSession.loadConversationList(service),
     );
-  }
-
-  async function loadConversationList() {
-    await chatSession.loadConversationList(service);
   }
 
   function startNewConversation(mode: WorkflowMode | string = 'chat') {
@@ -263,176 +232,78 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
-  async function handleSendChat() {
-    await chatSession.handleSendChat(
-      service,
-      modelSelection.selectedModel.value,
-      currentConversationLabel.value,
-      adjustComposerHeight,
-    );
-  }
-
-  async function maybeRenameCurrentConversation(name: string) {
-    const nextName = name.trim();
-    if (!nextName || nextName === chatSession.conversationTitle.value) return;
-    chatSession.conversationTitle.value = nextName;
-    if (!chatConversationId.value) return;
-    try {
-      await service.updateConversation(
-        chatConversationId.value as Parameters<typeof service.updateConversation>[0],
-        { name: nextName },
-      );
-      await loadConversationList();
-    } catch (error) {
-      console.warn('[AIChatView] failed to update conversation title', error);
-    }
-  }
-
-  function openSettings() {
-    void router.push('/settings');
-  }
-
-  function selectModel(modelKey: string) {
-    modelSelection.selectModel(modelKey);
-  }
-
-  function stopGenerating() {
-    chatSession.stopGenerating();
-  }
-
   // ─── Lifecycle ─────────────────────────────────────────────────────
 
-  watch(
-    () => chatSession.chatMessage.value,
-    () => {
-      nextTick(() => {
-        adjustComposerHeight();
-      });
+  bindChatViewLifecycle(
+    {
+      chatMessage: chatSession.chatMessage,
+      chatTimeline: chatSession.chatTimeline,
+      scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
+      abortActiveStream: chatSession.abortActiveStream,
+      adjustComposerHeight,
     },
+    { watch, onBeforeUnmount, nextTick: (cb) => void nextTick().then(cb) },
   );
 
-  watch(
-    () => chatSession.chatTimeline.value.map((item) => `${item.id}:${item.content.length}`).join('|'),
-    () => {
-      chatSession.scrollMessagesToBottom();
-    },
+  onMounted(() =>
+    initializeChatView({
+      initRepository: () => void initRepository(),
+      loadProviders,
+      loadConversationList: () => chatSession.loadConversationList(service),
+      syncSelectedModel: modelSelection.syncSelectedModel,
+      getPersistedModelKey: modelSelection.getPersistedModelKey,
+      selectConversation,
+      resetChatSession: chatSession.resetChatSession,
+      getDefaultConversationName,
+      lastActiveConversationId: chatSession.lastActiveConversationId,
+      conversationList: chatSession.conversationList,
+      adjustComposerHeight,
+      toastError: (msg: string) => toast.error(msg),
+      translate: t,
+      nextTick,
+    }),
   );
-
-  onBeforeUnmount(() => {
-    chatSession.abortActiveStream();
-  });
-
-  onMounted(async () => {
-    chatSession.resetChatSession('chat', getDefaultConversationName);
-    chatSession.lastActiveConversationId.value =
-      localStorage.getItem('ai:last-conversation-id') || '';
-
-    try {
-      void initRepository();
-      await loadProviders();
-      modelSelection.syncSelectedModel(modelSelection.getPersistedModelKey());
-      await loadConversationList();
-
-      const preferredConversation =
-        chatSession.conversationList.value.find(
-          (item) => item.id === chatSession.lastActiveConversationId.value,
-        ) ||
-        chatSession.conversationList.value[0] ||
-        null;
-
-      if (preferredConversation) {
-        await selectConversation(preferredConversation);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : null;
-      toast.error(
-        message && message.length > 0 ? message : t('common.operationFailed'),
-      );
-    }
-
-    await nextTick();
-    adjustComposerHeight();
-  });
 
   // ─── Return ────────────────────────────────────────────────────────
 
   return {
-    // Chat session state
-    chatMessage: chatSession.chatMessage,
-    chatLoading: chatSession.chatLoading,
-    chatConversationId,
-    chatTimeline: chatSession.chatTimeline,
-    conversationTitle: chatSession.conversationTitle,
-    conversationList: chatSession.conversationList,
-    conversationListLoading: chatSession.conversationListLoading,
-    messagesViewport: chatSession.messagesViewport,
-
-    // Model selection
-    selectedModelKey: modelSelection.selectedModelKey,
-    modelGroups: modelSelection.modelGroups,
-
-    // Goal workflow
-    goalDraftLoading: goalWorkflow.goalDraftLoading,
-    goalWorkflowStage: goalWorkflow.goalWorkflowStage,
-    goalDraft: goalWorkflow.goalDraft,
-    goalClarification: goalWorkflow.goalClarification,
-    goalAutomationResult: goalWorkflow.goalAutomationResult,
-    clarificationAnswers: goalWorkflow.clarificationAnswers,
-    showGoalDraftEditor: goalWorkflow.showGoalDraftEditor,
-    creatingGoal: goalWorkflow.creatingGoal,
-    automationLoading: goalWorkflow.automationLoading,
-    automationExecuting: goalWorkflow.automationExecuting,
-    editableGoal: goalWorkflow.editableGoal,
-    editableKeyResults: goalWorkflow.editableKeyResults,
-    canRunGoalWorkflow: goalWorkflow.canRunGoalWorkflow,
-    canPlanGoalAutomation: goalWorkflow.canPlanGoalAutomation,
-    goalExecutedActions: goalWorkflow.goalExecutedActions,
-    goalExecutionSummary: goalWorkflow.goalExecutionSummary,
-    goalExecutionRecovery: goalWorkflow.goalExecutionRecovery,
-    automatedGoalId: goalWorkflow.automatedGoalId,
-    generateGoalDraftFromConversation: goalWorkflow.generateGoalDraftFromConversation,
-    handlePlanGoalAutomation: goalWorkflow.handlePlanGoalAutomation,
-    handleExecuteGoalAutomation: goalWorkflow.handleExecuteGoalAutomation,
-    openAutomatedGoal: goalWorkflow.openAutomatedGoal,
-    handleCreateGoalFromDraft: goalWorkflow.handleCreateGoalFromDraft,
-    addKeyResultDraft: goalWorkflow.addKeyResultDraft,
-    removeKeyResultDraft: goalWorkflow.removeKeyResultDraft,
-    updateKeyResultDraft: goalWorkflow.updateKeyResultDraft,
-    handleUpdateGoalDraft: goalWorkflow.handleUpdateGoalDraft,
-    toggleGoalDraftEditor: goalWorkflow.toggleGoalDraftEditor,
-
-    // Note workflow
-    noteCreating: noteWorkflow.noteCreating,
-    noteSummary: noteWorkflow.noteSummary,
-    createKnowledgeNoteFromConversation: noteWorkflow.createKnowledgeNoteFromConversation,
-    openCreatedNote: noteWorkflow.openCreatedNote,
-
-    // Formatters
-    typingPlaceholder: formatters.typingPlaceholder,
-    getMessageStatusLabel: formatters.getMessageStatusLabel,
-    formatAutomationTool: formatters.formatAutomationTool,
-    formatActionStatus: formatters.formatActionStatus,
-    formatExecutionOutcome: formatters.formatExecutionOutcome,
-
-    // Computed
-    toolMode,
-    currentConversationLabel,
-    currentToolLabel,
-    currentToolButtonLabel,
-    notePreview,
-    workflowStatusText,
-    canSendMessage,
-    canRunWorkflowActions,
-
-    // Functions
-    selectConversation,
-    deleteConversation,
-    loadConversationList,
-    startNewConversation,
-    exitToolMode,
-    handleSendChat,
-    openSettings,
-    selectModel,
-    stopGenerating,
+    session: {
+      chatMessage: chatSession.chatMessage,
+      chatLoading: chatSession.chatLoading,
+      chatConversationId,
+      chatTimeline: chatSession.chatTimeline,
+      conversationTitle: chatSession.conversationTitle,
+      conversationList: chatSession.conversationList,
+      conversationListLoading: chatSession.conversationListLoading,
+      messagesViewport: chatSession.messagesViewport,
+      selectConversation,
+      deleteConversation: (id: string) =>
+        chatSession.deleteConversation(id, service, persistence.clearWorkflowState, modelSelection.clearConversationModelSelection),
+      loadConversationList: () => chatSession.loadConversationList(service),
+      startNewConversation,
+      handleSendChat: () =>
+        chatSession.handleSendChat(service, modelSelection.selectedModel.value, currentConversationLabel.value, adjustComposerHeight),
+      stopGenerating: () => chatSession.stopGenerating(),
+    },
+    model: {
+      selectedModelKey: modelSelection.selectedModelKey,
+      modelGroups: modelSelection.modelGroups,
+      canSendMessage,
+      selectModel: (key: string) => modelSelection.selectModel(key),
+    },
+    goalWorkflow,
+    noteWorkflow,
+    formatters,
+    common: {
+      toolMode,
+      currentConversationLabel,
+      currentToolLabel,
+      currentToolButtonLabel,
+      notePreview,
+      workflowStatusText,
+      canRunWorkflowActions,
+      exitToolMode,
+      openSettings: () => void router.push('/settings'),
+    },
   };
 }

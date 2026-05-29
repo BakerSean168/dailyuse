@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorContainer from './EditorContainer.vue';
+import type { EditorTab } from '../types';
 
 const mockTabs = [
   {
@@ -35,7 +36,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const WithTabs: Story = {
-  args: { initialTabs: mockTabs as any },
+  args: { initialTabs: mockTabs as unknown as EditorTab[] },
 };
 
 export const Empty: Story = {

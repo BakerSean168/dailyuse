@@ -1,3 +1,5 @@
+import type { ECharts } from 'echarts/core';
+
 export type ExportFormat = 'png' | 'svg' | 'pdf';
 
 export type ExportOptions = {
@@ -15,7 +17,7 @@ const dataUrlToBlob = async (dataUrl: string) => {
 };
 
 export const dagExportService = {
-  async exportPNG(chartInstance: any, options: ExportOptions): Promise<Blob> {
+  async exportPNG(chartInstance: ECharts, options: ExportOptions): Promise<Blob> {
     const dataUrl = chartInstance.getDataURL({
       type: 'png',
       pixelRatio: options.scale ?? 2,
@@ -24,7 +26,7 @@ export const dagExportService = {
     return dataUrlToBlob(dataUrl);
   },
 
-  async exportSVG(chartInstance: any, options: ExportOptions): Promise<Blob> {
+  async exportSVG(chartInstance: ECharts, options: ExportOptions): Promise<Blob> {
     const dataUrl = chartInstance.getDataURL({
       type: 'svg',
       pixelRatio: options.scale ?? 2,
@@ -33,7 +35,7 @@ export const dagExportService = {
     return dataUrlToBlob(dataUrl);
   },
 
-  async exportPDF(chartInstance: any, options: ExportOptions): Promise<Blob> {
+  async exportPDF(chartInstance: ECharts, options: ExportOptions): Promise<Blob> {
     const dataUrl = chartInstance.getDataURL({
       type: 'png',
       pixelRatio: options.scale ?? 2,

@@ -6,7 +6,6 @@
  */
 
 import { computed } from 'vue';
-import { useScheduleStore } from '../stores/schedule-store';
 import { createScheduleContext } from './useScheduleContext';
 import { useScheduleTasks } from './useScheduleTasks';
 import { useScheduleCalendar } from './useScheduleCalendar';

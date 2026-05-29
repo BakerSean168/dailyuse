@@ -15,6 +15,7 @@ import type {
   CheckAvailabilityReq,
   CloseAccountReq,
   UpdateAccountSettingsReq,
+  AccountClientDTO,
 } from '@dailyuse/contracts/account';
 import { useAccountStore } from '../stores/account-store';
 import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
@@ -48,7 +49,7 @@ export function useAccount() {
     if (authStore.authMode === AuthMode.GUEST) {
       // Create a mock profile for guest
       accountStore.setCurrentAccount({
-        id: authStore.currentIdentity?.id as any,
+        id: authStore.currentIdentity?.id as string,
         email: null,
         profile: {
           nickname: t('account.guestLabel'),
@@ -64,7 +65,7 @@ export function useAccount() {
         status: 'Active',
         createdAt: Date.now(),
         updatedAt: Date.now(),
-      } as any);
+      } as unknown as AccountClientDTO);
       return true;
     }
 

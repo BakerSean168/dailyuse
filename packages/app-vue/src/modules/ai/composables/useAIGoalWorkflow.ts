@@ -2,50 +2,38 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
-import type { Ref } from 'vue';
-import {
-  KeyResultCalculationMethod,
-  KeyResultValueType,
-  type CreateGoalReq,
-  type AddKeyResultReq,
-} from '@dailyuse/contracts/goal';
-import type { GenerateGoalsRes } from '@dailyuse/contracts/ai';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import {
   createEmptyGoalDraft,
-  type AIChatService,
-  type ChatItem,
-  type ChatModelOption,
   type EditableGoal,
   type EditableKeyResult,
   type GoalAutomationResult,
   type GoalClarification,
   type GoalDraft,
-  type GoalExecutedAction,
   type GoalWorkflowStage,
+  type UseAIGoalWorkflowOptions,
 } from './types';
 import { getAIErrorMessage } from './error';
-
-export interface UseAIGoalWorkflowOptions {
-  service: Pick<AIChatService, 'generateGoal'>;
-  selectedModel: Ref<ChatModelOption | null>;
-  chatLoading: Ref<boolean>;
-  chatTimeline: Ref<ChatItem[]>;
-  conversationTitle: Ref<string>;
-  hasWorkflowUserMessages: Ref<boolean>;
-  buildConversationTranscript: () => string;
-  scrollMessagesToBottom: () => void;
-  maybeRenameCurrentConversation: (name: string) => Promise<void>;
-  createGoal: (req: CreateGoalReq) => Promise<{ id: string } | null>;
-  addKeyResult: (goalId: string, req: AddKeyResultReq) => Promise<unknown>;
-}
-
-type GenerateGoalRequest = Parameters<UseAIGoalWorkflowOptions['service']['generateGoal']>[0];
+import {
+  buildDraftContext,
+  generateGoalDraft,
+  handlePlanAutomation,
+  handleExecuteAutomation,
+  type AutomationContext,
+} from './goalAutomationHelpers';
+import {
+  applyGoalDraft as applyGoalDraftHelper,
+  applyGoalClarification as applyGoalClarificationHelper,
+  clearGoalAutomationResult as clearHelper,
+  resetGoalArtifacts as resetHelper,
+  createKeyResultDraft,
+  createDraftStateProxy,
+  buildCreateGoalRequest,
+  buildAddKeyResultRequest,
+} from './goalDraftHelpers';
 
 export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const { t } = useI18n();
   const router = useRouter();
-
   const goalDraftLoading = ref(false);
   const goalWorkflowStage = ref<GoalWorkflowStage>('collect');
   const goalDraft = ref<GoalDraft | null>(null);
@@ -58,6 +46,33 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const automationExecuting = ref(false);
   const editableGoal = ref<EditableGoal>(createEmptyGoalDraft());
   const editableKeyResults = ref<EditableKeyResult[]>([]);
+
+  const automationCtx: AutomationContext = {
+    service: options.service,
+    selectedModel: options.selectedModel,
+    buildConversationTranscript: options.buildConversationTranscript,
+    conversationTitle: options.conversationTitle,
+    scrollMessagesToBottom: options.scrollMessagesToBottom,
+  };
+  const handlerCtx = {
+    selectedModel: options.selectedModel,
+    goalDraft,
+    goalAutomationResult,
+    goalWorkflowStage,
+    automationLoading,
+    automationExecuting,
+    buildCurrentDraftContext: () => buildDraftContext(editableGoal.value, editableKeyResults.value, goalDraft.value, options.conversationTitle.value),
+    scrollMessagesToBottom: options.scrollMessagesToBottom,
+    toastSuccess: (msg: string) => toast.success(msg),
+    toastError: (msg: string) => toast.error(msg),
+    translate: t,
+    getAIErrorMessage,
+  };
+
+  const draftState = createDraftStateProxy({
+    goalWorkflowStage, goalDraft, goalClarification, goalAutomationResult,
+    clarificationAnswers, showGoalDraftEditor, editableGoal, editableKeyResults,
+  });
 
   const canSubmitGoalClarification = computed(() => {
     if (!goalClarification.value) return false;
@@ -93,96 +108,26 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     () => goalExecutedActions.value.find((action) => action.tool === 'create_goal')?.entityId ?? '',
   );
 
-  function applyGoalDraft(nextDraft: GoalDraft) {
-    goalWorkflowStage.value = 'draft';
-    goalClarification.value = null;
-    goalAutomationResult.value = null;
-    clarificationAnswers.value = [];
-    goalDraft.value = nextDraft;
-
-    editableGoal.value = {
-      name: nextDraft.goal.title ?? '',
-      description: nextDraft.goal.description,
-      category: nextDraft.goal.category,
-      importance: nextDraft.goal.importance || ImportanceLevel.Moderate,
-      motivation: nextDraft.goal.motivation ?? '',
-      feasibilityAnalysis: nextDraft.goal.feasibilityAnalysis ?? '',
-      tags: [...(nextDraft.goal.tags ?? [])],
-      startDate: nextDraft.goal.suggestedStartDate ?? null,
-      targetDate: nextDraft.goal.suggestedEndDate ?? null,
-    };
-    editableKeyResults.value =
-      nextDraft.keyResults?.map((item) => ({
-        title: item.title,
-        description: item.description ?? '',
-        valueType: item.valueType || KeyResultValueType.Incremental,
-        calculationMethod:
-          item.calculationMethod ||
-          (item.valueType === KeyResultValueType.Incremental
-            ? KeyResultCalculationMethod.Sum
-            : KeyResultCalculationMethod.Last),
-        startValue: item.startValue ?? 0,
-        currentValue: item.currentValue ?? item.startValue ?? 0,
-        targetValue: item.targetValue,
-        unit: item.unit,
-        weight: item.weight ?? 1,
-      })) ?? [];
-  }
-
-  function applyGoalClarification(nextClarification: GoalClarification) {
-    goalWorkflowStage.value = 'clarification';
-    goalDraft.value = null;
-    goalAutomationResult.value = null;
-    showGoalDraftEditor.value = false;
-    editableGoal.value = createEmptyGoalDraft();
-    editableKeyResults.value = [];
-    goalClarification.value = nextClarification;
-    clarificationAnswers.value = nextClarification.questions.map(
-      (_, index) => clarificationAnswers.value[index] ?? '',
-    );
-  }
-
-  function clearGoalAutomationResult() {
-    goalAutomationResult.value = null;
-    goalWorkflowStage.value = goalDraft.value
-      ? 'draft'
-      : goalClarification.value
-        ? 'clarification'
-        : 'collect';
-  }
-
-  function resetGoalArtifacts() {
-    goalWorkflowStage.value = 'collect';
-    goalDraft.value = null;
-    goalClarification.value = null;
-    goalAutomationResult.value = null;
-    clarificationAnswers.value = [];
-    showGoalDraftEditor.value = false;
-    editableGoal.value = createEmptyGoalDraft();
-    editableKeyResults.value = [];
-  }
-
   async function generateGoalDraftFromConversation() {
-    if (!options.selectedModel.value) return;
-    if (!goalClarification.value && !options.hasWorkflowUserMessages.value) return;
-    if (goalClarification.value && !canSubmitGoalClarification.value) return;
-
     goalDraftLoading.value = true;
     try {
-      const response = (await options.service.generateGoal({
-        idea: options.buildConversationTranscript(),
-        includeKeyResults: true,
-        providerId: options.selectedModel.value.providerId as GenerateGoalRequest['providerId'],
-        model: options.selectedModel.value.modelId,
-        clarificationAnswers: goalClarification.value
-          ? clarificationAnswers.value.map((item) => item.trim())
-          : undefined,
-      })) as GenerateGoalsRes;
+      const response = await generateGoalDraft({
+        service: options.service,
+        selectedModel: options.selectedModel,
+        buildConversationTranscript: options.buildConversationTranscript,
+        conversationTitle: options.conversationTitle,
+        hasWorkflowUserMessages: options.hasWorkflowUserMessages,
+        goalClarification,
+        canSubmitGoalClarification,
+        clarificationAnswers,
+      });
+
+      if (!response) return;
 
       if (response.state === 'clarification') {
-        applyGoalClarification(response.clarification);
+        applyGoalClarificationHelper(draftState, response.clarification);
       } else if (response.state === 'draft') {
-        applyGoalDraft(response);
+        applyGoalDraftHelper(draftState, response);
         showGoalDraftEditor.value = false;
         await options.maybeRenameCurrentConversation(
           editableGoal.value.name || options.conversationTitle.value,
@@ -200,126 +145,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   async function handlePlanGoalAutomation() {
-    if (!options.selectedModel.value || !goalDraft.value) return;
-    goalWorkflowStage.value = 'plan';
-    automationLoading.value = true;
-    try {
-      const response = (await options.service.generateGoal({
-        idea: options.buildConversationTranscript(),
-        command: 'prepare',
-        includeKeyResults: true,
-        includeTaskTemplates: true,
-        draftContext: {
-          goal: {
-            title:
-              editableGoal.value.name ||
-              goalDraft.value.goal.title ||
-              options.conversationTitle.value,
-            description: editableGoal.value.description,
-            category: editableGoal.value.category || undefined,
-            importance: editableGoal.value.importance,
-            motivation: editableGoal.value.motivation || undefined,
-            feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
-            tags: editableGoal.value.tags.length ? editableGoal.value.tags : undefined,
-            suggestedStartDate: editableGoal.value.startDate ?? undefined,
-            suggestedEndDate: editableGoal.value.targetDate ?? undefined,
-          },
-          keyResults: editableKeyResults.value.length
-            ? editableKeyResults.value.map((item) => ({
-                title: item.title,
-                description: item.description || undefined,
-                valueType: item.valueType,
-                calculationMethod: item.calculationMethod,
-                startValue: item.startValue,
-                currentValue: item.currentValue,
-                targetValue: item.targetValue,
-                unit: item.unit,
-                weight: item.weight,
-              }))
-            : undefined,
-        },
-        providerId: options.selectedModel.value.providerId as GenerateGoalRequest['providerId'],
-        model: options.selectedModel.value.modelId,
-      })) as GenerateGoalsRes;
-
-      if (response.state !== 'confirm' && response.state !== 'result') {
-        throw new Error('Goal automation planning returned an unexpected workflow state.');
-      }
-      goalAutomationResult.value = response;
-      goalWorkflowStage.value = response.state === 'result' ? 'result' : 'confirm';
-      toast.success(t('aiAssistant.dialogs.automation.planReady'));
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      goalWorkflowStage.value = goalDraft.value ? 'draft' : 'collect';
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.automation.planFailed'));
-    } finally {
-      automationLoading.value = false;
-    }
+    await handlePlanAutomation(handlerCtx, automationCtx);
   }
 
   async function handleExecuteGoalAutomation() {
-    if (!options.selectedModel.value || !goalAutomationResult.value) return;
-    goalWorkflowStage.value = 'execute';
-    automationExecuting.value = true;
-    try {
-      const response = (await options.service.generateGoal({
-        idea: options.buildConversationTranscript(),
-        command: 'execute',
-        includeKeyResults: true,
-        includeTaskTemplates: true,
-        draftContext: {
-          goal: {
-            title:
-              editableGoal.value.name ||
-              goalDraft.value?.goal.title ||
-              options.conversationTitle.value,
-            description: editableGoal.value.description,
-            category: editableGoal.value.category || undefined,
-            importance: editableGoal.value.importance,
-            motivation: editableGoal.value.motivation || undefined,
-            feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
-            tags: editableGoal.value.tags.length ? editableGoal.value.tags : undefined,
-            suggestedStartDate: editableGoal.value.startDate ?? undefined,
-            suggestedEndDate: editableGoal.value.targetDate ?? undefined,
-          },
-          keyResults: editableKeyResults.value.length
-            ? editableKeyResults.value.map((item) => ({
-                title: item.title,
-                description: item.description || undefined,
-                valueType: item.valueType,
-                calculationMethod: item.calculationMethod,
-                startValue: item.startValue,
-                currentValue: item.currentValue,
-                targetValue: item.targetValue,
-                unit: item.unit,
-                weight: item.weight,
-              }))
-            : undefined,
-        },
-        approvedSummary: goalAutomationResult.value.summary,
-        approvedPlan: goalAutomationResult.value.plan,
-        approvedActions: goalAutomationResult.value.actions,
-        providerId: options.selectedModel.value.providerId as GenerateGoalRequest['providerId'],
-        model: options.selectedModel.value.modelId,
-      })) as GenerateGoalsRes;
-
-      if (response.state !== 'result') {
-        throw new Error('Goal automation execution returned an unexpected workflow state.');
-      }
-      goalAutomationResult.value = response;
-      goalWorkflowStage.value = 'result';
-      toast.success(t('aiAssistant.dialogs.automation.executed'));
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      goalWorkflowStage.value = goalAutomationResult.value
-        ? 'confirm'
-        : goalDraft.value
-          ? 'draft'
-          : 'collect';
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.automation.executeFailed'));
-    } finally {
-      automationExecuting.value = false;
-    }
+    await handleExecuteAutomation(handlerCtx, automationCtx);
   }
 
   async function openAutomatedGoal() {
@@ -331,38 +161,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalDraft.value) return;
     creatingGoal.value = true;
     try {
-      const created = await options.createGoal({
-        name: editableGoal.value.name,
-        description: editableGoal.value.description,
-        category: editableGoal.value.category || undefined,
-        importance: editableGoal.value.importance,
-        motivation: editableGoal.value.motivation || undefined,
-        feasibilityAnalysis: editableGoal.value.feasibilityAnalysis || undefined,
-        tags: editableGoal.value.tags.length ? editableGoal.value.tags : undefined,
-        startDate: editableGoal.value.startDate ?? undefined,
-        targetDate: editableGoal.value.targetDate ?? undefined,
-      });
-
+      const created = await options.createGoal(buildCreateGoalRequest(editableGoal.value));
       if (!created) {
         toast.error(t('aiAssistant.dialogs.generateGoal.createFailed'));
         return;
       }
-
       for (const item of editableKeyResults.value) {
-        await options.addKeyResult(created.id, {
-          goalId: created.id as never,
-          title: item.title,
-          description: item.description || undefined,
-          valueType: item.valueType,
-          calculationMethod: item.calculationMethod,
-          startValue: item.startValue,
-          targetValue: item.targetValue,
-          currentValue: item.currentValue,
-          unit: item.unit || undefined,
-          weight: item.weight,
-        });
+        await options.addKeyResult(created.id, buildAddKeyResultRequest(created.id, item));
       }
-
       toast.success(t('aiAssistant.dialogs.generateGoal.created'));
       await router.push(`/goals/${created.id}`);
     } catch (error) {
@@ -373,22 +179,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function addKeyResultDraft() {
-    clearGoalAutomationResult();
-    editableKeyResults.value.push({
-      title: '',
-      description: '',
-      valueType: KeyResultValueType.Incremental,
-      calculationMethod: KeyResultCalculationMethod.Sum,
-      startValue: 0,
-      currentValue: 0,
-      targetValue: 1,
-      unit: t('aiAssistant.goalDraft.unit'),
-      weight: 1,
-    });
+    clearHelper(draftState);
+    const draft = createKeyResultDraft();
+    draft.unit = t('aiAssistant.goalDraft.unit');
+    editableKeyResults.value.push(draft);
   }
 
   function removeKeyResultDraft(index: number) {
-    clearGoalAutomationResult();
+    clearHelper(draftState);
     editableKeyResults.value.splice(index, 1);
   }
 
@@ -396,12 +194,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     index: number;
     value: EditableKeyResult;
   }) {
-    clearGoalAutomationResult();
+    clearHelper(draftState);
     editableKeyResults.value.splice(payload.index, 1, payload.value);
   }
 
   function handleUpdateGoalDraft(payload: EditableGoal) {
-    clearGoalAutomationResult();
+    clearHelper(draftState);
     editableGoal.value = payload;
   }
 
@@ -429,10 +227,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalExecutionSummary,
     goalExecutionRecovery,
     automatedGoalId,
-    applyGoalDraft,
-    applyGoalClarification,
-    clearGoalAutomationResult,
-    resetGoalArtifacts,
+    applyGoalDraft: (nextDraft: GoalDraft) => applyGoalDraftHelper(draftState, nextDraft),
+    applyGoalClarification: (next: GoalClarification) => applyGoalClarificationHelper(draftState, next),
+    clearGoalAutomationResult: () => clearHelper(draftState),
+    resetGoalArtifacts: () => resetHelper(draftState),
     generateGoalDraftFromConversation,
     handlePlanGoalAutomation,
     handleExecuteGoalAutomation,

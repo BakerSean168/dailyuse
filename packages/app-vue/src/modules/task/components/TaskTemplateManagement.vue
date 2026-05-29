@@ -349,7 +349,7 @@ const getStatusBadgeClass = (status: string) => {
 };
 
 const getStatusIconComponent = (icon: string) => {
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     'mdi-play-circle': PlayCircle,
     'mdi-pause-circle': PauseCircle,
     'mdi-archive': Archive,

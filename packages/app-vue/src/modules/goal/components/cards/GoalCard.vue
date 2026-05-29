@@ -105,16 +105,17 @@ import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { getCompletedKeyResultCount } from '../../utils/progress';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const props = defineProps<{
-  goal: any;
+  goal: GoalClientDTO;
 }>();
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  view: [goal: any];
-  edit: [goal: any];
+  view: [goal: GoalClientDTO];
+  edit: [goal: GoalClientDTO];
   delete: [id: string];
 }>();
 

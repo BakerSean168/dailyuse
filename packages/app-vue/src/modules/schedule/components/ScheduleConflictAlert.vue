@@ -111,7 +111,7 @@ interface Emits {
   (e: 'ignore-conflict'): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();

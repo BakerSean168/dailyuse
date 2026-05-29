@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalRecordClientDTO, GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import { Dialog, DialogContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
@@ -116,8 +116,8 @@ const localRecord = ref({
 const isEditing = computed(() => !!propRecord.value);
 
 const currentKeyResultUnit = computed(() => {
-  const currentGoal = goals.value.find((g: any) => g.id === propGoalId.value);
-  const currentKeyResult = currentGoal?.keyResults?.find((kr: any) => kr.id === propKeyResultId.value);
+  const currentGoal = goals.value.find((g: GoalClientDTO) => g.id === propGoalId.value);
+  const currentKeyResult = currentGoal?.keyResults?.find((kr: KeyResultClientDTO) => kr.id === propKeyResultId.value);
   return currentKeyResult?.progress?.unit ?? '';
 });
 
@@ -140,14 +140,14 @@ const isValid = computed(() => !validationError.value && localRecord.value.chang
 
 const handleCreateKeyResult = async () => {
   // 获取当前 KeyResult
-  const currentGoal = goals.value.find((g: any) => g.id === propGoalId.value);
+  const currentGoal = goals.value.find((g: GoalClientDTO) => g.id === propGoalId.value);
   if (!currentGoal) {
     console.error(t('goal.recordDialog.goalNotFound'));
     return;
   }
 
   const currentKeyResult = currentGoal.keyResults?.find(
-    (kr: any) => kr.id === propKeyResultId.value,
+    (kr: KeyResultClientDTO) => kr.id === propKeyResultId.value,
   );
   if (!currentKeyResult) {
     console.error(t('goal.recordDialog.krNotFound'));

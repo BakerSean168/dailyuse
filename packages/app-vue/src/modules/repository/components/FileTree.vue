@@ -114,7 +114,7 @@ defineProps<{
   loading?: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   'create-folder': [parentId?: string];
   'create-resource': [folderId?: string];
   'rename-node': [node: TreeNode];

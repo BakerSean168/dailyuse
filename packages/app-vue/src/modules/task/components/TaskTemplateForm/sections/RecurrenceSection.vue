@@ -244,11 +244,12 @@ const emit = defineEmits<{
 }>();
 
 const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
+  const currentRule = props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null;
   const updatedTemplate: TaskTemplateViewModel = {
     ...props.modelValue,
     timeConfig: { ...(props.modelValue.timeConfig || {}) },
-    recurrenceRule: props.modelValue.recurrenceRule
-      ? { ...(props.modelValue.recurrenceRule as RecurrenceRuleDTO) }
+    recurrenceRule: currentRule
+      ? { ...currentRule }
       : null,
   } as TaskTemplateViewModel;
   updater(updatedTemplate);
@@ -298,14 +299,14 @@ const recurrenceEnabled = computed({
         occurrences: null,
       };
       updateTemplate((template) => {
-        (template as any).recurrenceRule = defaultRule;
-        (template as any).taskType = TaskType.Recurring;
+        template.recurrenceRule = defaultRule as unknown as Record<string, unknown>;
+        template.taskType = TaskType.Recurring;
       });
     } else if (!value) {
       // 禁用重复：清空规则
       updateTemplate((template) => {
-        (template as any).recurrenceRule = null;
-        (template as any).taskType = TaskType.OneTime;
+        template.recurrenceRule = null;
+        template.taskType = TaskType.OneTime;
       });
     }
   },
@@ -314,7 +315,7 @@ const recurrenceEnabled = computed({
 // 频率
 const frequency = computed({
   get: () =>
-    (props.modelValue.recurrenceRule as RecurrenceRuleDTO | null)?.frequency ??
+    (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.frequency ??
     RecurrenceFrequency.Daily,
   set: (value: RecurrenceFrequency) => {
     updateRecurrenceRule({ frequency: value });
@@ -323,7 +324,7 @@ const frequency = computed({
 
 // 间隔
 const interval = computed({
-  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleDTO | null)?.interval ?? 1,
+  get: () => (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.interval ?? 1,
   set: (value: number) => {
     updateRecurrenceRule({ interval: value });
   },
@@ -331,7 +332,7 @@ const interval = computed({
 
 // 选中的星期
 const selectedDays = computed({
-  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleDTO | null)?.daysOfWeek ?? [],
+  get: () => (props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null)?.daysOfWeek ?? [],
   set: (value: DayOfWeek[]) => {
     updateRecurrenceRule({ daysOfWeek: value });
   },
@@ -348,7 +349,7 @@ const occurrences = ref<number>(1);
 
 // 初始化结束条件
 const initializeEndCondition = () => {
-  const rule = props.modelValue.recurrenceRule;
+  const rule = props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null;
   if (!rule) {
     endConditionType.value = 'never';
     return;
@@ -367,7 +368,7 @@ const initializeEndCondition = () => {
 
 // 更新重复规则
 const updateRecurrenceRule = (updates: Partial<RecurrenceRuleDTO>) => {
-  const currentRule = props.modelValue.recurrenceRule as RecurrenceRuleDTO | null;
+  const currentRule = props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null;
   if (!currentRule) return;
 
   const newRuleDTO: RecurrenceRuleDTO = {
@@ -379,7 +380,7 @@ const updateRecurrenceRule = (updates: Partial<RecurrenceRuleDTO>) => {
   };
 
   updateTemplate((template) => {
-    (template as any).recurrenceRule = newRuleDTO;
+    template.recurrenceRule = newRuleDTO as unknown as Record<string, unknown>;
   });
 };
 
@@ -452,7 +453,7 @@ const intervalHint = computed(() => {
 const hasRecurrence = computed(() => recurrenceEnabled.value);
 
 const recurrenceDescription = computed(() => {
-  const rule = props.modelValue.recurrenceRule as RecurrenceRuleDTO | null;
+  const rule = props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null;
   if (!rule) return '';
   const freq = rule.frequency;
   const interval = rule.interval;
@@ -474,7 +475,7 @@ const validateRecurrence = () => {
   validationErrors.value = [];
 
   if (recurrenceEnabled.value) {
-    const rule = props.modelValue.recurrenceRule;
+    const rule = props.modelValue.recurrenceRule as unknown as RecurrenceRuleDTO | null;
     if (!rule) {
       validationErrors.value.push(t('task.recurrence.invalidConfig'));
       return;

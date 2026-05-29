@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import SearchPanel from './SearchPanel.vue';
+import type { SearchResultItem } from '@dailyuse/contracts/repository';
 
 const meta = {
   title: 'Business/Repository/SearchPanel',
@@ -54,7 +55,7 @@ export const WithResults: Story = {
           { lineNumber: 5, lineContent: '基于 Vue 3 + TypeScript 构建', startIndex: 3, endIndex: 7 },
         ],
       },
-    ] as any,
+    ] as unknown as SearchResultItem[],
     searching: false,
     hasSearched: true,
     totalResults: 2,

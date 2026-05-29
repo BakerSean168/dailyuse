@@ -306,7 +306,7 @@
                     {{ t('goal.comparison.fastestProgress') }}
                   </div>
                   <div class="mt-1 text-3xl font-bold text-success">
-                    {{ getProgress(getHighestProgressGoal()) }}%
+                    {{ getProgress(getHighestProgressGoal()!) }}%
                   </div>
                 </div>
               </div>
@@ -333,7 +333,7 @@
                 <div>
                   <div class="text-xs text-muted-foreground">{{ t('goal.comparison.mostKR') }}</div>
                   <div class="mt-1 text-3xl font-bold text-primary">
-                    {{ getKRCount(getMostKRsGoal()) }}
+                    {{ getKRCount(getMostKRsGoal()!) }}
                   </div>
                 </div>
               </div>
@@ -362,7 +362,7 @@
                     {{ t('goal.comparison.longestActive') }}
                   </div>
                   <div class="mt-1 text-3xl font-bold text-warning">
-                    {{ getActiveDays(getOldestGoal()) }}{{ t('goal.comparison.dayUnit') }}
+                    {{ getActiveDays(getOldestGoal()!) }}{{ t('goal.comparison.dayUnit') }}
                   </div>
                 </div>
               </div>
@@ -387,6 +387,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import {
   Card,
   CardHeader,
@@ -418,7 +419,7 @@ import {
 } from 'lucide-vue-next';
 
 const props = defineProps<{
-  goals: any[];
+  goals: GoalClientDTO[];
 }>();
 
 // State
@@ -426,16 +427,16 @@ const { t, locale } = useI18n();
 const viewMode = ref<'table' | 'chart'>('table');
 
 // Helper Methods
-const getKRCount = (goal: any): number => {
+const getKRCount = (goal: GoalClientDTO): number => {
   return goal?.keyResults?.length || 0;
 };
 
-const getProgress = (goal: any): number => {
+const getProgress = (goal: GoalClientDTO): number => {
   const krs = goal?.keyResults;
   if (!krs || krs.length === 0) return 0;
-  const totalWeight = krs.reduce((sum: number, kr: any) => sum + (kr.weight ?? 1), 0);
+  const totalWeight = krs.reduce((sum: number, kr: KeyResultClientDTO) => sum + (kr.weight ?? 1), 0);
   if (totalWeight === 0) return 0;
-  const weightedProgress = krs.reduce((sum: number, kr: any) => {
+  const weightedProgress = krs.reduce((sum: number, kr: KeyResultClientDTO) => {
     const p = kr.progress;
     if (!p || !p.targetValue) return sum;
     const pct = Math.min(1, p.currentValue / p.targetValue);
@@ -444,35 +445,35 @@ const getProgress = (goal: any): number => {
   return Math.round((weightedProgress / totalWeight) * 100);
 };
 
-const getTotalWeight = (goal: any): number => {
+const getTotalWeight = (goal: GoalClientDTO): number => {
   if (!goal?.keyResults) return 0;
-  return goal.keyResults.reduce((sum: number, kr: any) => sum + (kr.weight || 0), 0);
+  return goal.keyResults.reduce((sum: number, kr: KeyResultClientDTO) => sum + (kr.weight || 0), 0);
 };
 
-const getAverageWeight = (goal: any): number => {
+const getAverageWeight = (goal: GoalClientDTO): number => {
   const count = getKRCount(goal);
   if (count === 0) return 0;
   return Math.round(getTotalWeight(goal) / count);
 };
 
-const getMaxWeight = (goal: any): number => {
+const getMaxWeight = (goal: GoalClientDTO): number => {
   if (!goal?.keyResults || goal.keyResults.length === 0) return 0;
-  return Math.max(...goal.keyResults.map((kr: any) => kr.weight || 0));
+  return Math.max(...goal.keyResults.map((kr: KeyResultClientDTO) => kr.weight || 0));
 };
 
-const getMinWeight = (goal: any): number => {
+const getMinWeight = (goal: GoalClientDTO): number => {
   if (!goal?.keyResults || goal.keyResults.length === 0) return 0;
-  return Math.min(...goal.keyResults.map((kr: any) => kr.weight || 0));
+  return Math.min(...goal.keyResults.map((kr: KeyResultClientDTO) => kr.weight || 0));
 };
 
-const getActiveDays = (goal: any): number => {
+const getActiveDays = (goal: GoalClientDTO): number => {
   if (!goal?.createdAt) return 0;
   const now = Date.now();
   const created = goal.createdAt;
   return Math.floor((now - created) / (1000 * 60 * 60 * 24));
 };
 
-const getStatusBadgeVariant = (goal: any): 'default' | 'secondary' | 'destructive' | 'outline' => {
+const getStatusBadgeVariant = (goal: GoalClientDTO): 'default' | 'secondary' | 'destructive' | 'outline' => {
   const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
     Draft: 'outline',
     Active: 'default',
@@ -482,7 +483,7 @@ const getStatusBadgeVariant = (goal: any): 'default' | 'secondary' | 'destructiv
   return variantMap[goal.status] || 'outline';
 };
 
-const getStatusText = (goal: any): string => {
+const getStatusText = (goal: GoalClientDTO): string => {
   const textMap: Record<string, string> = {
     Draft: t('goal.comparison.statusDraft'),
     Active: t('goal.comparison.statusActive'),

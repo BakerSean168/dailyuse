@@ -6,7 +6,6 @@
  */
 
 import { computed } from 'vue';
-import { useReminderStore } from '../stores/reminder-store';
 import { createReminderContext } from './useReminderContext';
 import { useReminderTemplates } from './useReminderTemplates';
 import { useReminderGroups } from './useReminderGroups';

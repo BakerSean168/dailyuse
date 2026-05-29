@@ -10,7 +10,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export const isDesktopEnvironment = () =>
-  typeof window !== 'undefined' && typeof (window as any).electronAPI?.invoke === 'function';
+  typeof window !== 'undefined' && typeof (window as unknown as { electronAPI?: { invoke?: unknown } }).electronAPI?.invoke === 'function';
 
 export interface AuthContext {
   store: ReturnType<typeof useAuthenticationStore>;
