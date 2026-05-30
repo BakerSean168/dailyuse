@@ -21,6 +21,7 @@
  */
 
 import type { Router, Express, RequestHandler } from 'express';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 
 /**
  * 数据库客户端类型
@@ -52,18 +53,7 @@ export interface IApiMiddleware {
  * ApiBootstrapper 提供给每个模块的"工具箱"，模块在 register() 中
  * 通过此上下文完成依赖注入和路由挂载。
  */
-export interface IApiModuleContext {
-  /** Express 应用实例（用于挂载全局级别的中间件或特殊路由） */
-  readonly app: Express;
-  /** API 根路由（通常挂载在 /api 和 /api/v1） */
-  readonly router: Router;
-  /** 全局数据库连接 */
-  readonly db: DatabaseClient;
-  /** 平台中间件（auth, rbac 等） */
-  readonly middleware: IApiMiddleware;
-  /** OpenAPI registry for unified route + doc registration (optional) */
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export interface IApiModuleContext extends ServerModuleContext<DatabaseClient> {}
 
 /**
  * API 模块标准接口
