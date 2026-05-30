@@ -28,7 +28,8 @@ import {
   createScheduleEventTransportHandlers,
   createScheduleTransportHandlers,
 } from './transport-handlers';
-import { createScheduleRuntimeContribution, type ScheduleTaskSourceExecutor } from './runtime';
+import type { ScheduleTaskSourceExecutor } from '../application-server/source-executors/runtime-contract';
+import { createScheduleRuntimeContribution } from './runtime';
 
 /**
  * Typed module context for schedule registration.

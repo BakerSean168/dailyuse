@@ -52,6 +52,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   ResourceClientDTO,
+  UploadResourceFileDTO,
   UploadResourcesRequestDTO,
   UploadResourcesResponseDTO,
   RepositoryStatsDTO,
@@ -473,7 +474,7 @@ function buildApplicationPort(
       return useCases.uploadResources.execute({
         repositoryId: data.repositoryId,
         identityId: ctx.identityId,
-        files: data.files,
+        files: data.files as UploadResourceFileDTO[],
         metadata: data.metadata as UploadResourcesRequestDTO | undefined,
       });
     },

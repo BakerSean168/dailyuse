@@ -20,7 +20,7 @@
  * ```
  */
 
-import type { Router, Express, RequestHandler } from 'express';
+import type { RequestHandler } from 'express';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 
 /**

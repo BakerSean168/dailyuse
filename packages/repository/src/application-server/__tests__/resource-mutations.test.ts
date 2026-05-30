@@ -2,12 +2,6 @@ import { describe, expect, it } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
-import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
-import { FolderMemoryRepository } from '../../infrastructure-server/adapters/memory/folder-memory.repository';
-import { ResourceBookmarkMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-bookmark-memory.repository';
-import { createRepositoryModule } from '../../infrastructure-server/repository.module';
 import { Repository } from '../../domain-server/aggregates/repository';
 import { Folder } from '../../domain-server/entities/folder';
 import { CreateRepositoryUseCase } from '../use-cases/commands/create-repository.use-case';
@@ -18,23 +12,18 @@ import {
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
 import { eventBus } from '@dailyuse/utils/domain';
+import {
+  createRepositoryMemoryTestRepositories,
+  createRepositoryModuleForTests,
+} from '../../testing';
 
 describe('Repository resource mutations', () => {
   it('renames a resource in both storage and metadata', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-rename-'));
 
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
-      const module = createRepositoryModule({
-        repositoryRepository,
-        resourceRepository,
-        folderRepository,
-        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
-        storagePort: storage,
-      });
+      const { resourceRepository, repositoryRepository, module } =
+        createRepositoryModuleForTests({ tempDir });
 
       const repository = Repository.create({
         identityId: 'user-1' as any,
@@ -81,17 +70,8 @@ describe('Repository resource mutations', () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-move-'));
 
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
-      const module = createRepositoryModule({
-        repositoryRepository,
-        resourceRepository,
-        folderRepository,
-        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
-        storagePort: storage,
-      });
+      const { storagePort: storage, resourceRepository, repositoryRepository, folderRepository, module } =
+        createRepositoryModuleForTests({ tempDir });
 
       const repository = Repository.create({
         identityId: 'user-1' as any,
@@ -151,7 +131,7 @@ describe('Repository resource mutations', () => {
   });
 
   it('returns the existing repository when createRepository is called again for the same user', async () => {
-    const repositoryRepository = new RepositoryMemoryRepository();
+    const { repositoryRepository } = createRepositoryMemoryTestRepositories();
     const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const first = await createRepository.execute({
@@ -185,13 +165,7 @@ describe('Repository resource mutations', () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-bootstrap-'));
 
     try {
-      const module = createRepositoryModule({
-        repositoryRepository: new RepositoryMemoryRepository(),
-        resourceRepository: new ResourceMemoryRepository(),
-        folderRepository: new FolderMemoryRepository(),
-        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
-        storagePort: new FsStorageAdapter(tempDir),
-      });
+      const { module } = createRepositoryModuleForTests({ tempDir });
 
       const identityId = String(IdentityId.generate());
       const result = await module.api.getCurrentRepository({ identityId } as any);
@@ -217,12 +191,8 @@ describe('Repository resource mutations', () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-no-bootstrap-'));
 
     try {
-      const module = createRepositoryModule({
-        repositoryRepository: new RepositoryMemoryRepository(),
-        resourceRepository: new ResourceMemoryRepository(),
-        folderRepository: new FolderMemoryRepository(),
-        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
-        storagePort: new FsStorageAdapter(tempDir),
+      const { module } = createRepositoryModuleForTests({
+        tempDir,
         autoCreateCanonicalRepository: false,
       });
 
@@ -244,17 +214,8 @@ describe('Repository resource mutations', () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-read-binary-'));
 
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
-      const module = createRepositoryModule({
-        repositoryRepository,
-        resourceRepository,
-        folderRepository,
-        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
-        storagePort: storage,
-      });
+      const { repositoryRepository, module } =
+        createRepositoryModuleForTests({ tempDir });
 
       const repository = Repository.create({
         identityId: 'user-1' as any,
@@ -315,17 +276,8 @@ describe('Repository resource mutations', () => {
     (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
 
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
-      const module = createRepositoryModule({
-        repositoryRepository,
-        resourceRepository,
-        folderRepository,
-        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
-        storagePort: storage,
-      });
+      const { storagePort: storage, repositoryRepository, folderRepository, module } =
+        createRepositoryModuleForTests({ tempDir });
 
       const repository = Repository.create({
         identityId: 'user-1' as any,

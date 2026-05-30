@@ -190,6 +190,7 @@ describe('Schedule command use-cases', () => {
   it('update applies all supported mutations and saves task', async () => {
     const task = {
       updateMetadata: vi.fn(),
+      updateDescription: vi.fn(),
       enable: vi.fn(),
       disable: vi.fn(),
       updateSchedule: vi.fn(),
@@ -214,7 +215,7 @@ describe('Schedule command use-cases', () => {
     if (result.ok) {
       expect(result.data).toEqual({ id: 'task-1' });
     }
-    expect(task.updateMetadata).toHaveBeenCalledWith({ description: 'updated desc' });
+    expect(task.updateDescription).toHaveBeenCalledWith('updated desc');
     expect(task.enable).toHaveBeenCalledTimes(1);
     expect(task.disable).not.toHaveBeenCalled();
     expect(task.updateSchedule).toHaveBeenCalledWith({ cronExpression: '0 9 * * *' });
@@ -226,6 +227,8 @@ describe('Schedule command use-cases', () => {
   it('update disables task when enabled flag is false', async () => {
     const task = {
       updateMetadata: vi.fn(),
+      updateDescription: vi.fn(),
+      updateDescription: vi.fn(),
       enable: vi.fn(),
       disable: vi.fn(),
       updateSchedule: vi.fn(),

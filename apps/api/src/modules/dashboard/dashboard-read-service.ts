@@ -6,9 +6,9 @@ import {
 } from '@dailyuse/dashboard';
 import { GoalPrismaRepository } from '@dailyuse/goal/infrastructure-server';
 import { TaskInstancePrismaRepository, TaskTemplatePrismaRepository } from '@dailyuse/task/infrastructure-server';
-import { SchedulePrismaRepository } from '@dailyuse/schedule';
-import { ReminderTemplatePrismaRepository } from '@dailyuse/reminder';
-import { NotificationPrismaRepository } from '@dailyuse/notification';
+import { SchedulePrismaRepository } from '@dailyuse/schedule/infrastructure-server';
+import { ReminderTemplatePrismaRepository } from '@dailyuse/reminder/infrastructure-server';
+import { NotificationPrismaRepository } from '@dailyuse/notification/infrastructure-server';
 
 function toDashboardTaskInstanceRecord(
   instance: Awaited<ReturnType<TaskInstancePrismaRepository['findByIdentityId']>>[number],

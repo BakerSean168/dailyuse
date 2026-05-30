@@ -9,7 +9,7 @@
  * 现在 `createAIPowerSyncModule()` 组合根已在内部处理此逻辑。
  */
 
-import { AIKnowledgeNotePathResolver } from '../../infrastructure-server/services/ai-knowledge-note-path-resolver';
+import { AIKnowledgeNotePathResolver } from '../../application-server/services/ai-knowledge-note-path-resolver';
 import { ManageAIKnowledgeNoteUseCase } from '../../application-server/use-cases/commands/manage-ai-knowledge-note.use-case';
 import type { IKnowledgeNotePersistencePort } from '../../application-server/ports';
 import type { IAIProviderConfigRepository } from '../../domain-server/repositories/i-ai-provider-config-repository';

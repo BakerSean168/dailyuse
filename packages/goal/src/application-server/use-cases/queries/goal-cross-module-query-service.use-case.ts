@@ -67,11 +67,11 @@ export class GoalCrossModuleQueryServiceUseCase {
         .filter((goal: Goal) => (statusFilter as string[]).includes(goal.status))
         .map((goal: Goal) => ({
           id: goal.id,
-          title: goal.title,
+          title: goal.name,
           description: goal.description,
           status: goal.status,
-          targetDate: goal.targetDate,
-          progress: goal.getOverallProgress(),
+          targetDate: goal.targetDate?.getTime() ?? null,
+          progress: goal.progress,
         })),
     );
   }
@@ -95,9 +95,11 @@ export class GoalCrossModuleQueryServiceUseCase {
         description: kr.description,
         goalId: goal.id,
         progress: {
-          current: kr.progress.current,
-          target: kr.progress.target,
-          percentage: kr.progress.progressPercentage,
+          current: kr.progress.currentValue,
+          target: kr.progress.targetValue,
+          percentage: kr.progress.targetValue === 0
+            ? 0
+            : Math.round((kr.progress.currentValue / kr.progress.targetValue) * 100),
         },
         weight: kr.weight,
       })),

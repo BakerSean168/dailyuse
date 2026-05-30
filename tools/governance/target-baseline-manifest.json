@@ -91,44 +91,22 @@
     {
       "project": "mobile",
       "target": "test",
-      "type": "temporary",
-      "reason": "Mobile test infrastructure not yet set up; Expo test runner integration pending",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
+      "type": "permanent",
+      "reason": "React Native app in apps/: test infrastructure requires Expo test runner integration; not a standard package"
     },
     {
       "project": "database",
       "target": "test",
-      "type": "temporary",
-      "reason": "Infrastructure package: integration tests deferred; validated through downstream consumers",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
-    },
-    {
-      "project": "http-client",
-      "target": "test",
       "type": "permanent",
-      "reason": "Infrastructure lib: tested via integration with consuming apps"
-    },
-    {
-      "project": "ipc-client",
-      "target": "test",
-      "type": "temporary",
-      "reason": "Infrastructure lib: tested via desktop IPC test targets",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
-    },
-    {
-      "project": "dashboard",
-      "target": "test",
-      "type": "permanent",
-      "reason": "UI lib: component tests deferred; validated through app-vue integration"
+      "reason": "Infrastructure plumbing: Prisma client singleton and env resolution; no testable business logic; validated through downstream consumers"
     },
     {
       "project": "ui-vue-shadcn",
       "target": "test",
-      "type": "permanent",
-      "reason": "UI component lib: third-party shadcn-vue primitives; component tests deferred"
+      "type": "temporary",
+      "reason": "UI component lib: third-party shadcn-vue primitives; component test infrastructure pending",
+      "owner": "governance-team",
+      "targetDate": "2026-Q4"
     },
     {
       "project": "app-react",
@@ -139,8 +117,10 @@
     {
       "project": "app-react",
       "target": "test",
-      "type": "permanent",
-      "reason": "React lib: test infrastructure not yet set up"
+      "type": "temporary",
+      "reason": "React lib: test infrastructure not yet set up",
+      "owner": "governance-team",
+      "targetDate": "2026-Q4"
     },
     {
       "project": "ui-react-native",
@@ -151,8 +131,10 @@
     {
       "project": "ui-react-native",
       "target": "test",
-      "type": "permanent",
-      "reason": "React Native lib: test infrastructure not yet set up"
+      "type": "temporary",
+      "reason": "React Native lib: test infrastructure not yet set up",
+      "owner": "governance-team",
+      "targetDate": "2026-Q4"
     },
     {
       "project": "powersync-schema",

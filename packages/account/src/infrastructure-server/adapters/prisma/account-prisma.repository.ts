@@ -16,6 +16,14 @@ import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
+/**
+ * Minimal DB capability interface for Account repository.
+ * Both PrismaClient and Prisma.TransactionClient satisfy this.
+ */
+interface AccountDb {
+  account: PrismaClient['account'];
+}
+
 export class PrismaAccountRepository
   extends AggregateRepositoryBase<Account>
   implements IAccountRepository
@@ -25,16 +33,16 @@ export class PrismaAccountRepository
   }
 
   /**
-   * Resolve the effective Prisma client (transactional or default).
+   * Resolve the effective DB client (transactional or default).
    */
-  private client(tx?: unknown): PrismaClient {
-    return (tx ?? this.prisma) as PrismaClient;
+  private client(tx?: AccountDb): AccountDb {
+    return tx ?? this.prisma;
   }
 
   /**
    * Protected persistence method - called by base class before event publishing
    */
-  protected async persist(account: Account, tx?: unknown): Promise<void> {
+  protected async persist(account: Account, tx?: AccountDb): Promise<void> {
     const db = this.client(tx);
 
     await db.account.upsert({
@@ -83,18 +91,18 @@ export class PrismaAccountRepository
   /**
    * save 方法由基类提供，支持事务参数
    */
-  override async save(account: Account, tx?: unknown): Promise<void> {
+  override async save(account: Account, tx?: AccountDb): Promise<void> {
     await this.persist(account, tx);
     await publishAggregateEvents(account, this.eventBus);
   }
 
-  async findById(id: string, tx?: unknown): Promise<Account | null> {
+  async findById(id: string, tx?: AccountDb): Promise<Account | null> {
     const row = await this.client(tx).account.findUnique({ where: { id } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async findByNickname(nickname: string, tx?: unknown): Promise<Account | null> {
+  async findByNickname(nickname: string, tx?: AccountDb): Promise<Account | null> {
     const rows = await this.client(tx).account.findMany({
       where: { profile: { path: ['nickname'], equals: nickname } },
       take: 1,
@@ -103,29 +111,29 @@ export class PrismaAccountRepository
     return AccountPrismaMapper.toDomain(rows[0]);
   }
 
-  async findByEmail(email: string, tx?: unknown): Promise<Account | null> {
+  async findByEmail(email: string, tx?: AccountDb): Promise<Account | null> {
     const row = await this.client(tx).account.findFirst({ where: { emailAddress: email } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async findByPhone(phoneNumber: string, tx?: unknown): Promise<Account | null> {
+  async findByPhone(phoneNumber: string, tx?: AccountDb): Promise<Account | null> {
     const row = await this.client(tx).account.findFirst({ where: { phoneNumber } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async existsByNickname(nickname: string, tx?: unknown): Promise<boolean> {
+  async existsByNickname(nickname: string, tx?: AccountDb): Promise<boolean> {
     const account = await this.findByNickname(nickname, tx);
     return account !== null;
   }
 
-  async existsByEmail(email: string, tx?: unknown): Promise<boolean> {
+  async existsByEmail(email: string, tx?: AccountDb): Promise<boolean> {
     const count = await this.client(tx).account.count({ where: { emailAddress: email } });
     return count > 0;
   }
 
-  async delete(id: string, tx?: unknown): Promise<void> {
+  async delete(id: string, tx?: AccountDb): Promise<void> {
     await this.client(tx).account.delete({ where: { id } });
   }
 
@@ -135,7 +143,7 @@ export class PrismaAccountRepository
       pageSize?: number;
       status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED';
     },
-    tx?: unknown,
+    tx?: AccountDb,
   ): Promise<{ accounts: Account[]; total: number }> {
     const db = this.client(tx);
     const page = options?.page || 1;

@@ -303,7 +303,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   /** Updates the schedule configuration. */
   public updateSchedule(schedule: Partial<ScheduleConfigDTO>): void {
     const oldCron = this._props.schedule.cronExpression;
-    this._props.schedule = this._props.schedule.with(schedule);
+    this._props.schedule = this._props.schedule.with(schedule as Parameters<typeof this._props.schedule.with>[0]);
     this._props.updatedAt = new Date();
 
     const nextRunAt = this._props.schedule.calculateNextRun(Date.now());
@@ -358,7 +358,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       executionTime: Date.now(),
-      metadata: metadataDTO,
+      metadata: metadataDTO as unknown as Record<string, unknown>,
     });
 
     return true;
@@ -444,7 +444,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
   /** Updates the execution info. */
   public updateExecutionInfo(updates: Partial<ExecutionInfoDTO>): void {
-    this._props.execution = this._props.execution.with(updates);
+    this._props.execution = this._props.execution.with(updates as Parameters<typeof this._props.execution.with>[0]);
     this._props.updatedAt = new Date();
   }
 
@@ -474,7 +474,13 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return this._props.retryPolicy.calculateNextRetryDelay(execInfo.consecutiveFailures);
   }
 
-  // ===== Metadata Management =====
+  // ===== Metadata & Description Management =====
+
+  /** Updates the task description. */
+  public updateDescription(description: string): void {
+    this._props.description = description;
+    this._props.updatedAt = new Date();
+  }
 
   /** Updates the task metadata. */
   public updateMetadata(metadata: Partial<TaskMetadataDTO>): void {
@@ -696,7 +702,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
     if (dto.executions) {
       dto.executions.forEach((execDTO: unknown) => {
-        task.addExecution(ScheduleExecution.fromDTO(execDTO));
+        task.addExecution(ScheduleExecution.fromDTO(execDTO as Record<string, unknown>));
       });
     }
 

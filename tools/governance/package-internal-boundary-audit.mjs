@@ -54,19 +54,7 @@ const EXCEPTIONS = new Set([
   'http-client',
 ]);
 
-// Pre-existing violations that are tracked for future fixing.
-// Each entry: "relative/path.ts: layer must not import from forbidden (found: 'specifier')"
-const KNOWN_VIOLATIONS = new Set([
-  // TODO: move mapper to application-server or use a port
-  'packages/goal/src/application-server/mappers/goal.mapper.ts: application-server must not import from infrastructure-server (found: \'@/infrastructure-server/adapters/prisma/mappers/goal-state-mapper\')',
-  // TODO: move path resolver to domain or application layer
-  'packages/ai/src/application-server/use-cases/commands/manage-ai-knowledge-note.use-case.ts: application-server must not import from infrastructure-server (found: \'../../../infrastructure-server/services/ai-knowledge-note-path-resolver\')',
-  // TODO: move fs-storage adapter dependency behind a port
-  'packages/repository/src/application-server/index.ts: application-server must not import from infrastructure-server (found: \'../infrastructure-server/adapters/fs/fs-storage.adapter\')',
-  // TODO: extract runtime types to domain-shared or contracts
-  'packages/schedule/src/application-server/source-executors/shared-source-executor.ts: application-server must not import from api (found: \'../../api/runtime\')',
-  'packages/schedule/src/application-server/source-executors/types.ts: application-server must not import from api (found: \'../../api/runtime\')',
-]);
+const KNOWN_VIOLATIONS = new Set();
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.mts', '.cts']);
 

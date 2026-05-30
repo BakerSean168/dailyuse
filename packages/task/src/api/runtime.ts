@@ -80,7 +80,7 @@ export function createTaskRuntimeContribution(): TaskRuntimeContribution {
       }
 
       for (const [eventName, handler] of Object.entries(taskEventHandlers)) {
-        taskEventBus.on(eventName, handler);
+        taskEventBus.on(eventName, handler as (event: unknown) => void);
       }
 
       started = true;
@@ -93,7 +93,7 @@ export function createTaskRuntimeContribution(): TaskRuntimeContribution {
       }
 
       for (const [eventName, handler] of Object.entries(taskEventHandlers)) {
-        taskEventBus.off(eventName, handler);
+        taskEventBus.off(eventName, handler as (event: unknown) => void);
       }
 
       started = false;

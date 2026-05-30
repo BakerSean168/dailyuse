@@ -170,10 +170,11 @@ export default tseslint.config(
       },
     },
     {
-      // Controlled test exemption: @nx/enforce-module-boundaries disabled
-      // (tests legitimately cross package boundaries for mocking/fixture setup).
-      // no-restricted-imports off so test utilities can import @dailyuse/utils root.
-      // File matching is now precise — no glob leakage into production code.
+      // Test exemption: @nx/enforce-module-boundaries disabled
+      // (tests are entry points that legitimately cross package boundaries for mocking/fixture setup).
+      // no-restricted-imports is NOT disabled — tests inherit the default subpath import rule
+      // and package-specific test restrictions (repository, ai) remain enforced.
+      // File matching is precise — no glob leakage into production code.
       files: [
         '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
@@ -184,7 +185,46 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': 'off',
-        'no-restricted-imports': 'off',
+      },
+    },
+    {
+      files: [
+        'packages/repository/src/application-server/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        'packages/repository/src/application-server/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['../../infrastructure-server/**', '../../api/**'],
+                message:
+                  'Repository application tests must use ../../testing seams instead of private infrastructure or api paths.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: [
+        'packages/ai/src/application-server/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        'packages/ai/src/application-server/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['**/infrastructure-server/**', '**/api/**'],
+                message:
+                  'AI application tests must use src/testing seams instead of private infrastructure or api paths.',
+              },
+            ],
+          },
+        ],
       },
     },
     {

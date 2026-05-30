@@ -1186,7 +1186,7 @@ export class Goal extends AggregateRoot<GoalId> {
       snapshotTime: now,
       trigger,
       reason: reason ?? null,
-      operatorId: operatorId as unknown as string,
+      operatorId: operatorId as unknown as IdentityId,
       createdAt: now,
     });
 

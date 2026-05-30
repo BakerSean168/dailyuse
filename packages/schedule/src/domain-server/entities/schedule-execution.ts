@@ -265,15 +265,15 @@ export class ScheduleExecution extends Entity<string> {
    */
   public static fromDTO(dto: Record<string, unknown>): ScheduleExecution {
     return new ScheduleExecution({
-      id: dto.id ?? generateUUID(),
-      taskId: dto.taskId,
-      executionTime: dto.executionTime != null ? new Date(dto.executionTime) : new Date(0),
-      status: dto.status,
-      duration: dto.duration ?? null,
-      result: dto.result ?? null,
-      error: dto.error ?? null,
-      retryCount: dto.retryCount ?? 0,
-      createdAt: new Date(dto.createdAt ?? Date.now()),
+      id: (dto.id as string) ?? generateUUID(),
+      taskId: dto.taskId as string,
+      executionTime: dto.executionTime != null ? new Date(dto.executionTime as string | number) : new Date(0),
+      status: dto.status as ExecutionStatus,
+      duration: (dto.duration as number | null) ?? null,
+      result: (dto.result as Record<string, unknown> | null) ?? null,
+      error: (dto.error as string | null) ?? null,
+      retryCount: (dto.retryCount as number) ?? 0,
+      createdAt: new Date((dto.createdAt as string | number) ?? Date.now()),
     });
   }
 }

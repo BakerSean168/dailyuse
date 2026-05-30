@@ -40,8 +40,10 @@ import type {
   GetReminderTodayScheduleReq,
   GetReminderTodayScheduleRes,
   TimeSlotDTO,
+  GroupStatsDTO,
+  ControlMode,
 } from '@dailyuse/contracts/reminder';
-import { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the reminder runtime needs from the outside world.
@@ -301,21 +303,25 @@ export function createReminderModule(
     // ==================== Template CRUD / 模板 CRUD ====================
 
     async createTemplate(data, ctx) {
+      const d = data as Record<string, unknown>;
+      const activeTime = d.activeTime as Record<string, unknown> | undefined;
+      const activeHours = d.activeHours as Record<string, unknown> | undefined;
+      const notificationConfig = d.notificationConfig as Record<string, unknown> | undefined;
       const normalizedInput = {
-        ...data,
+        ...d,
         activeTime: {
-          activatedAt: data.activeTime?.startDate,
+          activatedAt: activeTime?.startDate,
         },
-        activeHours: data.activeHours
+        activeHours: activeHours
           ? {
               enabled: true,
-              startHour: data.activeHours.startHour,
-              endHour: data.activeHours.endHour,
+              startHour: activeHours.startHour,
+              endHour: activeHours.endHour,
             }
           : undefined,
         notificationConfig: {
-          ...data.notificationConfig,
-          actions: data.notificationConfig?.actions ?? null,
+          ...notificationConfig,
+          actions: notificationConfig?.actions ?? null,
         },
       };
       const template = await reminderDomainService.createReminderTemplate({
@@ -499,15 +505,15 @@ export function createReminderModule(
       const updated = ReminderGroup.load({
         id: existing.id,
         identityId: existing.identityId,
-        name: data.name ?? existing.name,
-        description: 'description' in data ? (data.description ?? null) : existing.description,
-        controlMode: data.controlMode ?? existing.controlMode,
+        name: (data.name as string) ?? existing.name,
+        description: 'description' in data ? ((data.description as string | null) ?? null) : existing.description,
+        controlMode: (data.controlMode as ControlMode) ?? existing.controlMode,
         enabled: existing.enabled,
         status: existing.status,
-        order: data.order ?? existing.order,
-        color: 'color' in data ? (data.color ?? null) : existing.color,
-        icon: 'icon' in data ? (data.icon ?? null) : existing.icon,
-        stats: GroupStats.fromDTO(existing.stats.toDTO()),
+        order: (data.order as number) ?? existing.order,
+        color: 'color' in data ? ((data.color as string | null) ?? null) : existing.color,
+        icon: 'icon' in data ? ((data.icon as string | null) ?? null) : existing.icon,
+        stats: GroupStats.fromDTO(existing.stats as GroupStatsDTO),
         createdAt: existing.createdAt,
         updatedAt: new Date(),
         deletedAt: existing.deletedAt,

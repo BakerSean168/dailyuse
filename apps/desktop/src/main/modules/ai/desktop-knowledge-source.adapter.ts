@@ -2,9 +2,9 @@ import { createHash } from 'node:crypto';
 import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/application-server';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { FsStorageAdapter } from '@dailyuse/repository';
 import {
   createRepositoryPowerSyncModule,
+  FsStorageAdapter,
   type RepositoryModuleInstance,
 } from '@dailyuse/repository/infrastructure-server';
 

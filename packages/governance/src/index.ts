@@ -56,13 +56,17 @@
 export * from './contracts';
 
 // ================= Domain Layer (领域层) =================
-// Domain-Shared: Value objects and shared logic (exported from contracts)
+// Domain-Shared: Value objects and shared logic.
 // Root barrel intentionally exposes only stable, public-facing pieces.
 // Domain-server implementation details (aggregates, concrete repositories, services)
 // are NOT re-exported from the package root to keep the public surface narrow.
-export * from './domain-shared';
+// Branded ID factories (RuleId, RuleRevisionId) and VO classes (RuleTag, CodeSnippet)
+// are available from '@dailyuse/governance/domain-shared' — not re-exported here
+// because contracts/primitives already exports the type-only branded ID types.
+// Enums (Language, SnippetType, ChangeType, RuleStatus, RuleSeverity) are already
+// re-exported via './contracts/value-objects'.
 // Consumers who need concrete implementations should import from specific subpaths
-// e.g. '@dailyuse/governance/domain-server' or '@dailyuse/governance/infrastructure-server'
+// e.g. '@dailyuse/governance/domain-shared' or '@dailyuse/governance/domain-server'
 
 // Note: domain-client exports Rule and RuleRevision classes with same names
 // Consumers should import from specific paths to avoid conflicts

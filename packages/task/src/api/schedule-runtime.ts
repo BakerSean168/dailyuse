@@ -302,17 +302,17 @@ export function createTaskScheduleRuntimeContribution(deps: {
         return;
       }
 
-      taskEventBus.on('task:created', upsertFromEvent);
-      taskEventBus.on('task:updated', upsertFromEvent);
-      taskEventBus.on('task:instance-generated', upsertFromEvent);
-      taskEventBus.on('task:template-schedule-time-changed', upsertFromEvent);
-      taskEventBus.on('task:template-recurrence-changed', upsertFromEvent);
-      taskEventBus.on('task:template-resumed', upsertFromEvent);
-      taskEventBus.on('task:deleted', deleteFromEvent);
-      taskEventBus.on('task:template-paused', deleteFromEvent);
-      taskEventBus.on('task:instance-completed', deleteCompletedInstanceTasks);
-      taskEventBus.on('task:instance-skipped', deleteCompletedInstanceTasks);
-      taskEventBus.on('task:instance-deleted', deleteCompletedInstanceTasks);
+      taskEventBus.on('task:created', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:updated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:instance-generated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-schedule-time-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-recurrence-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-resumed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:deleted', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-paused', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:instance-completed', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.on('task:instance-skipped', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.on('task:instance-deleted', deleteCompletedInstanceTasks as (event: unknown) => void);
 
       started = true;
       logger.info('[Task] Schedule projection runtime started');
@@ -323,17 +323,17 @@ export function createTaskScheduleRuntimeContribution(deps: {
         return;
       }
 
-      taskEventBus.off('task:created', upsertFromEvent);
-      taskEventBus.off('task:updated', upsertFromEvent);
-      taskEventBus.off('task:instance-generated', upsertFromEvent);
-      taskEventBus.off('task:template-schedule-time-changed', upsertFromEvent);
-      taskEventBus.off('task:template-recurrence-changed', upsertFromEvent);
-      taskEventBus.off('task:template-resumed', upsertFromEvent);
-      taskEventBus.off('task:deleted', deleteFromEvent);
-      taskEventBus.off('task:template-paused', deleteFromEvent);
-      taskEventBus.off('task:instance-completed', deleteCompletedInstanceTasks);
-      taskEventBus.off('task:instance-skipped', deleteCompletedInstanceTasks);
-      taskEventBus.off('task:instance-deleted', deleteCompletedInstanceTasks);
+      taskEventBus.off('task:created', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:updated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:instance-generated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-schedule-time-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-recurrence-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-resumed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:deleted', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-paused', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:instance-completed', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.off('task:instance-skipped', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.off('task:instance-deleted', deleteCompletedInstanceTasks as (event: unknown) => void);
 
       started = false;
       logger.info('[Task] Schedule projection runtime stopped');

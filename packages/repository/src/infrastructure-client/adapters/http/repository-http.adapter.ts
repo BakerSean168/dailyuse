@@ -12,6 +12,7 @@ import type {
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
+  UploadFileLike,
   UploadResourcesRequest,
 } from '../types';
 import type {
@@ -22,12 +23,20 @@ import type {
   SearchRequest,
   SearchResponse,
   UploadResourcesResponseDTO,
+  UploadResourceFileDTO,
   ResourceBookmarkClientDTO,
   CreateResourceBookmarkRequestDTO,
   UpdateResourceBookmarkRequestDTO,
   ReorderResourceBookmarksRequestDTO,
 } from '@dailyuse/contracts/repository';
 import { fail } from '@dailyuse/contracts/result';
+
+// Local aliases for Web API types not available in non-DOM tsconfig lib
+type BlobPart = ArrayBuffer | ArrayBufferView | Blob | string;
+interface BlobPropertyBag {
+  type?: string;
+  endings?: 'transparent' | 'native';
+}
 
 /**
  * Type guard to distinguish UploadResourceFileDTO from UploadFileLike.
@@ -181,7 +190,7 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
         formData.append('files', blob, file.name);
       } else {
         const bytes = new Uint8Array(await file.arrayBuffer());
-        const blob = new BlobCtor([bytes as unknown as BlobPart[]], {
+        const blob = new BlobCtor([bytes as unknown as BlobPart], {
           type: file.type || 'application/octet-stream',
         });
         formData.append('files', blob, file.name);

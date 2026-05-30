@@ -54,8 +54,11 @@ export class RepositoryRepositoryFactory {
   }
 
   /**
-   * Create repositories based on data source type
+   * Create repositories based on data source type.
+   * Overloads provide correct narrowing so no cast is needed at call sites.
    */
+  static create(dataSource: 'prisma', client: PrismaClient): RepositoryImplementations;
+  static create(dataSource: 'powersync', client: IElectronDatabase): RepositoryImplementations;
   static create(
     dataSource: 'prisma' | 'powersync',
     client: PrismaClient | IElectronDatabase,

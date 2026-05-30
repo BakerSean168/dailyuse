@@ -82,7 +82,11 @@ packages/<feature>/
 The `infrastructure-server/<feature>.module.ts` is the composition root. It wires concrete repository implementations to domain interfaces. This is allowed within a `layer:domain` tagged package because:
 - The composition root is infrastructure assembly code, not domain logic
 - The ESLint `layer:domain -> layer:infra` rule exists specifically for this pattern
-- The ideal solution is package-internal lint rules (future work)
+- Package-internal boundary enforcement is now implemented as a repo-level governance audit
+  (`tools/governance/package-internal-boundary-audit.mjs`) and runs via
+  `pnpm nx run daily-use:governance-check`
+- Some tracked known violations may still exist temporarily, but they are treated as
+  explicit technical debt to remove, not as absence of the rule
 
 ### Client Creation Language
 
@@ -106,4 +110,5 @@ Modules that are pure read-models (like `dashboard`) use a simplified shape:
 - New feature packages have a clear template to follow
 - The composition root pattern is documented and justified
 - Read-model modules have a recognized exception path
-- Package-internal lint rules remain a future improvement target
+- Package-internal layering is already guarded by repo-level governance audit
+- A future enhancement is to decide whether parts of that audit should also move into ESLint

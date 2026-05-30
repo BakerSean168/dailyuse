@@ -37,7 +37,11 @@ import { ReindexAllKnowledgeUseCase } from '../reindex-all-knowledge.use-case';
 import { QueryKnowledgeUseCase } from '../query-knowledge.use-case';
 import { ExpandKnowledgeUseCase } from '../expand-knowledge.use-case';
 import { ReindexKnowledgeUseCase } from '../reindex-knowledge.use-case';
-import { createAIModule } from '../../../../infrastructure-server/ai.module';
+import {
+  createAIModuleForTests,
+  createAIProviderConfigRepositoryStub,
+  createAIProviderConfigServerDTO,
+} from '../../../../testing';
 
 class StubProviderConfigRepository {
   constructor(
@@ -616,31 +620,12 @@ describe('AI knowledge auto-index runtime', () => {
       vectorRecallStatus: 'enabled',
     });
 
-    const aiModule = createAIModule({
-      conversationRepository: {
-        save: async () => {},
-        findById: async () => null,
-        findByIdentityId: async () => [],
-        findByStatus: async () => [],
-        findRecent: async () => [],
-        delete: async () => {},
-        exists: async () => false,
-      },
-      providerConfigRepository: {
-        findById: async () => null,
-        findDefaultByIdentityId: async () => null,
-        findByIdentityId: async () => [],
-        save: async () => {},
-        delete: async () => {},
-        findByIdentityAndName: async () => null,
-        countByIdentityId: async () => 0,
-        exists: async () => false,
-      },
+    const aiModule = createAIModuleForTests({
       knowledgeSourcePort: new StubKnowledgeSourcePort(),
       knowledgeIndexRepository,
       knowledgeIngestionPort: new StubKnowledgeIngestionPort(),
       knowledgeQueryPort: new StubKnowledgeQueryPort(),
-    } as any);
+    });
 
     const capabilities = await aiModule.api.getCapabilities();
     expect(capabilities.ok).toBe(true);
@@ -664,41 +649,18 @@ describe('AI knowledge auto-index runtime', () => {
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
 
-    const aiModule = createAIModule({
-      conversationRepository: {
-        save: async () => {},
-        findById: async () => null,
-        findByIdentityId: async () => [],
-        findByStatus: async () => [],
-        findRecent: async () => [],
-        delete: async () => {},
-        exists: async () => false,
-      },
-      providerConfigRepository: {
-        findById: async () => null,
-        findDefaultByIdentityId: async () => ({
-          id: 'provider-1',
-          identityId: 'identity-1',
-          providerType: AIProviderType.OpenAICompatible,
-          baseUrl: 'https://api.openai.com/v1',
-          apiKey: 'plain-secret',
-          defaultModel: 'gpt-4o-mini',
-          isActive: true,
-          isDefault: true,
-          name: 'Main provider',
-        }),
-        findByIdentityId: async () => [],
-        save: async () => {},
-        delete: async () => {},
-        findByIdentityAndName: async () => null,
-        countByIdentityId: async () => 0,
-        exists: async () => false,
-      },
+    const aiModule = createAIModuleForTests({
+      providerConfigRepository: createAIProviderConfigRepositoryStub({
+        findDefaultByIdentityId: async () =>
+          createAIProviderConfigServerDTO({
+            providerType: AIProviderType.OpenAICompatible,
+          }),
+      }),
       knowledgeSourcePort: sourcePort,
       knowledgeIndexRepository,
       knowledgeIngestionPort: ingestionPort,
       knowledgeQueryPort: queryPort,
-    } as any);
+    });
 
     aiModule.start();
 

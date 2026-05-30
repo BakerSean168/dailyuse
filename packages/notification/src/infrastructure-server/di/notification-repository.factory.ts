@@ -45,16 +45,19 @@ export class NotificationRepositoryFactory {
   }
 
   /**
-   * Create repositories based on data source type
+   * Create repositories based on data source type.
+   * Overloads provide correct narrowing so no cast is needed at call sites.
    */
+  static create(dataSource: 'prisma', client: PrismaClient): ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories>;
+  static create(dataSource: 'powersync', client: IElectronDatabase): ReturnType<typeof NotificationRepositoryFactory.createPowerSyncRepositories>;
   static create(
     dataSource: 'prisma' | 'powersync',
     client: PrismaClient | IElectronDatabase,
-  ): ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories> {
+  ) {
     if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient) as unknown as ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories>;
+      return this.createPrismaRepositories(client as PrismaClient);
     } else {
-      return this.createPowerSyncRepositories(client as IElectronDatabase) as unknown as ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories>;
+      return this.createPowerSyncRepositories(client as IElectronDatabase);
     }
   }
 }

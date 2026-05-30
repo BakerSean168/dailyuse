@@ -10,6 +10,7 @@ import { toDateOrNull } from '@dailyuse/utils/shared';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
+import type { TaskTimeType } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { DependencyStatus, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
@@ -32,7 +33,7 @@ export class PrismaTaskTemplateMapper {
     let timeConfig = null;
     if (data.timeConfigType) {
       timeConfig = TaskTimeConfig.create({
-        timeType: data.timeConfigType,
+        timeType: data.timeConfigType as TaskTimeType,
         startDate: data.timeConfigStartTime ? data.timeConfigStartTime.getTime() : null,
         timePoint: data.timeConfigTimePoint ?? null,
         timeRange:

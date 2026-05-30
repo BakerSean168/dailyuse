@@ -44,7 +44,14 @@ infrastructure -> domain (通过 port/adapter 接口)
 - `api/module.ts`：组合根（composition root），负责将 infra 实现注入 domain 接口。组合根位于领域包内是当前架构的务实选择，lint 规则允许 `layer:domain -> layer:infra` 以支持此模式。
 - `controllers`：传输层适配器，依赖 application-server。
 
-理想目标是通过 package-internal lint rule 约束 `domain-server` 不得导入 `infrastructure-server`，当前暂以文档约束为主。
+当前已经由 `tools/governance/package-internal-boundary-audit.mjs` 在 repo 级别执行第一层包内分层治理，并接入 `pnpm nx run daily-use:governance-check`。
+
+- 当前审计重点覆盖：
+  - `domain-server` 不得导入 `infrastructure-server`、`application-client`、`infrastructure-client`、`api`、`controllers`
+  - `application-server` 不得导入 `infrastructure-server`、`application-client`、`infrastructure-client`、`api`、`controllers`
+  - `controllers` 不得导入 `infrastructure-server`、`infrastructure-client`、`api`
+- 当前仍存在少量已登记的 known violations；这些属于待清零的技术债，不表示规则尚未存在。
+- 后续若 repo-level audit 覆盖不够细，再评估是否进一步抽成 ESLint rule。
 
 ## App 容器治理规则
 
@@ -63,7 +70,7 @@ infrastructure -> domain (通过 port/adapter 接口)
 - 跨 app 重复的业务逻辑（应提取到 packages）
 
 **治理方式**：
-- 当前以文档约束为主，辅以 code review 把关
+- 包内分层已优先由治理脚本执行；app-local 业务逻辑归属仍以文档约束与 code review 把关为主
 - 重复出现的 app-local 业务逻辑（如 api 和 desktop 共享的 schedule source executor）应提取到共享包
 - 新增 app-local 模块需在 PR 中说明为何不能放在 packages 中
 
@@ -75,7 +82,7 @@ infrastructure -> domain (通过 port/adapter 接口)
 
 ## 机器可执行治理与审计（新增）
 
-为保证架构规则的可验证性与可执行性，本仓库逐步将文档化规则迁移为机器可执行的治理脚本与 lint 规则：
+为保证架构规则的可验证性与可执行性，本仓库已将一部分关键规则迁移为机器可执行的治理脚本与 lint 规则，并继续收紧剩余豁口：
 
 - 运行 pnpm nx run daily-use:governance-check 可以执行完整治理审计链（JSDoc 审计、包内分层约束、根导出审计等）。
 - 常用治理脚本位于 tools/governance：

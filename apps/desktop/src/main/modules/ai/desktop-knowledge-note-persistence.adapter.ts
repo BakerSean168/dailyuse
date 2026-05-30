@@ -5,9 +5,9 @@ import type {
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
 } from '@dailyuse/ai/application-server';
-import { FsStorageAdapter } from '@dailyuse/repository';
 import {
   createRepositoryPowerSyncModule,
+  FsStorageAdapter,
   type RepositoryModuleInstance,
 } from '@dailyuse/repository/infrastructure-server';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';

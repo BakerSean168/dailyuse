@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
 import { StoredResourceHydrationService } from '../services/stored-resource-hydration.service';
+import { createTestFsStorage } from '../../testing';
 
 describe('StoredResourceHydrationService', () => {
   it('returns the resource as-is when content is already present', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'hydration-content-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
+      const storage = createTestFsStorage(tempDir);
       const service = new StoredResourceHydrationService({ storagePort: storage });
 
       const resource = {
@@ -30,7 +30,7 @@ describe('StoredResourceHydrationService', () => {
   it('returns null when resource is null', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'hydration-null-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
+      const storage = createTestFsStorage(tempDir);
       const service = new StoredResourceHydrationService({ storagePort: storage });
 
       const result = await service.hydrateContent(null);
@@ -43,7 +43,7 @@ describe('StoredResourceHydrationService', () => {
   it('hydrates text content as utf8', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'hydration-text-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
+      const storage = createTestFsStorage(tempDir);
       const repoId = 'repo-1';
 
       await storage.write({
@@ -72,7 +72,7 @@ describe('StoredResourceHydrationService', () => {
   it('hydrates binary content as base64', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'hydration-binary-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
+      const storage = createTestFsStorage(tempDir);
       const repoId = 'repo-1';
 
       const binaryBytes = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -102,7 +102,7 @@ describe('StoredResourceHydrationService', () => {
   it('hydrates application/json content as utf8', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'hydration-json-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
+      const storage = createTestFsStorage(tempDir);
       const repoId = 'repo-1';
 
       await storage.write({
@@ -131,7 +131,7 @@ describe('StoredResourceHydrationService', () => {
   it('returns the original resource when storage has no content', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'hydration-empty-'));
     try {
-      const storage = new FsStorageAdapter(tempDir);
+      const storage = createTestFsStorage(tempDir);
       const service = new StoredResourceHydrationService({ storagePort: storage });
 
       const resource = {

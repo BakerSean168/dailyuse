@@ -11,7 +11,7 @@ import {
   ResourceBookmarkPrismaRepository,
   ResourcePrismaRepository,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository';
+} from '@dailyuse/repository/infrastructure-server';
 
 function tokenize(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);

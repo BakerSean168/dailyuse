@@ -110,7 +110,6 @@ function normalizeTemplateListParams(
 
   return {
     ...(params ?? {}),
-    identityId: requestContext.identityId,
     status: Array.isArray(status) ? status : typeof status === 'string' ? [status] : undefined,
   };
 }

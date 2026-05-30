@@ -11,8 +11,8 @@
 import { createLogger } from '@dailyuse/utils/logger';
 import { SourceModule } from '../../domain-shared/value-objects/source-module';
 import type { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
-import type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor } from '../../api/runtime';
 import type { SourceExecutorDependencies } from './types';
+import type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor } from './runtime-contract';
 
 const logger = createLogger('SharedSourceExecutor');
 

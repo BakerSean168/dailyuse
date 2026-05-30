@@ -5,12 +5,809 @@ tags:
   - governance
   - architecture
   - lint
-description: 基于 2026-05-29 当前工作树状态的仓库范式统一、治理加严与 governance 示范模块深化计划
+description: 基于 2026-05-31 当前工作树状态的仓库范式统一执行审计与后续深化计划
 created: 2026-05-29T00:00:00
-updated: 2026-05-29T00:00:00
+updated: 2026-05-31T12:00:00
 ---
 
 # 2026-05-29 Repository Paradigm Unification Plan
+
+## 2026-05-31 执行审计更新
+
+以下内容是对 2026-05-30 审计的增量更新。**当前真值以本节为准**。
+
+### 本轮完成的工作
+
+1. **PR-5 + PR-6 合并完成：package export audit 扩展 + 全仓 application-server 子路径清理**
+   - `package-export-audit.mjs` 已从"只审计 `src/index.ts`"扩展为"同时审计 `src/index.ts` 与 `package.json#exports`"
+   - 审计使用白名单机制：默认允许 `.`、`./domain-shared`、`./domain-server`、`./domain-client`、`./application-client`、`./infrastructure-server`、`./infrastructure-client`、`./api`、`./electron-entry`
+   - `./application-server` 不在默认白名单中（经审计确认全仓 12 个 feature 包的 `application-server` 子路径零外部消费者）
+   - 已从以下 12 个包的 `package.json#exports` 中移除 `./application-server`：
+     `account`、`ai`、`authentication`、`editor`、`goal`、`governance`、`notification`、`reminder`、`repository`、`schedule`、`setting`、`task`
+   - `governance` 额外的 package-specific 白名单：`./contracts`、`./mocks`
+   - `task` 额外的 package-specific 白名单：`./testing`、`./schema`
+
+2. **PR-4 Slice C3 前置审计完成**
+   - 对 `goal`（37 个测试文件）、`task`（47 个测试文件）做了完整 import 审计
+   - 结论：两个包的测试层都已经是干净的，没有 private infra/api 路径穿透
+   - `desktop authentication` 测试有跨层 import，但位于 `apps/desktop/` 而非 `packages/`，结构不同，暂不纳入本轮
+
+3. **PR-4 Slice C4/C5 完成：移除测试层全局 `no-restricted-imports` 关闭**
+   - `eslint.config.ts` 全局测试豁免块中移除了 `no-restricted-imports: 'off'`
+   - `@nx/enforce-module-boundaries: 'off'` 保留（测试作为入口点合法跨包边界）
+   - 测试文件现在继承默认的 subpath import 规则（`@dailyuse/utils` 必须用子路径）
+   - `repository`、`ai` 的 package-specific 测试限制规则现在生效（之前被全局关闭覆盖）
+   - 验证：`goal`/`task`/`repository`/`ai`/`schedule`/`notification`/`governance` lint 全部通过，0 新增错误
+   - 全量 `governance-check --skip-nx-cache` 通过
+
+4. **PR-8 第一轮完成：target baseline exemption 压缩**
+   - 为 `ipc-client` 新增 vitest + 16 个测试，消除 `ipc-client:test` 临时豁免
+   - 重新分类豁免：`database:test`、`mobile:test` 从临时改为永久；`dashboard:test`、`ui-vue-shadcn:test`、`app-react:test`、`ui-react-native:test`、`http-client:test` 从永久改为临时
+   - 当前 14 个 documented exemption（从 15 降至 14）
+
+5. **PR-8 第二轮完成：http-client + dashboard 测试基础设施**
+   - `http-client`: 新增 vitest + 15 个测试（`HttpClientError`、`createAxiosInstance`、`AxiosHttpClient`、`ResultHttpClient`）
+   - `dashboard`: 新增 vitest + 12 个测试（`getDashboardData` projection 逻辑，使用 mock `DashboardReadSource`）
+   - 消除 `http-client:test` 和 `dashboard:test` 两个临时豁免
+   - 当前 **12 个 documented exemption**（从 25 → 15 → 14 → 12）
+
+### 当日验证的命令
+
+1. `node tools/governance/package-export-audit.mjs` — 通过
+2. `pnpm nx run daily-use:governance-check --skip-nx-cache` — 通过（全绿）
+3. `pnpm nx run governance:lint` — 通过
+4. `pnpm nx run governance:test --skip-nx-cache` — 通过（139 tests）
+5. `pnpm nx run repository:lint` — 通过
+6. `pnpm nx run repository:test --skip-nx-cache` — 通过（54 tests）
+7. `pnpm nx run goal:test --skip-nx-cache` — 通过（297 tests）
+8. `pnpm nx run goal:lint` — 失败（既有 `no-explicit-any` in `prisma-weight-snapshot-mapper.ts`，非本轮回归）
+9. `pnpm nx run task:lint` — 通过
+10. `pnpm nx run task:test --skip-nx-cache` — 失败（既有 `task-dependency-and-goal-binding.test.ts` 断言失败，非本轮回归）
+11. `pnpm nx run http-client:test --skip-nx-cache` — 通过（15 tests）
+12. `pnpm nx run dashboard:test --skip-nx-cache` — 通过（12 tests）
+13. `pnpm nx run eslint.config.ts` — 通过（`no-restricted-imports` 关闭已移除，无回归）
+
+### 执行状态总览（更新）
+
+| Track | 当前状态 | 审计结论 |
+| --- | --- | --- |
+| Track 1: 包内分层约束机器化 | 已闭环 | `package-internal-boundary-audit` 0 known violations |
+| Track 2: target baseline 豁免收缩 | **已大幅推进** | 12 个 documented exemption（从 25 → 15 → 14 → 12），3 个临时豁免剩余（均为 UI 组件库，需框架特定测试基础设施） |
+| Track 3: 测试边界治理收紧 | **已闭环** | `repository + ai` testing seams 已落地；`goal` / `task` 已确认干净；全局 `no-restricted-imports` 关闭已移除；package-specific 限制已生效 |
+| Track 4: 稳定公共 API 面收窄 | **audit 已扩展，dead exports 已清理** | `package-export-audit.mjs` 现在同时覆盖 `src/index.ts` 与 `package.json#exports`；12 个包的 `./application-server` dead export 已移除；白名单机制已落地 |
+| Track 5: typed API module context | API module 基本完成，生产 cast 未清零 | 仍存在 4 处实现体内部 `as PrismaClient` cast（hidden behind overloaded signatures） |
+| Track 6: governance 活文档审计深化 | 已落地 | 持续维护中 |
+| Track 7: lint ratchet | 已超出 governance 试点 | 多个高价值包已升级为 error |
+
+### 下一轮推荐执行顺序（更新）
+
+1. ~~PR-1 ~ PR-3~~：已完成
+2. ~~PR-4（test seams + 测试边界治理）~~：**全部完成**
+   - Slice C1/C2: `repository` + `ai` testing seams 已落地
+   - Slice C3: `goal` / `task` 已确认不需要 testing seam
+   - Slice C4/C5: 全局 `no-restricted-imports` 关闭已移除，package-specific 限制已生效
+3. ~~PR-5 + PR-6（export audit 扩展 + dead exports 清理）~~：已完成
+4. ~~PR-7（Prisma cast seam）~~：**大部分完成**
+   - account: `as PrismaClient` 已完全消除（使用 `AccountDb` 最小接口）
+   - schedule: `withTransaction` 的 `tx as PrismaClient` 已消除（使用 `ScheduleDb` / `ScheduleTaskDb` 最小接口 + overloaded constructors）
+   - notification / repository factory: 实现体内部仍保留 cast，但调用方已通过 overloaded signatures 获得类型安全
+   - 剩余 cast：4 处实现体内部 cast + 2 处注释文本
+5. ~~PR-8（两轮完成）~~：target baseline exemption 从 25 → 12
+   - 第一轮：ipc-client 测试 + 豁免重分类（25 → 14）
+   - 第二轮：http-client + dashboard 测试基础设施（14 → 12）
+   - 剩余 3 个临时豁免：`ui-vue-shadcn:test`、`app-react:test`、`ui-react-native:test`（均为 UI 组件库，需 Vue Test Utils / React Native 测试基础设施）
+6. **剩余工作**（低优先级）：
+   - PR-7 剩余：4 处实现体内部 cast（hidden behind overloads，类型安全已由 overloaded signatures 保证）
+   - PR-8 深化：为 3 个 UI 组件库添加框架特定测试基础设施（需 Vue Test Utils / Expo test runner 集成）
+
+## 2026-05-30 执行审计更新
+
+以下内容是对 2026-05-29 方案的执行审计。下文原始正文继续保留，作为当日基线判断；**当前真值以本节为准**。
+
+### 当日重新验证的命令
+
+1. `pnpm nx run daily-use:governance-check`
+   - 2026-05-30 以 `--skip-nx-cache` 重新执行通过
+   - 当前通过链路已包含：
+     - `target-baseline-audit`
+     - `governance-module-docs-audit`
+     - `server-feature-shape-audit`
+     - `package-internal-boundary-audit`
+     - `package-export-audit`
+   - 最新复跑结果：**0 条 known package-internal violations**
+   - 2026-05-30 本轮已实际清掉：
+     - `packages/ai/src/application-server/use-cases/commands/manage-ai-knowledge-note.use-case.ts`
+     - `packages/schedule/src/application-server/source-executors/shared-source-executor.ts`
+
+2. `pnpm nx run daily-use:target-baseline-check`
+   - 2026-05-30 重新执行通过
+   - 当前 documented exemptions 已从 2026-05-29 记录的 25 降到 **15**
+
+3. `pnpm nx build api` / `pnpm nx build desktop`
+   - 2026-05-30 重新执行，二者都失败
+   - 失败点都落在既有依赖构建红线，而不是本轮 import 迁移本身：
+     - `repository:build`
+     - `schedule:build`
+     - `governance:build`
+   - 其中 `repository` 的 `tsup` bundling 已能完成，失败来自既有 TypeScript 错误；说明本轮 `FsStorageAdapter` 导入路径收口没有额外打坏 app-specific wiring
+
+4. `pnpm nx run repository:lint` / `pnpm nx run repository:test --skip-nx-cache`
+   - 2026-05-30 在新增 `packages/repository/src/testing/` 并迁移 application tests 后重新执行通过
+   - 当前 `repository` application tests 已改为依赖 `../../testing` seam，而不是直接 import private infra path
+   - 2026-05-30 还额外做过一次负向验证：
+     - 临时加入 `application test -> ../../infrastructure-server/**` sentinel import
+     - `repository:lint` 会被 repository-specific `no-restricted-imports` 明确拦截
+     - sentinel 已删除，lint 再次恢复通过
+
+5. `pnpm nx run ai:lint` / `pnpm nx run ai:test --skip-nx-cache`
+   - 2026-05-30 在新增 `packages/ai/src/testing/` 并迁移 `ai-query-services.test.ts` 后重新执行通过
+   - 当前 AI application test 已改为依赖 `../../../../testing` seam，而不是直接 import `../../../../infrastructure-server/ai.module`
+   - 2026-05-30 还额外做过一次负向验证：
+     - 临时加入 `application test -> ../../../../infrastructure-server/ai.module` sentinel import
+     - `ai:lint` 会被 AI-specific `no-restricted-imports` 明确拦截
+     - sentinel 已删除，lint 再次恢复通过
+
+### 执行状态总览
+
+| Track | 当前状态 | 审计结论 |
+| --- | --- | --- |
+| Track 1: 包内分层约束机器化 | 已闭环第一版 | `project.json` 已把 `package-internal-boundary-audit.mjs` 接入 `daily-use:governance-check`；`docs/standards/architecture.md` 与 `ADR-031` 已改为“规则已落地”的表述；2026-05-30 本轮代码收口已把 known violation 从 4 压到 0 |
+| Track 2: target baseline 豁免收缩 | 已明显推进 | manifest 已升级到 v2，temporary exemption 强制 `owner` + `targetDate`；但当前仍有 15 个 documented exemption，尚未收敛到计划要求的 10 以内 |
+| Track 3: 测试边界治理收紧 | `repository + ai` 试点已落地，但 repo-wide 仍未闭环 | `packages/repository/src/testing/` 与 `packages/ai/src/testing/` 已落地；repository application tests 已迁移到 `../../testing`，AI application tests 已迁移到 `../../../../testing`；`eslint.config.ts` 已分别对 repository / ai tests 加入专用 `no-restricted-imports` 拦截 private infra/api import；但全仓测试层仍存在 `@nx/enforce-module-boundaries` 与 `no-restricted-imports` 的全局关闭，尚未进入 package-scoped allowlist 阶段 |
+| Track 4: 稳定公共 API 面收窄 | **audit 已扩展，dead exports 已清理** | `package-export-audit.mjs` 已扩展为同时审计 `src/index.ts` 与 `package.json#exports`；12 个包的 `./application-server` dead export 已移除；白名单机制已落地；`infrastructure-server` / `api` / `infrastructure-client` 保留（有活跃消费者） |
+| Track 5: typed API module context | API module 基本完成，仓库 seam 未清零 | 12 个 feature `api/module.ts` 已统一使用 `ServerModuleContext<PrismaClient>`；但生产代码中仍存在 `as PrismaClient` cast，且 `ServerModuleContext<DbClient = unknown>` 仍保留兼容默认值 |
+| Track 6: governance 活文档审计深化 | 基本落地 | `governance-module-docs-audit.mjs` 已不再只是 existence check，当前会检查文件级 JSDoc 内容量、English-first / 中文 second、`@internal`、公开导出 JSDoc，且 2026-05-30 复跑通过 |
+| Track 7: lint ratchet | 已超出最初 `governance` 试点 | `eslint.config.ts` 已把多组高价值包生产代码目录的 `no-explicit-any` / `no-unused-vars` 升为 `error`，不再只局限于 `governance` |
+
+### 明确结论
+
+当前仓库**不能**被判定为“方案已经优雅完整实现”。
+
+原因不是“治理不存在”，而是还存在三类足以阻止完成判定的现实缺口：
+
+1. **规则已存在，但 repo-wide 收口还没完成**
+   - `package-internal-boundary-audit` 已经收口到 0 tracked known violations
+   - 但测试边界、public surface、typed context、target baseline 仍未全部闭环
+
+2. **治理通过，但仍依赖制度化豁口**
+   - `target-baseline-audit` 仍保留 15 个 documented exemption
+   - 测试边界仍是宽泛豁免，而不是受控 seam
+
+3. **示范模块变强了，但 repo-wide 统一范式还没全部收口**
+   - `governance` 的确已经成为更强的实验田
+   - 但根导出面、typed context phase 2、测试 allowlist 机制、已知越层依赖清零都还没完成
+
+### 显式完成度审计
+
+以下审计直接对照本文件“完成判定”中的 7 条要求，结论以 2026-05-30 当前工作树与已复跑命令结果为准。
+
+| 完成要求 | 当前证据 | 结论 | 仍缺什么 |
+| --- | --- | --- | --- |
+| 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `daily-use:governance-check`；`architecture.md` 与 `ADR-031` 已改为“规则已落地”口径；`goal`、`repository`、`ai`、`schedule` 的 4 条 tracked violation 已在 2026-05-30 全部清零 | `已完成` | 后续只需保持 `KNOWN_VIOLATIONS` 为空并防止回退 |
+| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | `target-baseline-manifest.json` 已升级到 v2；temporary exemption 强制 `owner` + `targetDate`；`daily-use:target-baseline-check` 当前报告 15 个 documented exemption | `部分完成` | 15 仍高于计划要求的 10 以内 |
+| 3. 测试边界不再整体豁免 module boundary rules | `eslint.config.ts` 的全仓测试块仍对 `@nx/enforce-module-boundaries` 与 `no-restricted-imports` 做全局关闭；但 `repository` 与 `ai` 已新增 `src/testing` seam，application tests 已迁移到 test-support import，且 package-specific `no-restricted-imports` 已能拦截 private infra/api import | `未完成` | 需要把 `repository + ai` 试点扩展成真正的 package-scoped allowlist，并最终移除全局测试关闭 |
+| 4. `governance` 活文档审计能验证注释质量，而不只是 JSDoc 存在性 | `governance-module-docs-audit.mjs` 已检查文件级 JSDoc 内容量、English-first / 中文 second、`@internal`、公开导出 JSDoc；复跑通过 | `已完成` | 后续只需持续维护 |
+| 5. `governance` 和至少 3 个高价值 feature 包完成稳定 public surface 收缩 | `governance` 仅完成了 root barrel 第一层收窄；`governance`、`goal`、`task`、`repository` 的 `package.json#exports` 仍公开宽 surface | `未完成` | 需扩展 package export audit 到 `package.json#exports`，并同时收口 `governance` + 至少 3 个高价值包 |
+| 6. 高价值模块开始使用目录级 lint ratchet，而不是继续停留在全局 warn | `eslint.config.ts` 已将多个高价值包生产代码目录的 `no-explicit-any` / `no-unused-vars` 升为 `error` | `已完成` | 后续是扩大范围，不影响本条已达成 |
+| 7. feature `api/module.ts` 的 `db: unknown` + `as PrismaClient` 模式被统一替换 | 12 个 feature `api/module.ts` 已统一使用 `ServerModuleContext<PrismaClient>`；但生产代码仍有 5 处 `as PrismaClient` cast，shared contract 仍保留 `DbClient = unknown` 默认值 | `部分完成` | 需清零剩余生产 cast，并收紧 shared contract |
+
+结论：7 条完成要求里，当前已有 **3 条可直接判定为已完成**，**2 条是部分完成**，**2 条仍未完成**。因此当前状态仍只能叫“治理显著深化并已有强约束基础”，不能叫“范式已经优雅完整收口”。
+
+### 命令真实性审计
+
+为避免后续执行方案停留在“看起来合理但仓库里并没有对应 target”的层面，已额外核对本计划中最常用的项目级验证命令。
+
+| 项目 | `build` | `lint` | `typecheck` | `test` | 备注 |
+| --- | --- | --- | --- | --- | --- |
+| `repository` | 存在 | 存在 | 存在 | 存在 | `build` 依赖 `database:build` |
+| `goal` | 存在 | 存在 | 存在 | 存在 | 另有 integration / coverage 细分 target |
+| `ai` | 存在 | 存在 | 存在 | 存在 | 适合验证 PR-2 |
+| `schedule` | 存在 | 存在 | 存在 | 存在 | 另有 integration / coverage 细分 target |
+| `governance` | 存在 | 存在 | 存在 | 存在 | 适合验证 export / docs 审计相关改动 |
+| `notification` | 存在 | 存在 | 存在 | 存在 | 适合验证 repository-factory cast 清理 |
+
+补充说明：
+
+1. 本计划中引用的项目级 `build/lint/test/typecheck` 命令均有真实 Nx target 支撑，不是名义命令。
+2. 多包联合验证时，`pnpm nx run-many -t typecheck --projects=...` 仍是合理入口，但应把它视为**补充性验证**；每个 PR 先过本地项目 target，再过联合 target。
+3. 多数 library 的 `build` target 都依赖 `database:build`，所以 PR 级最小验证应优先 `lint` / `test` / `typecheck`，只有涉及 export surface 或构建产物时再跑 `build`。
+4. 当前 `package-export-audit.mjs` **只审计 `src/index.ts`，不审计 `package.json#exports`**；因此“governance-check 全绿”不能被误读为“export map 已收口”。
+
+### Target Baseline 可行性修正
+
+对 `tools/governance/target-baseline-manifest.json` 的当前真值再做了一次分布审计：
+
+- documented exemptions 总数：`15`
+- 其中 `permanent`：`12`
+- 其中 `temporary`：`3`
+
+这意味着：
+
+1. **“总 exemptions <= 10” 在当前分类模型下并不直接成立**
+   - 因为仅 `permanent` 豁免就已经有 `12`
+   - 若不回收或重分类部分 `permanent` 豁免，单纯清掉所有 `temporary` 也只能降到 `12`
+
+2. 因此 Track 2 的后续目标需要按两层表达，而不是只保留一个总数：
+   - 第一层目标：`temporary exemptions = 0`
+   - 第二层目标：复核现有 `permanent` 豁免，确认哪些其实属于工程欠账并应改回 `temporary` 或直接补 target
+
+3. 当前 manifest 中最值得复核的 `permanent` 条目不是平台天然例外，而是这些表述偏像“延后”而非“永久不需要”：
+   - `dashboard:test`
+   - `ui-vue-shadcn:test`
+   - `app-react:test`
+   - `ui-react-native:test`
+   - `http-client:test`
+
+4. 因此更现实、更可治理的阶段目标应改为：
+   - Phase F1：把 `temporary` exemptions 从 `3` 压到 `0`
+   - Phase F2：复核全部 `permanent` exemptions，清理误分类
+   - Phase F3：在完成误分类回收后，再争取把总 exemptions 压到 `10` 以内
+
+### 当前剩余问题清单（按优先级）
+
+1. 把已在 `repository` 落地的 test-support seam + package-scoped lint 模式扩展到更多包，并最终移除“测试文件整体关闭边界规则”。
+
+2. 扩大 package export audit 的定义，不再只禁止 `export * from './infrastructure-server'`，而是同时治理 `src/index.ts` 与 `package.json#exports` 的 public surface 白名单。
+
+3. 完成 typed context 第二阶段：
+   - 移除生产代码残留的 `as PrismaClient`
+   - 收紧 `ServerModuleContext<DbClient = unknown>` 的兼容默认值
+
+4. 继续收缩 target baseline exemptions，从 15 进一步压到 10 以内。
+
+### 修订后的后续优雅完整实现方案
+
+#### Phase A: 回收“规则已落地但文档仍写 future work”的真值漂移
+
+1. 更新 `docs/standards/architecture.md`
+   - 把“当前暂以文档约束为主”改为“已由 `package-internal-boundary-audit.mjs` 执行第一层包内分层治理”
+   - 同时明确：当前剩余 known violation 只是收口中的技术债，不是规则尚未存在
+
+2. 更新 `ADR-031`
+   - 把 package-internal lint rules 的表述从 “future work” 改成“已由 repo-level governance audit 落地，后续可再评估是否抽成 ESLint rule”
+
+3. 把 active plan 的完成判定细化为可审计门槛：
+   - `package-internal-boundary-audit` 已知违规数 = 0
+   - `target-baseline-audit` documented exemptions <= 10
+   - 测试边界不再全局关闭
+   - 根公共导出面有明确白名单审计
+   - 生产代码中不再出现 `as PrismaClient`
+
+#### Phase B: 清零 package-internal known violations，让 Track 1 真正闭环
+
+2026-05-30 当前状态：**已完成**
+
+1. `goal`
+   - 2026-05-30 执行状态：**已完成**
+   - 2026-05-30 代码核对结果：
+     - 当前违规集中在 `packages/goal/src/application-server/mappers/goal.mapper.ts`
+     - 问题点是 `GoalMapper.toDomain(raw: RawGoalData)` 直接依赖 `infrastructure-server/adapters/prisma/mappers/goal-state-mapper`
+     - 当前仓库内未检索到 `GoalMapper.toDomain(...)` 的调用点；因此已直接删除 `toDomain` 与相关 infra import，而不是再抽一层中间 mapper
+     - `goal:lint` 当前仍不通过，但失败点是既有 `no-explicit-any` 红线，不是这条越层依赖修复本身
+
+2. `ai`
+   - 2026-05-30 执行状态：**已完成**
+   - 2026-05-30 代码核对结果：
+     - 当前 `AIKnowledgeNotePathResolver` 只做字符串清洗与 slugify，不依赖数据库、网络、文件系统或 runtime 对象
+     - 这说明它并不是 infra service，而是纯计算逻辑
+     - 已按最短优雅路径完成：
+       - 把它移动到 `application-server/services/ai-knowledge-note-path-resolver.ts`
+       - runtime / electron entry / tests 全部改依赖该应用层实现
+     - 验证结果：
+       - `pnpm nx run ai:lint` 通过（仅剩既有 warnings）
+       - `pnpm nx run ai:test --skip-nx-cache` 通过
+     - 只有在未来出现真实平台差异（不同 runtime 生成不同路径规则）时，才值得升级成可注入 port
+
+3. `repository`
+   - 2026-05-30 执行状态：**已完成**
+   - 2026-05-30 代码核对结果：
+     - 当前违规不是业务逻辑错误，而是 `packages/repository/src/application-server/index.ts` 通过根导出把 `FsStorageAdapter` 重新泄露给 application surface
+     - `IStoragePort` 已经定义在 `application-server/ports/i-storage-port.ts`
+     - `api/module.ts` 与 `electron-entry/index.ts` 已经直接从 infra 子路径导入 `FsStorageAdapter`
+     - 因此已执行最短且最干净的修复：
+       - 删除 `application-server/index.ts` 对 `FsStorageAdapter` 的 re-export
+       - 明确消费者改为从 `@dailyuse/repository/infrastructure-server` 导入
+     - `repository:lint` 已重新通过；过程中还顺手修复了 `packages/repository/src/index.ts` 中一个既有 root barrel 语法错误，避免 lint 被无关 parse error 阻断
+
+4. `schedule`
+   - 2026-05-30 执行状态：**已完成**
+   - 2026-05-30 代码核对结果：
+     - 当前 `ScheduleTaskExecutionResult` 与 `ScheduleTaskSourceExecutor` 只定义在 `packages/schedule/src/api/runtime.ts`
+      - `application-server/source-executors/shared-source-executor.ts` 因而被迫反向依赖 `api/runtime`
+     - 已按 application-level contract 路线完成：
+       - 新增 `application-server/source-executors/runtime-contract.ts`
+       - `api/runtime.ts` 改为消费并 re-export 该 contract
+       - `api/module.ts`、`electron-entry/index.ts` 改为从新 contract 导入 `ScheduleTaskSourceExecutor`
+       - `shared-source-executor.ts` 不再反向 import `api/**`
+     - 验证结果：
+       - `pnpm nx run schedule:test --skip-nx-cache` 通过
+       - `pnpm nx run schedule:lint` 通过（仅剩既有 warnings）
+
+5. 完成后收紧 audit
+   - 当前 `daily-use:governance-check --skip-nx-cache` 已显示 `0 known violation(s) tracked`
+   - `tools/governance/package-internal-boundary-audit.mjs` 中的 `KNOWN_VIOLATIONS` 已清空；后续目标是保持其为空并防止回退
+
+#### Phase C: 让测试边界治理从宽豁免进入受控 seam
+
+2026-05-30 当前状态：**`repository + ai` 的试点已完成，但 Track 3 整体仍未完成**
+
+1. 已完成的 repository 试点
+   - 已新增 `packages/repository/src/testing/`
+     - 当前暴露：
+       - `createRepositoryMemoryTestRepositories(...)`
+       - `createTestFsStorage(...)`
+   - `packages/repository/src/application-server/__tests__/*` 已改为依赖 `../../testing`
+   - `eslint.config.ts` 已对 repository application tests 新增专用 `no-restricted-imports`
+     - 明确禁止 `../../infrastructure-server/**`
+     - 明确禁止 `../../api/**`
+   - 已完成负向验证：
+     - 临时加入一条 `application test -> private infra path` sentinel import
+     - `pnpm nx run repository:lint` 会报错：
+       - `Repository application tests must use ../../testing seams instead of private infrastructure or api paths.`
+   - 当前正向验证：
+     - `pnpm nx run repository:test --skip-nx-cache` 通过
+     - `pnpm nx run repository:lint` 通过
+
+2. 已完成的 AI 试点
+   - 已新增 `packages/ai/src/testing/`
+     - 当前暴露：
+       - `createAIModuleForTests(...)`
+       - `createAIProviderConfigRepositoryStub(...)`
+       - `createAIProviderConfigServerDTO(...)`
+   - `packages/ai/src/application-server/use-cases/commands/__tests__/ai-query-services.test.ts` 已改为依赖 `../../../../testing`
+   - `eslint.config.ts` 已对 AI application tests 新增专用 `no-restricted-imports`
+     - 明确禁止 `**/infrastructure-server/**`
+     - 明确禁止 `**/api/**`
+   - 已完成负向验证：
+     - 临时加入一条 `application test -> ../../../../infrastructure-server/ai.module` sentinel import
+     - `pnpm nx run ai:lint` 会报错：
+       - `AI application tests must use src/testing seams instead of private infrastructure or api paths.`
+   - 当前正向验证：
+     - `pnpm nx run ai:test --skip-nx-cache` 通过
+     - `pnpm nx run ai:lint --skip-nx-cache` 通过
+
+3. 下一步目标仍然是在 `eslint.config.ts` 中取消当前测试层对 `@nx/enforce-module-boundaries` / `no-restricted-imports` 的全局关闭策略
+
+4. 改成两层模型：
+   - 默认测试规则：仍执行边界检查
+   - 受控 allowlist：仅对 `packages/test-utils/**`、`src/test/**`、明确命名的 fixtures / public subpath exports 开白名单
+
+5. 后续试点顺序：
+   - 2026-05-30 已完成前两批试点：
+     - `packages/repository`
+     - `packages/ai`
+   - 下一批优先：
+     - `packages/goal`
+     - `packages/task`
+     - `apps/desktop/src/main/modules/authentication`
+   - AI 当前最关键的 private seam 已收口：`ai-query-services.test.ts` 不再直连 `infrastructure-server/ai.module`
+
+6. 验证方式：
+   - 人为引入一条跨模块私有实现 import，确认 lint 失败
+   - 同时确认合法 test seam 仍可通过
+
+7. 推荐的优雅实施切片：
+   - Slice C1：`repository` application-test seam
+     - 2026-05-30 执行状态：**已完成**
+     - 已完成动作：
+       - 新增 `packages/repository/src/testing/`
+       - 现有 `application-server/__tests__` 不再直接 import `infrastructure-server/adapters/*`
+       - repository-specific `no-restricted-imports` 已落地并经 sentinel 负向验证
+   - Slice C2：`ai` application-test seam
+     - 2026-05-30 执行状态：**已完成**
+     - 已完成动作：
+       - 新增 `packages/ai/src/testing/`
+       - `ai-query-services.test.ts` 不再直接 import `infrastructure-server/ai.module`
+       - AI-specific `no-restricted-imports` 已落地并经 sentinel 负向验证
+   - Slice C3：收 `goal` / `task` / `desktop authentication` 的真实穿透点
+     - 需要继续审计这些包/模块是否仍直接 import private implementation
+   - Slice C4：在 ESLint 中引入 test-only allowlist
+     - 先只对白名单测试支持目录关闭 restricted import
+     - 其余测试恢复 `@nx/enforce-module-boundaries`
+   - Slice C5：最后才收紧全仓测试规则
+     - 先对 `repository`、`ai`、`goal`、`task` 验证
+     - 再推广到其余包
+
+#### Phase D: 统一稳定公共 API 面，而不是只禁止最粗暴的 infra re-export
+
+1. 为 feature root barrel 定义白名单
+   - 允许：
+     - contracts
+     - domain-shared
+     - 稳定的 application-client factory
+     - composition root factory / module factory
+     - 必要的 stable type aliases
+   - 默认不允许：
+     - `export * from './application-server'`
+     - `export * from './application-client'`
+     - `export * from './infrastructure-client'`
+     - 具体 Prisma / PowerSync / Fs / Memory adapter class
+
+2. 扩展 `package-export-audit.mjs`
+   - 从“只抓 infra root-star export”扩展为“检查 root barrel 是否超出白名单”
+   - 2026-05-30 代码核对结果表明，仅审计 `src/index.ts` 还不够，因为 `package.json` 仍在正式公开宽 surface：
+     - `packages/goal/package.json`
+     - `packages/task/package.json`
+     - `packages/repository/package.json`
+   - 当前这些包都仍公开：
+     - `./application-server`
+     - `./application-client`
+     - `./infrastructure-server`
+     - `./infrastructure-client`
+     - `./api`
+   - 因此 Track 4 需要补成两层审计：
+     - `src/index.ts` root barrel audit
+     - `package.json#exports` export-map audit
+
+3. 第一批收口包：
+   - `governance`
+   - `goal`
+   - `task`
+   - `repository`
+
+4. 目标状态
+   - 根入口只保留稳定消费面
+   - 教学/实现可见性通过 subpath export 获取，而不是从 `.` 自动暴露
+
+5. 推荐的优雅实施切片：
+   - Slice D1：先定义 export-map 白名单策略
+     - 默认允许：
+       - `.`
+       - `./domain-shared`
+       - `./domain-server`
+       - 稳定的 `./application-client`
+       - 必要的 `./infrastructure-server` composition root
+     - 默认不再新增：
+       - `./application-server`
+       - `./api`
+       - `./infrastructure-client`
+       - 任何仅供内部 wiring 使用的 surface
+   - Slice D2：扩展 `package-export-audit.mjs`
+     - 同时读取 `package.json` 与 `src/index.ts`
+     - 对 export map 与 root barrel 做统一白名单校验
+   - Slice D3：优先收口 `repository`
+     - 它当前既有宽 root barrel，也有宽 export map，且还伴随测试直接依赖 infra
+   - Slice D4：再收口 `goal` 与 `task`
+     - 两者 root barrel 和 export map 结构接近，适合用同一模板批量推进
+
+#### Phase E: 完成 typed context 第二阶段，移除生产代码中的 Prisma cast seam
+
+1. 先把搜索范围明确锁定到 production code：
+   - `packages/notification/src/infrastructure-server/di/notification-repository.factory.ts`
+   - `packages/repository/src/infrastructure-server/di/repository-repository.factory.ts`
+   - `packages/schedule/src/infrastructure-server/adapters/prisma/*.ts`
+   - `packages/account/src/infrastructure-server/adapters/prisma/account-prisma.repository.ts`
+
+2. 设计统一替代方式：
+   - 用 typed transaction / typed repository factory context，替代 `unknown -> PrismaClient` cast
+   - 优先通过更准确的 port/interface 和 generic helper 清掉 cast
+   - 2026-05-30 代码核对结果显示，剩余生产 cast 可以分成三类：
+     - A. 事务 client 伪装成 `PrismaClient`
+       - `packages/account/src/infrastructure-server/adapters/prisma/account-prisma.repository.ts`
+       - `packages/schedule/src/infrastructure-server/adapters/prisma/schedule-prisma.repository.ts`
+       - `packages/schedule/src/infrastructure-server/adapters/prisma/schedule-task-prisma.repository.ts`
+     - B. 工厂方法把 union client 强转成 `PrismaClient`
+       - `packages/notification/src/infrastructure-server/di/notification-repository.factory.ts`
+       - `packages/repository/src/infrastructure-server/di/repository-repository.factory.ts`
+     - C. 注释文本中提到旧模式
+       - `packages/contracts/src/shared/server-module-context.ts`
+       - `packages/governance/src/api/module.ts`
+
+3. 推荐的优雅替代方向：
+   - Slice E1：为 Prisma 仓储定义最小 DB 能力接口，而不是强依赖完整 `PrismaClient`
+     - 例如 `AccountPrismaDb`、`SchedulePrismaDb`
+     - 只包含仓储实际用到的 model delegate 与 `$transaction`
+     - 这样 transaction client 与 root Prisma client 都能自然满足接口，不需要 `as PrismaClient`
+   - Slice E2：为 `withTransaction` 使用 typed repo recreation
+     - 让构造函数接收 `PrismaClient | Prisma.TransactionClient` 可满足的最小接口
+     - `new SchedulePrismaRepository(tx)` / `new ScheduleTaskPrismaRepository(tx)` 直接通过类型检查
+   - Slice E3：为 repository factory 使用 overload / discriminated union
+     - `create('prisma', prismaClient): PrismaRepositories`
+     - `create('powersync', electronDb): PowerSyncRepositories`
+     - 避免在单个实现体里 `client as PrismaClient`
+   - Slice E4：最后回收注释文本
+     - 在生产 cast 清零后，再修改 `ServerModuleContext` 与相关 API module 注释，避免文档提前宣称完成
+
+3. 第二阶段完成后再收紧 shared contract：
+   - 去掉 `ServerModuleContext<DbClient = unknown>` 的默认值
+   - 让所有使用方显式声明 `DbClient`
+
+4. 验证门槛：
+   - `rg -n "as PrismaClient" packages --glob "!**/*.test.ts" --glob "!**/*.spec.ts"` 为 0
+
+#### Phase F: 继续压缩 target baseline exemptions
+
+1. 先处理最像“工程欠账”而不是“技术天然例外”的项目
+   - `database:test`
+   - `ipc-client:test`
+   - `dashboard:test`
+   - `ui-vue-shadcn:test`
+
+2. 重新审视 currently-permanent exemptions
+   - 若本质上只是“暂时没补测试”，则不应长期标 permanent
+
+3. 目标
+   - `temporary` exemptions 从 3 压到 0
+   - temporary exemption 一律保留 owner + targetDate
+   - `permanent` exemption 只保留真正平台天然例外
+   - 在完成误分类回收后，再把 documented exemptions 总数从 15 压到 10 以内
+
+### 下一轮推荐执行顺序
+
+1. `Phase A` 已完成：文档真值漂移已回收
+2. `Phase B` 已完成：package-internal known violations 已清零
+3. `Phase C`：把测试边界改成受控 allowlist
+4. `Phase D`：扩大 root public surface audit 并收口 4 个高价值包
+5. `Phase E`：清掉生产代码 Prisma cast seam
+6. `Phase F`：继续压缩 target baseline exemptions
+
+这样推进的原因很直接：
+
+1. 文档真值已经回收，当前最值钱的是继续清规则内的已知例外
+2. 测试 seam、公开面和 typed context 现在都已具备足够清晰的收口切片
+3. 只有这些剩余切片完成，`governance` 的局部示范才能真正升级为 repo-wide 范式
+
+### 建议按 PR 切片推进
+
+下面的切片顺序按“对完成度审计提升最大、风险最低、可独立验证”排序。每个切片都应单独提交并独立过治理门禁。
+
+1. `PR-1` 清零最便宜的 known violations
+   - 2026-05-30 执行状态：**已完成**
+   - 目标文件：
+     - `packages/repository/src/application-server/index.ts`
+     - `packages/goal/src/application-server/mappers/goal.mapper.ts`
+   - 预期动作：
+     - 删除 `FsStorageAdapter` 的 application-layer re-export
+     - 删除无调用方的 `GoalMapper.toDomain` 及对应 infra import
+   - 验证：
+     - `pnpm nx run repository:lint` 通过
+     - `pnpm nx run goal:lint` 仍失败，但失败点是 `packages/goal/src/infrastructure-server/adapters/prisma/mappers/prisma-weight-snapshot-mapper.ts` 中既有 `no-explicit-any` 错误，不是 `GoalMapper` 修复回归
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过，tracked known violations 从 4 降到 2
+
+2. `PR-2` 抽离 AI knowledge note 路径解析到 application 层
+   - 2026-05-30 执行状态：**已完成**
+   - 目标文件：
+     - `packages/ai/src/application-server/use-cases/commands/manage-ai-knowledge-note.use-case.ts`
+     - 新增 application-level path helper/service
+     - `packages/ai/src/infrastructure-server/runtime/*.ts`
+     - `packages/ai/src/application-server/use-cases/commands/__tests__/ai-knowledge-note.service.test.ts`
+   - 预期动作：
+     - 移除 use case 对 `infrastructure-server/services/ai-knowledge-note-path-resolver` 的依赖
+     - 测试改依赖 application-level helper
+   - 验证：
+     - `pnpm nx run ai:test --skip-nx-cache` 通过
+     - `pnpm nx run ai:lint` 通过
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过，tracked known violations 从 2 降到 1
+
+3. `PR-3` 抽离 schedule runtime contract，清零最后一条 api 反向依赖
+   - 2026-05-30 执行状态：**已完成**
+   - 目标文件：
+     - `packages/schedule/src/api/runtime.ts`
+     - `packages/schedule/src/application-server/source-executors/shared-source-executor.ts`
+      - `packages/schedule/src/application-server/source-executors/runtime-contract.ts`
+      - `packages/schedule/src/api/module.ts`
+      - `packages/schedule/src/electron-entry/index.ts`
+   - 预期动作：
+     - 新建 shared/application-level runtime contract 文件
+      - `shared-source-executor.ts` 不再 import `api/runtime`
+   - 验证：
+     - `pnpm nx run schedule:test --skip-nx-cache` 通过
+     - `pnpm nx run schedule:lint` 通过（仅剩既有 warnings）
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过，tracked known violations 从 1 降到 0
+
+4. `PR-4` 为 `repository + ai` 建立 test-support seam，并把它们作为 Track 3 的前两批受控试点
+   - 目标文件：
+     - `packages/repository/src/testing/`
+     - `packages/ai/src/testing/`
+     - `packages/repository/src/application-server/__tests__/*`
+     - `packages/ai/src/application-server/use-cases/commands/__tests__/ai-query-services.test.ts`
+     - `eslint.config.ts`
+   - 2026-05-30 执行状态：**repository + ai 切片已完成，Track 3 剩余切片待继续**
+   - 已完成动作：
+     - 用测试支持层替代测试直接 import `infrastructure-server/adapters/*`
+     - 新增 `packages/repository/src/testing/repository-test-support.ts`
+     - 新增 `packages/repository/src/testing/index.ts`
+     - repository application tests 已迁移到 `../../testing`
+     - `eslint.config.ts` 已对 repository tests 新增专用 `no-restricted-imports`
+     - 新增 `packages/ai/src/testing/ai-test-support.ts`
+     - 新增 `packages/ai/src/testing/index.ts`
+     - `ai-query-services.test.ts` 已迁移到 `../../../../testing`
+     - `eslint.config.ts` 已对 AI application tests 新增专用 `no-restricted-imports`
+   - 剩余动作：
+     - 把同样的模式扩展到 `goal` / `task` / desktop authentication 等下一批包
+     - 最终移除测试层的全局边界关闭
+   - 验证：
+     - `pnpm nx run repository:test --skip-nx-cache` 通过
+     - `pnpm nx run repository:lint` 通过
+     - `pnpm nx run ai:test --skip-nx-cache` 通过
+     - `pnpm nx run ai:lint --skip-nx-cache` 通过
+     - 人为加入一条 application test -> private infra import，repository / ai lint 都已确认失败后再删除 sentinel
+
+5. `PR-5` 扩展 package export audit 到 export map，并先收口 governance + repository
+   - 目标文件：
+     - `tools/governance/package-export-audit.mjs`
+     - `packages/governance/package.json`
+     - `packages/repository/package.json`
+     - 需要时同步调整 `src/index.ts`
+   - 预期动作：
+     - 同时审计 `src/index.ts` 和 `package.json#exports`
+     - 先定义并应用白名单到两个包
+   - 验证：
+     - `pnpm nx run governance:build`
+     - `pnpm nx run repository:build`
+     - `pnpm nx run daily-use:governance-check`
+
+6. `PR-6` 收口 goal + task export map
+   - 目标文件：
+     - `packages/goal/package.json`
+     - `packages/task/package.json`
+     - 必要时同步 `src/index.ts`
+   - 预期动作：
+     - 应用与 `governance` / `repository` 一致的 export-map 白名单
+   - 验证：
+     - `pnpm nx run goal:build`
+     - `pnpm nx run task:build`
+     - `pnpm nx run daily-use:governance-check`
+
+7. `PR-7` 清零剩余 Prisma cast seam
+   - 目标文件：
+     - `packages/account/src/infrastructure-server/adapters/prisma/account-prisma.repository.ts`
+     - `packages/schedule/src/infrastructure-server/adapters/prisma/schedule-prisma.repository.ts`
+     - `packages/schedule/src/infrastructure-server/adapters/prisma/schedule-task-prisma.repository.ts`
+     - `packages/notification/src/infrastructure-server/di/notification-repository.factory.ts`
+     - `packages/repository/src/infrastructure-server/di/repository-repository.factory.ts`
+     - 最后才改 `packages/contracts/src/shared/server-module-context.ts`
+   - 预期动作：
+     - 先用最小 DB 能力接口、typed transaction client、overload/discriminated union 清零生产 cast
+     - 再回收 shared contract 默认泛型与注释文本
+   - 验证：
+     - `rg -n "as PrismaClient" packages --glob "!**/*.test.ts" --glob "!**/*.spec.ts"`
+     - `pnpm nx run-many -t typecheck --projects=account,notification,repository,schedule,goal,task,governance`
+
+8. `PR-8` 压缩 target baseline exemptions 到 10 以内
+   - 目标文件：
+     - `tools/governance/target-baseline-manifest.json`
+     - 以及对应项目的 `project.json` / test targets
+   - 预期动作：
+     - 先清零当前 `temporary`：`mobile:test`、`database:test`、`ipc-client:test`
+     - 再复核 `dashboard:test`、`ui-vue-shadcn:test`、`app-react:test`、`ui-react-native:test`、`http-client:test` 是否误标为 `permanent`
+     - 只有在误分类回收后，再以总数 `<=10` 作为最终门槛
+   - 验证：
+     - `pnpm nx run daily-use:target-baseline-check`
+     - `pnpm nx run daily-use:governance-check`
+
+### Slice 依赖图
+
+这些 PR 切片不是完全独立的。若顺序排错，会出现“先收 lint，再被测试 seam 卡住”或“先改注释，再被真实实现推翻”的问题。
+
+#### 强依赖
+
+1. `PR-1 -> PR-4`
+   - `PR-4` 的 repository 切片已经建立在这个前置条件之上并完成
+   - 2026-05-30 此前置条件已满足：`repository` 的 application surface 已停止 re-export `FsStorageAdapter`
+   - 当前剩余的 `PR-4` 工作只是在此基础上把同类模式扩展到其他包
+
+2. `PR-2 -> PR-4`
+   - 2026-05-30 此前置条件已满足：`AIKnowledgeNotePathResolver` 已经从 infra 平移出去
+   - 因此 `PR-4` 的下一步可以直接收 `ai` 测试边界，而不再受这条旧 seam 阻塞
+
+3. `PR-3 -> PR-7`
+   - 2026-05-30 此前置条件已满足：`schedule` runtime contract 已从 `api/runtime.ts` 抽离
+   - `PR-7` 现在可以直接聚焦 Prisma cast 清理，而不再混入层次修复
+
+4. `PR-5 -> PR-6`
+   - `PR-5` 负责先把 `package-export-audit.mjs` 扩到 `package.json#exports`
+   - `PR-6` 再用这个新门禁批量收口 `goal` 和 `task`
+   - 否则 `PR-6` 只是人工收窄，没有新的治理约束守住
+
+5. `PR-7 -> 注释口径回收`
+   - `ServerModuleContext` 和相关 API module 注释中的旧 seam 描述必须在 production cast 清零后再回收
+   - 否则文档会再次先于实现
+
+#### 可并行边界
+
+在多人并行或多 agent 并行时，以下组合是相对安全的：
+
+1. `PR-4` 与 `PR-8` 可并行
+   - 一个继续收 Track 3 剩余测试 seam / allowlist
+   - 一个收 target baseline manifest / target 欠账
+   - 共享文件极少
+
+2. `PR-2` 与 `PR-5` 可并行
+   - 该组合已失效，因为 `PR-2` 已完成
+
+3. `PR-3` 与 `PR-8` 可并行
+   - 该组合已失效，因为 `PR-3` 已完成
+
+#### 推荐关键路径
+
+若按“最快达成完成判定”排序，当前关键路径应为：
+
+1. `PR-4` 剩余切片（Phase C2 ~ C4）
+2. `PR-5`
+3. `PR-6`
+4. `PR-7`
+5. `PR-8`
+
+原因：
+
+1. `PR-1 ~ PR-3` 已全部完成，完成判定第 1 条已由“部分完成”推进到“已完成”
+2. `PR-4` 的 repository 试点已经落地，但 Track 3 仍是当前最明确的“未完成”项；因此关键路径已从“开始 PR-4”变成“完成 PR-4 的剩余切片”
+3. `PR-5 ~ PR-6` 解决 public surface 收缩这条当前明确“未完成”的条目
+4. `PR-7` 完成 typed context phase 2，把当前“部分完成”推进到可完成
+5. `PR-8` 最后处理 baseline 总量和误分类回收，因为它对最终完成必要，但不阻塞前几条结构治理闭环
+
+### PR 级执行前置条件
+
+为保证这些切片保持“小而硬”的治理收口风格，执行时应遵守以下前置条件：
+
+1. **每个 PR 只解决一个主 seam**
+   - 例如不要在 `PR-4` 同时做 repository test seam、export map 收口和 Prisma cast 清理
+   - 否则治理收益会被混在一起，回归范围也会失真
+
+2. **先过项目局部验证，再跑 `daily-use:governance-check`**
+   - 推荐顺序：
+     - `<project>:lint`
+     - `<project>:test`
+     - `<project>:typecheck`
+     - 如涉及 export / build 再跑 `<project>:build`
+     - 最后再跑 `daily-use:governance-check`
+
+3. **不要把“治理脚本本身还没覆盖”误判成“问题已经解决”**
+   - 当前最典型例子就是 export map：
+     - `package-export-audit` 仍绿
+     - 但 `package.json#exports` 仍然很宽
+   - 所以扩展审计脚本和收口实现需要同一 PR 完成，避免出现“实现变窄了，但未来没人守”的回退风险
+
+4. **测试 seam 重构必须伴随真实 lint 失败样例**
+   - `PR-4` 不应只新增 test-support helper
+   - 还应验证一条 application test 直接 import private infra path 会被 lint 拦住
+
+5. **typed context phase 2 必须把注释回收放到最后**
+   - 在 production `as PrismaClient` 尚未清零前，不应提前改注释宣称 seam 已消失
+
+### 最终完成证明清单
+
+以下证据都要在同一轮 completion audit 中重新采集，才能证明“范式已经优雅完整收口”。
+
+1. 包内分层治理闭环
+   - `pnpm nx run daily-use:governance-check` 通过
+   - 输出中 `Package-Internal Boundary Audit` 不再出现 tracked known violations
+   - `tools/governance/package-internal-boundary-audit.mjs` 中不再保留 `KNOWN_VIOLATIONS` 兜底列表，或列表为空
+
+2. target baseline 收口
+   - `pnpm nx run daily-use:target-baseline-check` 通过
+   - `temporary` exemptions = 0
+   - `permanent` exemptions 都能被治理文档中的“平台天然例外”口径自洽解释
+   - 若仍主张总数 `<=10`，必须有 manifest 真值证明，而不是计划目标本身
+
+3. 测试边界受控
+   - `eslint.config.ts` 不再对全部测试文件全局关闭 `@nx/enforce-module-boundaries` / `no-restricted-imports`
+   - `repository` 已迁移试点的测试只依赖 `src/testing` seam，不再直接 import private infra path
+   - 人为引入一条跨内部实现 import，lint 能失败
+   - 但 completion audit 时仍需证明这不只存在于 `repository`，而是已通过 package-scoped allowlist 取代全局测试关闭
+
+4. public surface 收口
+   - `package-export-audit.mjs` 同时覆盖 `src/index.ts` 与 `package.json#exports`
+   - `governance`、`repository`、`goal`、`task` 的 export map 与 root barrel 均符合白名单
+   - 检索结果不能再显示这些包公开 `./application-server`、`./api`、`./infrastructure-client` 等非稳定 surface（除非白名单有书面修订）
+
+5. typed context phase 2 闭环
+   - `rg -n "as PrismaClient" packages --glob "!**/*.test.ts" --glob "!**/*.spec.ts"` 为 0
+   - `ServerModuleContext<DbClient = unknown>` 的默认值已去掉，或有明确新标准替代并完成全仓迁移
+   - 相关联合 typecheck 通过
+
+6. 文档与治理一致
+   - `docs/standards/architecture.md`
+   - `docs/architecture/adr/ADR-031-server-feature-standard-shape.md`
+   - `docs/governance/target-baseline-governance.md`
+   - 上述文档都不能再保留与当前实现冲突的过渡口径
+
+7. 高价值模块 lint ratchet 保持有效
+   - `eslint.config.ts` 中已提升到 `error` 的高价值包规则仍存在
+   - 没有因为局部修复而把这些规则重新降回 `warn`
+
+## 2026-05-29 原始判断（保留）
 
 ## 当前判断
 
@@ -600,14 +1397,10 @@ updated: 2026-05-29T00:00:00
 
 ## 与现有 active plan 的关系
 
-`docs/plan/active/2026-05-28-architecture-governance-deepening.md` 仍有参考价值，但它的关注点更偏：
+当前 `docs/plan/active/` 目录中只剩本文件作为架构治理主计划。
 
-1. 某些具体业务模块的收口
-2. 已发生的局部重构审计
+这意味着：
 
-而这份新计划处理的是更高一层的问题：
-
-1. 如何把这些局部成果固化成 repo-wide 范式
-2. 如何让治理工具本身变得更强，而不是继续靠人工记忆
-
-因此，后续如果开始按本文件推进，应考虑把 2026-05-28 那份计划转为 archive，避免 active 目录同时保留两份不同粒度、不同时间切面的“架构治理主计划”。
+1. 本文件已经是当前 canonical active plan，不再与其他 active plan 并存竞争
+2. 后续若继续推进 repository paradigm unification，应直接在本文件上滚动维护执行审计与下一批切片
+3. 旧的同类治理计划若仍有参考价值，应保留在 archive 中作为历史背景，而不是重新回到 active 目录

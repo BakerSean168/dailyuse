@@ -7,17 +7,13 @@ import { CreateResourceUseCase } from '../use-cases/commands/create-resource.use
 import { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
 import { UpdateResourceContentUseCase } from '../use-cases/commands/update-resource-content.use-case';
 import { ResourceMutationService } from '../services/resource-mutation.service';
-import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
-import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
-import { FolderMemoryRepository } from '../../infrastructure-server/adapters/memory/folder-memory.repository';
 import { Repository } from '../../domain-server/aggregates/repository';
+import { createRepositoryMemoryTestRepositories, createTestFsStorage } from '../../testing';
 
 function createTestUploadSetup(tempDir: string) {
-  const storage = new FsStorageAdapter(tempDir);
-  const resourceRepository = new ResourceMemoryRepository();
-  const repositoryRepository = new RepositoryMemoryRepository();
-  const folderRepository = new FolderMemoryRepository();
+  const storage = createTestFsStorage(tempDir);
+  const { resourceRepository, repositoryRepository, folderRepository } =
+    createRepositoryMemoryTestRepositories();
 
   const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
   const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
@@ -44,7 +40,7 @@ describe('UploadResources', () => {
   it('writes markdown and binary files without corruption', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-upload-'));
     try {
-      const { resourceRepository, repositoryRepository, uploadResources } = createTestUploadSetup(tempDir);
+      const { repositoryRepository, uploadResources } = createTestUploadSetup(tempDir);
       const repository = Repository.create({
         identityId: 'user-1' as any,
         name: 'Repo',

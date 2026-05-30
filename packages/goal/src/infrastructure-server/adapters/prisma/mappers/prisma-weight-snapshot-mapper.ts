@@ -5,7 +5,10 @@
  */
 
 import { KeyResultWeightSnapshot } from '@/domain-server';
-import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultWeightSnapshotDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
+import type { IdentityId } from '@dailyuse/contracts';
+import type { GoalId, KeyResultId, KeyResultWeightSnapshotId } from '@dailyuse/contracts/primitives';
+import type { KeyResultWeightSnapshot as PrismaKeyResultWeightSnapshot } from '@dailyuse/database';
 
 /**
  * Weight Snapshot Mapper
@@ -37,7 +40,7 @@ export class PrismaWeightSnapshotMapper {
   /**
    * Prisma row -> Domain value object
    */
-  static toDomain(prismaSnapshot: any): KeyResultWeightSnapshot {
+  static toDomain(prismaSnapshot: PrismaKeyResultWeightSnapshot): KeyResultWeightSnapshot {
     const toDateNumber = (value: unknown): number => {
       if (value instanceof Date) return value.getTime();
       if (typeof value === 'bigint') return Number(value);
@@ -45,17 +48,17 @@ export class PrismaWeightSnapshotMapper {
     };
 
     const dto: KeyResultWeightSnapshotDTO = {
-      id: prismaSnapshot.id,
-      goalId: prismaSnapshot.goalId,
-      keyResultId: prismaSnapshot.keyResultId,
-      identityId: prismaSnapshot.identityId,
+      id: prismaSnapshot.id as KeyResultWeightSnapshotId,
+      goalId: prismaSnapshot.goalId as GoalId,
+      keyResultId: prismaSnapshot.keyResultId as KeyResultId,
+      identityId: prismaSnapshot.identityId as IdentityId,
       oldWeight: prismaSnapshot.oldWeight,
       newWeight: prismaSnapshot.newWeight,
       weightDelta: prismaSnapshot.weightDelta,
       snapshotTime: toDateNumber(prismaSnapshot.snapshotTime),
-      trigger: prismaSnapshot.trigger,
+      trigger: prismaSnapshot.trigger as SnapshotTrigger,
       reason: prismaSnapshot.reason ?? null,
-      operatorId: prismaSnapshot.operatorId,
+      operatorId: prismaSnapshot.operatorId as IdentityId,
       createdAt: toDateNumber(prismaSnapshot.createdAt),
     };
     return KeyResultWeightSnapshot.fromDTO(dto);
@@ -64,7 +67,7 @@ export class PrismaWeightSnapshotMapper {
   /**
    * Batch convert: Prisma -> Domain
    */
-  static toDomainList(prismaSnapshots: any[]): KeyResultWeightSnapshot[] {
+  static toDomainList(prismaSnapshots: PrismaKeyResultWeightSnapshot[]): KeyResultWeightSnapshot[] {
     return prismaSnapshots.map((snapshot) => this.toDomain(snapshot));
   }
 }

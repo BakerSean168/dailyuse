@@ -8,13 +8,13 @@ import type {
 } from '@dailyuse/ai/application-server';
 import {
   createRepositoryModule,
+  FsStorageAdapter,
   RepositoryPrismaRepository,
   ResourcePrismaRepository,
   FolderPrismaRepository,
   ResourceBookmarkPrismaRepository,
-  FsStorageAdapter,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository';
+} from '@dailyuse/repository/infrastructure-server';
 
 /**
  * Adapter that persists AI knowledge notes via the repository module's

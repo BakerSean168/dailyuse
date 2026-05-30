@@ -51,8 +51,8 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
+import { AIKnowledgeNotePathResolver } from '../../application-server/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
-import { AIKnowledgeNotePathResolver } from '../services/ai-knowledge-note-path-resolver';
 
 const ADVANCED_AI_REASON =
   'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';

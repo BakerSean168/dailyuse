@@ -4,19 +4,16 @@ import * as os from 'os';
 import * as path from 'path';
 import { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
-import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
-import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
 import { Repository } from '../../domain-server/aggregates/repository';
+import { createRepositoryMemoryTestRepositories, createTestFsStorage } from '../../testing';
 
 describe('DeleteResource', () => {
   it('removes storage, hard-deletes the resource, and updates repository stats', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-delete-'));
 
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
+      const storage = createTestFsStorage(tempDir);
+      const { resourceRepository, repositoryRepository } = createRepositoryMemoryTestRepositories();
       const repository = Repository.create({
         identityId: 'user-1' as any,
         name: 'Repo',

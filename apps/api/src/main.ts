@@ -46,7 +46,8 @@ import {
 } from '@dailyuse/task/infrastructure-server';
 import { createAIApiModule } from '@dailyuse/ai';
 import type { AIApiModuleContext } from '@dailyuse/ai/api';
-import { createSettingModule, UserSettingPrismaRepository } from '@dailyuse/setting';
+import { createSettingModule } from '@dailyuse/setting';
+import { UserSettingPrismaRepository } from '@dailyuse/setting/infrastructure-server';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';

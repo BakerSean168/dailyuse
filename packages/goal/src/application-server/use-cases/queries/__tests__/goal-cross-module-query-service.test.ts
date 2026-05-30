@@ -21,22 +21,27 @@ vi.mock('@dailyuse/utils', async () => {
 // ============================================================
 
 function createGoalFixture(overrides?: Record<string, any>) {
+  const { targetDate: rawTargetDate, ...rest } = overrides ?? {};
+  const targetDate = rawTargetDate != null
+    ? (rawTargetDate instanceof Date ? rawTargetDate : new Date(rawTargetDate))
+    : null;
   return {
-    id: overrides?.id ?? 'goal-id-1',
-    name: overrides?.name ?? 'Test Goal',
-    description: overrides?.description ?? 'Test description',
-    status: overrides?.status ?? 'IN_PROGRESS',
-    title: overrides?.title ?? 'Test Goal',
-    targetDate: overrides?.targetDate ?? null,
-    keyResults: overrides?.keyResults ?? [],
-    getOverallProgress: vi.fn().mockReturnValue(overrides?.progress ?? 50),
+    id: rest.id ?? 'goal-id-1',
+    name: rest.name ?? rest.title ?? 'Test Goal',
+    description: rest.description ?? 'Test description',
+    status: rest.status ?? 'IN_PROGRESS',
+    title: rest.title ?? 'Test Goal',
+    targetDate,
+    keyResults: rest.keyResults ?? [],
+    progress: rest.progress ?? 50,
+    getOverallProgress: vi.fn().mockReturnValue(rest.progress ?? 50),
     toClientDTO: vi.fn().mockReturnValue({
-      id: overrides?.id ?? 'goal-id-1',
-      name: overrides?.name ?? 'Test Goal',
-      description: overrides?.description ?? 'Test description',
-      status: overrides?.status ?? 'IN_PROGRESS',
+      id: rest.id ?? 'goal-id-1',
+      name: rest.name ?? rest.title ?? 'Test Goal',
+      description: rest.description ?? 'Test description',
+      status: rest.status ?? 'IN_PROGRESS',
     }),
-    ...overrides,
+    ...rest,
   } as any;
 }
 
@@ -46,9 +51,8 @@ function createKeyResultFixture(overrides?: Record<string, any>) {
     title: overrides?.title ?? 'Key Result 1',
     description: overrides?.description ?? 'KR description',
     progress: overrides?.progress ?? {
-      current: 30,
-      target: 100,
-      progressPercentage: 30,
+      currentValue: 30,
+      targetValue: 100,
     },
     weight: overrides?.weight ?? 1,
     ...overrides,
@@ -117,6 +121,7 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
     it('should map goal fields including progress', async () => {
       const goal = createGoalFixture({
         id: 'g1',
+        name: 'My Goal',
         title: 'My Goal',
         description: 'Desc',
         status: 'IN_PROGRESS',
@@ -141,7 +146,6 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
           progress: 75,
         });
       }
-      expect(goal.getOverallProgress).toHaveBeenCalled();
     });
   });
 
@@ -190,7 +194,7 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
         id: 'kr-1',
         title: 'KR Title',
         description: 'KR Desc',
-        progress: { current: 50, target: 200, progressPercentage: 25 },
+        progress: { currentValue: 50, targetValue: 200 },
         weight: 2,
       });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr] });

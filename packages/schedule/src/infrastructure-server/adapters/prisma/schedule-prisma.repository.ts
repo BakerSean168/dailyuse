@@ -15,8 +15,24 @@ import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
+/**
+ * Minimal DB capability interface for Schedule repository.
+ * Both PrismaClient and Prisma.TransactionClient satisfy this.
+ */
+interface ScheduleDb {
+  schedule: PrismaClient['schedule'];
+}
+
 export class SchedulePrismaRepository implements IScheduleRepository {
-  constructor(private prisma: PrismaClient) {}
+  private readonly db: ScheduleDb;
+  private readonly rootClient: PrismaClient | null;
+
+  constructor(prisma: PrismaClient);
+  constructor(prisma: ScheduleDb, rootClient?: PrismaClient);
+  constructor(prisma: ScheduleDb | PrismaClient, rootClient?: PrismaClient) {
+    this.db = prisma;
+    this.rootClient = rootClient ?? ('$transaction' in prisma ? (prisma as PrismaClient) : null);
+  }
 
   /**
    * Convert Prisma data to Domain Schedule entity
@@ -38,7 +54,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   async save(schedule: CalendarEntry): Promise<void> {
     const data = this.mapToPrisma(schedule);
 
-    await this.prisma.schedule.upsert({
+    await this.db.schedule.upsert({
       where: { id: data.id },
       create: data,
       update: data,
@@ -49,7 +65,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
    * Find schedule by UUID
    */
   async findById(id: string): Promise<CalendarEntry | null> {
-    const data = await this.prisma.schedule.findUnique({
+    const data = await this.db.schedule.findUnique({
       where: { id },
     });
 
@@ -60,7 +76,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
    * Find all schedules for an account
    */
   async findByIdentityId(identityId: string): Promise<CalendarEntry[]> {
-    const schedules = await this.prisma.schedule.findMany({
+    const schedules = await this.db.schedule.findMany({
       where: { identityId },
       orderBy: { startTime: 'asc' },
     });
@@ -80,7 +96,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     endTime: number,
     excludeId?: string
   ): Promise<CalendarEntry[]> {
-    const schedules = await this.prisma.schedule.findMany({
+    const schedules = await this.db.schedule.findMany({
       where: {
         identityId,
         // Time overlap: schedule starts before query end
@@ -100,13 +116,13 @@ export class SchedulePrismaRepository implements IScheduleRepository {
    * Delete schedule by UUID
    */
   async deleteById(id: string): Promise<void> {
-    await this.prisma.schedule.delete({
+    await this.db.schedule.delete({
       where: { id },
     });
   }
 
   async deleteAggregate(entry: CalendarEntry): Promise<void> {
-    await this.prisma.schedule.delete({
+    await this.db.schedule.delete({
       where: { id: entry.id },
     });
     await publishAggregateEvents(entry, eventBusAdapter);
@@ -118,8 +134,11 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   async withTransaction<T>(
     fn: (repo: IScheduleRepository) => Promise<T>
   ): Promise<T> {
-    return this.prisma.$transaction(async (tx) => {
-      const txRepo = new SchedulePrismaRepository(tx as PrismaClient);
+    if (!this.rootClient) {
+      throw new Error('withTransaction requires a root PrismaClient (not a TransactionClient)');
+    }
+    return this.rootClient.$transaction(async (tx) => {
+      const txRepo = new SchedulePrismaRepository(tx);
       return fn(txRepo);
     });
   }

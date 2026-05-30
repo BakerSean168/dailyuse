@@ -36,16 +36,13 @@ import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RepositoryId, FolderId, BookmarkId } from '@dailyuse/contracts/primitives';
 import type { RepositoryController } from '../../controllers/repository.controller';
 import type { UploadResourcesRequestDTO, UploadResourcesResponseDTO } from '@dailyuse/contracts/repository';
+import type { Context } from '@dailyuse/contracts/shared';
 
 // ============ Types ============
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
-}
-
-interface UploadRequestContext {
-  identityId?: string;
 }
 
 // ============ Route Registration ============
@@ -70,7 +67,7 @@ export function registerRepositoryCrudRoutes(
       traceId: (req as { traceId?: string; id?: string }).traceId ?? (req as { id?: string }).id,
       startTime: Date.now(),
     });
-    const ctx = (req as Record<string, unknown>).ctx as UploadRequestContext;
+    const ctx = (req as unknown as Record<string, unknown>).ctx as Context | undefined;
     if (!ctx?.identityId) {
       res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
       return;
@@ -95,7 +92,7 @@ export function registerRepositoryCrudRoutes(
         contentBase64: file.buffer.toString('base64'),
       }));
 
-      const result = await controller.uploadResources(req.params!.repoId, files, metadata, ctx);
+      const result = await controller.uploadResources(req.params!.repoId, files, metadata, ctx!);
       const hasFailures =
         result.ok &&
         Array.isArray((result.data as UploadResourcesResponseDTO)?.failures) &&

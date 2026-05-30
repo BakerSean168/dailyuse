@@ -1,3 +1,9 @@
+/**
+ * Resolves the repository path for generated AI knowledge notes.
+ *
+ * The logic is pure string normalization and filename generation, so it
+ * belongs to the application layer rather than infrastructure.
+ */
 export class AIKnowledgeNotePathResolver {
   resolve(
     subpath: string,

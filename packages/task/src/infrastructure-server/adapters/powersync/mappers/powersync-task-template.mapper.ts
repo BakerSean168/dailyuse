@@ -5,7 +5,7 @@ import { TaskTemplateId } from '../../../../domain-shared/value-objects/task-tem
 import { TaskTemplateStatus } from '../../../../domain-shared/value-objects/task-template-status';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { TaskType } from '@dailyuse/contracts/task';
-import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit } from '@dailyuse/contracts/task';
+import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit, TaskTimeType } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import {
   ChecklistItemDefinition,
@@ -69,7 +69,7 @@ export class PowerSyncTaskTemplateMapper {
 
     const timeConfig = data.time_config_type
       ? TaskTimeConfig.fromDTO({
-          timeType: data.time_config_type,
+          timeType: data.time_config_type as TaskTimeType,
           startDate,
           timePoint: data.time_config_time_point,
           timeRange:

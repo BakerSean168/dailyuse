@@ -35,6 +35,24 @@
         "command": "tsc --noEmit",
         "cwd": "packages/http-client"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/http-client"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --config vitest.config.ts",
+        "cwd": "packages/http-client"
+      }
     }
   }
 }

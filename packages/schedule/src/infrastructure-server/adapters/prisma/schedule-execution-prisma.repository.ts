@@ -1,18 +1,18 @@
 import type { IScheduleExecutionRepository } from '../../../domain-server/repositories/i-schedule-execution-repository';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@dailyuse/database';
 import { PrismaScheduleExecutionMapper } from './mappers/prisma-schedule-execution-mapper';
 
 export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepository {
   constructor(private prisma: PrismaClient) {}
 
   async save(execution: ScheduleExecution): Promise<void> {
-    const data = PrismaScheduleExecutionMapper.toCreateInput(execution);
+    const data = PrismaScheduleExecutionMapper.toCreateInput(execution) as Record<string, unknown> & { id: string };
 
     await this.prisma.scheduleExecution.upsert({
       where: { id: data.id },
-      update: data,
-      create: data,
+      update: data as Prisma.ScheduleExecutionUpdateInput,
+      create: data as Prisma.ScheduleExecutionCreateInput,
     });
   }
 
