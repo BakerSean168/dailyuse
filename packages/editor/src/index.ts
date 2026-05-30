@@ -52,21 +52,4 @@ export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================
 export * from './infrastructure-client';
-export {
-  /** @internal Concrete Prisma implementation — use IEditorWorkspaceRepository interface instead. Prisma 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
-  EditorWorkspacePrismaRepository,
-  EditorSessionPrismaRepository,
-  EditorGroupPrismaRepository,
-  EditorTabPrismaRepository,
-  /** @internal Concrete PowerSync implementation — use IEditorWorkspaceRepository interface instead. PowerSync 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
-  PowerSyncEditorWorkspaceRepository,
-  PowerSyncEditorSessionRepository,
-  PowerSyncEditorGroupRepository,
-  PowerSyncEditorTabRepository,
-  createEditorModule,
-  createEditorPowerSyncModule,
-  type EditorApplicationPort,
-  type EditorModuleDependencies,
-  type EditorModuleInstance,
-  type EditorModuleRuntimeContribution,
-} from './infrastructure-server';
+export { createEditorModule, createEditorPowerSyncModule, type EditorApplicationPort, type EditorModuleDependencies, type EditorModuleInstance, type EditorModuleRuntimeContribution } from './infrastructure-server';

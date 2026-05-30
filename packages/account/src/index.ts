@@ -84,20 +84,6 @@ export * from './application-client';
 // ================= Infrastructure Layer (基础设施层) =================
 // Infrastructure-Server: Repositories, persistence, composition root (server-side)
 // Infrastructure-Client: HTTP/IPC adapters (client-side)
-export {
-  /** @internal Concrete Prisma implementation — use IAccountRepository interface instead. Prisma 具体实现 — 请使用 IAccountRepository 接口。 */
-  PrismaAccountRepository,
-  /** @internal Concrete PowerSync implementation — use IAccountRepository interface instead. PowerSync 具体实现 — 请使用 IAccountRepository 接口。 */
-  PowerSyncAccountRepository,
-  /** @internal In-memory implementation for testing — use IAccountRepository interface instead. 内存实现（测试用）— 请使用 IAccountRepository 接口。 */
-  MemoryAccountRepository,
-  createAccountModule,
-  createAccountUseCases,
-  type AccountApplicationPort,
-  type AccountModuleDependencies,
-  type AccountModuleInstance,
-  type AccountModuleRuntimeContribution,
-  type AccountModuleUseCases,
-} from './infrastructure-server';
+export { createAccountModule, createAccountUseCases, type AccountApplicationPort, type AccountModuleDependencies, type AccountModuleInstance, type AccountModuleRuntimeContribution, type AccountModuleUseCases } from './infrastructure-server';
 
 export * from './infrastructure-client';

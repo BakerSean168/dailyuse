@@ -73,26 +73,6 @@ export * from './application-client';
 // ================= Infrastructure Layer (基础设施层) =================
 // Infrastructure-Server: Repositories, persistence, composition root (server-side)
 // Infrastructure-Client: HTTP/IPC adapters (client-side)
-export {
-  /** @internal Concrete Prisma implementation — use INotificationRepository interface instead. Prisma 具体实现 — 请使用 INotificationRepository 接口。 */
-  NotificationPrismaRepository,
-  /** @internal Concrete Prisma implementation — use INotificationPreferenceRepository interface instead. Prisma 具体实现 — 请使用 INotificationPreferenceRepository 接口。 */
-  NotificationPreferencePrismaRepository,
-  /** @internal Concrete Prisma implementation — use INotificationTemplateRepository interface instead. Prisma 具体实现 — 请使用 INotificationTemplateRepository 接口。 */
-  NotificationTemplatePrismaRepository,
-  /** @internal Concrete PowerSync implementation — use INotificationRepository interface instead. PowerSync 具体实现 — 请使用 INotificationRepository 接口。 */
-  PowerSyncNotificationRepository,
-  /** @internal Concrete PowerSync implementation — use INotificationPreferenceRepository interface instead. PowerSync 具体实现 — 请使用 INotificationPreferenceRepository 接口。 */
-  PowerSyncNotificationPreferenceRepository,
-  /** @internal Concrete PowerSync implementation — use INotificationTemplateRepository interface instead. PowerSync 具体实现 — 请使用 INotificationTemplateRepository 接口。 */
-  PowerSyncNotificationTemplateRepository,
-  createNotificationModule,
-  createNotificationPowerSyncModule,
-  type NotificationApplicationPort,
-  type NotificationModuleDependencies,
-  type NotificationModuleInstance,
-  type NotificationModuleRuntimeContribution,
-  type NotificationModuleUseCases,
-} from './infrastructure-server';
+export { createNotificationModule, createNotificationPowerSyncModule, type NotificationApplicationPort, type NotificationModuleDependencies, type NotificationModuleInstance, type NotificationModuleRuntimeContribution, type NotificationModuleUseCases } from './infrastructure-server';
 
 export * from './infrastructure-client';

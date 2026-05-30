@@ -44,28 +44,5 @@ export * from './application-client';
 // Composition root, factories, and concrete adapters.
 // Note: memory adapters and RepositoryRepositoryFactory are NOT exported from root;
 // import from @dailyuse/repository/infrastructure-server if needed.
-export {
-  createRepositoryModule,
-  createRepositoryUseCases,
-  createRepositoryPowerSyncModule,
-  type RepositoryModuleDependencies,
-  type RepositoryModuleInstance,
-  type RepositoryModuleRuntimeContribution,
-  type RepositoryModuleUseCases,
-  // Port interfaces
-  type IFolderRepository,
-  type IRepositoryRepository,
-  type IResourceRepository,
-  // Prisma adapters (externally consumed by editor, goal, task, ai, dashboard)
-  FolderPrismaRepository,
-  RepositoryPrismaRepository,
-  ResourcePrismaRepository,
-  ResourceBookmarkPrismaRepository,
-  FsStorageAdapter,
-  // PowerSync adapters
-  PowerSyncRepositoryRepository,
-  PowerSyncFolderRepository,
-  PowerSyncResourceRepository,
-  ResourceBookmarkPowerSyncRepository,
-} from './infrastructure-server';
+export { createRepositoryModule, createRepositoryUseCases, createRepositoryPowerSyncModule, type RepositoryModuleDependencies, type RepositoryModuleInstance, type RepositoryModuleRuntimeContribution, type RepositoryModuleUseCases, // Prisma adapters (externally consumed by editor, goal, task, ai } from './infrastructure-server';
 export * from './infrastructure-client';

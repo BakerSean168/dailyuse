@@ -48,21 +48,9 @@ export {
 
 // ================= Infrastructure Layer =================
 // Server
-export {
-  createSettingModule,
-  createSettingUseCases,
-  type SettingApplicationPort,
-  type SettingModuleDependencies,
-  type SettingModuleInstance,
-  type SettingModuleRuntimeContribution,
-  type SettingModuleUseCases,
-} from './infrastructure-server';
+export { createSettingModule, createSettingUseCases, type SettingApplicationPort, type SettingModuleDependencies, type SettingModuleInstance, type SettingModuleRuntimeContribution, type SettingModuleUseCases } from './infrastructure-server';
 
-export {
-  UserSettingPrismaRepository,
-  UserSettingPowerSyncRepository,
-  createSettingPowerSyncModule,
-} from './infrastructure-server';
+export { createSettingPowerSyncModule } from './infrastructure-server';
 
 // Client
 export {

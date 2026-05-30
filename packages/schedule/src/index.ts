@@ -48,5 +48,6 @@ export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
-export * from './infrastructure-server';
+// removed re-export of './infrastructure-server' to avoid exposing concrete adapters; import specific subpaths instead
+
 export * from './infrastructure-client';
