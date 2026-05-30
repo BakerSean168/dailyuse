@@ -4,30 +4,45 @@
   "changelog": {
     "2": "Added exemption types (permanent/temporary) with owner and targetDate for temporary exemptions"
   },
-
   "projectCategories": {
     "app": {
       "description": "Deployable applications",
-      "requiredTargets": ["build", "lint", "typecheck", "test"]
+      "requiredTargets": [
+        "build",
+        "lint",
+        "typecheck",
+        "test"
+      ]
     },
     "runtime-lib": {
       "description": "Libraries with runtime code consumed by apps or other business libraries",
-      "requiredTargets": ["build", "lint", "typecheck", "test"]
+      "requiredTargets": [
+        "build",
+        "lint",
+        "typecheck",
+        "test"
+      ]
     },
     "ui-lib": {
       "description": "UI component and presentation libraries",
-      "requiredTargets": ["build", "lint", "typecheck", "test"]
+      "requiredTargets": [
+        "build",
+        "lint",
+        "typecheck",
+        "test"
+      ]
     },
     "tooling-lib": {
       "description": "Tooling, scaffolding, test helpers, config projects",
-      "requiredTargets": ["build"]
+      "requiredTargets": [
+        "build"
+      ]
     },
     "meta-project": {
       "description": "Root/workspace-level governance project",
       "requiredTargets": []
     }
   },
-
   "projectRules": {
     "daily-use": "meta-project",
     "web": "app",
@@ -66,7 +81,6 @@
     "@dailyuse/test-utils": "tooling-lib",
     "nx-test-system": "tooling-lib"
   },
-
   "exemptions": [
     {
       "project": "mobile",
@@ -79,7 +93,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "Mobile test infrastructure not yet set up; Expo test runner integration pending",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
@@ -87,7 +101,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "Infrastructure package: integration tests deferred; validated through downstream consumers",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
@@ -95,7 +109,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "Infrastructure lib: tested via integration with consuming apps",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
@@ -103,7 +117,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "Infrastructure lib: tested via desktop IPC test targets",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
@@ -111,7 +125,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "UI lib: component tests deferred; validated through app-vue integration",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
@@ -119,7 +133,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "UI component lib: third-party shadcn-vue primitives; component tests deferred",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q4"
     },
     {
@@ -133,7 +147,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "React lib: test infrastructure not yet set up",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
@@ -147,7 +161,7 @@
       "target": "test",
       "type": "temporary",
       "reason": "React Native lib: test infrastructure not yet set up",
-      "owner": "repo-owner",
+      "owner": "governance-team",
       "targetDate": "2026-Q3"
     },
     {
