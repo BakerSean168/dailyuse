@@ -27,6 +27,7 @@ export type {
 export type { IDomainEvent } from './domain-event.interface';
 export type { Context } from './context';
 export type { ExecutionContext } from './execution-context';
+export type { ServerModuleContext } from './server-module-context';
 
 
 export * from './value-objects'

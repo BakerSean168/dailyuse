@@ -15,7 +15,7 @@ type UIInputType = UIConfigDTO['inputType'];
 
 interface UIOption {
   label: string;
-  value: any;
+  value: unknown;
 }
 
 /**

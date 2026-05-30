@@ -25,7 +25,7 @@ const logger = createLogger('SchedulerBootstrap');
 export class SchedulerBootstrap {
   private initialized = false;
 
-  constructor(prisma: PrismaClient) {
+  constructor(_prisma: PrismaClient) {
     logger.info('SchedulerBootstrap initialized');
   }
 

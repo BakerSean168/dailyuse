@@ -83,8 +83,8 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
 
     const now = new Date();
     const preference = NotificationPreference.load({
-      id: generateUUID() as any,
-      identityId: identityId as any,
+      id: generateUUID() as never,
+      identityId: identityId as never,
       settings: new Map([
         ['task', [NotificationChannelType.InApp]],
         ['goal', [NotificationChannelType.InApp]],

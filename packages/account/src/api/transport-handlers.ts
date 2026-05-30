@@ -1,6 +1,5 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import type { AccountUseCases } from '../controllers/account.controller';
 import type { AccountApplicationPort } from '../infrastructure-server';

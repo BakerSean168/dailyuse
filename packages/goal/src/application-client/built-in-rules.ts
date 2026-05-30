@@ -6,9 +6,6 @@
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type {
   StatusRule,
-  RuleConditionType,
-  RuleMetric,
-  RuleOperator,
 } from '@dailyuse/contracts/goal';
 
 /**

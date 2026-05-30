@@ -14,8 +14,8 @@ export class ReminderTemplateNotFoundError extends Error {
 }
 
 export class ReminderTemplateUpdateError extends Error {
-  constructor(message: string, context?: any) {
-    const fullMessage = context 
+  constructor(message: string, context?: unknown) {
+    const fullMessage = context
       ? `${message} - ${JSON.stringify(context)}`
       : message;
     super(fullMessage);
@@ -24,7 +24,7 @@ export class ReminderTemplateUpdateError extends Error {
 }
 
 export class ReminderTemplateMethodMissingError extends Error {
-  constructor(methodName: string, context?: any) {
+  constructor(methodName: string, context?: unknown) {
     const fullMessage = context
       ? `提醒模板方法缺失: ${methodName} - ${JSON.stringify(context)}`
       : `提醒模板方法缺失: ${methodName}`;
@@ -34,7 +34,7 @@ export class ReminderTemplateMethodMissingError extends Error {
 }
 
 export class ReminderTemplateSaveError extends Error {
-  constructor(message: string, context?: any) {
+  constructor(message: string, context?: unknown) {
     const fullMessage = context
       ? `保存提醒模板失败: ${message} - ${JSON.stringify(context)}`
       : `保存提醒模板失败: ${message}`;

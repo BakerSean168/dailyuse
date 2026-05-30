@@ -27,6 +27,7 @@ interface RuleTagProps {
  *
  * 包含：
  * - value: 标签值（自动规范化为 lowercase-kebab-case）
+  * @param props - 
  */
 export class RuleTag extends ValueObject<RuleTagProps> {
   /**

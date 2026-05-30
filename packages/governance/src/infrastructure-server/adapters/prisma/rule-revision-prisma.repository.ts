@@ -30,6 +30,7 @@ import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper'
  * Prisma RuleRevision Repository
  *
  * Provides read-only access to revision history
+  * @param prismaClient - 
  */
 export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
   private readonly prisma: PrismaClient;

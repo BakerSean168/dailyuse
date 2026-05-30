@@ -15,8 +15,8 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import { createTaskModule, type TaskModuleInstance } from '../infrastructure-server/task.module';
 import { TaskTemplatePrismaRepository } from '../infrastructure-server/adapters/prisma/task-template-prisma.repository';
 import { TaskInstancePrismaRepository } from '../infrastructure-server/adapters/prisma/task-instance-prisma.repository';
@@ -32,25 +32,10 @@ import { createTaskScheduleRuntimeContribution } from './schedule-runtime';
 import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
 
 /**
- * Module registration context (aligned with apps/api IApiModuleContext).
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）。
- *
- * Defined locally in task package to avoid circular dependency with apps/api.
- * TypeScript structural typing ensures compatibility as long as field signatures match.
- *
- * 此类型在 task 包内本地定义，避免对 apps/api 的循环依赖。
- * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
+ * Typed module context for task registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface TaskApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type TaskApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface TaskApiModuleOptions {
   /** Custom route prefix (default '/tasks'). 自定义路由前缀（默认 '/tasks'）。 */
@@ -73,7 +58,7 @@ export const TaskApiModule: TaskApiModuleDef = {
 
     // 1. Composition Root — assemble dependencies (using shared database singleton)
     //    组合根 — 组装依赖（使用共享数据库单例）
-    const prismaClient = db as PrismaClient;
+    const prismaClient = db;
     const taskTemplateRepository = new TaskTemplatePrismaRepository(prismaClient);
     const taskInstanceRepository = new TaskInstancePrismaRepository(prismaClient);
     const taskModule = createTaskModule({

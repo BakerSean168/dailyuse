@@ -19,7 +19,14 @@ import type { GovernanceController } from '../../controllers/governance.controll
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
 import { RuleRevisionResponseSchema, parseNumber } from './governance-route-shared';
 
-/** Registers revision sub-resource routes for Rule. 注册 Rule 的修订子资源路由。 */
+/**
+ * Registers revision sub-resource routes for Rule. 注册 Rule 的修订子资源路由。
+ *
+ * @param controller - GovernanceController 实例
+ * @param middleware - Platform middleware 集合
+ * @param openApiRegistry - optional OpenAPI registry for route registration
+ * @returns Router - express Router with the revision routes
+ */
 export function registerGovernanceRuleRevisionsRoutes(
   controller: GovernanceController,
   middleware: PlatformMiddleware,

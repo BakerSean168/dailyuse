@@ -7,9 +7,6 @@
  * @module schedule/source-executors
  */
 
-import type { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
-import type { ScheduleTaskExecutionResult } from '../../api/runtime';
-
 // ─── Reminder Source Ports ───────────────────────────────────────────
 
 export interface ReminderSourceTemplate {

@@ -41,6 +41,7 @@ import type {
  *
  * Implements IRuleApiClient using Electron IPC for desktop app.
  * 使用 Electron IPC 为桌面应用实现 IRuleApiClient。
+  * @param private readonly ipcClient - 
  */
 export class RuleIpcAdapter implements IRuleApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -83,6 +84,9 @@ export class RuleIpcAdapter implements IRuleApiClient {
   }
 }
 
+/** Factory that creates a RuleIpcAdapter wrapping the given IPC client.  * @param ipcClient - 
+  * @returns any - 
+ */
 export function createRuleIpcAdapter(ipcClient: IResultIpcClient): IRuleApiClient {
   return new RuleIpcAdapter(ipcClient);
 }

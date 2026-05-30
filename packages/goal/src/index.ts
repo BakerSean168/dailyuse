@@ -59,21 +59,11 @@ export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
+// Composition root + types — concrete adapters imported via subpath:
+//   @dailyuse/goal/infrastructure-server
 export {
-  // Prisma adapters
-  GoalPrismaRepository,
-  GoalFolderPrismaRepository,
-  FocusModePrismaRepository,
-  FocusSessionPrismaRepository,
-  PrismaWeightSnapshotRepository,
-  GoalRecordPrismaRepository,
-  // PowerSync adapters
-  GoalPowerSyncRepository,
-  GoalFolderPowerSyncRepository,
-  GoalRecordPowerSyncRepository,
-  // Composition root
+  // Composition root (externally consumed by apps/api, apps/desktop)
   createGoalModule,
-  createGoalUseCases,
   createGoalPrismaModule,
   createGoalPowerSyncModule,
   type GoalModuleDependencies,

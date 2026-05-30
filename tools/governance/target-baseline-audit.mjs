@@ -94,6 +94,11 @@ function main() {
       console.error(`[target-baseline-audit] ERROR: Exemption entry missing required fields (project, target, reason): ${JSON.stringify(entry)}`);
       process.exit(2);
     }
+    // Temporary exemptions must have owner and targetDate
+    if (entry.type === 'temporary' && (!entry.owner || !entry.targetDate)) {
+      console.error(`[target-baseline-audit] ERROR: Temporary exemption ${entry.project}:${entry.target} must have owner and targetDate fields`);
+      process.exit(2);
+    }
     exemptionMap.set(`${entry.project}:${entry.target}`, entry);
   }
 

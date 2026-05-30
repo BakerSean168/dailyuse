@@ -43,7 +43,7 @@ export class ScheduleTaskExecutorAdapter implements ITaskHandler {
    * @param taskId - 任务 ID (UUID)
    * @param context - 执行上下文（可选）
    */
-  async execute(taskId: string, context?: unknown): Promise<void> {
+  async execute(taskId: string, _context?: unknown): Promise<void> {
     try {
       logger.info(`执行 Schedule 任务`, { taskId });
 

@@ -170,31 +170,17 @@ export default tseslint.config(
       },
     },
     {
-      // Test files are exempt from module boundaries because they legitimately
-      // import from multiple packages for mocking, setup, and fixture purposes.
-      // TODO: Tighten to controlled exemption — allow test-utils/test-setup imports
-      // but still block cross-feature production imports in tests.
+      // Controlled test exemption: @nx/enforce-module-boundaries disabled
+      // (tests legitimately cross package boundaries for mocking/fixture setup).
+      // no-restricted-imports off so test utilities can import @dailyuse/utils root.
+      // File matching is now precise — no glob leakage into production code.
       files: [
         '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/e2e/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        '**/src/test/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+        'packages/test-utils/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       ],
-      plugins: { '@nx': nxPlugin },
-      rules: {
-        '@nx/enforce-module-boundaries': 'off',
-        'no-restricted-imports': 'off',
-      },
-    },
-    {
-      files: ['**/src/test/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}'],
-      plugins: { '@nx': nxPlugin },
-      rules: {
-        '@nx/enforce-module-boundaries': 'off',
-        'no-restricted-imports': 'off',
-      },
-    },
-    {
-      files: ['packages/test-utils/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': 'off',
@@ -204,6 +190,171 @@ export default tseslint.config(
     {
       files: ['apps/api/src/**/*.ts'],
       ignores: ['**/__tests__/**', '**/test/**'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/governance/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/contracts/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/domain-shared/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/setting/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/patterns/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/notification/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/account/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/editor/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/authentication/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/ai/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/repository/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/reminder/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/schedule/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/task/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+        ],
+      },
+    },
+    {
+      files: ['packages/goal/src/**/*.ts'],
+      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'error',
         '@typescript-eslint/no-unused-vars': [

@@ -127,7 +127,7 @@ export class RetryPolicyVO {
 export class TaskMetadataVO {
   constructor(private readonly dto: TaskMetadataDTO) {}
 
-  get payload(): Record<string, any> {
+  get payload(): Record<string, unknown> {
     return { ...this.dto.payload };
   }
 

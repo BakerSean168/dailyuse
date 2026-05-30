@@ -11,6 +11,7 @@ import type { UpdateGoalReq, UpdateGoalRes } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
+import type { GoalFolderId } from '@/domain-shared';
 
 /**
  * Update Goal Use Case
@@ -61,7 +62,7 @@ export class UpdateGoalUseCase {
 
     // 6. 更新文件夹
     if (input.folderId !== undefined) {
-      goal.moveToFolder(input.folderId ? (input.folderId as any) : null);
+      goal.moveToFolder(input.folderId ? (input.folderId as unknown as GoalFolderId) : null);
     }
 
     // 7. 更新提醒配置

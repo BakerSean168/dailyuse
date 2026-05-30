@@ -1,12 +1,12 @@
 ---
 tags:
   - plan
-  - active
+  - archived
   - architecture
   - governance
-description: 基于 2026-05-28 当前工作树状态的统一范式与 lint 治理深化计划执行审计与后续实施方案
+description: 基于 2026-05-28 当前工作树状态的统一范式与 lint 治理深化计划执行审计与后续实施方案（已归档，后续由 2026-05-29-repository-paradigm-unification-plan 接续）
 created: 2026-05-28T00:00:00
-updated: 2026-05-28T00:00:00
+updated: 2026-05-29T00:00:00
 ---
 
 # 2026-05-28 Architecture And Governance Deepening Plan

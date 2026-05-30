@@ -10,8 +10,8 @@
  * 遵循 Governance 模块的参考实现模式。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createGoalPrismaModule,
   GoalPrismaRepository,
@@ -24,25 +24,13 @@ import {
 } from './transport-handlers';
 import { createGoalRuntimeContribution } from './runtime';
 import { createGoalScheduleRuntimeContribution } from './schedule-runtime';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
 
 /**
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
- *
- * 此类型在 goal 包内本地定义，避免对 apps/api 的循环依赖。
- * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
+ * Typed module context for goal registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface GoalApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: OpenApiRegistryLike;
-}
+export type GoalApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface GoalApiModuleDef {
   readonly name: string;
@@ -58,15 +46,14 @@ export const GoalApiModule: GoalApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const prismaClient = db as PrismaClient;
-    const goalRepository = new GoalPrismaRepository(prismaClient);
-    const goalModule = createGoalPrismaModule(prismaClient, {
+    // 1. Composition Root — 组装依赖
+    const goalRepository = new GoalPrismaRepository(db);
+    const goalModule = createGoalPrismaModule(db, {
       runtimeContributions: [
         createGoalRuntimeContribution(),
         createGoalScheduleRuntimeContribution({
           goalRepository,
-          scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
+          scheduleTaskRepository: new ScheduleTaskPrismaRepository(db),
         }),
       ],
     });

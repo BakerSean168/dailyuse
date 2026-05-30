@@ -19,7 +19,7 @@ import {
   type UploadResourceFileDTO,
   type UploadResourcesRequestDTO,
 } from '@dailyuse/contracts/repository';
-import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
+import type { IdentityId, RepositoryId, ResourceId, FolderId } from '@dailyuse/contracts/primitives';
 import { PathCalculator } from '../../domain-server/services/path-calculator';
 import { eventBus } from '@dailyuse/utils/domain';
 import type { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
@@ -63,7 +63,7 @@ export class ResourceMutationService {
       identityId: data.identityId,
       folderId: data.folderId,
       name: data.name,
-      type: data.type as any,
+      type: data.type as ResourceType,
       path: data.path ?? `/${data.name}`,
       content: data.content,
     });
@@ -333,7 +333,7 @@ export class ResourceMutationService {
       resource.rename(targetName);
     }
     if (nextFolderId !== undefined) {
-      resource.moveTo(targetFolderId as any, targetPath);
+      resource.moveTo(targetFolderId as FolderId | null, targetPath);
     } else if (nextName !== undefined) {
       resource.moveTo(resource.folderId, targetPath);
     }

@@ -36,10 +36,8 @@ import type {
 import {
   getDefaultPreferences,
   PREFERENCE_CATEGORIES,
-  validateSettingValue,
   validateCategoryPatch,
 } from '@dailyuse/contracts/setting';
-import { CATEGORY_SCHEMAS } from '@dailyuse/contracts/setting';
 import { SettingId } from '../../domain-shared/value-objects/setting-id';
 import { IdentityId as IdentityIdVO } from '@dailyuse/domain-shared/shared';
 import {

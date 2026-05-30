@@ -13,6 +13,7 @@ import type { RuleId } from '../../../contracts/primitives/ids';
 /**
  * Get Rule Use Case.
  * 获取规则用例。
+  * @param private readonly ruleRepository - 
  */
 export class GetRuleUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

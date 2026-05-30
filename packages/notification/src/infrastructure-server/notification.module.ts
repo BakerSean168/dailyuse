@@ -235,7 +235,7 @@ export function createNotificationModule(
     // Delegate to CreateNotification use case.
     // 委托给 CreateNotification 用例。
     createNotification: async (data) => {
-      return useCases.createNotification.execute(data as any);
+      return useCases.createNotification.execute(data as Parameters<CreateNotificationUseCase['execute']>[0]);
     },
 
     // Delegate to GetUserNotifications use case.

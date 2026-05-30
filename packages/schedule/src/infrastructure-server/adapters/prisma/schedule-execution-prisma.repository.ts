@@ -1,7 +1,6 @@
 import type { IScheduleExecutionRepository } from '../../../domain-server/repositories/i-schedule-execution-repository';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
 import type { PrismaClient } from '@dailyuse/database';
-import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 import { PrismaScheduleExecutionMapper } from './mappers/prisma-schedule-execution-mapper';
 
 export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepository {

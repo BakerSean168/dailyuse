@@ -12,7 +12,7 @@ import {
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskInstanceRepository,
   PowerSyncTaskTemplateRepository,
-} from '@dailyuse/task';
+} from '@dailyuse/task/infrastructure-server';
 import {
   DayOfWeek,
   RecurrenceFrequency,

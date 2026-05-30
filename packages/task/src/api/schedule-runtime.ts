@@ -1,5 +1,16 @@
 import { eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
+
+/**
+ * Loosely-typed event bus handle for registering task event handlers.
+ * Avoids generic-constraint friction with union handler signatures.
+ */
+const taskEventBus = eventBus as unknown as {
+  on(event: string, handler: (event: unknown) => void): void;
+  off(event: string, handler: (event: unknown) => void): void;
+  send(event: string, payload: unknown): void;
+};
+
 import type {
   ReminderTimeUnit,
   TaskEventMap,
@@ -291,17 +302,17 @@ export function createTaskScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.on('task:created', upsertFromEvent as any);
-      eventBus.on('task:updated', upsertFromEvent as any);
-      eventBus.on('task:instance-generated', upsertFromEvent as any);
-      eventBus.on('task:template-schedule-time-changed', upsertFromEvent as any);
-      eventBus.on('task:template-recurrence-changed', upsertFromEvent as any);
-      eventBus.on('task:template-resumed', upsertFromEvent as any);
-      eventBus.on('task:deleted', deleteFromEvent as any);
-      eventBus.on('task:template-paused', deleteFromEvent as any);
-      eventBus.on('task:instance-completed', deleteCompletedInstanceTasks as any);
-      eventBus.on('task:instance-skipped', deleteCompletedInstanceTasks as any);
-      eventBus.on('task:instance-deleted', deleteCompletedInstanceTasks as any);
+      taskEventBus.on('task:created', upsertFromEvent);
+      taskEventBus.on('task:updated', upsertFromEvent);
+      taskEventBus.on('task:instance-generated', upsertFromEvent);
+      taskEventBus.on('task:template-schedule-time-changed', upsertFromEvent);
+      taskEventBus.on('task:template-recurrence-changed', upsertFromEvent);
+      taskEventBus.on('task:template-resumed', upsertFromEvent);
+      taskEventBus.on('task:deleted', deleteFromEvent);
+      taskEventBus.on('task:template-paused', deleteFromEvent);
+      taskEventBus.on('task:instance-completed', deleteCompletedInstanceTasks);
+      taskEventBus.on('task:instance-skipped', deleteCompletedInstanceTasks);
+      taskEventBus.on('task:instance-deleted', deleteCompletedInstanceTasks);
 
       started = true;
       logger.info('[Task] Schedule projection runtime started');
@@ -312,17 +323,17 @@ export function createTaskScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.off('task:created', upsertFromEvent as any);
-      eventBus.off('task:updated', upsertFromEvent as any);
-      eventBus.off('task:instance-generated', upsertFromEvent as any);
-      eventBus.off('task:template-schedule-time-changed', upsertFromEvent as any);
-      eventBus.off('task:template-recurrence-changed', upsertFromEvent as any);
-      eventBus.off('task:template-resumed', upsertFromEvent as any);
-      eventBus.off('task:deleted', deleteFromEvent as any);
-      eventBus.off('task:template-paused', deleteFromEvent as any);
-      eventBus.off('task:instance-completed', deleteCompletedInstanceTasks as any);
-      eventBus.off('task:instance-skipped', deleteCompletedInstanceTasks as any);
-      eventBus.off('task:instance-deleted', deleteCompletedInstanceTasks as any);
+      taskEventBus.off('task:created', upsertFromEvent);
+      taskEventBus.off('task:updated', upsertFromEvent);
+      taskEventBus.off('task:instance-generated', upsertFromEvent);
+      taskEventBus.off('task:template-schedule-time-changed', upsertFromEvent);
+      taskEventBus.off('task:template-recurrence-changed', upsertFromEvent);
+      taskEventBus.off('task:template-resumed', upsertFromEvent);
+      taskEventBus.off('task:deleted', deleteFromEvent);
+      taskEventBus.off('task:template-paused', deleteFromEvent);
+      taskEventBus.off('task:instance-completed', deleteCompletedInstanceTasks);
+      taskEventBus.off('task:instance-skipped', deleteCompletedInstanceTasks);
+      taskEventBus.off('task:instance-deleted', deleteCompletedInstanceTasks);
 
       started = false;
       logger.info('[Task] Schedule projection runtime stopped');

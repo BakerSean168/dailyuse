@@ -9,8 +9,8 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createSettingModule,
   UserSettingPrismaRepository,
@@ -20,16 +20,11 @@ import { registerSettingRoutes } from './routes';
 import { createSettingTransportHandlers } from './transport-handlers';
 import { createSettingRuntimeContribution } from './runtime';
 
-export interface SettingApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+/**
+ * Typed module context for setting registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
+ */
+export type SettingApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface SettingApiModuleDef {
   readonly name: string;
@@ -47,7 +42,7 @@ export const SettingApiModule: SettingApiModuleDef = {
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
     const settingModule = createSettingModule({
-      userSettingRepository: new UserSettingPrismaRepository(db as PrismaClient),
+      userSettingRepository: new UserSettingPrismaRepository(db),
       runtimeContributions: createSettingRuntimeContribution(),
     });
     activeSettingModule = settingModule;

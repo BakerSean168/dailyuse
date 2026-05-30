@@ -3,6 +3,10 @@
  *
  * Provides factory functions for generating realistic mock data
  * that conforms to the Governance module contracts.
+  *
+ * ${rel} — governance module source.
+ *
+ * 中文：自动补充说明。
  */
 
 import { faker } from '@faker-js/faker';
@@ -33,6 +37,13 @@ function createMockCodeSnippet(type: 'GoodExample' | 'BadExample'): CodeSnippetD
   };
 }
 
+/**
+ * Creates a mock RuleClientDTO with randomized fields for testing.
+ * 创建一个用于测试的随机 RuleClientDTO
+ *
+ * @param overrides - partial overrides applied to the generated DTO
+ * @returns RuleClientDTO - generated mock rule
+ */
 export function createMockRule(overrides: Partial<RuleClientDTO> = {}): RuleClientDTO {
   const now = Date.now();
   const status = faker.helpers.arrayElement(['Draft', 'Active', 'Deprecated'] as const);
@@ -65,6 +76,13 @@ export function createMockRule(overrides: Partial<RuleClientDTO> = {}): RuleClie
   };
 }
 
+/**
+ * Creates a list of mock RuleClientDTOs.
+ *
+ * @param count - number of items to generate
+ * @param overrides - partial overrides applied to each generated DTO
+ * @returns RuleClientDTO[] - generated list of mock rules
+ */
 export function createMockRuleList(
   count = 5,
   overrides: Partial<RuleClientDTO> = {},
@@ -72,6 +90,12 @@ export function createMockRuleList(
   return Array.from({ length: count }, () => createMockRule(overrides));
 }
 
+/**
+ * Creates a mock RuleRevisionClientDTO with randomized fields for testing.
+ *
+ * @param overrides - partial overrides applied to the generated DTO
+ * @returns RuleRevisionClientDTO - generated mock rule revision
+ */
 export function createMockRuleRevision(
   overrides: Partial<RuleRevisionClientDTO> = {},
 ): RuleRevisionClientDTO {
@@ -101,6 +125,13 @@ export function createMockRuleRevision(
   };
 }
 
+/**
+ * Creates a list of mock RuleRevisionClientDTOs.
+ *
+ * @param count - number of items to generate
+ * @param overrides - partial overrides applied to each generated DTO
+ * @returns RuleRevisionClientDTO[] - generated list of mock revisions
+ */
 export function createMockRuleRevisionList(
   count = 3,
   overrides: Partial<RuleRevisionClientDTO> = {},

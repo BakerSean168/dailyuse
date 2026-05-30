@@ -14,7 +14,7 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-type Transactional = Queryable & {
+export type Transactional = Queryable & {
   writeTransaction<T>(callback: (tx: Queryable) => Promise<T>): Promise<T>;
 };
 

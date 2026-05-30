@@ -189,7 +189,7 @@ export class NotificationTemplateDomainService {
    */
   public async previewTemplate(
     id: string,
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
   ): Promise<{ title: string; content: string }> {
     const template = await this.templateRepo.findById(id);
     if (!template) {
@@ -210,7 +210,7 @@ export class NotificationTemplateDomainService {
    */
   public async previewEmailTemplate(
     id: string,
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
   ): Promise<{ subject: string; htmlBody: string; textBody?: string }> {
     const template = await this.templateRepo.findById(id);
     if (!template) {
@@ -225,7 +225,7 @@ export class NotificationTemplateDomainService {
    */
   public async previewPushTemplate(
     id: string,
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
   ): Promise<{ title: string; body: string }> {
     const template = await this.templateRepo.findById(id);
     if (!template) {
@@ -240,7 +240,7 @@ export class NotificationTemplateDomainService {
    */
   public async validateTemplateVariables(
     id: string,
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
   ): Promise<{ isValid: boolean; missingVariables: string[] }> {
     const template = await this.templateRepo.findById(id);
     if (!template) {

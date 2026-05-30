@@ -160,6 +160,7 @@ export interface RuleState {
  * - 每个业务方法返回 Result<T>，表示成功或失败
  * - 状态变更自动触发领域事件
  * - 使用值对象（RuleTag, CodeSnippet）封装验证逻辑
+  * @param state - 
  */
 export class Rule extends AggregateRoot<RuleId> {
   /**

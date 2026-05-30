@@ -5,8 +5,8 @@
  */
 
 import type { IFolderRepository } from '../../../domain-server/repositories/i-folder-repository';
-import { Folder } from '../../../domain-server/entities/folder';
 import { FolderHierarchyService } from '../../../domain-server/services/folder-hierarchy-service';
+import type { FolderTreeNode } from '../../../domain-server/services/folder-hierarchy-service';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
@@ -39,15 +39,15 @@ export class GetFolderTreeUseCase {
     const allFolders = await this.folderRepository.findByRepositoryId(input.repositoryId);
     const tree = this.hierarchyService.buildTree(allFolders);
 
-    const convertTreeNode = (node: any): FolderClientDTO => {
-      const folder = node.folder as Folder;
+    const convertTreeNode = (node: FolderTreeNode): FolderClientDTO => {
+      const folder = node.folder;
       const clientDTO = folder.toClientDTO(false);
 
       if (node.children && node.children.length > 0) {
-        clientDTO.children = node.children.map((child: any) => convertTreeNode(child));
+        clientDTO.children = node.children.map((child) => convertTreeNode(child));
       }
 
-      return clientDTO as unknown as FolderClientDTO;
+      return clientDTO;
     };
 
     return ok({ folders: tree.map((node) => convertTreeNode(node)) });

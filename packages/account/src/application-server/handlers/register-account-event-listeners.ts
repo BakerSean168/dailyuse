@@ -40,6 +40,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cross-module event subscription
       (eventBus as any).on(AUTH_IDENTITY_CREATED_EVENT, onIdentityCreated);
       started = true;
       logger.info('[AccountEventListeners] Account event listeners registered successfully');
@@ -49,6 +50,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cross-module event subscription
       (eventBus as any).off(AUTH_IDENTITY_CREATED_EVENT, onIdentityCreated);
       started = false;
       logger.info('[AccountEventListeners] Account event listeners unregistered');

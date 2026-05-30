@@ -42,7 +42,7 @@ import { ScheduleConflictDetectionService } from '../application-server/services
 import { ScheduleConflictResolutionService } from '../application-server/services/schedule-conflict-resolution-service';
 import type { Result } from '@dailyuse/contracts/result';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import type { BatchScheduleTaskOperationRequest } from '@dailyuse/contracts/schedule';
+import type { BatchScheduleTaskOperationRequest, RetryPolicyDTO } from '@dailyuse/contracts/schedule';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   CreateScheduleRequest,
@@ -54,6 +54,7 @@ import type {
   UpdateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { resultify } from '@dailyuse/utils/result';
 
 /**
@@ -201,7 +202,7 @@ function toUpdateSchedulePayload(data: UpdateScheduleRequest) {
 export function createScheduleUseCases(
   dependencies: ScheduleModuleDependencies,
 ): ScheduleModuleUseCases {
-  const { scheduleRepository, scheduleExecutionRepository, scheduleTaskRepository } = dependencies;
+  const { scheduleRepository, scheduleTaskRepository } = dependencies;
   const deleteScheduleTask = new DeleteScheduleTaskUseCase(scheduleTaskRepository);
   const pauseScheduleTask = new PauseScheduleTaskUseCase(scheduleTaskRepository);
   const resumeScheduleTask = new ResumeScheduleTaskUseCase(scheduleTaskRepository);
@@ -288,20 +289,20 @@ export function createScheduleModule(
         name: data.name,
         sourceModule: data.sourceModule,
         sourceId: data.sourceEntityId,
-        scheduleConfig: data.schedule as any,
+        scheduleConfig: data.schedule,
         handlerType: data.sourceModule,
         description: data.description,
-        retryPolicy: data.retryPolicy as any,
+        retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
         enabled: data.enabled,
         identityId: ctx.identityId,
       });
     },
     listTasks: async (query, ctx) => {
       if (query.status) {
-        return useCases.listScheduleTasksByStatus.execute(query.status as any);
+        return useCases.listScheduleTasksByStatus.execute(query.status as ScheduleTaskStatus);
       } else if (query.sourceModule && query.sourceEntityId) {
         return useCases.listScheduleTasksBySource.execute(
-          query.sourceModule as any,
+          query.sourceModule as SourceModule,
           query.sourceEntityId as string,
         );
       } else {
@@ -311,8 +312,8 @@ export function createScheduleModule(
     updateTask: async (id, data) => {
       return useCases.updateScheduleTask.execute({
         id,
-        scheduleConfig: data.schedule as any,
-        retryPolicy: data.retryPolicy as any,
+        scheduleConfig: data.schedule,
+        retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
         enabled: data.enabled,
         description: data.description,
       });
@@ -345,7 +346,7 @@ export function createScheduleModule(
         }
         return event;
       }, 'Failed to get schedule event'),
-    listEvents: async (query, ctx) =>
+    listEvents: async (query, _ctx) =>
       resultify(
         () =>
           useCases.scheduleEventService.getSchedulesByRange(

@@ -11,7 +11,6 @@
  * @internal 持久化映射器 — 非公开 API。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
 import { NotificationPreference } from '../../../../domain-server/aggregates/notification-preference';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
 
@@ -83,8 +82,8 @@ export class NotificationPreferencePrismaMapper {
     }
 
     return NotificationPreference.load({
-      id: row.id as any,
-      identityId: row.identityId as any,
+      id: row.id as never,
+      identityId: row.identityId as never,
       settings,
       version: row.version,
       deletedAt: row.deletedAt,

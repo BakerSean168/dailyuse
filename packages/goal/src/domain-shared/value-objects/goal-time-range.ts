@@ -21,16 +21,6 @@ import type {
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 
 /**
- * 内部 DTO 类型（为了类型安全，将时间戳转为 DomainDate）
- */
-interface InternalGoalTimeRangeDTO {
-  startDate: DomainDate | null;
-  targetDate: DomainDate | null;
-  completedAt: DomainDate | null;
-  archivedAt: DomainDate | null;
-}
-
-/**
  * GoalTimeRange 值对象实现
  * 
  * 包含：

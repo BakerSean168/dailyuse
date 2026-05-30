@@ -12,8 +12,8 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createScheduleModule,
   SchedulePrismaRepository,
@@ -31,22 +31,10 @@ import {
 import { createScheduleRuntimeContribution, type ScheduleTaskSourceExecutor } from './runtime';
 
 /**
- * Module context (structurally compatible with IApiModuleContext from apps/api).
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 结构类型兼容）。
- *
- * Locally defined to avoid circular dependency on apps/api.
- * 此类型在 schedule 包内本地定义，避免对 apps/api 的循环依赖。
+ * Typed module context for schedule registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface ScheduleApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type ScheduleApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface ScheduleApiModuleDef {
   readonly name: string;
@@ -71,7 +59,7 @@ export function createScheduleApiModule(
 
       // 1. Composition Root — assemble dependencies (use shared database singleton)
       // 1. 组合根 —— 组装依赖（使用共享数据库单例）
-      const prismaClient = db as PrismaClient;
+      const prismaClient = db;
 
       const repos = {
         scheduleRepository: new SchedulePrismaRepository(prismaClient),

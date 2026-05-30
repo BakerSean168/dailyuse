@@ -14,7 +14,6 @@ import type {
   UpdateAIProviderConfigReq,
   TestAIProviderReq,
   TestAIProviderRes,
-  SetDefaultAIProviderReq,
   CreateKnowledgeNoteReq,
   CreateKnowledgeNoteRes,
   QueryAnalyticsReq,

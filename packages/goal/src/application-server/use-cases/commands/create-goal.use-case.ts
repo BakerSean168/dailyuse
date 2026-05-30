@@ -13,6 +13,7 @@ import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { GoalId, GoalFolderId } from '@/domain-shared';
 /**
  * Create Goal Use Case
  */
@@ -58,8 +59,8 @@ export class CreateGoalUseCase {
         tags: input.tags ?? [],
         startDate: input.startDate ? new Date(input.startDate) : null,
         targetDate: input.targetDate ? new Date(input.targetDate) : null,
-        folderId: input.folderId ? (input.folderId as any) : null,
-        parentGoalId: input.parentGoalId ? (input.parentGoalId as any) : null,
+        folderId: input.folderId ? (input.folderId as unknown as GoalFolderId) : null,
+        parentGoalId: input.parentGoalId ? (input.parentGoalId as unknown as GoalId) : null,
         reminderConfig: input.reminderConfig ? GoalReminderConfig.fromDTO(input.reminderConfig) : null,
       },
       parentGoal,

@@ -19,19 +19,23 @@ import type { TaskModuleRuntimeContribution } from '../infrastructure-server/tas
 const logger = createLogger('TaskRuntime');
 
 /**
+ * Loosely-typed event bus handle for registering task event handlers.
+ * Task events live in AppEventRegistry but handler signatures are
+ * wider than the strict generic constraint allows.
+ */
+const taskEventBus = eventBus as unknown as {
+  on(event: string, handler: (event: unknown) => void): void;
+  off(event: string, handler: (event: unknown) => void): void;
+};
+
+/**
  * Runtime contribution contract used by module transports.
  * 模块传输层使用的运行时贡献契约。
  */
 export type TaskRuntimeContribution = TaskModuleRuntimeContribution;
 
-// Cast eventBus to any for custom event types not in AppEventRegistry
-// 将 eventBus 转换为 any 以支持未在 AppEventRegistry 中注册的自定义事件类型
-const customEventBus = eventBus as any;
-
-/**
- * Task domain event handlers.
- * 任务领域事件处理器。
- */
+// Task domain event handlers use a looser bus handle to avoid
+// generic-constraint friction with union handler signatures.
 const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
   'task:instance-generated': (event) => {
     const payload = (event.payload ?? event) as Record<string, unknown>;
@@ -76,7 +80,7 @@ export function createTaskRuntimeContribution(): TaskRuntimeContribution {
       }
 
       for (const [eventName, handler] of Object.entries(taskEventHandlers)) {
-        customEventBus.on(eventName, handler);
+        taskEventBus.on(eventName, handler);
       }
 
       started = true;
@@ -89,7 +93,7 @@ export function createTaskRuntimeContribution(): TaskRuntimeContribution {
       }
 
       for (const [eventName, handler] of Object.entries(taskEventHandlers)) {
-        customEventBus.off(eventName, handler);
+        taskEventBus.off(eventName, handler);
       }
 
       started = false;

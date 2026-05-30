@@ -270,7 +270,7 @@ export class TaskQueryService {
   private applySort(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
     sortBy: TaskSortBy,
-    currentTime: Date,
+    _currentTime: Date,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     const sorted = [...dtos]; // Avoid mutating original array
 

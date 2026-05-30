@@ -57,12 +57,12 @@ export * from './contracts';
 
 // ================= Domain Layer (领域层) =================
 // Domain-Shared: Value objects and shared logic (exported from contracts)
-// Domain-Server: Aggregates, entities, repositories (server-side)
-// Domain-Client: Client-side domain models (UI view models)
-export { Rule } from './domain-server/aggregates/rule';
-export { RuleRevision } from './domain-server/entities/rule-revision';
-export * from './domain-server/repositories';
-export * from './domain-server/services';
+// Root barrel intentionally exposes only stable, public-facing pieces.
+// Domain-server implementation details (aggregates, concrete repositories, services)
+// are NOT re-exported from the package root to keep the public surface narrow.
+export * from './domain-shared';
+// Consumers who need concrete implementations should import from specific subpaths
+// e.g. '@dailyuse/governance/domain-server' or '@dailyuse/governance/infrastructure-server'
 
 // Note: domain-client exports Rule and RuleRevision classes with same names
 // Consumers should import from specific paths to avoid conflicts
@@ -76,17 +76,11 @@ export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================
-// Infrastructure-Server: Repositories, persistence (server-side)
-// Infrastructure-Client: Local storage, caching (client-side)
+// Stable composition root types only — concrete adapters are NOT re-exported
+// from the root barrel. Consumers should import from specific subpaths:
+//   @dailyuse/governance/infrastructure-server  (server adapters + module factory)
+//   @dailyuse/governance/infrastructure-client  (client adapters)
 export {
-  /** @internal Concrete Prisma implementation — use IRuleRepository interface instead. Prisma 具体实现 — 请使用 IRuleRepository 接口。 */
-  RulePrismaRepository,
-  /** @internal Concrete Prisma implementation — use IRuleRevisionRepository interface instead. Prisma 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
-  RuleRevisionPrismaRepository,
-  /** @internal Concrete PowerSync implementation — use IRuleRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRepository 接口。 */
-  PowerSyncRuleRepository,
-  /** @internal Concrete PowerSync implementation — use IRuleRevisionRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
-  PowerSyncRuleRevisionRepository,
   createGovernanceModule,
   createGovernancePowerSyncModule,
   type GovernanceApplicationPort,
@@ -95,5 +89,3 @@ export {
   type GovernanceModuleRuntimeContribution,
   type GovernanceModuleUseCases,
 } from './infrastructure-server';
-
-export * from './infrastructure-client';

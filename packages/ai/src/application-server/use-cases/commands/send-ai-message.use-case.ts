@@ -3,7 +3,7 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIConversationRepository } from '../../../domain-server/repositories/i-ai-conversation-repository';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/i-ai-provider-config-repository';
-import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
+import type { SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import type {
   IAIExecutionLogPort,

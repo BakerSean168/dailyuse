@@ -10,7 +10,15 @@
 
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
-import type { ScheduleEventMap, ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
+import type {
+  ScheduleEventMap,
+  ScheduleTaskClientDTO,
+  ScheduleTaskServerDTO,
+  ScheduleConfigDTO,
+  ExecutionInfoDTO,
+  RetryPolicyDTO,
+  TaskMetadataDTO,
+} from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import {
   ExecutionInfo,
@@ -293,7 +301,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   // ===== Schedule Configuration Management =====
 
   /** Updates the schedule configuration. */
-  public updateSchedule(schedule: Partial<any>): void {
+  public updateSchedule(schedule: Partial<ScheduleConfigDTO>): void {
     const oldCron = this._props.schedule.cronExpression;
     this._props.schedule = this._props.schedule.with(schedule);
     this._props.updatedAt = new Date();
@@ -350,7 +358,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       executionTime: Date.now(),
-      metadata: metadataDTO as Record<string, any>,
+      metadata: metadataDTO,
     });
 
     return true;
@@ -388,7 +396,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   public recordExecution(
     status: ExecutionStatus,
     duration: number,
-    result?: Record<string, any>,
+    result?: Record<string, unknown>,
     error?: string,
     nextRunAt?: number | null,
   ): ScheduleExecution {
@@ -435,7 +443,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   }
 
   /** Updates the execution info. */
-  public updateExecutionInfo(updates: Partial<any>): void {
+  public updateExecutionInfo(updates: Partial<ExecutionInfoDTO>): void {
     this._props.execution = this._props.execution.with(updates);
     this._props.updatedAt = new Date();
   }
@@ -449,7 +457,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   // ===== Retry Policy Management =====
 
   /** Updates the retry policy. */
-  public updateRetryPolicy(policy: Partial<any>): void {
+  public updateRetryPolicy(policy: Partial<RetryPolicyDTO>): void {
     this._props.retryPolicy = this._props.retryPolicy.with(policy);
     this._props.updatedAt = new Date();
   }
@@ -469,13 +477,13 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   // ===== Metadata Management =====
 
   /** Updates the task metadata. */
-  public updateMetadata(metadata: Partial<any>): void {
+  public updateMetadata(metadata: Partial<TaskMetadataDTO>): void {
     this._props.metadata = this._props.metadata.with(metadata);
     this._props.updatedAt = new Date();
   }
 
   /** Updates the payload. */
-  public updatePayload(payload: Record<string, any>): void {
+  public updatePayload(payload: Record<string, unknown>): void {
     this._props.metadata = this._props.metadata.setPayload(payload);
     this._props.updatedAt = new Date();
   }
@@ -589,10 +597,10 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       sourceEntityId: this._props.sourceEntityId,
       status: this._props.status,
       enabled: this._props.enabled,
-      schedule: this._props.schedule.toDTO() as any,
-      execution: this._props.execution.toDTO() as any,
-      retryPolicy: this._props.retryPolicy.toDTO() as any,
-      metadata: this._props.metadata.toDTO() as any,
+      schedule: this._props.schedule.toDTO(),
+      execution: this._props.execution.toDTO(),
+      retryPolicy: this._props.retryPolicy.toDTO(),
+      metadata: this._props.metadata.toDTO(),
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
@@ -664,7 +672,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   }
 
   /** Creates from a DTO (legacy compatibility). */
-  public static fromDTO(dto: any): ScheduleTask {
+  public static fromDTO(dto: ScheduleTaskServerDTO & { executions?: unknown[] }): ScheduleTask {
     const state: ScheduleTaskState = {
       id: dto.id ? ScheduleTaskId.of(dto.id) : ScheduleTaskId.generate(),
       identityId: dto.identityId,
@@ -687,7 +695,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     const task = new ScheduleTask(state);
 
     if (dto.executions) {
-      dto.executions.forEach((execDTO: any) => {
+      dto.executions.forEach((execDTO: unknown) => {
         task.addExecution(ScheduleExecution.fromDTO(execDTO));
       });
     }

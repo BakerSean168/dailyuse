@@ -4,8 +4,8 @@ import {
   type DashboardData,
   type DashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
-import { GoalPrismaRepository } from '@dailyuse/goal';
-import { TaskInstancePrismaRepository, TaskTemplatePrismaRepository } from '@dailyuse/task';
+import { GoalPrismaRepository } from '@dailyuse/goal/infrastructure-server';
+import { TaskInstancePrismaRepository, TaskTemplatePrismaRepository } from '@dailyuse/task/infrastructure-server';
 import { SchedulePrismaRepository } from '@dailyuse/schedule';
 import { ReminderTemplatePrismaRepository } from '@dailyuse/reminder';
 import { NotificationPrismaRepository } from '@dailyuse/notification';

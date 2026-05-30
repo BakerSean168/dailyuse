@@ -13,6 +13,21 @@
       },
       "dependsOn": ["^build", "database:build"]
     },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/authentication/**/*.{ts,js}"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/authentication"
+      }
+    },
     "dev": {
       "executor": "nx:run-commands",
       "cache": false,

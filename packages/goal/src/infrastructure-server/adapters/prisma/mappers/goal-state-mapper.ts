@@ -43,7 +43,7 @@ export interface RawGoalData {
   folderId: string | null;
   parentGoalId: string | null;
   sortOrder: number;
-  reminderConfig: { enabled: boolean; triggers: any[] } | null;
+  reminderConfig: { enabled: boolean; triggers: unknown[] } | null;
   keyResults: RawKeyResultData[] | null;
   goalReviews: RawGoalReviewData[] | null;
   weightSnapshots: KeyResultWeightSnapshotDTO[] | null;
@@ -85,7 +85,7 @@ export interface RawGoalReviewData {
   achievements: string | null;
   challenges: string | null;
   improvements: string | null;
-  keyResultSnapshots: any[];
+  keyResultSnapshots: unknown[];
   reviewedAt: Date;
   version: number;
   createdAt: Date;

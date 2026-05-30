@@ -111,7 +111,7 @@ export class AIServiceChatExecutionAdapter implements IAIChatExecutionPort {
         try {
           const payload = event.data ? (JSON.parse(event.data) as { detail?: string }) : {};
           throw new Error(payload.detail ?? 'ai-service stream error');
-        } catch (e) {
+        } catch (_e) {
           throw new Error(`ai-service returned error: ${event.data || 'unknown'}`);
         }
       }

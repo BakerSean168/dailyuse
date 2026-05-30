@@ -12,6 +12,7 @@ import type {
   ReminderGroupClientDTO,
   ReminderTemplateListRes,
   ReminderGroupListRes,
+  UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -134,11 +135,11 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.post(`${this.groupsUrl}/${id}/control-mode`, { mode });
   }
 
-  async getPreferences(): Promise<Result<any>> {
+  async getPreferences(): Promise<Result<UserReminderPreferencesClientDTO>> {
     return this.httpClient.get('/reminders/preferences');
   }
 
-  async updatePreferences(data: Record<string, unknown>): Promise<Result<any>> {
+  async updatePreferences(data: Record<string, unknown>): Promise<Result<UserReminderPreferencesClientDTO>> {
     return this.httpClient.patch('/reminders/preferences', data);
   }
 }

@@ -84,6 +84,7 @@ function unsubscribeGovernanceEvent<K extends GovernanceEventName>(eventName: K)
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
+  * @returns any - 
  */
 export function createGovernanceRuntimeContribution(): GovernanceRuntimeContribution {
   let started = false;

@@ -26,7 +26,7 @@ export class PauseTaskTemplateUseCase {
 
   async execute(
     id: string,
-    reason?: string,
+    _reason?: string,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instancesDeleted: number }>> {
     const template = await this.templateRepository.findById(id);
     if (!template) {

@@ -13,9 +13,7 @@ import { Account } from '../../../domain-server';
 import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
 import { AggregateRepositoryBase, createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
 
-const logger = createLogger('PrismaAccountRepository');
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class PrismaAccountRepository
@@ -27,12 +25,19 @@ export class PrismaAccountRepository
   }
 
   /**
+   * Resolve the effective Prisma client (transactional or default).
+   */
+  private client(tx?: unknown): PrismaClient {
+    return (tx ?? this.prisma) as PrismaClient;
+  }
+
+  /**
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(account: Account, tx?: unknown): Promise<void> {
-    const client = (tx || this.prisma) as PrismaClient;
+    const db = this.client(tx);
 
-    await (client as any).account.upsert({
+    await db.account.upsert({
       where: { id: account.id.toString() },
       update: {
         status: account.status.toString(),
@@ -45,7 +50,9 @@ export class PrismaAccountRepository
         phoneFullNumber: account.phone?.fullNumber ?? null,
         phoneIsVerified: account.phone?.isVerified ?? null,
         phoneVerifiedAt: account.phone?.verifiedAt ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         profile: account.profile.toDTO() as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         settings: account.settings.toDTO() as any,
         version: account.version,
         updatedAt: account.updatedAt,
@@ -62,7 +69,9 @@ export class PrismaAccountRepository
         phoneFullNumber: account.phone?.fullNumber ?? null,
         phoneIsVerified: account.phone?.isVerified ?? null,
         phoneVerifiedAt: account.phone?.verifiedAt ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         profile: account.profile.toDTO() as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         settings: account.settings.toDTO() as any,
         version: account.version,
         createdAt: account.createdAt,
@@ -80,16 +89,13 @@ export class PrismaAccountRepository
   }
 
   async findById(id: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    const row = await client.account.findUnique({ where: { id } });
+    const row = await this.client(tx).account.findUnique({ where: { id } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
   async findByNickname(nickname: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    // Nickname stored in profile JSON; search by nickname.
-    const rows = await client.account.findMany({
+    const rows = await this.client(tx).account.findMany({
       where: { profile: { path: ['nickname'], equals: nickname } },
       take: 1,
     });
@@ -98,15 +104,13 @@ export class PrismaAccountRepository
   }
 
   async findByEmail(email: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    const row = await client.account.findFirst({ where: { emailAddress: email } });
+    const row = await this.client(tx).account.findFirst({ where: { emailAddress: email } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
   async findByPhone(phoneNumber: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    const row = await client.account.findFirst({ where: { phoneNumber } });
+    const row = await this.client(tx).account.findFirst({ where: { phoneNumber } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
@@ -117,14 +121,12 @@ export class PrismaAccountRepository
   }
 
   async existsByEmail(email: string, tx?: unknown): Promise<boolean> {
-    const client = (tx || this.prisma) as any;
-    const count = await client.account.count({ where: { emailAddress: email } });
+    const count = await this.client(tx).account.count({ where: { emailAddress: email } });
     return count > 0;
   }
 
   async delete(id: string, tx?: unknown): Promise<void> {
-    const client = (tx || this.prisma) as any;
-    await client.account.delete({ where: { id } });
+    await this.client(tx).account.delete({ where: { id } });
   }
 
   async findAll(
@@ -135,15 +137,15 @@ export class PrismaAccountRepository
     },
     tx?: unknown,
   ): Promise<{ accounts: Account[]; total: number }> {
-    const client = (tx || this.prisma) as any;
+    const db = this.client(tx);
     const page = options?.page || 1;
     const pageSize = options?.pageSize || 10;
     const skip = (page - 1) * pageSize;
     const where = options?.status ? { status: options.status } : {};
 
     const [rows, total] = await Promise.all([
-      client.account.findMany({ where, skip, take: pageSize, orderBy: { createdAt: 'desc' } }),
-      client.account.count({ where }),
+      db.account.findMany({ where, skip, take: pageSize, orderBy: { createdAt: 'desc' } }),
+      db.account.count({ where }),
     ]);
 
     const accounts = rows.map((row: PrismaAccount) => AccountPrismaMapper.toDomain(row));

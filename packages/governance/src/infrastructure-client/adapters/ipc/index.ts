@@ -26,6 +26,13 @@ export interface GovernanceIpcAdapters {
   rule: RuleIpcAdapter;
 }
 
+/**
+ * createGovernanceIpcAdapters — auto-added minimal docs.
+ *
+ * 中文：自动添加的最小 JSDoc。
+ * @param ipcClient - 
+ * @returns any - 
+ */
 export function createGovernanceIpcAdapters(ipcClient: IResultIpcClient): GovernanceIpcAdapters {
   return {
     rule: new RuleIpcAdapter(ipcClient),

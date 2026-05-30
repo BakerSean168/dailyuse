@@ -12,7 +12,7 @@ import {
   TaskDependencyPrismaRepository,
   TaskInstancePrismaRepository,
   TaskTemplatePrismaRepository,
-} from '@dailyuse/task';
+} from '@dailyuse/task/infrastructure-server';
 import {
   DayOfWeek,
   RecurrenceFrequency,

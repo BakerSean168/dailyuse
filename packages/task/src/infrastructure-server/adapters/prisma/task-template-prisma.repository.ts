@@ -291,7 +291,7 @@ export class TaskTemplatePrismaRepository
 
   async findUpcomingTasks(
     identityId: string,
-    daysAhead: number,
+    _daysAhead: number,
   ): Promise<TaskTemplate[]> {
     const data = await this.prisma.taskTemplate.findMany({
       where: {

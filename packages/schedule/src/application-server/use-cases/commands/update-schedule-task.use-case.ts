@@ -24,10 +24,10 @@ import type {
 export interface UpdateScheduleTaskReq {
   id: string;
   scheduleConfig?: ScheduleConfigDTO;
-  retryPolicy?: RetryPolicyDTO;
+  retryPolicy?: Partial<RetryPolicyDTO>;
   enabled?: boolean;
   description?: string;
-  handlerPayload?: any;
+  handlerPayload?: unknown;
 }
 
 /**

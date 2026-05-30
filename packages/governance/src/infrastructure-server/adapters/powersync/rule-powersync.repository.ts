@@ -15,6 +15,8 @@
  *   支持事务以原子化保存规则 + 修订版本
  * - Throws structured errors on infrastructure failure
  *   基础设施失败时抛出结构化异常
+ *
+ * @internal Concrete PowerSync implementation — consumers should use IRuleRepository interface.
  */
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
@@ -42,6 +44,7 @@ import { escapeSqlLike } from '../mapper-helpers';
  * Data is automatically synced to/from the remote database by PowerSync SDK.
  * 使用 IElectronDatabase (SQLite) 进行本地持久化。
  * 数据由 PowerSync SDK 自动与远程数据库双向同步。
+  * @param private readonly db - 
  */
 export class PowerSyncRuleRepository implements IRuleRepository {
   constructor(private readonly db: IElectronDatabase) {}

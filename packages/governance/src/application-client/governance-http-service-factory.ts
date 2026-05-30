@@ -14,6 +14,9 @@ import { createGovernanceClientService, type GovernanceClientService } from './s
 /**
  * Creates the governance client facade from a shared Result HTTP client.
  * 基于共享 Result HTTP client 创建治理客户端门面。
+ *
+ * @param httpClient - shared IResultHttpClient instance
+ * @returns GovernanceClientService - composed client facade
  */
 export function createGovernanceServiceFromHttpClient(
   httpClient: IResultHttpClient,

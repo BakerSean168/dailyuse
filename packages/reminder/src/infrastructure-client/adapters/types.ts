@@ -6,7 +6,6 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // ============ Transport Client Interfaces ============
 

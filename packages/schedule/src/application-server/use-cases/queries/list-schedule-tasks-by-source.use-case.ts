@@ -29,6 +29,6 @@ export class ListScheduleTasksBySourceUseCase {
     const tasks = await this.scheduleTaskRepository.findBySourceEntity(sourceModule, sourceId);
 
     // 2. 转换为 Client DTO 列表
-    return ok(tasks.map((t: any) => t.toClientDTO()));
+    return ok(tasks.map((t) => t.toClientDTO()));
   }
 }

@@ -16,10 +16,6 @@ interface NotificationPreferenceRow {
   deleted_at: string | null;
 }
 
-function toIso(value: Date | null | undefined): string | null {
-  return value ? value.toISOString() : null;
-}
-
 function toSettings(
   row: NotificationPreferenceRow,
 ): Record<string, (typeof NotificationChannelType)[keyof typeof NotificationChannelType][]> {

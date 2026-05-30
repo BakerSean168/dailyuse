@@ -3,15 +3,21 @@ import type {
   EditorWorkspaceSessionGroup as PrismaEditorWorkspaceSessionGroup,
 } from '@dailyuse/database';
 import { SplitDirection } from '@dailyuse/contracts/editor';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
 import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
 import { EditorGroup } from '../../../domain-server/entities/editor-group';
 
 function toDomain(row: PrismaEditorWorkspaceSessionGroup): EditorGroup {
   return EditorGroup.load({
-    id: row.id as any,
-    sessionId: row.sessionId as any,
-    workspaceId: row.workspaceId as any,
-    identityId: row.identityId as any,
+    id: row.id as EditorGroupId,
+    sessionId: row.sessionId as EditorSessionId,
+    workspaceId: row.workspaceId as EditorWorkspaceId,
+    identityId: row.identityId as IdentityId,
     groupIndex: row.groupIndex,
     activeTabIndex: 0,
     name: row.name,

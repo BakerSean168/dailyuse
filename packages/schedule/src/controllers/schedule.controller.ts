@@ -110,7 +110,10 @@ export class ScheduleController {
   }
 
   async cancelTask(id: string, input: unknown): Promise<Result<unknown>> {
-    const reason = (input as any)?.reason ?? 'User cancelled';
+    const reason =
+      typeof input === 'object' && input !== null && 'reason' in input
+        ? String((input as { reason: unknown }).reason)
+        : 'User cancelled';
     return this.useCases.cancelTask(id, reason);
   }
 
@@ -119,7 +122,10 @@ export class ScheduleController {
   }
 
   async batchDeleteTasks(input: unknown): Promise<Result<unknown>> {
-    const ids = (input as any)?.taskIds;
+    const ids =
+      typeof input === 'object' && input !== null && 'taskIds' in input
+        ? (input as { taskIds: unknown }).taskIds
+        : undefined;
     if (!Array.isArray(ids) || ids.length === 0) {
       return fail({ code: 'VALIDATION_ERROR', message: 'taskIds must be a non-empty array' });
     }

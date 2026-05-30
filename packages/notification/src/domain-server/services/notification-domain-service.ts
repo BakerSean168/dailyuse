@@ -150,7 +150,6 @@ export class NotificationDomainService {
     });
 
     // 6. 触发领域事件 - 用于 SSE 推送
-    const notificationDTO = notification.toServerDTO();
     logger.info('📡 [领域服务] 发布 NotificationCreated 领域事件', {
       notificationId: String(notification.id),
       identityId: String(notification.identityId),
@@ -168,7 +167,7 @@ export class NotificationDomainService {
   public async createNotificationFromTemplate(params: {
     identityId: string;
     templateId: string;
-    variables: Record<string, any>;
+    variables: Record<string, unknown>;
     channels?: NotificationChannelType[];
   }): Promise<Notification> {
     // 1. 获取模板

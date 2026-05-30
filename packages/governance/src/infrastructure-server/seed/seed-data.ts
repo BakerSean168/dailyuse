@@ -273,6 +273,8 @@ const toPersistenceSnippets = (snippets: SeedCodeSnippet[]): string => JSON.stri
 /**
  * Upserts governance seed rules into the backing database.
  * 将治理种子规则 upsert 到底层数据库。
+  * @param authorId - 
+  * @returns any - 
  */
 export async function seedGovernanceRules(authorId = 'governance-seed'): Promise<number> {
   for (const rule of GOVERNANCE_SEED_RULES) {

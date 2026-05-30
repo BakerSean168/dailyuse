@@ -5,6 +5,7 @@ import { TaskTemplateId } from '../../../../domain-shared/value-objects/task-tem
 import { TaskTemplateStatus } from '../../../../domain-shared/value-objects/task-template-status';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { TaskType } from '@dailyuse/contracts/task';
+import type { DependencyStatus, RecurrenceFrequency, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import {
   ChecklistItemDefinition,
@@ -62,13 +63,13 @@ export class PowerSyncTaskTemplateMapper {
     const startDate = data.time_config_start_time
       ? new Date(data.time_config_start_time).getTime()
       : null;
-    const endDate = data.time_config_end_time
+    const _endDate = data.time_config_end_time
       ? new Date(data.time_config_end_time).getTime()
       : null;
 
     const timeConfig = data.time_config_type
       ? TaskTimeConfig.fromDTO({
-          timeType: data.time_config_type as any,
+          timeType: data.time_config_type,
           startDate,
           timePoint: data.time_config_time_point,
           timeRange:
@@ -83,7 +84,7 @@ export class PowerSyncTaskTemplateMapper {
 
     const recurrenceRule = data.recurrence_rule_type
       ? RecurrenceRule.fromDTO({
-          frequency: data.recurrence_rule_type as any,
+          frequency: data.recurrence_rule_type as RecurrenceFrequency,
           interval: data.recurrence_rule_interval ?? 1,
           daysOfWeek: data.recurrence_rule_days_of_week
             ? JSON.parse(data.recurrence_rule_days_of_week)
@@ -104,7 +105,7 @@ export class PowerSyncTaskTemplateMapper {
                 type: 'Relative',
                 absoluteTime: null,
                 relativeValue: data.reminder_config_time_offset_minutes ?? 0,
-                relativeUnit: (data.reminder_config_unit as any) ?? 'Minutes',
+                relativeUnit: (data.reminder_config_unit as ReminderTimeUnit) ?? 'Minutes',
               },
             ],
           })
@@ -143,7 +144,7 @@ export class PowerSyncTaskTemplateMapper {
       estimatedMinutes: null,
       actualMinutes: null,
       note: null,
-      dependencyStatus: (data.dependency_status ?? 'NONE') as any,
+      dependencyStatus: (data.dependency_status ?? 'NONE') as DependencyStatus,
       isBlocked: data.is_blocked === true || data.is_blocked === 1,
       blockingReason: data.blocking_reason ?? null,
       createdAt: new Date(data.created_at),

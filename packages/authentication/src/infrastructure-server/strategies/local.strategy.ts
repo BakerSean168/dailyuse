@@ -27,7 +27,11 @@ export function createLocalStrategy(config: LocalStrategyConfig): LocalStrategy 
       usernameField: 'email',
       passwordField: 'password',
     },
-    async (email: string, password: string, done: any) => {
+    async (
+      email: string,
+      password: string,
+      done: (err: unknown, user?: Express.User | false, options?: { message: string }) => void,
+    ) => {
       try {
         // 1. Find identity by email
         const identity = await identityRepository.findByEmail(email);
@@ -56,8 +60,8 @@ export function createLocalStrategy(config: LocalStrategyConfig): LocalStrategy 
         return done(null, {
           identityId: identity.id,
         });
-      } catch (error) {
-        return done(error);
+      } catch (err) {
+        return done(err instanceof Error ? err : new Error(String(err)));
       }
     },
   );

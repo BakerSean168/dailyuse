@@ -1,4 +1,3 @@
-import { generateUUID } from '@dailyuse/utils/shared';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { INotificationTemplateRepository } from '../../../domain-server/repositories/i-notification-template-repository';
 import { NotificationTemplate } from '../../../domain-server/aggregates/notification-template';

@@ -25,6 +25,8 @@ export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 /**
  * Parses query value as a string.
  * 将查询参数解析为字符串。
+  * @param value - 
+  * @returns any - 
  */
 export function parseString(value: unknown): string | undefined {
   if (Array.isArray(value)) {
@@ -39,6 +41,8 @@ export function parseString(value: unknown): string | undefined {
 /**
  * Parses query value as a finite number.
  * 将查询参数解析为有限数字。
+  * @param value - 
+  * @returns any - 
  */
 export function parseNumber(value: unknown): number | undefined {
   const raw = parseString(value);
@@ -50,6 +54,8 @@ export function parseNumber(value: unknown): number | undefined {
 /**
  * Parses query value as a comma-separated string array.
  * 将查询参数解析为逗号分隔的字符串数组。
+  * @param value - 
+  * @returns any - 
  */
 export function parseStringArray(value: unknown): string[] | undefined {
   if (Array.isArray(value)) {

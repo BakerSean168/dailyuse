@@ -10,7 +10,7 @@ import {
   PowerSyncTaskTemplateMapper,
   type PowerSyncTaskTemplateRow,
 } from './mappers/powersync-task-template.mapper';
-import { PowerSyncTaskInstanceMapper } from './mappers/powersync-task-instance.mapper';
+import { PowerSyncTaskInstanceMapper, type PowerSyncTaskInstanceRow } from './mappers/powersync-task-instance.mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -191,7 +191,7 @@ export class PowerSyncTaskTemplateRepository
     const template = await this.findById(id);
     if (!template) return null;
 
-    const instances = await this.db.getAll<any>(
+    const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
       'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
       [id],
     );

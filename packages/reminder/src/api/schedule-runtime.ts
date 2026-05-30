@@ -125,12 +125,12 @@ export function createReminderScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.on('reminder:template-created', upsertFromEvent as any);
-      eventBus.on('reminder:template-updated', upsertFromEvent as any);
-      eventBus.on('reminder:template-enabled', upsertFromEvent as any);
-      eventBus.on('reminder:template-moved', upsertFromEvent as any);
-      eventBus.on('reminder:template-paused', deleteFromEvent as any);
-      eventBus.on('reminder:template-deleted', deleteFromEvent as any);
+      eventBus.on('reminder:template-created', upsertFromEvent as (event: ReminderEventMap['reminder:template-created']) => void);
+      eventBus.on('reminder:template-updated', upsertFromEvent as (event: ReminderEventMap['reminder:template-updated']) => void);
+      eventBus.on('reminder:template-enabled', upsertFromEvent as (event: ReminderEventMap['reminder:template-enabled']) => void);
+      eventBus.on('reminder:template-moved', upsertFromEvent as (event: ReminderEventMap['reminder:template-moved']) => void);
+      eventBus.on('reminder:template-paused', deleteFromEvent as (event: ReminderEventMap['reminder:template-paused']) => void);
+      eventBus.on('reminder:template-deleted', deleteFromEvent as (event: ReminderEventMap['reminder:template-deleted']) => void);
 
       started = true;
       logger.info('[Reminder] Schedule projection runtime started', {
@@ -150,12 +150,12 @@ export function createReminderScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.off('reminder:template-created', upsertFromEvent as any);
-      eventBus.off('reminder:template-updated', upsertFromEvent as any);
-      eventBus.off('reminder:template-enabled', upsertFromEvent as any);
-      eventBus.off('reminder:template-moved', upsertFromEvent as any);
-      eventBus.off('reminder:template-paused', deleteFromEvent as any);
-      eventBus.off('reminder:template-deleted', deleteFromEvent as any);
+      eventBus.off('reminder:template-created', upsertFromEvent as (event: ReminderEventMap['reminder:template-created']) => void);
+      eventBus.off('reminder:template-updated', upsertFromEvent as (event: ReminderEventMap['reminder:template-updated']) => void);
+      eventBus.off('reminder:template-enabled', upsertFromEvent as (event: ReminderEventMap['reminder:template-enabled']) => void);
+      eventBus.off('reminder:template-moved', upsertFromEvent as (event: ReminderEventMap['reminder:template-moved']) => void);
+      eventBus.off('reminder:template-paused', deleteFromEvent as (event: ReminderEventMap['reminder:template-paused']) => void);
+      eventBus.off('reminder:template-deleted', deleteFromEvent as (event: ReminderEventMap['reminder:template-deleted']) => void);
 
       started = false;
       logger.info('[Reminder] Schedule projection runtime stopped');

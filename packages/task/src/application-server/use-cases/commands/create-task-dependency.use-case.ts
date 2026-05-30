@@ -8,7 +8,7 @@ import type { ITaskDependencyRepository } from '@/domain-server/repositories/i-t
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import { dependencyServerToClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 export class CreateTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
@@ -22,7 +22,7 @@ export class CreateTaskDependencyUseCase {
   }): Promise<Result<TaskDependencyClientDTO>> {
     // Check for self-dependency
     if (request.predecessorTaskId === request.successorTaskId) {
-      return { success: false, error: { code: 'VALIDATION_ERROR', message: '任务不能依赖自身' } } as any;
+      return error('VALIDATION_ERROR', '任务不能依赖自身');
     }
 
     // Check for duplicate
@@ -31,7 +31,7 @@ export class CreateTaskDependencyUseCase {
       request.successorTaskId,
     );
     if (existing) {
-      return { success: false, error: { code: 'DUPLICATE', message: '依赖关系已存在' } } as any;
+      return error('DUPLICATE', '依赖关系已存在');
     }
 
     const dependency = await this.dependencyRepository.create({

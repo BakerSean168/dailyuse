@@ -70,7 +70,7 @@ export class ValidationRule extends ValueObject<ValidationRuleDTO> implements IV
     return this.props.pattern;
   }
 
-  public get enum(): any[] | null {
+  public get enum(): unknown[] | null {
     return this.props.enum !== null ? [...this.props.enum] : null;
   }
 
@@ -98,7 +98,7 @@ export class ValidationRule extends ValueObject<ValidationRuleDTO> implements IV
     return this.with({ pattern });
   }
 
-  public setEnum(enumValues: any[] | null): ValidationRule {
+  public setEnum(enumValues: unknown[] | null): ValidationRule {
     return this.with({ enum: enumValues });
   }
 

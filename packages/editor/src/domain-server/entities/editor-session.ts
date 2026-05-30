@@ -14,7 +14,6 @@
  */
 
 import { Entity } from '@dailyuse/utils/domain';
-import { generateUUID } from '@dailyuse/utils/shared';
 import type {
   EditorSessionClientDTO,
   EditorSessionServerDTO,

@@ -1,9 +1,6 @@
-import { createLogger } from '@dailyuse/utils/logger';
 import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain-server/repositories/i-schedule-task-repository';
 import type { IScheduleTaskMonitor } from './schedule-executor-helpers';
-
-const logger = createLogger('ExecuteScheduleTaskUseCase');
 
 /**
  * 执行单个 ScheduleTask

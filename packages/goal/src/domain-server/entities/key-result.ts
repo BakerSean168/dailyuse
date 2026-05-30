@@ -245,7 +245,7 @@ export class KeyResult extends Entity<KeyResultId> {
    * 📊 计算完成百分比（0-100）
    */
   public calculatePercentage(): number {
-    const start = (this._props.progress as any).initialValue ?? 0;
+    const start = this._props.progress.initialValue ?? 0;
     const range = this._props.progress.targetValue - start;
 
     if (this._props.progress.targetValue <= 0 || range <= 0) {

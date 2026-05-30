@@ -59,6 +59,7 @@ interface CodeSnippetProps {
  * - content: 代码内容（最大 10KB）
  * - type: 片段类型（GoodExample/BadExample）
  * - caption: 标题说明（可选，最大 200 字符）
+  * @param props - 
  */
 export class CodeSnippet extends ValueObject<CodeSnippetProps> {
   private constructor(props: CodeSnippetProps) {

@@ -7,6 +7,8 @@
  *
  * Revision records are append-only (immutable audit log).
  * 修订版本记录为追加写入（不可变审计日志）。
+ *
+ * @internal Concrete PowerSync implementation — consumers should use IRuleRevisionRepository interface.
  */
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { IRuleRevisionRepository } from '../../../domain-server/repositories/i-rule-revision-repository';
@@ -25,6 +27,7 @@ import {
  *
  * Stores immutable revision records tracking all changes to rules.
  * 存储不可变的修订版本记录，跟踪规则的所有变更。
+  * @param private readonly db - 
  */
 export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository {
   constructor(private readonly db: IElectronDatabase) {}

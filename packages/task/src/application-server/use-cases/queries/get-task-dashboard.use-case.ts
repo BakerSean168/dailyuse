@@ -41,7 +41,7 @@ export class GetTaskDashboardUseCase {
       blocked,
       upcoming,
       highPriority,
-      recentCompleted,
+      _recentCompleted,
       totalActive,
       totalCompleted,
     ] = await Promise.all([
@@ -55,17 +55,17 @@ export class GetTaskDashboardUseCase {
       this.countTasks(identityId, { status: TaskTemplateStatus.Archived }),
     ]);
 
-    const completionRate =
+    const _completionRate =
       totalActive + totalCompleted > 0
         ? Math.round((totalCompleted / (totalActive + totalCompleted)) * 100)
         : 0;
 
     return ok({
-      todayTasks: today as any,
-      overdueTasks: overdue as any,
-      upcomingTasks: upcoming as any,
-      highPriorityTasks: highPriority as any,
-      blockedTasks: blocked as any,
+      todayTasks: today,
+      overdueTasks: overdue,
+      upcomingTasks: upcoming,
+      highPriorityTasks: highPriority,
+      blockedTasks: blocked,
       summary: {
         totalTasks: totalActive + totalCompleted,
         completedToday: totalCompleted,

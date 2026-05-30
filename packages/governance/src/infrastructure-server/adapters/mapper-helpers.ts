@@ -9,6 +9,7 @@
  * 本文件重导出它们以保持向后兼容。
  *
  * @see {@link @dailyuse/utils/shared} for the canonical source.
+ * @internal Re-export shim — prefer importing from @dailyuse/utils/shared directly.
  */
 
 export {

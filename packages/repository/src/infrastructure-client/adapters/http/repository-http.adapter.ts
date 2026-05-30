@@ -29,6 +29,27 @@ import type {
 } from '@dailyuse/contracts/repository';
 import { fail } from '@dailyuse/contracts/result';
 
+/**
+ * Type guard to distinguish UploadResourceFileDTO from UploadFileLike.
+ */
+function isUploadResourceFileDTO(
+  file: UploadFileLike | UploadResourceFileDTO,
+): file is UploadResourceFileDTO {
+  return 'contentBase64' in file;
+}
+
+/**
+ * Safely access getAxiosInstance from an IResultHttpClient.
+ */
+function getAxiosInstance(httpClient: IResultHttpClient): unknown | null {
+  const client = httpClient as IResultHttpClient & {
+    getAxiosInstance?: () => unknown;
+  };
+  return typeof client.getAxiosInstance === 'function'
+    ? client.getAxiosInstance()
+    : null;
+}
+
 function base64ToBytes(value: string): Uint8Array {
   if (typeof atob === 'function') {
     return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
@@ -129,8 +150,7 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     repositoryId: string,
     request: UploadResourcesRequest,
   ): Promise<Result<UploadResourcesResponseDTO>> {
-    const client = this.httpClient as any;
-    const axios = typeof client.getAxiosInstance === 'function' ? client.getAxiosInstance() : null;
+    const axios = getAxiosInstance(this.httpClient);
     if (!axios) {
       return fail({
         code: 'INTERNAL_ERROR',
@@ -138,8 +158,14 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
       });
     }
 
-    const FormDataCtor = (globalThis as any).FormData;
-    const BlobCtor = (globalThis as any).Blob;
+    // Access web API constructors via globalThis — they may not be in scope
+    // depending on the runtime environment (Node vs browser).
+    const global = globalThis as unknown as {
+      FormData?: { new (): FormData };
+      Blob?: { new (parts: BlobPart[], options?: BlobPropertyBag): Blob };
+    };
+    const FormDataCtor = global.FormData;
+    const BlobCtor = global.Blob;
     if (!FormDataCtor || !BlobCtor) {
       return fail({
         code: 'INTERNAL_ERROR',
@@ -148,24 +174,26 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     }
     const formData = new FormDataCtor();
     for (const file of request.files) {
-      if (typeof (file as any).arrayBuffer === 'function') {
-        const bytes = new Uint8Array(await (file as any).arrayBuffer());
-        const blob = new BlobCtor([bytes], {
-          type: (file as any).type || 'application/octet-stream',
+      if (isUploadResourceFileDTO(file)) {
+        const blob = new BlobCtor([base64ToBytes(file.contentBase64) as unknown as BlobPart], {
+          type: file.mimeType || 'application/octet-stream',
         });
-        formData.append('files', blob, (file as any).name);
+        formData.append('files', blob, file.name);
       } else {
-        const uploaded = file as any;
-        const blob = new BlobCtor([base64ToBytes(uploaded.contentBase64)], {
-          type: uploaded.mimeType || 'application/octet-stream',
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const blob = new BlobCtor([bytes as unknown as BlobPart[]], {
+          type: file.type || 'application/octet-stream',
         });
-        formData.append('files', blob, uploaded.name);
+        formData.append('files', blob, file.name);
       }
     }
     if (request.folderId) formData.append('folderId', request.folderId);
     if (request.tags) formData.append('tags', JSON.stringify(request.tags));
     if (request.overwritePolicy) formData.append('overwritePolicy', request.overwritePolicy);
 
+    const client = this.httpClient as IResultHttpClient & {
+      request: (config: unknown) => Promise<Result<UploadResourcesResponseDTO>>;
+    };
     return client.request({
       method: 'post',
       url: `${this.baseUrl}/${repositoryId}/resources/upload`,

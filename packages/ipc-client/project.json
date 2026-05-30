@@ -27,6 +27,14 @@
       "options": {
         "lintFilePatterns": ["packages/ipc-client/**/*.{ts,js}"]
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/ipc-client"
+      }
     }
   }
 }

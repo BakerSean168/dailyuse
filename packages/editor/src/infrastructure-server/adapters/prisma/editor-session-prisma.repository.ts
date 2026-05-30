@@ -2,6 +2,12 @@ import type {
   PrismaClient,
   EditorWorkspaceSession as PrismaEditorWorkspaceSession,
 } from '@dailyuse/database';
+import { Prisma } from '@dailyuse/database';
+import type {
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
 import { parseSessionLayoutFromPersistence } from '../shared/session-layout.persistence';
@@ -10,9 +16,9 @@ function toDomain(row: PrismaEditorWorkspaceSession): EditorSession {
   const layout = parseSessionLayoutFromPersistence(row.layout);
 
   return EditorSession.load({
-    id: row.id as any,
-    workspaceId: row.workspaceId as any,
-    identityId: row.identityId as any,
+    id: row.id as EditorSessionId,
+    workspaceId: row.workspaceId as EditorWorkspaceId,
+    identityId: row.identityId as IdentityId,
     name: row.name,
     description: null,
     layout,
@@ -65,7 +71,7 @@ export class EditorSessionPrismaRepository implements IEditorSessionRepository {
         workspaceId: dto.workspaceId,
         identityId: dto.identityId,
         name: dto.name,
-        layout: dto.layout as any,
+        layout: dto.layout as unknown as Prisma.InputJsonValue,
         isActive: dto.isActive,
         createdAt: new Date(dto.createdAt),
         updatedAt: new Date(dto.updatedAt),
@@ -74,7 +80,7 @@ export class EditorSessionPrismaRepository implements IEditorSessionRepository {
         workspaceId: dto.workspaceId,
         identityId: dto.identityId,
         name: dto.name,
-        layout: dto.layout as any,
+        layout: dto.layout as unknown as Prisma.InputJsonValue,
         isActive: dto.isActive,
         updatedAt: new Date(dto.updatedAt),
       },

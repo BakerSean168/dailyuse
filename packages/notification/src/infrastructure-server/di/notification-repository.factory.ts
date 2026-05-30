@@ -52,9 +52,9 @@ export class NotificationRepositoryFactory {
     client: PrismaClient | IElectronDatabase,
   ): ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories> {
     if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient) as any;
+      return this.createPrismaRepositories(client as PrismaClient) as unknown as ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories>;
     } else {
-      return this.createPowerSyncRepositories(client as IElectronDatabase) as any;
+      return this.createPowerSyncRepositories(client as IElectronDatabase) as unknown as ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories>;
     }
   }
 }

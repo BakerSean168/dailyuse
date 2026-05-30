@@ -53,7 +53,7 @@ function parseJsonSafe<T>(value: string | null | undefined): T | null {
 
 function mapPrismaTemplateToDomain(row: PrismaNotificationTemplate): NotificationTemplate {
   return NotificationTemplate.load({
-    id: row.id as any,
+    id: row.id as never,
     name: row.name,
     description: row.description,
     type: row.type as NotificationType,

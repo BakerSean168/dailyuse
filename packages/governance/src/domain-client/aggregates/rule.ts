@@ -67,6 +67,7 @@ export interface RuleState {
  * - 从 API 响应创建实例
  * - UI 辅助方法（状态格式化、标签过滤）
  * - 数据转换（toDTO）
+  * @param state - 
  */
 export class Rule extends AggregateRoot<RuleId> {
   private readonly _props: RuleState;

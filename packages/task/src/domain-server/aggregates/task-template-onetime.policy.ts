@@ -5,7 +5,7 @@
  * Extracted from TaskTemplate aggregate to reduce aggregate size.
  */
 
-import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
+import { PriorityLevel } from '@dailyuse/contracts/shared';
 import { TaskType } from '../value-objects';
 import { DependencyStatus } from '../value-objects';
 import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';

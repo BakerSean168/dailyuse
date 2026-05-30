@@ -99,7 +99,7 @@ export class PrismaScheduleTaskMapper {
           result: execData.result
             ? typeof execData.result === 'string'
               ? JSON.parse(execData.result as string)
-              : (execData.result as Record<string, any>)
+              : (execData.result as Record<string, unknown>)
             : null,
           error: execData.error ?? null,
           retryCount: execData.retryCount,

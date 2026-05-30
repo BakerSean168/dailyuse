@@ -51,23 +51,9 @@ export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
+// Composition root + types — concrete adapters imported via subpath:
+//   @dailyuse/task/infrastructure-server
 export {
-  /** @internal Concrete Prisma implementation — use ITaskTemplateRepository interface instead. Prisma 具体实现 — 请使用 ITaskTemplateRepository 接口。 */
-  TaskTemplatePrismaRepository,
-  /** @internal Concrete Prisma implementation — use ITaskInstanceRepository interface instead. Prisma 具体实现 — 请使用 ITaskInstanceRepository 接口。 */
-  TaskInstancePrismaRepository,
-  /** @internal Concrete Prisma implementation — use ITaskDependencyRepository interface instead. Prisma 具体实现 — 请使用 ITaskDependencyRepository 接口。 */
-  TaskDependencyPrismaRepository,
-  /** @internal Concrete Prisma implementation — use ITaskFolderRepository interface instead. Prisma 具体实现 — 请使用 ITaskFolderRepository 接口。 */
-  TaskFolderPrismaRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskTemplateRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskInstanceRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskDependencyRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskFolderRepository,
   createTaskModule,
   createTaskPowerSyncModule,
   type TaskApplicationPort,

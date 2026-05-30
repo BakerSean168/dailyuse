@@ -62,8 +62,8 @@ export interface TaskTemplateState {
   completedInstanceCount: number;
   pendingInstanceCount: number;
   completionRate: number;
-  history?: any[];
-  instances?: any[];
+  history?: unknown[];
+  instances?: unknown[];
 }
 
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
@@ -209,11 +209,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.completionRate;
   }
 
-  get history(): any[] | undefined {
+  get history(): unknown[] | undefined {
     return this._props.history ? [...this._props.history] : undefined;
   }
 
-  get instances(): any[] | undefined {
+  get instances(): unknown[] | undefined {
     return this._props.instances ? [...this._props.instances] : undefined;
   }
 

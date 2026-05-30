@@ -19,7 +19,6 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import {
-  CreateGoalRecordSchema,
   GoalRecordClientDTOSchema,
   GoalRecordListResSchema,
   DeleteSuccessResSchema,

@@ -16,8 +16,8 @@
  * + `destroy()` for cleanup
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   AIExecutionLogPrismaAdapter,
   AIEvaluationReportFileAdapter,
@@ -62,21 +62,10 @@ import { createAITransportHandlers } from './transport-handlers';
 import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 /**
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
- *
- * 此类型在 AI 包内本地定义，避免对 apps/api 的循环依赖。
- * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
+ * Typed module context for AI registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface AIApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type AIApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface AIApiModuleDef {
   readonly name: string;
@@ -117,7 +106,7 @@ export function createAIApiModule(options: {
       //    The application edge decides which adapter implementation to use.
       //    模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
       // ---------------------------------------------------------------
-      const prismaClient = db as PrismaClient;
+      const prismaClient = db;
       const aiServiceRuntimeConfig = getAIServiceRuntimeConfig();
       const aiModule = createAIModule({
         conversationRepository: new AIConversationPrismaRepository(prismaClient),

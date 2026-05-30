@@ -5,7 +5,6 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-
 import type { IRepositoryRepository } from '../../domain-server/repositories/i-repository-repository';
 import type { IResourceRepository } from '../../domain-server/repositories/i-resource-repository';
 import type { IFolderRepository } from '../../domain-server/repositories/i-folder-repository';
@@ -25,6 +24,12 @@ import {
 /**
  * Repository Repository Factory
  */
+interface RepositoryImplementations {
+  repositoryRepository: IRepositoryRepository;
+  resourceRepository: IResourceRepository;
+  folderRepository: IFolderRepository;
+}
+
 export class RepositoryRepositoryFactory {
   /**
    * Create repositories using Prisma (for API/PostgreSQL)
@@ -54,11 +59,11 @@ export class RepositoryRepositoryFactory {
   static create(
     dataSource: 'prisma' | 'powersync',
     client: PrismaClient | IElectronDatabase,
-  ): ReturnType<typeof RepositoryRepositoryFactory.createPrismaRepositories> {
+  ): RepositoryImplementations {
     if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient) as any;
+      return this.createPrismaRepositories(client as PrismaClient);
     } else {
-      return this.createPowerSyncRepositories(client as IElectronDatabase) as any;
+      return this.createPowerSyncRepositories(client as IElectronDatabase);
     }
   }
 }

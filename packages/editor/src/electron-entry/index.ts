@@ -42,6 +42,17 @@ import { createEditorPowerSyncModule } from '../infrastructure-server/powersync'
 import type { EditorModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils/logger';
 import { fail } from '@dailyuse/contracts/result';
+import type {
+  CreateEditorWorkspaceRequest,
+  UpdateEditorWorkspaceRequest,
+  CreateEditorSessionRequest,
+  UpdateEditorSessionRequest,
+  CreateEditorGroupRequest,
+  UpdateEditorGroupRequest,
+  CreateEditorTabRequest,
+  UpdateEditorTabRequest,
+  SearchRequest,
+} from '@dailyuse/contracts/editor';
 import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('EditorElectron');
@@ -160,14 +171,14 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       );
       ipcMain.handle(Ch.WORKSPACE_CREATE, async (_event, dto: unknown) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          api.createWorkspace((dto ?? {}) as any, requestContext),
+          api.createWorkspace(dto as CreateEditorWorkspaceRequest, requestContext),
         ),
       );
       ipcMain.handle(
         Ch.WORKSPACE_UPDATE,
         async (_event, payload: { workspaceId: string; data: unknown }) =>
           withAuthenticatedValue(ctx, async () =>
-            api.updateWorkspace(payload.workspaceId, (payload.data ?? {}) as any),
+            api.updateWorkspace(payload.workspaceId, payload.data as UpdateEditorWorkspaceRequest),
           ),
       );
       ipcMain.handle(Ch.WORKSPACE_DELETE, async (_event, workspaceId: string) =>
@@ -214,7 +225,7 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
         const result = await withAuthenticatedValue(ctx, async (requestContext) =>
           {
             try {
-              return await api.createSession((dto ?? {}) as any, requestContext);
+              return await api.createSession(dto as CreateEditorSessionRequest, requestContext);
             } catch (error) {
               const loggableError = toLoggableError(error);
               logger.error('[EditorIPC] create-session:exception', {
@@ -244,7 +255,7 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
         Ch.SESSION_UPDATE,
         async (_event, payload: { sessionId: string; data: unknown }) =>
           withAuthenticatedValue(ctx, async (requestContext) =>
-            api.updateSession(payload.sessionId, (payload.data ?? {}) as any, requestContext),
+            api.updateSession(payload.sessionId, payload.data as UpdateEditorSessionRequest, requestContext),
           ),
       );
       ipcMain.handle(
@@ -262,12 +273,12 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
 
       ipcMain.handle(Ch.GROUP_CREATE, async (_event, dto: unknown) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          api.createGroup((dto ?? {}) as any, requestContext),
+          api.createGroup(dto as CreateEditorGroupRequest, requestContext),
         ),
       );
       ipcMain.handle(Ch.GROUP_UPDATE, async (_event, payload: { groupId: string; data: unknown }) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          api.updateGroup(payload.groupId, (payload.data ?? {}) as any, requestContext),
+          api.updateGroup(payload.groupId, payload.data as UpdateEditorGroupRequest, requestContext),
         ),
       );
       ipcMain.handle(
@@ -288,7 +299,7 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
         const result = await withAuthenticatedValue(ctx, async (requestContext) =>
           {
             try {
-              return await api.createTab((dto ?? {}) as any, requestContext);
+              return await api.createTab(dto as CreateEditorTabRequest, requestContext);
             } catch (error) {
               const loggableError = toLoggableError(error);
               logger.error('[EditorIPC] create-tab:exception', {
@@ -316,7 +327,7 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       });
       ipcMain.handle(Ch.TAB_UPDATE, async (_event, payload: { tabId: string; data: unknown }) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          api.updateTab(payload.tabId, (payload.data ?? {}) as any, requestContext),
+          api.updateTab(payload.tabId, payload.data as UpdateEditorTabRequest, requestContext),
         ),
       );
       ipcMain.handle(
@@ -381,7 +392,7 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       // -- Search channel -- 搜索通道 --
       ipcMain.handle(Ch.SEARCH, async (_event, query: unknown) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          api.searchResources((query ?? {}) as any, requestContext),
+          api.searchResources(query as SearchRequest, requestContext),
         ),
       );
 

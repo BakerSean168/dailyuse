@@ -7,6 +7,7 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAccountRepository } from '@/domain-server';
 import type { UpdateAccountSettingsReq, AccountSettingsDTO } from '@dailyuse/contracts/account';
+import type { ThemeType, LanguageCode } from '../../../domain-shared';
 
 export class UpdateAccountSettingsUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}
@@ -23,10 +24,10 @@ export class UpdateAccountSettingsUseCase {
     let settings = account.settings;
 
     if (request.theme) {
-      settings = settings.switchTheme(request.theme as any);
+      settings = settings.switchTheme(request.theme as ThemeType);
     }
     if (request.language) {
-      settings = settings.switchLanguage(request.language as any);
+      settings = settings.switchLanguage(request.language as LanguageCode);
     }
     if (request.timezone) {
       settings = settings.setTimezone(request.timezone);

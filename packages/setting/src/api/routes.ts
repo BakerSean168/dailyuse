@@ -20,7 +20,6 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import {
-  PatchUserSettingSchema,
   ResetUserSettingPublicSchema,
   ExportSettingsSchema,
   ImportSettingsSchema,

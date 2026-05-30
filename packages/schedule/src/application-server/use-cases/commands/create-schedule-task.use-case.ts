@@ -35,9 +35,9 @@ export interface CreateScheduleTaskReq {
   sourceId: string;
   scheduleConfig: ScheduleConfigDTO;
   handlerType: string;
-  handlerPayload?: any;
+  handlerPayload?: unknown;
   priority?: number;
-  retryPolicy?: RetryPolicyDTO;
+  retryPolicy?: Partial<RetryPolicyDTO>;
   enabled?: boolean;
   description?: string;
   identityId: string;

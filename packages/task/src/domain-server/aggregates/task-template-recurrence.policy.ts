@@ -7,7 +7,6 @@
 
 import type { TaskEventMap } from '@dailyuse/contracts/task';
 import { RecurrenceEndConditionType } from '@dailyuse/contracts/task';
-import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
 import { TaskType } from '../value-objects';
 import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import type { RecurrenceRule } from '../value-objects';

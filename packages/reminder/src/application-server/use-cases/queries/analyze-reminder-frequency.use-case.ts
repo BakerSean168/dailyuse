@@ -94,7 +94,7 @@ export class AnalyzeReminderFrequencyUseCase {
     lookbackDays: number,
   ): Promise<ResponseMetrics | null> {
     // 2. 查询响应记录
-    const lookbackMs = lookbackDays * 24 * 60 * 60 * 1000;
+    const _lookbackMs = lookbackDays * 24 * 60 * 60 * 1000;
     // const cutoffTime = BigInt(Date.now() - lookbackMs);
 
     // TODO: 需要运行 Prisma migration 后才能使用 reminderResponse
@@ -164,7 +164,7 @@ export class AnalyzeReminderFrequencyUseCase {
    */
   private calculateMetrics(
     records: ReminderResponseRecord[],
-    template: any,
+    _template: unknown,
   ): ResponseMetrics | null {
     if (records.length === 0) {
       return null;
@@ -173,7 +173,7 @@ export class AnalyzeReminderFrequencyUseCase {
     const clicked = records.filter((r) => r.action === 'clicked').length;
     const ignored = records.filter((r) => r.action === 'ignored').length;
     const snoozed = records.filter((r) => r.action === 'snoozed').length;
-    const dismissed = records.filter((r) => r.action === 'dismissed').length;
+    const _dismissed = records.filter((r) => r.action === 'dismissed').length;
     const completed = records.filter((r) => r.action === 'completed').length;
 
     const totalResponses = records.length;

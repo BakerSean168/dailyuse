@@ -6,11 +6,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // ============ Transport Client Interfaces ============
-
-// IResultHttpClient imported from @dailyuse/http-client
 
 export interface IResultIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;

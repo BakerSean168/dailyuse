@@ -18,7 +18,7 @@ export interface IRepository<T> {
 export interface IQuery {
   skip?: number;
   take?: number;
-  where?: Record<string, any>;
+  where?: Record<string, unknown>;
   orderBy?: Record<string, 'asc' | 'desc'>;
 }
 

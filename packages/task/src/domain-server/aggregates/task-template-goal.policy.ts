@@ -9,7 +9,6 @@ import type {
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@dailyuse/contracts/task';
 import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
 import { TaskType } from '../value-objects';
 import { TaskGoalBinding } from '../value-objects';

@@ -17,7 +17,7 @@ export class DeleteGoalRecordUseCase {
     try {
       await this.goalRecordRepository.delete(recordId);
       return ok(undefined);
-    } catch (e) {
+    } catch (_e) {
       return error('INTERNAL_ERROR', `Failed to delete record: ${recordId}`);
     }
   }

@@ -9,11 +9,12 @@ import {
   AccountStatus,
   ContactPhone,
 } from '../../../../domain-shared';
+import type { AccountProfileDTO, AccountSettingsDTO } from '@dailyuse/contracts/account';
 
 export class AccountPrismaMapper {
   static toDomain(row: PrismaAccount): Account {
-    const profile = row.profile as any;
-    const settings = row.settings as any;
+    const profile = row.profile as unknown as AccountProfileDTO;
+    const settings = row.settings as unknown as AccountSettingsDTO;
 
     const state: AccountState = {
       id: IdentityId.of(row.id),

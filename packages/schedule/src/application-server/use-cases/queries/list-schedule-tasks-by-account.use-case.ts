@@ -29,6 +29,6 @@ export class ListScheduleTasksByAccountUseCase {
     const tasks = await this.scheduleTaskRepository.findByIdentityId(identityId);
 
     // 2. 转换为 Client DTO 列表
-    return ok(tasks.map((t: any) => t.toClientDTO()));
+    return ok(tasks.map((t) => t.toClientDTO()));
   }
 }

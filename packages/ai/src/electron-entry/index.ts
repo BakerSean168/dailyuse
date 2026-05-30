@@ -18,7 +18,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
+import { AIStreamChannels } from '@dailyuse/contracts/electron';
 import { fail, ok } from '@dailyuse/contracts/result';
 import {
   AIServiceAnalyticsQueryAdapter,

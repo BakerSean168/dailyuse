@@ -6,7 +6,6 @@
 
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import type {
-  TaskInstanceClientDTO,
   SkipTaskInstanceReq,
   TaskInstanceOperationRes,
 } from '@dailyuse/contracts/task';

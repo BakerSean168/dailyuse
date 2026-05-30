@@ -15,8 +15,8 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createReminderModule,
   ReminderTemplatePrismaRepository,
@@ -31,19 +31,10 @@ import { createReminderTransportHandlers } from './transport-handlers';
 import { createReminderScheduleRuntimeContribution } from './schedule-runtime';
 
 /**
- * Module registration context (structurally compatible with apps/api's IApiModuleContext).
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 结构兼容）。
+ * Typed module context for reminder registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface ReminderApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type ReminderApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface ReminderApiModuleDef {
   readonly name: string;
@@ -61,7 +52,7 @@ export const ReminderApiModule: ReminderApiModuleDef = {
 
     // 1. Composition Root — assemble dependencies (using shared database singleton)
     //    组合根 — 组装依赖（使用共享数据库单例）
-    const prismaClient = db as PrismaClient;
+    const prismaClient = db;
     const reminderTemplateRepository = new ReminderTemplatePrismaRepository(prismaClient);
     const reminderGroupRepository = new ReminderGroupPrismaRepository(prismaClient);
     const reminderModule = createReminderModule({

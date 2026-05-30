@@ -23,21 +23,15 @@ import {
   CreateGoalReviewSchema,
   CreateGoalRecordSchema,
   UpdateGoalReviewSchema,
-  GetGoalRecordsSchema,
   ActivateFocusModeSchema,
   ExtendFocusModeSchema,
 } from '@dailyuse/contracts/goal';
 import type {
   GoalClientDTO,
+  GoalSystemView,
   GetGoalAggregateRes,
   ProgressBreakdown,
-  UpdateGoalReq,
-  ListGoalFilters,
   ListGoalsQuery,
-  AddKeyResultReq,
-  UpdateKeyResultReq,
-  UpdateKeyResultProgressReq,
-  CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
@@ -162,7 +156,7 @@ export class GoalController {
         message: 'Search query (query) is required',
       });
     }
-    return this.useCases.searchGoals.execute(cx.identityId, query, systemView as any);
+    return this.useCases.searchGoals.execute(cx.identityId, query, systemView as GoalSystemView);
   }
 
   async get(id: string, includeChildren = true): Promise<Result<unknown>> {

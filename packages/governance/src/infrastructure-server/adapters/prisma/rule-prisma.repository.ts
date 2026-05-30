@@ -37,6 +37,7 @@ import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper'
  * Prisma Rule Repository
  *
  * Uses PrismaClient for database access
+  * @param prismaClient - 
  */
 export class RulePrismaRepository implements IRuleRepository {
   private readonly prisma: PrismaClient;

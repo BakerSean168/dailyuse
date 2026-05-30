@@ -12,8 +12,6 @@
 
 import type {
   PrismaClient,
-  ScheduleTask as PrismaScheduleTask,
-  ScheduleExecution as PrismaScheduleExecution,
   Prisma,
 } from '@dailyuse/database';
 import type { IScheduleTaskRepository } from '../../../domain-server/repositories/i-schedule-task-repository';

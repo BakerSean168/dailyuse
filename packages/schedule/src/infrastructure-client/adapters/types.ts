@@ -8,7 +8,6 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export port interfaces from application-client ports
 export type { IScheduleEventApiClient } from '../../application-client/ports/schedule-event-api-client.port';

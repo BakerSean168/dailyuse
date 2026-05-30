@@ -9,7 +9,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult, ok } from '@dailyuse/contracts/result';
+import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
   CreateGoalReq,
   UpdateGoalReq,

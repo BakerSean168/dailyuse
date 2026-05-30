@@ -13,6 +13,8 @@
  *   日期字符串 ↔ Date 对象转换
  * - Branded type casting (string → RuleId, RuleSeverity, etc.)
  *   品牌类型转换（string → RuleId, RuleSeverity 等）
+ *
+ * @internal Concrete PowerSync mapper — consumers should use domain entities directly.
  */
 import { Rule } from '../../../../domain-server/aggregates/rule';
 import { RuleId } from '../../../../domain-shared/value-objects/rule-id';

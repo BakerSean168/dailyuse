@@ -40,6 +40,7 @@ import type { ChangeType } from '../../../../domain-shared/value-objects/change-
 // Mapper
 // ---------------------------------------------------------------------------
 
+/** Converts between Prisma RuleRevision rows and domain RuleRevision entities. */
 export class RuleRevisionPrismaMapper {
   /**
    * Converts a Prisma row to a domain RuleRevision entity.
