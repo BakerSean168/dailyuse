@@ -15,6 +15,8 @@ import { Router } from 'express';
 import { ResultCode } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import type { PrismaClient } from '@dailyuse/database';
 import { getPowerSyncConfig } from '../../shared/infrastructure/config/env.js';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/auth-middleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
@@ -27,7 +29,7 @@ const logger = createLogger('PowerSync');
 export const PowerSyncApiModule: IApiModule = {
   name: 'PowerSync',
 
-  register(context: IApiModuleContext) {
+  register(context: IApiModuleContext & ServerModuleContext<PrismaClient>) {
     const { router, db, middleware } = context;
     const psRouter = Router();
     const config = getPowerSyncConfig();
