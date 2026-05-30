@@ -9,6 +9,7 @@
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/auth-middleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';
 import { getApiDashboardData } from './dashboard-read-service.js';
@@ -16,10 +17,10 @@ import { getApiDashboardData } from './dashboard-read-service.js';
 export const DashboardApiModule: IApiModule = {
   name: 'Dashboard',
 
-  register(context: IApiModuleContext) {
+  register(context: IApiModuleContext & ServerModuleContext<PrismaClient>) {
     const { router, middleware, db } = context;
     const dashboardRouter = Router();
-    const prisma = db as PrismaClient;
+    const prisma = db;
 
     // GET /dashboard/stats — Aggregated dashboard statistics
     dashboardRouter.get('/stats', middleware.auth, async (req, res) => {
