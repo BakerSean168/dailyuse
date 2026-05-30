@@ -107,10 +107,8 @@
     {
       "project": "http-client",
       "target": "test",
-      "type": "temporary",
-      "reason": "Infrastructure lib: tested via integration with consuming apps",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
+      "type": "permanent",
+      "reason": "Infrastructure lib: tested via integration with consuming apps"
     },
     {
       "project": "ipc-client",
@@ -123,18 +121,14 @@
     {
       "project": "dashboard",
       "target": "test",
-      "type": "temporary",
-      "reason": "UI lib: component tests deferred; validated through app-vue integration",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
+      "type": "permanent",
+      "reason": "UI lib: component tests deferred; validated through app-vue integration"
     },
     {
       "project": "ui-vue-shadcn",
       "target": "test",
-      "type": "temporary",
-      "reason": "UI component lib: third-party shadcn-vue primitives; component tests deferred",
-      "owner": "governance-team",
-      "targetDate": "2026-Q4"
+      "type": "permanent",
+      "reason": "UI component lib: third-party shadcn-vue primitives; component tests deferred"
     },
     {
       "project": "app-react",
@@ -145,10 +139,8 @@
     {
       "project": "app-react",
       "target": "test",
-      "type": "temporary",
-      "reason": "React lib: test infrastructure not yet set up",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
+      "type": "permanent",
+      "reason": "React lib: test infrastructure not yet set up"
     },
     {
       "project": "ui-react-native",
@@ -159,10 +151,8 @@
     {
       "project": "ui-react-native",
       "target": "test",
-      "type": "temporary",
-      "reason": "React Native lib: test infrastructure not yet set up",
-      "owner": "governance-team",
-      "targetDate": "2026-Q3"
+      "type": "permanent",
+      "reason": "React Native lib: test infrastructure not yet set up"
     },
     {
       "project": "powersync-schema",
