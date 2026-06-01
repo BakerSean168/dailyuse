@@ -11,8 +11,10 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
+import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import type { AuthenticationModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('AuthenticationRuntime');
@@ -70,7 +72,10 @@ export function createAuthenticationRuntimeContribution(): AuthenticationRuntime
       }
 
       for (const [eventName, handler] of Object.entries(authenticationEventHandlers)) {
-        (eventBus as any).on(eventName, handler);
+        eventBus.on(
+          eventName as keyof AppEventRegistry,
+          handler as (event: AppEventRegistry[keyof AppEventRegistry]) => void,
+        );
       }
 
       started = true;
@@ -83,7 +88,10 @@ export function createAuthenticationRuntimeContribution(): AuthenticationRuntime
       }
 
       for (const [eventName, handler] of Object.entries(authenticationEventHandlers)) {
-        (eventBus as any).off(eventName, handler);
+        eventBus.off(
+          eventName as keyof AppEventRegistry,
+          handler as (event: AppEventRegistry[keyof AppEventRegistry]) => void,
+        );
       }
 
       started = false;

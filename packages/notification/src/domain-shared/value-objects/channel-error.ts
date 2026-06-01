@@ -5,7 +5,7 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   ChannelError as IChannelError,
   ChannelErrorDTO,

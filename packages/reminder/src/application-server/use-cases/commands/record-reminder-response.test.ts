@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RecordReminderResponseUseCase } from './record-reminder-response.use-case';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 describe('RecordReminderResponseUseCase', () => {
   const repo = {

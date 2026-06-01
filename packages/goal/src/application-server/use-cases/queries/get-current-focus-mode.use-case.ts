@@ -1,5 +1,5 @@
 import type { IFocusModeRepository } from '@/domain-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { FocusModeDTO } from '@dailyuse/contracts/goal';

@@ -97,7 +97,7 @@ export const useAuthenticationStore = defineStore('authentication', {
     },
 
     // ========== Token Actions ==========
-    setAccessToken(token: string | null, expiresAt?: number) {
+    setAccessToken(token: string | null, _expiresAt?: number) {
       this.accessToken = token;
     },
 
@@ -165,8 +165,8 @@ export const useAuthenticationStore = defineStore('authentication', {
       }
       this.setCurrentIdentity(data.identity);
       this.setCurrentSession(data.session);
-      if ((data as any).authMode) {
-        this.setAuthMode((data as any).authMode);
+      if ('authMode' in data && (data as Record<string, unknown>).authMode) {
+        this.setAuthMode((data as Record<string, unknown>).authMode as string);
       }
     },
 

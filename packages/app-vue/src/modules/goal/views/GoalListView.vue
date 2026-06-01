@@ -98,8 +98,6 @@ const {
   search,
   selectedFolderId,
   systemView,
-  setSelectedFolderId,
-  setSystemView,
   deleteGoal,
 } = useGoal();
 const searchQuery = ref('');

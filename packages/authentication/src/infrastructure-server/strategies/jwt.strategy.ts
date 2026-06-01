@@ -6,8 +6,10 @@
  */
 
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import type { StrategyOptions } from 'passport-jwt';
+import type { StrategyOptions, VerifiedCallback } from 'passport-jwt';
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '../../domain-server';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { AuthSessionId } from '../../domain-shared';
 
 export interface JwtStrategyConfig {
   jwtSecret: string;
@@ -29,17 +31,17 @@ export function createJwtStrategy(config: JwtStrategyConfig): JwtStrategy {
     ignoreExpiration: false,
   };
 
-  return new JwtStrategy(options, async (payload: any, done: any) => {
+  return new JwtStrategy(options, async (payload: Record<string, unknown>, done: VerifiedCallback) => {
     try {
       // Verify identity exists
-      const identity = await identityRepository.findById(payload.identityId || payload.identityId);
+      const identity = await identityRepository.findById(IdentityId.of(payload.identityId as string));
       if (!identity) {
         return done(null, false, { message: 'Identity not found' });
       }
 
       // Optionally verify session
       if (payload.sessionId) {
-        const session = await sessionRepository.findById(payload.sessionId);
+        const session = await sessionRepository.findById(AuthSessionId.of(payload.sessionId as string));
         if (!session || !session.isValid()) {
           return done(null, false, { message: 'Session is not active' });
         }
@@ -49,8 +51,8 @@ export function createJwtStrategy(config: JwtStrategyConfig): JwtStrategy {
         identityId: identity.id,
         sessionId: payload.sessionId,
       });
-    } catch (error) {
-      return done(error, false);
+    } catch (err) {
+      return done(err instanceof Error ? err : new Error(String(err)), false);
     }
   });
 }

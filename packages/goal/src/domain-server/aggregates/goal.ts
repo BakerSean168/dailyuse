@@ -27,12 +27,12 @@
  * - 目标进度在 0-100 之间
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
-import type { SnapshotTrigger, GoalReminderConfigDTO } from '@dailyuse/contracts/goal';
+import type { SnapshotTrigger, GoalReminderConfigDTO, ReviewType } from '@dailyuse/contracts/goal';
 import type {
   GoalServerDTO,
   GoalReviewServerDTO,
@@ -58,7 +58,6 @@ import {
   GoalArchivedError,
   GoalNameTooLongError,
   KeyResultWeightInvalidError,
-  KeyResultWeightExceededError,
   GoalReviewRatingInvalidError,
 } from '../value-objects';
 import {
@@ -906,8 +905,8 @@ export class Goal extends AggregateRoot<GoalId> {
         initialValue: params.startValue ?? 0,
         currentValue: params.currentValue ?? 0,
         targetValue: params.targetValue,
-        valueType: params.valueType as any,
-        aggregationMethod: (params.aggregationMethod || 'Last') as any,
+        valueType: params.valueType as KeyResultServerDTO['progress']['valueType'],
+        aggregationMethod: (params.aggregationMethod || 'Last') as KeyResultServerDTO['progress']['aggregationMethod'],
         unit: params.unit ?? null,
       },
       weight: params.weight,
@@ -1032,7 +1031,7 @@ export class Goal extends AggregateRoot<GoalId> {
   public updateKeyResultProgress(
     keyResultId: string,
     newValue: number,
-    note?: string,
+    _note?: string,
   ): KeyResultServerDTO {
     // Guard: 确保未删除
     this.ensureNotDeleted();
@@ -1177,17 +1176,17 @@ export class Goal extends AggregateRoot<GoalId> {
     const now = Date.now();
     // 创建快照
     const snapshot = KeyResultWeightSnapshot.create({
-      id: KeyResultWeightSnapshotId.of(KeyResultWeightSnapshotId.generate()) as any,
-      goalId: this.id as any,
-      keyResultId: krId as any,
-      identityId: this.identityId as any,
+      id: KeyResultWeightSnapshotId.of(KeyResultWeightSnapshotId.generate()) as unknown as KeyResultWeightSnapshotId,
+      goalId: this.id as unknown as GoalId,
+      keyResultId: krId as unknown as KeyResultId,
+      identityId: this.identityId as unknown as IdentityId,
       oldWeight,
       newWeight,
       weightDelta: newWeight - oldWeight,
       snapshotTime: now,
       trigger,
       reason: reason ?? null,
-      operatorId: operatorId as any,
+      operatorId: operatorId as unknown as IdentityId,
       createdAt: now,
     });
 
@@ -1237,7 +1236,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
     // 创建关键结果快照
     const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
-      keyResultId: kr.id as any,
+      keyResultId: kr.id,
       title: kr.title,
       targetValue: kr.progress.targetValue,
       currentValue: kr.progress.currentValue,
@@ -1246,7 +1245,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
     const review = GoalReview.create({
       goalId: this.id,
-      type: params.reviewType as any,
+      type: params.reviewType as ReviewType,
       rating: params.rating || 3,
       summary: params.content,
       achievements: params.achievements,
@@ -1363,7 +1362,6 @@ export class Goal extends AggregateRoot<GoalId> {
    * 转换为 Server DTO
    */
   public toServerDTO(includeChildren: boolean = false): GoalServerDTO {
-    const goalId = this.id as unknown as string;
     return {
       id: this.id,
       identityId: this._props.identityId,
@@ -1410,13 +1408,6 @@ export class Goal extends AggregateRoot<GoalId> {
   public toClientDTO(
     includeChildren: boolean = false,
   ): import('@dailyuse/contracts/goal').GoalClientDTO {
-    const now = new Date();
-    const isOverdue = this._props.targetDate
-      ? this._props.targetDate < now && !this._props.completedAt && !this._props.archivedAt
-      : false;
-    const daysRemaining = this._props.targetDate
-      ? Math.ceil((this._props.targetDate.getTime() - now.getTime()) / DAY_MS)
-      : null;
     const computedTotal = this._props.keyResults.length;
     const computedCompleted = this._props.keyResults.filter((kr) => kr.isCompleted()).length;
     const totalKeyResults = this._props.totalKeyResults ?? computedTotal;

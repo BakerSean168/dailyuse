@@ -5,7 +5,7 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   IResourceMetadata,
   ResourceMetadataDTO,
@@ -75,7 +75,7 @@ export class ResourceMetadata
     return this.props.language;
   }
 
-  public get customFields(): Record<string, any> | null {
+  public get customFields(): Record<string, unknown> | null {
     return this.props.customFields !== undefined && this.props.customFields !== null
       ? { ...this.props.customFields }
       : null;
@@ -105,7 +105,7 @@ export class ResourceMetadata
     return this.with({ wordCount, characterCount, readingTime });
   }
 
-  public setCustomField(key: string, value: any): ResourceMetadata {
+  public setCustomField(key: string, value: unknown): ResourceMetadata {
     const currentFields = this.props.customFields ?? {};
     return this.with({ customFields: { ...currentFields, [key]: value } });
   }

@@ -4,7 +4,8 @@ import * as path from 'path';
 
 import type { IdentityId } from '@dailyuse/contracts/authentication';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
-import { createLogger, type ILogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@dailyuse/utils/logger';
 
 export interface RememberedAccountRecord {
   identityId: IdentityId;
@@ -57,26 +58,13 @@ function toIdentityId(value: string | IdentityId): IdentityId {
 }
 
 export class RememberedAccountsService {
-  private static instance: RememberedAccountsService | null = null;
-
   private readonly logger: ILogger;
   private filePath: string;
   private cache: RememberedAccountsFile | null = null;
 
-  private constructor(logger?: ILogger) {
+  constructor(logger?: ILogger) {
     this.logger = logger ?? createLogger('RememberedAccounts');
     this.filePath = path.join(app.getPath('userData'), 'auth', 'remembered-accounts.json');
-  }
-
-  static getInstance(logger?: ILogger): RememberedAccountsService {
-    if (!RememberedAccountsService.instance) {
-      RememberedAccountsService.instance = new RememberedAccountsService(logger);
-    }
-    return RememberedAccountsService.instance;
-  }
-
-  static resetInstance(): void {
-    RememberedAccountsService.instance = null;
   }
 
   /**
@@ -229,8 +217,4 @@ export class RememberedAccountsService {
     }
     return value;
   }
-}
-
-export function getRememberedAccountsService(logger?: ILogger): RememberedAccountsService {
-  return RememberedAccountsService.getInstance(logger);
 }

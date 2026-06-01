@@ -37,6 +37,7 @@ import { fromDbDate, parseJson } from '../../mapper-helpers';
 // Mapper
 // ---------------------------------------------------------------------------
 
+/** Converts between Prisma Rule rows and domain Rule aggregates. */
 export class RulePrismaMapper {
   /**
    * Converts a Prisma row to a domain Rule aggregate.

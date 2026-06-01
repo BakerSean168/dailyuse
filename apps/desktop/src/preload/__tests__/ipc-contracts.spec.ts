@@ -24,9 +24,9 @@ import {
   AIConversationIpcAdapter,
   AIMessageIpcAdapter,
   AIProviderConfigIpcAdapter,
+  AIGoalIpcAdapter,
+  AIKnowledgeNoteIpcAdapter,
 } from '@dailyuse/ai/infrastructure-client';
-import { AIGoalIpcAdapter } from '../../../../../packages/ai/src/infrastructure-client/adapters/ipc/ai-goal-ipc.adapter';
-import { AIKnowledgeNoteIpcAdapter } from '../../../../../packages/ai/src/infrastructure-client/adapters/ipc/ai-knowledge-note-ipc.adapter';
 import { RuleIpcAdapter } from '@dailyuse/governance/infrastructure-client';
 import { NotificationIpcAdapter } from '@dailyuse/notification/infrastructure-client';
 import { TaskTemplateIpcAdapter } from '@dailyuse/task/infrastructure-client';

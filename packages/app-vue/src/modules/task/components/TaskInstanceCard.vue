@@ -31,7 +31,7 @@
       <div class="flex items-center gap-2 text-xs text-muted-foreground">
         <component :is="isCompleted ? Check : Clock" class="h-3 w-3" />
         <span v-if="!isCompleted">{{ timeLabel }}</span>
-        <span v-else>Completed at {{ formatCompletionTime }}</span>
+        <span v-else>{{ t('task.instanceCard.completedAt', { time: formatCompletionTime }) }}</span>
       </div>
     </div>
   </div>
@@ -82,17 +82,17 @@ const formatCompletionTime = computed(() => {
 const timeLabel = computed(() => {
   const timeConfig = props.task.timeConfig;
 
-  if (timeConfig?.timeType === 'ALL_DAY') {
-    return 'All Day';
+  if (timeConfig?.timeType === 'AllDay') {
+    return t('task.templateCard.allDay');
   }
 
-  if (timeConfig?.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
+  if (timeConfig?.timeType === 'TimePoint' && timeConfig.timePoint !== null) {
     const hours = Math.floor(timeConfig.timePoint / 60);
     const minutes = timeConfig.timePoint % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 
-  if (timeConfig?.timeType === 'TIME_RANGE' && timeConfig.timeRange) {
+  if (timeConfig?.timeType === 'TimeRange' && timeConfig.timeRange) {
     const startHours = Math.floor(timeConfig.timeRange.start / 60);
     const startMinutes = timeConfig.timeRange.start % 60;
     const endHours = Math.floor(timeConfig.timeRange.end / 60);
@@ -101,7 +101,7 @@ const timeLabel = computed(() => {
     return `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')} - ${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   }
 
-  return 'All Day';
+  return t('task.templateCard.allDay');
 });
 
 const toggleComplete = () => {

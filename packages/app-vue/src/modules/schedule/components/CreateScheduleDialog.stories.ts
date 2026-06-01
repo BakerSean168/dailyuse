@@ -36,7 +36,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { CreateScheduleDialog },
     setup() {
       const open = ref(args.modelValue);
@@ -50,7 +50,7 @@ export const Default: Story = {
 };
 
 export const EditMode: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { CreateScheduleDialog },
     setup() {
       const open = ref(true);
@@ -65,7 +65,7 @@ export const EditMode: Story = {
 };
 
 export const Loading: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { CreateScheduleDialog },
     setup() {
       const open = ref(true);

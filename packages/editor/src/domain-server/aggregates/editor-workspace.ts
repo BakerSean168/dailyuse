@@ -3,7 +3,7 @@
  * 编辑器工作区聚合根 - 服务端实现
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type {
   EditorWorkspaceId as IEditorWorkspaceId,
   EditorSessionId,

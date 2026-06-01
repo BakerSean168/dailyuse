@@ -80,6 +80,7 @@ import type {
   UpdateGoalFolderReq,
   UpdateGoalFolderRes,
   GoalServerDTO,
+  GoalSystemView,
   GetGoalAggregateRes,
   ProgressBreakdown,
   CloneGoalReq,
@@ -457,7 +458,7 @@ function normalizeRuntimeContributions(
 // ---------------------------------------------------------------------------
 
 export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstance {
-  const { goalRepository, goalFolderRepository, goalRecordRepository, focusModeRepository } = deps;
+  const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
   const runtimeContributions = normalizeRuntimeContributions(deps.runtimeContributions);
   const useCases = createGoalUseCases(deps);
   let started = false;
@@ -475,7 +476,7 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     activateGoal: (id) => useCases.activateGoal.execute(id),
     completeGoal: (id) => useCases.completeGoal.execute(id),
     searchGoals: (identityId, query, systemView) =>
-      useCases.searchGoals.execute(identityId, query, systemView as any),
+      useCases.searchGoals.execute(identityId, query, systemView as GoalSystemView),
 
     // Folder CRUD / 文件夹增删改查
     listGoalFolders: (input) => useCases.listGoalFolders.execute(input),

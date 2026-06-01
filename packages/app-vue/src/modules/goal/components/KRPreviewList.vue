@@ -250,7 +250,7 @@ import type { MenuAction } from '../../../components/shared';
 import type { KeyResultDraft, KeyResultPreview } from '../types';
 
 const props = defineProps<{
-  results?: any[];
+  results?: KeyResultDraft[];
   onSuccess?: (message: string) => void;
   onWarning?: (message: string) => void;
 }>();

@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { AiUsageQuotaId as IAiUsageQuotaId } from '@dailyuse/contracts/primitives';
 

@@ -1,67 +1,48 @@
-export * from './components/GoalCard';
-export * from './components/NotificationCard';
-export * from './components/ReminderTemplateCard';
-export * from './components/ScheduleTaskCard';
-export * from './constants/app';
-export * from './constants/auth';
-export * from './hooks/useAccountProfile';
-export * from './hooks/useAccountService';
-export * from './hooks/useAIService';
-export * from './hooks/useAIWorkspace';
-export * from './hooks/useAppApiClient';
-export * from './hooks/useAppSession';
-export * from './hooks/useFolderNavigation';
-export * from './hooks/useGoalDetail';
-export * from './hooks/useGoalReviews';
-export * from './hooks/useGoalService';
-export * from './hooks/useGoals';
-export * from './hooks/useNotificationService';
-export * from './hooks/useNotifications';
-export * from './hooks/useReminderService';
-export * from './hooks/useReminders';
-export * from './hooks/useRepositoryService';
-export * from './hooks/useRepositoryWorkspace';
-export * from './hooks/useScheduleAgenda';
-export * from './hooks/useScheduleService';
-export * from './hooks/useScheduleTasks';
-export * from './hooks/useSettingService';
-export * from './hooks/useSettings';
-export * from './hooks/useTaskDependencies';
-export * from './hooks/useTaskInstances';
-export * from './hooks/useTaskService';
-export * from './hooks/useTaskTemplateDetail';
-export * from './hooks/useTaskTemplates';
-export * from './providers/app-providers';
-export * from './providers/app-client-registry-provider';
-export * from './providers/app-session-provider';
-export * from './root-layout';
-export * from './screens/AccountScreen';
-export * from './screens/AIScreen';
-export * from './screens/AuthScreen';
-export * from './screens/BootScreen';
-export * from './screens/GoalCompareScreen';
-export * from './screens/GoalDetailScreen';
-export * from './screens/GoalEditorScreen';
-export * from './screens/GoalKeyResultScreen';
-export * from './screens/GoalReviewDetailScreen';
-export * from './screens/GoalReviewScreen';
-export * from './screens/GoalsScreen';
-export * from './screens/HomeScreen';
-export * from './screens/NoteEditorScreen';
-export * from './screens/NotificationDetailScreen';
-export * from './screens/NotificationsScreen';
-export * from './screens/ReminderDetailScreen';
-export * from './screens/ReminderEditorScreen';
-export * from './screens/RemindersScreen';
-export * from './screens/RepositoryFolderScreen';
-export * from './screens/RepositoryScreen';
-export * from './screens/ScheduleCalendarScreen';
-export * from './screens/ScheduleEventEditorScreen';
-export * from './screens/ScheduleScreen';
-export * from './screens/ScheduleWeekScreen';
-export * from './screens/SettingsScreen';
-export * from './screens/SetupScreen';
-export * from './screens/TaskDetailScreen';
-export * from './screens/TaskEditorScreen';
-export * from './screens/TasksScreen';
-export * from './utils/file-utils';
+/**
+ * @dailyuse/app-react — React application shell
+ *
+ * Root export only exposes what external consumers (apps/mobile) need:
+ * - Screens (route-level components)
+ * - RootLayout (app shell)
+ * - Providers (app-level context)
+ *
+ * Internal hooks, components, constants, and utils should be imported
+ * directly from their subpath within the package.
+ */
+
+// ── App Shell ──
+export { RootLayout } from './root-layout';
+export { AppProviders } from './providers/app-providers';
+export { AppClientRegistryProvider } from './providers/app-client-registry-provider';
+export { AppSessionProvider } from './providers/app-session-provider';
+
+// ── Screens ──
+export { AccountScreen } from './screens/AccountScreen';
+export { AIScreen } from './screens/AIScreen';
+export { AuthScreen } from './screens/AuthScreen';
+export { BootScreen } from './screens/BootScreen';
+export { GoalCompareScreen } from './screens/GoalCompareScreen';
+export { GoalDetailScreen } from './screens/GoalDetailScreen';
+export { GoalEditorScreen } from './screens/GoalEditorScreen';
+export { GoalKeyResultScreen } from './screens/GoalKeyResultScreen';
+export { GoalReviewDetailScreen } from './screens/GoalReviewDetailScreen';
+export { GoalReviewScreen } from './screens/GoalReviewScreen';
+export { GoalsScreen } from './screens/GoalsScreen';
+export { HomeScreen } from './screens/HomeScreen';
+export { NoteEditorScreen } from './screens/NoteEditorScreen';
+export { NotificationDetailScreen } from './screens/NotificationDetailScreen';
+export { NotificationsScreen } from './screens/NotificationsScreen';
+export { ReminderDetailScreen } from './screens/ReminderDetailScreen';
+export { ReminderEditorScreen } from './screens/ReminderEditorScreen';
+export { RemindersScreen } from './screens/RemindersScreen';
+export { RepositoryFolderScreen } from './screens/RepositoryFolderScreen';
+export { RepositoryScreen } from './screens/RepositoryScreen';
+export { ScheduleCalendarScreen } from './screens/ScheduleCalendarScreen';
+export { ScheduleEventEditorScreen } from './screens/ScheduleEventEditorScreen';
+export { ScheduleScreen } from './screens/ScheduleScreen';
+export { ScheduleWeekScreen } from './screens/ScheduleWeekScreen';
+export { SettingsScreen } from './screens/SettingsScreen';
+export { SetupScreen } from './screens/SetupScreen';
+export { TaskDetailScreen } from './screens/TaskDetailScreen';
+export { TaskEditorScreen } from './screens/TaskEditorScreen';
+export { TasksScreen } from './screens/TasksScreen';

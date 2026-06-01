@@ -8,7 +8,8 @@
  * - 错误信息管理
  */
 
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 import type {
   ScheduleExecutionClientDTO,
   ScheduleExecutionServerDTO,
@@ -25,7 +26,7 @@ export interface ScheduleExecutionState {
   executionTime: Date;
   status: ExecutionStatus;
   duration: number | null;
-  result: Record<string, any> | null;
+  result: Record<string, unknown> | null;
   error: string | null;
   retryCount: number;
   createdAt: Date;
@@ -41,7 +42,7 @@ export class ScheduleExecution extends Entity<string> {
   private _executionTime: Date;
   private _status: ExecutionStatus;
   private _duration: number | null;
-  private _result: Record<string, any> | null;
+  private _result: Record<string, unknown> | null;
   private _error: string | null;
   private _retryCount: number;
   private _createdAt: Date;
@@ -77,7 +78,7 @@ export class ScheduleExecution extends Entity<string> {
   public get duration(): number | null {
     return this._duration;
   }
-  public get result(): Record<string, any> | null {
+  public get result(): Record<string, unknown> | null {
     return this._result;
   }
   public get error(): string | null {
@@ -95,7 +96,7 @@ export class ScheduleExecution extends Entity<string> {
   /**
    * 标记执行成功
    */
-  public markSuccess(duration: number, result?: Record<string, any>): void {
+  public markSuccess(duration: number, result?: Record<string, unknown>): void {
     this._status = ExecutionStatus.Success;
     this._duration = duration;
     if (result) {
@@ -144,7 +145,7 @@ export class ScheduleExecution extends Entity<string> {
   /**
    * 设置执行结果
    */
-  public setResult(result: Record<string, any>): void {
+  public setResult(result: Record<string, unknown>): void {
     this._result = result;
   }
 
@@ -262,17 +263,17 @@ export class ScheduleExecution extends Entity<string> {
   /**
    * 从 DTO 创建实体 (兼容旧代码)
    */
-  public static fromDTO(dto: any): ScheduleExecution {
+  public static fromDTO(dto: Record<string, unknown>): ScheduleExecution {
     return new ScheduleExecution({
-      id: dto.id ?? generateUUID(),
-      taskId: dto.taskId,
-      executionTime: dto.executionTime != null ? new Date(dto.executionTime) : new Date(0),
-      status: dto.status,
-      duration: dto.duration ?? null,
-      result: dto.result ?? null,
-      error: dto.error ?? null,
-      retryCount: dto.retryCount ?? 0,
-      createdAt: new Date(dto.createdAt ?? Date.now()),
+      id: (dto.id as string) ?? generateUUID(),
+      taskId: dto.taskId as string,
+      executionTime: dto.executionTime != null ? new Date(dto.executionTime as string | number) : new Date(0),
+      status: dto.status as ExecutionStatus,
+      duration: (dto.duration as number | null) ?? null,
+      result: (dto.result as Record<string, unknown> | null) ?? null,
+      error: (dto.error as string | null) ?? null,
+      retryCount: (dto.retryCount as number) ?? 0,
+      createdAt: new Date((dto.createdAt as string | number) ?? Date.now()),
     });
   }
 }

@@ -12,7 +12,7 @@
       "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/database",
-        "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated',{recursive:true});fs.cpSync('src/generated/prisma','dist/generated/prisma',{recursive:true})\""
+        "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
       },
       "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts", "{projectRoot}/src/**/*.ts"],
       "cache": true
@@ -23,7 +23,7 @@
       "dependsOn": ["prisma-generate"],
       "options": {
         "cwd": "packages/database",
-        "command": "tsc --build && node -e \"const fs=require('fs');fs.mkdirSync('dist/generated',{recursive:true});fs.cpSync('src/generated/prisma','dist/generated/prisma',{recursive:true})\""
+        "command": "tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
       }
     },
     "prisma-generate": {
@@ -35,6 +35,21 @@
       },
       "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts"],
       "cache": true
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/database/**/*.ts"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.json",
+        "cwd": "packages/database"
+      }
     },
     "prisma-migrate": {
       "executor": "nx:run-commands",

@@ -13,7 +13,7 @@ import type { DependencyType } from '@dailyuse/contracts/task';
 import { TaskDependency } from '@/domain-server/aggregates/task-dependency';
 import { PrismaTaskDependencyMapper } from './mappers/prisma-task-dependency-mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -70,7 +70,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       where: { successorTaskId: taskId },
       orderBy: { createdAt: 'asc' },
     });
-    return dependencies.map((dep: any) => this.mapToDTO(dep));
+    return dependencies.map((dep) => this.mapToDTO(dep));
   }
 
   async findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
@@ -78,7 +78,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       where: { predecessorTaskId: taskId },
       orderBy: { createdAt: 'asc' },
     });
-    return dependencies.map((dep: any) => this.mapToDTO(dep));
+    return dependencies.map((dep) => this.mapToDTO(dep));
   }
 
   async findByPredecessorAndSuccessorId(
@@ -192,7 +192,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       select: { id: true },
     });
 
-    const templateIds = templates.map((t: any) => t.id);
+    const templateIds = templates.map((t) => t.id);
     if (templateIds.length === 0) return [];
 
     const dependencies = await this.prisma.taskDependency.findMany({
@@ -202,6 +202,6 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       orderBy: { createdAt: 'asc' },
     });
 
-    return dependencies.map((dep: any) => this.mapToDTO(dep));
+    return dependencies.map((dep) => this.mapToDTO(dep));
   }
 }

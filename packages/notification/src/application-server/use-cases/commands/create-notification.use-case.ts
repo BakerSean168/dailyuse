@@ -5,7 +5,9 @@
  */
 
 import { NotificationPolicy } from '../../../domain-server/services/notification-policy';
-import { createLogger, eventBus, BusinessRuleViolationError } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   NotificationClientDTO,
   NotificationDispatchDesktopEvent,
@@ -16,7 +18,7 @@ import type {
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
 import { NotificationChannelType as ChannelTypeEnum } from '@dailyuse/contracts/notification';
-import type { IdentityId, NotificationId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type {

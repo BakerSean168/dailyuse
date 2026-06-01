@@ -35,9 +35,9 @@ export interface CreateScheduleTaskReq {
   sourceId: string;
   scheduleConfig: ScheduleConfigDTO;
   handlerType: string;
-  handlerPayload?: any;
+  handlerPayload?: unknown;
   priority?: number;
-  retryPolicy?: RetryPolicyDTO;
+  retryPolicy?: Partial<RetryPolicyDTO>;
   enabled?: boolean;
   description?: string;
   identityId: string;
@@ -67,10 +67,12 @@ export class CreateScheduleTaskUseCase {
         : null,
     });
 
-    const retryPolicy = req.retryPolicy ? RetryPolicy.fromDTO(req.retryPolicy) : undefined;
+    const retryPolicy = req.retryPolicy
+      ? RetryPolicy.fromDTO({ ...RetryPolicy.createDefault().toDTO(), ...req.retryPolicy })
+      : undefined;
     const metadata = req.handlerPayload
       ? ScheduleTaskMetadata.create({
-          payload: req.handlerPayload,
+          payload: req.handlerPayload as Record<string, unknown>,
           tags: [],
           priority: 'Normal',
           timeout: null,

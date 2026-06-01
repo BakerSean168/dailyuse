@@ -14,13 +14,14 @@
  * - AggregateRoot.clearDomainEvents() clears published events
  */
 
-import type { AggregateRoot } from '@dailyuse/utils';
+import type { AggregateRoot } from '@dailyuse/utils/domain';
+import type { Equatable } from '@dailyuse/contracts/shared';
 import type { IEventBus } from '../events';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AggregateRepository');
 
-export interface IAggregateRepository<T extends AggregateRoot<any>> {
+export interface IAggregateRepository<T extends AggregateRoot<string | number | Equatable>> {
   save(aggregate: T): Promise<void>;
 }
 
@@ -32,7 +33,7 @@ export interface IAggregateRepository<T extends AggregateRoot<any>> {
  * Event publish failures are logged but do not interrupt the flow.
  */
 export async function publishAggregateEvents(
-  aggregate: AggregateRoot<any>,
+  aggregate: AggregateRoot<string | number | Equatable>,
   eventBus: IEventBus,
 ): Promise<void> {
   const events = aggregate.domainEvents;
@@ -69,7 +70,7 @@ export async function publishAggregateEvents(
  * 2. Handle event publish failures gracefully
  * 3. Provide a unified error handling pattern
  */
-export abstract class AggregateRepositoryBase<T extends AggregateRoot<any>>
+export abstract class AggregateRepositoryBase<T extends AggregateRoot<string | number | Equatable>>
   implements IAggregateRepository<T>
 {
   constructor(protected readonly eventBus: IEventBus) {}

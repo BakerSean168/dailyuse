@@ -10,7 +10,7 @@
  */
 
 import type { GoalFolderClientDTO, FolderType } from '@dailyuse/contracts/goal';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { GoalFolderId } from '../../domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 

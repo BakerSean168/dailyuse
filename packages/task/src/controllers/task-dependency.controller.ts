@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import type { TaskDependencyClientDTO, DependencyType } from '@dailyuse/contracts/task';
 import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
 import {

@@ -12,7 +12,7 @@
 import type {
   EditorGroupClientDTO,
 } from '@dailyuse/contracts/editor';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
 import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
 import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';

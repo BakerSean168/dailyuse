@@ -18,8 +18,8 @@
 
 import type { PowerSyncDatabase } from '@powersync/node';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { createLogger } from '@dailyuse/utils';
-import { DesktopAuthContextProvider } from './auth/desktop-auth-context';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { DesktopAuthContextProvider } from './auth/desktop-auth-context';
 
 const logger = createLogger('ElectronBootstrapper');
 
@@ -44,10 +44,10 @@ export class ElectronBootstrapper {
    * Execute all queued module registrations sequentially.
    * Each module receives the shared context and performs its own Composition Root.
    */
-  public async init(): Promise<void> {
+  public async init(authProvider: DesktopAuthContextProvider): Promise<void> {
     const context: IElectronModuleContext = {
       db: this.db,
-      auth: new DesktopAuthContextProvider(),
+      auth: authProvider,
     };
 
     logger.info(`Starting module registration (${this.modules.length} modules)...`);

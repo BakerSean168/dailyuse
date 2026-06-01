@@ -2,7 +2,8 @@
  * ResourceVersion 实体实现
  */
 
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 import { VersionChangeType } from '@dailyuse/contracts/editor';
 import type {
   ResourceVersionClientDTO,

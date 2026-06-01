@@ -6,7 +6,8 @@
 
 import type { IAccountRepository } from '../../domain-server';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { IdentityCreatedHandler } from './identity-created.handler';
 
 const logger = createLogger('AccountEventListeners');
@@ -39,6 +40,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cross-module event subscription
       (eventBus as any).on(AUTH_IDENTITY_CREATED_EVENT, onIdentityCreated);
       started = true;
       logger.info('[AccountEventListeners] Account event listeners registered successfully');
@@ -48,6 +50,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cross-module event subscription
       (eventBus as any).off(AUTH_IDENTITY_CREATED_EVENT, onIdentityCreated);
       started = false;
       logger.info('[AccountEventListeners] Account event listeners unregistered');

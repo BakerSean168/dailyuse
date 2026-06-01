@@ -277,7 +277,7 @@ function registerDesktopFeaturesHandlers(
         shortcutManager.unregister(accelerator);
       } else {
         const shortcuts = shortcutManager.getShortcuts();
-        const existing = shortcuts.find((s: any) => s.accelerator === accelerator);
+        const existing = shortcuts.find((s) => s.accelerator === accelerator);
         if (existing) {
           shortcutManager.register({ ...existing, enabled: true });
         }

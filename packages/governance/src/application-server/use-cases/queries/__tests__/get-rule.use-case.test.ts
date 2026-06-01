@@ -8,8 +8,45 @@ import { RuleSeverity } from '../../../../contracts/value-objects/rule-severity'
 
 // ============ Helpers ============
 
-function createRuleFixture(overrides?: Record<string, any>) {
-  const fixture = {
+type FixtureTagDto = { value: string };
+type FixtureExampleDto = { language: string; content: string; type: string };
+type RuleFixture = {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  severity: (typeof RuleSeverity)[keyof typeof RuleSeverity];
+  status: (typeof RuleStatus)[keyof typeof RuleStatus];
+  deprecationReason: string | null;
+  replacementRuleId: string | null;
+  liveReferenceLocation: string | null;
+  tags: Array<{ value: string; toDTO: () => FixtureTagDto }>;
+  goodExamples: Array<{ toDTO: () => FixtureExampleDto }>;
+  badExamples: Array<{ toDTO: () => FixtureExampleDto }>;
+  authorId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  toClientDTO: () => {
+    id: string;
+    code: string;
+    title: string;
+    description: string;
+    severity: (typeof RuleSeverity)[keyof typeof RuleSeverity];
+    status: (typeof RuleStatus)[keyof typeof RuleStatus];
+    deprecationReason: string | null;
+    replacementRuleId: string | null;
+    liveReferenceLocation: string | null;
+    tags: FixtureTagDto[];
+    goodExamples: FixtureExampleDto[];
+    badExamples: FixtureExampleDto[];
+    authorId: string;
+    createdAt: number;
+    updatedAt: number;
+  };
+};
+
+function createRuleFixture(overrides: Partial<Omit<RuleFixture, 'toClientDTO'>> = {}): RuleFixture {
+  const fixture: RuleFixture = {
     id: 'rule-id-1',
     code: 'DDD-001',
     title: 'Use Aggregates',
@@ -29,26 +66,26 @@ function createRuleFixture(overrides?: Record<string, any>) {
     authorId: 'author-123',
     createdAt: new Date('2026-02-01T00:00:00.000Z'),
     updatedAt: new Date('2026-02-10T00:00:00.000Z'),
+    toClientDTO: () => ({
+      id: fixture.id,
+      code: fixture.code,
+      title: fixture.title,
+      description: fixture.description,
+      severity: fixture.severity,
+      status: fixture.status,
+      deprecationReason: fixture.deprecationReason,
+      replacementRuleId: fixture.replacementRuleId,
+      liveReferenceLocation: fixture.liveReferenceLocation,
+      tags: fixture.tags.map((tag) => tag.toDTO()),
+      goodExamples: fixture.goodExamples.map((example) => example.toDTO()),
+      badExamples: fixture.badExamples.map((example) => example.toDTO()),
+      authorId: fixture.authorId,
+      createdAt: fixture.createdAt.getTime(),
+      updatedAt: fixture.updatedAt.getTime(),
+    }),
     ...overrides,
   };
-  fixture.toClientDTO = () => ({
-    id: fixture.id,
-    code: fixture.code,
-    title: fixture.title,
-    description: fixture.description,
-    severity: fixture.severity,
-    status: fixture.status,
-    deprecationReason: fixture.deprecationReason,
-    replacementRuleId: fixture.replacementRuleId,
-    liveReferenceLocation: fixture.liveReferenceLocation,
-    tags: fixture.tags.map((tag: any) => tag.toDTO()),
-    goodExamples: fixture.goodExamples.map((ex: any) => ex.toDTO()),
-    badExamples: fixture.badExamples.map((ex: any) => ex.toDTO()),
-    authorId: fixture.authorId,
-    createdAt: fixture.createdAt.getTime(),
-    updatedAt: fixture.updatedAt.getTime(),
-  });
-  return fixture as any;
+  return fixture;
 }
 
 // ============ Tests ============

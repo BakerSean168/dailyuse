@@ -13,6 +13,12 @@
 import type { GovernanceUseCases } from '../controllers/governance.controller';
 import type { GovernanceApplicationPort } from '../infrastructure-server';
 
+/**
+ * Maps the module application port to the controller use-case interface.
+ *
+ * @param api - GovernanceApplicationPort to adapt into GovernanceUseCases
+ * @returns GovernanceUseCases - the handler mapping used by controllers
+ */
 export function createGovernanceTransportHandlers(
   api: GovernanceApplicationPort,
 ): GovernanceUseCases {

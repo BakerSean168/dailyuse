@@ -1,30 +1,48 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Workspace target baseline and exemption manifest for governance audit",
-
+  "changelog": {
+    "2": "Added exemption types (permanent/temporary) with owner and targetDate for temporary exemptions"
+  },
   "projectCategories": {
     "app": {
       "description": "Deployable applications",
-      "requiredTargets": ["build", "lint", "typecheck", "test"]
+      "requiredTargets": [
+        "build",
+        "lint",
+        "typecheck",
+        "test"
+      ]
     },
     "runtime-lib": {
       "description": "Libraries with runtime code consumed by apps or other business libraries",
-      "requiredTargets": ["build", "lint", "typecheck", "test"]
+      "requiredTargets": [
+        "build",
+        "lint",
+        "typecheck",
+        "test"
+      ]
     },
     "ui-lib": {
       "description": "UI component and presentation libraries",
-      "requiredTargets": ["build", "lint", "typecheck", "test"]
+      "requiredTargets": [
+        "build",
+        "lint",
+        "typecheck",
+        "test"
+      ]
     },
     "tooling-lib": {
       "description": "Tooling, scaffolding, test helpers, config projects",
-      "requiredTargets": ["build"]
+      "requiredTargets": [
+        "build"
+      ]
     },
     "meta-project": {
       "description": "Root/workspace-level governance project",
       "requiredTargets": []
     }
   },
-
   "projectRules": {
     "daily-use": "meta-project",
     "web": "app",
@@ -63,131 +81,77 @@
     "@dailyuse/test-utils": "tooling-lib",
     "nx-test-system": "tooling-lib"
   },
-
   "exemptions": [
     {
       "project": "mobile",
       "target": "build",
+      "type": "permanent",
       "reason": "React Native: build is handled by Expo/Metro bundler, not a standalone Nx build target"
     },
     {
       "project": "mobile",
       "target": "test",
-      "reason": "Mobile test infrastructure not yet set up; Expo test runner integration pending"
-    },
-    {
-      "project": "database",
-      "target": "lint",
-      "reason": "Infrastructure package with minimal source; lint coverage deferred"
-    },
-    {
-      "project": "database",
-      "target": "typecheck",
-      "reason": "Infrastructure package: types validated at build time via tsup"
+      "type": "permanent",
+      "reason": "React Native app in apps/: test infrastructure requires Expo test runner integration; not a standard package"
     },
     {
       "project": "database",
       "target": "test",
-      "reason": "Infrastructure package: integration tests deferred; validated through downstream consumers"
-    },
-    {
-      "project": "authentication",
-      "target": "lint",
-      "reason": "Domain lib: lint coverage deferred; code style enforced via shared eslint config in consuming projects"
-    },
-    {
-      "project": "authentication",
-      "target": "typecheck",
-      "reason": "Domain lib: types validated at build time via tsup"
-    },
-    {
-      "project": "http-client",
-      "target": "typecheck",
-      "reason": "Infrastructure lib: types validated at build time; dedicated typecheck target deferred"
-    },
-    {
-      "project": "http-client",
-      "target": "test",
-      "reason": "Infrastructure lib: tested via integration with consuming apps"
-    },
-    {
-      "project": "ipc-client",
-      "target": "typecheck",
-      "reason": "Infrastructure lib: types validated at build time; dedicated typecheck target deferred"
-    },
-    {
-      "project": "ipc-client",
-      "target": "test",
-      "reason": "Infrastructure lib: tested via desktop IPC test targets"
-    },
-    {
-      "project": "dashboard",
-      "target": "test",
-      "reason": "UI lib: component tests deferred; validated through app-vue integration"
+      "type": "permanent",
+      "reason": "Infrastructure plumbing: Prisma client singleton and env resolution; no testable business logic; validated through downstream consumers"
     },
     {
       "project": "ui-vue-shadcn",
       "target": "test",
-      "reason": "UI component lib: component tests deferred; validated through app-vue integration"
+      "type": "permanent",
+      "reason": "UI component lib: third-party shadcn-vue primitives; component tests require Vue Test Utils + jsdom/happy-dom environment setup that differs from standard vitest"
     },
     {
       "project": "app-react",
       "target": "build",
+      "type": "permanent",
       "reason": "React lib: build handled by React Native bundler; no standalone tsup build"
     },
     {
       "project": "app-react",
       "target": "test",
-      "reason": "React lib: test infrastructure not yet set up"
+      "type": "permanent",
+      "reason": "UI lib: test infrastructure requires React Native Testing Library + Expo/Metro test runner integration; not a standard vitest setup"
     },
     {
       "project": "ui-react-native",
       "target": "build",
+      "type": "permanent",
       "reason": "React Native lib: build handled by Expo/Metro bundler"
     },
     {
       "project": "ui-react-native",
       "target": "test",
-      "reason": "React Native lib: test infrastructure not yet set up"
-    },
-    {
-      "project": "ui-core",
-      "target": "typecheck",
-      "reason": "UI core lib: types validated at build time via tsup"
+      "type": "permanent",
+      "reason": "React Native lib: test infrastructure requires React Native Testing Library + Metro bundler mock setup; not a standard vitest setup"
     },
     {
       "project": "powersync-schema",
       "target": "test",
+      "type": "permanent",
       "reason": "Schema definition lib: declarative schema with no business logic to test"
     },
     {
       "project": "assets",
       "target": "lint",
+      "type": "permanent",
       "reason": "Static asset lib: no source code to lint; contains only image/font/media files"
     },
     {
       "project": "assets",
       "target": "typecheck",
+      "type": "permanent",
       "reason": "Static asset lib: no TypeScript source to type-check"
-    },
-    {
-      "project": "patterns",
-      "target": "lint",
-      "reason": "Shared pattern lib: lint coverage deferred; validated via consuming projects"
-    },
-    {
-      "project": "patterns",
-      "target": "typecheck",
-      "reason": "Shared pattern lib: types validated at build time via tsup"
-    },
-    {
-      "project": "utils",
-      "target": "typecheck",
-      "reason": "Shared utils lib: types validated at build time; dedicated typecheck target deferred"
     },
     {
       "project": "nx-test-system",
       "target": "build",
+      "type": "permanent",
       "reason": "Nx plugin: consumed directly by Nx devkit at runtime; no separate build artifact needed"
     }
   ]

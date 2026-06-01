@@ -3,7 +3,7 @@ import {
   type DashboardData,
   type DashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { getGoalRepository } from '@dailyuse/goal/electron-entry';
 import {
   getTaskInstanceRepository,

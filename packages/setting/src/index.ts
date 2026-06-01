@@ -18,7 +18,7 @@
  *
  * ```ts
  * // Server — composition root
- * import { createSettingModule } from '@dailyuse/setting/infrastructure-server';
+ * import { createSettingModule } from '@dailyuse/setting';
  *
  * // Client — service + adapter
  * import { createSettingClientService } from '@dailyuse/setting/application-client';
@@ -38,7 +38,6 @@ export * from '@dailyuse/contracts/setting';
 export * from './domain-server';
 
 // ================= Application Layer =================
-export * from './application-server';
 export {
   SettingClientService,
   createSettingClientService,
@@ -48,21 +47,9 @@ export {
 
 // ================= Infrastructure Layer =================
 // Server
-export {
-  createSettingModule,
-  createSettingUseCases,
-  type SettingApplicationPort,
-  type SettingModuleDependencies,
-  type SettingModuleInstance,
-  type SettingModuleRuntimeContribution,
-  type SettingModuleUseCases,
-} from './infrastructure-server';
+export { createSettingModule, createSettingUseCases, type SettingApplicationPort, type SettingModuleDependencies, type SettingModuleInstance, type SettingModuleRuntimeContribution, type SettingModuleUseCases } from './infrastructure-server';
 
-export {
-  UserSettingPrismaRepository,
-  UserSettingPowerSyncRepository,
-  createSettingPowerSyncModule,
-} from './infrastructure-server';
+export { createSettingPowerSyncModule } from './infrastructure-server';
 
 // Client
 export {

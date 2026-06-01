@@ -4,12 +4,12 @@ import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
-} from '@dailyuse/ai/application-server';
-import { FsStorageAdapter } from '@dailyuse/repository';
+} from '@dailyuse/ai/ports';
 import {
   createRepositoryPowerSyncModule,
+  createFsStorageAdapter,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository/infrastructure-server';
+} from '@dailyuse/repository/api';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 /**
@@ -23,7 +23,7 @@ export class DesktopKnowledgeNotePersistenceAdapter implements IKnowledgeNotePer
   private readonly repositoryModule: RepositoryModuleInstance;
 
   constructor(db: IElectronDatabase, storageBaseDir: string) {
-    const storagePort = new FsStorageAdapter(storageBaseDir);
+    const storagePort = createFsStorageAdapter(storageBaseDir);
 
     this.repositoryModule = createRepositoryPowerSyncModule(db, { storagePort });
   }

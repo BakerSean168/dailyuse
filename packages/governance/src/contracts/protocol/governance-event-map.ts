@@ -1,3 +1,11 @@
+/**
+ * Governance event contract surface for the asynchronous module seam.
+ * 治理模块异步 seam 的事件契约面。
+ *
+ * This file is the single protocol map that transport adapters and subscribers
+ * use to agree on event names and payload types.
+ * 这是传输适配器与订阅方对齐事件名和 payload 类型的唯一协议映射。
+ */
 import type {
   RuleCreatedEvent,
   RuleUpdatedEvent,

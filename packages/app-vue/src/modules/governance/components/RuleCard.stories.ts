@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import RuleCard from './RuleCard.vue';
+import type { RuleClientDTO } from '../types';
 
 const mockRule = {
   code: 'RULE-001',
@@ -28,18 +29,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Mandatory: Story = {
-  args: { rule: mockRule as any },
+  args: { rule: mockRule as unknown as RuleClientDTO },
 };
 
 export const Recommended: Story = {
   args: {
-    rule: { ...mockRule, code: 'RULE-002', title: '优先使用组合式 API', severity: 'Recommended', tags: ['vue', 'composition-api'] } as any,
+    rule: { ...mockRule, code: 'RULE-002', title: '优先使用组合式 API', severity: 'Recommended', tags: ['vue', 'composition-api'] } as unknown as RuleClientDTO,
   },
 };
 
 export const Draft: Story = {
   args: {
-    rule: { ...mockRule, code: 'RULE-003', title: '新规则草稿', status: 'Draft', tags: ['draft'] } as any,
+    rule: { ...mockRule, code: 'RULE-003', title: '新规则草稿', status: 'Draft', tags: ['draft'] } as unknown as RuleClientDTO,
   },
 };
 
@@ -52,6 +53,6 @@ export const Deprecated: Story = {
       status: 'Deprecated',
       deprecationReason: '该规则已被 RULE-005 替代',
       tags: ['deprecated'],
-    } as any,
+    } as unknown as RuleClientDTO,
   },
 };

@@ -6,7 +6,7 @@ import type {
   AIConversationQueryOptions,
   IAIConversationRepository,
 } from '../../../domain-server/repositories/i-ai-conversation-repository';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PowerSyncAIConversationMapper,
   type PowerSyncAIConversationRow,

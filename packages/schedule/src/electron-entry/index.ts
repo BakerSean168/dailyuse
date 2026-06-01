@@ -22,12 +22,10 @@ import {
 } from '../infrastructure-server';
 import { ScheduleEventController } from '../controllers/schedule-event.controller';
 import { ScheduleController } from '../controllers/schedule.controller';
-import {
-  createScheduleRuntimeContribution,
-  type ScheduleTaskSourceExecutor,
-} from '../api/runtime';
+import type { ScheduleTaskSourceExecutor } from '../application-server/source-executors/runtime-contract';
+import { createScheduleRuntimeContribution } from '../api/runtime';
 import { createScheduleEventTransportHandlers } from '../api/transport-handlers';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { IScheduleRepository, IScheduleTaskRepository } from '../domain-server';
 

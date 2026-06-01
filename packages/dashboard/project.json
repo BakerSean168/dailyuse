@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/dashboard/src",
-  "tags": ["scope:shared", "type:lib", "layer:app"],
+  "tags": ["scope:shared", "type:lib", "layer:domain"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
@@ -18,7 +18,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --noEmit",
+        "command": "tsc --noEmit -p tsconfig.json",
         "cwd": "packages/dashboard"
       }
     },
@@ -27,6 +27,24 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/dashboard/**/*.{ts,js}"]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/dashboard"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest --config vitest.config.ts",
+        "cwd": "packages/dashboard"
       }
     }
   }

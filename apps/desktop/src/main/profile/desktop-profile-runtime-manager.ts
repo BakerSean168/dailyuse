@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import type { PowerSyncDatabase } from '@powersync/node';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import {
   type SharedPathResolver,
@@ -11,14 +11,11 @@ import {
 import { ProfileRegistry, type ProfileDescriptor } from './profile-registry';
 import { ProfileSnapshotService } from './profile-snapshot-service';
 import { ElectronBootstrapper } from '../bootstrap';
-import { clearDesktopAuthService, registerDesktopAuthService } from '../auth/desktop-auth-context';
-import {
-  getTokenManager,
-  getSessionManager,
-  SessionManager,
-} from '../modules/authentication/infrastructure';
+import { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
+import type { TokenManager, RememberedAccountsService, NetworkStateManager } from '../modules/authentication/infrastructure';
 import { createDesktopProfileAuthService } from '../modules/authentication/application/create-desktop-profile-auth-service';
 import type { AuthDesktopApplicationService } from '../modules/authentication/application/auth-desktop-application-service';
+import type { WindowManager } from '../lifecycle/window-manager';
 import {
   openPowerSyncLocalOnly,
   ensurePowerSyncSyncMode,
@@ -33,6 +30,7 @@ export interface PreparedProfileRuntime {
   profileResolver: ProfilePathResolver;
   db: PowerSyncDatabase;
   authService: AuthDesktopApplicationService;
+  authContextProvider: DesktopAuthContextProvider;
 }
 
 interface PrepareProfileOptions {
@@ -58,10 +56,11 @@ type ProfileModuleRegistration = (
  * does the manager activate that prepared runtime into the full business runtime.
  */
 export class DesktopProfileRuntimeManager {
-  private static instance: DesktopProfileRuntimeManager | null = null;
-
   private readonly sharedResolver: SharedPathResolver;
   private readonly profileRegistry: ProfileRegistry;
+  private readonly tokenManager: TokenManager;
+  private readonly rememberedAccountsService: RememberedAccountsService;
+  private readonly networkStateManager: NetworkStateManager;
   private readonly profileSnapshotService = new ProfileSnapshotService();
 
   private activeRuntime: ActiveProfileRuntime | null = null;
@@ -69,23 +68,22 @@ export class DesktopProfileRuntimeManager {
   private activationLock: Promise<void> | null = null;
   private registerModules: ProfileModuleRegistration | null = null;
 
-  private constructor(sharedResolver: SharedPathResolver) {
+  /** Called when the auth service changes (set during open, cleared during teardown). */
+  onAuthServiceChanged: ((service: AuthDesktopApplicationService | null) => void) | null = null;
+
+  constructor(
+    sharedResolver: SharedPathResolver,
+    profileRegistry: ProfileRegistry,
+    tokenManager: TokenManager,
+    rememberedAccountsService: RememberedAccountsService,
+    networkStateManager: NetworkStateManager,
+    private readonly windowManager: WindowManager,
+  ) {
     this.sharedResolver = sharedResolver;
-    this.profileRegistry = ProfileRegistry.getInstance(sharedResolver);
-  }
-
-  static getInstance(sharedResolver?: SharedPathResolver): DesktopProfileRuntimeManager {
-    if (!DesktopProfileRuntimeManager.instance) {
-      if (!sharedResolver) {
-        throw new Error('DesktopProfileRuntimeManager requires SharedPathResolver on first init');
-      }
-      DesktopProfileRuntimeManager.instance = new DesktopProfileRuntimeManager(sharedResolver);
-    }
-    return DesktopProfileRuntimeManager.instance;
-  }
-
-  static resetInstance(): void {
-    DesktopProfileRuntimeManager.instance = null;
+    this.profileRegistry = profileRegistry;
+    this.tokenManager = tokenManager;
+    this.rememberedAccountsService = rememberedAccountsService;
+    this.networkStateManager = networkStateManager;
   }
 
   setModuleRegistration(fn: ProfileModuleRegistration): void {
@@ -94,6 +92,10 @@ export class DesktopProfileRuntimeManager {
 
   getSharedResolver(): SharedPathResolver {
     return this.sharedResolver;
+  }
+
+  getRememberedAccountsService(): RememberedAccountsService {
+    return this.rememberedAccountsService;
   }
 
   getActiveProfileResolver(): ProfilePathResolver | null {
@@ -159,40 +161,11 @@ export class DesktopProfileRuntimeManager {
     const profileResolver = createProfilePathResolver(this.sharedResolver.rootDir, descriptor.profileId);
     ensureProfileDirs(profileResolver);
 
-    const snapshotResult = await this.profileSnapshotService.hydrateIfNeeded({
-      sharedResolver: this.sharedResolver,
-      profileResolver,
-      descriptor,
-      accessToken: options?.snapshotAccessToken,
-    });
+    const snapshotResult = await this.hydrateProfileSnapshot(descriptor, profileResolver, options?.snapshotAccessToken);
 
-    if (snapshotResult.metadata) {
-      await this.profileRegistry.recordSnapshotHydration(descriptor.profileId, {
-        version: snapshotResult.metadata.version,
-        hydratedAt: snapshotResult.metadata.hydratedAt,
-      });
-    } else if (snapshotResult.skippedReason === 'snapshot-unavailable') {
-      await this.profileRegistry.clearSnapshotState(descriptor.profileId);
-    }
+    const { db, authService, authContextProvider } = await this.openProfileResources(profileResolver);
 
-    const tokenManager = getTokenManager();
-    tokenManager.switchToProfile(profileResolver.tokensPath);
-
-    const db = await openPowerSyncLocalOnly(profileResolver.dbPath);
-    const authService = createDesktopProfileAuthService(db);
-    registerDesktopAuthService(authService);
-
-    const sessionManager = getSessionManager();
-    sessionManager.setSharedAuthDir(this.sharedResolver.authDir);
-    await sessionManager.activateProfile();
-
-    this.preparedRuntime = {
-      descriptor,
-      profileResolver,
-      db,
-      authService,
-    };
-
+    this.preparedRuntime = { descriptor, profileResolver, db, authService, authContextProvider };
     await this.profileRegistry.markReady(descriptor.profileId);
 
     logger.info('Profile prepared', {
@@ -224,6 +197,10 @@ export class DesktopProfileRuntimeManager {
       }
     }
 
+    // Capture profileId before the IIFE clears preparedRuntime at line ~215,
+    // so the catch block can safely reference it even if registry calls throw.
+    const preparedProfileId = this.preparedRuntime.descriptor.profileId;
+
     const activationPromise = (async () => {
       if (this.activeRuntime) {
         await this.deactivateProfile();
@@ -232,14 +209,14 @@ export class DesktopProfileRuntimeManager {
       const prepared = this.preparedRuntime!;
 
       if (options.syncMode === 'online') {
-        await ensurePowerSyncSyncMode();
+        await ensurePowerSyncSyncMode(this.tokenManager);
       }
 
       const bootstrapper = new ElectronBootstrapper(prepared.db);
       if (this.registerModules) {
         await this.registerModules(bootstrapper, prepared.db, prepared.profileResolver);
       }
-      await bootstrapper.init();
+      await bootstrapper.init(prepared.authContextProvider);
 
       this.activeRuntime = {
         ...prepared,
@@ -262,9 +239,15 @@ export class DesktopProfileRuntimeManager {
       await activationPromise;
     } catch (error) {
       logger.error('Profile activation failed', { error });
-      await this.profileRegistry.markError(this.preparedRuntime.descriptor.profileId).catch(
+      await this.profileRegistry.markError(preparedProfileId).catch(
         (registryError) => logger.error('Failed to mark profile activation error', { error: registryError }),
       );
+      // activeRuntime may have been assigned before the failure — clean it up too
+      if (this.activeRuntime) {
+        await this.deactivateProfile().catch(
+          (deactivateError) => logger.error('Failed to deactivate partially activated profile', { error: deactivateError }),
+        );
+      }
       await this.disposePreparedRuntime();
       throw error;
     } finally {
@@ -281,7 +264,8 @@ export class DesktopProfileRuntimeManager {
       return;
     }
 
-    logger.info('Deactivating profile', { profileId: this.activeRuntime.descriptor.profileId });
+    const profileId = this.activeRuntime.descriptor.profileId;
+    logger.info('Deactivating profile', { profileId });
 
     try {
       stopScheduleRuntime();
@@ -295,37 +279,14 @@ export class DesktopProfileRuntimeManager {
       logger.error('Error destroying profile bootstrapper', { error });
     }
 
-    try {
-      this.activeRuntime.authService.cleanup();
-    } catch (error) {
-      logger.error('Error cleaning auth service during profile deactivation', { error });
-    }
+    await this.teardownAuthResources();
 
-    try {
-      await shutdownPowerSync();
-    } catch (error) {
-      logger.error('Error shutting down PowerSync during profile deactivation', { error });
-    }
-
-    try {
-      await getTokenManager().clearForProfileSwitch();
-    } catch (error) {
-      logger.error('Error clearing token manager during profile deactivation', { error });
-    }
-
-    SessionManager.resetInstance();
-    clearDesktopAuthService();
-
-    const previousProfileId = this.activeRuntime.descriptor.profileId;
     this.activeRuntime = null;
 
     try {
       await this.profileRegistry.setActiveProfile(null);
     } catch (error) {
-      logger.error('Failed to clear active profile in registry', {
-        error,
-        previousProfileId,
-      });
+      logger.error('Failed to clear active profile in registry', { error, previousProfileId: profileId });
     }
   }
 
@@ -367,30 +328,74 @@ export class DesktopProfileRuntimeManager {
       profileId: this.preparedRuntime.descriptor.profileId,
     });
 
+    await this.teardownAuthResources();
+    this.preparedRuntime = null;
+  }
+
+  private async hydrateProfileSnapshot(
+    descriptor: ProfileDescriptor,
+    profileResolver: ProfilePathResolver,
+    accessToken?: string | null,
+  ) {
+    const result = await this.profileSnapshotService.hydrateIfNeeded({
+      sharedResolver: this.sharedResolver,
+      profileResolver,
+      descriptor,
+      accessToken,
+    });
+
+    if (result.metadata) {
+      await this.profileRegistry.recordSnapshotHydration(descriptor.profileId, {
+        version: result.metadata.version,
+        hydratedAt: result.metadata.hydratedAt,
+      });
+    } else if (result.skippedReason === 'snapshot-unavailable') {
+      await this.profileRegistry.clearSnapshotState(descriptor.profileId);
+    }
+
+    return result;
+  }
+
+  private async openProfileResources(profileResolver: ProfilePathResolver) {
+    this.tokenManager.switchToProfile(profileResolver.tokensPath);
+
+    const db = await openPowerSyncLocalOnly(profileResolver.dbPath);
+    const authService = createDesktopProfileAuthService(db, this.tokenManager, this.rememberedAccountsService, this.networkStateManager, this.windowManager);
+    const authContextProvider = new DesktopAuthContextProvider(authService);
+    this.onAuthServiceChanged?.(authService);
+
+    await authService.configureAndActivateProfile(this.sharedResolver.authDir);
+
+    return { db, authService, authContextProvider };
+  }
+
+  private async teardownAuthResources(): Promise<void> {
+    const authService = this.activeRuntime?.authService ?? this.preparedRuntime?.authService;
+
     try {
-      this.preparedRuntime.authService.cleanup();
+      authService?.cleanupSessionManager();
     } catch (error) {
-      logger.error('Failed to cleanup prepared auth service', { error });
+      logger.error('Failed to cleanup session manager', { error });
+    }
+
+    try {
+      authService?.cleanup();
+    } catch (error) {
+      logger.error('Failed to cleanup auth service', { error });
     }
 
     try {
       await shutdownPowerSync();
     } catch (error) {
-      logger.error('Failed to shutdown PowerSync for prepared profile', { error });
+      logger.error('Failed to shutdown PowerSync', { error });
     }
 
     try {
-      await getTokenManager().clearForProfileSwitch();
+      await this.tokenManager.clearForProfileSwitch();
     } catch (error) {
-      logger.error('Failed to clear token manager for prepared profile', { error });
+      logger.error('Failed to clear token manager', { error });
     }
 
-    SessionManager.resetInstance();
-    clearDesktopAuthService();
-    this.preparedRuntime = null;
+    this.onAuthServiceChanged?.(null);
   }
-}
-
-export function getDesktopProfileRuntimeManager(): DesktopProfileRuntimeManager {
-  return DesktopProfileRuntimeManager.getInstance();
 }

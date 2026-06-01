@@ -5,7 +5,7 @@
  * Shared by Prisma and PowerSync mappers.
  */
 
-import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod } from '@dailyuse/contracts/goal';
+import type { ReviewType, KeyResultWeightSnapshotDTO, KeyResultValueType, KeyResultCalculationMethod, GoalReminderConfigDTO, KeyResultSnapshotDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -43,7 +43,7 @@ export interface RawGoalData {
   folderId: string | null;
   parentGoalId: string | null;
   sortOrder: number;
-  reminderConfig: { enabled: boolean; triggers: any[] } | null;
+  reminderConfig: { enabled: boolean; triggers: unknown[] } | null;
   keyResults: RawKeyResultData[] | null;
   goalReviews: RawGoalReviewData[] | null;
   weightSnapshots: KeyResultWeightSnapshotDTO[] | null;
@@ -85,7 +85,7 @@ export interface RawGoalReviewData {
   achievements: string | null;
   challenges: string | null;
   improvements: string | null;
-  keyResultSnapshots: any[];
+  keyResultSnapshots: unknown[];
   reviewedAt: Date;
   version: number;
   createdAt: Date;
@@ -98,7 +98,7 @@ export interface RawGoalReviewData {
  */
 export function rawDataToGoalState(raw: RawGoalData): GoalState {
   const reminderConfig = raw.reminderConfig
-    ? GoalReminderConfig.fromDTO(raw.reminderConfig)
+    ? GoalReminderConfig.fromDTO(raw.reminderConfig as GoalReminderConfigDTO)
     : null;
 
   const keyResults = (raw.keyResults || []).map((kr) =>
@@ -133,7 +133,7 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       achievements: r.achievements ?? null,
       challenges: r.challenges ?? null,
       improvements: r.improvements ?? null,
-      keyResultSnapshots: r.keyResultSnapshots,
+      keyResultSnapshots: r.keyResultSnapshots as KeyResultSnapshotDTO[],
       reviewedAt: new Date(r.reviewedAt),
       version: r.version ?? 1,
       createdAt: new Date(r.createdAt),

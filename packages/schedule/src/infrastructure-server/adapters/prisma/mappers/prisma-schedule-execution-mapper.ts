@@ -26,7 +26,7 @@ export class PrismaScheduleExecutionMapper {
       result: data.result
         ? typeof data.result === 'string'
           ? JSON.parse(data.result as string)
-          : (data.result as Record<string, any>)
+          : (data.result as Record<string, unknown>)
         : null,
       error: data.error ?? null,
       retryCount: data.retryCount,
@@ -52,7 +52,7 @@ export class PrismaScheduleExecutionMapper {
   }
 
   /** Converts to Prisma create input data (includes createdAt). */
-  public static toCreateInput(execution: ScheduleExecution): any {
+  public static toCreateInput(execution: ScheduleExecution): Record<string, unknown> {
     const persistence = this.toPersistence(execution);
 
     return {
@@ -62,7 +62,7 @@ export class PrismaScheduleExecutionMapper {
   }
 
   /** Converts to Prisma update input data. */
-  public static toUpdateInput(execution: ScheduleExecution): any {
+  public static toUpdateInput(execution: ScheduleExecution): Record<string, unknown> {
     return this.toPersistence(execution);
   }
 }

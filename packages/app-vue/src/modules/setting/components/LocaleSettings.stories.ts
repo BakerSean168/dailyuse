@@ -25,7 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { LocaleSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -39,7 +39,7 @@ export const Default: Story = {
 };
 
 export const EnglishUS: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { LocaleSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -60,7 +60,7 @@ export const EnglishUS: Story = {
 };
 
 export const Japanese: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { LocaleSettings },
     setup() {
       const model = ref({ ...args.modelValue });

@@ -6,7 +6,7 @@ export default defineConfig({
     'src/domain-shared/index.ts',
     'src/domain-server/index.ts',
     'src/domain-client/index.ts',
-    'src/application-server/index.ts',
+    'src/commands/index.ts',
     'src/infrastructure-server/index.ts',
     'src/infrastructure-server/powersync.ts',
     'src/application-client/index.ts',

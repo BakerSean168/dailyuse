@@ -15,7 +15,7 @@
 
 import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../repositories/i-reminder-template-repository';
-import { TriggerResult, TriggerType } from '@dailyuse/contracts/reminder';
+import { TriggerResult } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateControlService } from './reminder-template-control-service';
 
 /**
@@ -68,7 +68,7 @@ export class ReminderTriggerService {
    * 5. 保存模板
    */
   async triggerReminder(params: ITriggerReminderParams): Promise<ITriggerReminderResult> {
-    const { template, triggerTime = Date.now(), reason } = params;
+    const { template, triggerTime = Date.now() } = params;
 
     // 检查模板是否真正启用
     const isEnabled = await this.controlService.isTemplateEffectivelyEnabled(template);
@@ -169,7 +169,7 @@ export class ReminderTriggerService {
    *
    * 基于当前触发时间和重复配置计算
    */
-  calculateNextTriggerTime(template: ReminderTemplate, currentTriggerTime: number): number | null {
+  calculateNextTriggerTime(template: ReminderTemplate, _currentTriggerTime: number): number | null {
     // Recurrence logic is now handled within the ReminderTemplate aggregate
     return template.calculateNextTrigger();
   }

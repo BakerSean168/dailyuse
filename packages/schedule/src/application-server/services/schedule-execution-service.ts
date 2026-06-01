@@ -17,6 +17,7 @@ import type {
   IScheduleTaskRepository,
 } from '../../domain-server/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
+import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * Execution Engine interface - to be provided by infrastructure layer
@@ -58,7 +59,7 @@ export class ScheduleExecutionService {
       console.log('🚀 Initializing Schedule Execution Engine...');
 
       // 从数据库加载所有活跃的调度任务
-      const activeTasks = await this.taskRepository.findByStatus('active' as any);
+      const activeTasks = await this.taskRepository.findByStatus(ScheduleTaskStatus.Active);
 
       console.log(`📊 Found ${activeTasks.length} active schedule tasks`);
 

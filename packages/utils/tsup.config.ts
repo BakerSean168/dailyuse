@@ -21,6 +21,7 @@ export default {
     'src/domain/index.ts',
     'src/errors/index.ts',
     'src/frontend/index.ts',
+    'src/lifecycle/index.ts',
     'src/logger/index.ts',
     'src/result/index.ts',
     'src/shared/index.ts',

@@ -14,6 +14,7 @@ import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import type { ECElementEvent } from 'echarts';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 use([TitleComponent, TooltipComponent, LegendComponent, PieChart, CanvasRenderer]);
@@ -67,7 +68,7 @@ const weightOption = computed(() => {
         color: fontColor,
         fontSize: 14,
       },
-      formatter: (params: any) => {
+      formatter: (params: ECElementEvent) => {
         const item = data[params.dataIndex];
         return `
           <div style="font-weight: bold; margin-bottom: 4px;">${params.name}</div>
@@ -103,7 +104,7 @@ const weightOption = computed(() => {
             show: true,
             fontSize: 16,
             fontWeight: 'bold',
-            formatter: (params: any) => {
+            formatter: (params: ECElementEvent) => {
               const item = data[params.dataIndex];
               return `${params.name}\n${t('goal.chart.krWeightDistribution.tooltipWeight')} ${item.value}\n${t('goal.chart.krWeightDistribution.tooltipPercent')} ${item.percentage}%`;
             },

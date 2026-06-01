@@ -6,8 +6,9 @@
  */
 
 import type { IGoalRepository } from '@/domain-server';
+import type { Goal } from '@/domain-server';
 import type { GoalStatus } from '@dailyuse/contracts/goal';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -63,14 +64,14 @@ export class GoalCrossModuleQueryServiceUseCase {
 
     return ok(
       goals
-        .filter((goal: any) => (statusFilter as string[]).includes(goal.status))
-        .map((goal: any) => ({
+        .filter((goal: Goal) => (statusFilter as string[]).includes(goal.status))
+        .map((goal: Goal) => ({
           id: goal.id,
-          title: goal.title,
+          title: goal.name,
           description: goal.description,
           status: goal.status,
-          targetDate: goal.targetDate,
-          progress: goal.getOverallProgress(),
+          targetDate: goal.targetDate?.getTime() ?? null,
+          progress: goal.progress,
         })),
     );
   }
@@ -88,15 +89,17 @@ export class GoalCrossModuleQueryServiceUseCase {
     const keyResults = goal.keyResults;
 
     return ok(
-      keyResults.map((kr: any) => ({
+      keyResults.map((kr) => ({
         id: kr.id,
         title: kr.title,
         description: kr.description,
         goalId: goal.id,
         progress: {
-          current: kr.progress.current,
-          target: kr.progress.target,
-          percentage: kr.progress.progressPercentage,
+          current: kr.progress.currentValue,
+          target: kr.progress.targetValue,
+          percentage: kr.progress.targetValue === 0
+            ? 0
+            : Math.round((kr.progress.currentValue / kr.progress.targetValue) * 100),
         },
         weight: kr.weight,
       })),
@@ -118,7 +121,7 @@ export class GoalCrossModuleQueryServiceUseCase {
         return { valid: false, error: `Goal not found: ${goalId}` };
       }
 
-      const keyResult = goal.keyResults.find((kr: any) => kr.id === keyResultId);
+      const keyResult = goal.keyResults.find((kr) => kr.id === keyResultId);
       if (!keyResult) {
         return { valid: false, error: `KeyResult not found in goal: ${keyResultId}` };
       }

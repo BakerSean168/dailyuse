@@ -1,7 +1,9 @@
-import type { IAnalyticsReadPort } from '@dailyuse/ai/application-server';
+import type { IAnalyticsReadPort } from '@dailyuse/ai/ports';
 import type { PrismaClient } from '@dailyuse/database';
-import { SearchGoalsUseCase, GoalPrismaRepository } from '@dailyuse/goal';
-import { GetTaskDashboardUseCase, TaskTemplatePrismaRepository } from '@dailyuse/task';
+import { SearchGoalsUseCase } from '@dailyuse/goal/analytics';
+import { createGoalPrismaModule } from '@dailyuse/goal/api';
+import { GetTaskDashboardUseCase } from '@dailyuse/task/analytics';
+import { createTaskPrismaRepositories } from '@dailyuse/task/api';
 
 import { getApiDashboardData } from '../dashboard/dashboard-read-service';
 
@@ -9,17 +11,17 @@ export class ControlledAnalyticsReadAdapter implements IAnalyticsReadPort {
   constructor(private readonly db: PrismaClient) {}
 
   async buildContext(identityId: string, question: string) {
-    const goalRepository = new GoalPrismaRepository(this.db);
-    const taskTemplateRepository = new TaskTemplatePrismaRepository(this.db);
+    const goalModule = createGoalPrismaModule(this.db);
+    const taskRepos = createTaskPrismaRepositories(this.db);
     const dashboard = await getApiDashboardData(this.db, identityId);
-    const taskDashboard = await new GetTaskDashboardUseCase(taskTemplateRepository).execute(
+    const taskDashboard = await new GetTaskDashboardUseCase(taskRepos.taskTemplateRepository).execute(
       identityId,
     );
-    const activeGoals = await goalRepository.findByIdentityId(identityId, {
+    const activeGoals = await goalModule.goalRepository.findByIdentityId(identityId, {
       includeChildren: true,
       systemView: 'active',
     });
-    const goalSearch = await new SearchGoalsUseCase(goalRepository).execute(
+    const goalSearch = await new SearchGoalsUseCase(goalModule.goalRepository).execute(
       identityId,
       question,
       'active',

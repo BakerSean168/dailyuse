@@ -45,6 +45,7 @@ import type {
  *
  * Implements IRuleApiClient using HTTP REST API calls.
  * 使用 HTTP REST API 调用实现 IRuleApiClient。
+  * @param private readonly httpClient - 
  */
 export class RuleHttpAdapter implements IRuleApiClient {
   private readonly baseUrl = '/governance/rules';
@@ -99,6 +100,9 @@ export class RuleHttpAdapter implements IRuleApiClient {
   }
 }
 
+/** Factory that creates a RuleHttpAdapter wrapping the given HTTP client.  * @param httpClient - 
+  * @returns any - 
+ */
 export function createRuleHttpAdapter(httpClient: IResultHttpClient): IRuleApiClient {
   return new RuleHttpAdapter(httpClient);
 }

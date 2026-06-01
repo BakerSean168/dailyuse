@@ -17,7 +17,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Calendar } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
-import type { AccountProfileDTO, GenderType } from '@dailyuse/contracts/account';
+import type { AccountProfileDTO } from '@dailyuse/contracts/account';
 
 interface ProfileFormProps {
   profile: AccountProfileDTO;

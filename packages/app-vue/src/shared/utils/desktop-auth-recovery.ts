@@ -20,15 +20,7 @@ export function isDesktopAuthRecoverable(error: DesktopAuthErrorLike): boolean {
 export function getDesktopAuthApi(
   host?: { electronAPI?: DesktopAuthApi },
 ): DesktopAuthApi | undefined {
-  if (host) {
-    return host.electronAPI;
-  }
-
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  return (window as { electronAPI?: DesktopAuthApi }).electronAPI;
+  return host?.electronAPI;
 }
 
 export async function ensureDesktopAuthReadyWithApi(

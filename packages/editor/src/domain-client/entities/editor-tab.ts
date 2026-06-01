@@ -15,7 +15,7 @@ import type {
   TabType,
 } from '@dailyuse/contracts/editor';
 import type { ResourceId } from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { EditorTabId } from '../../domain-shared/value-objects/editor-tab-id';
 import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
 import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';

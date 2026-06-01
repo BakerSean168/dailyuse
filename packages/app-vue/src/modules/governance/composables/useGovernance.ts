@@ -216,7 +216,7 @@ export function useGovernance() {
     store.setError(null);
     try {
       const result = await service.getRevisions({
-        ruleId: ruleId as any,
+        ruleId: ruleId as unknown as Parameters<typeof service.getRevisions>[0]['ruleId'],
         page: 1,
         pageSize: 50,
       });

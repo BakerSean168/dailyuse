@@ -21,8 +21,25 @@ import type { SettingRpcMap } from '../modules/setting/protocol/setting-rpc-map'
 import type { TaskEventMap } from '../modules/task/protocol/task-event-map';
 import type { TaskRpcMap } from '../modules/task/protocol/task-rpc-map';
 
+/**
+ * Feature-owned event registry extensions.
+ * 功能模块自有的事件注册表扩展点。
+ *
+ * Feature packages that keep protocol files outside `@dailyuse/contracts`
+ * can merge into this interface through module augmentation.
+ * 协议仍保留在 feature 包内的模块，可以通过 module augmentation
+ * 合并进这个接口。
+ */
+export interface AppEventRegistryExtensions extends Record<string, unknown> {}
+
+/**
+ * Feature-owned RPC registry extensions.
+ * 功能模块自有的 RPC 注册表扩展点。
+ */
+export interface AppRpcRegistryExtensions extends Record<string, [unknown, unknown]> {}
+
 // 1. 组装全局事件表 (Global Event Registry)
-export type AppEventRegistry = AccountEventMap &
+type CoreAppEventRegistry = AccountEventMap &
   AIEventMap &
   AuthEventMap &
   EditorEventMap &
@@ -34,8 +51,10 @@ export type AppEventRegistry = AccountEventMap &
   SettingEventMap &
   TaskEventMap & { 'system:ready': void; 'system:error': Error }; // 也可以加一些全局通用的
 
+export type AppEventRegistry = CoreAppEventRegistry & AppEventRegistryExtensions;
+
 // 2. 组装全局 RPC 表 (Global RPC Registry)
-export type AppRpcRegistry = AccountRpcMap &
+type CoreAppRpcRegistry = AccountRpcMap &
   AIRpcMap &
   AuthRpcMap &
   EditorRpcMap &
@@ -46,3 +65,5 @@ export type AppRpcRegistry = AccountRpcMap &
   ScheduleRpcMap &
   SettingRpcMap &
   TaskRpcMap;
+
+export type AppRpcRegistry = CoreAppRpcRegistry & AppRpcRegistryExtensions;

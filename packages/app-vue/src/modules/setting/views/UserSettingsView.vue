@@ -27,15 +27,16 @@ import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
-import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
+import { inject } from 'vue';
+import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();
 const presentationStore = usePresentationPreferenceStore();
+const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 
 const {
   userSetting,
   isLoading,
-  error,
   getCategory,
   loadSettings,
   exportSettings,
@@ -60,6 +61,19 @@ type OpenTextResult = {
   canceled: boolean;
   content: string | null;
 };
+
+interface ShortcutCategory {
+  name: string;
+  label: string;
+  iconComponent: unknown;
+  shortcuts: { id: string; label: string; description: string; key: string; defaultKey: string }[];
+}
+
+interface Backup {
+  key: string;
+  label: string;
+  time: number;
+}
 
 // ── Section models — local reactive copies for v-model ──
 const appearance = ref({
@@ -89,12 +103,12 @@ const experimental = ref({
 });
 
 // Shortcut state (read-only display for now)
-const shortcutCategories = ref<any[]>([]);
+const shortcutCategories = ref<ShortcutCategory[]>([]);
 const editingShortcut = ref(null);
 const editingKey = ref('');
 
 // Advanced state
-const backups = ref<any[]>([]);
+const backups = ref<Backup[]>([]);
 const syncStatus = ref(null);
 const syncing = ref(false);
 
@@ -111,7 +125,7 @@ function normalizeTimeFormat(
 
 /** Wrap importSettings for the @import event (which has no payload). */
 async function handleImport() {
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     try {
       const result = (await electronApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
@@ -142,7 +156,7 @@ async function handleExportJson() {
     return;
   }
 
-  const electronApi = getDesktopAuthApi();
+  const electronApi = desktopApi;
   if (electronApi?.invoke) {
     try {
       await electronApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {

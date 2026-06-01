@@ -25,7 +25,7 @@ export interface TaskExecutionContext {
   identityId: string;
   sourceModule: string;
   sourceEntityId: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   executedAt: number;
 }
 

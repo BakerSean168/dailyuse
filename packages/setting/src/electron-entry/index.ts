@@ -9,8 +9,9 @@ import {
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
+import type { PreferenceCategory } from '@dailyuse/contracts/setting';
 import { createSettingPowerSyncModule } from '../infrastructure-server/powersync';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { SettingModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 
@@ -44,7 +45,7 @@ export const SettingElectronModule: IElectronModule = {
       const category = payload.category as string;
       const patch = (payload.patch as Record<string, unknown>) ?? {};
       return withAuthenticatedIdentity(ctx, (identityId) =>
-        mod.api.patchUserSetting(identityId, category as any, patch),
+        mod.api.patchUserSetting(identityId, category as PreferenceCategory, patch),
       );
     });
 

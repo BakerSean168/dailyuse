@@ -1,9 +1,7 @@
-import { eventBus } from '@dailyuse/utils';
 import { ConflictError } from '@dailyuse/utils/errors';
 import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
-import { PlainPassword } from '../../domain-shared';
 import type { IPasswordHasher } from '../../domain-shared';
 
 // 定义业务异常 - 继承 DomainError 以便正确处理和响应

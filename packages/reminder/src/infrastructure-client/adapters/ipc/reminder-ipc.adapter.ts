@@ -11,6 +11,7 @@ import type {
   ReminderGroupClientDTO,
   ReminderTemplateListRes,
   ReminderGroupListRes,
+  UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -179,11 +180,11 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     return this.ipcClient.invoke(REMINDER_CHANNELS.SWITCH_GROUP_CONTROL_MODE, id, { mode });
   }
 
-  async getPreferences(): Promise<Result<any>> {
+  async getPreferences(): Promise<Result<UserReminderPreferencesClientDTO>> {
     return this.ipcClient.invoke(REMINDER_CHANNELS.GET_PREFERENCES);
   }
 
-  async updatePreferences(data: Record<string, unknown>): Promise<Result<any>> {
+  async updatePreferences(data: Record<string, unknown>): Promise<Result<UserReminderPreferencesClientDTO>> {
     return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_PREFERENCES, data);
   }
 }

@@ -55,12 +55,7 @@
 import { computed } from 'vue';
 import {
   File,
-  Image,
-  Video,
-  Music,
   FileText,
-  Link2,
-  Code,
   Eye,
   Pencil,
   Trash2,
@@ -112,71 +107,46 @@ const menuActions = computed<MenuAction[]>(() => [
 ]);
 
 function getResourceIcon() {
-  const type = (props.resource as any).type;
-  const iconMap: Record<string, any> = {
-    IMAGE: Image,
-    VIDEO: Video,
-    AUDIO: Music,
-    PDF: FileText,
-    LINK: Link2,
-    CODE: Code,
-    OTHER: File,
+  const type = props.resource.type;
+  const iconMap: Record<string, unknown> = {
+    File: FileText,
+    Folder: File,
   };
   return iconMap[type] || File;
 }
 
 function getIconBgClass(): string {
-  const type = (props.resource as any).type;
+  const type = props.resource.type;
   const classMap: Record<string, string> = {
-    IMAGE: 'bg-success/15 dark:bg-success/20',
-    VIDEO: 'bg-purple-100 dark:bg-purple-900/20',
-    AUDIO: 'bg-warning/15 dark:bg-warning/20',
-    PDF: 'bg-destructive/15 dark:bg-destructive/20',
-    LINK: 'bg-cyan-100 dark:bg-cyan-900/20',
-    CODE: 'bg-info/15 dark:bg-info/20',
-    OTHER: 'bg-muted dark:bg-muted/20',
+    File: 'bg-info/15 dark:bg-info/20',
+    Folder: 'bg-muted dark:bg-muted/20',
   };
-  return classMap[type] || classMap.OTHER;
+  return classMap[type] || 'bg-muted dark:bg-muted/20';
 }
 
 function getIconClass(): string {
-  const type = (props.resource as any).type;
+  const type = props.resource.type;
   const classMap: Record<string, string> = {
-    IMAGE: 'text-success dark:text-success',
-    VIDEO: 'text-purple-600 dark:text-purple-400',
-    AUDIO: 'text-warning dark:text-warning',
-    PDF: 'text-destructive dark:text-destructive',
-    LINK: 'text-cyan-600 dark:text-cyan-400',
-    CODE: 'text-info dark:text-info',
-    OTHER: 'text-muted-foreground dark:text-muted-foreground',
+    File: 'text-info dark:text-info',
+    Folder: 'text-muted-foreground dark:text-muted-foreground',
   };
-  return classMap[type] || classMap.OTHER;
+  return classMap[type] || 'text-muted-foreground dark:text-muted-foreground';
 }
 
 function getTypeVariant(): 'default' | 'secondary' | 'destructive' | 'outline' {
-  const type = (props.resource as any).type;
+  const type = props.resource.type;
   const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-    IMAGE: 'default',
-    VIDEO: 'secondary',
-    AUDIO: 'secondary',
-    PDF: 'destructive',
-    LINK: 'outline',
-    CODE: 'outline',
-    OTHER: 'secondary',
+    File: 'default',
+    Folder: 'secondary',
   };
   return variantMap[type] || 'secondary';
 }
 
 function getTypeLabel(): string {
-  const type = (props.resource as any).type;
+  const type = props.resource.type;
   const labelMap: Record<string, string> = {
-    IMAGE: '图片',
-    VIDEO: '视频',
-    AUDIO: '音频',
-    PDF: 'PDF',
-    LINK: '链接',
-    CODE: '代码',
-    OTHER: '其他',
+    File: '文件',
+    Folder: '文件夹',
   };
   return labelMap[type] || '未知';
 }

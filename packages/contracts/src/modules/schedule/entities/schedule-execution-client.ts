@@ -3,9 +3,8 @@
  * 调度执行记录实体 - 客户端接?
  */
 
-import type { ScheduleExecutionId, ScheduleTaskId, DomainDate, TransferDate } from '../../../primitives';
+import type { ScheduleExecutionId, ScheduleTaskId, TransferDate } from '../../../primitives';
 import type { ExecutionStatus } from '../value-objects/execution-status';
-import type { ScheduleExecutionServerDTO } from './schedule-execution-server';
 
 // ============ DTO 定义 ============
 

@@ -18,7 +18,7 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type { RuleStatus } from '../../contracts/value-objects/rule-status';
 import type { RuleSeverity } from '../../contracts/value-objects/rule-severity';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
@@ -67,6 +67,7 @@ export interface RuleState {
  * - 从 API 响应创建实例
  * - UI 辅助方法（状态格式化、标签过滤）
  * - 数据转换（toDTO）
+  * @param state - 
  */
 export class Rule extends AggregateRoot<RuleId> {
   private readonly _props: RuleState;

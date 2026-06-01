@@ -2,7 +2,7 @@
  * Domain errors for Goal value objects
  */
 
-import { DomainError } from '@dailyuse/utils';
+import { DomainError } from '@dailyuse/utils/errors';
 
 export class InvalidWeightError extends DomainError {
   constructor(field: string, value: number) {

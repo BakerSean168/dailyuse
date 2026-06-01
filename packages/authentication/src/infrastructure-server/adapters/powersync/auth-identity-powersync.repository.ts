@@ -2,7 +2,8 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { IAuthIdentityRepository } from '../../../domain-server';
 import { AuthIdentity } from '../../../domain-server';
 import type { OAuthProvider } from '../../../domain-shared';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import {
   PowerSyncAuthIdentityMapper,

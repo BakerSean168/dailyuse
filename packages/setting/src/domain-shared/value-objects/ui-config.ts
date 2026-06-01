@@ -5,7 +5,7 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   UIConfigDTO,
   UIConfig as IUIConfig,
@@ -15,7 +15,7 @@ type UIInputType = UIConfigDTO['inputType'];
 
 interface UIOption {
   label: string;
-  value: any;
+  value: unknown;
 }
 
 /**

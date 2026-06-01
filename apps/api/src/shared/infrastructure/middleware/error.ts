@@ -5,10 +5,16 @@
  */
 
 import type { Express, Request, Response, NextFunction } from 'express';
-import { createLogger, mapPrismaError } from '@dailyuse/utils';
+import { mapPrismaError } from '@dailyuse/utils/errors';
+import { createLogger } from '@dailyuse/utils/logger';
 import { errorCodeToHttpStatus, extractStructuredResultError } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ErrorHandler');
+
+type ErrorLike = {
+  code?: unknown;
+  message?: unknown;
+};
 
 function isCorsRejectionError(err: unknown): err is { message: string } {
   return (
@@ -18,6 +24,10 @@ function isCorsRejectionError(err: unknown): err is { message: string } {
     typeof err.message === 'string' &&
     err.message === 'Not allowed by CORS'
   );
+}
+
+function toErrorLike(err: unknown): ErrorLike | null {
+  return typeof err === 'object' && err !== null ? (err as ErrorLike) : null;
 }
 
 /**
@@ -32,10 +42,11 @@ export function applyErrorHandlers(app: Express): void {
   });
 
   // Global error handler (must have 4 args for Express to recognize it)
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    const errorLike = toErrorLike(err);
     logger.error('Express error handler caught error', err, {
-      code: err?.code,
-      message: err?.message,
+      code: errorLike?.code,
+      message: errorLike?.message,
     });
 
     // 0. CORS rejections — expected client-side access control failures

@@ -5,7 +5,7 @@
 
 import type { RuleRevisionId as IRuleRevisionId } from '../../contracts/primitives/ids';
 
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 /**
  * RuleRevisionId 值对象

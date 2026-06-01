@@ -1,4 +1,4 @@
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type { ContactEmailDTO, ContactEmail as IContactEmail } from '@dailyuse/contracts/account';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 

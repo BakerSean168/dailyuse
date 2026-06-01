@@ -24,6 +24,7 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
 import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
+import { GroupStats } from '../domain-shared/value-objects/group-stats';
 import { ReminderDomainService } from '../domain-server/services/reminder-domain-service';
 import { UpcomingReminderCalculationService } from '../domain-server/services/upcoming-reminder-calculation-service';
 import { RecordReminderResponseUseCase } from '../application-server/use-cases/commands/record-reminder-response.use-case';
@@ -38,7 +39,11 @@ import type {
   GetUpcomingRemindersRes,
   GetReminderTodayScheduleReq,
   GetReminderTodayScheduleRes,
+  TimeSlotDTO,
+  GroupStatsDTO,
+  ControlMode,
 } from '@dailyuse/contracts/reminder';
+import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the reminder runtime needs from the outside world.
@@ -74,7 +79,7 @@ export interface ReminderModuleRuntimeContribution {
 
 export interface ReminderApplicationPort {
   // Template CRUD / 模板 CRUD
-  createTemplate(data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  createTemplate(data: Record<string, unknown>, ctx: ExecutionContext): Promise<Result<unknown>>;
   listTemplates(ctx: ExecutionContext): Promise<Result<ReminderTemplateListRes>>;
   getUpcomingReminders(
     params: GetUpcomingRemindersReq,
@@ -85,7 +90,7 @@ export interface ReminderApplicationPort {
     ctx: ExecutionContext,
   ): Promise<Result<GetReminderTodayScheduleRes>>;
   getTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
-  updateTemplate(id: string, data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  updateTemplate(id: string, data: Record<string, unknown>, ctx: ExecutionContext): Promise<Result<unknown>>;
   deleteTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Template Actions / 模板操作
@@ -114,10 +119,10 @@ export interface ReminderApplicationPort {
   rejectFrequencyAdjustment(templateId: string, ctx: ExecutionContext): Promise<Result<unknown>>;
 
   // Group CRUD / 分组 CRUD
-  createGroup(data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  createGroup(data: Record<string, unknown>, ctx: ExecutionContext): Promise<Result<unknown>>;
   listGroups(ctx: ExecutionContext): Promise<Result<ReminderGroupListRes>>;
   getGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
-  updateGroup(id: string, data: Record<string, any>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  updateGroup(id: string, data: Record<string, unknown>, ctx: ExecutionContext): Promise<Result<unknown>>;
   deleteGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
   switchGroupControlMode(
     id: string,
@@ -298,21 +303,25 @@ export function createReminderModule(
     // ==================== Template CRUD / 模板 CRUD ====================
 
     async createTemplate(data, ctx) {
+      const d = data as Record<string, unknown>;
+      const activeTime = d.activeTime as Record<string, unknown> | undefined;
+      const activeHours = d.activeHours as Record<string, unknown> | undefined;
+      const notificationConfig = d.notificationConfig as Record<string, unknown> | undefined;
       const normalizedInput = {
-        ...data,
+        ...d,
         activeTime: {
-          activatedAt: data.activeTime?.startDate,
+          activatedAt: activeTime?.startDate,
         },
-        activeHours: data.activeHours
+        activeHours: activeHours
           ? {
               enabled: true,
-              startHour: data.activeHours.startHour,
-              endHour: data.activeHours.endHour,
+              startHour: activeHours.startHour,
+              endHour: activeHours.endHour,
             }
           : undefined,
         notificationConfig: {
-          ...data.notificationConfig,
-          actions: data.notificationConfig?.actions ?? null,
+          ...notificationConfig,
+          actions: notificationConfig?.actions ?? null,
         },
       };
       const template = await reminderDomainService.createReminderTemplate({
@@ -404,24 +413,37 @@ export function createReminderModule(
       if (!existing) {
         throw new Error('Template not found');
       }
-      const normalizedUpdates: Record<string, unknown> = { ...data };
-      if (data.activeTime) {
-        normalizedUpdates.activeTime = { activatedAt: data.activeTime.startDate };
+      // data is validated by Zod in the controller; cast nested fields for type safety
+      const activeTime = data['activeTime'] as { startDate?: string } | undefined;
+      const activeHours = data['activeHours'] as { startHour?: number; endHour?: number } | undefined;
+      const notificationConfig = data['notificationConfig'] as Record<string, unknown> | undefined;
+
+      const updates: Record<string, unknown> = {};
+      if (data['title'] !== undefined) updates.title = data['title'];
+      if (data['description'] !== undefined) updates.description = data['description'];
+      if (data['trigger'] !== undefined) updates.trigger = data['trigger'];
+      if (data['importanceLevel'] !== undefined) updates.importanceLevel = data['importanceLevel'];
+      if (data['tags'] !== undefined) updates.tags = data['tags'];
+      if (data['color'] !== undefined) updates.color = data['color'];
+      if (data['icon'] !== undefined) updates.icon = data['icon'];
+      if (data['groupId'] !== undefined) updates.groupId = data['groupId'];
+      if (activeTime) {
+        updates.activeTime = { activatedAt: activeTime.startDate };
       }
-      if (data.activeHours) {
-        normalizedUpdates.activeHours = {
+      if (activeHours) {
+        updates.activeHours = {
           enabled: true,
-          startHour: data.activeHours.startHour,
-          endHour: data.activeHours.endHour,
+          startHour: activeHours.startHour,
+          endHour: activeHours.endHour,
         };
       }
-      if (data.notificationConfig) {
-        normalizedUpdates.notificationConfig = {
-          ...data.notificationConfig,
-          actions: data.notificationConfig.actions ?? null,
+      if (notificationConfig) {
+        updates.notificationConfig = {
+          ...notificationConfig,
+          actions: notificationConfig['actions'] ?? null,
         };
       }
-      existing.update(normalizedUpdates as any);
+      existing.update(updates as Parameters<typeof existing.update>[0]);
       await reminderDomainService.syncTemplateEffectiveEnabled(existing);
       await reminderTemplateRepository.save(existing);
       if (existing.groupId) {
@@ -483,15 +505,15 @@ export function createReminderModule(
       const updated = ReminderGroup.load({
         id: existing.id,
         identityId: existing.identityId,
-        name: data.name ?? existing.name,
-        description: 'description' in data ? (data.description ?? null) : existing.description,
-        controlMode: data.controlMode ?? existing.controlMode,
+        name: (data.name as string) ?? existing.name,
+        description: 'description' in data ? ((data.description as string | null) ?? null) : existing.description,
+        controlMode: (data.controlMode as ControlMode) ?? existing.controlMode,
         enabled: existing.enabled,
         status: existing.status,
-        order: data.order ?? existing.order,
-        color: 'color' in data ? (data.color ?? null) : existing.color,
-        icon: 'icon' in data ? (data.icon ?? null) : existing.icon,
-        stats: existing.stats as any,
+        order: (data.order as number) ?? existing.order,
+        color: 'color' in data ? ((data.color as string | null) ?? null) : existing.color,
+        icon: 'icon' in data ? ((data.icon as string | null) ?? null) : existing.icon,
+        stats: GroupStats.fromDTO(existing.stats as GroupStatsDTO),
         createdAt: existing.createdAt,
         updatedAt: new Date(),
         deletedAt: existing.deletedAt,
@@ -622,7 +644,7 @@ export function createReminderModule(
     async getTemplateHistory(id, ctx) {
       const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx, {
         includeHistory: true,
-      } as any);
+      });
       if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       const history = template.getAllHistory ? template.getAllHistory() : [];
       return ok(history);
@@ -635,7 +657,7 @@ export function createReminderModule(
     async recordResponse(templateId, data, ctx) {
       return recordReminderResponse.execute({
         templateId,
-        action: data.action as any,
+        action: data.action as ReminderResponseAction,
         identityId: ctx.identityId,
       });
     },
@@ -709,8 +731,8 @@ export function createReminderModule(
         const prefs = UserReminderPreferences.create({ identityId: ctx.identityId });
         if (data.bestTimeSlots || data.worstTimeSlots) {
           prefs.updateTimeSlots(
-            (data.bestTimeSlots as any) ?? [],
-            (data.worstTimeSlots as any) ?? [],
+            (data.bestTimeSlots as TimeSlotDTO[] | undefined) ?? [],
+            (data.worstTimeSlots as TimeSlotDTO[] | undefined) ?? [],
           );
         }
         if (data.globalReminderEnabled !== undefined) {
@@ -725,8 +747,8 @@ export function createReminderModule(
       }
       if (data.bestTimeSlots || data.worstTimeSlots) {
         existing.updateTimeSlots(
-          (data.bestTimeSlots as any) ?? [],
-          (data.worstTimeSlots as any) ?? [],
+          (data.bestTimeSlots as TimeSlotDTO[] | undefined) ?? [],
+          (data.worstTimeSlots as TimeSlotDTO[] | undefined) ?? [],
         );
       }
       if (data.globalReminderEnabled !== undefined) {

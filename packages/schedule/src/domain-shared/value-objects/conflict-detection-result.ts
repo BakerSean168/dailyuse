@@ -5,7 +5,7 @@
  * 这是一个简单的只读值对象
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   ConflictDetectionResult as IConflictDetectionResult,
   ConflictDetail,

@@ -8,8 +8,8 @@
  * Middleware comes from context.middleware, no dependency on apps/api internals.
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   PrismaAccountRepository,
   createAccountModule,
@@ -21,19 +21,10 @@ import { createAccountRuntimeContribution } from './runtime';
 import { createAccountEventListenerRuntime } from '../application-server/handlers/register-account-event-listeners';
 
 /**
- * Module context (structurally compatible with IApiModuleContext from apps/api).
- * Locally defined to avoid circular dependency on apps/api.
+ * Typed module context for account registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface AccountApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type AccountApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface AccountApiModuleDef {
   readonly name: string;
@@ -50,7 +41,7 @@ export const AccountApiModule: AccountApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — 使用共享数据库单例
-    const accountRepository = new PrismaAccountRepository(db as PrismaClient);
+    const accountRepository = new PrismaAccountRepository(db);
     const accountModule = createAccountModule({
       accountRepository,
       runtimeContributions: createAccountRuntimeContribution(

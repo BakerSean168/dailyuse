@@ -42,7 +42,7 @@ describe('MarkdownEditor', () => {
     await new Promise<void>((resolve) => {
       setTimeout(() => resolve(), 0);
     });
-    (wrapper.vm as any).insertTextAtSelection(' world', { from: 5, to: 5 });
+    (wrapper.vm as unknown as { insertTextAtSelection: (text: string, range: { from: number; to: number }) => void }).insertTextAtSelection(' world', { from: 5, to: 5 });
 
     const file = new File(['data'], 'shot.png', { type: 'image/png' });
     const pasteEvent = new Event('paste', { bubbles: true, cancelable: true }) as ClipboardEvent;
@@ -119,7 +119,7 @@ describe('MarkdownEditor', () => {
       setTimeout(() => resolve(), 0);
     });
 
-    (wrapper.vm as any).insertTextAtSelection('daily', { from: 6, to: 11 });
+    (wrapper.vm as unknown as { insertTextAtSelection: (text: string, range: { from: number; to: number }) => void }).insertTextAtSelection('daily', { from: 6, to: 11 });
 
     const updates = wrapper.emitted('update:modelValue');
     expect(updates?.at(-1)?.[0]).toBe('hello daily');

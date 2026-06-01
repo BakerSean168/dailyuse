@@ -9,7 +9,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { ReminderHistoryId } from '../../domain-shared/value-objects/reminder-history-id';
 
 /**

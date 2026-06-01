@@ -10,7 +10,7 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { INotificationPreferenceRepository } from '../../../domain-server';
 import { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
-import { generateUUID } from '@dailyuse/utils';
+import { generateUUID } from '@dailyuse/utils/shared';
 import {
   NotificationPreferencePrismaMapper,
   type PrismaNotificationPreferenceRow,
@@ -83,8 +83,8 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
 
     const now = new Date();
     const preference = NotificationPreference.load({
-      id: generateUUID() as any,
-      identityId: identityId as any,
+      id: generateUUID() as never,
+      identityId: identityId as never,
       settings: new Map([
         ['task', [NotificationChannelType.InApp]],
         ['goal', [NotificationChannelType.InApp]],

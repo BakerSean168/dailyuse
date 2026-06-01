@@ -230,13 +230,6 @@ const loadingKeyResults = ref(false);
 // 目标和关键结果数据
 const keyResults = ref<KeyResultBindingOption[]>([]);
 
-// ===== 验证规则 =====
-const rules = {
-  required: (value: any) => !!value || t('task.krLinks.validation.required'),
-  positiveNumber: (value: number) => value > 0 || t('task.krLinks.validation.positiveNumber'),
-  maxValue: (value: number) => value <= 1000 || t('task.krLinks.validation.maxValue'),
-};
-
 // ===== 计算属性 =====
 const hasGoalBinding = computed(() => {
   return props.modelValue.goalBinding !== null && props.modelValue.goalBinding !== undefined;

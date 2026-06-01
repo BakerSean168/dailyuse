@@ -6,17 +6,12 @@ import type {
   TaskInstanceId,
   TaskTemplateId,
   IdentityId,
-  DomainDate,
   TransferDate,
 } from '../../../primitives';
-import type { TaskInstanceServerDTO } from './task-instance-server';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
-  TaskTimeConfig,
   TaskTimeConfigDTO,
-  CompletionRecord,
-  CompletionRecordDTO,
 } from '../value-objects';
 
 export interface TaskInstanceClientDTO {

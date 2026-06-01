@@ -13,7 +13,7 @@
  *           └── EditorTab (实体)
  */
 
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import type {
   EditorSessionClientDTO,
   EditorSessionServerDTO,
@@ -30,7 +30,7 @@ import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/valu
 import { SessionLayout } from '../value-objects/session-layout';
 import { EditorGroup } from './editor-group';
 import { EditorTab } from './editor-tab';
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 /**
  * EditorSession 状态接口（domain types）

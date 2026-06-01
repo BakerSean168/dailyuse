@@ -10,7 +10,7 @@
  */
 
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { GoalRecordId, KeyResultId, GoalId } from '../../domain-shared';
 
 export interface GoalRecordState {

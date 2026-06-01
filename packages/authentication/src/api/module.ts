@@ -16,9 +16,9 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { eventBus } from '@dailyuse/utils';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import { eventBus } from '@dailyuse/utils/domain';
 import { createEventBusAdapter } from '@dailyuse/patterns';
 import {
   createAuthenticationModule,
@@ -33,22 +33,10 @@ import { createAuthenticationTransportHandlers } from './transport-handlers';
 import { createAuthenticationRuntimeContribution } from './runtime';
 
 /**
- * Module context (structurally compatible with IApiModuleContext from apps/api).
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）。
- *
- * Locally defined to avoid circular dependency on apps/api.
- * 此类型在 authentication 包内本地定义，避免对 apps/api 的循环依赖。
+ * Typed module context for authentication registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface AuthenticationApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type AuthenticationApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface AuthenticationApiModuleDef {
   readonly name: string;
@@ -65,7 +53,7 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
     const { router, middleware, db } = context;
 
     // ── 1. Composition Root — 组装依赖（使用共享数据库单例）──
-    const prismaClient = db as PrismaClient;
+    const prismaClient = db;
     const eventBusAdapter = createEventBusAdapter(eventBus);
 
     // Initialize token provider with configuration

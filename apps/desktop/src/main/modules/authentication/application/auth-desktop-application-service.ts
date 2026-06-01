@@ -19,12 +19,13 @@
  * - 失败: { ok: false, error: { code, message } }
  */
 
-import { createLogger, type ILogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/domain-server';
-import type { IAccountRepository } from '@dailyuse/account/domain-server';
+} from '@dailyuse/authentication/api';
+import type { IAccountRepository } from '@dailyuse/account/api';
 import {
   type IpcResult,
   toIpcResult,
@@ -50,12 +51,10 @@ import {
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
-  getTokenManager,
   SessionManager,
-  createSessionManager,
-  getRememberedAccountsService,
   type SessionStatus,
 } from '../infrastructure';
+import type { RememberedAccountsService, NetworkStateManager } from '../infrastructure';
 import { AuthRemoteGateway, type RegisterApiResponse } from './auth-remote-gateway';
 import { DesktopAuthAccountProjectionService } from './desktop-auth-account-projection-service';
 import { DesktopRememberedAccountService } from './desktop-remembered-account-service';
@@ -66,6 +65,8 @@ import {
   type SessionRestoreResult,
 } from './desktop-auth-lifecycle-coordinator';
 import { DesktopAuthSecurityAdminService } from './desktop-auth-security-admin-service';
+import { safeTransition } from './auth-coordinator-helpers';
+import type { WindowManager } from '../../../lifecycle/window-manager';
 
 // Re-export from contracts for convenience
 export type { IpcResult, TwoFactorStatus, ApiKeyInfo, AuthStatus, EmailLoginCredentials };
@@ -109,13 +110,19 @@ export class AuthDesktopApplicationService {
   };
   private isInitialized = { value: false };
 
-  constructor(logger?: ILogger) {
+  constructor(
+    tokenManager: TokenManager,
+    rememberedAccountsService: RememberedAccountsService,
+    private readonly networkStateManager: NetworkStateManager,
+    private readonly windowManager: WindowManager,
+    logger?: ILogger,
+  ) {
     this.logger = logger || createLogger('AuthDesktopAppService');
-    this.tokenManager = getTokenManager(this.logger);
+    this.tokenManager = tokenManager;
     this.remoteGateway = new AuthRemoteGateway();
     this.rememberedAccountService = new DesktopRememberedAccountService(
       this.logger,
-      getRememberedAccountsService(),
+      rememberedAccountsService,
     );
     this.projectionService = new DesktopAuthAccountProjectionService(
       this.logger,
@@ -128,6 +135,7 @@ export class AuthDesktopApplicationService {
     return new DesktopAuthLifecycleCoordinator(
       this.logger,
       this.tokenManager,
+      this.networkStateManager,
       this.remoteGateway,
       this.sessionManager,
       this.projectionService,
@@ -140,17 +148,19 @@ export class AuthDesktopApplicationService {
   }
 
   private createCredentialCoordinator(): DesktopCredentialAuthCoordinator {
-    return new DesktopCredentialAuthCoordinator(
-      this.logger,
-      this.tokenManager,
-      this.remoteGateway,
-      this.sessionManager!,
-      this.projectionService,
-      this.rememberedAccountService,
-      this.credentialRepository,
-      this.sessionRepository,
-      this.authState,
-    );
+    return new DesktopCredentialAuthCoordinator({
+      logger: this.logger,
+      tokenManager: this.tokenManager,
+      networkStateManager: this.networkStateManager,
+      remoteGateway: this.remoteGateway,
+      sessionManager: this.sessionManager!,
+      projectionService: this.projectionService,
+      rememberedAccountService: this.rememberedAccountService,
+      credentialRepository: this.credentialRepository,
+      sessionRepository: this.sessionRepository,
+      authState: this.authState,
+      windowManager: this.windowManager,
+    });
   }
 
   private createSecurityAdminService(): DesktopAuthSecurityAdminService {
@@ -165,6 +175,28 @@ export class AuthDesktopApplicationService {
   }
 
   /**
+   * Configure shared auth directory and activate the profile session.
+   * Encapsulates the session manager coordination that was previously
+   * done externally via getSessionManager().
+   */
+  async configureAndActivateProfile(sharedAuthDir: string): Promise<void> {
+    if (!this.sessionManager) {
+      throw new Error('SessionManager not available — call setRepositories() first');
+    }
+    this.sessionManager.setSharedAuthDir(sharedAuthDir);
+    await this.sessionManager.activateProfile();
+  }
+
+  /**
+   * 清理 SessionManager（供 profile teardown 使用）
+   */
+  cleanupSessionManager(): void {
+    if (this.sessionManager) {
+      this.sessionManager.cleanup();
+    }
+  }
+
+  /**
    * 设置 Repositories（延迟注入）
    */
   setRepositories(
@@ -175,9 +207,10 @@ export class AuthDesktopApplicationService {
     this.credentialRepository = credentialRepository;
 
     // 创建 SessionManager
-    this.sessionManager = createSessionManager(
+    this.sessionManager = new SessionManager(
       sessionRepository,
       credentialRepository,
+      this.tokenManager,
       this.logger,
     );
 
@@ -212,7 +245,7 @@ export class AuthDesktopApplicationService {
    * 将 IAuthIdentityRepository + IPasswordHasher 传递给 SessionManager
    */
   setOfflineAuthDependencies(
-    identityRepository: import('@dailyuse/authentication/domain-server').IAuthIdentityRepository,
+    identityRepository: import('@dailyuse/authentication/api').IAuthIdentityRepository,
     passwordHasher: import('@dailyuse/authentication/domain-shared').IPasswordHasher,
   ): void {
     if (this.sessionManager) {
@@ -264,7 +297,7 @@ export class AuthDesktopApplicationService {
     if (!this.credentialCoordinator) {
       await this.tokenManager.clearTokens();
       this.authState.authMode = AuthMode.UNAUTHENTICATED;
-      this.authState.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      safeTransition(this.authState, AuthRuntimeState.UNAUTHENTICATED);
       return toIpcResult(ok(undefined));
     }
     return this.credentialCoordinator.logout();
@@ -524,7 +557,11 @@ export class AuthDesktopApplicationService {
  * 创建 AuthDesktopApplicationService 实例
  */
 export function createAuthDesktopApplicationService(
+  tokenManager: TokenManager,
+  rememberedAccountsService: RememberedAccountsService,
+  networkStateManager: NetworkStateManager,
+  windowManager: WindowManager,
   logger?: ILogger,
 ): AuthDesktopApplicationService {
-  return new AuthDesktopApplicationService(logger);
+  return new AuthDesktopApplicationService(tokenManager, rememberedAccountsService, networkStateManager, windowManager, logger);
 }

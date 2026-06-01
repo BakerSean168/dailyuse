@@ -11,20 +11,10 @@ import { use } from 'echarts/core';
 import { BarChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import type { ComposeOption } from 'echarts/core';
-import type { BarSeriesOption } from 'echarts/charts';
-import type {
-  TitleComponentOption,
-  TooltipComponentOption,
-  GridComponentOption,
-} from 'echarts/components';
+import type { ECElementEvent } from 'echarts';
 import VChart from 'vue-echarts';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
-
-type EChartsOption = ComposeOption<
-  TitleComponentOption | TooltipComponentOption | GridComponentOption | BarSeriesOption
->;
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -161,7 +151,7 @@ const chartData = computed(() => ({
 
 const progressDiff = computed(() => chartData.value.goal - chartData.value.time);
 
-const progressOption = computed<EChartsOption>(() => {
+const progressOption = computed(() => {
   const diff = progressDiff.value;
   let bgColor = safe_color;
   if (diff <= -danger_threshold) {
@@ -188,7 +178,7 @@ const progressOption = computed<EChartsOption>(() => {
       },
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      formatter: (params: any) => {
+      formatter: (params: ECElementEvent) => {
         const dataPoint = Array.isArray(params) ? params[0] : params;
         const name = dataPoint?.name ?? '';
         const value = dataPoint?.value ?? 0;

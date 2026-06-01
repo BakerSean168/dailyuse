@@ -58,7 +58,7 @@ export class JwtTokenProvider implements ITokenProvider {
     try {
       const decoded = jwt.verify(token, this.accessSecret) as AccessTokenPayload;
       return ok(decoded);
-    } catch (error) {
+    } catch (_error) {
       return fail({ code: ResultCode.UNAUTHORIZED, message: 'Invalid or expired access token' });
     }
   }
@@ -67,7 +67,7 @@ export class JwtTokenProvider implements ITokenProvider {
     try {
       const decoded = jwt.verify(token, this.refreshSecret) as RefreshTokenPayload;
       return ok(decoded);
-    } catch (error) {
+    } catch (_error) {
       return fail({ code: ResultCode.UNAUTHORIZED, message: 'Invalid or expired refresh token' });
     }
   }

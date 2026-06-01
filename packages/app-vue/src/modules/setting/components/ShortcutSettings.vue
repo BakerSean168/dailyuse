@@ -109,7 +109,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { Search, RotateCcw, Check, X, Globe, FileEdit, CheckSquare, Target } from 'lucide-vue-next';
+import { Search, RotateCcw, Check, X } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
@@ -124,7 +124,7 @@ interface ShortcutItem {
 interface ShortcutCategory {
   name: string;
   label: string;
-  iconComponent: any;
+  iconComponent: unknown;
   shortcuts: ShortcutItem[];
 }
 

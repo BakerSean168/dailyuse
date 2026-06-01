@@ -1,4 +1,10 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
 import type { IEditorGroupRepository } from '../../../domain-server/repositories/i-editor-group-repository';
 import { EditorGroup } from '../../../domain-server/entities/editor-group';
 
@@ -16,10 +22,10 @@ type GroupRow = {
 
 function toDomain(row: GroupRow): EditorGroup {
   return EditorGroup.load({
-    id: row.id as any,
-    sessionId: row.session_id as any,
-    workspaceId: row.workspace_id as any,
-    identityId: row.identity_id as any,
+    id: row.id as EditorGroupId,
+    sessionId: row.session_id as EditorSessionId,
+    workspaceId: row.workspace_id as EditorWorkspaceId,
+    identityId: row.identity_id as IdentityId,
     groupIndex: row.group_index,
     activeTabIndex: 0,
     name: row.name,

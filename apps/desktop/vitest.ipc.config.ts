@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import { createContractsAliasEntries } from '../../vite.workspace-aliases';
 
 export default defineConfig({
   test: {
@@ -22,44 +23,40 @@ export default defineConfig({
     testTimeout: 10000,
   },
   resolve: {
-    alias: {
-      '@dailyuse/contracts/authentication': resolve(
-        __dirname,
-        '../../packages/contracts/src/modules/authentication/index.ts',
-      ),
-      '@dailyuse/contracts/result': resolve(
-        __dirname,
-        '../../packages/contracts/src/result/index.ts',
-      ),
-      '@dailyuse/infrastructure-server': resolve(
-        __dirname,
-        '../../packages/infrastructure-server/src',
-      ),
-      '@dailyuse/domain-server': resolve(__dirname, '../../packages/domain-server/src'),
-      '@dailyuse/domain-shared/shared': resolve(
-        __dirname,
-        '../../packages/domain-shared/src/shared/index.ts',
-      ),
-      '@dailyuse/domain-shared': resolve(__dirname, '../../packages/domain-shared/src'),
-      '@dailyuse/application-server': resolve(__dirname, '../../packages/application-server/src'),
-      '@dailyuse/contracts': resolve(__dirname, '../../packages/contracts/src'),
-      '@dailyuse/utils': resolve(__dirname, '../../packages/utils/src'),
-      '@dailyuse/account/domain-server': resolve(
-        __dirname,
-        '../../packages/account/src/domain-server/index.ts',
-      ),
-      '@dailyuse/account/domain-shared': resolve(
-        __dirname,
-        '../../packages/account/src/domain-shared/index.ts',
-      ),
-      '@dailyuse/authentication/domain-server': resolve(
-        __dirname,
-        '../../packages/authentication/src/domain-server/index.ts',
-      ),
-      '@dailyuse/authentication/domain-shared': resolve(
-        __dirname,
-        '../../packages/authentication/src/domain-shared/index.ts',
-      ),
-    },
+    alias: [
+      ...createContractsAliasEntries(resolve(__dirname, '../..')),
+      {
+        find: '@dailyuse/domain-shared/shared',
+        replacement: resolve(__dirname, '../../packages/domain-shared/src/shared/index.ts'),
+      },
+      {
+        find: '@dailyuse/domain-shared',
+        replacement: resolve(__dirname, '../../packages/domain-shared/src'),
+      },
+      {
+        find: '@dailyuse/utils',
+        replacement: resolve(__dirname, '../../packages/utils/src'),
+      },
+      {
+        find: '@dailyuse/authentication/api',
+        replacement: resolve(__dirname, '../../packages/authentication/src/api/index.ts'),
+      },
+      {
+        find: '@dailyuse/authentication/domain-shared',
+        replacement: resolve(__dirname, '../../packages/authentication/src/domain-shared/index.ts'),
+      },
+      {
+        find: '@dailyuse/authentication',
+        replacement: resolve(__dirname, '../../packages/authentication/src/index.ts'),
+      },
+      {
+        find: '@dailyuse/account/api',
+        replacement: resolve(__dirname, '../../packages/account/src/api/index.ts'),
+      },
+      {
+        find: '@dailyuse/account',
+        replacement: resolve(__dirname, '../../packages/account/src/index.ts'),
+      },
+    ],
   },
 });

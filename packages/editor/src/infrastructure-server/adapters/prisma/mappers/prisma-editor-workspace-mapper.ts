@@ -8,6 +8,7 @@
 import type { Prisma, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { ProjectType } from '@dailyuse/contracts/editor';
 import { EditorWorkspace } from '../../../../domain-server/aggregates/editor-workspace';
+import type { EditorWorkspaceState } from '../../../../domain-server/aggregates/editor-workspace';
 import { EditorWorkspaceId } from '../../../../domain-shared';
 import { WorkspaceLayout } from '../../../../domain-shared/value-objects/workspace-layout';
 import { WorkspaceSettings } from '../../../../domain-shared/value-objects/workspace-settings';
@@ -35,7 +36,7 @@ export class PrismaEditorWorkspaceMapper {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       sessions: [],
-    } as any);
+    } as unknown as EditorWorkspaceState);
   }
 
   /** Maps a Domain EditorWorkspace aggregate to Prisma write data. */

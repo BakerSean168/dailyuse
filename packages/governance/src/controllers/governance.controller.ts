@@ -78,6 +78,11 @@ export interface GovernanceUseCases {
   getRevisions: (query: GetRuleRevisionsQuery) => Promise<Result<GetRuleRevisionsRes>>;
 }
 
+/**
+ * Thin controller that validates input with Zod schemas and delegates to use cases.
+ * Shared by Express HTTP and Electron IPC transports.
+  * @param private readonly useCases - 
+ */
 export class GovernanceController {
   constructor(private readonly useCases: GovernanceUseCases) {}
 

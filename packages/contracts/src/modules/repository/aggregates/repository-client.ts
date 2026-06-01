@@ -2,13 +2,11 @@
  * Repository Aggregate Root - Client Interface
  * 仓储聚合?- 客户端接?
  */
-import type { RepositoryId, IdentityId, DomainDate, TransferDate } from '../../../primitives';
+import type { RepositoryId, IdentityId, TransferDate } from '../../../primitives';
 import type { RepositoryType } from '../value-objects/repository-type';
 import type { RepositoryStatus } from '../value-objects/repository-status';
 import type {
-  RepositoryConfig,
   RepositoryConfigDTO,
-  RepositoryStats,
   RepositoryStatsDTO,
 } from '../value-objects';
 

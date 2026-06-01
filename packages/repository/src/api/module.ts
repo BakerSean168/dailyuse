@@ -22,8 +22,8 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import { createRepositoryModule, type RepositoryModuleInstance } from '../infrastructure-server';
 import { ResourceBookmarkPrismaRepository } from '../infrastructure-server/adapters/prisma/resource-bookmark-prisma.repository';
 import { RepositoryRepositoryFactory } from '../infrastructure-server/di/repository-repository.factory';
@@ -41,22 +41,10 @@ import { createRepositoryRuntimeContribution } from './runtime';
 // ---------------------------------------------------------------------------
 
 /**
- * Module registration context (structurally compatible with IApiModuleContext).
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 结构兼容）。
- *
- * Defined locally to avoid circular dependency on apps/api.
- * 在包内本地定义，避免对 apps/api 的循环依赖。
+ * Typed module context for repository registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface RepositoryApiModuleContext {
-  readonly app: import('express').Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: import('express').RequestHandler;
-    requireRole(roles: string[]): import('express').RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type RepositoryApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface RepositoryApiModuleDef {
   readonly name: string;
@@ -81,7 +69,7 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const prismaClient = db as PrismaClient;
+    const prismaClient = db;
     const repositories = RepositoryRepositoryFactory.createPrismaRepositories(prismaClient);
     const storageBaseDir =
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';

@@ -11,7 +11,8 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { GovernanceEventMap } from '../contracts/protocol/governance-event-map';
 import type { GovernanceModuleRuntimeContribution } from '../infrastructure-server';
 
@@ -62,9 +63,28 @@ const governanceEventHandlers: {
   },
 };
 
+const governanceEventNames = [
+  'governance:rule-created',
+  'governance:rule-updated',
+  'governance:rule-deprecated',
+  'governance:rule-reactivated',
+  'governance:rule-status-changed',
+  'governance:rule-severity-changed',
+  'governance:rule-deleted',
+] as const satisfies readonly GovernanceEventName[];
+
+function subscribeGovernanceEvent<K extends GovernanceEventName>(eventName: K): void {
+  eventBus.on(eventName, governanceEventHandlers[eventName]);
+}
+
+function unsubscribeGovernanceEvent<K extends GovernanceEventName>(eventName: K): void {
+  eventBus.off(eventName, governanceEventHandlers[eventName]);
+}
+
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
+  * @returns any - 
  */
 export function createGovernanceRuntimeContribution(): GovernanceRuntimeContribution {
   let started = false;
@@ -75,8 +95,8 @@ export function createGovernanceRuntimeContribution(): GovernanceRuntimeContribu
         return;
       }
 
-      for (const [eventName, handler] of Object.entries(governanceEventHandlers)) {
-        (eventBus as any).on(eventName, handler);
+      for (const eventName of governanceEventNames) {
+        subscribeGovernanceEvent(eventName);
       }
 
       started = true;
@@ -88,8 +108,8 @@ export function createGovernanceRuntimeContribution(): GovernanceRuntimeContribu
         return;
       }
 
-      for (const [eventName, handler] of Object.entries(governanceEventHandlers)) {
-        (eventBus as any).off(eventName, handler);
+      for (const eventName of governanceEventNames) {
+        unsubscribeGovernanceEvent(eventName);
       }
 
       started = false;

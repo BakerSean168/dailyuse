@@ -2,9 +2,9 @@
  * Folder 实体实现 (Server)
  */
 import type { FolderMetadataDTO } from '@dailyuse/contracts/repository';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { FolderMetadata, ResourceId } from '../value-objects';
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 // ============ 本地类型定义 ============
 // TODO: 这些类型应该移到 @dailyuse/contracts/repository

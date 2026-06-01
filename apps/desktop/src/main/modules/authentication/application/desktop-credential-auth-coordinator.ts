@@ -1,8 +1,8 @@
-import type { ILogger } from '@dailyuse/utils';
+import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/domain-server';
+} from '@dailyuse/authentication/api';
 import {
   type IpcResult,
   toIpcResult,
@@ -19,9 +19,9 @@ import {
 import {
   TokenManager,
   SessionManager,
-  getNetworkStateManager,
+  NetworkStateManager,
 } from '../infrastructure';
-import { getWindowManager } from '../../../lifecycle/window-manager';
+import type { WindowManager } from '../../../lifecycle/window-manager';
 import { registerDesktopAccount } from './register-desktop-account';
 import type { RegisterApiResponse } from './auth-remote-gateway';
 import { AuthRemoteGateway } from './auth-remote-gateway';
@@ -32,6 +32,7 @@ import {
   getAccessTokenExpiresInSeconds,
   resolveCurrentIdentityId,
   buildOfflineAuthResponse,
+  safeTransition,
 } from './auth-coordinator-helpers';
 
 export type LoginCredentials = EmailLoginCredentials;
@@ -48,46 +49,51 @@ export interface AuthState {
   runtimeState: AuthRuntimeState;
 }
 
+/** Dependencies for DesktopCredentialAuthCoordinator. */
+export interface CredentialAuthCoordinatorDeps {
+  readonly logger: ILogger;
+  readonly tokenManager: TokenManager;
+  readonly networkStateManager: NetworkStateManager;
+  readonly remoteGateway: AuthRemoteGateway;
+  readonly sessionManager: SessionManager;
+  readonly projectionService: DesktopAuthAccountProjectionService;
+  readonly rememberedAccountService: DesktopRememberedAccountService;
+  readonly credentialRepository: IAuthCredentialRepository | null;
+  readonly sessionRepository: IAuthSessionRepository | null;
+  readonly authState: AuthState;
+  readonly windowManager: WindowManager;
+}
+
 /**
  * Coordinates credential-based authentication: login, register, logout, guest mode.
  * Manages auth mode and runtime state transitions.
  */
 export class DesktopCredentialAuthCoordinator {
-  constructor(
-    private readonly logger: ILogger,
-    private readonly tokenManager: TokenManager,
-    private readonly remoteGateway: AuthRemoteGateway,
-    private readonly sessionManager: SessionManager,
-    private readonly projectionService: DesktopAuthAccountProjectionService,
-    private readonly rememberedAccountService: DesktopRememberedAccountService,
-    private readonly credentialRepository: IAuthCredentialRepository | null,
-    private readonly sessionRepository: IAuthSessionRepository | null,
-    private readonly authState: AuthState,
-  ) {}
+  constructor(private readonly deps: CredentialAuthCoordinatorDeps) {}
 
   async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
-    this.logger.info('Login attempt', { email: credentials.email });
+    this.deps.logger.info('Login attempt', { email: credentials.email });
     return this.executeLogin(credentials);
   }
 
   async loginRememberedAccount(
     request: RememberedDesktopAccountLoginReq,
   ): Promise<IpcResult<AuthResponseDTO>> {
-    const account = await this.rememberedAccountService.findRememberedAccount(request.identityId);
+    const account = await this.deps.rememberedAccountService.findRememberedAccount(request.identityId);
     if (!account) {
       return toIpcResult(
         fail({ code: 'REMEMBERED_ACCOUNT_NOT_FOUND', message: '未找到该记住的账号' }),
       );
     }
 
-    const resolvedPassword = this.rememberedAccountService.decryptPassword(account);
+    const resolvedPassword = this.deps.rememberedAccountService.decryptPassword(account);
     if (!resolvedPassword) {
       return toIpcResult(
         fail({ code: 'REMEMBERED_PASSWORD_UNAVAILABLE', message: '该账号没有可用的已保存密码' }),
       );
     }
 
-    this.logger.info('Remembered account login attempt', {
+    this.deps.logger.info('Remembered account login attempt', {
       identityId: String(request.identityId),
       email: account.identifier,
     });
@@ -102,20 +108,20 @@ export class DesktopCredentialAuthCoordinator {
 
   private async executeLogin(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     try {
-      const mainWindow = getWindowManager().getMainWindow();
+      const mainWindow = this.deps.windowManager.getMainWindow();
       if (mainWindow && !mainWindow.isDestroyed()) {
-        const currentIdentityId = resolveCurrentIdentityId(this.authState, this.sessionManager, this.tokenManager);
-        const localConflict = await this.projectionService.checkActiveLocalConflict(
+        const currentIdentityId = resolveCurrentIdentityId(this.deps.authState, this.deps.sessionManager, this.deps.tokenManager);
+        const localConflict = await this.deps.projectionService.checkActiveLocalConflict(
           credentials.email,
           currentIdentityId,
-          this.credentialRepository,
+          this.deps.credentialRepository,
         );
         if (localConflict) {
           return toIpcResult(fail(localConflict));
         }
       }
 
-      const networkManager = getNetworkStateManager();
+      const networkManager = this.deps.networkStateManager;
       const remoteResult = await loginDesktopAccount(
         {
           email: credentials.email,
@@ -125,8 +131,8 @@ export class DesktopCredentialAuthCoordinator {
         },
         {
           isOnline: () => networkManager.isOnline(),
-          remoteGateway: this.remoteGateway,
-          logger: this.logger,
+          remoteGateway: this.deps.remoteGateway,
+          logger: this.deps.logger,
           onSuccess: async (response, request) => {
             if (!response.accessToken) return;
 
@@ -134,16 +140,16 @@ export class DesktopCredentialAuthCoordinator {
             const expiresIn = getAccessTokenExpiresInSeconds(response.session?.expiresAt);
 
             if (request.rememberPassword) {
-              await this.sessionManager
+              await this.deps.sessionManager
                 .saveOfflineCredentials(request.email, request.password, response.identity.id)
-                .catch((err) => this.logger.warn('Failed to cache offline credentials', { error: err }));
+                .catch((err) => this.deps.logger.warn('Failed to cache offline credentials', { error: err }));
             } else {
-              await this.sessionManager
+              await this.deps.sessionManager
                 .removeOfflineCredentials(request.email)
-                .catch((err) => this.logger.warn('Failed to clear offline credentials', { error: err }));
+                .catch((err) => this.deps.logger.warn('Failed to clear offline credentials', { error: err }));
             }
 
-            await this.sessionManager.activateOnlineSession({
+            await this.deps.sessionManager.activateOnlineSession({
               identityId: response.identity.id,
               sessionId,
               accessToken: response.accessToken,
@@ -151,15 +157,15 @@ export class DesktopCredentialAuthCoordinator {
               expiresIn,
             });
 
-            await this.projectionService.ensureAccountProjection(
+            await this.deps.projectionService.ensureAccountProjection(
               String(response.identity.id),
-              this.projectionService.extractIdentityEmail(response.identity) ?? request.email,
+              this.deps.projectionService.extractIdentityEmail(response.identity) ?? request.email,
             );
 
-            await this.rememberedAccountService.recordLogin({
+            await this.deps.rememberedAccountService.recordLogin({
               identityId: response.identity.id,
               identifier: request.email,
-              nickname: this.projectionService.extractNickname(response.identity),
+              nickname: this.deps.projectionService.extractNickname(response.identity),
               avatarUrl: null,
               rememberPassword: request.rememberPassword ?? false,
               autoLogin: request.autoLogin ?? false,
@@ -174,12 +180,12 @@ export class DesktopCredentialAuthCoordinator {
       }
 
       if (remoteResult.ok) {
-        this.authState.authMode = AuthMode.ONLINE_USER;
-        this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+        this.deps.authState.authMode = AuthMode.ONLINE_USER;
+        safeTransition(this.deps.authState, AuthRuntimeState.AUTHENTICATED);
         return toIpcResult(ok({ ...remoteResult.response, authMode: AuthMode.ONLINE_USER }));
       }
 
-      const offlineResponse = await this.sessionManager.loginOffline({
+      const offlineResponse = await this.deps.sessionManager.loginOffline({
         identifier: credentials.email,
         password: credentials.password,
         rememberPassword: credentials.rememberPassword,
@@ -192,17 +198,17 @@ export class DesktopCredentialAuthCoordinator {
           offlineResponse.sessionId,
           offlineResponse.accessToken,
           undefined,
-          this.credentialRepository,
-          this.sessionRepository,
+          this.deps.credentialRepository,
+          this.deps.sessionRepository,
         );
-        this.authState.authMode = AuthMode.OFFLINE_USER;
-        this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+        this.deps.authState.authMode = AuthMode.OFFLINE_USER;
+        safeTransition(this.deps.authState, AuthRuntimeState.AUTHENTICATED);
         return toIpcResult(ok({ ...offlineAuthResponse, authMode: AuthMode.OFFLINE_USER }));
       }
 
       return toIpcResult(fail({ code: 'LOGIN_FAILED', message: offlineResponse.error || '登录失败' }));
     } catch (error) {
-      this.logger.error('Login failed', { error });
+      this.deps.logger.error('Login failed', { error });
       return toIpcResult(
         fail({ code: 'LOGIN_ERROR', message: error instanceof Error ? error.message : '登录失败' }),
       );
@@ -211,9 +217,9 @@ export class DesktopCredentialAuthCoordinator {
 
   async register(request: RegisterRequest): Promise<IpcResult<AuthResponseDTO>> {
     const result = await registerDesktopAccount(request, {
-      isOnline: () => getNetworkStateManager().isOnline(),
-      remoteGateway: this.remoteGateway,
-      logger: this.logger,
+      isOnline: () => this.deps.networkStateManager.isOnline(),
+      remoteGateway: this.deps.remoteGateway,
+      logger: this.deps.logger,
       onSuccess: async (data) => {
         await this.completeRegisterSuccess(data, request);
       },
@@ -239,10 +245,10 @@ export class DesktopCredentialAuthCoordinator {
 
     const sessionId = data.session?.id || registerLike.sessionId || crypto.randomUUID();
     const expiresIn = getAccessTokenExpiresInSeconds(data.session?.expiresAt);
-    this.authState.authMode = AuthMode.ONLINE_USER;
-    this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+    this.deps.authState.authMode = AuthMode.ONLINE_USER;
+    safeTransition(this.deps.authState, AuthRuntimeState.AUTHENTICATED);
 
-    await this.sessionManager.activateOnlineSession({
+    await this.deps.sessionManager.activateOnlineSession({
       identityId,
       sessionId,
       accessToken: data.accessToken,
@@ -250,13 +256,13 @@ export class DesktopCredentialAuthCoordinator {
       expiresIn,
     });
 
-    await this.sessionManager
+    await this.deps.sessionManager
       .saveOfflineCredentials(request.email, request.password, identityId)
       .catch((err) =>
-        this.logger.warn('Failed to cache offline credentials after register', { error: err }),
+        this.deps.logger.warn('Failed to cache offline credentials after register', { error: err }),
       );
 
-    await this.rememberedAccountService.recordLogin({
+    await this.deps.rememberedAccountService.recordLogin({
       identityId,
       identifier: request.email,
       nickname: request.username ?? null,
@@ -283,16 +289,16 @@ export class DesktopCredentialAuthCoordinator {
     const expiresIn = getAccessTokenExpiresInSeconds(response.session?.expiresAt);
 
     if (request.rememberPassword) {
-      await this.sessionManager
+      await this.deps.sessionManager
         .saveOfflineCredentials(request.email, request.password, response.identity.id)
-        .catch((err) => this.logger.warn('Failed to cache offline credentials', { error: err }));
+        .catch((err) => this.deps.logger.warn('Failed to cache offline credentials', { error: err }));
     } else {
-      await this.sessionManager
+      await this.deps.sessionManager
         .removeOfflineCredentials(request.email)
-        .catch((err) => this.logger.warn('Failed to clear offline credentials', { error: err }));
+        .catch((err) => this.deps.logger.warn('Failed to clear offline credentials', { error: err }));
     }
 
-    await this.sessionManager.activateOnlineSession({
+    await this.deps.sessionManager.activateOnlineSession({
       identityId: response.identity.id,
       sessionId,
       accessToken: response.accessToken,
@@ -300,41 +306,41 @@ export class DesktopCredentialAuthCoordinator {
       expiresIn,
     });
 
-    await this.projectionService.ensureAccountProjection(
+    await this.deps.projectionService.ensureAccountProjection(
       String(response.identity.id),
-      this.projectionService.extractIdentityEmail(response.identity) ?? request.email,
+      this.deps.projectionService.extractIdentityEmail(response.identity) ?? request.email,
     );
 
-    await this.rememberedAccountService.recordLogin({
+    await this.deps.rememberedAccountService.recordLogin({
       identityId: response.identity.id,
       identifier: request.email,
-      nickname: this.projectionService.extractNickname(response.identity),
+      nickname: this.deps.projectionService.extractNickname(response.identity),
       avatarUrl: null,
       rememberPassword: request.rememberPassword ?? false,
       autoLogin: request.autoLogin ?? false,
       password: request.rememberPassword ? request.password : undefined,
     });
 
-    this.authState.authMode = AuthMode.ONLINE_USER;
-    this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+    this.deps.authState.authMode = AuthMode.ONLINE_USER;
+    safeTransition(this.deps.authState, AuthRuntimeState.AUTHENTICATED);
   }
 
   async enterGuestMode(): Promise<IpcResult<{ identityId: string; mode: AuthMode; message: string }>> {
-    this.logger.info('Entering guest mode');
+    this.deps.logger.info('Entering guest mode');
 
     try {
-      const guestId = await this.sessionManager.getOrCreateGuestIdentity();
-      this.authState.authMode = AuthMode.GUEST;
-      this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+      const guestId = await this.deps.sessionManager.getOrCreateGuestIdentity();
+      this.deps.authState.authMode = AuthMode.GUEST;
+      safeTransition(this.deps.authState, AuthRuntimeState.AUTHENTICATED);
 
-      this.projectionService.ensureAccountProjection(guestId, null).catch((err) =>
-        this.logger.warn('Account projection failed in guest mode (non-blocking)', { error: err }),
+      this.deps.projectionService.ensureAccountProjection(guestId, null).catch((err) =>
+        this.deps.logger.warn('Account projection failed in guest mode (non-blocking)', { error: err }),
       );
 
-      this.logger.info('Guest mode activated', { identityId: guestId });
+      this.deps.logger.info('Guest mode activated', { identityId: guestId });
       return toIpcResult(ok({ identityId: guestId, mode: AuthMode.GUEST, message: '已进入访客模式' }));
     } catch (error) {
-      this.logger.error('Failed to enter guest mode', { error });
+      this.deps.logger.error('Failed to enter guest mode', { error });
       return toIpcResult(
         fail({ code: 'GUEST_MODE_ERROR', message: error instanceof Error ? error.message : '进入访客模式失败' }),
       );
@@ -342,17 +348,17 @@ export class DesktopCredentialAuthCoordinator {
   }
 
   async logout(): Promise<IpcResult<void>> {
-    this.logger.info('Logout');
+    this.deps.logger.info('Logout');
 
     try {
-      const result = await this.sessionManager.logout();
-      this.authState.authMode = AuthMode.UNAUTHENTICATED;
-      this.authState.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      const result = await this.deps.sessionManager.logout();
+      this.deps.authState.authMode = AuthMode.UNAUTHENTICATED;
+      safeTransition(this.deps.authState, AuthRuntimeState.UNAUTHENTICATED);
 
       if (result.ok) return toIpcResult(ok(undefined));
       return toIpcResult(fail({ code: 'LOGOUT_FAILED', message: result.error || '登出失败' }));
     } catch (error) {
-      this.logger.error('Logout failed', { error });
+      this.deps.logger.error('Logout failed', { error });
       return toIpcResult(fail({ code: 'LOGOUT_ERROR', message: String(error) }));
     }
   }

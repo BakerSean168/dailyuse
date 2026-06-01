@@ -2,21 +2,30 @@ import type {
   PrismaClient,
   EditorWorkspaceSessionGroupTab as PrismaEditorWorkspaceSessionGroupTab,
 } from '@dailyuse/database';
+import { Prisma } from '@dailyuse/database';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+  EditorTabId,
+} from '@dailyuse/contracts/primitives';
+import type { TabType, TabViewStateDTO } from '@dailyuse/contracts/editor';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import { EditorTab } from '../../../domain-server/entities/editor-tab';
 
 function toDomain(row: PrismaEditorWorkspaceSessionGroupTab): EditorTab {
   return EditorTab.load({
-    id: row.id as any,
-    groupId: row.groupId as any,
-    sessionId: row.sessionId as any,
-    workspaceId: row.workspaceId as any,
-    identityId: row.identityId as any,
+    id: row.id as EditorTabId,
+    groupId: row.groupId as EditorGroupId,
+    sessionId: row.sessionId as EditorSessionId,
+    workspaceId: row.workspaceId as EditorWorkspaceId,
+    identityId: row.identityId as IdentityId,
     resourceId: row.resourceId,
     tabIndex: row.tabIndex,
-    tabType: row.tabType as any,
+    tabType: row.tabType as TabType,
     name: row.title,
-    viewState: (row.viewState as any) ?? {
+    viewState: (row.viewState as unknown as TabViewStateDTO) ?? {
       scrollTop: 0,
       scrollLeft: 0,
       cursorPosition: { line: 1, column: 1 },
@@ -97,7 +106,7 @@ export class EditorTabPrismaRepository implements IEditorTabRepository {
         tabIndex: dto.tabIndex,
         tabType: dto.tabType,
         title: dto.name,
-        viewState: dto.viewState as any,
+        viewState: dto.viewState as unknown as Prisma.InputJsonValue,
         isPinned: dto.isPinned,
         isActive: dto.isActive,
         createdAt: new Date(dto.createdAt),
@@ -112,7 +121,7 @@ export class EditorTabPrismaRepository implements IEditorTabRepository {
         tabIndex: dto.tabIndex,
         tabType: dto.tabType,
         title: dto.name,
-        viewState: dto.viewState as any,
+        viewState: dto.viewState as unknown as Prisma.InputJsonValue,
         isPinned: dto.isPinned,
         isActive: dto.isActive,
         updatedAt: new Date(dto.updatedAt),

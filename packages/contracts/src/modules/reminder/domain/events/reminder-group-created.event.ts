@@ -1,4 +1,5 @@
 import type { IdentityId } from '../../../../primitives';
+import type { ReminderGroupServerDTO } from '../../aggregates/reminder-group-server';
 
 /**
  * Reminder Group Created Event
@@ -12,5 +13,5 @@ import type { IdentityId } from '../../../../primitives';
  */
 export interface ReminderGroupCreatedEvent {
   identityId: IdentityId;
-  group: Record<string, any>;
+  group: ReminderGroupServerDTO;
 }

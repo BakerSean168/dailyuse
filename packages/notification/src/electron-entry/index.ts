@@ -18,7 +18,7 @@ import {
 } from '@dailyuse/contracts/electron';
 import { fail } from '@dailyuse/contracts/result';
 import { createNotificationPowerSyncModule } from '../infrastructure-server/powersync';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { createNotificationTransportHandlers } from '../api/transport-handlers';
 import { createNotificationRuntimeContribution } from '../api/runtime';
 import type { NotificationModuleInstance } from '../infrastructure-server';

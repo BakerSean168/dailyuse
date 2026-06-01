@@ -24,7 +24,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { PrivacySettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -38,7 +38,7 @@ export const Default: Story = {
 };
 
 export const PublicProfile: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { PrivacySettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -58,7 +58,7 @@ export const PublicProfile: Story = {
 };
 
 export const MaxPrivacy: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { PrivacySettings },
     setup() {
       const model = ref({ ...args.modelValue });

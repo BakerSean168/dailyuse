@@ -5,7 +5,7 @@ import type { IDomainEvent } from '@dailyuse/contracts/shared';
 /**
  * Event handler type
  */
-export type EventHandler<T = any> = (event: T) => void | Promise<void>;
+export type EventHandler<T = unknown> = (event: T) => void | Promise<void>;
 
 /**
  * Event emitter interface
@@ -14,7 +14,7 @@ export interface IEventEmitter {
   on(eventName: string, handler: EventHandler): void;
   once(eventName: string, handler: EventHandler): void;
   off(eventName: string, handler: EventHandler): void;
-  emit(eventName: string, data?: any): Promise<void>;
+  emit(eventName: string, data?: unknown): Promise<void>;
   removeAllListeners(eventName?: string): void;
 }
 
@@ -47,7 +47,7 @@ export interface IEventBus {
    * @param eventType 事件类型
    * @param payload 事件负载
    */
-  send?(eventType: string, payload: any): Promise<void>;
+  send?(eventType: string, payload: unknown): Promise<void>;
 }
 
 // ============ Mapper 接口 ============
@@ -78,7 +78,7 @@ export interface IPersistenceMapper<TDomain, TRecord, TPersistence = Record<stri
  * 与 GlobalEventBus.send() 匹配，但不依赖具体实现
  */
 export interface IEventSender {
-  send(eventType: any, payload: any): void;
+  send(eventType: string, payload: unknown): void;
 }
 
 /**
@@ -94,7 +94,7 @@ export interface IEventSender {
  * 
  * @example
  * ```typescript
- * import { eventBus } from '@dailyuse/utils';
+ * import { eventBus } from '@dailyuse/utils/domain';
  * import { createEventBusAdapter } from '@dailyuse/patterns';
  * 
  * const eventBusAdapter = createEventBusAdapter(eventBus);
@@ -104,10 +104,10 @@ export interface IEventSender {
 export function createEventBusAdapter(sender: IEventSender): IEventBus {
   return {
     async publish(event) {
-      sender.send(event.eventType as any, event.payload);
+      sender.send(event.eventType, event.payload);
     },
     async send(eventType, payload) {
-      sender.send(eventType as any, payload);
+      sender.send(eventType, payload);
     },
   };
 }

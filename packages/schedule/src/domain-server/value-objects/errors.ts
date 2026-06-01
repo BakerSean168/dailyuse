@@ -3,7 +3,7 @@
  * 调度模块领域错误
  */
 
-import { DomainError } from '@dailyuse/utils';
+import { DomainError } from '@dailyuse/utils/errors';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 
 /**

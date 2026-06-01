@@ -5,9 +5,8 @@
  * Same global overlays as the web app, with a custom desktop title bar
  * on Windows/Linux and native traffic lights preserved on macOS.
  */
-import { computed, onBeforeUnmount, onMounted, reactive } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { APP_TITLE_NAME, logo48 } from '@dailyuse/assets';
-import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { useRoute, useRouter } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
 import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
@@ -19,6 +18,7 @@ import {
   useThemeSync,
 } from '@dailyuse/app-vue';
 import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
+import { useDesktopWindowControls } from './useDesktopWindowControls';
 
 const route = useRoute();
 const router = useRouter();
@@ -27,12 +27,15 @@ const showDesktopTitlebar = computed(() => route.name !== 'custom-notification')
 const isMacPlatform =
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 const showCustomWindowControls = computed(() => !isMacPlatform && showDesktopTitlebar.value);
-const windowControlsState = reactive({
-  isMaximized: false,
-  isMinimizable: true,
-  isMaximizable: true,
-  isClosable: true,
-});
+
+const {
+  windowControlsState,
+  minimizeWindow,
+  toggleMaximize,
+  closeWindow,
+  startListening,
+  stopListening,
+} = useDesktopWindowControls();
 
 function navigateHome() {
   if (route.path !== '/') {
@@ -40,56 +43,16 @@ function navigateHome() {
   }
 }
 
-function applyWindowControlsState(state: Partial<typeof windowControlsState> | null | undefined) {
-  if (!state) {
-    return;
-  }
-
-  windowControlsState.isMaximized = state.isMaximized ?? windowControlsState.isMaximized;
-  windowControlsState.isMinimizable = state.isMinimizable ?? windowControlsState.isMinimizable;
-  windowControlsState.isMaximizable = state.isMaximizable ?? windowControlsState.isMaximizable;
-  windowControlsState.isClosable = state.isClosable ?? windowControlsState.isClosable;
-}
-
-async function syncWindowControlsState() {
-  const state = (await window.electronAPI?.invoke(WindowChannels.GET_CONTROLS_STATE)) as
-    | Partial<typeof windowControlsState>
-    | null
-    | undefined;
-  applyWindowControlsState(state);
-}
-
-async function minimizeWindow() {
-  await window.electronAPI?.invoke(WindowChannels.MINIMIZE);
-}
-
-async function toggleWindowMaximize() {
-  const state = (await window.electronAPI?.invoke(WindowChannels.TOGGLE_MAXIMIZE)) as
-    | Partial<typeof windowControlsState>
-    | null
-    | undefined;
-  applyWindowControlsState(state);
-}
-
-async function closeWindow() {
-  await window.electronAPI?.invoke(WindowChannels.CLOSE);
-}
-
-const handleWindowStateChanged = (...args: unknown[]) => {
-  applyWindowControlsState(args[0] as Partial<typeof windowControlsState> | null | undefined);
-};
-
 onMounted(() => {
   if (!showCustomWindowControls.value) {
     return;
   }
 
-  void syncWindowControlsState();
-  window.electronAPI?.on(RendererEventChannels.WINDOW_STATE_CHANGED, handleWindowStateChanged);
+  startListening();
 });
 
 onBeforeUnmount(() => {
-  window.electronAPI?.off(RendererEventChannels.WINDOW_STATE_CHANGED, handleWindowStateChanged);
+  stopListening();
 });
 
 useThemeSync();
@@ -143,7 +106,7 @@ usePresentationBootstrap();
             :disabled="!windowControlsState.isMaximizable"
             :aria-label="windowControlsState.isMaximized ? 'Restore window' : 'Maximize window'"
             :title="windowControlsState.isMaximized ? 'Restore' : 'Maximize'"
-            @click="toggleWindowMaximize"
+            @click="toggleMaximize"
           >
             <Copy v-if="windowControlsState.isMaximized" class="desktop-titlebar__window-icon" />
             <Square v-else class="desktop-titlebar__window-icon" />

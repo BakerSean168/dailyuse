@@ -6,5 +6,5 @@
 
 export { healthController } from './health.controller';
 export { infoController } from './info.controller';
-export { metricsController } from './metrics.controller';
+export { createMetricsController } from './metrics.controller';
 export { logsController } from './logs.controller';

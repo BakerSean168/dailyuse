@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { TaskInstanceId as ITaskInstanceId } from '@dailyuse/contracts/primitives';
 

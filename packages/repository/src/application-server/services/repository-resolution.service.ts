@@ -4,7 +4,7 @@
  * Responsible for canonical repository resolution with active fallback and auto-create.
  */
 import type { IRepositoryRepository } from '../../domain-server/repositories/i-repository-repository';
-import { RepositoryStatus } from '@dailyuse/contracts/repository';
+import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -55,7 +55,7 @@ export class RepositoryResolutionService {
     const result = await this.deps.createRepository.execute({
       identityId,
       name: 'Knowledge Base',
-      type: 'Markdown' as any,
+      type: RepositoryType.Markdown,
       path: 'knowledge-base',
     });
 

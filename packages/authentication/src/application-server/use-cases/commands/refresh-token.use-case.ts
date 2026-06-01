@@ -14,7 +14,7 @@ import {
 import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { AuthSessionId } from '../../../domain-shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('RefreshToken');
 
@@ -36,8 +36,8 @@ export class RefreshTokenUseCase {
 
     // 1. Verify refresh token and parse payload
     const verifyResult = this.tokenProvider.verifyRefreshToken(input.refreshToken);
-    let tokenIdentityId: any;
-    let tokenSessionId: any;
+    let tokenIdentityId: unknown;
+    let tokenSessionId: unknown;
     try {
       ({ identityId: tokenIdentityId, sessionId: tokenSessionId } =
         unwrapOrThrowError(verifyResult));
@@ -46,7 +46,7 @@ export class RefreshTokenUseCase {
     }
 
     // 2. Find and validate session
-    const session = await this.sessionRepository.findById(AuthSessionId.of(tokenSessionId));
+    const session = await this.sessionRepository.findById(AuthSessionId.of(tokenSessionId as string));
     const refreshTokenHash = this.tokenProvider.hash(input.refreshToken);
 
     if (!session || !session.isValid() || session.refreshTokenHash !== refreshTokenHash) {

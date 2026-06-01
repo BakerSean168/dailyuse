@@ -1,4 +1,9 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type {
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/i-editor-session-repository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
 import { parseSessionLayoutFromPersistence } from '../shared/session-layout.persistence';
@@ -19,9 +24,9 @@ function toDomain(row: SessionRow): EditorSession {
   const layout = parseSessionLayoutFromPersistence(row.layout);
 
   return EditorSession.load({
-    id: row.id as any,
-    workspaceId: row.workspace_id as any,
-    identityId: row.identity_id as any,
+    id: row.id as EditorSessionId,
+    workspaceId: row.workspace_id as EditorWorkspaceId,
+    identityId: row.identity_id as IdentityId,
     name: row.name,
     description: null,
     layout,

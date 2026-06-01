@@ -83,7 +83,7 @@ export class PrismaAuthIdentityMapper {
     const identifiers = (serverDTO.identifiers ?? []).map((dto: AuthIdentifierDTO) => {
       if (dto.type === 'Email') return EmailIdentifier.fromDTO(dto);
       if (dto.type === 'Phone') return PhoneIdentifier.fromDTO(dto);
-      throw new Error(`Unknown identifier type: ${(dto as any).type}`);
+      throw new Error(`Unknown identifier type: ${(dto as Record<string, unknown>).type}`);
     });
 
     // Convert DTO oauth bindings to domain entities

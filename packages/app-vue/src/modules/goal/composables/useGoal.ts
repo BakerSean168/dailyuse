@@ -4,6 +4,14 @@
  * 编排 GoalClientService 调用 + Store 更新 + 错误处理。
  * 通过 inject(GOAL_SERVICE_KEY) 获取服务实例，
  * 使用 Result<T> 模式替代 try/catch。
+ *
+ * 子实体操作已拆分：
+ * - useFocusMode: focus mode
+ * - useGoalFilters: filter/search
+ * - useGoalFolders: folder CRUD
+ * - useKeyResults: key result CRUD
+ * - useGoalRecords: records + reviews
+ * - goalOperations: 共享 orchestration helpers
  */
 
 import { computed, ref } from 'vue';
@@ -12,27 +20,20 @@ import { useGoalStore } from '../stores/goal-store';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { ResultError } from '@dailyuse/contracts/result';
 import type {
   GoalClientDTO,
   CreateGoalReq,
   UpdateGoalReq,
   GetGoalAggregateRes,
-  GoalSystemView,
-  CreateGoalFolderReq,
-  UpdateGoalFolderReq,
-  AddKeyResultReq,
-  UpdateKeyResultReq,
-  CreateGoalRecordReq,
-  CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { executeGoalOperation, executeGoalAction, createGoalErrorHandler } from './goalOperations';
+import { useFocusMode } from './useFocusMode';
+import { useGoalFilters } from './useGoalFilters';
+import { useGoalFolders } from './useGoalFolders';
+import { useKeyResults } from './useKeyResults';
+import { useGoalRecords } from './useGoalRecords';
 
 type GoalEntityLike = { toDTO(): GoalClientDTO };
-type GoalFolderEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalFolders'][number] };
-type KeyResultEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['keyResults'][number] };
-type GoalReviewEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalReviews'][number] };
-type GoalRecordEntityLike = { toDTO(): ReturnType<typeof useGoalStore>['goalRecords'][number] };
 
 export function useGoal() {
   const store = useGoalStore();
@@ -46,40 +47,17 @@ export function useGoal() {
   const goalFolders = computed(() => store.goalFolders);
   const goalReviews = computed(() => store.goalReviews);
   const goalRecords = computed(() => store.goalRecords);
-  const systemView = computed(() => store.systemView);
-  const selectedFolderId = computed(() => store.selectedFolderId);
-  const currentFocusMode = computed(() => store.currentFocusMode);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
-  const pagination = computed(() => store.pagination);
-  const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(error: unknown, fallbackKey: string, scope?: string): void {
-    const message = translateResultError(error, t, { fallbackKey });
-    store.setError(message);
+  const opOpts = {
+    t,
+    setError: (msg: string | null) => store.setError(msg),
+    onError: createGoalErrorHandler(t, (msg) => store.setError(msg)),
+  };
 
-    if (!error || typeof error !== 'object') {
-      console.error(message);
-      return;
-    }
-
-    const err = error as ResultError;
-    const details = err.details?.map((detail) => ({
-      field: detail.field,
-      code: detail.code,
-      message: detail.message,
-      value: detail.value,
-    }));
-
-    console.error(`[goal] ${scope ?? 'error'}`, {
-      code: err.code,
-      message: err.message,
-      details,
-      context: err.context,
-      translatedMessage: message,
-    });
-  }
+  // ── Goal CRUD ────────────────────────────────────────────────────────
 
   async function fetchGoals() {
     store.setLoading(true);
@@ -103,10 +81,10 @@ export function useGoal() {
           result.data.pagination?.total ?? 0,
         );
       } else {
-        handleError(result.error, 'goal.error.loadListFailed', 'fetchGoals');
+        opOpts.onError(result.error, 'goal.error.loadListFailed', 'fetchGoals');
       }
-    } catch (e: any) {
-      handleError(e, 'goal.error.loadListException');
+    } catch (e: unknown) {
+      opOpts.onError(e, 'goal.error.loadListException', 'fetchGoals');
     } finally {
       store.setLoading(false);
     }
@@ -115,20 +93,21 @@ export function useGoal() {
   async function fetchGoal(id: string): Promise<GoalClientDTO | null> {
     store.setLoading(true);
     store.setError(null);
-    // Clear key results when switching goals to prevent stale data
     store.setKeyResults([]);
     store.setGoalRecords([]);
     store.setGoalReviews([]);
     try {
-      const result = await service.getGoal(id);
-      if (result.ok) {
-        const dto = result.data.toDTO();
+      const data = await executeGoalOperation(() => service.getGoal(id), {
+        ...opOpts,
+        fallbackKey: 'goal.error.loadFailed',
+        scope: 'fetchGoal',
+      });
+      if (data) {
+        const dto = data.toDTO();
         store.setCurrentGoal(dto);
         return dto;
-      } else {
-        handleError(result.error, 'goal.error.loadFailed', 'fetchGoal');
-        return null;
       }
+      return null;
     } finally {
       store.setLoading(false);
     }
@@ -138,15 +117,16 @@ export function useGoal() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createGoal(sanitizeForIpc(req));
-      if (result.ok) {
-        const dto = result.data.toDTO();
+      const data = await executeGoalOperation(
+        () => service.createGoal(sanitizeForIpc(req)),
+        { ...opOpts, fallbackKey: 'goal.error.createFailed', scope: 'createGoal' },
+      );
+      if (data) {
+        const dto = data.toDTO();
         store.addGoal(dto);
         return dto;
-      } else {
-        handleError(result.error, 'goal.error.createFailed', 'createGoal');
-        return null;
       }
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -156,15 +136,16 @@ export function useGoal() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.updateGoal(id, sanitizeForIpc(req));
-      if (result.ok) {
-        const dto = result.data.toDTO();
+      const data = await executeGoalOperation(
+        () => service.updateGoal(id, sanitizeForIpc(req)),
+        { ...opOpts, fallbackKey: 'goal.error.updateFailed', scope: 'updateGoal' },
+      );
+      if (data) {
+        const dto = data.toDTO();
         store.updateGoal(dto);
         return dto;
-      } else {
-        handleError(result.error, 'goal.error.updateFailed', 'updateGoal');
-        return null;
       }
+      return null;
     } finally {
       savingId.value = null;
     }
@@ -174,291 +155,76 @@ export function useGoal() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.deleteGoal(id);
-      if (result.ok) {
-        store.removeGoal(id);
-        return true;
-      } else {
-        handleError(result.error, 'goal.error.deleteFailed', 'deleteGoal');
-        return false;
-      }
+      const ok = await executeGoalAction(
+        () => service.deleteGoal(id),
+        { ...opOpts, fallbackKey: 'goal.error.deleteFailed', scope: 'deleteGoal' },
+      );
+      if (ok) store.removeGoal(id);
+      return ok;
     } finally {
       savingId.value = null;
     }
   }
 
-  async function fetchFolders() {
-    const result = await service.listGoalFolders();
-    if (result.ok) {
-      store.setGoalFolders((result.data ?? []).map((f: GoalFolderEntityLike) => f.toDTO()));
-    } else {
-      handleError(result.error, 'goal.error.loadFoldersFailed', 'fetchFolders');
-    }
-  }
+  // ── Aggregate View ───────────────────────────────────────────────────
 
-  async function createFolder(req: CreateGoalFolderReq) {
-    const result = await service.createGoalFolder(sanitizeForIpc(req));
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.addGoalFolder(dto);
-      return dto;
-    } else {
-      handleError(result.error, 'goal.error.createFolderFailed', 'createFolder');
-      return null;
-    }
-  }
-
-  async function updateFolder(id: string, req: UpdateGoalFolderReq) {
-    const result = await service.updateGoalFolder(id, sanitizeForIpc(req));
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.updateGoalFolder(dto);
-      return dto;
-    } else {
-      handleError(result.error, 'goal.error.updateFolderFailed', 'updateFolder');
-      return null;
-    }
-  }
-
-  async function deleteFolder(id: string) {
-    const result = await service.deleteGoalFolder(id);
-    if (result.ok) {
-      store.removeGoalFolder(id);
-      return true;
-    } else {
-      handleError(result.error, 'goal.error.deleteFolderFailed', 'deleteFolder');
-      return false;
-    }
-  }
-
-  async function fetchKeyResults(goalId: string) {
-    const result = await service.getKeyResults(goalId);
-    if (result.ok) {
-      store.setKeyResults(
-        (result.data.keyResults ?? []).map((kr: KeyResultEntityLike) => kr.toDTO()),
-      );
-    } else {
-      handleError(result.error, 'goal.error.loadKRFailed', 'fetchKeyResults');
-    }
-  }
-
-  async function addKeyResult(goalId: string, req: AddKeyResultReq) {
-    const result = await service.createKeyResult(goalId, sanitizeForIpc(req));
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.addKeyResult(dto);
-      return dto;
-    } else {
-      handleError(result.error, 'goal.error.addKRFailed', 'addKeyResult');
-      return null;
-    }
-  }
-
-  async function updateKeyResult(goalId: string, krId: string, req: UpdateKeyResultReq) {
-    const result = await service.updateKeyResult(goalId, krId, sanitizeForIpc(req));
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.updateKeyResult(dto);
-      return dto;
-    } else {
-      handleError(result.error, 'goal.error.updateKRFailed', 'updateKeyResult');
-      return null;
-    }
-  }
-
-  async function deleteKeyResult(goalId: string, krId: string) {
-    const result = await service.deleteKeyResult(goalId, krId);
-    if (result.ok) {
-      store.removeKeyResult(krId);
-      return true;
-    } else {
-      handleError(result.error, 'goal.error.deleteKRFailed', 'deleteKeyResult');
-      return false;
-    }
-  }
-
-  async function fetchRecords(goalId: string) {
-    const result = await service.getGoalRecordsByGoal(goalId);
-    if (result.ok) {
-      store.setGoalRecords(
-        (result.data.records ?? []).map((r: GoalRecordEntityLike) => r.toDTO()),
-      );
-    } else {
-      handleError(result.error, 'goal.error.loadRecordsFailed', 'fetchRecords');
-    }
-  }
-
-  async function createRecord(goalId: string, req: CreateGoalRecordReq) {
-    const { keyResultId, ...rest } = req;
-    const result = await service.createGoalRecord(goalId, keyResultId, sanitizeForIpc(rest));
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId)]);
-      return dto;
-    } else {
-      handleError(result.error, 'goal.error.createRecordFailed', 'createRecord');
-      return null;
-    }
-  }
-
-  /**
-   * createGoalRecord - 便捷别名，接收 (goalId, keyResultId, data) 三参数
-   * 供 GoalRecordDialog 等组件调用
-   */
-  async function createGoalRecord(
-    goalId: string,
-    keyResultId: string,
-    data: { value: number; note?: string; recordedAt?: number },
-  ) {
-    return createRecord(goalId, { keyResultId, ...data } as CreateGoalRecordReq);
-  }
-
-  /**
-   * getGoalAggregateView - 获取单个目标聚合视图（含关键结果等）
-   * 供 GoalDAGVisualization 等组件调用
-   */
   async function getGoalAggregateView(goalId: string): Promise<GetGoalAggregateRes | null> {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getGoalAggregateView(goalId);
-      if (result.ok) {
-        store.setCurrentGoal(result.data.goal);
-        store.setKeyResults(result.data.keyResults ?? result.data.goal.keyResults ?? []);
-        store.setGoalRecords(result.data.records ?? []);
-        store.setGoalReviews(result.data.reviews ?? result.data.goal.reviews ?? []);
-        return result.data;
-      } else {
-        handleError(result.error, 'goal.error.loadAggregateViewFailed', 'getGoalAggregateView');
-        return null;
+      const data = await executeGoalOperation(
+        () => service.getGoalAggregateView(goalId),
+        { ...opOpts, fallbackKey: 'goal.error.loadAggregateViewFailed', scope: 'getGoalAggregateView' },
+      );
+      if (data) {
+        store.setCurrentGoal(data.goal);
+        store.setKeyResults(data.keyResults ?? data.goal.keyResults ?? []);
+        store.setGoalRecords(data.records ?? []);
+        store.setGoalReviews(data.reviews ?? data.goal.reviews ?? []);
+        return data;
       }
+      return null;
     } finally {
       store.setLoading(false);
     }
   }
 
-  async function fetchReviews(goalId: string) {
-    const result = await service.getGoalReviews(goalId);
-    if (result.ok) {
-      store.setGoalReviews(
-        (result.data.reviews ?? []).map((r: GoalReviewEntityLike) => r.toDTO()),
-      );
-    } else {
-      handleError(result.error, 'goal.error.loadReviewsFailed', 'fetchReviews');
-    }
-  }
+  // ── Sub-composables ──────────────────────────────────────────────────
 
-  async function getCurrentFocusMode() {
-    const result = await service.getCurrentFocusMode();
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function activateFocusMode(request: {
-    focusedGoalIds: string[];
-    hiddenGoalsMode?: string;
-  }) {
-    const sanitizedRequest = sanitizeForIpc(request);
-    const result = await service.activateFocusMode(sanitizedRequest as never);
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function deactivateFocusMode() {
-    const result = await service.deactivateFocusMode();
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function extendFocusMode(newEndTime: number) {
-    const result = await service.extendFocusMode(newEndTime);
-    if (result.ok) {
-      store.setCurrentFocusMode(result.data ?? null);
-    }
-    return result;
-  }
-
-  async function createReview(goalId: string, req: CreateGoalReviewReq) {
-    const result = await service.createGoalReview(goalId, sanitizeForIpc(req));
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.addGoalReview(dto);
-      return dto;
-    } else {
-      handleError(result.error, 'goal.error.createReviewFailed', 'createReview');
-      return null;
-    }
-  }
-
-  function setSystemView(v: GoalSystemView) {
-    store.setSystemView(v);
-    fetchGoals();
-  }
-  function setPage(p: number) {
-    store.setPage(p);
-    fetchGoals();
-  }
-  function clearFilters() {
-    store.clearFilters();
-    fetchGoals();
-  }
-  function search(q: string) {
-    store.setSearchQuery(q);
-    fetchGoals();
-  }
-
-  function setSelectedFolderId(folderId: string | null) {
-    store.setSelectedFolderId(folderId);
-  }
+  const focusMode = useFocusMode();
+  const filters = useGoalFilters(fetchGoals);
+  const folders = useGoalFolders();
+  const keyResultOps = useKeyResults();
+  const recordOps = useGoalRecords();
 
   return {
+    // View state
     goals,
     currentGoal,
     keyResults,
     goalFolders,
     goalReviews,
     goalRecords,
-    systemView,
-    selectedFolderId,
-    currentFocusMode,
     isLoading,
     isSaving,
     error,
-    pagination,
-    hasActiveFilter,
+    // Goal CRUD
     fetchGoals,
     fetchGoal,
     createGoal,
     updateGoal,
     deleteGoal,
-    fetchFolders,
-    createFolder,
-    updateFolder,
-    deleteFolder,
-    fetchKeyResults,
-    addKeyResult,
-    updateKeyResult,
-    deleteKeyResult,
-    fetchRecords,
-    createRecord,
-    createGoalRecord,
+    // Aggregate view
     getGoalAggregateView,
-    fetchReviews,
-    createReview,
-    getCurrentFocusMode,
-    activateFocusMode,
-    deactivateFocusMode,
-    extendFocusMode,
-    setSystemView,
-    setPage,
-    clearFilters,
-    search,
-    setSelectedFolderId,
+    // Focus mode (delegated)
+    ...focusMode,
+    // Filters (delegated)
+    ...filters,
+    // Folder CRUD (delegated)
+    ...folders,
+    // Key Result CRUD (delegated)
+    ...keyResultOps,
+    // Records + Reviews (delegated)
+    ...recordOps,
   };
 }

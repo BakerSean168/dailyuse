@@ -95,8 +95,6 @@ export enum ModuleGroup {
  * Web 应用专用初始化管理器
  */
 export class WebInitializationManager {
-  private static instance: WebInitializationManager;
-
   /** 基础初始化管理器 */
   private baseManager: InitializationManager;
 
@@ -112,23 +110,13 @@ export class WebInitializationManager {
   /** 加载失败的模块 */
   private failedModules: Map<string, Error> = new Map();
 
-  private constructor() {
-    this.baseManager = InitializationManager.getInstance();
+  constructor(baseManager?: InitializationManager) {
+    this.baseManager = baseManager ?? new InitializationManager();
 
     // 初始化模块注册表
     this.moduleRegistry.set(ModuleGroup.CRITICAL, []);
     this.moduleRegistry.set(ModuleGroup.AUTHENTICATED, []);
     this.moduleRegistry.set(ModuleGroup.OPTIONAL, []);
-  }
-
-  /**
-   * 获取单例实例
-   */
-  static getInstance(): WebInitializationManager {
-    if (!WebInitializationManager.instance) {
-      WebInitializationManager.instance = new WebInitializationManager();
-    }
-    return WebInitializationManager.instance;
   }
 
   /**

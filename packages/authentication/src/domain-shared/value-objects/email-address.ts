@@ -1,4 +1,4 @@
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   EmailAddressDTO,
   EmailAddress as IEmailAddress,
@@ -96,7 +96,6 @@ export class EmailAddress extends ValueObject<EmailAddressDTO> implements IEmail
     if (!localPart || !domain) return this.props.value;
 
     // Show at least 1 character at start and end
-    const visibleCount = Math.max(2, Math.ceil(localPart.length / 3));
     const maskedLocalPart =
       localPart.slice(0, 1) + '*'.repeat(localPart.length - 2) + localPart.slice(-1);
 

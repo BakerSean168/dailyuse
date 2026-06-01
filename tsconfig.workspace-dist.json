@@ -1,0 +1,67 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@dailyuse/database": ["packages/database/dist/index.d.ts"],
+      "@dailyuse/database/prisma": ["packages/database/dist/generated/prisma/client.d.ts"],
+      "@dailyuse/powersync-schema": ["packages/powersync-schema/dist/index.d.ts"],
+      "@dailyuse/patterns": ["packages/patterns/dist/index.d.ts"],
+      "@dailyuse/utils": ["packages/utils/dist/index.d.ts"],
+      "@dailyuse/utils/*": ["packages/utils/dist/*/index.d.ts", "packages/utils/dist/*.d.ts"],
+      "@dailyuse/contracts": ["packages/contracts/dist/index.d.ts"],
+      "@dailyuse/contracts/*": [
+        "packages/contracts/dist/modules/*/index.d.ts",
+        "packages/contracts/dist/*/index.d.ts"
+      ],
+      "@dailyuse/assets": ["packages/assets/dist/index.d.ts"],
+      "@dailyuse/assets/*": ["packages/assets/dist/*/index.d.ts", "packages/assets/dist/*.d.ts"],
+      "@dailyuse/domain-shared": ["packages/domain-shared/dist/index.d.ts"],
+      "@dailyuse/domain-shared/*": ["packages/domain-shared/dist/*/index.d.ts"],
+      "@dailyuse/governance": ["packages/governance/dist/index.d.ts"],
+      "@dailyuse/governance/*": ["packages/governance/dist/*/index.d.ts"],
+      "@dailyuse/account": ["packages/account/dist/index.d.ts"],
+      "@dailyuse/account/*": ["packages/account/dist/*/index.d.ts"],
+      "@dailyuse/authentication": ["packages/authentication/dist/index.d.ts"],
+      "@dailyuse/authentication/*": ["packages/authentication/dist/*/index.d.ts"],
+      "@dailyuse/goal": ["packages/goal/dist/index.d.ts"],
+      "@dailyuse/goal/*": ["packages/goal/dist/*/index.d.ts"],
+      "@dailyuse/task": ["packages/task/dist/index.d.ts"],
+      "@dailyuse/task/*": ["packages/task/dist/*/index.d.ts"],
+      "@dailyuse/repository": ["packages/repository/dist/index.d.ts"],
+      "@dailyuse/repository/*": ["packages/repository/dist/*/index.d.ts"],
+      "@dailyuse/editor": ["packages/editor/dist/index.d.ts"],
+      "@dailyuse/editor/*": ["packages/editor/dist/*/index.d.ts"],
+      "@dailyuse/reminder": ["packages/reminder/dist/index.d.ts"],
+      "@dailyuse/reminder/*": ["packages/reminder/dist/*/index.d.ts"],
+      "@dailyuse/notification": ["packages/notification/dist/index.d.ts"],
+      "@dailyuse/notification/*": ["packages/notification/dist/*/index.d.ts"],
+      "@dailyuse/schedule": ["packages/schedule/dist/index.d.ts"],
+      "@dailyuse/schedule/*": ["packages/schedule/dist/*/index.d.ts"],
+      "@dailyuse/setting": ["packages/setting/dist/index.d.ts"],
+      "@dailyuse/setting/*": ["packages/setting/dist/*/index.d.ts"],
+      "@dailyuse/ai": ["packages/ai/dist/index.d.ts"],
+      "@dailyuse/ai/*": ["packages/ai/dist/*/index.d.ts", "packages/ai/dist/*.d.ts"],
+      "@dailyuse/http-client": ["packages/http-client/dist/index.d.ts"],
+      "@dailyuse/ipc-client": ["packages/ipc-client/dist/index.d.ts"],
+      "@dailyuse/ui-core": ["packages/ui-core/dist/index.d.ts"],
+      "@dailyuse/ui-core/*": ["packages/ui-core/dist/*", "packages/ui-core/dist/*/index.d.ts"],
+      "@dailyuse/ui-react-native": ["packages/ui-react-native/dist/index.d.ts"],
+      "@dailyuse/app-react": ["packages/app-react/dist/index.d.ts"],
+      "@dailyuse/app-vue": ["packages/app-vue/dist/index.d.ts"],
+      "@dailyuse/ui-vue-shadcn": ["packages/ui-vue-shadcn/dist/index.d.ts"],
+      "@dailyuse/ui-vue-shadcn/*": [
+        "packages/ui-vue-shadcn/dist/*",
+        "packages/ui-vue-shadcn/dist/*/index.d.ts"
+      ],
+      "@dailyuse/dashboard": ["packages/dashboard/dist/index.d.ts"],
+      "@dailyuse/dashboard/*": ["packages/dashboard/dist/*/index.d.ts", "packages/dashboard/dist/*.d.ts"],
+      "@dailyuse/scheduler-server": ["packages/scheduler-server/dist/index.d.ts"],
+      "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
+      "@dailyuse/test-utils/*": [
+        "packages/test-utils/src/*",
+        "packages/test-utils/src/*.ts"
+      ],
+      "@api/shared": ["apps/api/src/shared/index.ts"]
+    }
+  }
+}

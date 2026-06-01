@@ -52,8 +52,10 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   ResourceClientDTO,
+  UploadResourceFileDTO,
   UploadResourcesRequestDTO,
   UploadResourcesResponseDTO,
+  RepositoryStatsDTO,
 } from '@dailyuse/contracts/repository';
 
 // ---------------------------------------------------------------------------
@@ -472,14 +474,14 @@ function buildApplicationPort(
       return useCases.uploadResources.execute({
         repositoryId: data.repositoryId,
         identityId: ctx.identityId,
-        files: data.files as any,
+        files: data.files as UploadResourceFileDTO[],
         metadata: data.metadata as UploadResourcesRequestDTO | undefined,
       });
     },
 
     // ---- Repository stats — 仓库统计 ----
     updateRepositoryStats: async (id, data) => {
-      return useCases.updateRepositoryStats.execute({ id, stats: data as any });
+      return useCases.updateRepositoryStats.execute({ id, stats: data as Partial<RepositoryStatsDTO> });
     },
 
     // ---- Folder CRUD — 文件夹增删改查 ----

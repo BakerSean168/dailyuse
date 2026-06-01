@@ -85,16 +85,17 @@ import { Plus, LayoutGrid, Folder, Archive, Pencil, Trash2 } from 'lucide-vue-ne
 import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
+import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
-const props = defineProps<{
-  goalFolders: any[];
+defineProps<{
+  goalFolders: GoalFolderClientDTO[];
   selectedFolderId: string;
 }>();
 
 const emit = defineEmits<{
   select: [id: string];
   create: [];
-  edit: [folder: any];
+  edit: [folder: GoalFolderClientDTO];
   delete: [id: string];
 }>();
 
@@ -104,7 +105,7 @@ const selectFolder = (id: string) => {
   emit('select', id);
 };
 
-function getFolderActions(folder: any): MenuAction[] {
+function getFolderActions(folder: GoalFolderClientDTO): MenuAction[] {
   return [
     {
       key: 'edit',

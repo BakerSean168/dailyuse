@@ -21,7 +21,7 @@ import type { IReminderGroupRepository } from '../../domain-server/repositories/
 import { ReminderSchedulerService } from '../../domain-server/services/reminder-scheduler-service';
 import { ReminderTriggerService } from '../../domain-server/services/reminder-trigger-service';
 import { ReminderTemplateControlService } from '../../domain-server/services/reminder-template-control-service';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 
 const logger = createLogger('ReminderTriggerCronJob');

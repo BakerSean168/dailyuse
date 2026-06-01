@@ -31,7 +31,7 @@
 
       <WeekViewCalendar
         v-else
-        :schedules="schedules as any"
+        :schedules="events"
         @event-click="handleEventClick"
         @week-change="handleWeekChange"
       />
@@ -49,29 +49,27 @@ import { ArrowLeft, Plus } from 'lucide-vue-next';
 import { Button, Separator } from '@dailyuse/ui-vue-shadcn';
 import WeekViewCalendar from '../components/WeekViewCalendar.vue';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
+import { useCalendarView } from '../composables/useCalendarView';
 import { useSchedule } from '../composables/useSchedule';
+import type { CalendarEventItem } from '../composables/useCalendarView';
+import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 const { t } = useI18n();
-const {
-  calendarEntries: schedules,
-  isLoading,
-  fetchCalendarEntries,
-  createCalendarEntry,
-} = useSchedule();
+const { events, isLoading, fetchForRange } = useCalendarView();
+const { createCalendarEntry } = useSchedule();
 
 const showCreateDialog = ref(false);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleEventClick(event: any) {
-  toast.info(t('schedule.weekViewPage.eventToast', { name: event.name || event.title }));
+function handleEventClick(event: CalendarEventItem) {
+  toast.info(t('schedule.weekViewPage.eventToast', { name: event.title }));
 }
 
-function handleWeekChange(_start: Date, _end: Date) {
-  fetchCalendarEntries(_start.getTime(), _end.getTime());
+function handleWeekChange(start: Date, end: Date) {
+  fetchForRange(start.getTime(), end.getTime());
 }
 
-async function handleCreate(data: Record<string, unknown>) {
-  const result = await createCalendarEntry(data as any);
+async function handleCreate(data: CreateScheduleRequest) {
+  const result = await createCalendarEntry(data);
   if (result) {
     showCreateDialog.value = false;
     toast.success(t('schedule.toast.scheduleCreated'));
@@ -88,6 +86,6 @@ onMounted(async () => {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
   weekEnd.setHours(23, 59, 59, 999);
-  await fetchCalendarEntries(weekStart.getTime(), weekEnd.getTime());
+  await fetchForRange(weekStart.getTime(), weekEnd.getTime());
 });
 </script>

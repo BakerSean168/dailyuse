@@ -1,30 +1,31 @@
 {
   "extends": "../../tsconfig.workspace-src.json",
-
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./dist",
-    "noEmit": true,
+    "moduleResolution": "Bundler",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
-    "moduleResolution": "Bundler",
-
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
     "paths": {
       "@/*": ["./src/*"],
       "@electron/*": ["./electron/*"],
       "@common/*": ["./common/*"],
-
-      // 开发态源码白名单：仅保留当前桌面渲染进程需要深度联调的包入口。
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
       "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
       "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/ai/ports": ["../../packages/ai/src/ports/index.ts"],
       "@dailyuse/editor/application-client": ["../../packages/editor/src/application-client/index.ts"],
       "@dailyuse/editor/infrastructure-client": [
         "../../packages/editor/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/editor/electron-entry": ["../../packages/editor/src/electron-entry/index.ts"],
       "@dailyuse/ipc-client": ["../../packages/ipc-client/src/index.ts"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/dashboard": ["../../packages/dashboard/src/index.ts"],
@@ -39,19 +40,17 @@
       "@dailyuse/domain-shared": ["../../packages/domain-shared/src/index.ts"],
       "@dailyuse/utils": ["../../packages/utils/src/index.ts"],
       "@dailyuse/utils/*": ["../../packages/utils/src/*/index.ts", "../../packages/utils/src/*.ts"],
-      "@dailyuse/editor/electron-entry": ["../../packages/editor/src/electron-entry/index.ts"],
+      "@dailyuse/goal/analytics": ["../../packages/goal/src/analytics/index.ts"],
+      "@dailyuse/notification/commands": ["../../packages/notification/src/commands/index.ts"],
+      "@dailyuse/task/analytics": ["../../packages/task/src/analytics/index.ts"],
+      "@dailyuse/schedule/api": ["../../packages/schedule/src/api/index.ts"],
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/*": [
         "../../packages/assets/src/*/index.ts",
         "../../packages/assets/src/*.ts"
       ]
-
-      // 其他 @dailyuse/* 包通过 package.json dependencies + exports → dist 解析。
-      // 让桌面构建与真实包边界对齐，而不是默认长期依赖源码直连。
     }
   },
-
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "electron/**/*", "common/**/*"],
-
   "exclude": ["node_modules", "dist", "dist-electron", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -8,3 +8,4 @@ export type { EditorClientPort } from './editor-client.port';
 
 // ===== Client Service =====
 export { EditorClientService, createEditorClientService } from './editor-client-service';
+export { createEditorServiceFromHttpClient } from './editor-http-service-factory';

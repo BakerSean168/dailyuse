@@ -13,22 +13,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   GoalTimeRange as IGoalTimeRange,
   GoalTimeRangeDTO,
 } from '@dailyuse/contracts/goal';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
-
-/**
- * 内部 DTO 类型（为了类型安全，将时间戳转为 DomainDate）
- */
-interface InternalGoalTimeRangeDTO {
-  startDate: DomainDate | null;
-  targetDate: DomainDate | null;
-  completedAt: DomainDate | null;
-  archivedAt: DomainDate | null;
-}
 
 /**
  * GoalTimeRange 值对象实现

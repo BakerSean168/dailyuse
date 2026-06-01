@@ -187,8 +187,10 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
+import type { GoalSnapshotItem } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
-import { format } from 'date-fns';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { format, type Locale } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 import {
   Card,
@@ -225,7 +227,7 @@ const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapsho
 const { goals } = useGoal();
 const { t, locale } = useI18n();
 
-const dateFnsLocaleMap: Record<string, any> = {
+const dateFnsLocaleMap: Record<string, Locale> = {
   'zh-CN': zhCN,
   'en-US': enUS,
 };
@@ -255,12 +257,12 @@ const triggerOptions = computed(() => [
 
 // KeyResult 选项
 const krOptions = computed(() => {
-  const goal = goals.value.find((g: any) => g.id === props.goalId);
+  const goal = goals.value.find((g: GoalClientDTO) => g.id === props.goalId);
   if (!goal || !goal.keyResults) return [{ text: t('goal.weightSnapshotList.allKR'), value: null }];
 
   return [
     { text: t('goal.weightSnapshotList.allKR'), value: null },
-    ...goal.keyResults.map((kr: any) => ({
+    ...goal.keyResults.map((kr: KeyResultClientDTO) => ({
       text: kr.title,
       value: kr.id,
     })),
@@ -273,12 +275,12 @@ const filteredSnapshots = computed(() => {
 
   // 按 KR 筛选
   if (selectedKRId.value) {
-    filtered = filtered.filter((s: any) => s.keyResultId === selectedKRId.value);
+    filtered = filtered.filter((s: GoalSnapshotItem) => s.keyResultId === selectedKRId.value);
   }
 
   // 按触发方式筛选
   if (selectedTriggers.value.length > 0) {
-    filtered = filtered.filter((s: any) => selectedTriggers.value.includes(s.trigger));
+    filtered = filtered.filter((s: GoalSnapshotItem) => selectedTriggers.value.includes(s.trigger));
   }
 
   // 按时间范围筛选
@@ -286,7 +288,7 @@ const filteredSnapshots = computed(() => {
     const now = Date.now();
     const days = selectedRange.value === '7d' ? 7 : selectedRange.value === '30d' ? 30 : 90;
     const cutoff = now - days * 24 * 60 * 60 * 1000;
-    filtered = filtered.filter((s: any) => s.snapshotTime >= cutoff);
+    filtered = filtered.filter((s: GoalSnapshotItem) => s.snapshotTime >= cutoff);
   }
 
   return filtered;
@@ -294,8 +296,8 @@ const filteredSnapshots = computed(() => {
 
 // 获取 KR 标题
 const getKRTitle = (krId: string) => {
-  const goal = goals.value.find((g: any) => g.id === props.goalId);
-  const kr = goal?.keyResults?.find((k: any) => k.id === krId);
+  const goal = goals.value.find((g: GoalClientDTO) => g.id === props.goalId);
+  const kr = goal?.keyResults?.find((k: KeyResultClientDTO) => k.id === krId);
   return kr?.title || 'Unknown KR';
 };
 

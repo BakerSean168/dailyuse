@@ -1,80 +1,40 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  getTokenManager: vi.fn(),
-  getRememberedAccountsService: vi.fn(),
-  getNetworkStateManager: vi.fn(),
-  createSessionManager: vi.fn(),
+  sessionManagerInstance: null as unknown,
 }));
 
 vi.mock('../../infrastructure', () => ({
-  getTokenManager: mocks.getTokenManager,
-  getRememberedAccountsService: mocks.getRememberedAccountsService,
-  getNetworkStateManager: mocks.getNetworkStateManager,
-  createSessionManager: mocks.createSessionManager,
   TokenManager: class {},
-  SessionManager: class {},
-}));
-
-vi.mock('../../../../lifecycle/window-manager', () => ({
-  getWindowManager: vi.fn(() => ({
-    getMainWindow: vi.fn(() => null),
-  })),
+  SessionManager: class {
+    constructor() {
+      return mocks.sessionManagerInstance;
+    }
+  },
 }));
 
 import { AuthDesktopApplicationService } from '../auth-desktop-application-service';
+import {
+  createMockLogger,
+  createMockSessionManager,
+  createMockTokenManager,
+} from '../../__fixtures__/auth-test-fixtures';
 
-function createLogger() {
+function createMockRememberedAccountsService() {
   return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
+    list: vi.fn().mockResolvedValue([]),
+    getAutoLoginAccount: vi.fn().mockResolvedValue(null),
+    remove: vi.fn(),
+    decryptPassword: vi.fn(),
+    recordLogin: vi.fn(),
+    setFilePath: vi.fn(),
   };
 }
 
-function createMockSessionManager() {
+function createMockNetworkStateManager() {
   return {
-    initialize: vi.fn().mockResolvedValue({ ok: false }),
-    getCurrentSession: vi.fn(() => null),
-    loginOffline: vi.fn(),
-    logout: vi.fn().mockResolvedValue({ ok: true }),
-    autoLogin: vi.fn().mockResolvedValue({ ok: false }),
-    refreshSession: vi.fn(),
-    activateOnlineSession: vi.fn(),
-    getOrCreateGuestIdentity: vi.fn().mockResolvedValue('guest-id-1'),
-    saveOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    removeOfflineCredentials: vi.fn().mockResolvedValue(undefined),
-    cleanupExpiredSessions: vi.fn().mockResolvedValue(0),
-    cleanupOtherSessions: vi.fn().mockResolvedValue(0),
+    isOnline: vi.fn(() => true),
     cleanup: vi.fn(),
-    getStatus: vi.fn(),
-    getDeviceInfo: vi.fn().mockReturnValue({
-      deviceId: 'device-1',
-      deviceName: 'Test Desktop',
-      deviceType: 'DESKTOP',
-      deviceFingerprint: 'fp-123',
-      os: 'Windows',
-    }),
-    ensureCurrentSession: vi.fn(),
-    syncCurrentSessionExpiry: vi.fn(),
-    setApiCallbacks: vi.fn(),
-    setOfflineAuthDependencies: vi.fn(),
-  };
-}
-
-function createMockTokenManager() {
-  return {
-    loadTokens: vi.fn().mockResolvedValue(null),
-    updateAccessToken: vi.fn(),
-    updateRefreshToken: vi.fn(),
-    getCachedTokenData: vi.fn().mockReturnValue(null),
-    getStatus: vi.fn().mockResolvedValue({
-      isRefreshTokenExpired: false,
-      isAccessTokenExpired: false,
-    }),
-    getAccessToken: vi.fn().mockResolvedValue(null),
-    clearTokens: vi.fn(),
   };
 }
 
@@ -93,8 +53,19 @@ function createCredentialRepo() {
   };
 }
 
-function createService() {
-  return new AuthDesktopApplicationService(createLogger() as never);
+function createService(
+  tokenManager?: ReturnType<typeof createMockTokenManager>,
+  rememberedAccountsService?: ReturnType<typeof createMockRememberedAccountsService>,
+  networkStateManager?: ReturnType<typeof createMockNetworkStateManager>,
+) {
+  const windowManager = { getMainWindow: vi.fn(() => null) };
+  return new AuthDesktopApplicationService(
+    (tokenManager ?? createMockTokenManager()) as never,
+    (rememberedAccountsService ?? createMockRememberedAccountsService()) as never,
+    (networkStateManager ?? createMockNetworkStateManager()) as never,
+    windowManager as never,
+    createMockLogger() as never,
+  );
 }
 
 describe('AuthDesktopApplicationService', () => {
@@ -105,26 +76,13 @@ describe('AuthDesktopApplicationService', () => {
     vi.clearAllMocks();
 
     mockTokenManager = createMockTokenManager();
-    mocks.getTokenManager.mockReturnValue(mockTokenManager);
-
     mockSessionManager = createMockSessionManager();
-    mocks.createSessionManager.mockReturnValue(mockSessionManager);
-
-    mocks.getNetworkStateManager.mockReturnValue({
-      isOnline: vi.fn(() => true),
-    });
-    mocks.getRememberedAccountsService.mockReturnValue({
-      list: vi.fn().mockResolvedValue([]),
-      getAutoLoginAccount: vi.fn().mockResolvedValue(null),
-      remove: vi.fn(),
-      decryptPassword: vi.fn(),
-      recordLogin: vi.fn(),
-    });
+    mocks.sessionManagerInstance = mockSessionManager;
   });
 
   describe('assembly guards', () => {
     it('throws for coordinator-backed methods before repositories are injected', async () => {
-      const service = createService();
+      const service = createService(mockTokenManager);
 
       await expect(service.login({ email: 'a@b.com', password: 'x' })).rejects.toThrow(
         'Credential coordinator not initialized',
@@ -138,18 +96,17 @@ describe('AuthDesktopApplicationService', () => {
     });
 
     it('wires the session refresh callback when repositories are injected', () => {
-      const service = createService();
+      const service = createService(mockTokenManager);
 
       service.setRepositories(createSessionRepo() as never, createCredentialRepo() as never);
 
-      expect(mocks.createSessionManager).toHaveBeenCalledOnce();
       expect(mockSessionManager.setApiCallbacks).toHaveBeenCalledWith(
         expect.objectContaining({ refreshToken: expect.any(Function) }),
       );
     });
 
     it('keeps lifecycle methods callable after account repository injection', async () => {
-      const service = createService();
+      const service = createService(mockTokenManager);
       mockSessionManager.initialize.mockResolvedValue({ ok: false });
 
       service.setRepositories(createSessionRepo() as never, createCredentialRepo() as never);
@@ -164,7 +121,7 @@ describe('AuthDesktopApplicationService', () => {
 
   describe('identity and context helpers', () => {
     it('reads the current identity from the current session', () => {
-      const service = createService();
+      const service = createService(mockTokenManager);
       mockSessionManager.getCurrentSession.mockReturnValue({
         identityId: 'user-1',
         id: 'session-1',
@@ -182,7 +139,7 @@ describe('AuthDesktopApplicationService', () => {
     });
 
     it('falls back to token cache when no session exists', async () => {
-      const service = createService();
+      const service = createService(mockTokenManager);
       mockTokenManager.getCachedTokenData.mockReturnValue({
         identityId: 'cached-user',
         sessionId: 'cached-session',
@@ -206,7 +163,7 @@ describe('AuthDesktopApplicationService', () => {
 
   describe('facade-only fallback behavior', () => {
     it('clears tokens and returns ok when logout runs before assembly', async () => {
-      const service = createService();
+      const service = createService(mockTokenManager);
 
       const result = await service.logout();
 

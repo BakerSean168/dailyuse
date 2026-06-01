@@ -3,7 +3,7 @@
  * 调度任务聚合?- 客户端接?
  */
 
-import type { ScheduleTaskId, IdentityId, DomainDate, TransferDate } from '../../../primitives';
+import type { ScheduleTaskId, IdentityId, TransferDate } from '../../../primitives';
 import type { ScheduleTaskStatus } from '../value-objects/schedule-task-status';
 import type { SourceModule } from '../value-objects/source-module';
 
@@ -13,13 +13,9 @@ import type {
 
 // 从值对象导入类?
 import type {
-  IScheduleConfig,
   ScheduleConfigDTO,
-  IExecutionInfo,
   ExecutionInfoDTO,
-  IRetryPolicy,
   RetryPolicyDTO,
-  ITaskMetadata,
   TaskMetadataDTO,
 } from '../value-objects';
 

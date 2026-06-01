@@ -10,7 +10,7 @@
  */
 
 import type { ScheduleExecutionClientDTO, ExecutionStatus } from '@dailyuse/contracts/schedule';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { ScheduleExecutionId } from '../../domain-shared/value-objects/schedule-execution-id';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 
@@ -21,7 +21,7 @@ export interface ScheduleExecutionState {
   executionTime: Date;
   status: ExecutionStatus;
   duration: number | null;
-  result: Record<string, any> | null;
+  result: Record<string, unknown> | null;
   error: string | null;
   retryCount: number;
   version: number;
@@ -55,7 +55,7 @@ export class ScheduleExecution extends Entity<ScheduleExecutionId> {
     return this._props.duration;
   }
 
-  get result(): Record<string, any> | null {
+  get result(): Record<string, unknown> | null {
     return this._props.result ? { ...this._props.result } : null;
   }
 

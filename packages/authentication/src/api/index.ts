@@ -14,3 +14,14 @@ export type { AuthenticationRuntimeContribution } from './runtime';
 
 // Transport handler factory
 export { createAuthenticationTransportHandlers } from './transport-handlers';
+
+// PowerSync adapters for desktop composition
+export {
+  PowerSyncAuthIdentityRepository,
+  PowerSyncAuthSessionRepository,
+  Argon2Hasher,
+} from '../infrastructure-server';
+
+// Domain types for desktop authentication cluster
+export { AuthSession, AuthIdentity } from '../domain-server';
+export type { IAuthSessionRepository, IAuthIdentityRepository } from '../domain-server';

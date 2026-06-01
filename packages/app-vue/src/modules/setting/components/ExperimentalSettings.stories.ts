@@ -26,7 +26,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ExperimentalSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -40,7 +40,7 @@ export const Default: Story = {
 };
 
 export const WithFeaturesEnabled: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ExperimentalSettings },
     setup() {
       const model = ref({ ...args.modelValue });
@@ -58,7 +58,7 @@ export const WithFeaturesEnabled: Story = {
 };
 
 export const Disabled: Story = {
-  render: (args: any) => ({
+  render: (args) => ({
     components: { ExperimentalSettings },
     setup() {
       const model = ref({ ...args.modelValue });

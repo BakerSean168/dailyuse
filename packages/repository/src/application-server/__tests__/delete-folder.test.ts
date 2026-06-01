@@ -3,24 +3,20 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { DeleteFolderUseCase } from '../use-cases/commands/delete-folder.use-case';
-import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
-import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
-import { FolderMemoryRepository } from '../../infrastructure-server/adapters/memory/folder-memory.repository';
 import { Repository } from '../../domain-server/aggregates/repository';
 import { Folder } from '../../domain-server/entities/folder';
 import { Resource } from '../../domain-server/entities/resource';
 import { ResourceType } from '@dailyuse/contracts/repository';
+import { createRepositoryMemoryTestRepositories, createTestFsStorage } from '../../testing';
 
 describe('DeleteFolder', () => {
   it('hard-deletes nested resources and folders while updating repository stats', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-delete-folder-'));
 
     try {
-      const storage = new FsStorageAdapter(tempDir);
-      const resourceRepository = new ResourceMemoryRepository();
-      const repositoryRepository = new RepositoryMemoryRepository();
-      const folderRepository = new FolderMemoryRepository();
+      const storage = createTestFsStorage(tempDir);
+      const { resourceRepository, repositoryRepository, folderRepository } =
+        createRepositoryMemoryTestRepositories();
       const repository = Repository.create({
         identityId: 'user-1' as any,
         name: 'Repo',

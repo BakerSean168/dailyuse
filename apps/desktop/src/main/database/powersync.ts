@@ -31,7 +31,7 @@ import fs from 'fs';
 import { Worker } from 'node:worker_threads';
 
 import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
-import { getTokenManager } from '../modules/authentication/infrastructure';
+import type { TokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { serializeCrudTransaction } from './powersync-crud';
 
@@ -230,9 +230,11 @@ async function purgePreHydrationBootstrapCrud(
 
 class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
   private readonly apiBaseUrl: string;
+  private readonly tokenManager: TokenManager;
 
-  constructor() {
+  constructor(tokenManager: TokenManager) {
     this.apiBaseUrl = getApiBaseUrl();
+    this.tokenManager = tokenManager;
   }
 
   /**
@@ -240,8 +242,7 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
    * existing HS256 access token stored in safeStorage.
    */
   async fetchCredentials(): Promise<PowerSyncCredentials> {
-    const tokenManager = getTokenManager();
-    const accessToken = await tokenManager.getAccessToken();
+    const accessToken = await this.tokenManager.getAccessToken();
 
     if (!accessToken) {
       throw new Error('[PowerSync] No valid access token — user is not authenticated');
@@ -300,8 +301,7 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
    * The API's `/powersync/crud` endpoint applies them inside a Prisma $transaction.
    */
   async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
-    const tokenManager = getTokenManager();
-    const accessToken = await tokenManager.getAccessToken();
+    const accessToken = await this.tokenManager.getAccessToken();
 
     if (!accessToken) {
       throw new Error('[PowerSync] No valid access token — cannot upload data');
@@ -369,7 +369,7 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
  * Guarded against concurrent calls — if a connection is already in
  * progress the same promise is returned.
  */
-export async function connectPowerSync(dbPath: string): Promise<PowerSyncDatabase> {
+export async function connectPowerSync(dbPath: string, tokenManager: TokenManager): Promise<PowerSyncDatabase> {
   assertCompatibleDbPath(dbPath);
 
   if (connectingPromise) {
@@ -387,7 +387,7 @@ export async function connectPowerSync(dbPath: string): Promise<PowerSyncDatabas
       console.log('[PowerSync] Promoting existing local-only instance to sync mode');
       await purgeNonSyncableLocalCrud(powerSyncDb!);
       await purgePreHydrationBootstrapCrud(powerSyncDb!);
-      const connector = new DesktopPowerSyncConnector();
+      const connector = new DesktopPowerSyncConnector(tokenManager);
       await powerSyncDb!.connect(connector);
       syncConnected = true;
       console.log('[PowerSync] Connected to PowerSync Service (promoted)');
@@ -410,7 +410,7 @@ export async function connectPowerSync(dbPath: string): Promise<PowerSyncDatabas
     await purgeNonSyncableLocalCrud(db);
     await purgePreHydrationBootstrapCrud(db);
 
-    const connector = new DesktopPowerSyncConnector();
+    const connector = new DesktopPowerSyncConnector(tokenManager);
     await db.connect(connector);
 
     powerSyncDb = db;
@@ -486,7 +486,7 @@ export async function openPowerSyncLocalOnly(dbPath: string): Promise<PowerSyncD
  * If a local-only instance already exists, it is promoted by attaching a
  * connector. If no instance exists yet, a new sync-mode connection is created.
  */
-export async function ensurePowerSyncSyncMode(): Promise<PowerSyncDatabase> {
+export async function ensurePowerSyncSyncMode(tokenManager: TokenManager): Promise<PowerSyncDatabase> {
   if (!powerSyncDb) {
     throw new Error('PowerSync sync mode requires an already prepared profile-local database');
   }
@@ -498,7 +498,7 @@ export async function ensurePowerSyncSyncMode(): Promise<PowerSyncDatabase> {
 
   await purgeNonSyncableLocalCrud(powerSyncDb);
   await purgePreHydrationBootstrapCrud(powerSyncDb);
-  const connector = new DesktopPowerSyncConnector();
+  const connector = new DesktopPowerSyncConnector(tokenManager);
   await powerSyncDb.connect(connector);
   syncConnected = true;
   console.log('[PowerSync] Promoted to sync mode');
@@ -508,8 +508,8 @@ export async function ensurePowerSyncSyncMode(): Promise<PowerSyncDatabase> {
 /**
  * @deprecated Use ensurePowerSyncSyncMode() for a self-contained sync-mode entrypoint.
  */
-export async function promotePowerSyncToSync(): Promise<void> {
-  await ensurePowerSyncSyncMode();
+export async function promotePowerSyncToSync(tokenManager: TokenManager): Promise<void> {
+  await ensurePowerSyncSyncMode(tokenManager);
 }
 
 /**

@@ -26,7 +26,7 @@
  * - keyResultId 必须存在
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { GoalRecordId, KeyResultId } from '../../domain-shared';
 import type { GoalRecordServerDTO, GoalEventMap } from '@dailyuse/contracts/goal';
 import type { IdentityId } from '@dailyuse/contracts/primitives';

@@ -15,6 +15,6 @@ export { useNotification } from './composables/useNotification';
 export { notificationRoutes } from './router';
 
 // Initialization
-export { registerNotificationInitializationTasks } from './initialization';
+export { createNotificationStartupHook } from './initialization';
 // Components
 export * from './components';

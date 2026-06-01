@@ -8,7 +8,6 @@ import type {
   ReminderGroupId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { ReminderType } from '../value-objects/reminder-type';
@@ -17,13 +16,9 @@ import type { ReminderStatus } from '../value-objects/reminder-status';
 // 从值对象导入类型
 import type {
   NotificationConfigDTO,
-  INotificationConfig,
   TriggerConfigDTO,
-  ITriggerConfig,
   ActiveTimeConfigDTO,
-  IActiveTimeConfig,
   ActiveHoursConfigDTO,
-  IActiveHoursConfig,
 } from '../value-objects';
 import type { ReminderHistoryClientDTO } from '../entities/reminder-history-client';
 

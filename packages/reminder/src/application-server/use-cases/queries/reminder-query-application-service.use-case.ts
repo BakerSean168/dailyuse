@@ -3,6 +3,7 @@ import { ok } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 
 /**
  * Reminder Query Application Service
@@ -13,6 +14,6 @@ export class ReminderQueryApplicationServiceUseCase {
 
   async getUpcomingReminders(cx: ExecutionContext): Promise<Result<ReminderTemplateClientDTO[]>> {
     const templates = await this.reminderTemplateRepository.findByIdentityId(cx.identityId);
-    return ok(templates.map((t: any) => t.toClientDTO()));
+    return ok(templates.map((t: ReminderTemplate) => t.toClientDTO()));
   }
 }

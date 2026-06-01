@@ -1,7 +1,7 @@
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import type { GoalPowerSyncDatabase } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalFolderMapper } from './mappers/powersync-goal-folder.mapper';

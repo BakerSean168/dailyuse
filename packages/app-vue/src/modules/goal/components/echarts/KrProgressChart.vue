@@ -14,6 +14,7 @@ import { use } from 'echarts/core';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
+import type { ECElementEvent } from 'echarts';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
 
@@ -31,10 +32,6 @@ const fontColor = '#64748b';
 const keyResults = computed(() => props.goal?.keyResults || []);
 
 const krNames = computed(() => props.goal?.keyResults?.map((kr) => kr.title) ?? []);
-const krProgress = computed(
-  () => props.goal?.keyResults?.map((kr) => getKeyResultProgressPercentage(kr.progress)) ?? [],
-);
-
 const krBarOption = computed(() => {
   const data = keyResults.value.map((kr) => getKeyResultProgressPercentage(kr.progress));
   const max = data.length ? Math.max(...data) : 0;
@@ -60,7 +57,7 @@ const krBarOption = computed(() => {
         fontSize: 14,
       },
 
-      formatter: (params: any) => {
+      formatter: (params: ECElementEvent) => {
         const kr = keyResults.value[params.dataIndex];
         if (!kr) return '';
         // 获取当前柱子的颜色
@@ -107,7 +104,7 @@ const krBarOption = computed(() => {
           color: fontColor,
         },
         itemStyle: {
-          color: (params: any) => {
+          color: (params: ECElementEvent) => {
             if (params.dataIndex === maxIdx) return '#52c41a'; // 绿色
             if (params.dataIndex === minIdx) return '#ff4d4f'; // 红色
             return '#5470C6'; // 其他

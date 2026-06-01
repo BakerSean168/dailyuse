@@ -14,6 +14,7 @@ import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import type { ECElementEvent } from 'echarts';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { getKeyResultProgressPercentage } from '../../utils/progress';
 
@@ -72,9 +73,10 @@ const completionOption = computed(() => {
         color: fontColor,
         fontSize: 14,
       },
-      formatter: (params: any) => {
-        const percent = ((params.value / stats.total) * 100).toFixed(1);
-        return `${params.name}: ${params.value}${t('goal.chart.krCompletion.tooltipUnit')} (${percent}%)`;
+      formatter: (params: ECElementEvent) => {
+        const value = Number(params.value ?? 0);
+        const percent = ((value / stats.total) * 100).toFixed(1);
+        return `${params.name}: ${value}${t('goal.chart.krCompletion.tooltipUnit')} (${percent}%)`;
       },
     },
     legend: {
@@ -104,7 +106,7 @@ const completionOption = computed(() => {
             show: true,
             fontSize: 20,
             fontWeight: 'bold',
-            formatter: (params: any) =>
+            formatter: (params: ECElementEvent) =>
               `${params.name}\n${params.value}${t('goal.chart.krCompletion.tooltipUnit')}`,
           },
         },

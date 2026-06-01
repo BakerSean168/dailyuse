@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { GoalFolderId as IGoalFolderId } from '@dailyuse/contracts/primitives';
 

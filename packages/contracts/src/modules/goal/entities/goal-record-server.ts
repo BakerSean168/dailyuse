@@ -10,7 +10,6 @@
 
 import type {
   TransferDate,
-  DomainDate,
   GoalRecordId,
   KeyResultId,
   IdentityId,

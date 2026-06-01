@@ -1,4 +1,4 @@
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import type { AIConversationClientDTO, AIConversationServerDTO } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 import type { AIEventMap } from '@dailyuse/contracts/ai';

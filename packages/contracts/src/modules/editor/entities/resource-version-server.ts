@@ -8,11 +8,8 @@ import type {
   EditorWorkspaceId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { VersionChangeType } from '../value-objects/version-change-type';
-import type { ResourceVersionClientDTO } from './resource-version-client';
-
 /**
  * Resource Version Server DTO
  */

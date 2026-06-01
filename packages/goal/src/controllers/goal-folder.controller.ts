@@ -12,7 +12,7 @@ import {
   UpdateGoalFolderSchema,
   ListGoalFolderFiltersSchema,
 } from '@dailyuse/contracts/goal';
-import type { ListGoalFolderFilters, ListGoalFoldersQuery } from '@dailyuse/contracts/goal';
+import type { ListGoalFoldersQuery } from '@dailyuse/contracts/goal';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';

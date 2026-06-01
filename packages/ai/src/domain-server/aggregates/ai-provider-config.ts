@@ -2,7 +2,7 @@
  * AI Provider Config - Domain Aggregate
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import type {
   AIEventMap,

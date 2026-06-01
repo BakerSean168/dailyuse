@@ -3,7 +3,7 @@
  * 提醒分组聚合?- 客户端接?
  */
 
-import type { ReminderGroupId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type { ReminderGroupId, IdentityId, TransferDate } from '../../../primitives';
 import type { ControlMode } from '../value-objects/control-mode';
 import type { ReminderStatus } from '../value-objects/reminder-status';
 import type { GroupStatsDTO } from '../value-objects';

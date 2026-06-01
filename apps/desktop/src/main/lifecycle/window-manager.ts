@@ -15,17 +15,17 @@ import { BrowserWindow, ipcMain, app } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktop-chrome';
 import type { DesktopChromeTheme } from './desktop-chrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
 import { resolveWindowIconPath } from '../utils/app-icon';
-import { bindDesktopFeaturesWindow } from '../desktop-features';
+import type { DesktopFeaturesRuntime } from '../desktop-features';
 import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 import { WindowStateManager } from '../modules/window';
 import { getSharedPathResolver } from '../runtime-init';
-import { getDesktopProfileRuntimeManager } from '../profile';
+import type { DesktopProfileRuntimeManager } from '../profile';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,8 +75,6 @@ interface WindowControlsState {
  * 负责创建和管理登录窗口、主窗口，处理窗口间切换
  */
 export class WindowManager {
-  private static instance: WindowManager | null = null;
-
   private loginWindow: BrowserWindow | null = null;
   private registerWindow: BrowserWindow | null = null;
   private mainWindow: BrowserWindow | null = null;
@@ -87,8 +85,10 @@ export class WindowManager {
   private loginWindowStateManager: WindowStateManager | null = null;
   private registerWindowStateManager: WindowStateManager | null = null;
   private mainWindowStateManager: WindowStateManager | null = null;
+  private runtimeManager: DesktopProfileRuntimeManager | null = null;
+  private desktopFeaturesRuntime: DesktopFeaturesRuntime | null = null;
 
-  private constructor(config: WindowManagerConfig = {}) {
+  constructor(config: WindowManagerConfig = {}) {
     const preloadPath = config.preloadPath || resolvePreloadPath(__dirname);
 
     this.config = {
@@ -110,23 +110,15 @@ export class WindowManager {
   }
 
   /**
-   * 获取单例实例
+   * Set the runtime manager instance. Must be called before profile-dependent
+   * IPC handlers (TRANSITION_TO_MAIN) are invoked.
    */
-  static getInstance(config?: WindowManagerConfig): WindowManager {
-    if (!WindowManager.instance) {
-      WindowManager.instance = new WindowManager(config);
-    }
-    return WindowManager.instance;
+  setRuntimeManager(manager: DesktopProfileRuntimeManager): void {
+    this.runtimeManager = manager;
   }
 
-  /**
-   * 重置单例（仅用于测试）
-   */
-  static resetInstance(): void {
-    if (WindowManager.instance) {
-      WindowManager.instance.cleanup();
-      WindowManager.instance = null;
-    }
+  setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime | null): void {
+    this.desktopFeaturesRuntime = runtime;
   }
 
   // ============ Window Creation ============
@@ -378,7 +370,7 @@ export class WindowManager {
 
       // 3. 显示主窗口
       mainWin.show();
-      bindDesktopFeaturesWindow(mainWin);
+      this.desktopFeaturesRuntime?.bindWindow(mainWin);
       startScheduleRuntime();
 
       // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
@@ -425,7 +417,7 @@ export class WindowManager {
 
       // 3. 显示登录窗口
       loginWin.show();
-      bindDesktopFeaturesWindow(loginWin);
+      this.desktopFeaturesRuntime?.bindWindow(loginWin);
 
       // 4. 关闭主窗口
       setTimeout(() => {
@@ -613,9 +605,11 @@ export class WindowManager {
     // 登录成功 → 切换到主窗口
     ipcMain.handle(WindowChannels.TRANSITION_TO_MAIN, async () => {
       logger.info('IPC window:transition-to-main received');
-      const runtimeManager = getDesktopProfileRuntimeManager();
-      const profileId = runtimeManager.getActiveProfileId();
-      const profileResolver = runtimeManager.getActiveProfileResolver();
+      if (!this.runtimeManager) {
+        throw new Error('WindowManager: runtimeManager not set before TRANSITION_TO_MAIN');
+      }
+      const profileId = this.runtimeManager.getActiveProfileId();
+      const profileResolver = this.runtimeManager.getActiveProfileResolver();
       if (!profileId || !profileResolver) {
         throw new Error('No active profile available for main window transition');
       }
@@ -754,11 +748,4 @@ export class WindowManager {
   private getProfilePartition(profileId: string): string {
     return `persist:profile-${profileId}`;
   }
-}
-
-/**
- * 获取 WindowManager 单例
- */
-export function getWindowManager(config?: WindowManagerConfig): WindowManager {
-  return WindowManager.getInstance(config);
 }

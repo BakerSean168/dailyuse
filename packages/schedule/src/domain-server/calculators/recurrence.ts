@@ -38,12 +38,12 @@ export function recurrenceRuleToText(rule: RecurrenceRule): string {
     if (Array.isArray(seg) && seg.length > 0) {
       const first = seg[0] as unknown;
       if (typeof first === 'number') return first as number;
-      if (typeof first === 'object' && first && 'start' in (first as any)) {
+      if (typeof first === 'object' && first && 'start' in (first as Record<string, unknown>)) {
         const start = (first as Range).start;
         if (typeof start === 'number') return start;
       }
     }
-    if (typeof seg === 'object' && seg && !Array.isArray(seg) && 'start' in (seg as any)) {
+    if (typeof seg === 'object' && seg && !Array.isArray(seg) && 'start' in (seg as Record<string, unknown>)) {
       const start = (seg as Range).start;
       if (typeof start === 'number') return start;
     }

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import StatisticsCard from './StatisticsCard.vue';
+import type { SourceModule } from '@dailyuse/contracts/schedule';
 
 const mockStatistics = {
   totalTasks: 24,
@@ -20,7 +21,7 @@ const mockModuleStatistics = {
   Notification: { totalTasks: 3, activeTasks: 2, totalExecutions: 100, successRate: 96.0, successRateFormatted: '96.0%' },
   System: { totalTasks: 1, activeTasks: 0, totalExecutions: 40, successRate: 100.0, successRateFormatted: '100.0%' },
   Custom: { totalTasks: 1, activeTasks: 0, totalExecutions: 20, successRate: 85.0, successRateFormatted: '85.0%' },
-} as any;
+} as unknown as Record<SourceModule, { totalTasks: number; activeTasks: number; totalExecutions: number; successRate: number; successRateFormatted: string }>;
 
 const meta = {
   title: 'Business/Schedule/StatisticsCard',

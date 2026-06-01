@@ -72,11 +72,11 @@ export class RegisterUseCase {
           code: 'CONFLICT',
           message: err.message,
           context: {
-            ...((err as any).context ?? {}),
+            ...(err.context ?? {}),
             domainCode:
-              typeof (err as any).context?.domainCode === 'string'
-                ? (err as any).context.domainCode
-                : (err as any).code,
+              typeof err.context?.domainCode === 'string'
+                ? err.context.domainCode
+                : err.code,
           },
         });
       }

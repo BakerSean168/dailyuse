@@ -1,4 +1,4 @@
-import { ok, type Result } from '@dailyuse/contracts/result';
+import type { Result } from '@dailyuse/contracts/result';
 import type { AICapabilities } from '@dailyuse/contracts/ai';
 
 interface AICapabilitiesControllerService {

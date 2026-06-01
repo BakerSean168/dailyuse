@@ -16,7 +16,7 @@ import type {
   OAuthBindingServerDTO,
   AuthIdentityClientDTO,
 } from '@dailyuse/contracts/authentication';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 
 import {
   AuthIdentityStatus,

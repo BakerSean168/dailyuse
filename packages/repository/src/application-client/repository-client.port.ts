@@ -1,6 +1,5 @@
 import type { Result } from '@dailyuse/contracts/result';
 import type {
-  RepositoryClientDTO,
   FolderClientDTO,
   ResourceClientDTO,
   FileTreeResponse,

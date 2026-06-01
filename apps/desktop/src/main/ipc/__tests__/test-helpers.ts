@@ -5,7 +5,7 @@
  * 这些 helper 只服务于 handler 注册和参数断言，不负责模拟完整 Electron 生命周期。
  */
 
-import { vi, expect } from 'vitest';
+import { expect } from 'vitest';
 
 /**
  * 创建通用的 IPC handler 注册捕获器。

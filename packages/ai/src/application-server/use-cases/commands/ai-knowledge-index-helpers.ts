@@ -4,7 +4,7 @@ import type {
   KnowledgeSourceResource,
   KnowledgeIndexedResource,
 } from '../../ports';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AIKnowledgeIndexHelpers');
 

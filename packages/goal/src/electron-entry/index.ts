@@ -23,12 +23,12 @@ import {
 } from '../api/transport-handlers';
 import { createGoalRuntimeContribution } from '../api/runtime';
 import { createGoalScheduleRuntimeContribution } from '../api/schedule-runtime';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { IGoalRecordRepository, IGoalRepository } from '../domain-server';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { GoalModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
 
 const logger = createLogger('GoalElectron');
 

@@ -176,7 +176,7 @@ export function registerAuthenticationRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.getCurrentUser(ctx, (req as any).user?.sessionId),
+    (req, ctx) => controller.getCurrentUser(ctx, req.user?.sessionId),
   );
 
   r.route(
@@ -191,7 +191,7 @@ export function registerAuthenticationRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listSessions(ctx, (req as any).user?.sessionId),
+    (req, ctx) => controller.listSessions(ctx, req.user?.sessionId),
   );
 
   r.route(

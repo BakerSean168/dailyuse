@@ -12,8 +12,6 @@
 
 import type {
   PrismaClient,
-  ScheduleTask as PrismaScheduleTask,
-  ScheduleExecution as PrismaScheduleExecution,
   Prisma,
 } from '@dailyuse/database';
 import type { IScheduleTaskRepository } from '../../../domain-server/repositories/i-schedule-task-repository';
@@ -21,7 +19,7 @@ import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PrismaScheduleTaskMapper,
   type PrismaScheduleTaskWithExecutions,
@@ -29,6 +27,22 @@ import {
 import { PrismaScheduleExecutionMapper } from './mappers/prisma-schedule-execution-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
+
+/**
+ * Minimal DB capability interface for ScheduleTask repository.
+ * Both PrismaClient and Prisma.TransactionClient satisfy this.
+ */
+interface ScheduleTaskDb {
+  scheduleTask: PrismaClient['scheduleTask'];
+  scheduleExecution: PrismaClient['scheduleExecution'];
+}
+
+type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
+type ScheduleTaskRootDb = ScheduleTaskDb & PrismaTransactionRoot;
+
+function isScheduleTaskRootDb(db: ScheduleTaskDb | ScheduleTaskRootDb): db is ScheduleTaskRootDb {
+  return '$transaction' in db;
+}
 
 /**
  * Query options for ScheduleTask.
@@ -52,8 +66,15 @@ export class ScheduleTaskPrismaRepository
   extends AggregateRepositoryBase<ScheduleTask>
   implements IScheduleTaskRepository
 {
-  constructor(private prisma: PrismaClient) {
+  private readonly db: ScheduleTaskDb;
+  private readonly rootClient: PrismaTransactionRoot | null;
+
+  constructor(prisma: PrismaClient);
+  constructor(prisma: ScheduleTaskDb, rootClient?: PrismaTransactionRoot);
+  constructor(prisma: ScheduleTaskDb | PrismaClient, rootClient?: PrismaTransactionRoot) {
     super(eventBusAdapter);
+    this.db = prisma;
+    this.rootClient = rootClient ?? (isScheduleTaskRootDb(prisma) ? prisma : null);
   }
 
   // ===== Mapping =====
@@ -76,9 +97,12 @@ export class ScheduleTaskPrismaRepository
    * atomically within a single transaction.
    */
   protected async persist(task: ScheduleTask): Promise<void> {
+    if (!this.rootClient) {
+      throw new Error('persist with transaction requires a root PrismaClient');
+    }
     const data = this.toPrisma(task);
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.rootClient.$transaction(async (tx) => {
       await tx.scheduleTask.upsert({
         where: { id: data.id },
         create: data,
@@ -89,19 +113,19 @@ export class ScheduleTaskPrismaRepository
       const executions = task.executions;
       if (executions && executions.length > 0) {
         for (const execution of executions) {
-          const execData = PrismaScheduleExecutionMapper.toCreateInput(execution);
+          const execData = PrismaScheduleExecutionMapper.toCreateInput(execution) as Record<string, unknown> & { id: string; status: string };
           await tx.scheduleExecution.upsert({
             where: { id: execData.id },
             create: {
               ...execData,
               identityId: task.identityId,
-            },
+            } as unknown as Prisma.ScheduleExecutionCreateInput,
             update: {
               status: execData.status,
-              duration: execData.duration ?? null,
+              duration: (execData.duration as number | null) ?? null,
               result: execData.result ?? null,
-              error: execData.error ?? null,
-              retryCount: execData.retryCount ?? 0,
+              error: (execData.error as string | null) ?? null,
+              retryCount: (execData.retryCount as number) ?? 0,
             },
           });
         }
@@ -110,7 +134,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async findById(id: string): Promise<ScheduleTask | null> {
-    const data = await this.prisma.scheduleTask.findUnique({
+    const data = await this.db.scheduleTask.findUnique({
       where: { id },
       include: {
         executions: {
@@ -124,7 +148,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async deleteById(id: string): Promise<void> {
-    await this.prisma.scheduleTask.delete({
+    await this.db.scheduleTask.delete({
       where: { id },
     });
   }
@@ -132,7 +156,7 @@ export class ScheduleTaskPrismaRepository
   // ===== Query Methods =====
 
   async findByIdentityId(identityId: string): Promise<ScheduleTask[]> {
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where: { identityId },
       include: {
         executions: {
@@ -146,7 +170,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where: {
         sourceModule: module,
         ...(identityId && { identityId }),
@@ -167,7 +191,7 @@ export class ScheduleTaskPrismaRepository
     entityId: string,
     identityId?: string,
   ): Promise<ScheduleTask[]> {
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where: {
         sourceModule: module,
         sourceEntityId: entityId,
@@ -185,7 +209,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where: {
         status: status,
         ...(identityId && { identityId }),
@@ -202,7 +226,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async findEnabled(identityId?: string): Promise<ScheduleTask[]> {
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where: {
         enabled: true,
         ...(identityId && { identityId }),
@@ -220,7 +244,7 @@ export class ScheduleTaskPrismaRepository
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
     // Find active tasks with nextRunAt <= beforeTime for execution
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where: {
         enabled: true,
         status: ScheduleTaskStatus.Active,
@@ -252,7 +276,7 @@ export class ScheduleTaskPrismaRepository
     if (options.status) where.status = options.status;
     if (options.isEnabled !== undefined) where.enabled = options.isEnabled;
 
-    const tasks = await this.prisma.scheduleTask.findMany({
+    const tasks = await this.db.scheduleTask.findMany({
       where,
       include: {
         executions: {
@@ -276,7 +300,7 @@ export class ScheduleTaskPrismaRepository
     if (options.status) where.status = options.status;
     if (options.isEnabled !== undefined) where.enabled = options.isEnabled;
 
-    return this.prisma.scheduleTask.count({ where });
+    return this.db.scheduleTask.count({ where });
   }
 
   // ===== Batch Operations =====
@@ -288,7 +312,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async deleteBatch(ids: string[]): Promise<void> {
-    await this.prisma.scheduleTask.deleteMany({
+    await this.db.scheduleTask.deleteMany({
       where: {
         id: {
           in: ids,
@@ -300,8 +324,11 @@ export class ScheduleTaskPrismaRepository
   // ===== Transaction Support =====
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction(async (tx) => {
-      const txRepo = new ScheduleTaskPrismaRepository(tx as PrismaClient);
+    if (!this.rootClient) {
+      throw new Error('withTransaction requires a root PrismaClient (not a TransactionClient)');
+    }
+    return this.rootClient.$transaction(async (tx) => {
+      const txRepo = new ScheduleTaskPrismaRepository(tx);
       return fn(txRepo);
     });
   }

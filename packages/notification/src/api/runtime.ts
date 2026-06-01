@@ -1,4 +1,4 @@
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { NotificationModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('NotificationRuntime');

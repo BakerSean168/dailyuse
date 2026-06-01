@@ -46,6 +46,35 @@ export const AuthRuntimeState = {
 export type AuthRuntimeState = (typeof AuthRuntimeState)[keyof typeof AuthRuntimeState];
 
 /**
+ * Valid state transitions for AuthRuntimeState.
+ * Key = current state, Value = set of allowed next states.
+ */
+const AUTH_STATE_TRANSITIONS: Record<AuthRuntimeState, ReadonlySet<AuthRuntimeState>> = {
+  UNINITIALIZED: new Set([AuthRuntimeState.RESTORING, AuthRuntimeState.AUTHENTICATED, AuthRuntimeState.UNAUTHENTICATED]),
+  RESTORING: new Set([AuthRuntimeState.AUTHENTICATED, AuthRuntimeState.UNAUTHENTICATED]),
+  AUTHENTICATED: new Set([AuthRuntimeState.RESTORING, AuthRuntimeState.UNAUTHENTICATED]),
+  UNAUTHENTICATED: new Set([AuthRuntimeState.RESTORING, AuthRuntimeState.AUTHENTICATED]),
+};
+
+/**
+ * Validates and performs a state transition.
+ * Returns the new state if valid, throws if the transition is illegal.
+ */
+export function transitionAuthState(
+  current: AuthRuntimeState,
+  next: AuthRuntimeState,
+): AuthRuntimeState {
+  if (current === next) return next;
+  const allowed = AUTH_STATE_TRANSITIONS[current];
+  if (!allowed.has(next)) {
+    throw new Error(
+      `[AuthStateMachine] Illegal transition: ${current} → ${next}. Allowed: ${[...allowed].join(', ')}`,
+    );
+  }
+  return next;
+}
+
+/**
  * Network connection status as observed by the main process.
  */
 export const ConnectionStatus = {

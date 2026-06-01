@@ -9,11 +9,9 @@ import type {
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
 } from '@dailyuse/contracts/task';
 import {
-  RecurrenceFrequency,
   RecurrenceEndConditionType,
   TaskGoalBindingTrigger,
 } from '@dailyuse/contracts/task';
-import { TaskTimeType as TimeType, TaskInstanceStatus } from '../../domain-shared/value-objects';
 import { DependencyStatus, TaskType } from '../value-objects';
 import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
@@ -21,11 +19,9 @@ import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-
 import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import { differenceInCalendarDays, differenceInCalendarWeeks, startOfDay } from 'date-fns';
+import { startOfDay } from 'date-fns';
 
-import { AggregateRoot } from '@dailyuse/utils';
-import { addDays } from 'date-fns';
-import { calculateTaskPriority } from '../services/priority-calculator.service';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
   TaskTimeConfig,
   RecurrenceRule,
@@ -35,14 +31,15 @@ import {
 } from '../value-objects';
 import { TaskTemplateHistory } from '../entities';
 import { TaskInstance } from './task-instance';
+import * as instanceGen from './instance-generation.policy';
+import * as dtoHelper from './task-template-dto';
+import * as goalPolicy from './task-template-goal.policy';
+import * as lifecyclePolicy from './task-template-lifecycle.policy';
+import * as oneTimePolicy from './task-template-onetime.policy';
+import * as recurrencePolicy from './task-template-recurrence.policy';
 import {
-  TaskTemplateNotFoundError,
   InvalidTaskTemplateStateError,
-  TaskTemplateArchivedError,
-  RecurrenceRuleNotImplementedError,
-  InvalidGoalBindingError,
   InvalidDateRangeError,
-  InstanceGenerationFailedError,
 } from '../value-objects/task-errors';
 
 /**
@@ -93,8 +90,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   private _history: TaskTemplateHistory[];
   private _instances: TaskInstance[];
 
-  // ===== Constructor (private, use factory methods to create) =====
-  private constructor(state: TaskTemplateState) {
+  // ===== Constructor (protected, use factory methods to create) =====
+  protected constructor(state: TaskTemplateState) {
     super(state.id);
 
     const { id: _, ...rest } = state;
@@ -128,6 +125,26 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     this._history = [];
     this._instances = [];
+  }
+
+  /** Internal factory — used by task-template-factory.ts to bypass protected constructor. */
+  static _create(state: TaskTemplateState): TaskTemplate {
+    return new TaskTemplate(state);
+  }
+
+  /** Publish a domain event — used by factory after construction. */
+  publishDomainEvent<T>(eventName: string, payload: T): void {
+    this.addDomainEvent(eventName, payload);
+  }
+
+  private static assertValidDateRange(
+    startDate: Date | null | undefined,
+    dueDate: Date | null | undefined,
+  ): void {
+    if (!startDate || !dueDate) return;
+    if (startDate.getTime() > dueDate.getTime()) {
+      throw new InvalidDateRangeError(startDate.getTime(), dueDate.getTime());
+    }
   }
 
   // ===== Getters =====
@@ -274,93 +291,19 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return [...this._instances];
   }
 
-  // ===== Instance Generation Methods =====
+  /** Internal props — used by extracted policy modules. */
+  get props(): Omit<TaskTemplateState, 'id'> {
+    return this._props;
+  }
+
+  // ===== Instance Generation Methods (delegated to instance-generation.policy) =====
 
   /** Generates task instances within the specified date range. */
   public generateInstances(fromDate: number, toDate: number): TaskInstance[] {
-    // Validate date range
-    if (fromDate >= toDate) {
-      throw new InvalidDateRangeError(fromDate, toDate);
-    }
-
-    // Check if template is archived
-    if (this._props.status === TaskTemplateStatus.Archived) {
-      throw new TaskTemplateArchivedError(this.id);
-    }
-
-    const instances: TaskInstance[] = [];
-
-    // Only generate instances for active templates
-    if (this._props.status !== TaskTemplateStatus.Active) {
-      throw new InvalidTaskTemplateStateError('Can only generate instances for active templates', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'generateInstances',
-      });
-    }
-
-    if (this._props.taskType === TaskType.OneTime) {
-      // One-time task: generate instance if startDate exists
-      // Reason: even if outside date range, user still needs the instance
-      if (this._props.timeConfig?.startDate) {
-        const targetDay = TaskTemplate.startOfLocalDay(this._props.timeConfig.startDate.getTime());
-        // Check if already generated to avoid duplicates
-        const alreadyGenerated = this._instances.some(
-          (inst) => TaskTemplate.startOfLocalDay(inst.instanceDate) === targetDay,
-        );
-
-        if (!alreadyGenerated) {
-          const instance = TaskInstance.create({
-            templateId: this.id,
-            identityId: this._props.identityId,
-            instanceDate: targetDay,
-            timeConfig: this._props.timeConfig,
-            importance: this._props.importance,
-          });
-          instances.push(instance);
-          this._instances.push(instance);
-        }
-      }
-    } else if (
-      this._props.taskType === TaskType.Recurring &&
-      this._props.recurrenceRule &&
-      this._props.timeConfig
-    ) {
-      const fromDay = TaskTemplate.startOfLocalDay(fromDate);
-      const endDate = TaskTemplate.startOfLocalDay(toDate);
-      const maxOccurrences = this._props.recurrenceRule.occurrences;
-      const existingInstanceCount = this._instances.filter(
-        (instance) => !instance.deletedAt,
-      ).length;
-
-      if (maxOccurrences !== null && existingInstanceCount >= maxOccurrences) {
-        return [];
-      }
-
-      let currentDate = fromDay;
-
-      while (
-        currentDate <= endDate &&
-        (maxOccurrences === null || existingInstanceCount + instances.length < maxOccurrences)
-      ) {
-        if (this.shouldGenerateInstance(currentDate)) {
-          const instance = TaskInstance.create({
-            templateId: this.id,
-            identityId: this._props.identityId,
-            instanceDate: currentDate,
-            timeConfig: this._props.timeConfig,
-            importance: this._props.importance,
-          });
-          instances.push(instance);
-          this._instances.push(instance);
-        }
-        // Move to next day
-        currentDate = addDays(new Date(currentDate), 1).getTime();
-      }
-    }
-
-    if (instances.length > 0) {
-      this._props.lastGeneratedDate = new Date(toDate);
+    const { instances, lastGeneratedDate } = instanceGen.generateInstances(this.getInstanceContext(), fromDate, toDate);
+    this._instances.push(...instances);
+    if (lastGeneratedDate) {
+      this._props.lastGeneratedDate = lastGeneratedDate;
       this._props.updatedAt = new Date();
       this.addDomainEvent<TaskEventMap['task:instance-generated']>('task:instance-generated', {
         identityId: this._props.identityId,
@@ -370,264 +313,63 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
         strategy: instances.length <= 20 ? 'full' : 'summary',
       });
     }
-
     return instances;
   }
 
   /** Gets the task instance for a specific date. */
   public getInstanceForDate(date: number): TaskInstance | null {
     const targetDay = TaskTemplate.startOfLocalDay(date);
-    return (
-      this._instances.find((i) => {
-        return TaskTemplate.startOfLocalDay(i.instanceDate) === targetDay;
-      }) ?? null
-    );
+    return this._instances.find((i) => TaskTemplate.startOfLocalDay(i.instanceDate) === targetDay) ?? null;
   }
 
   /** Determines whether an instance should be generated for the given date. */
   public shouldGenerateInstance(date: number): boolean {
-    if (this._props.status !== TaskTemplateStatus.Active) {
-      return false;
-    }
-
-    if (this._props.taskType === TaskType.OneTime) {
-      return false; // Handled separately for one-time tasks
-    }
-
-    if (!this._props.recurrenceRule) {
-      return false;
-    }
-
-    const candidateDay = TaskTemplate.startOfLocalDay(date);
-
-    if (this._props.timeConfig?.startDate) {
-      const templateStartDay = TaskTemplate.startOfLocalDay(
-        this._props.timeConfig.startDate.getTime(),
-      );
-      if (candidateDay < templateStartDay) {
-        return false;
-      }
-    }
-
-    // Check if within recurrence rule validity period
-    if (
-      this._props.recurrenceRule.endDate &&
-      candidateDay > TaskTemplate.startOfLocalDay(this._props.recurrenceRule.endDate.getTime())
-    ) {
-      return false;
-    }
-
-    if (
-      this._props.recurrenceRule.occurrences !== null &&
-      this._instances.filter((instance) => !instance.deletedAt).length >=
-        this._props.recurrenceRule.occurrences
-    ) {
-      return false;
-    }
-
-    // Check recurrence rule
-    const rule = this._props.recurrenceRule;
-    const dateObj = new Date(candidateDay);
-
-    switch (rule.frequency) {
-      case RecurrenceFrequency.Daily:
-        if (!this._props.timeConfig?.startDate) {
-          return true;
-        }
-
-        return (
-          differenceInCalendarDays(dateObj, new Date(this._props.timeConfig.startDate.getTime())) %
-            rule.interval ===
-          0
-        );
-
-      case RecurrenceFrequency.Weekly:
-        if (!this._props.timeConfig?.startDate) {
-          return false;
-        }
-
-        if (
-          differenceInCalendarWeeks(dateObj, new Date(this._props.timeConfig.startDate.getTime()), {
-            weekStartsOn: 1,
-          }) %
-            rule.interval !==
-          0
-        ) {
-          return false;
-        }
-
-        const dayOfWeek = dateObj.getDay();
-        return rule.daysOfWeek.includes(dayOfWeek as any);
-
-      case RecurrenceFrequency.Monthly:
-        // Monthly on specified date (simplified implementation)
-        return true;
-
-      case RecurrenceFrequency.Yearly:
-        // Yearly on specified date
-        return true;
-
-      default:
-        return false;
-    }
+    return instanceGen.shouldGenerateInstance(this.getInstanceContext(), date);
   }
 
-  // ===== State Transition Methods =====
+  private getInstanceContext(): instanceGen.InstanceGenerationContext {
+    return {
+      templateId: this.id,
+      identityId: this._props.identityId,
+      status: this._props.status,
+      taskType: this._props.taskType,
+      timeConfig: this._props.timeConfig,
+      recurrenceRule: this._props.recurrenceRule,
+      importance: this._props.importance,
+      existingInstances: this._instances,
+    };
+  }
 
-  /** Activates the template. */
+  // ===== State Transition Methods (delegated to task-template-lifecycle.policy) =====
+
   public activate(): void {
-    if (this._props.status === TaskTemplateStatus.Deleted) {
-      throw new InvalidTaskTemplateStateError('Cannot activate a deleted template', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'activate',
-      });
-    }
-    if (this._props.status === TaskTemplateStatus.Active) {
-      throw new InvalidTaskTemplateStateError('Template is already active', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'activate',
-      });
-    }
-    this._props.status = TaskTemplateStatus.Active;
-    this._props.updatedAt = new Date();
-    this.addHistory('resumed');
-    this.addDomainEvent<TaskEventMap['task:template-resumed']>('task:template-resumed', {
-      identityId: this._props.identityId,
-      taskTemplateId: this.id,
-      resumedAt: this._props.updatedAt.getTime(),
-      taskTemplate: this.toServerDTO(),
-    });
+    lifecyclePolicy.activate(this);
   }
 
-  /** Pauses the template. */
   public pause(): void {
-    if (this._props.status !== TaskTemplateStatus.Active) {
-      throw new InvalidTaskTemplateStateError('Can only pause active templates', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'pause',
-      });
-    }
-    this._props.status = TaskTemplateStatus.Paused;
-    this._props.updatedAt = new Date();
-    this.addHistory('Paused');
-    this.addDomainEvent<TaskEventMap['task:template-paused']>('task:template-paused', {
-      identityId: this._props.identityId,
-      taskTemplateId: this.id,
-      pausedAt: this._props.updatedAt.getTime(),
-      taskTemplate: this.toServerDTO(),
-    });
+    lifecyclePolicy.pause(this);
   }
 
-  /** Archives the template. */
   public archive(): void {
-    if (this._props.status === TaskTemplateStatus.Deleted) {
-      throw new InvalidTaskTemplateStateError('Cannot archive a deleted template', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'archive',
-      });
-    }
-    if (this._props.status === TaskTemplateStatus.Archived) {
-      throw new TaskTemplateArchivedError(this.id);
-    }
-    this._props.status = TaskTemplateStatus.Archived;
-    this._props.updatedAt = new Date();
-    this.addHistory('Archived');
+    lifecyclePolicy.archive(this);
   }
 
-  /** Soft-deletes the template. */
   public softDelete(): void {
-    if (this._props.status === TaskTemplateStatus.Deleted) {
-      throw new InvalidTaskTemplateStateError('Template is already deleted', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'softDelete',
-      });
-    }
-    this._props.status = TaskTemplateStatus.Deleted;
-    this._props.deletedAt = new Date();
-    this._props.updatedAt = new Date();
-    this.addHistory('Deleted');
-
-    // Publish domain event
-    this.addDomainEvent<TaskEventMap['task:deleted']>('task:deleted', {
-      identityId: this._props.identityId,
-      taskTemplateId: this.id,
-      isSoftDelete: true,
-      deletedAt: this._props.deletedAt.getTime(),
-      task: this.toServerDTO(),
-    });
+    lifecyclePolicy.softDelete(this);
   }
 
-  /** Restores a soft-deleted template. */
   public restore(): void {
-    if (this._props.status !== TaskTemplateStatus.Deleted) {
-      throw new InvalidTaskTemplateStateError('Can only restore deleted templates', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'restore',
-      });
-    }
-    this._props.status = TaskTemplateStatus.Active;
-    this._props.deletedAt = null;
-    this._props.updatedAt = new Date();
-    this.addHistory('restored');
+    lifecyclePolicy.restore(this);
   }
 
-  // ===== One-time task state methods (legacy) =====
-  // NOTE: These methods are from a previous architecture iteration and should be
-  // managed through TaskInstance status transitions instead.
-  // TaskTemplate only manages template-level statuses (ACTIVE/PAUSED/ARCHIVED/DELETED).
-  // Kept for backwards compatibility; should be removed in the future.
+  // ===== Time-related methods (delegated to instance-generation.policy) =====
 
-  // ===== Time-related methods =====
-
-  /** Checks whether the template is active on a given date. */
   public isActiveOnDate(date: number): boolean {
-    if (this._props.status !== TaskTemplateStatus.Active) {
-      return false;
-    }
-
-    if (this._props.taskType === TaskType.OneTime) {
-      return this._props.timeConfig?.startDate?.getTime() === date;
-    }
-
-    if (!this._props.recurrenceRule) {
-      return false;
-    }
-
-    if (this._props.recurrenceRule.endDate && date > this._props.recurrenceRule.endDate.getTime()) {
-      return false;
-    }
-
-    return true;
+    return instanceGen.isActiveOnDate(this.getInstanceContext(), date);
   }
 
-  /** Gets the next occurrence date after the given date. */
   public getNextOccurrence(afterDate: number): number | null {
-    if (this._props.status !== TaskTemplateStatus.Active) {
-      return null;
-    }
-
-    if (this._props.taskType === TaskType.OneTime) {
-      if (
-        this._props.timeConfig?.startDate &&
-        this._props.timeConfig.startDate.getTime() > afterDate
-      ) {
-        return this._props.timeConfig.startDate.getTime();
-      }
-      return null;
-    }
-
-    if (!this._props.recurrenceRule) {
-      return null;
-    }
-
-    // Simplified: return next day (real implementation should follow recurrence rule)
-    return afterDate + 86400000;
+    return instanceGen.getNextOccurrence(this.getInstanceContext(), afterDate);
   }
 
   // ===== One-time task time methods =====
@@ -768,107 +510,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     );
   }
 
-  /** Updates the recurrence rule (Recurring tasks only). */
-  public updateRecurrenceRule(newRule: RecurrenceRule): void {
-    if (this._props.taskType !== TaskType.Recurring) {
-      throw new InvalidTaskTemplateStateError('Only Recurring tasks have recurrence rules.', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'updateRecurrenceRule',
-      });
-    }
-    const oldRuleDTO = this._props.recurrenceRule?.toDTO() ?? null;
-    this._props.recurrenceRule = newRule;
-    this._props.updatedAt = new Date();
-    this.addHistory('recurrence_rule_updated', {
-      oldRule: oldRuleDTO,
-      newRule: newRule.toDTO(),
-    });
+  // ===== Recurrence Methods (delegated to task-template-recurrence.policy) =====
 
-    this.addDomainEvent<TaskEventMap['task:template-recurrence-changed']>(
-      'task:template-recurrence-changed',
-      {
-        identityId: this._props.identityId,
-        taskTemplate: this.toServerDTO(),
-        oldRecurrenceRule: oldRuleDTO,
-        newRecurrenceRule: newRule.toDTO(),
-      },
-    );
+  public updateRecurrenceRule(newRule: RecurrenceRule): void {
+    recurrencePolicy.updateRecurrenceRule(this, newRule);
   }
 
-  /**
-   * Updates the recurrence end condition using enum type and default values.
-   *
-   * @param endConditionType - End condition type
-   * @param customValue - Custom value (e.g., number of occurrences)
-   */
   public updateRecurrenceEndCondition(
     endConditionType: RecurrenceEndConditionType,
     customValue?: number,
   ): void {
-    if (this._props.taskType !== TaskType.Recurring) {
-      throw new InvalidTaskTemplateStateError('Only Recurring tasks have recurrence rules.', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'updateRecurrenceEndCondition',
-      });
-    }
-
-    if (!this._props.recurrenceRule) {
-      throw new InvalidTaskTemplateStateError('Recurrence rule is not set', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'updateRecurrenceEndCondition',
-      });
-    }
-
-    let updatedRule: RecurrenceRule;
-
-    switch (endConditionType) {
-      case RecurrenceEndConditionType.Never:
-        // No end condition: clear endDate and occurrences
-        updatedRule = this._props.recurrenceRule.setEndDate(null).setOccurrences(null);
-        break;
-
-      case RecurrenceEndConditionType.EndDate:
-        // End by date: use provided date or default to 30 days from now
-        const endDate = customValue ?? Date.now() + 30 * 86400000; // Default: 30 days
-        updatedRule = this._props.recurrenceRule.setEndDate(new Date(endDate));
-        break;
-
-      case RecurrenceEndConditionType.Occurrences:
-        // End by occurrence count: use provided count or default to 10
-        const occurrences = customValue ?? 10; // Default: 10
-        updatedRule = this._props.recurrenceRule.setOccurrences(occurrences);
-        break;
-
-      default:
-        throw new InvalidTaskTemplateStateError(`Invalid end condition type: ${endConditionType}`, {
-          templateId: this.id,
-          currentStatus: this._props.status,
-          attemptedAction: 'updateRecurrenceEndCondition',
-        });
-    }
-
-    const oldRuleDTO = this._props.recurrenceRule.toDTO();
-    this._props.recurrenceRule = updatedRule;
-    this._props.updatedAt = new Date();
-
-    this.addHistory('recurrence_end_condition_updated', {
-      oldRule: oldRuleDTO,
-      newRule: updatedRule.toDTO(),
-      endConditionType,
-    });
-
-    this.addDomainEvent<TaskEventMap['task:template-recurrence-changed']>(
-      'task:template-recurrence-changed',
-      {
-        identityId: this._props.identityId,
-        taskTemplate: this.toServerDTO(),
-        oldRecurrenceRule: oldRuleDTO,
-        newRecurrenceRule: updatedRule.toDTO(),
-      },
-    );
+    recurrencePolicy.updateRecurrenceEndCondition(this, endConditionType, customValue);
   }
 
   /** Updates the importance level. */
@@ -977,278 +629,92 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       return null;
     }
 
-    return instanceDate - 3600000;
+    // Standardized fallback: return 1 hour before (real implementation should use reminder configuration offset)
+    const ONE_HOUR_MS = 3600000;
+    return instanceDate - ONE_HOUR_MS;
   }
 
-  // ===== Goal Binding Methods =====
+  // ===== Goal Binding Methods (delegated to task-template-goal.policy) =====
 
-  /** Binds the template to a goal. */
   public bindToGoal(
     goalId: string,
     keyResultId: string,
-    goalRecordValue: number,
+    goalRecordValue?: number,
     progressTrigger: TaskGoalBindingTriggerValue = TaskGoalBindingTrigger.PerInstance,
   ): void {
-    // Validate parameters
-    if (!goalId || !keyResultId) {
-      throw new InvalidGoalBindingError('Goal ID and Key Result ID are required');
-    }
-
-    // Check if template is archived
-    if (this._props.status === TaskTemplateStatus.Archived) {
-      throw new TaskTemplateArchivedError(this.id);
-    }
-
-    if (this._props.goalBinding) {
-      throw new InvalidGoalBindingError('Template is already bound to a goal');
-    }
-
-    this._props.goalBinding = TaskGoalBinding.fromDTO({
-      goalId: goalId as GoalId,
-      keyResultId: keyResultId as KeyResultId,
-      goalRecordValue,
-      progressTrigger,
-    });
-    this._props.goalId = goalId as GoalId;
-    this._props.keyResultId = keyResultId as KeyResultId;
-    this._props.updatedAt = new Date();
-    this.addHistory('goal_bound', { goalId, keyResultId, goalRecordValue, progressTrigger });
+    goalPolicy.bindToGoal(this, goalId, keyResultId, goalRecordValue, progressTrigger);
   }
 
-  /** Unbinds from the current goal. */
   public unbindFromGoal(): void {
-    // Check if template has goal binding
-    if (!this._props.goalBinding) {
-      throw new InvalidGoalBindingError('Template is not bound to any goal');
-    }
-
-    // Check if template is archived
-    if (this._props.status === TaskTemplateStatus.Archived) {
-      throw new TaskTemplateArchivedError(this.id);
-    }
-
-    this._props.goalBinding = null;
-    this._props.goalId = null;
-    this._props.keyResultId = null;
-    this._props.updatedAt = new Date();
-    this.addHistory('goal_unbound');
+    goalPolicy.unbindFromGoal(this);
   }
 
-  /** Checks whether the template is linked to a goal. */
   public isLinkedToGoal(): boolean {
-    return this._props.goalBinding !== null;
+    return goalPolicy.isLinkedToGoal(this._props);
   }
 
-  /** Links to a goal (OneTime tasks only, supports multiple fields). */
   public linkToGoal(goalId: string, keyResultId?: string): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can be linked to goals', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'linkToGoal',
-      });
-    }
-    if (this._props.goalId) {
-      throw new InvalidTaskTemplateStateError('Task is already linked to a goal', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'linkToGoal',
-      });
-    }
-    this._props.goalId = goalId as GoalId;
-    this._props.keyResultId = keyResultId ? (keyResultId as KeyResultId) : null;
-    this._props.updatedAt = new Date();
-    this.addHistory('linked_to_goal', { goalId, keyResultId });
+    goalPolicy.linkToGoal(this, goalId, keyResultId);
   }
 
-  /** Unlinks from the current goal (OneTime tasks only). */
   public unlinkFromGoal(): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can be unlinked from goals', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'unlinkFromGoal',
-      });
-    }
-    if (!this._props.goalId) {
-      throw new InvalidTaskTemplateStateError('Task is not linked to any goal', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'unlinkFromGoal',
-      });
-    }
-    const oldGoalId = this._props.goalId;
-    const oldKeyResultId = this._props.keyResultId;
-    this._props.goalId = null;
-    this._props.keyResultId = null;
-    this._props.updatedAt = new Date();
-    this.addHistory('unlinked_from_goal', { oldGoalId, oldKeyResultId });
+    goalPolicy.unlinkFromGoal(this);
   }
 
-  // ===== Subtask Methods (OneTime) =====
+  // ===== Subtask Methods (delegated to task-template-onetime.policy) =====
 
-  /** Adds a subtask. */
   public addSubtask(subtaskId: string): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can have subtasks', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'addSubtask',
-      });
-    }
-    // In practice, subtaskId existence should be verified via repository
-    this._props.updatedAt = new Date();
-    this.addHistory('subtask_added', { subtaskId });
+    oneTimePolicy.addSubtask(this, subtaskId);
   }
 
-  /** Removes a subtask. */
   public removeSubtask(subtaskId: string): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can have subtasks', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'removeSubtask',
-      });
-    }
-    this._props.updatedAt = new Date();
-    this.addHistory('subtask_removed', { subtaskId });
+    oneTimePolicy.removeSubtask(this, subtaskId);
   }
 
-  /** Checks whether this template is a subtask. */
   public isSubtask(): boolean {
-    return this._props.parentTaskId !== null;
+    return oneTimePolicy.isSubtask(this._props);
   }
 
-  /** Gets the parent task ID. */
   public getParentTaskId(): string | null {
     return this._props.parentTaskId;
   }
 
-  /** Updates the parent task relationship. */
   public updateParentTaskId(parentTaskId: TaskTemplateId | null): void {
-    if (parentTaskId && String(parentTaskId) === String(this.id)) {
-      throw new InvalidTaskTemplateStateError('Task cannot be its own parent', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'updateParentTaskId',
-      });
-    }
-
-    this._props.parentTaskId = parentTaskId;
-    this._props.updatedAt = new Date();
-    this.addHistory('parent_task_updated', {
-      parentTaskId: parentTaskId ? String(parentTaskId) : null,
-    });
+    oneTimePolicy.updateParentTaskId(this, parentTaskId);
   }
 
-  // ===== Priority Calculation Methods (OneTime) =====
+  // ===== Priority Calculation (delegated to task-template-onetime.policy) =====
 
-  /**
-   * Gets the priority level and score.
-   *
-   * Uses calculateTaskPriority with:
-   * - Importance: from this task template
-   * - Due Date: task deadline
-   * - Current Time: reference time
-   *
-   * For one-time tasks: maps score to one of 5 priority levels.
-   * For recurring tasks: returns default low priority.
-   */
   public getPriority(): { level: PriorityLevel; score: number } {
-    if (this._props.taskType !== TaskType.OneTime) {
-      return { level: PriorityLevel.Low as PriorityLevel, score: 0 };
-    }
-
-    const currentTime = new Date();
-    const dueDateObj = this._props.dueDate;
-
-    const score = calculateTaskPriority(this._props.importance, dueDateObj, currentTime);
-    const level = this.scoreToPriorityLevel(score);
-
-    return { level, score };
+    return oneTimePolicy.getPriority(this._props);
   }
 
-  /**
-   * Maps a priority score to a priority level.
-   *
-   * Score ranges:
-   * - [80, 100]: Critical - requires immediate action
-   * - [60, 80): High - should be handled soon
-   * - [40, 60): Medium - needs attention
-   * - [20, 40): Low - can wait
-   * - [0, 20): None - no urgency
-   */
-  private scoreToPriorityLevel(score: number): PriorityLevel {
-    if (score >= 80) return PriorityLevel.Critical as PriorityLevel;
-    if (score >= 60) return PriorityLevel.High as PriorityLevel;
-    if (score >= 40) return PriorityLevel.Medium as PriorityLevel;
-    if (score >= 20) return PriorityLevel.Low as PriorityLevel;
-    return PriorityLevel.None as PriorityLevel;
-  }
-
-  /** Gets the priority score. */
   public getPriorityScore(): number {
     return this.getPriority().score;
   }
 
-  /** Gets the priority level. */
   public getPriorityLevel(): PriorityLevel {
     return this.getPriority().level;
   }
 
-  // ===== Dependency Management (OneTime) =====
+  // ===== Dependency Management (delegated to task-template-onetime.policy) =====
 
-  /** Marks the template as blocked. */
   public markAsBlocked(reason: string, dependencyTaskId?: string): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can be blocked by dependencies', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'markAsBlocked',
-      });
-    }
-    this._props.isBlocked = true;
-    this._props.blockingReason = reason;
-    this._props.dependencyStatus = DependencyStatus.Blocked;
-    this._props.updatedAt = new Date();
-    this.addHistory('marked_as_blocked', { reason, dependencyTaskId });
+    oneTimePolicy.markAsBlocked(this, reason, dependencyTaskId);
   }
 
-  /** Marks the template as ready (dependencies resolved). */
   public markAsReady(): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can have dependency status', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'markAsReady',
-      });
-    }
-    this._props.isBlocked = false;
-    this._props.blockingReason = null;
-    this._props.dependencyStatus = DependencyStatus.Ready;
-    this._props.updatedAt = new Date();
-    this.addHistory('marked_as_ready');
+    oneTimePolicy.markAsReady(this);
   }
 
-  /** Updates the dependency status. */
   public updateDependencyStatus(status: DependencyStatus): void {
-    if (this._props.taskType !== TaskType.OneTime) {
-      throw new InvalidTaskTemplateStateError('Only OneTime tasks can have dependency status', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'updateDependencyStatus',
-      });
-    }
-    const oldStatus = this._props.dependencyStatus;
-    this._props.dependencyStatus = status;
-    this._props.updatedAt = new Date();
-    this.addHistory('dependency_status_updated', { oldStatus, newStatus: status });
+    oneTimePolicy.updateDependencyStatus(this, status);
   }
 
   // ===== History Methods =====
 
   /** Adds a history record. */
-  public addHistory(action: string, changes?: any): void {
+  public addHistory(action: string, changes?: unknown): void {
     const history = TaskTemplateHistory.create({
       templateId: this.id,
       action,
@@ -1261,39 +727,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   // ===== Instance Management Methods =====
 
   /** Creates an instance from this template. */
-  public createInstance(params: any): string {
-    // Check if template is archived or deleted
-    if (this._props.status === TaskTemplateStatus.Archived) {
-      throw new TaskTemplateArchivedError(this.id);
-    }
-    if (this._props.status === TaskTemplateStatus.Deleted) {
-      throw new InvalidTaskTemplateStateError('Cannot create instance from deleted template', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'createInstance',
-      });
-    }
-
-    // Validate instance date
-    if (!params.instanceDate || typeof params.instanceDate !== 'number') {
-      throw new InvalidTaskTemplateStateError('Invalid instance date provided', {
-        templateId: this.id,
-        currentStatus: this._props.status,
-        attemptedAction: 'createInstance',
-      });
-    }
-
-    if (!this._props.timeConfig) {
-      throw new Error('Cannot create instance without timeConfig');
-    }
-
-    const instance = TaskInstance.create({
-      templateId: this.id,
-      identityId: this._props.identityId,
-      instanceDate: params.instanceDate,
-      timeConfig: this._props.timeConfig,
-      importance: this._props.importance,
-    });
+  public createInstance(params: instanceGen.CreateInstanceParams): string {
+    const instance = instanceGen.createInstanceFromTemplate(this.getInstanceContext(), params);
     this._instances.push(instance);
     this._props.updatedAt = new Date();
     return instance.id;
@@ -1324,369 +759,35 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return [...this._instances];
   }
 
-  // ===== DTO Conversion =====
+  // ===== DTO Conversion (delegated to task-template-dto) =====
 
   public toServerDTO(includeChildren: boolean = false): TaskTemplateServerDTO {
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      name: this._props.title,
-      description: this._props.description,
-      timeConfig: this._props.timeConfig?.toDTO() ?? null,
-      recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
-      reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
-      importance: this._props.importance,
-      priority: this._props.taskType === TaskType.OneTime ? this.getPriority().score : undefined,
-      goalBinding: this._props.goalBinding?.toDTO() ?? null,
-      checklist: this._props.checklist.map((c) => c.toDTO()),
-      folderId: this._props.folderId,
-      tags: [...this._props.tags],
-      color: this._props.color,
-      status: this._props.status,
-      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
-      generateAheadDays: this._props.generateAheadDays,
-      parentTaskId: this._props.parentTaskId,
-      dependencyStatus: this._props.dependencyStatus,
-      isBlocked: this._props.isBlocked,
-      blockingReason: this._props.blockingReason,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
-      version: this._props.version,
-      instances: includeChildren ? this._instances.map((i) => i.toServerDTO()) : undefined,
-    };
+    return dtoHelper.toServerDTO(this, includeChildren);
   }
 
   public toClientDTO(includeChildren: boolean = false): TaskTemplateClientDTO {
-    const completedCount = this._instances.filter(
-      (i) => i.status === TaskInstanceStatus.Completed,
-    ).length;
-    const pendingCount = this._instances.filter(
-      (i) => i.status === TaskInstanceStatus.Pending,
-    ).length;
-    const totalCount = this._instances.length;
-    const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-    // OneTime tasks include priority calculation
-    const priority = this._props.taskType === TaskType.OneTime ? this.getPriority() : undefined;
-
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      name: this._props.title,
-      description: this._props.description,
-      timeConfig: this._props.timeConfig?.toDTO() ?? {
-        timeType: TimeType.AllDay,
-        startDate: null,
-        timePoint: null,
-        timeRange: null,
-      },
-      recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
-      reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
-      importance: this._props.importance,
-      priority: priority?.score,
-      goalBinding: this._props.goalBinding?.toDTO() ?? null,
-      folderId: this._props.folderId,
-      tags: [...this._props.tags],
-      color: this._props.color,
-      status: this._props.status,
-      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
-      generateAheadDays: this._props.generateAheadDays,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
-      version: this._props.version,
-      parentTaskId: this._props.parentTaskId,
-      startDate: this._props.startDate?.getTime() ?? null,
-      dueDate: this._props.dueDate?.getTime() ?? null,
-      completedAt: this._props.completedAt?.getTime() ?? null,
-      estimatedMinutes: this._props.estimatedMinutes,
-      actualMinutes: this._props.actualMinutes,
-      comment: this._props.note,
-      dependencyStatus: this._props.dependencyStatus,
-      isBlocked: this._props.isBlocked,
-      blockingReason: this._props.blockingReason,
-      history: includeChildren ? this._history.map((h) => h.toClientDTO()) : undefined,
-      instances: includeChildren ? this._instances.map((i) => i.toClientDTO()) : undefined,
-      instanceCount: totalCount,
-      completedInstanceCount: completedCount,
-      pendingInstanceCount: pendingCount,
-      completionRate,
-    };
+    return dtoHelper.toClientDTO(this, includeChildren);
   }
 
-  // ===== Factory Methods =====
+  // ===== Factory Methods (delegated to task-template-factory) =====
 
-  /** Convenience factory: creates a one-time task. */
-  public static createOneTimeTask(params: {
-    identityId: IdentityId;
-    title: string;
-    description?: string;
-    importance?: ImportanceLevel;
-    startDate?: Date;
-    dueDate?: Date;
-    estimatedMinutes?: number;
-    note?: string;
-    goalId?: GoalId;
-    keyResultId?: KeyResultId;
-    parentTaskId?: TaskTemplateId;
-    folderId?: TaskFolderId;
-    tags?: string[];
-    color?: string;
-  }): TaskTemplate {
-    if (!params.identityId) {
-      throw new InvalidTaskTemplateStateError('Identity ID is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createOneTimeTask',
-      });
-    }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new InvalidTaskTemplateStateError('Title is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createOneTimeTask',
-      });
-    }
-    TaskTemplate.assertValidDateRange(params.startDate ?? null, params.dueDate ?? null);
+  public static createOneTimeTask: typeof import('./task-template-factory').createOneTimeTask =
+    (...args) => factory.createOneTimeTask(...args);
 
-    const now = new Date();
-    const template = new TaskTemplate({
-      id: TaskTemplateId.generate(),
-      identityId: params.identityId,
-      title: params.title.trim(),
-      description: params.description || null,
-      taskType: TaskType.OneTime,
-      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      tags: params.tags ?? [],
-      color: params.color || null,
-      status: TaskTemplateStatus.Active,
-      folderId: params.folderId || null,
-      goalId: params.goalId || null,
-      keyResultId: params.keyResultId || null,
-      goalBinding: null,
-      checklist: [],
-      parentTaskId: params.parentTaskId || null,
-      timeConfig: null,
-      recurrenceRule: null,
-      reminderConfig: null,
-      lastGeneratedDate: null,
-      generateAheadDays: null,
-      startDate: params.startDate || null,
-      dueDate: params.dueDate || null,
-      completedAt: null,
-      estimatedMinutes: params.estimatedMinutes || null,
-      actualMinutes: null,
-      note: params.note || null,
-      dependencyStatus: DependencyStatus.Waiting,
-      isBlocked: false,
-      blockingReason: null,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-      version: 1,
-    });
+  public static createRecurringTask: typeof import('./task-template-factory').createRecurringTask =
+    (...args) => factory.createRecurringTask(...args);
 
-    template.addHistory('created', { taskType: TaskType.OneTime });
-    return template;
-  }
+  public static create: typeof import('./task-template-factory').createTaskTemplate =
+    (...args) => factory.createTaskTemplate(...args);
 
-  /** Convenience factory: creates a recurring task. */
-  public static createRecurringTask(params: {
-    identityId: IdentityId;
-    title: string;
-    description?: string;
-    timeConfig: TaskTimeConfig;
-    recurrenceRule: RecurrenceRule;
-    reminderConfig?: TaskReminderConfig;
-    importance?: ImportanceLevel;
-    folderId?: TaskFolderId;
-    tags?: string[];
-    color?: string;
-    generateAheadDays?: number;
-  }): TaskTemplate {
-    if (!params.identityId) {
-      throw new InvalidTaskTemplateStateError('Identity ID is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createRecurringTask',
-      });
-    }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new InvalidTaskTemplateStateError('Title is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createRecurringTask',
-      });
-    }
-    const now = new Date();
-    const template = new TaskTemplate({
-      id: TaskTemplateId.generate(),
-      identityId: params.identityId,
-      title: params.title.trim(),
-      description: params.description || null,
-      taskType: TaskType.Recurring,
-      timeConfig: params.timeConfig,
-      recurrenceRule: params.recurrenceRule,
-      reminderConfig: params.reminderConfig || null,
-      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      goalBinding: null,
-      folderId: params.folderId || null,
-      goalId: null,
-      keyResultId: null,
-      checklist: [],
-      parentTaskId: null,
-      lastGeneratedDate: null,
-      startDate: null,
-      dueDate: null,
-      completedAt: null,
-      estimatedMinutes: null,
-      actualMinutes: null,
-      note: null,
-      dependencyStatus: DependencyStatus.None,
-      isBlocked: false,
-      blockingReason: null,
-      tags: params.tags ?? [],
-      color: params.color || null,
-      status: TaskTemplateStatus.Active,
-      generateAheadDays: params.generateAheadDays ?? 30,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-      version: 1,
-    });
-
-    template.addHistory('created', { taskType: TaskType.Recurring });
-    return template;
-  }
-
-  /** General factory: creates a new task template. */
-  public static create(params: {
-    identityId: IdentityId;
-    title: string;
-    description?: string;
-    taskType: TaskType;
-    timeConfig: TaskTimeConfig;
-    recurrenceRule?: RecurrenceRule;
-    reminderConfig?: TaskReminderConfig;
-    importance?: ImportanceLevel;
-    folderId?: TaskFolderId;
-    tags?: string[];
-    color?: string;
-    generateAheadDays?: number;
-    goalBinding?: {
-      goalId: string;
-      keyResultId: string;
-      goalRecordValue: number;
-      progressTrigger: TaskGoalBindingTriggerValue;
-    } | null;
-    parentTaskId?: TaskTemplateId;
-  }): TaskTemplate {
-    if (!params.identityId) {
-      throw new InvalidTaskTemplateStateError('Identity ID is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'create',
-      });
-    }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new InvalidTaskTemplateStateError('Title is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'create',
-      });
-    }
-    if (!params.timeConfig) {
-      throw new InvalidTaskTemplateStateError('Time configuration is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'create',
-      });
-    }
-    if (params.taskType === TaskType.Recurring && !params.recurrenceRule) {
-      throw new InvalidTaskTemplateStateError('Recurrence rule is required for Recurring tasks', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'create',
-      });
-    }
-
-    const now = new Date();
-    const template = new TaskTemplate({
-      id: TaskTemplateId.generate(),
-      identityId: params.identityId,
-      title: params.title.trim(),
-      description: params.description ?? null,
-      taskType: params.taskType,
-      timeConfig: params.timeConfig,
-      recurrenceRule: params.recurrenceRule ?? null,
-      reminderConfig: params.reminderConfig ?? null,
-      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      goalBinding: params.goalBinding
-        ? TaskGoalBinding.fromDTO({
-            ...params.goalBinding,
-            goalId: params.goalBinding.goalId as GoalId,
-            keyResultId: params.goalBinding.keyResultId as KeyResultId,
-          })
-        : null,
-      folderId: params.folderId ?? null,
-      goalId: (params.goalBinding?.goalId as GoalId | undefined) ?? null,
-      keyResultId: (params.goalBinding?.keyResultId as KeyResultId | undefined) ?? null,
-      checklist: [],
-      parentTaskId: params.parentTaskId ?? null,
-      lastGeneratedDate: null,
-      startDate: null,
-      dueDate: null,
-      completedAt: null,
-      estimatedMinutes: null,
-      actualMinutes: null,
-      note: null,
-      dependencyStatus: DependencyStatus.None,
-      isBlocked: false,
-      blockingReason: null,
-      tags: params.tags ?? [],
-      color: params.color ?? null,
-      status: TaskTemplateStatus.Active,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-      generateAheadDays: params.generateAheadDays ?? 30,
-      version: 1,
-    });
-
-    template.addHistory('created');
-    template.addDomainEvent<TaskEventMap['task:created']>('task:created', {
-      identityId: params.identityId,
-      task: template.toServerDTO(),
-      templateId: template.id,
-      goalId: template.goalBinding?.goalId ?? null,
-    });
-
-    return template;
-  }
-
-  /** Factory method: restores an aggregate from persisted state. */
   public static load(state: TaskTemplateState): TaskTemplate {
-    return new TaskTemplate(state);
+    return factory.loadTaskTemplate(state);
   }
 
-  private static assertValidDateRange(
-    startDate: Date | null | undefined,
-    dueDate: Date | null | undefined,
-  ): void {
-    if (!startDate || !dueDate) {
-      return;
-    }
-
-    const start = startDate.getTime();
-    const due = dueDate.getTime();
-
-    if (start > due) {
-      throw new InvalidDateRangeError(start, due);
-    }
-  }
-
-  private static startOfLocalDay(value: number): number {
+  static startOfLocalDay(value: number): number {
     return startOfDay(new Date(value)).getTime();
   }
 }
+
+// Lazy import to avoid circular dependency at module load time
+import * as factory from './task-template-factory';

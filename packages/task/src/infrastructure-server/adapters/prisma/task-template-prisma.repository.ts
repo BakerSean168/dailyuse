@@ -13,7 +13,7 @@ import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-tas
 import type { TaskFilters } from '@/domain-server/repositories/i-task-template-repository';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaTaskTemplateMapper } from './mappers/prisma-task-template-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
@@ -291,7 +291,7 @@ export class TaskTemplatePrismaRepository
 
   async findUpcomingTasks(
     identityId: string,
-    daysAhead: number,
+    _daysAhead: number,
   ): Promise<TaskTemplate[]> {
     const data = await this.prisma.taskTemplate.findMany({
       where: {

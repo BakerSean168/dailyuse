@@ -1,4 +1,4 @@
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 import type { AuthSessionId as IAuthSessionId } from '@dailyuse/contracts/authentication';
 

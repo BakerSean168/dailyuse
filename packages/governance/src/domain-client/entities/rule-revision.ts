@@ -14,7 +14,7 @@
  */
 
 import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revision-client';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
@@ -57,6 +57,7 @@ export interface RuleRevisionState {
  *   UI 辅助方法（更改摘要、字段比较）
  * - Data conversion (toDTO)
  *   数据转换（toDTO）
+  * @param state - 
  */
 export class RuleRevision extends Entity<RuleRevisionId> {
   private readonly _props: RuleRevisionState;

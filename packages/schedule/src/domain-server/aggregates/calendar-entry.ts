@@ -1,4 +1,4 @@
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type {
   CalendarEntryClientDTO,

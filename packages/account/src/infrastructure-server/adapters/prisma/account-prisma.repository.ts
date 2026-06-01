@@ -12,10 +12,17 @@ import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
 import { AggregateRepositoryBase, createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
-const logger = createLogger('PrismaAccountRepository');
 const eventBusAdapter = createEventBusAdapter(eventBus);
+
+/**
+ * Minimal DB capability interface for Account repository.
+ * Both PrismaClient and Prisma.TransactionClient satisfy this.
+ */
+interface AccountDb {
+  account: PrismaClient['account'];
+}
 
 export class PrismaAccountRepository
   extends AggregateRepositoryBase<Account>
@@ -26,12 +33,19 @@ export class PrismaAccountRepository
   }
 
   /**
+   * Resolve the effective DB client (transactional or default).
+   */
+  private client(tx?: AccountDb): AccountDb {
+    return tx ?? this.prisma;
+  }
+
+  /**
    * Protected persistence method - called by base class before event publishing
    */
-  protected async persist(account: Account, tx?: unknown): Promise<void> {
-    const client = (tx || this.prisma) as PrismaClient;
+  protected async persist(account: Account, tx?: AccountDb): Promise<void> {
+    const db = this.client(tx);
 
-    await (client as any).account.upsert({
+    await db.account.upsert({
       where: { id: account.id.toString() },
       update: {
         status: account.status.toString(),
@@ -44,7 +58,9 @@ export class PrismaAccountRepository
         phoneFullNumber: account.phone?.fullNumber ?? null,
         phoneIsVerified: account.phone?.isVerified ?? null,
         phoneVerifiedAt: account.phone?.verifiedAt ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         profile: account.profile.toDTO() as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         settings: account.settings.toDTO() as any,
         version: account.version,
         updatedAt: account.updatedAt,
@@ -61,7 +77,9 @@ export class PrismaAccountRepository
         phoneFullNumber: account.phone?.fullNumber ?? null,
         phoneIsVerified: account.phone?.isVerified ?? null,
         phoneVerifiedAt: account.phone?.verifiedAt ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         profile: account.profile.toDTO() as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
         settings: account.settings.toDTO() as any,
         version: account.version,
         createdAt: account.createdAt,
@@ -73,22 +91,19 @@ export class PrismaAccountRepository
   /**
    * save 方法由基类提供，支持事务参数
    */
-  override async save(account: Account, tx?: unknown): Promise<void> {
+  override async save(account: Account, tx?: AccountDb): Promise<void> {
     await this.persist(account, tx);
     await publishAggregateEvents(account, this.eventBus);
   }
 
-  async findById(id: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    const row = await client.account.findUnique({ where: { id } });
+  async findById(id: string, tx?: AccountDb): Promise<Account | null> {
+    const row = await this.client(tx).account.findUnique({ where: { id } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async findByNickname(nickname: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    // Nickname stored in profile JSON; search by nickname.
-    const rows = await client.account.findMany({
+  async findByNickname(nickname: string, tx?: AccountDb): Promise<Account | null> {
+    const rows = await this.client(tx).account.findMany({
       where: { profile: { path: ['nickname'], equals: nickname } },
       take: 1,
     });
@@ -96,34 +111,30 @@ export class PrismaAccountRepository
     return AccountPrismaMapper.toDomain(rows[0]);
   }
 
-  async findByEmail(email: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    const row = await client.account.findFirst({ where: { emailAddress: email } });
+  async findByEmail(email: string, tx?: AccountDb): Promise<Account | null> {
+    const row = await this.client(tx).account.findFirst({ where: { emailAddress: email } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async findByPhone(phoneNumber: string, tx?: unknown): Promise<Account | null> {
-    const client = (tx || this.prisma) as any;
-    const row = await client.account.findFirst({ where: { phoneNumber } });
+  async findByPhone(phoneNumber: string, tx?: AccountDb): Promise<Account | null> {
+    const row = await this.client(tx).account.findFirst({ where: { phoneNumber } });
     if (!row) return null;
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async existsByNickname(nickname: string, tx?: unknown): Promise<boolean> {
+  async existsByNickname(nickname: string, tx?: AccountDb): Promise<boolean> {
     const account = await this.findByNickname(nickname, tx);
     return account !== null;
   }
 
-  async existsByEmail(email: string, tx?: unknown): Promise<boolean> {
-    const client = (tx || this.prisma) as any;
-    const count = await client.account.count({ where: { emailAddress: email } });
+  async existsByEmail(email: string, tx?: AccountDb): Promise<boolean> {
+    const count = await this.client(tx).account.count({ where: { emailAddress: email } });
     return count > 0;
   }
 
-  async delete(id: string, tx?: unknown): Promise<void> {
-    const client = (tx || this.prisma) as any;
-    await client.account.delete({ where: { id } });
+  async delete(id: string, tx?: AccountDb): Promise<void> {
+    await this.client(tx).account.delete({ where: { id } });
   }
 
   async findAll(
@@ -132,17 +143,17 @@ export class PrismaAccountRepository
       pageSize?: number;
       status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED';
     },
-    tx?: unknown,
+    tx?: AccountDb,
   ): Promise<{ accounts: Account[]; total: number }> {
-    const client = (tx || this.prisma) as any;
+    const db = this.client(tx);
     const page = options?.page || 1;
     const pageSize = options?.pageSize || 10;
     const skip = (page - 1) * pageSize;
     const where = options?.status ? { status: options.status } : {};
 
     const [rows, total] = await Promise.all([
-      client.account.findMany({ where, skip, take: pageSize, orderBy: { createdAt: 'desc' } }),
-      client.account.count({ where }),
+      db.account.findMany({ where, skip, take: pageSize, orderBy: { createdAt: 'desc' } }),
+      db.account.count({ where }),
     ]);
 
     const accounts = rows.map((row: PrismaAccount) => AccountPrismaMapper.toDomain(row));

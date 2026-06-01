@@ -1,4 +1,4 @@
-import { fail, ok, isOk, type Result } from '@dailyuse/contracts/result';
+import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   CreateConversationSchema,
@@ -14,8 +14,6 @@ import {
   type UpdateConversationRes,
 } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import { toAIControllerFailure } from './ai-controller-errors';
-
 interface AIChatConversationControllerService {
   createConversation(cx: ExecutionContext, name?: string): Promise<Result<CreateConversationRes>>;
   listConversations(cx: ExecutionContext, page?: number, pageSize?: number): Promise<Result<ConversationListRes>>;

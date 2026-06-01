@@ -5,7 +5,6 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-
 import type { IRepositoryRepository } from '../../domain-server/repositories/i-repository-repository';
 import type { IResourceRepository } from '../../domain-server/repositories/i-resource-repository';
 import type { IFolderRepository } from '../../domain-server/repositories/i-folder-repository';
@@ -25,6 +24,12 @@ import {
 /**
  * Repository Repository Factory
  */
+interface RepositoryImplementations {
+  repositoryRepository: IRepositoryRepository;
+  resourceRepository: IResourceRepository;
+  folderRepository: IFolderRepository;
+}
+
 export class RepositoryRepositoryFactory {
   /**
    * Create repositories using Prisma (for API/PostgreSQL)
@@ -49,16 +54,16 @@ export class RepositoryRepositoryFactory {
   }
 
   /**
-   * Create repositories based on data source type
+   * Create repositories based on data source type.
+   * Overloads provide correct narrowing so no cast is needed at call sites.
    */
-  static create(
-    dataSource: 'prisma' | 'powersync',
-    client: PrismaClient | IElectronDatabase,
-  ): ReturnType<typeof RepositoryRepositoryFactory.createPrismaRepositories> {
+  static create(dataSource: 'prisma', client: PrismaClient): RepositoryImplementations;
+  static create(dataSource: 'powersync', client: IElectronDatabase): RepositoryImplementations;
+  static create(...args: ['prisma', PrismaClient] | ['powersync', IElectronDatabase]): RepositoryImplementations {
+    const [dataSource, client] = args;
     if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient) as any;
-    } else {
-      return this.createPowerSyncRepositories(client as IElectronDatabase) as any;
+      return this.createPrismaRepositories(client);
     }
+    return this.createPowerSyncRepositories(client);
   }
 }

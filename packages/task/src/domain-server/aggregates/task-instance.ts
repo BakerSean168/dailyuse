@@ -18,7 +18,7 @@ import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-
 import { TaskInstanceId } from '../../domain-shared/value-objects/task-instance-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 
 /**

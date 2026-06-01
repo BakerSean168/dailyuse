@@ -88,6 +88,8 @@ import {
   toTaskTimeConfigPayload,
 } from '../utils/task-template-presentation';
 import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { buildTaskGraphData } from '../types/task-dag.types';
 
 const router = useRouter();
@@ -194,8 +196,8 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     description: template.description ?? null,
     taskType: template.recurrenceRule ? TaskType.Recurring : TaskType.OneTime,
     timeConfig: toTaskTimeConfigPayload(template.timeConfig),
-    recurrenceRule: template.recurrenceRule ?? null,
-    importance: (template.importance as any) ?? 'Moderate',
+    recurrenceRule: (template.recurrenceRule as unknown as RecurrenceRuleDTO) ?? null,
+    importance: (template.importance as ImportanceLevel) ?? 'Moderate',
     parentTaskId: (template.parentTaskId as TaskTemplateId) ?? null,
     tags: template.tags ?? [],
     color: template.color ?? null,
@@ -225,8 +227,8 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     name: vm.title,
     description: vm.description ?? null,
     timeConfig: toTaskTimeConfigPayload(vm.timeConfig),
-    recurrenceRule: vm.recurrenceRule ?? null,
-    importance: (vm.importance as any) ?? 'Moderate',
+    recurrenceRule: (vm.recurrenceRule as unknown as RecurrenceRuleDTO) ?? null,
+    importance: (vm.importance as ImportanceLevel) ?? 'Moderate',
     parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,
     tags: vm.tags ?? [],
     color: vm.color ?? null,

@@ -28,7 +28,6 @@ import { brandedId } from '@dailyuse/contracts/primitives';
 import type { NotificationId } from '@dailyuse/contracts/primitives';
 import {
   CreateNotificationSchema,
-  UpdateNotificationSchema,
   NotificationQuerySchema,
   MarkAsReadBatchSchema,
   DeleteNotificationsBatchSchema,

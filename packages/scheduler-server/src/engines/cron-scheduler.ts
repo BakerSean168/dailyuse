@@ -1,6 +1,6 @@
 import cron, { type ScheduledTask } from 'node-cron';
 import type { IScheduler, ITaskHandler } from '../interfaces';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('CronScheduler');
 

@@ -83,7 +83,7 @@ export const SessionStatus = {
   /**
    * Checks whether the session can be recovered to active status.
    */
-  isRecoverable(status: SessionStatus): boolean {
+  isRecoverable(_status: SessionStatus): boolean {
     return false;
   },
 };

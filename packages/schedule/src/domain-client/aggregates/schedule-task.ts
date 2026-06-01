@@ -21,7 +21,7 @@ import type {
   TaskPriority,
   ExecutionStatus,
 } from '@dailyuse/contracts/schedule';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ScheduleExecution } from '../entities/schedule-execution.js';
@@ -127,7 +127,7 @@ export class RetryPolicyVO {
 export class TaskMetadataVO {
   constructor(private readonly dto: TaskMetadataDTO) {}
 
-  get payload(): Record<string, any> {
+  get payload(): Record<string, unknown> {
     return { ...this.dto.payload };
   }
 

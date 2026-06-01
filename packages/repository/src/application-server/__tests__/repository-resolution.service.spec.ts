@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
 import { RepositoryResolutionService } from '../services/repository-resolution.service';
 import { CreateRepositoryUseCase } from '../use-cases/commands/create-repository.use-case';
 import { Repository } from '../../domain-server/aggregates/repository';
-import { RepositoryStatus } from '@dailyuse/contracts/repository';
+import { createRepositoryMemoryTestRepositories } from '../../testing';
 
 describe('RepositoryResolutionService', () => {
   it('resolves the active repository for an identity', async () => {
-    const repositoryRepository = new RepositoryMemoryRepository();
+    const { repositoryRepository } = createRepositoryMemoryTestRepositories();
     const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const repository = Repository.create({
@@ -31,7 +30,7 @@ describe('RepositoryResolutionService', () => {
   });
 
   it('falls back to any repository when no active one exists', async () => {
-    const repositoryRepository = new RepositoryMemoryRepository();
+    const { repositoryRepository } = createRepositoryMemoryTestRepositories();
     const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const repository = Repository.create({
@@ -56,7 +55,7 @@ describe('RepositoryResolutionService', () => {
   });
 
   it('returns NOT_FOUND when no repository exists and auto-create is disabled', async () => {
-    const repositoryRepository = new RepositoryMemoryRepository();
+    const { repositoryRepository } = createRepositoryMemoryTestRepositories();
     const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const service = new RepositoryResolutionService({
@@ -72,7 +71,7 @@ describe('RepositoryResolutionService', () => {
   });
 
   it('auto-creates a canonical repository when none exists', async () => {
-    const repositoryRepository = new RepositoryMemoryRepository();
+    const { repositoryRepository } = createRepositoryMemoryTestRepositories();
     const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const service = new RepositoryResolutionService({
@@ -89,7 +88,7 @@ describe('RepositoryResolutionService', () => {
   });
 
   it('returns existing repository on ensureCanonicalRepository when one exists', async () => {
-    const repositoryRepository = new RepositoryMemoryRepository();
+    const { repositoryRepository } = createRepositoryMemoryTestRepositories();
     const createRepository = new CreateRepositoryUseCase(repositoryRepository);
 
     const repository = Repository.create({

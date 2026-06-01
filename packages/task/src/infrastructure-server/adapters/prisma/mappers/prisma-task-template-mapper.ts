@@ -10,7 +10,9 @@ import { toDateOrNull } from '@dailyuse/utils/shared';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
+import type { TaskTimeType } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { DependencyStatus, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -31,7 +33,7 @@ export class PrismaTaskTemplateMapper {
     let timeConfig = null;
     if (data.timeConfigType) {
       timeConfig = TaskTimeConfig.create({
-        timeType: data.timeConfigType as any,
+        timeType: data.timeConfigType as TaskTimeType,
         startDate: data.timeConfigStartTime ? data.timeConfigStartTime.getTime() : null,
         timePoint: data.timeConfigTimePoint ?? null,
         timeRange:
@@ -59,7 +61,7 @@ export class PrismaTaskTemplateMapper {
           type: 'Relative' as const,
           absoluteTime: null,
           relativeValue: data.reminderConfigTimeOffsetMinutes,
-          relativeUnit: data.reminderConfigUnit as any,
+          relativeUnit: data.reminderConfigUnit as ReminderTimeUnit,
         },
       ];
       reminderConfig = TaskReminderConfig.create({
@@ -104,7 +106,7 @@ export class PrismaTaskTemplateMapper {
       lastGeneratedDate: data.lastGeneratedDate ?? null,
       generateAheadDays: data.generateAheadDays,
       parentTaskId: data.parentTaskId ? TaskTemplateId.of(data.parentTaskId) : null,
-      dependencyStatus: (data.dependencyStatus ?? 'NONE') as any,
+      dependencyStatus: (data.dependencyStatus ?? 'NONE') as unknown as DependencyStatus,
       isBlocked: data.isBlocked ?? false,
       blockingReason: data.blockingReason,
       startDate: null,

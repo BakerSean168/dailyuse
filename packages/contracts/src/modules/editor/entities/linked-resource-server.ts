@@ -8,12 +8,9 @@ import type {
   IdentityId,
   ResourceId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { LinkedSourceType } from '../value-objects/linked-source-type';
 import type { LinkedTargetType } from '../value-objects/linked-target-type';
-import type { LinkedResourceClientDTO } from './linked-resource-client';
-
 /**
  * Linked Resource Server DTO
  */

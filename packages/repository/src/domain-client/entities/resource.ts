@@ -16,7 +16,7 @@ import type {
   RepositoryId as IRepositoryId,
   FolderId as IFolderId,
 } from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { ResourceId } from '../../domain-shared/value-objects/resource-id';
 import { ResourceMetadata } from '../../domain-shared/value-objects/resource-metadata';
 import { ResourceStats } from '../../domain-shared/value-objects/resource-stats';

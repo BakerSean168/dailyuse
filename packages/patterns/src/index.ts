@@ -1,5 +1,21 @@
-// Generic patterns for cross-module reuse
-export * from './scheduler';
-export * from './repository';
-export * from './cache';
-export * from './events';
+/**
+ * @dailyuse/patterns — Cross-cutting domain patterns
+ *
+ * Root export only exposes stable, widely-used patterns.
+ * Use subpath imports for specific pattern families:
+ * - `@dailyuse/patterns/scheduler` — priority queue, timer, monitor
+ * - `@dailyuse/patterns/repository` — aggregate repository base
+ * - `@dailyuse/patterns/events` — event bus adapter, event interfaces
+ */
+
+// ── Repository patterns (most widely used) ──
+export {
+  AggregateRepositoryBase,
+  publishAggregateEvents,
+  type IAggregateRepository,
+} from './repository/aggregate-repository.base';
+export type { IRepository, IQuery } from './repository';
+
+// ── Event patterns ──
+export { createEventBusAdapter } from './events';
+export type { IEventBus, IEventSender, EventHandler, IEventEmitter } from './events';

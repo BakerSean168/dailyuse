@@ -13,8 +13,16 @@
  *    build 产物类型。
  */
 
+import type { AccountClientPort } from '@dailyuse/account/application-client';
 import type { AIClientPort } from '@dailyuse/ai/application-client';
+import type { AuthenticationClientPort } from '@dailyuse/authentication/application-client';
+import type { EditorClientPort } from '@dailyuse/editor/application-client';
 import type { GoalClientPort } from '@dailyuse/goal/application-client';
+import type { NotificationClientPort } from '@dailyuse/notification/application-client';
+import type { ReminderClientPort } from '@dailyuse/reminder/application-client';
+import type { RepositoryClientPort } from '@dailyuse/repository/application-client';
+import type { ScheduleClientPort } from '@dailyuse/schedule/application-client';
+import type { SettingClientPort } from '@dailyuse/setting/application-client';
 import type { TaskClientPort } from '@dailyuse/task/application-client';
 import type { Component } from 'vue';
 
@@ -26,16 +34,16 @@ type PublicInterface<T> = { [K in keyof T]: T[K] };
 
 // ── Service Interfaces (structural, no private members) ──
 
-export type IAccountService = PublicInterface<any>;
-export type IAuthService = PublicInterface<any>;
+export type IAccountService = AccountClientPort;
+export type IAuthService = AuthenticationClientPort;
 export type IGoalService = GoalClientPort;
 export type ITaskService = TaskClientPort;
-export type IScheduleService = PublicInterface<any>;
-export type IReminderService = PublicInterface<any>;
-export type IRepositoryService = PublicInterface<any>;
-export type IEditorService = PublicInterface<any>;
-export type INotificationService = PublicInterface<any>;
-export type ISettingService = PublicInterface<any>;
+export type IScheduleService = ScheduleClientPort;
+export type IReminderService = ReminderClientPort;
+export type IRepositoryService = RepositoryClientPort;
+export type IEditorService = EditorClientPort;
+export type INotificationService = NotificationClientPort;
+export type ISettingService = SettingClientPort;
 export type IAIService = AIClientPort;
 
 // ── Governance（结构化 service interface）──

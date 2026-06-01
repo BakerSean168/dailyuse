@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdjustReminderFrequencyUseCase } from './adjust-reminder-frequency.use-case';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 describe('AdjustReminderFrequencyUseCase', () => {
   const repo = {

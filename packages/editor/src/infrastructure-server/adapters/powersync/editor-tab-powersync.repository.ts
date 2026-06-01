@@ -1,4 +1,12 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+  EditorTabId,
+} from '@dailyuse/contracts/primitives';
+import type { TabType } from '@dailyuse/contracts/editor';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/i-editor-tab-repository';
 import { EditorTab } from '../../../domain-server/entities/editor-tab';
 
@@ -43,14 +51,14 @@ function parseViewState(viewState: string) {
 
 function toDomain(row: TabRow): EditorTab {
   return EditorTab.load({
-    id: row.id as any,
-    groupId: row.group_id as any,
-    sessionId: row.session_id as any,
-    workspaceId: row.workspace_id as any,
-    identityId: row.identity_id as any,
+    id: row.id as EditorTabId,
+    groupId: row.group_id as EditorGroupId,
+    sessionId: row.session_id as EditorSessionId,
+    workspaceId: row.workspace_id as EditorWorkspaceId,
+    identityId: row.identity_id as IdentityId,
     resourceId: row.resource_id,
     tabIndex: row.tab_index,
-    tabType: row.tab_type as any,
+    tabType: row.tab_type as TabType,
     name: row.title,
     viewState: parseViewState(row.view_state),
     isPinned: row.is_pinned === 1,

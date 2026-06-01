@@ -1,38 +1,64 @@
 /**
  * @dailyuse/utils - 通用工具库
  *
- * 模块结构:
- * - shared/     共享工具（id, date, time, recurrence, priority）
- * - domain/     DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
- * - errors/     错误处理
- * - validation/ 验证工具
- * - result/     Result Pattern 工具（新）
- * - response/   HTTP 响应工具（旧，保留兼容）
- * - frontend/   前端专用工具
- * - logger/     日志系统
+ * 根入口只导出最常用的跨层工具。深层访问请使用子路径导入：
+ * - `@dailyuse/utils/shared`      共享工具（id, date, time, recurrence, priority）
+ * - `@dailyuse/utils/domain`      DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
+ * - `@dailyuse/utils/errors`      错误处理
+ * - `@dailyuse/utils/validation`  验证工具
+ * - `@dailyuse/utils/result`      Result Pattern 工具
+ * - `@dailyuse/utils/frontend`    前端专用工具（debounce, throttle, loading-state）
+ * - `@dailyuse/utils/lifecycle`   初始化管理器
+ * - `@dailyuse/utils/logger`      日志系统
+ * - `@dailyuse/utils/winston`     Node.js Winston 日志
  */
 
-// 共享工具
-export * from './shared/index';
+// ── shared ──
+export { newId, generateUUID, isValidUUID, generateShortId } from './shared/uuid';
+export { ensureDate, toDayStart, toDayEnd, formatDateToInput, formatTimeToInput, updateDateKeepTime, updateTimeKeepDate } from './shared/date';
+export { nowIso, toIso } from './shared/time';
+export { EnvConfig, envConfig, type IEnvConfig } from './shared/env-config';
 
-// DDD 基础类和事件系统
-export * from './domain/index';
+// ── domain ──
+export { Entity } from './domain/entity';
+export { AggregateRoot } from './domain/aggregate-root';
+export { ValueObject } from './domain/value-object';
+export { eventBus } from './domain/global-event-bus';
+export { createIdType } from './domain/create-id-type';
 
-// 错误处理
-export * from './errors/index';
+// ── errors ──
+export { DomainError, BusinessRuleViolationError, NotFoundError, ValidationError, UnauthorizedError } from './errors/domain-error';
+export { mapPrismaError } from './errors/prisma-error-mapper';
 
-// 验证工具
-export * from './validation/index';
+// ── validation ──
+export { FormValidator } from './validation/form-validator';
+export type {
+  ValidationRule,
+  ValidationResult,
+  FieldValidationResult,
+  FormValidationResult,
+  FieldConfig,
+  FormConfig,
+} from './validation/types';
 
-// Result Pattern 工具（新）
-export * from './result/index';
+// ── lifecycle ──
+export {
+  InitializationPhase,
+  InitializationManager,
+  type InitializationTask,
+} from './initialization-manager';
 
-// 前端工具
-export * from './frontend/index';
+export {
+  WebInitializationManager,
+  ModuleGroup,
+  type ModuleLoader,
+  type ModuleDefinition,
+  type LoadingProgress,
+} from './web-initialization-manager';
 
-// 初始化管理器
-export * from './initialization-manager';
-export * from './web-initialization-manager';
-
-// 日志系统（仅导出跨平台安全入口；Node 专属实现走 '@dailyuse/utils/winston'）
-export * from './logger/index';
+// ── logger ──
+export { Logger } from './logger/logger';
+export { LoggerFactory, createLogger } from './logger/logger-factory';
+export { ConsoleTransport } from './logger/transports/console-transport';
+export { HttpTransport } from './logger/transports/http-transport';
+export type { ILogger, LogLevel, LogEntry } from './logger/types';

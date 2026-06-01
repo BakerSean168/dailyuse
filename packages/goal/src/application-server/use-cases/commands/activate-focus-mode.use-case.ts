@@ -1,12 +1,10 @@
 import type { IFocusModeRepository, IGoalRepository } from '@/domain-server';
 import { GoalPolicy, FocusSessionPolicy, FocusMode, Goal } from '@/domain-server';
 import { FocusModeId } from '@/domain-shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ActivateFocusModeRequest, FocusModeDTO } from '@dailyuse/contracts/goal';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export class ActivateFocusModeUseCase {
   private readonly logger = createLogger('goal:activate-focus-mode');

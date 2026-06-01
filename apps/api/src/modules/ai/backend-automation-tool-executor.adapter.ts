@@ -1,18 +1,13 @@
 import {
   type GoalAutomationExecutionInput,
   type IAIAutomationToolExecutorPort,
-} from '@dailyuse/ai/application-server';
+} from '@dailyuse/ai/ports';
 import type { IdentityId } from '@dailyuse/contracts';
 import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import type { PrismaClient } from '@dailyuse/database';
-import { createGoalPrismaModule } from '@dailyuse/goal';
-import {
-  createTaskModule,
-  TaskDependencyPrismaRepository,
-  TaskInstancePrismaRepository,
-  TaskTemplatePrismaRepository,
-} from '@dailyuse/task';
+import { createGoalPrismaModule } from '@dailyuse/goal/api';
+import { createTaskPrismaModule } from '@dailyuse/task/api';
 import {
   DayOfWeek,
   RecurrenceFrequency,
@@ -20,7 +15,7 @@ import {
   TaskType,
 } from '@dailyuse/contracts/task';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adapter';
 import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';
@@ -63,11 +58,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
     storageBaseDir: string,
   ) {
     this.goalModule = createGoalPrismaModule(db);
-    this.taskModule = createTaskModule({
-      taskTemplateRepository: new TaskTemplatePrismaRepository(db),
-      taskInstanceRepository: new TaskInstancePrismaRepository(db),
-      taskDependencyRepository: new TaskDependencyPrismaRepository(db),
-    });
+    this.taskModule = createTaskPrismaModule(db);
     this.knowledgeSource = new RepositoryKnowledgeSourceAdapter(db, storageBaseDir);
     this.analyticsRead = new ControlledAnalyticsReadAdapter(db);
   }

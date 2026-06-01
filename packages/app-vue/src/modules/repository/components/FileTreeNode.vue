@@ -70,7 +70,7 @@ const props = defineProps<{
   expandedIds: string[];
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   select: [node: TreeNode];
   toggle: [node: TreeNode];
   dblclick: [node: TreeNode];
@@ -86,7 +86,7 @@ const nodeIcon = computed(() => {
   }
 
   const ext = props.node.extension?.toLowerCase();
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, unknown> = {
     md: FileText,
     markdown: FileText,
     txt: File,

@@ -18,7 +18,7 @@ import type { IReminderTemplateRepository } from '../../../domain-server/reposit
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PrismaReminderTemplateMapper,
   type PrismaReminderTemplateWithHistory,

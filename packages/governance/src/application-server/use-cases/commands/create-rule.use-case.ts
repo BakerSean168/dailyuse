@@ -23,6 +23,8 @@ import type { ExecutionContext } from '../execution-context';
  *
  * Dependencies injected via constructor (standard dependency injection).
  * 通过构造函数注入依赖（标准依赖注入）。
+  * @param private readonly ruleRepository - 
+  * @param private readonly revisionRepository - 
  */
 export class CreateRuleUseCase {
   constructor(

@@ -7,10 +7,7 @@ import type {
   EditorWorkspaceId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
-import type { SearchEngineServerDTO } from './search-engine-server';
-
 /**
  * Search Engine Client DTO (includes UI formatted fields).
  */

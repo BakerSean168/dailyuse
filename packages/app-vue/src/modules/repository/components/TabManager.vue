@@ -73,9 +73,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, reactive, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FileIcon, PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from 'lucide-vue-next';
+import { PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from 'lucide-vue-next';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import {
   DropdownMenu,
@@ -89,7 +89,7 @@ import { logEditorIssue } from '../../../shared/utils/editor-issue-debug';
 export interface ResourceTab {
   id: string;
   name: string;
-  icon: any;
+  icon: Component;
   isDirty: boolean;
   isPinned: boolean;
 }

@@ -25,7 +25,7 @@
 
 import type { IpcResult } from '@dailyuse/contracts/result';
 import type { ElectronBridge, IpcClient, IpcClientConfig } from './types';
-import { DEFAULT_IPC_CLIENT_CONFIG, IpcClientError, getElectronBridge } from './types';
+import { DEFAULT_IPC_CLIENT_CONFIG, IpcClientError } from './types';
 
 // ============================================================================
 // IpcClientImpl
@@ -59,8 +59,8 @@ export class IpcClientImpl implements IpcClient {
   private readonly enableLogging: boolean;
   private readonly timeout: number;
 
-  constructor(config: IpcClientConfig = {}) {
-    this.bridge = config.bridge ?? getElectronBridge();
+  constructor(config: IpcClientConfig) {
+    this.bridge = config.bridge;
     this.enableLogging = config.enableLogging ?? DEFAULT_IPC_CLIENT_CONFIG.enableLogging;
     this.timeout = config.timeout ?? DEFAULT_IPC_CLIENT_CONFIG.timeout;
   }

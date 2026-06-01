@@ -46,7 +46,14 @@ import {
   parseStringArray,
 } from './governance-route-shared';
 
-/** Registers resource-first routes for the Rule aggregate. 注册 Rule 聚合根的资源优先路由。 */
+/**
+ * Registers resource-first routes for the Rule aggregate. 注册 Rule 聚合根的资源优先路由。
+ *
+ * @param controller - GovernanceController 实例
+ * @param middleware - Platform middleware 集合
+ * @param openApiRegistry - optional OpenAPI registry for route registration
+ * @returns Router - express Router with resource routes
+ */
 export function registerGovernanceRulesRoutes(
   controller: GovernanceController,
   middleware: PlatformMiddleware,

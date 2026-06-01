@@ -1,3 +1,12 @@
+/**
+ * Shared route helpers for the governance HTTP seam.
+ * 治理 HTTP seam 的共享路由辅助。
+ *
+ * Keeps query parsing and response schema registration local to the route layer
+ * so individual Rule route modules stay thin and consistent.
+ * 将查询解析与响应 schema 注册收敛在路由层本地，
+ * 让各个 Rule 路由模块保持轻量且一致。
+ */
 import { z } from 'zod';
 import type { RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
@@ -16,6 +25,8 @@ export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 /**
  * Parses query value as a string.
  * 将查询参数解析为字符串。
+  * @param value - 
+  * @returns any - 
  */
 export function parseString(value: unknown): string | undefined {
   if (Array.isArray(value)) {
@@ -30,6 +41,8 @@ export function parseString(value: unknown): string | undefined {
 /**
  * Parses query value as a finite number.
  * 将查询参数解析为有限数字。
+  * @param value - 
+  * @returns any - 
  */
 export function parseNumber(value: unknown): number | undefined {
   const raw = parseString(value);
@@ -41,6 +54,8 @@ export function parseNumber(value: unknown): number | undefined {
 /**
  * Parses query value as a comma-separated string array.
  * 将查询参数解析为逗号分隔的字符串数组。
+  * @param value - 
+  * @returns any - 
  */
 export function parseStringArray(value: unknown): string[] | undefined {
   if (Array.isArray(value)) {

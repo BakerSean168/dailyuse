@@ -24,5 +24,5 @@ export { goalRoutes } from './router';
 // ===== Components =====
 export * from './components';
 
-// ===== Initialization =====
-export { registerGoalInitializationTasks } from './initialization';
+// ===== Startup Hook =====
+export { createGoalStartupHook } from './initialization';

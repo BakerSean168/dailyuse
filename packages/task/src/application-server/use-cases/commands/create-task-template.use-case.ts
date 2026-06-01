@@ -13,7 +13,7 @@ import { TaskTemplateId } from '../../../domain-shared/value-objects/task-templa
 import { TaskInstanceGenerationService } from '@/domain-server/services/index';
 import type { TaskTemplateClientDTO, CreateTaskTemplateInput } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
 import { error, ok } from '@dailyuse/contracts/result';
 

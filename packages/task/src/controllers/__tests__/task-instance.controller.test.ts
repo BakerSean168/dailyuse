@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ok, fail, isOk } from '@dailyuse/contracts/result';
-import { anIdentityId } from '@dailyuse/task/testing';
+import { anIdentityId } from '../../testing';
 import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { TaskInstanceController, type TaskInstanceUseCases } from '../task-instance.controller';
 

@@ -13,7 +13,7 @@ import type {
   AuthEventMap,
   AuthSessionClientDTO,
 } from '@dailyuse/contracts/authentication';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 
 import { SessionStatus, DeviceInfo, AuthSessionId } from '../../domain-shared';
 

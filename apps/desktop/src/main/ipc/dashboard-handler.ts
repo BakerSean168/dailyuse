@@ -1,16 +1,21 @@
 import { ipcMain } from 'electron';
 import { isElectronAuthResolutionError } from '@dailyuse/contracts/electron';
 import { extractStructuredResultError, fail, ok } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
-import { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
+import { createLogger } from '@dailyuse/utils/logger';
+import type { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
 import { getDesktopDashboardData } from '../services/dashboard-read-service';
 
 const CHANNEL = 'dashboard:get-stats';
 const logger = createLogger('DashboardIpc');
 
-export function registerDashboardIpcHandler(): void {
+export function registerDashboardIpcHandler(
+  getAuthProvider: () => DesktopAuthContextProvider | null,
+): void {
   ipcMain.handle(CHANNEL, async () => {
-    const auth = new DesktopAuthContextProvider();
+    const auth = getAuthProvider();
+    if (!auth) {
+      return fail({ code: 'AUTH_REQUIRED', message: 'No active profile' });
+    }
 
     try {
       const requestContext = await auth.requireRequestContext();

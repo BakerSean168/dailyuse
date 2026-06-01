@@ -6,11 +6,13 @@
  */
 
 import { http, HttpResponse } from 'msw';
+import type { RuleId } from '@dailyuse/contracts/primitives';
+// eslint-disable-next-line @nx/enforce-module-boundaries -- Mock handler, dev-only
 import {
   createMockRule,
   createMockRuleList,
   createMockRuleRevisionList,
-} from '@dailyuse/contracts/mocks';
+} from '@dailyuse/governance/mocks';
 
 // NOTE: The governance adapter hardcodes '/api/governance/rules' (no /v1/).
 const BASE = '/api/governance/rules';
@@ -39,7 +41,7 @@ export const governanceHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockRule({ id: params.id as string }),
+      data: createMockRule({ id: params.id as RuleId }),
       timestamp: Date.now(),
     });
   }),
@@ -67,7 +69,7 @@ export const governanceHandlers = [
       code: 200,
       message: 'Updated',
       data: createMockRule({
-        id: params.id as string,
+        id: params.id as RuleId,
         ...(body as object),
       }),
       timestamp: Date.now(),
@@ -82,7 +84,7 @@ export const governanceHandlers = [
       code: 200,
       message: 'Updated',
       data: createMockRule({
-        id: params.id as string,
+        id: params.id as RuleId,
         ...(body as object),
       }),
       timestamp: Date.now(),
@@ -126,7 +128,7 @@ export const governanceHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: revisions.map((r) => ({ ...r, ruleId: params.id as string })),
+      data: revisions.map((r) => ({ ...r, ruleId: params.id as RuleId })),
       timestamp: Date.now(),
     });
   }),

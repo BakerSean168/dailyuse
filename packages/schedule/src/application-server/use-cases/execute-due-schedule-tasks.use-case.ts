@@ -1,4 +1,4 @@
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { IScheduleTaskRepository } from '../../domain-server/repositories/i-schedule-task-repository';
 import type { IScheduleTaskMonitor } from './schedule-executor-helpers';
 import { FindDueScheduleTasksUseCase } from './find-due-schedule-tasks.use-case';

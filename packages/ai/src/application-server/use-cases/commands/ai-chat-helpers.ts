@@ -4,7 +4,7 @@ import { Message as MessageServer } from '../../../domain-server/entities/messag
 import type { MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import type { ChatExecutionMessage } from '../../ports';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AIChatHelpers');
 

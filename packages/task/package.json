@@ -23,13 +23,9 @@
       "types": "./dist/domain-client/index.d.ts",
       "import": "./dist/domain-client/index.js"
     },
-    "./application-server": {
-      "types": "./dist/application-server/index.d.ts",
-      "import": "./dist/application-server/index.js"
-    },
-    "./infrastructure-server": {
-      "types": "./dist/infrastructure-server/index.d.ts",
-      "import": "./dist/infrastructure-server/index.js"
+    "./analytics": {
+      "types": "./dist/analytics/index.d.ts",
+      "import": "./dist/analytics/index.js"
     },
     "./application-client": {
       "types": "./dist/application-client/index.d.ts",

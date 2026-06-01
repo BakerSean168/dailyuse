@@ -3,7 +3,6 @@
  */
 
 import type {
-  DomainDate,
   TransferDate,
   GoalId,
   IdentityId,
@@ -13,7 +12,7 @@ import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
 import type { GoalReviewClientDTO } from '../entities/goal-review-client';
-import type { GoalReminderConfig, GoalReminderConfigDTO } from '../value-objects';
+import type { GoalReminderConfigDTO } from '../value-objects';
 
 // ============ Transfer DTO ============
 

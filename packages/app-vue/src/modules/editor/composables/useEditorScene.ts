@@ -1,6 +1,5 @@
 import { computed, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { toast } from 'vue-sonner';
 import { useActiveEditorDocument } from './useActiveEditorDocument';
 import { useEditorLinkIndex } from './useEditorLinkIndex';
 import { useResourceReferenceIndex } from './useResourceReferenceIndex';

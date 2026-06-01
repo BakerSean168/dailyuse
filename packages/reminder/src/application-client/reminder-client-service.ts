@@ -151,13 +151,13 @@ export class ReminderClientService implements ReminderClientPort {
   }
 
   async getPreferences(): Promise<Result<UserReminderPreferencesClientDTO>> {
-    return (this.reminderApi as any).getPreferences();
+    return this.reminderApi.getPreferences();
   }
 
   async updatePreferences(
     data: Record<string, unknown>,
   ): Promise<Result<UserReminderPreferencesClientDTO>> {
-    return (this.reminderApi as any).updatePreferences(data);
+    return this.reminderApi.updatePreferences(data);
   }
 }
 

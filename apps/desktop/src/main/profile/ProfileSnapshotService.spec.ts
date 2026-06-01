@@ -198,7 +198,7 @@ describe('ProfileSnapshotService', () => {
         sharedResolver,
         profileResolver,
         descriptor,
-        accessToken: token as any,
+        accessToken: token as string | null,
       });
 
       expect(result.hydrated).toBe(false);

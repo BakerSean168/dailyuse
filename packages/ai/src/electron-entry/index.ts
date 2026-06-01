@@ -18,7 +18,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
+import { AIStreamChannels } from '@dailyuse/contracts/electron';
 import { fail, ok } from '@dailyuse/contracts/result';
 import {
   AIServiceAnalyticsQueryAdapter,
@@ -32,7 +32,7 @@ import {
   AIServiceKnowledgeQueryAdapter,
   AIServiceKnowledgeNoteGenerationAdapter,
 } from '../infrastructure-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,

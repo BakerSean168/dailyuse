@@ -21,6 +21,7 @@
     "@dailyuse/schedule": "workspace:*",
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/task": "workspace:*",
+    "@dailyuse/test-utils": "workspace:*",
     "@dailyuse/ui-core": "workspace:*",
     "@dailyuse/ui-vue-shadcn": "workspace:*",
     "@dailyuse/utils": "workspace:*",

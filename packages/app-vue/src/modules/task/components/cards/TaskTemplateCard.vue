@@ -389,7 +389,7 @@ const getTemplateStatusBadgeClass = (template: TaskTemplateViewModel) => {
 };
 
 const getTemplateStatusIconComponent = (template: TaskTemplateViewModel) => {
-  const statusMap: Record<string, any> = {
+  const statusMap: Record<string, unknown> = {
     ACTIVE: PlayCircle,
     PAUSED: PauseCircle,
     ARCHIVED: Archive,

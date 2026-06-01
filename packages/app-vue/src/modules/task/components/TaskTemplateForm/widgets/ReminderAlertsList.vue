@@ -156,13 +156,6 @@ const reminderTypes = computed(() => [
   { title: t('task.reminderAlerts.sms'), value: 'sms', disabled: true },
 ]);
 
-// 验证规则
-const minutesBeforeRules = [
-  (v: number) => !!v || t('task.reminderAlerts.invalidMinutes'),
-  (v: number) => v > 0 || t('task.reminderAlerts.invalidMinutes'),
-  (v: number) => v <= 10080 || t('task.reminderAlerts.invalidTime'),
-];
-
 // 验证状态
 const isValid = computed(() => {
   for (const alert of localAlerts.value) {
@@ -189,14 +182,6 @@ const errorMessage = computed(() => {
 });
 
 // 方法
-const getReminderItemProps = (item: any) => {
-  return {
-    disabled: item.disabled,
-    title: item.disabled
-      ? `${item.title} (${t('task.reminderAlerts.notImplemented')})`
-      : item.title,
-  };
-};
 const handleAbsoluteTimeChange = (timeValue: string, alertIndex: number) => {
   if (!timeValue || alertIndex < 0 || alertIndex >= localAlerts.value.length) return;
 

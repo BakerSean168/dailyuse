@@ -6,7 +6,6 @@
  */
 
 import type { IGoalFolderRepository } from '@/domain-server';
-import { GoalFolder } from '@/domain-server';
 import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

@@ -13,7 +13,6 @@ describe('executeDesktopAuthenticatedResult', () => {
       .mockResolvedValueOnce({ authenticated: false, runtimeState: 'RESTORING' })
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce({ authenticated: true });
-    vi.stubGlobal('window', { electronAPI: { invoke } });
 
     const operation = vi
       .fn()
@@ -30,6 +29,7 @@ describe('executeDesktopAuthenticatedResult', () => {
     const result = await executeDesktopAuthenticatedResult({
       operation,
       logScope: 'ExecuteDesktopAuthenticatedResultSpec',
+      desktopApi: { invoke },
       onSuccess,
     });
 
@@ -45,12 +45,6 @@ describe('executeDesktopAuthenticatedResult', () => {
   });
 
   it('does not retry non-auth failures and reports the translated error', async () => {
-    vi.stubGlobal('window', {
-      electronAPI: {
-        invoke: vi.fn(),
-      },
-    });
-
     const operation = vi.fn().mockResolvedValue({
       ok: false as const,
       error: { code: 'INTERNAL_ERROR', message: 'Boom' },

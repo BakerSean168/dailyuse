@@ -4,7 +4,7 @@ import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIConversationRepository } from '../../../domain-server/repositories/i-ai-conversation-repository';
 import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('CreateConversationV2UseCase');
 

@@ -15,13 +15,20 @@ import {
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
+import type {
+  UpdateAccountReq,
+  UpdateAccountSettingsReq,
+  CheckAvailabilityReq,
+  CloseAccountReq,
+} from '@dailyuse/contracts/account';
 import {
   PowerSyncAccountRepository,
   createAccountModule,
   type AccountModuleInstance,
+  type Transactional,
 } from '../infrastructure-server';
 import { createAccountEventListenerRuntime } from '../application-server/handlers';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 const logger = createLogger('AccountElectron');
@@ -45,7 +52,7 @@ export const AccountElectronModule: IElectronModule = {
 
   register(ctx: IElectronModuleContext): void {
     // 1. Composition Root — PowerSync repository + AccountModule facade
-    const accountRepository = new PowerSyncAccountRepository(ctx.db as any);
+    const accountRepository = new PowerSyncAccountRepository(ctx.db as unknown as Transactional);
     const accountModule = createAccountModule({
       accountRepository,
       runtimeContributions: createAccountEventListenerRuntime(accountRepository),
@@ -74,25 +81,25 @@ export const AccountElectronModule: IElectronModule = {
       );
     });
 
-    ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
+    ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: UpdateAccountReq) => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
         accountModule.api.updateProfile(payload, { identityId }),
       );
     });
 
-    ipcMain.handle(Ch.UPDATE_SETTINGS, async (_event, payload: any) => {
+    ipcMain.handle(Ch.UPDATE_SETTINGS, async (_event, payload: UpdateAccountSettingsReq) => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
         accountModule.api.updateSettings(payload, { identityId }),
       );
     });
 
-    ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: any) =>
+    ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: CheckAvailabilityReq) =>
       accountModule.api.checkAvailability(data),
     );
 
-    ipcMain.handle(Ch.CLOSE, async (_event, payload: any) => {
+    ipcMain.handle(Ch.CLOSE, async (_event, payload: CloseAccountReq) => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
-        accountModule.api.closeAccount(payload ?? {}, { identityId }),
+        accountModule.api.closeAccount(payload, { identityId }),
       );
     });
 

@@ -29,11 +29,10 @@
  * // 1. 导入契约 / Import contracts
  * import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
  *
- * // 2. 导入服务端聚合根 / Import server aggregates
- * import { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-server';
+ * // 2. 导入公共聚合根和组合根 / Import public aggregates + composition root
+ * import { TaskTemplate, TaskInstance, createTaskModule } from '@dailyuse/task';
  *
  * // 3. 使用组合根 / Use composition root
- * import { createTaskModule } from '@dailyuse/task/infrastructure-server';
  * const module = createTaskModule({
  *   taskTemplateRepository,
  *   taskInstanceRepository,
@@ -46,28 +45,11 @@
 // ================= Domain Layer =================
 export * from './domain-server';
 
-// ================= Application Layer =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
+// Composition root + types — stable public helpers live on the package root.
 export {
-  /** @internal Concrete Prisma implementation — use ITaskTemplateRepository interface instead. Prisma 具体实现 — 请使用 ITaskTemplateRepository 接口。 */
-  TaskTemplatePrismaRepository,
-  /** @internal Concrete Prisma implementation — use ITaskInstanceRepository interface instead. Prisma 具体实现 — 请使用 ITaskInstanceRepository 接口。 */
-  TaskInstancePrismaRepository,
-  /** @internal Concrete Prisma implementation — use ITaskDependencyRepository interface instead. Prisma 具体实现 — 请使用 ITaskDependencyRepository 接口。 */
-  TaskDependencyPrismaRepository,
-  /** @internal Concrete Prisma implementation — use ITaskFolderRepository interface instead. Prisma 具体实现 — 请使用 ITaskFolderRepository 接口。 */
-  TaskFolderPrismaRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskTemplateRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskInstanceRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskDependencyRepository,
-  /** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
-  PowerSyncTaskFolderRepository,
   createTaskModule,
   createTaskPowerSyncModule,
   type TaskApplicationPort,

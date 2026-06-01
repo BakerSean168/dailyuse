@@ -8,7 +8,7 @@
  * TypeScript 类无法直接实现。此类提供相同的属性和方法。
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type {
   RepositoryConfigDTO,
 } from '@dailyuse/contracts/repository';

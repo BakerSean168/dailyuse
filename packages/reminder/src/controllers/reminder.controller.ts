@@ -247,7 +247,7 @@ export class ReminderController {
   }
 
   async moveTemplate(id: string, input: unknown, ctx: ExecutionContext): Promise<Result<unknown>> {
-    const rawGroupId = (input as any)?.groupId;
+    const rawGroupId = (input as Record<string, unknown>)?.groupId;
     if (rawGroupId !== null && rawGroupId !== undefined && typeof rawGroupId !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'groupId must be a string or null' });
     }
@@ -261,7 +261,7 @@ export class ReminderController {
   // ==================== Response Operations ====================
 
   async recordResponse(templateId: string, input: unknown, ctx: ExecutionContext): Promise<Result<unknown>> {
-    const action = (input as any)?.action;
+    const action = (input as Record<string, unknown>)?.action;
     if (!action || typeof action !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'action is required' });
     }
@@ -269,7 +269,7 @@ export class ReminderController {
       templateId,
       {
         action,
-        note: (input as any)?.note,
+        note: (input as Record<string, unknown>)?.note as string | undefined,
       },
       ctx,
     );
@@ -294,7 +294,7 @@ export class ReminderController {
     input: unknown,
     ctx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    const action = (input as any)?.action;
+    const action = (input as Record<string, unknown>)?.action;
     if (!action || typeof action !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'action is required (apply | custom)' });
     }
@@ -302,7 +302,7 @@ export class ReminderController {
       templateId,
       {
         action,
-        customInterval: (input as any)?.customInterval,
+        customInterval: (input as Record<string, unknown>)?.customInterval as number | undefined,
       },
       ctx,
     );

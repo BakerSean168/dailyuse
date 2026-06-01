@@ -9,7 +9,7 @@ import type { IDomainEvent } from '@dailyuse/contracts/shared';
 import type { SettingEventMap } from '@dailyuse/contracts/setting';
 import type { IUserSettingRepository } from '../../../domain-server/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../domain-server/aggregates/user-setting';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaUserSettingMapper } from './mappers';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {

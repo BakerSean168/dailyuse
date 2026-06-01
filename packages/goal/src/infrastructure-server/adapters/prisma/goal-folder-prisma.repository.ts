@@ -2,7 +2,7 @@ import type { PrismaClient, GoalFolder as PrismaGoalFolder } from '@dailyuse/dat
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaGoalFolderMapper } from './mappers/prisma-goal-folder-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

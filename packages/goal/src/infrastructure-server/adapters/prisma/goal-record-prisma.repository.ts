@@ -9,7 +9,7 @@ import type { PrismaClient, GoalRecord as PrismaGoalRecord, Prisma } from '@dail
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-server';
 import { GoalRecord } from '@/domain-server';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaGoalRecordMapper } from './mappers/prisma-goal-record-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

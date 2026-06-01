@@ -1,4 +1,4 @@
-import type { ILogger } from '@dailyuse/utils';
+import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { RememberedDesktopAccountDTO } from '@dailyuse/contracts/authentication';
 import { type IpcResult, ok, fail, toIpcResult } from '@dailyuse/contracts/result';

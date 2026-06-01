@@ -5,7 +5,7 @@
  */
 
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import {
   AccountProfile,

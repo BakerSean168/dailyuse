@@ -10,7 +10,7 @@
 import type { PrismaClient, AuthSession as PrismaAuthSession, Prisma } from '@dailyuse/database';
 import type { IAuthSessionRepository } from '../../../domain-server';
 import { AuthSession } from '../../../domain-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { PrismaAuthSessionMapper } from './mappers';
 import type { PrismaAuthSessionRow } from '../../types';

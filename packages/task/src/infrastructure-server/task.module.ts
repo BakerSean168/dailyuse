@@ -14,28 +14,12 @@
  * injection only, no hidden service locator.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
 import type {
   ITaskTemplateRepository,
-  TaskFilters,
 } from '../domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';
 import type { ITaskDependencyRepository } from '../domain-server/repositories/i-task-dependency-repository';
 import type { ITaskFolderRepository } from '../domain-server/repositories/i-task-folder-repository';
-import type {
-  CreateTaskTemplateReq,
-  UpdateTaskTemplateReq,
-  GenerateInstancesReq,
-  BindToGoalReq,
-  CompleteTaskInstanceReq,
-  SkipTaskInstanceReq,
-  TaskTemplateClientDTO,
-  TaskInstanceClientDTO,
-  TaskDependencyServerDTO,
-  DependencyChainServerDTO,
-  DependencyType,
-  QueryTaskTemplateGraphRes,
-} from '@dailyuse/contracts/task';
 import { CreateTaskTemplateUseCase } from '../application-server/use-cases/commands/create-task-template.use-case';
 import { GetTaskTemplateUseCase } from '../application-server/use-cases/queries/get-task-template.use-case';
 import { ListTaskTemplatesUseCase } from '../application-server/use-cases/queries/list-task-templates.use-case';

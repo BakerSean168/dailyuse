@@ -29,11 +29,10 @@
  * // 1. Import contracts / 导入契约
  * import type { EditorWorkspaceServerDTO } from '@dailyuse/contracts/editor';
  *
- * // 2. Import server aggregate / 导入服务端聚合根
- * import { EditorWorkspace } from '@dailyuse/editor/domain-server';
+ * // 2. Import public aggregate + composition root / 导入公共聚合根和组合根
+ * import { EditorWorkspace, createEditorModule } from '@dailyuse/editor';
  *
  * // 3. Use composition root / 使用组合根
- * import { createEditorModule } from '@dailyuse/editor/infrastructure-server';
  * const module = createEditorModule({ workspaceRepository, sessionRepository, groupRepository, tabRepository });
  * const result = await module.api.createWorkspace(props, context);
  * ```
@@ -47,26 +46,8 @@ export * from '@dailyuse/contracts/editor';
 export * from './domain-server';
 
 // ================= Application Layer (应用层) =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================
 export * from './infrastructure-client';
-export {
-  /** @internal Concrete Prisma implementation — use IEditorWorkspaceRepository interface instead. Prisma 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
-  EditorWorkspacePrismaRepository,
-  EditorSessionPrismaRepository,
-  EditorGroupPrismaRepository,
-  EditorTabPrismaRepository,
-  /** @internal Concrete PowerSync implementation — use IEditorWorkspaceRepository interface instead. PowerSync 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
-  PowerSyncEditorWorkspaceRepository,
-  PowerSyncEditorSessionRepository,
-  PowerSyncEditorGroupRepository,
-  PowerSyncEditorTabRepository,
-  createEditorModule,
-  createEditorPowerSyncModule,
-  type EditorApplicationPort,
-  type EditorModuleDependencies,
-  type EditorModuleInstance,
-  type EditorModuleRuntimeContribution,
-} from './infrastructure-server';
+export { createEditorModule, createEditorPowerSyncModule, type EditorApplicationPort, type EditorModuleDependencies, type EditorModuleInstance, type EditorModuleRuntimeContribution } from './infrastructure-server';

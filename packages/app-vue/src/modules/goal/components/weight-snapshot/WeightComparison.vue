@@ -140,7 +140,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
-import { format } from 'date-fns';
+import { format, type Locale } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 import {
   Card,
@@ -155,6 +155,13 @@ import {
   Label,
 } from '@dailyuse/ui-vue-shadcn';
 import { Plus, BarChart3, X, Loader2, Info } from 'lucide-vue-next';
+
+/** Minimal tooltip formatter params for ECharts axis-triggered tooltip */
+interface TooltipAxisParams {
+  color?: string;
+  seriesName?: string;
+  value: unknown;
+}
 
 use([
   TitleComponent,
@@ -180,7 +187,7 @@ const {
 
 const { t, locale } = useI18n();
 
-const dateFnsLocaleMap: Record<string, any> = {
+const dateFnsLocaleMap: Record<string, Locale> = {
   'zh-CN': zhCN,
   'en-US': enUS,
 };
@@ -226,8 +233,8 @@ const removeTimePoint = (index: number) => {
 };
 
 // 处理时间点变化
-const handleTimePointChange = (index: number, event: any) => {
-  const dateStr = event.target?.value || event;
+const handleTimePointChange = (index: number, event: Event) => {
+  const dateStr = (event.target as HTMLInputElement | null)?.value || '';
   const timestamp = new Date(dateStr).getTime();
   selectedTimePoints.value[index].timestamp = timestamp;
 };
@@ -295,9 +302,9 @@ const barChartOption = computed(() => {
       axisPointer: {
         type: 'shadow',
       },
-      formatter: (params: any) => {
+      formatter: (params: TooltipAxisParams[]) => {
         let html = `<div style="padding: 8px;">`;
-        params.forEach((param: any) => {
+        params.forEach((param: TooltipAxisParams) => {
           html += `
             <div style="margin-bottom: 4px;">
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${param.color}; margin-right: 8px;"></span>
@@ -394,7 +401,7 @@ const loadComparison = async () => {
 
 // 初始化时间点标签
 onMounted(() => {
-  selectedTimePoints.value.forEach((tp, index) => {
+  selectedTimePoints.value.forEach((tp, _index) => {
     tp.label = format(new Date(tp.timestamp), "yyyy-MM-dd'T'HH:mm");
   });
 });

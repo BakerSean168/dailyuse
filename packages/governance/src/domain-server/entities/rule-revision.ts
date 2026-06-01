@@ -97,6 +97,7 @@ export interface RuleRevisionState {
  * - 防御性复制数组和对象 - 防止外部修改引用
  * - 仅提供 readonly getters - 无任何 setters
  * - changedFields 至少包含 1 个字段
+  * @param state - 
  */
 export class RuleRevision extends Entity<RuleRevisionId> {
   /**

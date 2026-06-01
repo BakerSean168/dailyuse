@@ -5,12 +5,11 @@
 
 import type { IdentityId } from '../value-objects/identity-id';
 import type { AccountStatus } from '../value-objects/account-status';
-import type { AccountProfile, AccountProfileDTO } from '../value-objects/account-profile';
-import type { AccountSettings, AccountSettingsDTO } from '../value-objects/account-settings';
-import type { ContactEmail, ContactEmailDTO } from '../value-objects/contact-email';
-import type { ContactPhone, ContactPhoneDTO } from '../value-objects/contact-phone';
+import type { AccountProfileDTO } from '../value-objects/account-profile';
+import type { AccountSettingsDTO } from '../value-objects/account-settings';
+import type { ContactEmailDTO } from '../value-objects/contact-email';
+import type { ContactPhoneDTO } from '../value-objects/contact-phone';
 
-import type { DomainDate } from '../../../primitives';
 import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============

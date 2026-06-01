@@ -1,7 +1,7 @@
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import type { AppEventRegistry } from '@dailyuse/contracts/shared';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   AccountPowerSyncMapper,
   type PowerSyncAccountRow,
@@ -14,7 +14,7 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-type Transactional = Queryable & {
+export type Transactional = Queryable & {
   writeTransaction<T>(callback: (tx: Queryable) => Promise<T>): Promise<T>;
 };
 

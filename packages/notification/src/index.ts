@@ -38,11 +38,14 @@
  * // 2. 导入值对象
  * import { NotificationChannelId } from '@dailyuse/notification/domain-shared';
  *
- * // 3. 导入聚合根
- * import { Notification, INotificationRepository } from '@dailyuse/notification/domain-server';
+ * // 3. 导入公共聚合根和组合根
+ * import {
+ *   Notification,
+ *   type INotificationRepository,
+ *   createNotificationModule,
+ * } from '@dailyuse/notification';
  *
  * // 4. 使用组合根
- * import { createNotificationModule } from '@dailyuse/notification/infrastructure-server';
  * const module = createNotificationModule({
  *   notificationRepository, preferenceRepository, templateRepository,
  * });
@@ -65,34 +68,12 @@ export * from './domain-server';
 // to avoid name conflicts with server-side models.
 
 // ================= Application Layer (应用层) =================
-// Application-Server: Use cases (server-side)
 // Application-Client: Client services, view model mappers
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================
 // Infrastructure-Server: Repositories, persistence, composition root (server-side)
 // Infrastructure-Client: HTTP/IPC adapters (client-side)
-export {
-  /** @internal Concrete Prisma implementation — use INotificationRepository interface instead. Prisma 具体实现 — 请使用 INotificationRepository 接口。 */
-  NotificationPrismaRepository,
-  /** @internal Concrete Prisma implementation — use INotificationPreferenceRepository interface instead. Prisma 具体实现 — 请使用 INotificationPreferenceRepository 接口。 */
-  NotificationPreferencePrismaRepository,
-  /** @internal Concrete Prisma implementation — use INotificationTemplateRepository interface instead. Prisma 具体实现 — 请使用 INotificationTemplateRepository 接口。 */
-  NotificationTemplatePrismaRepository,
-  /** @internal Concrete PowerSync implementation — use INotificationRepository interface instead. PowerSync 具体实现 — 请使用 INotificationRepository 接口。 */
-  PowerSyncNotificationRepository,
-  /** @internal Concrete PowerSync implementation — use INotificationPreferenceRepository interface instead. PowerSync 具体实现 — 请使用 INotificationPreferenceRepository 接口。 */
-  PowerSyncNotificationPreferenceRepository,
-  /** @internal Concrete PowerSync implementation — use INotificationTemplateRepository interface instead. PowerSync 具体实现 — 请使用 INotificationTemplateRepository 接口。 */
-  PowerSyncNotificationTemplateRepository,
-  createNotificationModule,
-  createNotificationPowerSyncModule,
-  type NotificationApplicationPort,
-  type NotificationModuleDependencies,
-  type NotificationModuleInstance,
-  type NotificationModuleRuntimeContribution,
-  type NotificationModuleUseCases,
-} from './infrastructure-server';
+export { createNotificationModule, createNotificationPowerSyncModule, type NotificationApplicationPort, type NotificationModuleDependencies, type NotificationModuleInstance, type NotificationModuleRuntimeContribution, type NotificationModuleUseCases } from './infrastructure-server';
 
 export * from './infrastructure-client';

@@ -83,7 +83,7 @@ export class UpdateResourceContentUseCase {
             thumbnail: parsed.data.thumbnail ?? parsed.data.cover ?? null,
           };
         }
-      } catch (e) {
+      } catch (_e) {
         // ignore parsing errors
       }
     }

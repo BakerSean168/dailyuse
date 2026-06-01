@@ -15,7 +15,8 @@ import {
   NotificationType,
 } from '@dailyuse/contracts/notification';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot, createLogger } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import {
   NotificationId,
   NotificationAction,

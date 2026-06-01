@@ -1,4 +1,16 @@
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
+
+/**
+ * Loosely-typed event bus handle for registering task event handlers.
+ * Avoids generic-constraint friction with union handler signatures.
+ */
+const taskEventBus = eventBus as unknown as {
+  on(event: string, handler: (event: unknown) => void): void;
+  off(event: string, handler: (event: unknown) => void): void;
+  send(event: string, payload: unknown): void;
+};
+
 import type {
   ReminderTimeUnit,
   TaskEventMap,
@@ -10,7 +22,7 @@ import { SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
 import {
   ScheduleTask,
   type IScheduleTaskRepository,
-} from '@dailyuse/schedule/domain-server';
+} from '@dailyuse/schedule/api';
 import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type { TaskModuleRuntimeContribution } from '../infrastructure-server';
 import type { ITaskInstanceRepository, ITaskTemplateRepository } from '../domain-server';
@@ -290,17 +302,17 @@ export function createTaskScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.on('task:created', upsertFromEvent as any);
-      eventBus.on('task:updated', upsertFromEvent as any);
-      eventBus.on('task:instance-generated', upsertFromEvent as any);
-      eventBus.on('task:template-schedule-time-changed', upsertFromEvent as any);
-      eventBus.on('task:template-recurrence-changed', upsertFromEvent as any);
-      eventBus.on('task:template-resumed', upsertFromEvent as any);
-      eventBus.on('task:deleted', deleteFromEvent as any);
-      eventBus.on('task:template-paused', deleteFromEvent as any);
-      eventBus.on('task:instance-completed', deleteCompletedInstanceTasks as any);
-      eventBus.on('task:instance-skipped', deleteCompletedInstanceTasks as any);
-      eventBus.on('task:instance-deleted', deleteCompletedInstanceTasks as any);
+      taskEventBus.on('task:created', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:updated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:instance-generated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-schedule-time-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-recurrence-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-resumed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:deleted', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:template-paused', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.on('task:instance-completed', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.on('task:instance-skipped', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.on('task:instance-deleted', deleteCompletedInstanceTasks as (event: unknown) => void);
 
       started = true;
       logger.info('[Task] Schedule projection runtime started');
@@ -311,17 +323,17 @@ export function createTaskScheduleRuntimeContribution(deps: {
         return;
       }
 
-      eventBus.off('task:created', upsertFromEvent as any);
-      eventBus.off('task:updated', upsertFromEvent as any);
-      eventBus.off('task:instance-generated', upsertFromEvent as any);
-      eventBus.off('task:template-schedule-time-changed', upsertFromEvent as any);
-      eventBus.off('task:template-recurrence-changed', upsertFromEvent as any);
-      eventBus.off('task:template-resumed', upsertFromEvent as any);
-      eventBus.off('task:deleted', deleteFromEvent as any);
-      eventBus.off('task:template-paused', deleteFromEvent as any);
-      eventBus.off('task:instance-completed', deleteCompletedInstanceTasks as any);
-      eventBus.off('task:instance-skipped', deleteCompletedInstanceTasks as any);
-      eventBus.off('task:instance-deleted', deleteCompletedInstanceTasks as any);
+      taskEventBus.off('task:created', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:updated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:instance-generated', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-schedule-time-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-recurrence-changed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-resumed', upsertFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:deleted', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:template-paused', deleteFromEvent as (event: unknown) => void);
+      taskEventBus.off('task:instance-completed', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.off('task:instance-skipped', deleteCompletedInstanceTasks as (event: unknown) => void);
+      taskEventBus.off('task:instance-deleted', deleteCompletedInstanceTasks as (event: unknown) => void);
 
       started = false;
       logger.info('[Task] Schedule projection runtime stopped');

@@ -8,6 +8,7 @@ import {
   AccountStatus,
   ContactPhone,
 } from '../../../../domain-shared';
+import type { AccountProfileDTO, AccountSettingsDTO } from '@dailyuse/contracts/account';
 
 export type PowerSyncAccountRow = {
   id: string;
@@ -31,8 +32,8 @@ export type PowerSyncAccountRow = {
 
 export class AccountPowerSyncMapper {
   static toDomain(row: PowerSyncAccountRow): Account {
-    const profile = this.parseJson<any>(row.profile);
-    const settings = this.parseJson<any>(row.settings);
+    const profile = this.parseJson<AccountProfileDTO>(row.profile);
+    const settings = this.parseJson<AccountSettingsDTO>(row.settings);
 
     const state: AccountState = {
       id: IdentityId.of(row.id),

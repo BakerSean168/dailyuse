@@ -3,7 +3,7 @@ import type { IEditorWorkspaceRepository } from '../../../domain-server/reposito
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { PrismaEditorWorkspaceMapper } from './mappers/prisma-editor-workspace-mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

@@ -136,8 +136,8 @@ export class NotificationPrismaMapper {
    */
   static historyToDomain(row: PrismaNotificationHistoryRow): NotificationHistory {
     return NotificationHistory.load({
-      id: row.id as any,
-      notificationId: row.notificationId as any,
+      id: row.id as never,
+      notificationId: row.notificationId as never,
       action: row.action,
       details: parseJsonSafe(row.details),
       createdAt: row.createdAt,
@@ -157,10 +157,10 @@ export class NotificationPrismaMapper {
 
     return Notification.load({
       id: NotificationId.of(row.id),
-      identityId: row.identityId as any,
+      identityId: row.identityId as never,
       title: row.title,
       content: row.content,
-      type: row.type as any,
+      type: row.type as never,
       category: row.category as NotificationCategory,
       importance: (row.importance || 'Moderate') as ImportanceLevel,
       status: row.status as NotificationStatus,

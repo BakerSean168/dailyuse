@@ -1,6 +1,5 @@
 import {
   ResultErrorException,
-  toResultErrorException,
   unwrapOrThrowError,
   type Result,
   type ResultErrorDetail,

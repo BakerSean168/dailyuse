@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { app } from 'electron';
-import { LoggerFactory, createLogger } from '@dailyuse/utils';
+import { LoggerFactory, createLogger } from '@dailyuse/utils/logger';
 import { WinstonLogger } from '@dailyuse/utils/winston';
 import { configureDesktopUserDataPath, resolveDesktopUserFilesPath } from './user-data-path';
 import { createSharedPathResolver, ensureSharedDirs } from './paths';

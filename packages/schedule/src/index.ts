@@ -29,24 +29,22 @@
  * // 1. 导入契约 / Import contracts
  * import type { ScheduleServerDTO } from '@dailyuse/contracts/schedule';
  *
- * // 2. 导入服务端聚合根 / Import server aggregates
- * import { CalendarEntry, ScheduleTask } from '@dailyuse/schedule/domain-server';
+ * // 2. 导入公共聚合根 / Import public aggregates
+ * import { CalendarEntry, ScheduleTask } from '@dailyuse/schedule';
  * import { ScheduleConfig } from '@dailyuse/schedule/domain-shared';
  *
- * // 3. 使用组合根 / Use composition root
- * import { createScheduleModule } from '@dailyuse/schedule/infrastructure-server';
- * const module = createScheduleModule({ scheduleRepository, scheduleExecutionRepository, scheduleTaskRepository });
- * const result = await module.api.createTask(data, ctx);
+ * // 3. 使用稳定 API seam / Use the stable API seam
+ * import { createScheduleApiModule } from '@dailyuse/schedule/api';
+ * bootstrapper.register(createScheduleApiModule({ sourceExecutor }));
  * ```
  */
 
 // ================= Domain Layer =================
 export * from './domain-server';
 
-// ================= Application Layer =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
-export * from './infrastructure-server';
+// removed re-export of './infrastructure-server' to avoid exposing concrete adapters; import specific subpaths instead
+
 export * from './infrastructure-client';

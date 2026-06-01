@@ -1,18 +1,13 @@
 import {
   type GoalAutomationExecutionInput,
   type IAIAutomationToolExecutorPort,
-} from '@dailyuse/ai/application-server';
+} from '@dailyuse/ai/ports';
 import type { IdentityId } from '@dailyuse/contracts';
 import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
-import { createGoalPowerSyncModule } from '@dailyuse/goal';
-import {
-  createTaskModule,
-  PowerSyncTaskDependencyRepository,
-  PowerSyncTaskInstanceRepository,
-  PowerSyncTaskTemplateRepository,
-} from '@dailyuse/task';
+import { createGoalPowerSyncModule } from '@dailyuse/goal/api';
+import { createTaskPowerSyncModule } from '@dailyuse/task/api';
 import {
   DayOfWeek,
   RecurrenceFrequency,
@@ -20,7 +15,7 @@ import {
   TaskType,
 } from '@dailyuse/contracts/task';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
@@ -48,11 +43,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
 
   constructor(db: IElectronDatabase, repositoryStorageDir: string) {
     this.goalModule = createGoalPowerSyncModule(db);
-    this.taskModule = createTaskModule({
-      taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
-      taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
-      taskDependencyRepository: new PowerSyncTaskDependencyRepository(db),
-    });
+    this.taskModule = createTaskPowerSyncModule(db);
     this.knowledgeSource = new DesktopKnowledgeSourceAdapter(db, repositoryStorageDir);
     this.analyticsRead = new DesktopAnalyticsReadAdapter();
   }

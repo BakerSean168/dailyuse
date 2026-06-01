@@ -11,7 +11,8 @@ import type {
   NotificationTemplateConfigServerDTO,
 } from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import { AggregateRoot, createLogger } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { NotificationTemplateId as NotificationTemplateIdType } from '../../domain-shared/value-objects/notification-template-id';
 import { NotificationTemplateConfig } from '../value-objects/notification-template-config';
 

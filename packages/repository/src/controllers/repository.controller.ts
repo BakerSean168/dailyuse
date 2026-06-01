@@ -88,6 +88,8 @@ export interface RepositoryUseCases {
   ): Promise<Result<unknown>>;
 }
 
+type RecordInput = Record<string, unknown>;
+
 export class RepositoryController {
   constructor(private readonly useCases: RepositoryUseCases) {}
 
@@ -115,7 +117,7 @@ export class RepositoryController {
     return this.useCases.createResource(
       {
         ...parsed.data,
-        repositoryId: repoId as any,
+        repositoryId: repoId,
       },
       ctx,
     );
@@ -169,7 +171,8 @@ export class RepositoryController {
   // ==================== Folder Operations ====================
 
   async createFolder(repoId: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
-    const name = (input as any)?.name;
+    const inp = input as RecordInput;
+    const name = inp.name;
     if (!name || typeof name !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'name is required' });
     }
@@ -177,8 +180,8 @@ export class RepositoryController {
       {
         repositoryId: repoId,
         name,
-        parentId: (input as any)?.parentId,
-        order: (input as any)?.order,
+        parentId: inp.parentId as string | undefined,
+        order: inp.order as number | undefined,
       },
       ctx,
     );
@@ -193,7 +196,7 @@ export class RepositoryController {
   }
 
   async renameFolder(id: string, input: unknown): Promise<Result<unknown>> {
-    const newName = (input as any)?.name;
+    const newName = (input as RecordInput).name;
     if (!newName || typeof newName !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'name is required' });
     }
@@ -201,7 +204,7 @@ export class RepositoryController {
   }
 
   async moveFolder(id: string, input: unknown): Promise<Result<unknown>> {
-    const newParentId = (input as any)?.parentId ?? null;
+    const newParentId = ((input as RecordInput).parentId as string | undefined) ?? null;
     return this.useCases.moveFolder(id, newParentId);
   }
 

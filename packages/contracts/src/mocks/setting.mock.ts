@@ -4,7 +4,6 @@
 
 import { faker } from '@faker-js/faker';
 import type { UserSettingClientDTO } from '../modules/setting/aggregates/user-setting-client';
-import { getDefaultPreferences } from '../modules/setting/preferences/defaults';
 import type { SettingId, IdentityId } from '../primitives/ids';
 
 export function createMockUserSetting(

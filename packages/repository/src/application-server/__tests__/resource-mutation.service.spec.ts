@@ -2,10 +2,6 @@ import { describe, expect, it, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { FsStorageAdapter } from '../../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { ResourceMemoryRepository } from '../../infrastructure-server/adapters/memory/resource-memory.repository';
-import { RepositoryMemoryRepository } from '../../infrastructure-server/adapters/memory/repository-memory.repository';
-import { FolderMemoryRepository } from '../../infrastructure-server/adapters/memory/folder-memory.repository';
 import { ResourceMutationService } from '../services/resource-mutation.service';
 import { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
@@ -18,7 +14,8 @@ import {
   ResourceType,
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createRepositoryMemoryTestRepositories, createTestFsStorage } from '../../testing';
 
 const tempDirs: string[] = [];
 
@@ -26,10 +23,9 @@ async function createTestEnv() {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'resource-mutation-'));
   tempDirs.push(tempDir);
 
-  const storage = new FsStorageAdapter(tempDir);
-  const resourceRepository = new ResourceMemoryRepository();
-  const repositoryRepository = new RepositoryMemoryRepository();
-  const folderRepository = new FolderMemoryRepository();
+  const storage = createTestFsStorage(tempDir);
+  const { resourceRepository, repositoryRepository, folderRepository } =
+    createRepositoryMemoryTestRepositories();
 
   const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storage);
   const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storage);
@@ -53,7 +49,15 @@ async function createTestEnv() {
   });
   await repositoryRepository.save(repository);
 
-  return { service, storage, resourceRepository, repositoryRepository, folderRepository, repository, tempDir };
+  return {
+    service,
+    storage,
+    resourceRepository,
+    repositoryRepository,
+    folderRepository,
+    repository,
+    tempDir,
+  };
 }
 
 afterEach(async () => {

@@ -18,7 +18,6 @@ import type {
   TriggerConfigDTO,
 } from '@dailyuse/contracts/reminder';
 import {
-  NotificationChannel,
   ReminderStatus,
   ReminderType,
   TriggerResult,
@@ -28,7 +27,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
   NotificationConfig,
   TriggerConfig,
@@ -581,7 +580,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     return this._props.nextTriggerAt;
   }
 
-  public async getGroup(): Promise<any | null> {
+  public async getGroup(): Promise<unknown | null> {
     // 需要在应用层实现
     return null;
   }

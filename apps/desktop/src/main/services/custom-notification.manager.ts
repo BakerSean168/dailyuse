@@ -10,10 +10,10 @@
 import { BrowserWindow, screen, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { NotificationChannels } from '../../shared/types/ipc-channels';
 import type { NotificationOptions } from './notification.service';
-import { getWindowManager } from '../lifecycle/window-manager';
+import type { WindowManager } from '../lifecycle/window-manager';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
 import { getDesktopDevServerUrlOrDefault, usesDesktopViteDevServer } from '../utils';
 
@@ -22,7 +22,6 @@ const __dirname = path.dirname(__filename);
 const logger = createLogger('CustomNotificationManager');
 
 export class CustomNotificationManager {
-  private static instance: CustomNotificationManager | null = null;
   private notificationWindow: BrowserWindow | null = null;
   private isDev = usesDesktopViteDevServer();
   private devServerUrl = getDesktopDevServerUrlOrDefault();
@@ -31,15 +30,8 @@ export class CustomNotificationManager {
   private notificationQueue: Array<NotificationOptions & { id: string }> = [];
   private isRendererReady: boolean = false;
 
-  private constructor() {
+  constructor(private readonly windowManager: WindowManager) {
     this.registerIpcHandlers();
-  }
-
-  static getInstance(): CustomNotificationManager {
-    if (!CustomNotificationManager.instance) {
-      CustomNotificationManager.instance = new CustomNotificationManager();
-    }
-    return CustomNotificationManager.instance;
   }
 
   private createWindow(): BrowserWindow {
@@ -233,8 +225,7 @@ export class CustomNotificationManager {
       (_, id: string, data?: Record<string, unknown>) => {
         console.log(`[CustomNotification] Clicked notification ${id}`, data);
 
-        const windowManager = getWindowManager();
-        const mainWin = windowManager.getMainWindow();
+        const mainWin = this.windowManager.getMainWindow();
 
         if (mainWin) {
           if (mainWin.isMinimized()) {
@@ -319,8 +310,4 @@ export class CustomNotificationManager {
       return true;
     });
   }
-}
-
-export function getCustomNotificationManager(): CustomNotificationManager {
-  return CustomNotificationManager.getInstance();
 }

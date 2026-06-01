@@ -7,13 +7,11 @@ import type {
   EditorSessionId,
   IdentityId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { ProjectType } from '../value-objects/project-type';
 
 // Value object imports
 import type { WorkspaceLayoutDTO, WorkspaceSettingsDTO } from '../value-objects';
-import type { EditorWorkspaceServerDTO } from './editor-workspace-server';
 
 // Entity imports
 import type { EditorSessionClientDTO } from '../entities/editor-session-client';

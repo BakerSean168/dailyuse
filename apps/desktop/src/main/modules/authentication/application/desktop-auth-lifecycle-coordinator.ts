@@ -1,9 +1,9 @@
-import type { ILogger } from '@dailyuse/utils';
+import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
   AuthSession,
-} from '@dailyuse/authentication/domain-server';
+} from '@dailyuse/authentication/api';
 import {
   type IpcResult,
   toIpcResult,
@@ -28,7 +28,7 @@ import {
   TokenManager,
   SessionManager,
   type SessionStatus,
-  getNetworkStateManager,
+  NetworkStateManager,
 } from '../infrastructure';
 import { AuthRemoteGateway } from './auth-remote-gateway';
 import { refreshDesktopSession } from './refresh-desktop-session';
@@ -41,6 +41,7 @@ import {
   buildOfflineAuthResponse,
   buildFallbackIdentityClientDTO,
   toIdentityLookupId,
+  safeTransition,
 } from './auth-coordinator-helpers';
 
 // ===== Extended Types =====
@@ -61,6 +62,7 @@ export class DesktopAuthLifecycleCoordinator {
   constructor(
     private readonly logger: ILogger,
     private readonly tokenManager: TokenManager,
+    private readonly networkStateManager: NetworkStateManager,
     private readonly remoteGateway: AuthRemoteGateway,
     private readonly sessionManager: SessionManager | null,
     private readonly projectionService: DesktopAuthAccountProjectionService,
@@ -86,18 +88,18 @@ export class DesktopAuthLifecycleCoordinator {
     if (!this.sessionManager) {
       this.logger.warn('SessionManager not available, running in minimal mode');
       this.isInitializedRef.value = true;
-      this.authState.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      safeTransition(this.authState, AuthRuntimeState.UNAUTHENTICATED);
       return { ok: true, hasValidSession: false, runtimeState: this.authState.runtimeState };
     }
 
     try {
-      this.authState.runtimeState = AuthRuntimeState.RESTORING;
+      safeTransition(this.authState, AuthRuntimeState.RESTORING);
       const result = await this.sessionManager.initialize();
 
       if (result.ok && result.session) {
         const tokenData = await this.tokenManager.loadTokens();
         this.authState.authMode = this.resolveRestoredAuthMode(result.session.identityId, tokenData);
-        this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+        safeTransition(this.authState, AuthRuntimeState.AUTHENTICATED);
 
         const credentialIdentity = await this.credentialRepository?.findById(
           toIdentityLookupId(result.session.identityId),
@@ -108,7 +110,7 @@ export class DesktopAuthLifecycleCoordinator {
         await this.projectionService.ensureAccountProjection(result.session.identityId, restoredEmail);
       } else {
         this.authState.authMode = AuthMode.UNAUTHENTICATED;
-        this.authState.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+        safeTransition(this.authState, AuthRuntimeState.UNAUTHENTICATED);
       }
 
       this.isInitializedRef.value = true;
@@ -130,7 +132,7 @@ export class DesktopAuthLifecycleCoordinator {
       this.logger.error('Failed to initialize', { error });
       this.isInitializedRef.value = true;
       this.authState.authMode = AuthMode.UNAUTHENTICATED;
-      this.authState.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      safeTransition(this.authState, AuthRuntimeState.UNAUTHENTICATED);
       return {
         ok: false,
         hasValidSession: false,
@@ -179,10 +181,10 @@ export class DesktopAuthLifecycleCoordinator {
       if (result.ok && result.session) {
         const tokenData = await this.tokenManager.loadTokens();
         this.authState.authMode = this.resolveRestoredAuthMode(result.session.identityId, tokenData);
-        this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+        safeTransition(this.authState, AuthRuntimeState.AUTHENTICATED);
       } else {
         this.authState.authMode = AuthMode.UNAUTHENTICATED;
-        this.authState.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+        safeTransition(this.authState, AuthRuntimeState.UNAUTHENTICATED);
       }
 
       return {
@@ -217,7 +219,7 @@ export class DesktopAuthLifecycleCoordinator {
           sessionId: tokenData.sessionId,
         },
         {
-          isOnline: () => getNetworkStateManager().isOnline(),
+          isOnline: () => this.networkStateManager.isOnline(),
           remoteGateway: this.remoteGateway,
           logger: this.logger,
           onSuccess: async (response) => {
@@ -278,7 +280,7 @@ export class DesktopAuthLifecycleCoordinator {
 
       if (result) {
         this.authState.authMode = remoteResult.ok ? AuthMode.ONLINE_USER : AuthMode.OFFLINE_USER;
-        this.authState.runtimeState = AuthRuntimeState.AUTHENTICATED;
+        safeTransition(this.authState, AuthRuntimeState.AUTHENTICATED);
         return toIpcResult(ok(result));
       }
       return toIpcResult(fail({ code: 'REFRESH_FAILED', message: '刷新失败' }));
@@ -294,7 +296,7 @@ export class DesktopAuthLifecycleCoordinator {
     await this.sessionManager?.ensureCurrentSession();
     const tokenStatus = await this.tokenManager.getStatus();
     const session = this.sessionManager?.getCurrentSession();
-    const networkManager = getNetworkStateManager();
+    const networkManager = this.networkStateManager;
     const connectionStatus: ConnectionStatus = networkManager.isOnline()
       ? ConnectionStatus.ONLINE
       : ConnectionStatus.OFFLINE;

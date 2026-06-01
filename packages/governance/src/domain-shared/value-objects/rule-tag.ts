@@ -9,7 +9,7 @@
  * - 只允许小写字母、数字和连字符
  */
 
-import { ValueObject } from '@dailyuse/utils';
+import { ValueObject } from '@dailyuse/utils/domain';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleTagDTO } from '../../contracts/value-objects/rule-tag';
@@ -27,6 +27,7 @@ interface RuleTagProps {
  *
  * 包含：
  * - value: 标签值（自动规范化为 lowercase-kebab-case）
+  * @param props - 
  */
 export class RuleTag extends ValueObject<RuleTagProps> {
   /**

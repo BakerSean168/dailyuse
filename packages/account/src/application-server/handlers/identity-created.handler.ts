@@ -8,7 +8,7 @@
 import type { IAccountRepository } from '../../domain-server';
 import { Account } from '../../domain-server';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
 import { IdentityCreateMethod } from '@dailyuse/contracts/authentication';
 

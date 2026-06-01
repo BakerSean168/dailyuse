@@ -7,6 +7,7 @@ import {
   type MarkdownResourceReference,
   type ResolvedMarkdownResourceReference,
 } from './markdown-resource-references';
+import { isMarkdownResource, toTimestamp, stripMarkdownExtension } from './index-helpers';
 
 export interface ResourceReferenceNote {
   id: string;
@@ -45,27 +46,6 @@ export interface ResourceReferenceIndex {
     notes: ResourceReferenceNote[];
     usages: ResourceReferenceUsage[];
   };
-}
-
-function isMarkdownResource(resource: ResourceClientDTO): boolean {
-  return resource.mimeType?.startsWith('text/markdown') || resource.extension === '.md';
-}
-
-function toTimestamp(value: string | number | null | undefined): number {
-  if (!value) {
-    return 0;
-  }
-
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  const timestamp = new Date(value).getTime();
-  return Number.isFinite(timestamp) ? timestamp : 0;
-}
-
-function stripMarkdownExtension(value: string): string {
-  return value.replace(/\.md$/i, '');
 }
 
 function buildNote(resource: ResourceClientDTO): ResourceReferenceNote {

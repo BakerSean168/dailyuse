@@ -5,16 +5,11 @@ import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
-} from '@dailyuse/ai/application-server';
+} from '@dailyuse/ai/ports';
 import {
-  createRepositoryModule,
-  RepositoryPrismaRepository,
-  ResourcePrismaRepository,
-  FolderPrismaRepository,
-  ResourceBookmarkPrismaRepository,
-  FsStorageAdapter,
+  createRepositoryPrismaModule,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository';
+} from '@dailyuse/repository/api';
 
 /**
  * Adapter that persists AI knowledge notes via the repository module's
@@ -27,13 +22,8 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
   private readonly repositoryModule: RepositoryModuleInstance;
 
   constructor(db: PrismaClient, storageBaseDir: string) {
-    const storagePort = new FsStorageAdapter(storageBaseDir);
-    this.repositoryModule = createRepositoryModule({
-      repositoryRepository: new RepositoryPrismaRepository(db),
-      resourceRepository: new ResourcePrismaRepository(db),
-      folderRepository: new FolderPrismaRepository(db),
-      resourceBookmarkRepository: new ResourceBookmarkPrismaRepository(db),
-      storagePort,
+    this.repositoryModule = createRepositoryPrismaModule(db, {
+      storageBaseDir,
     });
   }
 

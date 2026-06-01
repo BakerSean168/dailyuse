@@ -27,6 +27,14 @@
         "lintFilePatterns": ["packages/utils/**/*.{ts,js}"]
       }
     },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.json",
+        "cwd": "packages/utils"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

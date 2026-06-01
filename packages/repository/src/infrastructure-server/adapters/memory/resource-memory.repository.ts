@@ -32,7 +32,7 @@ export class ResourceMemoryRepository implements IResourceRepository {
   async findByRepositoryIdAndPath(repositoryId: string, path: string): Promise<Resource | null> {
     return (
       Array.from(this.resources.values()).find(
-        (r: any) => String(r.repositoryId) === repositoryId && r.path === path,
+        (r) => String(r.repositoryId) === repositoryId && r.path === path,
       ) ?? null
     );
   }
@@ -42,12 +42,12 @@ export class ResourceMemoryRepository implements IResourceRepository {
   }
 
   async findByIdentityId(identityId: string): Promise<Resource[]> {
-    return Array.from(this.resources.values()).filter((r: any) => r.identityId === identityId);
+    return Array.from(this.resources.values()).filter((r) => r.identityId === identityId);
   }
 
   async existsByPath(repositoryId: string, path: string): Promise<boolean> {
     return Array.from(this.resources.values()).some(
-      (r: any) => String(r.repositoryId) === repositoryId && r.path === path,
+      (r) => String(r.repositoryId) === repositoryId && r.path === path,
     );
   }
 

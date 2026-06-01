@@ -36,6 +36,8 @@ export {
   AIMessageIpcAdapter,
   AIProviderConfigIpcAdapter,
   AIEvaluationReportIpcAdapter,
+  AIGoalIpcAdapter,
+  AIKnowledgeNoteIpcAdapter,
   createAIIpcAdapters,
 } from './adapters';
 

@@ -5,7 +5,7 @@ import {
   type PowerSyncScheduleRow,
 } from './mappers/powersync-schedule.mapper';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

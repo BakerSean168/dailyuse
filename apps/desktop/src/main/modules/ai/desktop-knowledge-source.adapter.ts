@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/application-server';
+import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/ports';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { FsStorageAdapter } from '@dailyuse/repository';
 import {
   createRepositoryPowerSyncModule,
+  createFsStorageAdapter,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository/infrastructure-server';
+} from '@dailyuse/repository/api';
 
 function tokenize(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
@@ -45,7 +45,7 @@ export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
 
   constructor(db: IElectronDatabase, storageBaseDir: string) {
     this.repositoryModule = createRepositoryPowerSyncModule(db, {
-      storagePort: new FsStorageAdapter(storageBaseDir),
+      storagePort: createFsStorageAdapter(storageBaseDir),
     });
   }
 

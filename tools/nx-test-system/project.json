@@ -4,5 +4,5 @@
   "projectType": "library",
   "root": "tools/nx-test-system",
   "sourceRoot": "tools/nx-test-system/src",
-  "tags": ["scope:tools", "type:plugin"]
+  "tags": ["scope:tools", "type:plugin", "layer:testing"]
 }

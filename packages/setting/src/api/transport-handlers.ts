@@ -1,4 +1,5 @@
 import { ok, fail } from '@dailyuse/contracts/result';
+import type { PreferenceCategory } from '@dailyuse/contracts/setting';
 import type { SettingUseCases } from '../controllers/setting.controller';
 import type { SettingApplicationPort } from '../infrastructure-server';
 
@@ -10,14 +11,14 @@ export function createSettingTransportHandlers(api: SettingApplicationPort): Set
   return {
     getUserSetting: async (ctx) => ok(await api.getUserSetting(ctx.identityId)),
     patchUserSetting: async (data, ctx) =>
-      ok(await api.patchUserSetting(ctx.identityId, data.category as any, data.patch)),
+      ok(await api.patchUserSetting(ctx.identityId, data.category as PreferenceCategory, data.patch)),
     resetUserSetting: async (ctx, category) =>
       ok(await api.resetUserSetting(ctx.identityId, category)),
     exportSettings: async (ctx) => ok(await api.exportSettings(ctx.identityId)),
     importSettings: async (data, ctx) => {
-      let importData: Record<string, any>;
+      let importData: Record<string, unknown>;
       try {
-        importData = JSON.parse(data.data) as Record<string, any>;
+        importData = JSON.parse(data.data) as Record<string, unknown>;
       } catch {
         return fail({ code: 'VALIDATION_ERROR' as const, message: 'Invalid JSON in data field' });
       }

@@ -23,7 +23,7 @@ import type {
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskFolderId, GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
@@ -62,8 +62,8 @@ export interface TaskTemplateState {
   completedInstanceCount: number;
   pendingInstanceCount: number;
   completionRate: number;
-  history?: any[];
-  instances?: any[];
+  history?: unknown[];
+  instances?: unknown[];
 }
 
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
@@ -209,11 +209,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.completionRate;
   }
 
-  get history(): any[] | undefined {
+  get history(): unknown[] | undefined {
     return this._props.history ? [...this._props.history] : undefined;
   }
 
-  get instances(): any[] | undefined {
+  get instances(): unknown[] | undefined {
     return this._props.instances ? [...this._props.instances] : undefined;
   }
 

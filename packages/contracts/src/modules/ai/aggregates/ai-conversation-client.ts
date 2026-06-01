@@ -3,7 +3,7 @@
  * AI对话聚合根 - 客户端接口
  */
 
-import type { AiConversationId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type { AiConversationId, IdentityId, TransferDate } from '../../../primitives';
 import type { ConversationStatus } from '../value-objects/conversation-status';
 import type { MessageClientDTO } from '../entities/message-client';
 

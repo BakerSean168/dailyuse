@@ -168,7 +168,7 @@ const onDragStart = (event: DragEvent) => {
   }
 };
 
-const onDragEnd = (event: DragEvent) => {
+const onDragEnd = (_event: DragEvent) => {
   isDragging.value = false;
   draggedTaskId.value = null;
   dropTargetId.value = null;
@@ -192,12 +192,12 @@ const onDragOver = (event: DragEvent) => {
   }
 };
 
-const onDragLeave = (event: DragEvent) => {
+const onDragLeave = (_event: DragEvent) => {
   dropTargetId.value = null;
   isValidDrop.value = false;
 };
 
-const onDrop = async (event: DragEvent) => {
+const onDrop = async (_event: DragEvent) => {
   if (!isDragging.value || !draggedTaskId.value) return;
   if (draggedTaskId.value === props.template.id) return;
 

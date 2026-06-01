@@ -3,7 +3,7 @@
  * 消息实体 - 客户端接口
  */
 
-import type { AiMessageId, AiConversationId, TransferDate, DomainDate } from '../../../primitives';
+import type { AiMessageId, AiConversationId, TransferDate } from '../../../primitives';
 import type { MessageRole } from '../value-objects/message-role';
 
 // ============ DTO 定义 ============

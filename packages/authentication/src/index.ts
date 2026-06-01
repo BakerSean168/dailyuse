@@ -37,11 +37,14 @@
  * // 1. 导入契约层类型
  * import type { AuthIdentityServerDTO } from '@dailyuse/contracts/authentication';
  *
- * // 2. 导入聚合根
- * import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
+ * // 2. 导入公共聚合根与组合根
+ * import {
+ *   AuthIdentity,
+ *   AuthSession,
+ *   createAuthenticationModule,
+ * } from '@dailyuse/authentication';
  *
  * // 3. 使用组合根
- * import { createAuthenticationModule } from '@dailyuse/authentication/infrastructure-server';
  * const module = createAuthenticationModule({ identityRepository, sessionRepository, passwordHasher, tokenProvider });
  * const result = await module.api.login(data, cx);
  *
@@ -62,30 +65,12 @@ export { AuthSession } from './domain-server';
 export type { IAuthIdentityRepository, IAuthSessionRepository } from './domain-server';
 
 // ================= Application Layer (应用层) =================
-// Application-Server: Use cases (server-side)
 // Application-Client: Client services, API client ports
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================
 // Infrastructure-Server: Repositories, persistence, composition root (server-side)
 // Infrastructure-Client: HTTP/IPC adapters (client-side)
-export {
-  /** @internal Concrete Prisma implementation — use IAuthIdentityRepository interface instead. Prisma 具体实现 — 请使用 IAuthIdentityRepository 接口。 */
-  PrismaAuthIdentityRepository,
-  /** @internal Concrete Prisma implementation — use IAuthSessionRepository interface instead. Prisma 具体实现 — 请使用 IAuthSessionRepository 接口。 */
-  PrismaAuthSessionRepository,
-  /** @internal Concrete PowerSync implementation — use IAuthIdentityRepository interface instead. PowerSync 具体实现 — 请使用 IAuthIdentityRepository 接口。 */
-  PowerSyncAuthIdentityRepository,
-  /** @internal Concrete PowerSync implementation — use IAuthSessionRepository interface instead. PowerSync 具体实现 — 请使用 IAuthSessionRepository 接口。 */
-  PowerSyncAuthSessionRepository,
-  createAuthenticationModule,
-  createAuthenticationPowerSyncModule,
-  type AuthenticationApplicationPort,
-  type AuthenticationModuleDependencies,
-  type AuthenticationModuleInstance,
-  type AuthenticationModuleRuntimeContribution,
-  type AuthenticationModuleUseCases,
-} from './infrastructure-server';
+export { createAuthenticationModule, createAuthenticationPowerSyncModule, type AuthenticationApplicationPort, type AuthenticationModuleDependencies, type AuthenticationModuleInstance, type AuthenticationModuleRuntimeContribution, type AuthenticationModuleUseCases } from './infrastructure-server';
 
 export * from './infrastructure-client';

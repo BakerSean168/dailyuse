@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
@@ -15,6 +15,7 @@ import {
 import { Checkbox } from '@dailyuse/ui-vue-shadcn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import type { LoginByEmailReq, LoginByPhoneReq } from '@dailyuse/contracts/authentication';
+import { useSmsCodeCountdown } from '../composables/useSmsCodeCountdown';
 
 const { t } = useI18n();
 
@@ -56,10 +57,8 @@ const phoneForm = ref({
   code: '',
 });
 
-// SMS code state
-const smsCodeSending = ref(false);
-const smsCodeCountdown = ref(0);
-let countdownTimer: ReturnType<typeof setInterval> | null = null;
+// SMS code countdown
+const { smsCodeSending, smsCodeCountdown, canSendSmsCode: smsReady, startCountdown } = useSmsCodeCountdown();
 
 // Validation
 const emailValid = computed(() => {
@@ -80,7 +79,7 @@ const phoneFormValid = computed(() => {
 });
 
 const canSendSmsCode = computed(() => {
-  return phoneValid.value && smsCodeCountdown.value === 0 && !smsCodeSending.value;
+  return phoneValid.value && smsReady.value;
 });
 
 // Handlers
@@ -104,26 +103,10 @@ const handlePhoneLogin = () => {
   });
 };
 
-const handleSendSmsCode = async () => {
+const handleSendSmsCode = () => {
   if (!canSendSmsCode.value) return;
-
-  smsCodeSending.value = true;
   emit('sendSmsCode', phoneForm.value.phoneNumber);
-
-  // Start countdown
-  smsCodeCountdown.value = 60;
-  countdownTimer = setInterval(() => {
-    smsCodeCountdown.value--;
-    if (smsCodeCountdown.value <= 0 && countdownTimer) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-    }
-  }, 1000);
-
-  // Simulate sending (remove this timeout when integrated with real API)
-  setTimeout(() => {
-    smsCodeSending.value = false;
-  }, 1000);
+  startCountdown();
 };
 
 const handleRegister = () => {
@@ -151,13 +134,6 @@ watch(
     }
   },
 );
-
-// Cleanup
-onUnmounted(() => {
-  if (countdownTimer) {
-    clearInterval(countdownTimer);
-  }
-});
 </script>
 
 <template>

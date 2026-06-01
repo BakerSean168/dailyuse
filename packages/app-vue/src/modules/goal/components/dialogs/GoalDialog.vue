@@ -514,8 +514,6 @@ const { t, locale } = useI18n();
 
 // ── Constants ──────────────────────────────────────────────────────────
 
-const importanceLevels = ['Vital', 'Important', 'Moderate', 'Minor', 'Trivial'] as const;
-
 const importanceLevelOptions = computed(() => [
   { value: 'Vital', label: t('goal.dialog.importanceVital') },
   { value: 'Important', label: t('goal.dialog.importanceImportant') },
@@ -552,22 +550,6 @@ interface LocalKr {
 let _localIdCounter = 0;
 
 const krList = ref<LocalKr[]>([]);
-
-function makeEmptyKr(): LocalKr {
-  return {
-    _existingId: undefined,
-    _localId: _localIdCounter++,
-    _markedForDelete: false,
-    title: '',
-    valueType: 'Incremental',
-    calculationMethod: 'Sum',
-    weight: 1,
-    initialValue: 0,
-    targetValue: 100,
-    currentValue: 0,
-    unit: '',
-  };
-}
 
 function krFromDTO(dto: KeyResultClientDTO): LocalKr {
   return {

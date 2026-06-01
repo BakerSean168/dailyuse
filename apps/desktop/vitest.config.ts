@@ -1,4 +1,4 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 import { createSharedConfig } from '../../vitest.shared';
 import { createWorkspaceSourceAliasEntries } from '../../vite.workspace-aliases';
 
@@ -90,7 +90,7 @@ const sharedConfig = createSharedConfig({
     __dirname + '/../..',
     desktopTestWorkspaceEntries,
   ),
-}) as any;
+}) as Record<string, unknown>;
 
 export default defineConfig({
   ...sharedConfig,

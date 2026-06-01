@@ -9,3 +9,4 @@
 export type { IAuthApiClient } from './ports/auth-api-client.port';
 export type { AuthenticationClientPort } from './services/auth-client-service';
 export { AuthClientService, createAuthenticationClientService } from './services/auth-client-service';
+export { createAuthenticationServiceFromHttpClient } from './authentication-http-service-factory';

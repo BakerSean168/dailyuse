@@ -8,7 +8,7 @@ import type {
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
 import type { IdentityId, NotificationPreferenceId as NotificationPreferenceIdBranded } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
   NotificationPreferenceId,
 } from '../../domain-shared/value-objects/notification-preference-id';

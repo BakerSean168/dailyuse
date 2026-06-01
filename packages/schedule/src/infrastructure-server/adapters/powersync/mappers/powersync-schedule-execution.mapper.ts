@@ -24,7 +24,7 @@ export class PowerSyncScheduleExecutionMapper {
       executionTime: new Date(data.execution_time),
       status: data.status as ExecutionStatus,
       duration: data.duration ?? null,
-      result: data.result ? (JSON.parse(data.result) as Record<string, any>) : null,
+      result: data.result ? (JSON.parse(data.result) as Record<string, unknown>) : null,
       error: data.error ?? null,
       retryCount: Number(data.retry_count ?? 0),
       createdAt: new Date(data.created_at),

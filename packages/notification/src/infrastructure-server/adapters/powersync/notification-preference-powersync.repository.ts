@@ -1,4 +1,4 @@
-import { generateUUID } from '@dailyuse/utils';
+import { generateUUID } from '@dailyuse/utils/shared';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
@@ -14,10 +14,6 @@ interface NotificationPreferenceRow {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-}
-
-function toIso(value: Date | null | undefined): string | null {
-  return value ? value.toISOString() : null;
 }
 
 function toSettings(

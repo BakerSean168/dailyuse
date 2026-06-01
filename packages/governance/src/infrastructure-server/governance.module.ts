@@ -127,6 +127,13 @@ export interface GovernanceModuleInstance {
  * Pure assembly helper used by the class facade and tests.
  * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
  */
+/**
+ * Pure assembly helper used by the class facade and tests.
+ * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
+ *
+ * @param dependencies - GovernanceModuleDependencies (ports and runtime contributions)
+ * @returns GovernanceModuleUseCases - assembled use-case instances
+ */
 export function createGovernanceUseCases(
   dependencies: GovernanceModuleDependencies,
 ): GovernanceModuleUseCases {
@@ -170,6 +177,13 @@ function normalizeRuntimeContributions(
  * 3. assemble use cases once
  * 4. wrap them in `api`
  * 5. let the module instance own `start` / `dispose`
+ */
+/**
+ * Canonical composition root.
+ * 规范化的治理模块主组合根。
+ *
+ * @param dependencies - GovernanceModuleDependencies describing ports and runtime contributions
+ * @returns GovernanceModuleInstance - assembled module instance with api/useCases and lifecycle
  */
 export function createGovernanceModule(
   dependencies: GovernanceModuleDependencies,

@@ -10,7 +10,7 @@ import { ReminderTemplateId } from '../../../domain-shared/value-objects/reminde
 import { IdentityId } from '@dailyuse/domain-shared';
 import { TriggerConfig, ActiveTimeConfig, GroupStats } from '../../value-objects';
 import { ReminderNotificationConfig } from '../../../domain-shared/value-objects/reminder-notification-config';
-import { generateUUID } from '@dailyuse/utils';
+import { generateUUID } from '@dailyuse/utils/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

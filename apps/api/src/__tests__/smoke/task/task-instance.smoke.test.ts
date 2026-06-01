@@ -13,9 +13,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import { createSmokeApp, TEST_IDENTITY_ID, type SmokeTestApp } from '../helpers/create-smoke-app';
-import { TaskInstance } from '@dailyuse/task/domain-server';
+import { TaskInstance } from '@dailyuse/task';
 import { TaskTimeConfig, TaskTemplateId } from '@dailyuse/task/domain-shared';
-import { IdentityId } from '@dailyuse/domain-shared';
 
 // Mock eventBus to prevent console noise and import side-effects from fire-and-forget events
 vi.mock('@dailyuse/utils', async (importOriginal) => {
@@ -44,8 +43,8 @@ function makeFakeInstance(
   }> = {},
 ): TaskInstance {
   const instance = TaskInstance.create({
-    templateId: (overrides.templateId ?? FAKE_TEMPLATE_ID) as any,
-    identityId: (overrides.identityId ?? TEST_IDENTITY_ID) as any,
+    templateId: overrides.templateId ?? FAKE_TEMPLATE_ID,
+    identityId: overrides.identityId ?? TEST_IDENTITY_ID,
     instanceDate: Date.now(),
     timeConfig: TaskTimeConfig.create({
       timeType: 'AllDay',
@@ -117,7 +116,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return instances from repository', async () => {
       const instance = makeFakeInstance();
-      (ctx.instanceRepo.findByIdentityId as any).mockResolvedValue([instance]);
+      vi.mocked(ctx.instanceRepo.findByIdentityId).mockResolvedValue([instance]);
 
       const res = await request(ctx.app)
         .get('/api/v1/task-instances')
@@ -131,7 +130,7 @@ describe('Task Instance API Smoke Tests', () => {
     });
 
     it('should route to listByTemplate when templateId filter is provided', async () => {
-      (ctx.instanceRepo.findByTemplateId as any).mockResolvedValue([]);
+      vi.mocked(ctx.instanceRepo.findByTemplateId).mockResolvedValue([]);
 
       const res = await request(ctx.app)
         .get(`/api/v1/task-instances?templateId=${FAKE_TEMPLATE_ID}`)
@@ -142,7 +141,7 @@ describe('Task Instance API Smoke Tests', () => {
     });
 
     it('should route to listByStatus when status filter is provided', async () => {
-      (ctx.instanceRepo.findByStatus as any).mockResolvedValue([]);
+      vi.mocked(ctx.instanceRepo.findByStatus).mockResolvedValue([]);
 
       const res = await request(ctx.app)
         .get('/api/v1/task-instances?status=Completed')
@@ -176,7 +175,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return instances within date range', async () => {
       const instance = makeFakeInstance();
-      (ctx.instanceRepo.findByDateRange as any).mockResolvedValue([instance]);
+      vi.mocked(ctx.instanceRepo.findByDateRange).mockResolvedValue([instance]);
 
       const res = await request(ctx.app)
         .get('/api/v1/task-instances/by-date-range?startDate=1000000&endDate=2000000')
@@ -227,7 +226,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 with instance when found', async () => {
       const instance = makeFakeInstance();
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .get(`/api/v1/task-instances/${instance.id}`)
@@ -264,7 +263,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 and start a Pending instance', async () => {
       const instance = makeFakeInstance(); // Pending by default
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/start`)
@@ -278,7 +277,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 422 when instance cannot be started (already InProgress)', async () => {
       const instance = makeFakeInstance({ status: 'InProgress' });
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/start`)
@@ -314,7 +313,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 and complete a Pending instance', async () => {
       const instance = makeFakeInstance(); // Pending by default
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/complete`)
@@ -329,7 +328,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 and complete with optional fields', async () => {
       const instance = makeFakeInstance({ status: 'InProgress' });
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/complete`)
@@ -343,7 +342,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 422 when instance cannot be completed (already Completed)', async () => {
       const instance = makeFakeInstance({ status: 'Completed' });
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/complete`)
@@ -380,7 +379,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 and skip a Pending instance', async () => {
       const instance = makeFakeInstance(); // Pending by default
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/skip`)
@@ -395,7 +394,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 200 and skip with optional reason', async () => {
       const instance = makeFakeInstance(); // Pending by default
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/skip`)
@@ -409,7 +408,7 @@ describe('Task Instance API Smoke Tests', () => {
 
     it('should return 422 when instance cannot be skipped (already Completed)', async () => {
       const instance = makeFakeInstance({ status: 'Completed' });
-      (ctx.instanceRepo.findById as any).mockResolvedValue(instance);
+      vi.mocked(ctx.instanceRepo.findById).mockResolvedValue(instance);
 
       const res = await request(ctx.app)
         .post(`/api/v1/task-instances/${instance.id}/skip`)

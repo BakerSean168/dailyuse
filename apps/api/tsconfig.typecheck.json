@@ -23,28 +23,30 @@
         "packages/dashboard/src/*/index.ts",
         "packages/dashboard/src/*.ts"
       ],
-      "@dailyuse/notification": ["packages/notification/src/index.ts"],
+      "@dailyuse/notification": ["packages/notification/dist/index.d.ts"],
       "@dailyuse/notification/*": [
-        "packages/notification/src/*/index.ts",
-        "packages/notification/src/*.ts"
+        "packages/notification/dist/*/index.d.ts",
+        "packages/notification/dist/*.d.ts"
       ],
+      "@dailyuse/notification/commands": ["packages/notification/dist/commands/index.d.ts"],
       "@dailyuse/powersync-schema": ["packages/powersync-schema/src/index.ts"],
-      "@dailyuse/repository": ["packages/repository/src/index.ts"],
+      "@dailyuse/repository": ["packages/repository/dist/index.d.ts"],
       "@dailyuse/repository/*": [
-        "packages/repository/src/*/index.ts",
-        "packages/repository/src/*.ts"
+        "packages/repository/dist/*/index.d.ts",
+        "packages/repository/dist/*.d.ts"
       ],
-      "@dailyuse/repository/infrastructure-server": [
-        "packages/repository/src/infrastructure-server/index.ts"
-      ],
-      "@dailyuse/schedule": ["packages/schedule/src/index.ts"],
+      "@dailyuse/schedule": ["packages/schedule/dist/index.d.ts"],
       "@dailyuse/schedule/*": [
-        "packages/schedule/src/*/index.ts",
-        "packages/schedule/src/*.ts"
+        "packages/schedule/dist/*/index.d.ts",
+        "packages/schedule/dist/*.d.ts"
       ],
+      "@dailyuse/schedule/api": ["packages/schedule/dist/api/index.d.ts"],
       "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
       "@dailyuse/ai": ["packages/ai/dist/index.d.ts"],
       "@dailyuse/ai/*": ["packages/ai/dist/*/index.d.ts", "packages/ai/dist/*.d.ts"],
+      "@dailyuse/ai/ports": ["packages/ai/dist/ports/index.d.ts"],
+      "@dailyuse/goal/analytics": ["packages/goal/dist/analytics/index.d.ts"],
+      "@dailyuse/task/analytics": ["packages/task/dist/analytics/index.d.ts"],
       "@api/shared": ["apps/api/src/shared/index.ts"]
     }
   }

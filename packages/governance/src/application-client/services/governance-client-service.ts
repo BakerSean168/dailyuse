@@ -39,7 +39,8 @@ export interface GovernanceClientPort {
   getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>>;
 }
 
-/** Governance frontend service facade. 治理前端服务门面。 */
+/** Governance frontend service facade. 治理前端服务门面。  * @param private readonly ruleApiClient - 
+ */
 export class GovernanceClientService implements GovernanceClientPort {
   constructor(private readonly ruleApiClient: IRuleApiClient) {
     this.createRule = this.createRule.bind(this);
@@ -89,7 +90,9 @@ export class GovernanceClientService implements GovernanceClientPort {
 
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
-/** Create a `GovernanceClientService` from any transport adapter. */
+/** Create a `GovernanceClientService` from any transport adapter.  * @param ruleApiClient - 
+  * @returns any - 
+ */
 export function createGovernanceClientService(ruleApiClient: IRuleApiClient): GovernanceClientService {
   return new GovernanceClientService(ruleApiClient);
 }

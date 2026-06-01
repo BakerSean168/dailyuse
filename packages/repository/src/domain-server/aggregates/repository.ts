@@ -14,11 +14,11 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils/domain';
 import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
 import { RepositoryConfig } from '../../domain-shared/value-objects/repository-config';
 import { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';
-import { BusinessRuleViolationError } from '@dailyuse/utils';
+import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
 /**
  * 创建仓库参数

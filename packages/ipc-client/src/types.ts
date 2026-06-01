@@ -77,10 +77,9 @@ export interface IpcClient {
  */
 export interface IpcClientConfig {
   /**
-   * 自定义的 ElectronBridge 实例
-   * 不传则自动从 window.electronAPI 获取
+   * ElectronBridge 实例（由 preload 脚本暴露）
    */
-  bridge?: ElectronBridge;
+  bridge: ElectronBridge;
 
   /**
    * 是否开启调用日志（开发环境调试用）
@@ -134,32 +133,5 @@ export class IpcClientError extends Error {
   ) {
     super(message);
     this.name = 'IpcClientError';
-  }
-}
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-/**
- * 获取 window 上挂载的 Electron API
- *
- * 在非 Electron 环境中返回 undefined。
- * Preload 中通过 `contextBridge.exposeInMainWorld('electronAPI', ...)` 暴露。
- */
-export function getElectronBridge(): ElectronBridge | undefined {
-  if (typeof window === 'undefined') return undefined;
-  return window.electronAPI;
-}
-
-/**
- * 兼容别名
- */
-export const getElectronAPI = getElectronBridge;
-
-// 扩展全局 Window 类型
-declare global {
-  interface Window {
-    electronAPI?: ElectronBridge;
   }
 }

@@ -6,7 +6,7 @@ import {
   aLoadedTaskTemplate,
   aRecurringTask,
   anIdentityId,
-} from '@dailyuse/task/testing';
+} from '../../../../testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';

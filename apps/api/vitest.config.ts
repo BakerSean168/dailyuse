@@ -6,8 +6,6 @@ const sharedConfig = createSharedConfig({
   projectRoot: __dirname,
   environment: 'node',
   aliases: {
-    '@dailyuse/domain-server/ai': '../../packages/domain-server/src/ai',
-    '@dailyuse/domain-server': '../../packages/domain-server/src',
     '@dailyuse/contracts/ai': '../../packages/contracts/src/modules/ai',
     '@dailyuse/contracts/goal': '../../packages/contracts/src/modules/goal',
     '@dailyuse/contracts/response': '../../packages/contracts/src/response',

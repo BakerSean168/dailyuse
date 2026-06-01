@@ -11,6 +11,8 @@
  *   changed_fields、previous_values、new_values 的 JSON 序列化
  * - Defensive parsing with fallback defaults for malformed data
  *   对格式错误数据的防御性解析（带回退默认值）
+ *
+ * @internal Concrete PowerSync mapper — consumers should use domain entities directly.
  */
 import { RuleRevision } from '../../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../../domain-shared/value-objects/rule-id';

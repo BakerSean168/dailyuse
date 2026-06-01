@@ -19,16 +19,11 @@
  * 此文件只是纯粹的管道连接。
  */
 
-import type { Router, Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import { ResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
-import {
-  createRepositoryModule,
-  RepositoryRepositoryFactory,
-  ResourceBookmarkPrismaRepository,
-  FsStorageAdapter,
-} from '@dailyuse/repository/infrastructure-server';
+import { createRepositoryPrismaModule } from '@dailyuse/repository/api';
 import {
   createEditorModule,
   EditorWorkspacePrismaRepository,
@@ -46,22 +41,10 @@ import { createEditorRuntimeContribution } from './runtime';
 // ---------------------------------------------------------------------------
 
 /**
- * Registration context (structurally compatible with apps/api's IApiModuleContext).
- * 注册上下文（与 apps/api 的 IApiModuleContext 结构兼容）。
- *
- * Locally defined to avoid circular dependency on apps/api.
- * 在本地定义以避免对 apps/api 的循环依赖。
+ * Typed module context for editor registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface EditorApiModuleContext {
-  readonly app: Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: RequestHandler;
-    requireRole(roles: string[]): RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type EditorApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface EditorApiModuleDef {
   readonly name: string;
@@ -74,7 +57,7 @@ export interface EditorApiModuleDef {
 // ---------------------------------------------------------------------------
 
 let activeEditorModule: EditorModuleInstance | null = null;
-let activeRepositoryBridgeModule: ReturnType<typeof createRepositoryModule> | null = null;
+let activeRepositoryBridgeModule: ReturnType<typeof createRepositoryPrismaModule> | null = null;
 
 type RepositorySearchItem = RepositorySearchResponse['results'][number];
 
@@ -90,17 +73,11 @@ export const EditorApiModule: EditorApiModuleDef = {
 
     // 1. Composition Root — assemble dependencies (uses shared database singleton)
     //    组合根 — 组装依赖（使用共享数据库单例）
-    const prismaClient = db as PrismaClient;
-    const repositoryRepositories =
-      RepositoryRepositoryFactory.createPrismaRepositories(prismaClient);
+    const prismaClient = db;
     const repositoryStorageBaseDir =
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';
-    const repositoryBridgeModule = createRepositoryModule({
-      repositoryRepository: repositoryRepositories.repositoryRepository,
-      resourceRepository: repositoryRepositories.resourceRepository,
-      folderRepository: repositoryRepositories.folderRepository,
-      resourceBookmarkRepository: new ResourceBookmarkPrismaRepository(prismaClient),
-      storagePort: new FsStorageAdapter(repositoryStorageBaseDir),
+    const repositoryBridgeModule = createRepositoryPrismaModule(prismaClient, {
+      storageBaseDir: repositoryStorageBaseDir,
     });
     activeRepositoryBridgeModule = repositoryBridgeModule;
     repositoryBridgeModule.start();

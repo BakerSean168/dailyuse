@@ -2,7 +2,7 @@ import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import type { GoalPowerSyncDatabase, PowerSyncLockContext } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalMapper } from './mappers/powersync-goal.mapper';

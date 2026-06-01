@@ -8,7 +8,7 @@
  * - Fully complies with layered architecture
  */
 
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { PrismaClient } from '@dailyuse/database';
 
 const logger = createLogger('SchedulerBootstrap');
@@ -23,22 +23,10 @@ const logger = createLogger('SchedulerBootstrap');
  * - Start the scheduler
  */
 export class SchedulerBootstrap {
-  private static instance: SchedulerBootstrap;
   private initialized = false;
 
-  private constructor(prisma: PrismaClient) {
-    // Initialize dependencies
+  constructor(_prisma: PrismaClient) {
     logger.info('SchedulerBootstrap initialized');
-  }
-
-  public static getInstance(prisma: PrismaClient): SchedulerBootstrap {
-    if (!SchedulerBootstrap.instance) {
-      if (!prisma) {
-        throw new Error('SchedulerBootstrap.getInstance() requires prisma instance for first initialization');
-      }
-      SchedulerBootstrap.instance = new SchedulerBootstrap(prisma);
-    }
-    return SchedulerBootstrap.instance;
   }
 
   /**

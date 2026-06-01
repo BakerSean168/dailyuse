@@ -1,5 +1,5 @@
 import type { AIModelInfo } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type {
   IAIProviderModelCatalogPort,
   ProviderModelCatalogInput,

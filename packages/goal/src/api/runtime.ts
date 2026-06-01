@@ -14,7 +14,7 @@
  * 替代: `api/initialization.ts` (registerGoalInitializationTasks)
  */
 
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { GoalModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('GoalRuntime');

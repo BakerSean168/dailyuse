@@ -5,10 +5,11 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 import type { IReminderResponseRepository } from '@/domain-server/repositories/i-reminder-response-repository';
 import type { ReminderEventMap, ReminderResponseAction } from '@dailyuse/contracts/reminder';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import { ReminderResponse } from '@/domain-server/entities/reminder-response';
 
 const logger = createLogger('RecordReminderResponseUseCase');
@@ -103,7 +104,7 @@ export class RecordReminderResponseUseCase {
     return ok({
       id: savedRecord.id,
       templateId: savedRecord.reminderTemplateId,
-      action: savedRecord.action as any,
+      action: savedRecord.action as ResponseRecordResult['action'],
       responseTime: savedRecord.responseTime ?? null,
       recordedAt: savedRecord.timestamp,
     });
@@ -116,7 +117,7 @@ export class RecordReminderResponseUseCase {
    * @param limit - 返回记录数限制
    * @returns 响应记录列表
    */
-  async getResponsesByTemplate(templateId: string, limit: number = 100): Promise<Result<any[]>> {
+  async getResponsesByTemplate(templateId: string, limit: number = 100): Promise<Result<unknown[]>> {
     const responses = await this.responseRepository.findByTemplateId(templateId, limit);
     return ok(responses);
   }

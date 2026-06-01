@@ -23,13 +23,14 @@ import type { IRuleRevisionRepository } from '../../../domain-server/repositorie
 import { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils';
+import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
 
 /**
  * Prisma RuleRevision Repository
  *
  * Provides read-only access to revision history
+  * @param prismaClient - 
  */
 export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
   private readonly prisma: PrismaClient;

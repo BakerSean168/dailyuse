@@ -15,6 +15,7 @@ import type {
 /**
  * Get Rule Revisions Use Case.
  * 获取规则修订记录用例。
+  * @param private readonly revisionRepository - 
  */
 export class GetRuleRevisionsUseCase {
   constructor(private readonly revisionRepository: IRuleRevisionRepository) {}

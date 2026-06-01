@@ -6,12 +6,9 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs - concrete implementations injected from App layer.
-
-// IResultHttpClient imported from @dailyuse/http-client
 
 /**
  * IPC Client interface (Result-returning).

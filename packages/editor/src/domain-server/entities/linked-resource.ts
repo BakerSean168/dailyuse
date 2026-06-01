@@ -11,7 +11,8 @@ import type {
   ResourceId,
   TransferDate,
 } from '@dailyuse/contracts/primitives';
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
+import { generateUUID } from '@dailyuse/utils/shared';
 import { EditorWorkspaceId as EditorWorkspaceIdType } from '../../domain-shared/value-objects/editor-workspace-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 

@@ -15,6 +15,7 @@ import type { ExecutionContext } from '../execution-context';
 /**
  * Search Rules Use Case.
  * 搜索规则用例。
+  * @param private readonly ruleRepository - 
  */
 export class SearchRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}
@@ -31,7 +32,7 @@ export class SearchRulesUseCase {
    */
   async execute(
     req: SearchRulesQueryInput,
-    cx?: ExecutionContext,
+    _cx?: ExecutionContext,
   ): Promise<Result<SearchRulesRes>> {
     return resultify(async () => {
       const startedAt = Date.now();

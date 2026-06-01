@@ -9,7 +9,11 @@ import { RuleStatus } from '../../../../contracts/value-objects/rule-status';
 
 // ============ Helpers ============
 
-const testCx: ExecutionContext = { identityId: 'test-user-123' as any };
+const testCx: ExecutionContext = {
+  identityId: 'test-user-123' as ExecutionContext['identityId'],
+};
+
+type DeleteRuleFixture = NonNullable<Awaited<ReturnType<IRuleRepository['findById']>>>;
 
 function createRuleFixture(
   overrides?: Partial<{ id: string; status: string; deprecate: ReturnType<typeof vi.fn> }>,
@@ -18,7 +22,7 @@ function createRuleFixture(
     id: overrides?.id ?? 'rule-id-1',
     status: overrides?.status ?? RuleStatus.Draft,
     deprecate: overrides?.deprecate ?? vi.fn().mockReturnValue(ok(undefined)),
-  } as any;
+  } as unknown as DeleteRuleFixture;
 }
 
 // ============ Tests ============

@@ -12,6 +12,7 @@ import type { ListRulesQuery, ListRulesRes } from '../../../contracts/api/rules'
 /**
  * List Rules Use Case.
  * 列出规则用例。
+  * @param private readonly ruleRepository - 
  */
 export class ListRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

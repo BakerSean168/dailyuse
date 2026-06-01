@@ -15,11 +15,10 @@ import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type {
-  GoalServerDTO,
   KeyResultServerDTO,
 } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
 import { rawDataToGoalState, type RawKeyResultData } from './mappers/goal-state-mapper';
 
@@ -41,10 +40,6 @@ const GOAL_INCLUDE_ALL = {
   keyResults: { orderBy: { order: 'asc' as const } },
   reviews: { orderBy: { createdAt: 'desc' as const } },
   keyResultWeightSnapshots: { orderBy: { snapshotTime: 'desc' as const } },
-};
-
-const GOAL_INCLUDE_KEY_RESULTS = {
-  keyResults: { orderBy: { order: 'asc' as const } },
 };
 
 /**
@@ -197,16 +192,16 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
           priority: dto.priority ?? 0,
           category: dto.category,
           tags: dto.tags,
-          startDate: dto.startDate ? new Date(dto.startDate as any) : null,
-          targetDate: dto.targetDate ? new Date(dto.targetDate as any) : null,
-          completedAt: dto.completedAt ? new Date(dto.completedAt as any) : null,
-          archivedAt: dto.archivedAt ? new Date(dto.archivedAt as any) : null,
+          startDate: dto.startDate ? new Date(dto.startDate) : null,
+          targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+          completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+          archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
           folderId: dto.folderId ? (dto.folderId as string) : null,
           parentGoalId: dto.parentGoalId ? (dto.parentGoalId as string) : null,
           sortOrder: dto.sortOrder,
           reminderConfig: dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
           version: dto.version,
-          deletedAt: dto.deletedAt ? new Date(dto.deletedAt as any) : null,
+          deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
         },
         update: {
           name: dto.name,
@@ -219,16 +214,16 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
           priority: dto.priority ?? 0,
           category: dto.category,
           tags: dto.tags,
-          startDate: dto.startDate ? new Date(dto.startDate as any) : null,
-          targetDate: dto.targetDate ? new Date(dto.targetDate as any) : null,
-          completedAt: dto.completedAt ? new Date(dto.completedAt as any) : null,
-          archivedAt: dto.archivedAt ? new Date(dto.archivedAt as any) : null,
+          startDate: dto.startDate ? new Date(dto.startDate) : null,
+          targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+          completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+          archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
           folderId: dto.folderId ? (dto.folderId as string) : null,
           parentGoalId: dto.parentGoalId ? (dto.parentGoalId as string) : null,
           sortOrder: dto.sortOrder,
           reminderConfig: dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
           version: dto.version,
-          deletedAt: dto.deletedAt ? new Date(dto.deletedAt as any) : null,
+          deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
           updatedAt: new Date(),
         },
       });
@@ -342,7 +337,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
                 oldWeight: ws.oldWeight,
                 newWeight: ws.newWeight,
                 weightDelta: ws.weightDelta,
-                snapshotTime: new Date(ws.snapshotTime as any),
+                snapshotTime: new Date(ws.snapshotTime),
                 trigger: ws.trigger,
                 reason: ws.reason ?? null,
                 operatorId: ws.operatorId as string,

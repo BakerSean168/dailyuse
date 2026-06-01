@@ -18,7 +18,6 @@ import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   TaskTimeConfigDTO,
-  CompletionRecordDTO,
 } from '../value-objects';
 
 // ============ DTO 定义 ============

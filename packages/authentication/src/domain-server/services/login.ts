@@ -1,8 +1,6 @@
-import { eventBus } from '@dailyuse/utils';
 import type { LoginByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
-import { PlainPassword } from '../../domain-shared';
 import type { IPasswordHasher } from '../../domain-shared';
 
 // Business exceptions

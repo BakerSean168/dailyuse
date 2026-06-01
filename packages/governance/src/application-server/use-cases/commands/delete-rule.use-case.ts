@@ -15,6 +15,7 @@ import type { ExecutionContext } from '../execution-context';
 /**
  * Delete Rule Use Case.
  * 删除规则用例。
+  * @param private readonly ruleRepository - 
  */
 export class DeleteRuleUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

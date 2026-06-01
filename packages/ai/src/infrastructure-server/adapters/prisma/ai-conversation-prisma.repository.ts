@@ -17,7 +17,7 @@ import { ConversationStatus, MessageRole } from '@dailyuse/contracts/ai';
 import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
 import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 
 type PrismaAiConversationWithMessages = PrismaAiConversation & {
   messages?: PrismaAiMessage[];

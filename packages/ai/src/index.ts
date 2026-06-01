@@ -21,7 +21,7 @@
  * import type { AIConversationDTO } from '@dailyuse/contracts/ai';
  *
  * // 2. 使用组合根 (推荐)
- * import { createAIModule } from '@dailyuse/ai/infrastructure-server';
+ * import { createAIModule } from '@dailyuse/ai';
  * const module = createAIModule({
  *   conversationRepository,
  *   providerConfigRepository,
@@ -42,45 +42,12 @@ export * from '@dailyuse/contracts/ai';
 export * from './domain-server';
 
 // ================= Application Layer (应用层) =================
-export * from './application-server';
 // application-client is available via subpath export only
 // (e.g., @dailyuse/ai/application-client) to avoid name conflicts
 
 // ================= Infrastructure Layer (基础设施层) =================
-export {
-  // -- Composition Root (canonical entry point) --
-  createAIModule,
-  createAIUseCases,
-  createAIPowerSyncModule,
-  type AIModuleDependencies,
-  type AIModuleInstance,
-  type AIModuleUseCases,
-  type AIModuleServices,
-  type AIApplicationPort,
-  type AIModuleRuntimeContribution,
-  type AIRuntimeContributionsInput,
-  type AIModulePowerSyncOptions,
-
-  // -- Prisma Adapters --
-  /** @internal Concrete Prisma implementation — use IAIConversationRepository interface instead. Prisma 具体实现 — 请使用 IAIConversationRepository 接口。 */
-  AIConversationPrismaRepository,
-  /** @internal Concrete Prisma implementation — use IAIProviderConfigRepository interface instead. Prisma 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
-  AIProviderConfigPrismaRepository,
-  /** @internal Concrete Prisma implementation — use IKnowledgeIndexRepository interface instead. Prisma 具体实现 — 请使用 IKnowledgeIndexRepository 接口。 */
-  AIKnowledgeIndexPrismaRepository,
-  /** @internal Concrete Prisma implementation — use IAIExecutionLogPort interface instead. Prisma 具体实现 — 请使用 IAIExecutionLogPort 接口。 */
-  AIExecutionLogPrismaAdapter,
-
-  // -- PowerSync Adapters --
-  /** @internal Concrete PowerSync implementation — use IAIConversationRepository interface instead. PowerSync 具体实现 — 请使用 IAIConversationRepository 接口。 */
-  PowerSyncAIConversationRepository,
-  /** @internal Concrete PowerSync implementation — use IAIProviderConfigRepository interface instead. PowerSync 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
-  PowerSyncAIProviderConfigRepository,
-  /** @internal Concrete PowerSync implementation — use IKnowledgeIndexRepository interface instead. PowerSync 具体实现 — 请使用 IKnowledgeIndexRepository 接口。 */
-  AIKnowledgeIndexPowerSyncRepository,
-  /** @internal Concrete PowerSync implementation — use IAIExecutionLogPort interface instead. PowerSync 具体实现 — 请使用 IAIExecutionLogPort 接口。 */
-  AIExecutionLogPowerSyncAdapter,
-} from './infrastructure-server';
+export { // -- Composition Root (canonical entry point) --
+  createAIModule, createAIUseCases, createAIPowerSyncModule, type AIModuleDependencies, type AIModuleInstance, type AIModuleUseCases, type AIModuleServices, type AIApplicationPort, type AIModuleRuntimeContribution, type AIRuntimeContributionsInput, type AIModulePowerSyncOptions } from './infrastructure-server';
 
 export * from './infrastructure-client';
 

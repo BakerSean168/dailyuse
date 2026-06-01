@@ -5,12 +5,12 @@ import type {
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PowerSyncTaskTemplateMapper,
   type PowerSyncTaskTemplateRow,
 } from './mappers/powersync-task-template.mapper';
-import { PowerSyncTaskInstanceMapper } from './mappers/powersync-task-instance.mapper';
+import { PowerSyncTaskInstanceMapper, type PowerSyncTaskInstanceRow } from './mappers/powersync-task-instance.mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -191,7 +191,7 @@ export class PowerSyncTaskTemplateRepository
     const template = await this.findById(id);
     if (!template) return null;
 
-    const instances = await this.db.getAll<any>(
+    const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
       'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
       [id],
     );

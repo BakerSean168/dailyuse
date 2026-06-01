@@ -295,9 +295,11 @@ import {
 import type {
   ControlMode,
   CreateReminderGroupReq,
+  CreateReminderTemplateReq,
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
   UpdateReminderGroupReq,
+  UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
 
 const {
@@ -332,10 +334,10 @@ const selectedTemplate = computed(
 );
 const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const defaultTemplateGroupId = ref<string | null>(null);
-const templateCardRef = ref<any>(null);
-const templateDialogRef = ref<any>(null);
-const templateMoveDialogRef = ref<any>(null);
-const groupDialogRef = ref<any>(null);
+const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard> | null>(null);
+const templateDialogRef = ref<InstanceType<typeof TemplateDialog> | null>(null);
+const templateMoveDialogRef = ref<InstanceType<typeof TemplateMoveDialog> | null>(null);
+const groupDialogRef = ref<InstanceType<typeof GroupDialog> | null>(null);
 const editingGroup = ref<ReminderGroupClientDTO | null>(null);
 const movingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 
@@ -356,10 +358,6 @@ const filteredTemplates = computed(() => {
 const selectedGroup = computed(
   () => groups.value.find((group) => group.id === selectedGroupId.value) || null,
 );
-
-function getTemplatesByGroup(groupId: string) {
-  return templates.value.filter((template) => template.groupId === groupId);
-}
 
 function getSidebarGroupSummary(group: ReminderGroupClientDTO) {
   return getGroupSidebarSummary(t, group, templates.value);
@@ -436,8 +434,8 @@ async function handleToggleGlobalReminder(enabled: boolean) {
   }
 }
 
-async function handleSaveTemplate(data: Record<string, unknown>) {
-  const result = await createTemplate(data as any);
+async function handleSaveTemplate(data: CreateReminderTemplateReq) {
+  const result = await createTemplate(data);
   if (result) {
     defaultTemplateGroupId.value = null;
     toast.success(t('reminder.toast.templateCreated'));
@@ -445,8 +443,8 @@ async function handleSaveTemplate(data: Record<string, unknown>) {
   }
 }
 
-async function handleUpdateTemplate(id: string, data: Record<string, unknown>) {
-  const result = await updateTemplate(id, data as any);
+async function handleUpdateTemplate(id: string, data: UpdateReminderTemplateReq) {
+  const result = await updateTemplate(id, data);
   if (result) {
     defaultTemplateGroupId.value = null;
     toast.success(t('reminder.toast.templateUpdated'));

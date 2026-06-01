@@ -14,7 +14,7 @@ type WeightComparisonData = {
   comparisons: Record<string, number[]>;
 };
 
-type GoalSnapshotItem = {
+export type GoalSnapshotItem = {
   id: string;
   keyResultId: string;
   trigger: string;

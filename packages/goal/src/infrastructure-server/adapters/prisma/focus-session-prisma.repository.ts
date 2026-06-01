@@ -3,7 +3,7 @@ import type { IFocusSessionRepository } from '@/domain-server';
 import { FocusSession } from '@/domain-server';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaFocusSessionMapper } from './mappers/prisma-focus-session-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

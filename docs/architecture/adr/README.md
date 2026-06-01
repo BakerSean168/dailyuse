@@ -45,6 +45,8 @@ updated: 2026-04-26T00:00:00
 | [ADR-028](./ADR-028-workspace-package-resolution-strategy.md) | Workspace Package Resolution Strategy | 已采纳 | 2026-03-09 |
 | [ADR-029](./ADR-029-main-process-sqlite-access.md) | 主进程 SQLite 直接访问策略 | 已过时 | 2025-12-06 |
 | [ADR-030](./ADR-030-standard-result-pattern.md) | Unifying API Responses with Result Pattern | 已采纳 | 2026-01-16 |
+| [ADR-031](./ADR-031-server-feature-standard-shape.md) | Server Feature Standard Shape | 已采纳 | 2026-05-25 |
+| [ADR-032](./ADR-032-support-package-import-conventions.md) | Support Package Import Conventions | 已采纳 | 2026-05-25 |
 
 ## 维护规则
 

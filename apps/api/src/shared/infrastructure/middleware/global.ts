@@ -10,7 +10,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import { performanceMiddleware } from '../http/middlewares/performance.middleware';
+import {
+  createPerformanceMiddleware,
+  type MetricsStore,
+} from '../http/middlewares/performance.middleware';
 import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
 
 /**
@@ -18,7 +21,7 @@ import { getCorsOrigins, isAllCorsOriginsAllowed } from '../config/env.js';
  *
  * 包含：Helmet、JSON 解析、Cookie 解析、CORS、Compression、性能监控
  */
-export function applyGlobalMiddleware(app: Express): void {
+export function applyGlobalMiddleware(app: Express, metricsStore: MetricsStore): void {
   const allowedOrigins = getCorsOrigins();
   const allowAllOrigins = isAllCorsOriginsAllowed();
 
@@ -60,7 +63,7 @@ export function applyGlobalMiddleware(app: Express): void {
   );
 
   // Performance monitoring
-  app.use(performanceMiddleware);
+  app.use(createPerformanceMiddleware(metricsStore));
 }
 
 // Re-export express for use in applyGlobalMiddleware

@@ -13,6 +13,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import { createTaskModule } from '../infrastructure-server/task.module';
 import { createTaskTransportHandlers } from '../api/transport-handlers';
 import { createTaskRuntimeContribution } from '../api/runtime';
@@ -20,7 +21,7 @@ import { createTaskScheduleRuntimeContribution } from '../api/schedule-runtime';
 import { TaskTemplateController } from '../controllers/task-template.controller';
 import { TaskInstanceController } from '../controllers/task-instance.controller';
 import { TaskDependencyController } from '../controllers/task-dependency.controller';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { TaskModuleInstance } from '../infrastructure-server';
 import type { ITaskTemplateRepository } from '../domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';
@@ -31,9 +32,21 @@ import {
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskFolderRepository,
 } from '../infrastructure-server/powersync';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
 
 const logger = createLogger('TaskElectron');
+
+/**
+ * PowerSync database interface expected by repository constructors.
+ * IElectronDatabase is structurally compatible but declared in a separate package,
+ * so we bridge with a local structural type and a double-cast.
+ */
+type Queryable = {
+  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
+  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
+  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
+  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
+};
 
 const Ch = {
   TEMPLATE_LIST: 'task:template:list',
@@ -92,12 +105,11 @@ export function getTaskInstanceRepository(): ITaskInstanceRepository {
 function normalizeTemplateListParams(
   requestContext: { identityId: string },
   params: Record<string, unknown> | undefined,
-): Record<string, unknown> {
+): ListTaskTemplateFilters {
   const status = params?.status;
 
   return {
     ...(params ?? {}),
-    identityId: requestContext.identityId,
     status: Array.isArray(status) ? status : typeof status === 'string' ? [status] : undefined,
   };
 }
@@ -106,23 +118,25 @@ export const TaskElectronModule: IElectronModule = {
   name: 'Task',
 
   register(ctx: IElectronModuleContext): void {
-    const { db } = ctx;
+    const { db: electronDb } = ctx;
+    // IElectronDatabase is structurally compatible with Queryable; bridge the package boundary
+    const db = electronDb as unknown as Queryable;
 
     // 1. Composition Root — PowerSync factory wires repos + use cases + runtime contribution
     //    组合根 — PowerSync 工厂组装仓储、用例和运行时贡献
-    const taskTemplateRepo = new PowerSyncTaskTemplateRepository(db as any);
-    const taskInstanceRepo = new PowerSyncTaskInstanceRepository(db as any);
+    const taskTemplateRepo = new PowerSyncTaskTemplateRepository(db);
+    const taskInstanceRepo = new PowerSyncTaskInstanceRepository(db);
     const taskModule = createTaskModule({
       taskTemplateRepository: taskTemplateRepo,
       taskInstanceRepository: taskInstanceRepo,
-      taskDependencyRepository: new PowerSyncTaskDependencyRepository(db as any),
-      taskFolderRepository: new PowerSyncTaskFolderRepository(db as any),
+      taskDependencyRepository: new PowerSyncTaskDependencyRepository(db),
+      taskFolderRepository: new PowerSyncTaskFolderRepository(db),
       runtimeContributions: [
         createTaskRuntimeContribution(),
         createTaskScheduleRuntimeContribution({
           taskTemplateRepository: taskTemplateRepo,
           taskInstanceRepository: taskInstanceRepo,
-          scheduleTaskRepository: new PowerSyncScheduleTaskRepository(db as any),
+          scheduleTaskRepository: new PowerSyncScheduleTaskRepository(db),
         }),
       ],
     });
@@ -148,7 +162,7 @@ export const TaskElectronModule: IElectronModule = {
           normalizeTemplateListParams(
             requestContext,
             params && typeof params === 'object' ? (params as Record<string, unknown>) : undefined,
-          ) as any,
+          ),
           requestContext,
         ),
       ),
@@ -165,7 +179,7 @@ export const TaskElectronModule: IElectronModule = {
           normalizeTemplateListParams(
             requestContext,
             params && typeof params === 'object' ? (params as Record<string, unknown>) : undefined,
-          ) as any,
+          ),
           requestContext,
         ),
       ),

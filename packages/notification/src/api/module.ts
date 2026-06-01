@@ -10,9 +10,8 @@
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
-import { Router } from 'express';
-import type { Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createNotificationModule,
   NotificationPrismaRepository,
@@ -25,21 +24,10 @@ import { createNotificationTransportHandlers } from './transport-handlers';
 import { createNotificationRuntimeContribution } from './runtime';
 
 /**
- * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
- *
- * 此类型在 notification 包内本地定义，避免对 apps/api 的循环依赖。
- * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
+ * Typed module context for notification registration.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
-export interface NotificationApiModuleContext {
-  readonly app: Express;
-  readonly router: Router;
-  readonly db: unknown;
-  readonly middleware: {
-    readonly auth: RequestHandler;
-    requireRole(roles: string[]): RequestHandler;
-  };
-  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
-}
+export type NotificationApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface NotificationApiModuleDef {
   readonly name: string;
@@ -58,7 +46,7 @@ export const NotificationApiModule: NotificationApiModuleDef = {
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
     // The application edge decides which adapter implementation to use.
     // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
-    const prismaClient = db as PrismaClient;
+    const prismaClient = db;
     const notificationModule = createNotificationModule({
       notificationRepository: new NotificationPrismaRepository(prismaClient),
       preferenceRepository: new NotificationPreferencePrismaRepository(prismaClient),

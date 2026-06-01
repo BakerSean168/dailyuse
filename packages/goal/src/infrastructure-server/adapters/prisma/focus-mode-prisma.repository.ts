@@ -1,7 +1,7 @@
 import type { PrismaClient, FocusMode as PrismaFocusMode } from '@dailyuse/database';
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import { PrismaFocusModeMapper } from './mappers/prisma-focus-mode-mapper';
 
 /**

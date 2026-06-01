@@ -8,7 +8,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
-import type { Context, ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Context } from '@dailyuse/contracts/shared';
 import {
   ChangePasswordSchema,
   ForgotPasswordSchema,

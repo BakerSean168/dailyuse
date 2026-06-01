@@ -5,7 +5,7 @@
  */
 
 import * as cron from 'node-cron';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('CronSchedulerManager');
 
@@ -51,26 +51,11 @@ interface CronJobStatus {
  * @remarks
  * 负责应用中所有 Cron Jobs 的注册、启动、停止和状态监控。
  * 提供统一的错误处理和日志记录。
- * 单例模式实现。
+ * 实例由调用方创建并持有。
  */
 export class CronSchedulerManager {
-  private static instance: CronSchedulerManager;
   private jobs: Map<string, StoredJob> = new Map();
   private isStarted: boolean = false;
-
-  private constructor() {}
-
-  /**
-   * 获取单例实例。
-   *
-   * @returns {CronSchedulerManager} 管理器实例
-   */
-  static getInstance(): CronSchedulerManager {
-    if (!CronSchedulerManager.instance) {
-      CronSchedulerManager.instance = new CronSchedulerManager();
-    }
-    return CronSchedulerManager.instance;
-  }
 
   /**
    * 注册 Cron Job。
@@ -250,7 +235,7 @@ export class CronSchedulerManager {
    */
   public getStatus(): CronJobStatus[] {
     const status: CronJobStatus[] = [];
-    for (const [name, { task, config }] of Array.from(this.jobs.entries())) {
+    for (const [name, { config }] of Array.from(this.jobs.entries())) {
       status.push({
         name,
         schedule: config.schedule,

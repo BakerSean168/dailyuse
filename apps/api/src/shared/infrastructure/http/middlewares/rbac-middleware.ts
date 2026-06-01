@@ -2,6 +2,12 @@ import type { Request, Response, NextFunction } from 'express';
 import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
 
 const responseBuilder = createHttpResponseBuilder();
+type RequestWithOptionalRoles = Request & {
+  user?: {
+    roles?: unknown;
+    role?: unknown;
+  };
+};
 
 function normalizeRoles(input: unknown): string[] {
   if (!input) {
@@ -23,7 +29,8 @@ function normalizeRoles(input: unknown): string[] {
 }
 
 function getRolesFromRequest(req: Request): string[] {
-  const userRoles = normalizeRoles((req as any).user?.roles ?? (req as any).user?.role);
+  const requestWithRoles = req as RequestWithOptionalRoles;
+  const userRoles = normalizeRoles(requestWithRoles.user?.roles ?? requestWithRoles.user?.role);
   const headerRoles = normalizeRoles(
     req.headers['x-user-role'] ?? req.headers['x-user-roles'] ?? req.headers['x-roles'],
   );

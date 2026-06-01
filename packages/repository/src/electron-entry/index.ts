@@ -21,7 +21,7 @@ import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contract
 import { createRepositoryPowerSyncModule } from '../infrastructure-server/powersync';
 import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
 import type { RepositoryModuleInstance } from '../infrastructure-server';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { SearchResponse } from '@dailyuse/contracts/repository';
 import { withAuthenticatedValue } from './authenticated-ipc';
 

@@ -10,7 +10,7 @@
  */
 
 import type { KeyResultClientDTO, KeyResultProgress } from '@dailyuse/contracts/goal';
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import { KeyResultId } from '../../domain-shared';
 
 export interface KeyResultState {

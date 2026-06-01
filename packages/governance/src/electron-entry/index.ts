@@ -15,10 +15,9 @@ import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { createGovernancePowerSyncModule } from '../infrastructure-server/powersync';
 import { GovernanceController } from '../controllers/governance.controller';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { ListRulesQuery, SearchRulesQuery, GetRuleRevisionsQuery } from '../contracts';
 import { createGovernanceTransportHandlers } from '../api/transport-handlers';
-import { createGovernanceRuntimeContribution } from '../api/runtime';
 import type { GovernanceModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
 

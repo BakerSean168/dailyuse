@@ -42,7 +42,7 @@ describe('Task dependency and goal binding use-cases', () => {
         identityId: 'identity-1',
       });
 
-      expect((result as any).success).toBe(false);
+      expect((result as any).ok).toBe(false);
       expect((result as any).error.code).toBe('VALIDATION_ERROR');
       expect(dependencyRepo.findByPredecessorAndSuccessorId).not.toHaveBeenCalled();
       expect(dependencyRepo.create).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('Task dependency and goal binding use-cases', () => {
         identityId: 'identity-1',
       });
 
-      expect((result as any).success).toBe(false);
+      expect((result as any).ok).toBe(false);
       expect((result as any).error.code).toBe('DUPLICATE');
       expect(dependencyRepo.create).not.toHaveBeenCalled();
     });

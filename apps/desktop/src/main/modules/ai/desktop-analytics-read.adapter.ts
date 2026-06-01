@@ -1,7 +1,7 @@
-import type { IAnalyticsReadPort } from '@dailyuse/ai/application-server';
-import { SearchGoalsUseCase } from '@dailyuse/goal';
+import type { IAnalyticsReadPort } from '@dailyuse/ai/ports';
+import { SearchGoalsUseCase } from '@dailyuse/goal/analytics';
 import { getGoalRepository } from '@dailyuse/goal/electron-entry';
-import { GetTaskDashboardUseCase } from '@dailyuse/task';
+import { GetTaskDashboardUseCase } from '@dailyuse/task/analytics';
 import { getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
 
 import { getDesktopDashboardData } from '../../services/dashboard-read-service';

@@ -9,7 +9,7 @@
  * - Instance toDTO(): MessageClientDTO
  */
 
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import type { MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { AiMessageId } from '../../domain-shared/value-objects/ai-message-id';

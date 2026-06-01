@@ -1,9 +1,10 @@
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/domain-server';
+} from '@dailyuse/authentication/api';
 import {
   AuthRuntimeState,
+  transitionAuthState,
   type AuthResponseDTO,
   type AuthIdentityClientDTO,
   type AuthSessionClientDTO,
@@ -143,4 +144,12 @@ export async function buildOfflineAuthResponse(
     : buildFallbackSessionClientDTO(identityId, sessionId);
 
   return { accessToken, refreshToken, identity: identityDto, session: sessionDto };
+}
+
+/**
+ * Safely transition the auth runtime state.
+ * Validates the transition is legal before mutating the shared state.
+ */
+export function safeTransition(authState: AuthState, next: AuthRuntimeState): void {
+  authState.runtimeState = transitionAuthState(authState.runtimeState, next);
 }

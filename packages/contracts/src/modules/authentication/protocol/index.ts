@@ -2,7 +2,7 @@ export type { AuthEventMap } from './auth-event-map';
 export type { AuthRpcMap } from './auth-rpc-map';
 
 // Desktop authentication protocol types
-export { AuthMode, AuthRuntimeState, ConnectionStatus } from './desktop-auth.types';
+export { AuthMode, AuthRuntimeState, ConnectionStatus, transitionAuthState } from './desktop-auth.types';
 export type {
   TokenStorageData,
   SaveTokenRequest,

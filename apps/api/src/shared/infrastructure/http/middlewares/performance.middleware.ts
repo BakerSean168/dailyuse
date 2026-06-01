@@ -4,21 +4,22 @@
  * @date 2025-01-22
  */
 
-import type { Request, Response, NextFunction } from 'express';
-import { createLogger } from '@dailyuse/utils';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('PerformanceMiddleware');
 
 /**
- * 性能指标数据结构。
+ * Endpoint 聚合统计。
  */
-interface PerformanceMetrics {
-  method: string;
-  url: string;
-  duration: number;
-  statusCode: number;
-  timestamp: Date;
-}
+export type EndpointPerformanceStats = {
+  count: number;
+  avg: number;
+  p50: number;
+  p95: number;
+  p99: number;
+  max: number;
+};
 
 /**
  * 内存指标存储 (简单实现)。
@@ -27,9 +28,9 @@ interface PerformanceMetrics {
  * 用于存储每个 Endpoint 的响应时间样本，并计算统计信息。
  * 限制每个 Endpoint 最多存储 1000 个样本。
  */
-class MetricsStore {
+export class MetricsStore {
   private metrics: Map<string, number[]> = new Map();
-  private readonly MAX_SAMPLES = 1000; // Keep last 1000 requests per endpoint
+  private readonly MAX_SAMPLES = 1000;
 
   /**
    * 记录请求耗时。
@@ -44,7 +45,6 @@ class MetricsStore {
     const values = this.metrics.get(endpoint)!;
     values.push(duration);
 
-    // Keep only last MAX_SAMPLES
     if (values.length > this.MAX_SAMPLES) {
       values.shift();
     }
@@ -56,14 +56,7 @@ class MetricsStore {
    * @param endpoint - 请求的 Endpoint
    * @returns {object | null} 统计信息 (count, avg, p50, p95, p99, max)
    */
-  getStats(endpoint: string): {
-    count: number;
-    avg: number;
-    p50: number;
-    p95: number;
-    p99: number;
-    max: number;
-  } | null {
+  getStats(endpoint: string): EndpointPerformanceStats | null {
     const values = this.metrics.get(endpoint);
     if (!values || values.length === 0) return null;
 
@@ -73,9 +66,9 @@ class MetricsStore {
     return {
       count,
       avg: Math.round(values.reduce((a, b) => a + b, 0) / count),
-      p50: sorted[Math.floor(count * 0.5)],
-      p95: sorted[Math.floor(count * 0.95)],
-      p99: sorted[Math.floor(count * 0.99)],
+      p50: sorted[Math.floor(count * 0.5)] ?? sorted[count - 1]!,
+      p95: sorted[Math.floor(count * 0.95)] ?? sorted[count - 1]!,
+      p99: sorted[Math.floor(count * 0.99)] ?? sorted[count - 1]!,
       max: Math.max(...values),
     };
   }
@@ -84,10 +77,10 @@ class MetricsStore {
    * 获取所有 Endpoint 的统计信息。
    * @returns {Record<string, object>} 所有统计信息
    */
-  getAllStats(): Record<string, ReturnType<typeof this.getStats>> {
-    const result: Record<string, ReturnType<typeof this.getStats>> = {};
+  getAllStats(): Record<string, EndpointPerformanceStats | null> {
+    const result: Record<string, EndpointPerformanceStats | null> = {};
 
-    for (const [endpoint, _] of this.metrics.entries()) {
+    for (const endpoint of this.metrics.keys()) {
       result[endpoint] = this.getStats(endpoint);
     }
 
@@ -102,87 +95,44 @@ class MetricsStore {
   }
 }
 
-export const metricsStore = new MetricsStore();
-
-/**
- * 性能监控中间件。
- *
- * @remarks
- * - 记录请求处理时长
- * - 记录 Endpoint 级别的性能指标
- * - 添加 X-Response-Time 响应头
- * - 对慢请求 (>300ms) 打印警告日志
- *
- * @param req - Express 请求对象
- * @param res - Express 响应对象
- * @param next - 下一个中间件函数
- */
-export function performanceMiddleware(req: Request, res: Response, next: NextFunction): void {
-  // 跳过 SSE 路由 - SSE 是长连接，不适合用常规性能监控
-  if (req.path.includes('/sse/')) {
-    return next();
-  }
-  
-  const start = Date.now();
-  const endpoint = `${req.method} ${req.route?.path || req.path}`;
-
-  // Override res.json to capture when response is sent
-  const originalJson = res.json.bind(res);
-  res.json = function (body: any) {
-    const duration = Date.now() - start;
-
-    // Log performance
-    const logLevel = duration > 300 ? 'warn' : 'debug';
-    logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
-
-    // Store metrics
-    metricsStore.recordRequest(endpoint, duration);
-
-    // Add performance header
-    res.setHeader('X-Response-Time', `${duration}ms`);
-
-    return originalJson(body);
-  };
-
-  // Handle response end for non-JSON responses
-  res.on('finish', () => {
-    if (res.getHeader('X-Response-Time')) {
-      return; // Already logged via json override
+export function createPerformanceMiddleware(metricsStore: MetricsStore): RequestHandler {
+  return function performanceMiddleware(req: Request, res: Response, next: NextFunction): void {
+    if (req.path.includes('/sse/')) {
+      next();
+      return;
     }
 
-    const duration = Date.now() - start;
-    const logLevel = duration > 300 ? 'warn' : 'debug';
-    logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
+    const start = Date.now();
+    const endpoint = `${req.method} ${req.route?.path || req.path}`;
 
-    metricsStore.recordRequest(endpoint, duration);
-    
-    // 只在响应头未发送时设置
-    if (!res.headersSent) {
+    const originalJson = res.json.bind(res) as (body: unknown) => Response;
+    res.json = ((body: unknown) => {
+      const duration = Date.now() - start;
+      const logLevel = duration > 300 ? 'warn' : 'debug';
+      logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
+
+      metricsStore.recordRequest(endpoint, duration);
       res.setHeader('X-Response-Time', `${duration}ms`);
-    }
-  });
 
-  next();
-}
+      return originalJson(body);
+    }) as Response['json'];
 
-/**
- * 获取指定 Endpoint 的性能指标。
- * @param endpoint - Endpoint 标识 (e.g. "GET /api/users")
- */
-export function getEndpointMetrics(endpoint: string) {
-  return metricsStore.getStats(endpoint);
-}
+    res.on('finish', () => {
+      if (res.getHeader('X-Response-Time')) {
+        return;
+      }
 
-/**
- * 获取所有 Endpoint 的性能指标。
- */
-export function getAllMetrics() {
-  return metricsStore.getAllStats();
-}
+      const duration = Date.now() - start;
+      const logLevel = duration > 300 ? 'warn' : 'debug';
+      logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
 
-/**
- * 清除所有性能指标。
- */
-export function clearMetrics() {
-  metricsStore.clear();
+      metricsStore.recordRequest(endpoint, duration);
+
+      if (!res.headersSent) {
+        res.setHeader('X-Response-Time', `${duration}ms`);
+      }
+    });
+
+    next();
+  };
 }

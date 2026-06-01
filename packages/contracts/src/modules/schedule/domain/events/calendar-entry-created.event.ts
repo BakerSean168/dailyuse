@@ -1,4 +1,4 @@
-import type { ScheduleId, IdentityId } from '../../../../primitives';
+import type { IdentityId } from '../../../../primitives';
 
 /**
  * Calendar Entry Created Event

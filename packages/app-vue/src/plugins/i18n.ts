@@ -19,7 +19,7 @@ export { useI18n } from 'vue-i18n';
 
 export type AppLocale = 'zh-CN' | 'en-US';
 
-type LocaleMessages = Record<string, any>;
+type LocaleMessages = Record<string, unknown>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyI18n = any;
@@ -89,7 +89,7 @@ export function createI18nPlugin(locale: AppLocale = 'zh-CN', messages: LocaleMe
     fallbackLocale: 'zh-CN',
     messages: {
       [locale]: messages,
-    },
+    } as Record<string, any>,
     // Suppress missing-translation warnings in dev for keys not yet migrated
     missingWarn: false,
     fallbackWarn: false,

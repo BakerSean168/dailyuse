@@ -207,7 +207,7 @@ function handleSearch() {
   });
 }
 
-function getFileIcon(type: string) {
+function getFileIcon(_type: string) {
   return FileText; // Simplified
 }
 

@@ -23,11 +23,11 @@ import type {
  */
 export interface UpdateScheduleTaskReq {
   id: string;
-  scheduleConfig?: ScheduleConfigDTO;
-  retryPolicy?: RetryPolicyDTO;
+  scheduleConfig?: Partial<ScheduleConfigDTO>;
+  retryPolicy?: Partial<RetryPolicyDTO>;
   enabled?: boolean;
   description?: string;
-  handlerPayload?: any;
+  handlerPayload?: unknown;
 }
 
 /**
@@ -53,7 +53,7 @@ export class UpdateScheduleTaskUseCase {
 
     // 2. 调用聚合根方法更新字段
     if (req.description !== undefined) {
-      task.updateMetadata({ description: req.description });
+      task.updateDescription(req.description);
     }
     if (req.enabled !== undefined) {
       if (req.enabled) {
@@ -69,7 +69,7 @@ export class UpdateScheduleTaskUseCase {
       task.updateRetryPolicy(req.retryPolicy);
     }
     if (req.handlerPayload !== undefined) {
-      task.updatePayload(req.handlerPayload);
+      task.updatePayload(req.handlerPayload as Record<string, unknown>);
     }
 
     // 3. 持久化更新

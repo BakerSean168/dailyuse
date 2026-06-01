@@ -22,7 +22,7 @@
 
 import type { RuleId as IRuleId } from '../../contracts/primitives/ids';
 
-import { createIdType } from '@dailyuse/utils';
+import { createIdType } from '@dailyuse/utils/domain';
 
 /**
  * RuleId 工具对象

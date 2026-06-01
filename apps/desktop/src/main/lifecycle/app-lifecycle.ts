@@ -16,14 +16,13 @@
  */
 
 import { app, BrowserWindow } from 'electron';
-import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-features';
+import { initializeDesktopFeatures } from '../desktop-features';
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { initNotificationService } from '../services';
-import { getDesktopProfileRuntimeManager } from '../profile';
-import { getWindowManager } from './window-manager';
-import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
+import type { DesktopMainRuntime } from '../desktop-main-runtime';
+import type { WindowManager } from './window-manager';
 import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils/logger';
 const logger = createLogger('AppLifecycle');
 
 /**
@@ -37,17 +36,20 @@ const logger = createLogger('AppLifecycle');
  * @param {() => Promise<void>} initializeApp - The application initialization function to be called.
  * @returns {Promise<void>} A promise that resolves when initialization is complete.
  */
-async function handleAppReady(initializeApp: () => Promise<void>): Promise<void> {
+async function handleAppReady(
+  initializeApp: () => Promise<void>,
+  getMainRuntime: () => DesktopMainRuntime,
+  windowManager: WindowManager,
+): Promise<void> {
   // Application core initialization
   await initializeApp();
 
-  // Register system IPC handlers BEFORE creating window
-  registerSystemIpcHandlers(null, null, null);
-  console.log('[Lifecycle] System IPC handlers registered (initial)');
+  const mainRuntime = getMainRuntime();
+  const runtimeManager = mainRuntime.profileRuntimeManager;
 
   // 决定显示哪个窗口
-  const windowManager = getWindowManager();
-  const rememberedAccounts = getRememberedAccountsService();
+  windowManager.setRuntimeManager(runtimeManager);
+  const rememberedAccounts = runtimeManager.getRememberedAccountsService();
   const rememberedAccountList = await rememberedAccounts.list();
   const quickLoginAccounts = rememberedAccountList.map((account) => ({
     id: account.identityId,
@@ -67,14 +69,22 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
 
   // Initialize notification service (requires window to be created)
   if (win) {
-    initNotificationService(win);
+    const notificationService = initNotificationService(win, windowManager);
+    mainRuntime.setNotificationService(notificationService);
     console.log('[Lifecycle] Notification service initialized');
 
-    // Initialize desktop features
-    await initializeDesktopFeatures(win);
+    // Initialize desktop features and wire the runtime into the lifecycle owner
+    const desktopFeaturesRuntime = await initializeDesktopFeatures(win);
+    mainRuntime.setDesktopFeaturesRuntime(desktopFeaturesRuntime);
+    windowManager.setDesktopFeaturesRuntime(desktopFeaturesRuntime);
 
-    // Update system handlers with desktop feature managers
-    // Note: Handlers that need these managers will get them lazily
+    registerSystemIpcHandlers(
+      desktopFeaturesRuntime.trayManager,
+      desktopFeaturesRuntime.shortcutManager,
+      desktopFeaturesRuntime.autoLaunchManager,
+    );
+    console.log('[Lifecycle] System IPC handlers registered');
+
     console.log('[Lifecycle] Desktop features initialized');
   }
 
@@ -82,7 +92,7 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       const accounts = await rememberedAccounts.list();
-      getWindowManager().createLoginWindow({
+      windowManager.createLoginWindow({
         hasQuickLoginAccounts: accounts.length > 0,
         quickLoginAccounts: accounts.map((account) => ({
           id: account.identityId,
@@ -119,7 +129,10 @@ function handleWindowAllClosed(): void {
  */
 let isQuitting = false;
 
-async function handleBeforeQuit(event: Electron.Event): Promise<void> {
+async function handleBeforeQuit(
+  event: Electron.Event,
+  getMainRuntime: () => DesktopMainRuntime | null,
+): Promise<void> {
   if (isQuitting) return; // Already handling quit — let it proceed
   isQuitting = true;
   event.preventDefault();
@@ -128,14 +141,12 @@ async function handleBeforeQuit(event: Electron.Event): Promise<void> {
 
   const cleanup = (async () => {
     try {
-      // Deactivate the active profile runtime (shuts down PowerSync, destroys bootstrapper)
-      const runtimeManager = getDesktopProfileRuntimeManager();
-      await runtimeManager.deactivateProfile().catch((err) =>
-        console.error('[Lifecycle] Profile deactivation failed during quit:', err),
-      );
+      // Dispose the main runtime (deactivates profile, shuts down PowerSync)
+      const mainRuntime = getMainRuntime();
+      if (mainRuntime) {
+        await mainRuntime.dispose();
+      }
 
-      // Cleanup desktop feature resources
-      await cleanupDesktopFeatures();
     } catch (err) {
       console.error('[Lifecycle] Cleanup failed:', err);
     }
@@ -173,12 +184,18 @@ function setupSecurityHandlers(): void {
  * and configures security policies.
  *
  * @param {() => Promise<void>} initializeApp - The function to initialize the application logic.
+ * @param {() => DesktopMainRuntime | null} getMainRuntime - Returns the main runtime (or null if not yet initialized).
+ * @param {WindowManager} windowManager - The shared window manager instance.
  */
-export function registerAppLifecycleHandlers(initializeApp: () => Promise<void>): void {
+export function registerAppLifecycleHandlers(
+  initializeApp: () => Promise<void>,
+  getMainRuntime: () => DesktopMainRuntime | null,
+  windowManager: WindowManager,
+): void {
   // Create window when application is ready
   app
     .whenReady()
-    .then(() => handleAppReady(initializeApp))
+    .then(() => handleAppReady(initializeApp, getMainRuntime as () => DesktopMainRuntime, windowManager))
     .catch((error) => {
       logger.error('App ready sequence failed', error);
       app.quit();
@@ -189,7 +206,7 @@ export function registerAppLifecycleHandlers(initializeApp: () => Promise<void>)
 
   // Cleanup before quit
   app.on('before-quit', (event) => {
-    void handleBeforeQuit(event).catch((error) => {
+    void handleBeforeQuit(event, getMainRuntime).catch((error) => {
       logger.error('Before-quit cleanup failed', error);
       app.quit();
     });

@@ -18,7 +18,7 @@
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import { Entity } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils/domain';
 import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, DomainDate, TransferDate } from '@dailyuse/contracts/primitives';
 import type {
   GoalReviewServerDTO,

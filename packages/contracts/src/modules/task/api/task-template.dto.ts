@@ -21,7 +21,6 @@ import { TaskType } from '../value-objects/task-type';
 import type { DependencyType } from '../value-objects/dependency-type';
 import type { RecurrenceRuleDTO } from '../value-objects/recurrence-rule';
 import type { TaskReminderConfigDTO } from '../value-objects/task-reminder-config';
-import type { TaskGoalBindingDTO } from '../value-objects/task-goal-binding';
 import type { TaskTimeConfigDTO } from '../value-objects/task-time-config';
 
 const DayOfWeekSchema = z.union([
