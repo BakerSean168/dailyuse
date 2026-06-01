@@ -1,73 +1,18 @@
 {
-  // 继承基础配置
   "extends": "../../tsconfig.workspace-src.json",
-
   "compilerOptions": {
-    // ============================================================
-    // 路径和输出配置
-    // ============================================================
-
-    // 基础路径：相对路径的起点
     "baseUrl": ".",
-
-    // 输出目录：编译后的 JavaScript 和声明文件
-    "outDir": "./dist",
-
-    // 源码根目录：限制编译范围
-    "rootDir": "./src",
-
-    // 生成输出文件（应用项目需要构建产物）
-    "noEmit": false,
-
-    // ============================================================
-    // Composite 项目配置（Monorepo 关键）
-    // ============================================================
-
-    // 关闭 composite（改用 tsup 负责类型与构建）
-    // 说明：避免 TS Project References 带来的耦合与报错
     "composite": false,
-
-    // 生成类型声明文件（.d.ts）
-    "declaration": true,
-
-    // 生成声明文件的 source map（.d.ts.map）
-    // 作用：IDE 可以从声明文件跳转回 TypeScript 源码
-    "declarationMap": true,
-
-    // 生成 JavaScript 的 source map（.js.map）
-    // 作用：调试时可以断点到 TypeScript 源码
-    "sourceMap": true,
-
-    // ============================================================
-    // Node.js 环境配置
-    // ============================================================
-
-    // 标准库：仅包含 ES2020（不包含 DOM）
+    "declaration": false,
+    "declarationMap": false,
     "lib": ["ES2020"],
-
-    // 类型定义：只包含 Node.js 类型
-    "types": ["node"],
-
-    // 模块解析：使用 Bundler 策略（支持无扩展名导入）
-    // Bundler 策略允许导入时省略 .js 扩展名，由构建工具处理
     "moduleResolution": "Bundler",
-
-    // 允许导入 JSON 文件
+    "noEmit": true,
     "resolveJsonModule": true,
-
-    // ============================================================
-    // 本地路径别名配置
-    // ============================================================
-
-    // 路径别名规范：
-    // - 项目内部别名走 src
-    // - 源码白名单包显式走 src（开发态深度联调）
-    // - 其他运行时包移除别名，走 package.json exports → dist（正确的包边界）
+    "sourceMap": false,
+    "types": ["node"],
     "paths": {
-      // 项目内部别名：@/ 指向 src 目录
       "@/*": ["./src/*"],
-
-      // 源码白名单：仅保留开发态需要深度联调的基础设施包
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/*": [
         "../../packages/contracts/src/modules/*/index.ts",
@@ -91,50 +36,26 @@
         "../../packages/notification/src/*/index.ts",
         "../../packages/notification/src/*.ts"
       ],
+      "@dailyuse/notification/commands": ["../../packages/notification/src/commands/index.ts"],
+      "@dailyuse/powersync-schema": ["../../packages/powersync-schema/src/index.ts"],
       "@dailyuse/repository": ["../../packages/repository/src/index.ts"],
       "@dailyuse/repository/*": [
         "../../packages/repository/src/*/index.ts",
         "../../packages/repository/src/*.ts"
       ],
-      "@dailyuse/powersync-schema": ["../../packages/powersync-schema/src/index.ts"],
       "@dailyuse/schedule": ["../../packages/schedule/src/index.ts"],
       "@dailyuse/schedule/*": [
         "../../packages/schedule/src/*/index.ts",
         "../../packages/schedule/src/*.ts"
       ],
-      "@dailyuse/repository/infrastructure-server": [
-        "../../packages/repository/src/infrastructure-server/index.ts"
-      ],
+      "@dailyuse/schedule/api": ["../../packages/schedule/src/api/index.ts"],
+      "@dailyuse/goal/analytics": ["../../packages/goal/src/analytics/index.ts"],
+      "@dailyuse/task/analytics": ["../../packages/task/src/analytics/index.ts"],
+      "@dailyuse/ai/ports": ["../../packages/ai/src/ports/index.ts"],
       "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"]
-
-      // 运行时包（已删除）：
-      // - @dailyuse/authentication / @dailyuse/authentication/api
-      // - @dailyuse/account / @dailyuse/account/api
-      // - @dailyuse/governance / @dailyuse/governance/api
-      // - @dailyuse/goal / @dailyuse/goal/api
-      // - @dailyuse/reminder / @dailyuse/reminder/api
-      // - @dailyuse/setting / @dailyuse/setting/api
-      // - @dailyuse/task / @dailyuse/task/api
-      // - @dailyuse/ai / @dailyuse/ai/api / @dailyuse/ai/application-server
-      //
-      // 现在这些包通过 package.json 的 dependencies + exports 正常解析，
-      // 开发运行时（tsx）不会被误导到 .d.ts 声明文件。
     }
   },
-
-  // ============================================================
-  // 包含和排除配置
-  // ============================================================
-
-  // 包含的文件：所有 src 目录下的 TypeScript 文件
   "include": ["src/**/*"],
-
-  // 排除的文件：
-  // - node_modules: 第三方依赖
-  // - dist: 构建输出（避免重复编译）
-  // - *.test.ts: 测试文件（可选，根据需求决定）
-  // - *.spec.ts: 规范文件（可选）
-  // - src/**/__tests__/manual/**/*: 手动测试文件使用旧的 API
   "exclude": [
     "node_modules",
     "dist",
@@ -144,6 +65,4 @@
     "src/**/__tests__/manual/**/*",
     "src/**/__tests__/smoke/**/*"
   ]
-
-  // 保持非引用式构建；仅对白名单共享包使用源码类型联调
 }

@@ -25,7 +25,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["^build"],
       "options": {
-        "command": "tsc --noEmit",
+        "command": "tsc --noEmit -p tsconfig.json",
         "cwd": "packages/app-vue"
       }
     },

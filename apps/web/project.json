@@ -74,7 +74,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["^build"],
       "options": {
-        "command": "vue-tsc --noEmit",
+        "command": "vue-tsc --noEmit -p tsconfig.typecheck.json",
         "cwd": "apps/web"
       }
     },

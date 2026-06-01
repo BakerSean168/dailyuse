@@ -6,7 +6,7 @@ export default defineConfig({
     'src/domain-shared/index.ts',
     'src/domain-server/index.ts',
     'src/domain-client/index.ts',
-    'src/application-server/index.ts',
+    'src/analytics/index.ts',
     'src/infrastructure-server/index.ts',
     'src/application-client/index.ts',
     'src/infrastructure-client/index.ts',

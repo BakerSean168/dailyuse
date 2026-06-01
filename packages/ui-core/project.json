@@ -45,7 +45,7 @@
       "executor": "nx:run-commands",
       "cache": true,
       "options": {
-        "command": "tsc --noEmit",
+        "command": "tsc --noEmit -p tsconfig.json",
         "cwd": "packages/ui-core"
       }
     },

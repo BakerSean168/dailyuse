@@ -5,16 +5,814 @@ tags:
   - governance
   - architecture
   - lint
-description: 基于 2026-05-31 当前工作树状态的仓库范式统一执行审计与后续深化计划
+description: 基于 2026-05-30 当前工作树状态的仓库范式统一执行审计与后续深化计划
 created: 2026-05-29T00:00:00
-updated: 2026-05-31T12:00:00
+updated: 2026-05-31T10:30:00
 ---
 
 # 2026-05-29 Repository Paradigm Unification Plan
 
-## 2026-05-31 执行审计更新
+## 2026-05-31 执行审计更新（第三轮，当前真值）
 
-以下内容是对 2026-05-30 审计的增量更新。**当前真值以本节为准**。
+以下内容基于 **2026-05-31 当前工作树与当日命令结果**。**当前真值以本节为准**；下方较早的 2026-05-31 / 2026-05-30 段落保留为历史过程记录，但其中部分“已完成”判断已被当前代码和命令结果反证，不能继续作为完成证明使用。
+
+### 本轮重新验证的硬证据
+
+1. `pnpm nx run daily-use:governance-check --skip-nx-cache`
+   - **失败**
+   - 通过项：
+     - `target-baseline-audit` 通过
+     - `package-internal-boundary-audit` 通过（0 known violations）
+     - `governance-module-docs-audit` 通过
+   - 当前红线：
+     - `package-export-audit` 失败
+     - 失败原因仍然是 12 个 feature 包继续导出 `./application-server`
+
+2. `tools/governance/package-export-audit.mjs`
+   - 当前默认白名单仍然**不允许** `./application-server`
+   - 审计逻辑与门禁是一致的，不存在“脚本过时但仓库已收口”的解释空间
+
+3. `tools/governance/target-baseline-manifest.json`
+   - 当前 documented exemptions = **12**
+   - 其中 temporary exemptions = **3**
+     - `ui-vue-shadcn:test`
+     - `app-react:test`
+     - `ui-react-native:test`
+   - 因此 Track 2 只能判定为“明显推进”，不能判定为完全闭环
+
+4. `packages/contracts/src/shared/server-module-context.ts`
+   - `ServerModuleContext<DbClient = unknown>` 默认值仍在
+   - 注释文本仍明确提到 `db: unknown` + `as PrismaClient` migration pattern
+
+5. `rg -n "as PrismaClient|readonly db: unknown|ServerModuleContext<.*unknown|DbClient = unknown" packages`
+   - 生产代码仍有 4 处 `as PrismaClient`
+   - shared contract 仍保留 `DbClient = unknown`
+   - 说明 Track 5 不能判定为完成
+
+6. `eslint.config.ts`
+   - 全局测试文件仍保留 `@nx/enforce-module-boundaries: 'off'`
+   - `no-restricted-imports` 的测试层全局关闭已移除，`repository` / `ai` package-specific 限制已存在
+   - 因此 Track 3 已显著推进，但还不能叫“完全闭环”
+
+7. `apps/api/tsconfig.json`、`apps/web/tsconfig.json`、`apps/desktop/tsconfig.json`
+   - `api` 默认 `tsconfig.json` 仍保留：
+     - `rootDir: "./src"`
+     - `outDir: "./dist"`
+     - `noEmit: false`
+     - `declaration: true`
+   - `web` 默认 `tsconfig.json` 仍保留：
+     - `outDir`
+     - `declaration: false`
+     - `declarationMap: false`
+     - `sourceMap: true`
+   - `desktop` 默认 `tsconfig.json` 仍保留：
+     - `outDir`
+   - `tsconfig.workspace-dist.json` 当前**不存在**
+   - 因此 Phase G 目前仍处于“方案已形成、代码未真正落地”的状态
+
+### 当前执行状态总览（按真实证据重判）
+
+| Track | 当前状态 | 当前证据结论 |
+| --- | --- | --- |
+| Track 1: 包内分层约束机器化 | 已闭环 | `package-internal-boundary-audit` 通过，0 known violations |
+| Track 2: target baseline 豁免收缩 | 部分完成 | documented exemptions 已降到 12，但 temporary exemptions 仍有 3 条 |
+| Track 3: 测试边界治理收紧 | 部分完成 | `no-restricted-imports` 测试层全局关闭已移除；但 `@nx/enforce-module-boundaries` 仍对测试全局关闭 |
+| Track 4: 稳定公共 API 面收窄 | **未完成，且是当前门禁红线** | `package-export-audit` 当前直接失败；12 个包仍导出 `./application-server` |
+| Track 5: typed API module context | 部分完成 | 统一 context 已有基础，但仍有 4 处生产 `as PrismaClient` + `DbClient = unknown` 默认值 |
+| Track 6: governance 活文档审计深化 | 已落地 | 当前审计仍通过 |
+| Track 7: lint ratchet | 已显著推进 | 多个高价值包生产代码目录已升级为 `error` |
+| Phase G: tsconfig 分层统一 | 仅形成方案 | root 模板未落地，`api/web/desktop` 默认 tsconfig 仍混写编辑器与构建语义 |
+
+### 对“是否已经优雅完整实现”的最新判断
+
+**结论：没有。当前仓库不能判定为“优雅完整实现”。**
+
+不能成立的原因不是抽象担忧，而是当前工作树里仍有 4 个硬缺口：
+
+1. `daily-use:governance-check` 现在仍然是红的
+   - `package-export-audit` 明确失败
+
+2. 测试边界还没有完全收成受控 allowlist
+   - `@nx/enforce-module-boundaries` 仍对测试层整体关闭
+
+3. typed API module context 还没有真正收口
+   - `DbClient = unknown` 仍在
+   - 生产代码仍有 4 处 `as PrismaClient`
+
+4. tsconfig 分层仍停留在 plan
+   - `tsconfig.workspace-dist.json` 不存在
+   - `apps/api/web/desktop` 默认 `tsconfig.json` 仍承担 build-like 语义
+
+### 完成判定审计（按当前证据重做）
+
+| 完成要求 | 当前证据 | 结论 |
+| --- | --- | --- |
+| 1. package-internal layering 不再主要靠文档约束 | governance audit 已覆盖，0 known violations | `已完成` |
+| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | 已降到 12；temporary 3 条且均有 owner + targetDate | `部分完成` |
+| 3. 测试边界不再整体豁免 module boundary rules | `@nx/enforce-module-boundaries` 仍对测试层整体关闭 | `未完成` |
+| 4. `governance` 活文档审计能验证注释质量 | docs audit 当前通过 | `已完成` |
+| 5. `governance` 和至少 3 个高价值 feature 包完成稳定 public surface 收缩 | `package-export-audit` 当前失败，12 个 `./application-server` export 仍在 | `未完成` |
+| 6. 高价值模块开始使用目录级 lint ratchet | 多个包生产代码目录已升为 `error` | `已完成` |
+| 7. feature `api/module.ts` 的 `db: unknown` + `as PrismaClient` 模式被统一替换 | shared contract 默认值仍在，生产代码仍有 4 处 cast | `未完成` |
+
+**最新判定：7 条完成要求中，3 条已完成，1 条部分完成，3 条未完成。**
+
+### 当前最优关键路径（重新排序）
+
+1. **先完成 PR-5 / PR-6 的真实代码收口**
+   - 目标：让 `package-export-audit` 从红线恢复为绿
+   - 动作：
+     - 从 12 个 feature 包的 `package.json#exports` 移除 `./application-server`
+     - 若存在真实消费方，迁移到允许的稳定子路径（`./application-client`、`./api`、`./domain-client` 等）
+     - 需要时补 app-level dev alias，但前提是 export map 先收窄
+   - 验证：
+     - `node tools/governance/package-export-audit.mjs`
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache`
+
+2. **再完成 PR-7 的剩余 typed context 收口**
+   - 目标：清零生产 `as PrismaClient`，移除 `DbClient = unknown`
+   - 动作：
+     - 处理：
+       - `packages/notification/src/infrastructure-server/di/notification-repository.factory.ts`
+       - `packages/repository/src/infrastructure-server/di/repository-repository.factory.ts`
+       - `packages/schedule/src/infrastructure-server/adapters/prisma/schedule-prisma.repository.ts`
+       - `packages/schedule/src/infrastructure-server/adapters/prisma/schedule-task-prisma.repository.ts`
+     - 最后回收：
+       - `packages/contracts/src/shared/server-module-context.ts`
+   - 验证：
+     - `rg -n "as PrismaClient" packages --glob "!**/*.test.ts" --glob "!**/*.spec.ts"`
+     - `rg -n "DbClient = unknown|readonly db: unknown" packages/contracts packages/*/src/api`
+
+3. **然后完成 Track 3 的最后一段**
+   - 目标：收紧测试边界，不再对测试层整体关闭 `@nx/enforce-module-boundaries`
+   - 动作：
+     - 为 `@dailyuse/test-utils` 建立可跨层的测试支持语义，或引入专门测试 layer/tag
+     - 把“测试可跨边界”从全局关闭改成明确 allowlist
+   - 验证：
+     - `pnpm nx run repository:lint`
+     - `pnpm nx run ai:lint`
+     - 对测试层人为加入违规 import，确认 lint 失败
+
+4. **最后推进 Phase G，从方案进入代码**
+   - 目标：统一 editor/runtime/typecheck/build 的 tsconfig 职责
+   - 动作：
+     - 新增 `tsconfig.workspace-dist.json`
+     - 先收 `apps/api`
+     - 再收 `apps/web`、`apps/desktop`
+     - 最后统一 library `typecheck` target 显式 `-p`
+   - 验证：
+     - `pnpm nx run api:typecheck`
+     - `pnpm nx run web:typecheck`
+     - `pnpm nx run desktop:typecheck`
+
+### 剩余工作细化：PR-5 / PR-6 / PR-7 的可直接执行切片
+
+#### A. `./application-server` export 清理不能只改 `package.json#exports`
+
+当前审计发现两个并存问题：
+
+1. `package.json#exports["./application-server"]` 仍存在于 12 个 feature 包
+2. 这 12 个包的 `src/index.ts` 也仍然普遍存在 `export * from './application-server'`
+
+这意味着即使只删 subpath export，只要 root barrel 继续 re-export `application-server`，稳定 public surface 仍然没有真正收窄。当前 `package-export-audit.mjs` 只禁止 root barrel 暴露 `infrastructure-server`，还**没有**覆盖 `application-server` root re-export，这是 Track 4 还需要继续深化的关键缺口。
+
+#### B. `./application-server` 的真实消费者图（2026-05-31 当前代码）
+
+经全仓搜索，真正的仓内消费者并不多，可分为三类：
+
+1. **纯 dead export，可直接删除**
+   - `account`
+   - `authentication`
+   - `editor`
+   - `governance`
+   - `goal`
+   - `reminder`
+   - `repository`
+   - `setting`
+   - 这些包当前没有实际的 runtime/test import 指向 `@dailyuse/<pkg>/application-server`
+
+2. **真实 runtime consumer，需要先补稳定替代 seam**
+   - `ai`
+     - `apps/api/src/modules/ai/*`
+     - `apps/desktop/src/main/modules/ai/*`
+     - 当前消费的是：
+       - `IKnowledgeSourcePort`
+       - `IAnalyticsReadPort`
+       - `KnowledgeSourceResource`
+     - 这些并不是“完整 application-server surface”，而是模块装配所需的**稳定端口类型**
+   - `notification`
+     - `apps/api/src/main.ts`
+     - `apps/desktop/src/main/modules/schedule/source-executors.ts`
+     - 当前消费的是 `CreateNotificationUseCase`
+   - `schedule`
+     - `apps/api/src/main.ts`
+     - 当前消费的是 `createSharedSourceExecutor`
+
+3. **仅测试/构建配置使用，需要迁到测试 seam 或内部配置**
+   - `task`
+     - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts` 当前直接 import 多个 use case
+   - `goal`
+     - `packages/goal/tsup.config.ts` 中出现 `@dailyuse/goal/application-server`，这是 bundler external，不是稳定 public API 消费
+
+#### C. `PR-5 / PR-6` 的推荐最终收口形态
+
+1. **先收子路径 export**
+   - 从 12 个 feature 包的 `package.json#exports` 移除 `./application-server`
+   - 先让 `package-export-audit` 恢复为绿
+
+2. **再收 root barrel**
+   - 从 12 个 feature 包的 `src/index.ts` 移除 `export * from './application-server'`
+   - 同步扩展 `package-export-audit.mjs`：
+     - 禁止 root barrel `export * from './application-server'`
+     - 允许 package-specific 白名单例外时必须显式登记
+
+3. **对真实消费者先补稳定替代 seam**
+   - `ai`
+     - 当前最佳候选不是继续暴露整个 `application-server`，而是把 `application-server/ports` 提升为稳定窄 seam：
+       - 新增 `@dailyuse/ai/ports`
+       - 或 package-specific 白名单式 `./contracts`
+     - 目标只公开当前真实外部需要的组合根协作端口：
+       - `IKnowledgeSourcePort`
+       - `IAnalyticsReadPort`
+       - `KnowledgeSourceResource`
+     - 不应继续让宿主应用依赖完整 use case / service surface
+   - `notification`
+     - 当前 `api/runtime.ts` 只承担 start/stop，不足以替代 `CreateNotificationUseCase`
+     - 最优方向是新增窄的 runtime-facing command seam，例如：
+       - `CreateNotificationPort`
+       - `NotificationRuntimeCommands`
+       - 或 `createNotificationExecutor(...)`
+     - `apps/api` / `apps/desktop` 不再直接 `new CreateNotificationUseCase(...)`
+     - app shell 应依赖一个更窄的 command contract，而不是具体 use case class
+   - `schedule`
+     - `createSharedSourceExecutor` 不是一般 application service，而是 runtime wiring helper
+     - 它更适合迁到：
+       - `@dailyuse/schedule/api/runtime`
+       - 或 `@dailyuse/schedule/infrastructure-server`
+     - 当前 `api/runtime.ts` 已经是 runtime contribution seam，因此优先建议把 source-executor helper 收到同一 runtime-facing surface，而不是继续挂在 `application-server`
+   - `task`
+     - 当前 `@dailyuse/task/testing` 已存在，但只暴露 fixture
+     - smoke test 仍直接 import 多个 use case
+     - 最优路径：
+       - 扩充 `@dailyuse/task/testing`，提供 smoke app / controller wiring helper
+       - 或把 smoke test 改为只依赖 `api`/route registration + mock adapters
+     - 不应为了测试继续维持 production `./application-server` public export
+
+#### C1. `PR-5 / PR-6` 的推荐执行顺序（更细）
+
+1. `task`
+   - 成本最低，已有 `./testing` seam
+   - 先扩 testing seam，再删 `./application-server`
+
+2. `schedule`
+   - 已有 `api/runtime.ts`
+   - 把 `createSharedSourceExecutor` 迁过去后即可删 `./application-server` 子路径
+
+3. `ai`
+   - 已有清晰的 ports 集群
+   - 新增 `./ports` 或 `./contracts` 后迁宿主 app imports
+
+4. `notification`
+   - 成本最高，因为当前还缺真正替代 `CreateNotificationUseCase` 的窄 runtime seam
+   - 最后做，避免为了赶进度把 use case 重新塞进根入口或 `api` 根面
+
+5. 剩余 8 个无真实消费者的包
+   - 可在上述真实消费者迁完后统一删 `./application-server`
+   - 同步清 root barrel `export * from './application-server'`
+
+#### C2. package export audit 还需要再深化一层
+
+当前脚本只把 `package.json#exports["./application-server"]` 视为红线；但 root barrel 仍可通过 `export * from './application-server'` 继续扩大稳定 public surface。
+
+因此最终完成态应包含：
+
+1. `package.json#exports`
+   - 不再导出 `./application-server`
+
+2. `src/index.ts`
+   - 不再 `export * from './application-server'`
+
+3. `package-export-audit.mjs`
+   - 新增对 root barrel `application-server` re-export 的失败规则
+   - 避免“删了子路径 export，但继续从根入口泄露”的假闭环
+
+#### C3. 四个真实消费者包的文件级迁移矩阵
+
+1. `task`（测试专用，成本最低）
+   - 当前消费者：
+     - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts`
+   - 当前问题：
+     - smoke test 直接 import 多个 `@dailyuse/task/application-server` use case
+     - `@dailyuse/task/testing` 已存在，但当前只暴露 fixture
+     - `@dailyuse/task/api` 当前公开的是 `TaskApiModule` 与 schedule runtime contribution，不适合作为 smoke test wiring 替代面
+   - 目标 seam：
+     - 首选：扩充 `@dailyuse/task/testing`
+   - 目标文件：
+     - `packages/task/src/testing/index.ts`
+     - 新增 `packages/task/src/testing/create-task-smoke-wiring.ts` 或等价 helper
+     - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts`
+     - `packages/task/package.json`
+     - `packages/task/src/index.ts`
+   - 预期改法：
+     - 把 smoke app 所需 use case/controller wiring 封装进 testing seam
+     - smoke test 不再直接 import `@dailyuse/task/application-server`
+     - 之后删除：
+       - `package.json#exports["./application-server"]`
+       - `src/index.ts` 中的 `export * from './application-server'`
+   - 验证：
+     - `pnpm nx run api:test --skip-nx-cache`
+     - `node tools/governance/package-export-audit.mjs`
+
+2. `schedule`（runtime helper，已有良好落点）
+   - 当前消费者：
+     - `apps/api/src/main.ts`
+   - 当前符号：
+     - `createSharedSourceExecutor`
+   - 当前问题：
+     - `createSharedSourceExecutor` 是 runtime wiring helper，不应从 `application-server` 公开
+     - `packages/schedule/src/api/runtime.ts` 已经是 runtime-facing seam
+     - `packages/schedule/src/api/index.ts` 当前还没有导出 runtime helper，因此这是一个**可在允许 surface 内完成的增量改动**
+   - 目标 seam：
+     - 首选：`@dailyuse/schedule/api`
+       - 通过 `api/index.ts` 显式 re-export runtime helper
+     - 备选：`@dailyuse/schedule/infrastructure-server`
+   - 目标文件：
+     - `packages/schedule/src/api/runtime.ts`
+     - `packages/schedule/src/api/index.ts`
+     - 需要时新增 `packages/schedule/src/api/source-executor.ts`
+     - `packages/schedule/src/application-server/index.ts`
+     - `packages/schedule/src/index.ts`
+     - `apps/api/src/main.ts`
+     - `packages/schedule/package.json`
+   - 预期改法：
+     - 将 `createSharedSourceExecutor` 从 `application-server` 移到 runtime-facing API seam
+     - app shell 改从 `@dailyuse/schedule/api` 或明确允许的 runtime subpath 导入
+     - 再删除 `./application-server` export 与 root barrel re-export
+   - 验证：
+     - `pnpm nx run schedule:test --skip-nx-cache`
+     - `pnpm nx run api:typecheck`
+     - `node tools/governance/package-export-audit.mjs`
+
+3. `ai`（ports 已清晰，适合收成窄 contract）
+   - 当前消费者：
+     - `apps/api/src/modules/ai/repository-knowledge-source.adapter.ts`
+     - `apps/api/src/modules/ai/repository-knowledge-note-persistence.adapter.ts`
+     - `apps/api/src/modules/ai/controlled-analytics-read.adapter.ts`
+     - `apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts`
+     - `apps/desktop/src/main/modules/ai/desktop-knowledge-source.adapter.ts`
+     - `apps/desktop/src/main/modules/ai/desktop-knowledge-note-persistence.adapter.ts`
+     - `apps/desktop/src/main/modules/ai/desktop-analytics-read.adapter.ts`
+     - `apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts`
+   - 当前真实需求（宿主 app 当前真实 import 面）：
+     - `IKnowledgeSourcePort`
+     - `IAnalyticsReadPort`
+     - `KnowledgeSourceResource`
+     - `IKnowledgeNotePersistencePort`
+     - `CreateKnowledgeNotePersistenceInput`
+     - `CreateKnowledgeNotePersistenceResult`
+     - `IAIAutomationToolExecutorPort`
+     - `GoalAutomationExecutionInput`
+   - 当前 seam 现状：
+     - `packages/ai/src/api/index.ts` 只暴露 API module / transport handlers，不适合承载宿主 app 所需的 domain-agnostic port types
+     - `packages/ai/src/application-server/ports/*` 已经是高度内聚的 port 集群，最适合被提升为窄稳定 surface
+   - 目标 seam：
+     - 首选：新增 `@dailyuse/ai/ports`
+     - 备选：package-specific `./contracts`
+   - 目标文件：
+     - 新增 `packages/ai/src/ports/index.ts` 或等价窄 barrel
+     - `packages/ai/package.json`
+     - `packages/ai/src/index.ts`
+     - `apps/api/src/modules/ai/*.ts`
+     - `apps/desktop/src/main/modules/ai/*.ts`
+   - 预期改法：
+     - 只把宿主 app 当前真实依赖的稳定 ports/types 暴露到新窄 seam
+     - 宿主 app 改从 `@dailyuse/ai/ports` 导入
+     - 不继续开放完整 use case / service surface
+     - 然后删除 `./application-server` export 与 root barrel re-export
+   - 验证：
+     - `pnpm nx run ai:test --skip-nx-cache`
+     - `pnpm nx run api:typecheck`
+     - `pnpm nx run desktop:typecheck`
+     - `node tools/governance/package-export-audit.mjs`
+
+4. `notification`（比先前判断更便宜，优先复用现有 module facade）
+   - 当前消费者：
+     - `apps/api/src/main.ts`
+     - `apps/desktop/src/main/modules/schedule/source-executors.ts`
+   - 当前符号：
+     - `CreateNotificationUseCase`
+   - 当前问题：
+     - `api/runtime.ts` 目前只负责 start/stop，不足以承接宿主应用的通知创建需求
+     - app shell 直接 `new CreateNotificationUseCase(...)`，泄露了 use case class 和 repository wiring
+     - 但 `packages/notification/src/infrastructure-server/notification.module.ts` 已经有稳定的 `NotificationApplicationPort`
+     - `NotificationApplicationPort.createNotification(data)` 本身就是 transport-neutral callable seam
+   - 目标 seam：
+     - 首选：直接复用 `@dailyuse/notification/infrastructure-server` 上已有的 `NotificationApplicationPort`
+     - app shell 本地补一个极薄适配器，把 `api.createNotification(data)` 适配到 schedule 所需的 `NotificationSourceCreator.execute(params)` 形状
+     - 仅当这条路径在实现上不成立时，才退回到新增 runtime-facing command seam
+   - 目标文件：
+     - 首选不新增 package-level public seam 文件
+     - 需要时新增 app-local adapter 文件
+     - `packages/notification/src/application-server/index.ts`
+     - `packages/notification/src/index.ts`
+     - `apps/api/src/main.ts`
+     - `apps/desktop/src/main/modules/schedule/source-executors.ts`
+     - `packages/notification/package.json`
+   - 预期改法：
+     - app shell 改为通过 `createNotificationModule(...).api.createNotification(...)` 或等价 facade 调用
+     - 本地薄适配器负责把 `createNotification(data)` 转成 schedule 所需 `execute(params)` 形状
+     - `CreateNotificationUseCase` 退回模块内部实现细节
+     - 最后删除 `./application-server` export 与 root barrel re-export
+   - 验证：
+     - `pnpm nx run notification:test --skip-nx-cache`
+     - `pnpm nx run api:typecheck`
+     - `pnpm nx run desktop:typecheck`
+     - `node tools/governance/package-export-audit.mjs`
+
+#### C4. `PR-5 / PR-6` 完成判定需要新增的强证据
+
+当前仅靠 `package-export-audit` 由红转绿还不够，需要同时满足：
+
+1. `rg -n "\"\\./application-server\"" packages -g "package.json"` 返回 0
+2. `rg -n "export \\* from './application-server'" packages -g "index.ts"` 返回 0
+3. `rg -n "@dailyuse/.+/application-server" apps packages tools` 只允许：
+   - package 自身内部相对路径
+   - 或 0 结果
+4. `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过
+
+#### C5. 可复用 seam 与必须新增 seam 总结
+
+1. **可直接复用，无需新增 public surface**
+   - `task`
+     - 已有：`@dailyuse/task/testing`
+     - 只需要扩 testing helper，不需要扩大 root/api public surface
+   - `schedule`
+     - 已有：`packages/schedule/src/api/runtime.ts`
+     - 只需要把 `createSharedSourceExecutor` 收到现有 runtime-facing API seam
+
+2. **已有内部结构，但需要新增更窄 public seam**
+   - `ai`
+     - 已有：`application-server/ports/*`
+     - 需要新增：`@dailyuse/ai/ports` 或同等窄 contract surface
+   - `notification`
+     - 已有：`NotificationApplicationPort`（位于允许的 `infrastructure-server` surface）
+     - 优先复用，不必先新增 package-level public seam
+
+3. **明确不该做的捷径**
+   - 不把 `application-server` 留在 whitelist 里当“长期稳定 public surface”
+   - 不把 smoke-test 需要的 use case/controller wiring 直接塞进 `@dailyuse/task/api`
+   - 不把 `CreateNotificationUseCase` 重新从 root barrel 或 `api` 根面直接公开
+   - 不把 AI 的整个 use case/service surface 包装成另一个等价宽入口
+
+#### C6. 推荐并行顺序
+
+1. 可并行：
+   - `task` testing seam 扩展
+   - `schedule` runtime helper 迁移
+
+2. 依赖前置更强：
+   - `ai` 需要先新增 `ports` seam，再迁 app consumers
+   - `notification` 需要先验证用现有 `NotificationApplicationPort` + 本地薄适配器即可完成迁移；只有这条路径不成立时才新增 package-level seam
+
+3. 最后统一收口：
+   - 删除 12 个 `package.json#exports["./application-server"]`
+   - 删除 12 个 root barrel `export * from './application-server'`
+   - 扩展 `package-export-audit.mjs` 覆盖 root barrel 的 application-server re-export
+
+#### C7. 符号级 seam 提案（实现前不再重新发明接口）
+
+1. `task`
+   - 推荐新增 testing helper：
+     - `createTaskSmokeControllers(deps)` 或 `createTaskSmokeWiring(deps)`
+   - 最小职责：
+     - 接收 mock repositories
+     - 返回：
+       - `templateController`
+       - `instanceController`
+       - `dependencyController`
+     - 可选 `registerTaskRoutes` 所需 middleware helper
+   - 推荐签名：
+     - `createTaskSmokeWiring(deps: { templateRepo: ITaskTemplateRepository; instanceRepo: ITaskInstanceRepository }): { templateController: TaskTemplateController; instanceController: TaskInstanceController; dependencyController: TaskDependencyController }`
+   - 目标：
+     - smoke test 不再直接 import 16 个 use case class
+     - 但也不把这些 use case 重新公开到生产 public surface
+
+2. `schedule`
+   - 推荐新增或迁移后的稳定 helper：
+     - `createScheduleSourceExecutor(deps)`
+     - 或保留原名 `createSharedSourceExecutor(deps)`，但把导出面迁到 `api`
+   - 推荐位置：
+     - `packages/schedule/src/api/source-executor.ts`
+     - 再由 `packages/schedule/src/api/index.ts` re-export
+   - 目标依赖形状保持不变：
+     - 继续复用 `SourceExecutorDependencies`
+     - 继续返回 `ScheduleTaskSourceExecutor`
+   - 推荐签名：
+     - `createScheduleSourceExecutor(deps: SourceExecutorDependencies): ScheduleTaskSourceExecutor`
+   - 这样做的价值：
+     - 不改 helper 本身的业务语义
+     - 只把它从错误的 application surface 迁到正确的 runtime/API surface
+
+3. `ai`
+   - 推荐新增窄 barrel：
+     - `packages/ai/src/ports/index.ts`
+   - 推荐仅导出这些符号：
+     - `IKnowledgeSourcePort`
+     - `KnowledgeSourceResource`
+     - `IAnalyticsReadPort`
+     - `IKnowledgeNotePersistencePort`
+     - `CreateKnowledgeNotePersistenceInput`
+     - `CreateKnowledgeNotePersistenceResult`
+     - `IAIAutomationToolExecutorPort`
+     - `GoalAutomationExecutionInput`
+   - 明确不导出：
+     - use case classes
+     - service helpers
+     - 完整 `application-server/index.ts`
+
+4. `notification`
+   - 首选不新增 package-level seam，而是复用已有：
+     - `NotificationApplicationPort`
+   - 推荐新增的只是 **app-local** thin adapter，例如：
+     - `createNotificationSourceCreator(api: Pick<NotificationApplicationPort, 'createNotification'>): NotificationSourceCreator`
+   - 推荐行为：
+     - `execute(params)` 内部调用 `api.createNotification(params)`
+     - 若 `Result` 为失败，则抛出 `Error`，保持与当前 `CreateNotificationUseCase` 直接调用时的失败传播语义一致
+   - 目标：
+     - schedule runtime 依旧只看到 `NotificationSourceCreator`
+     - notification 包不需要为了这个场景再增加一个新的公开子路径
+
+5. `package-export-audit`
+   - 推荐新增 root barrel 规则：
+     - 若 `src/index.ts` 包含 `export * from './application-server'` 则失败
+   - 推荐新增 allowlist 原则：
+     - 除非显式登记并有真实长期消费方，否则 `application-server` 不得出现在：
+       - `package.json#exports`
+       - root barrel
+
+#### C8. 建议拆成 `PR-5a` 到 `PR-5e`
+
+当前 2026-05-31 重新扫描后的影响面快照：
+
+1. 仓内真实 `@dailyuse/*/application-server` 消费点
+   - `task`: 1 处（API smoke test）
+   - `schedule`: 1 处（`apps/api/src/main.ts`）
+   - `notification`: 2 处（`apps/api` + `apps/desktop`）
+   - `ai`: 8 处（`apps/api` 4 处 + `apps/desktop` 4 处）
+   - `goal`: 0 处 runtime consumer，只有 `tsup.config.ts` external 配置
+
+2. root barrel 泄露面
+   - 当前仍有 12 个 `src/index.ts` 在 `export * from './application-server'`
+
+3. export map 泄露面
+   - 当前仍有 12 个 `package.json#exports["./application-server"]`
+
+1. `PR-5a`：先收 `task` smoke seam
+   - 动作：
+     - 新增 `createTaskSmokeWiring(...)`
+     - `apps/api/src/__tests__/smoke/helpers/create-smoke-app.ts` 改依赖 `@dailyuse/task/testing`
+     - 删除 `task` 的 `./application-server` export 与 root barrel re-export
+   - 完成条件：
+     - `rg -n "@dailyuse/task/application-server" apps/api/src/__tests__/smoke` 返回 0
+     - `packages/task/package.json` 不再导出 `./application-server`
+     - `packages/task/src/index.ts` 不再 `export * from './application-server'`
+   - 验证：
+     - `pnpm nx run api:test --skip-nx-cache`
+     - `node tools/governance/package-export-audit.mjs`
+
+2. `PR-5b`：再收 `schedule` runtime helper
+   - 动作：
+     - 把 `createSharedSourceExecutor` 迁到 `api` surface，或以 `createScheduleSourceExecutor` 名义重新导出
+     - `apps/api/src/main.ts` 改从 `@dailyuse/schedule/api` 或允许的 runtime seam 导入
+     - 删除 `schedule` 的 `./application-server` export 与 root barrel re-export
+   - 完成条件：
+     - `rg -n "@dailyuse/schedule/application-server" apps packages tools` 返回 0
+     - `packages/schedule/package.json` 不再导出 `./application-server`
+     - `packages/schedule/src/index.ts` 不再 `export * from './application-server'`
+   - 验证：
+     - `pnpm nx run schedule:test --skip-nx-cache`
+     - `pnpm nx run api:typecheck`
+     - `node tools/governance/package-export-audit.mjs`
+
+3. `PR-5c`：补 `ai` 窄 ports seam
+   - 动作：
+     - 新增 `packages/ai/src/ports/index.ts`
+     - `apps/api/src/modules/ai/*.ts` 与 `apps/desktop/src/main/modules/ai/*.ts` 改从 `@dailyuse/ai/ports` 导入
+     - 删除 `ai` 的 `./application-server` export 与 root barrel re-export
+   - 完成条件：
+     - `rg -n "@dailyuse/ai/application-server" apps packages tools` 返回 0
+     - `packages/ai/package.json` 不再导出 `./application-server`
+     - `packages/ai/src/index.ts` 不再 `export * from './application-server'`
+   - 验证：
+     - `pnpm nx run ai:test --skip-nx-cache`
+     - `pnpm nx run api:typecheck`
+     - `pnpm nx run desktop:typecheck`
+     - `node tools/governance/package-export-audit.mjs`
+
+4. `PR-5d`：复用 `NotificationApplicationPort` 收 `notification`
+   - 动作：
+     - app-local 新增 `createNotificationSourceCreator(...)` 薄适配器
+     - `apps/api/src/main.ts` 和 `apps/desktop/src/main/modules/schedule/source-executors.ts` 不再 direct new `CreateNotificationUseCase`
+     - 删除 `notification` 的 `./application-server` export 与 root barrel re-export
+   - 完成条件：
+     - `rg -n "@dailyuse/notification/application-server" apps packages tools` 返回 0
+     - `packages/notification/package.json` 不再导出 `./application-server`
+     - `packages/notification/src/index.ts` 不再 `export * from './application-server'`
+   - 验证：
+     - `pnpm nx run notification:test --skip-nx-cache`
+     - `pnpm nx run api:typecheck`
+     - `pnpm nx run desktop:typecheck`
+     - `node tools/governance/package-export-audit.mjs`
+
+5. `PR-5e`：统一清剩余 8 个无真实消费者包 + 升级 audit
+   - 动作：
+     - 删除剩余 8 个包的 `./application-server` export 与 root barrel re-export
+     - 扩展 `package-export-audit.mjs`，让 root barrel `application-server` re-export 直接失败
+   - 完成条件：
+     - `rg -n "\"\\./application-server\"" packages -g "package.json"` 返回 0
+     - `rg -n "export \\* from './application-server'" packages -g "index.ts"` 返回 0
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过
+   - 验证：
+     - `node tools/governance/package-export-audit.mjs`
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache`
+
+#### C9. `PR-5a` 到 `PR-5e` 的关键路径与风险热点
+
+1. **关键路径**
+   - `PR-5a` → `PR-5b` → `PR-5c` → `PR-5d` → `PR-5e`
+   - 原因：
+     - `task` 和 `schedule` 是最低风险、最快能减少真实 consumer 的切片
+     - `ai` consumer 最多，但 seam 形状已经清晰
+     - `notification` 需要验证 facade 复用路径，放在 `task/schedule/ai` 之后更稳
+     - `PR-5e` 必须最后做，因为它负责把“剩余 8 个无真实消费者包”与 root barrel audit 一次性收口
+
+2. **可并行项**
+   - `PR-5a` 与 `PR-5b` 可以并行
+   - `PR-5c` 可以在 `PR-5a/5b` 进行中并行准备 `ports` barrel
+   - `PR-5d` 最好晚于 `PR-5b`，因为它同样影响 schedule runtime wiring 语境
+
+3. **最高风险点**
+   - `ai`
+     - consumer 最多，且跨 `apps/api` 与 `apps/desktop`
+     - 一旦 ports barrel 选错范围，容易重新放宽 public surface
+   - `notification`
+     - 需要确认 `NotificationApplicationPort.createNotification(...)` 的 `Result` 失败语义与当前直接 use case 调用兼容
+     - 如果兼容性差，才需要退回新增 package-level seam
+
+4. **低风险点**
+   - `task`
+     - 只影响 smoke test
+   - `schedule`
+     - helper 业务语义不变，主要是导出面迁移
+
+5. **每条子 PR 的最强完成证明**
+   - `PR-5a`
+     - `rg -n "@dailyuse/task/application-server" apps/api/src/__tests__/smoke` 返回 0
+   - `PR-5b`
+     - `rg -n "@dailyuse/schedule/application-server" apps packages tools` 返回 0
+   - `PR-5c`
+     - `rg -n "@dailyuse/ai/application-server" apps packages tools` 返回 0
+   - `PR-5d`
+     - `rg -n "@dailyuse/notification/application-server" apps packages tools` 返回 0
+   - `PR-5e`
+     - `rg -n "\"\\./application-server\"" packages -g "package.json"` 返回 0
+     - `rg -n "export \\* from './application-server'" packages -g "index.ts"` 返回 0
+     - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过
+
+#### D. `PR-7` 剩余 4 处 Prisma cast 的最短优雅收口路径
+
+1. `notification-repository.factory.ts`
+   - 当前问题：
+     - `create(dataSource, client)` 使用重载，但实现体仍写 `client as PrismaClient`
+   - 最短修法：
+     - 改成 discriminated union 参数或 tuple union 参数
+     - 让 `dataSource === 'prisma'` 时 `client` 在实现体内自动收窄
+   - 目标：
+     - 删除实现体 cast，而不是只在调用方获得类型安全
+
+2. `repository-repository.factory.ts`
+   - 与 `notification` 同型
+   - 最短修法相同：
+     - discriminated union / tuple union 取代当前“重载 + 宽联合实现”
+
+3. `schedule-prisma.repository.ts`
+   - 当前问题：
+     - 构造器里用 `'$transaction' in prisma ? (prisma as PrismaClient) : null`
+   - 最短修法：
+     - 提供 `isRootPrismaClient()` 类型守卫
+     - 或强制二参构造器在 transaction 场景显式传 `rootClient`
+   - 目标：
+     - 让 `rootClient` 初始化不再依赖 cast
+
+4. `schedule-task-prisma.repository.ts`
+   - 与 `schedule-prisma.repository.ts` 同型
+   - 最短修法相同：
+     - 类型守卫或显式 rootClient 传递
+
+5. `ServerModuleContext`
+   - 只有在上述 4 处 cast 清零后，才回收：
+     - 注释中的 migration 文案
+     - `DbClient = unknown` 默认值
+   - 否则只是文档先改，真实 seam 仍在
+
+### 下一轮推荐执行顺序（修正版）
+
+1. `PR-5 + PR-6`：真实移除 12 个 `./application-server` exports，恢复 governance 绿
+2. `PR-7`：清零剩余 4 处生产 `as PrismaClient`，移除 `DbClient = unknown`
+3. `PR-4` 收尾：把测试层整体 `@nx/enforce-module-boundaries` 关闭改成受控 allowlist
+4. `Phase G / PR-9 ~ PR-11`：把 tsconfig 分层方案真正落地到 root + `api/web/desktop` + libraries
+5. `PR-8` 深化：继续消化 3 个 temporary UI test exemptions
+
+> 历史记录警告
+>
+> 接下来两段 `2026-05-30 执行审计更新（第二轮）` 与 `2026-05-31 执行审计更新` 保留为历史过程记录，但其中关于“`package-export-audit` 全绿”“Track 3/4/5 已闭环”“Phase G 已启动”的结论，已经被当前工作树反证。它们不能再作为当前状态依据；当前判断统一以本文顶部“2026-05-31 执行审计更新（第三轮，当前真值）”为准。
+
+## 2026-05-30 执行审计更新（第二轮，历史记录，已失真）
+
+以下内容保留为当时的执行记录，**不再代表当前真值**。
+
+### 本轮完成的工作
+
+1. **PR-5 + PR-6 收口完成：移除 12 个包的 `./application-server` export**
+   - `package-export-audit.mjs` 已从红线失败恢复为全绿
+   - 已从以下 12 个包的 `package.json#exports` 中移除 `./application-server`：
+     `account`、`ai`、`authentication`、`editor`、`goal`、`governance`、`notification`、`reminder`、`repository`、`schedule`、`setting`、`task`
+   - 为保持消费方正常解析，已在 `apps/api/tsconfig.json` 新增 `@dailyuse/ai/*` 和 `@dailyuse/task/*` 路径别名
+   - 已在 `apps/desktop/tsconfig.json` 新增 `@dailyuse/ai/application-server` 和 `@dailyuse/notification/application-server` 路径别名
+   - 验证：`daily-use:governance-check --skip-nx-cache` 全绿
+
+2. **PR-7 完成：清零生产代码 `as PrismaClient` cast**
+   - `schedule-prisma.repository.ts`：新增 `hasTransaction()` 类型守卫，消除 `prisma as PrismaClient`
+   - `schedule-task-prisma.repository.ts`：同上
+   - `notification-repository.factory.ts`：新增 `isPrismaDataSource()` 类型守卫，消除 `client as PrismaClient`
+   - `repository-repository.factory.ts`：同上
+   - `server-module-context.ts`：移除 `DbClient = unknown` 默认值，所有 12 个 feature 包已显式传递 `PrismaClient`
+   - 验证：`rg -n "as PrismaClient" packages --glob "!**/*.test.ts" --glob "!**/*.spec.ts"` 仅剩 2 处注释文本
+   - 验证：`schedule:test` 通过（263 tests），`governance:test` 通过（139 tests）
+
+3. **PR-8 完成：target baseline 豁免清理**
+   - 将 3 个临时豁免（`ui-vue-shadcn:test`、`app-react:test`、`ui-react-native:test`）转为永久豁免
+   - 所有 12 个豁免现在都是永久类型，均有明确平台技术理由
+   - 临时豁免数量：3 → 0
+   - 验证：`daily-use:target-baseline-check` 通过
+
+### 当日验证的命令
+
+1. `pnpm nx run daily-use:governance-check --skip-nx-cache` — 通过（全绿）
+2. `pnpm nx run daily-use:target-baseline-check --skip-nx-cache` — 通过（12 个永久豁免）
+3. `pnpm nx run schedule:test --skip-nx-cache` — 通过（263 tests）
+4. `pnpm nx run schedule:lint` — 通过（0 errors）
+5. `pnpm nx run notification:lint` — 通过（0 errors）
+6. `pnpm nx run repository:lint` — 通过（0 errors）
+7. `pnpm nx run contracts:lint` — 通过
+8. `pnpm nx run governance:lint` — 通过
+9. `pnpm nx run governance:test --skip-nx-cache` — 通过（139 tests）
+10. `pnpm nx run goal:lint` — 通过
+11. `pnpm nx run task:lint` — 通过
+
+### 执行状态总览（更新）
+
+| Track | 当前状态 | 审计结论 |
+| --- | --- | --- |
+| Track 1: 包内分层约束机器化 | 已闭环 | `package-internal-boundary-audit` 0 known violations |
+| Track 2: target baseline 豁免收缩 | **已闭环** | 12 个永久豁免，0 个临时豁免；均有明确平台技术理由 |
+| Track 3: 测试边界治理收紧 | **已闭环** | `repository + ai` testing seams 已落地；`goal` / `task` 已确认干净；全局 `no-restricted-imports` 关闭已移除；package-specific 限制已生效 |
+| Track 4: 稳定公共 API 面收窄 | **已闭环** | `package-export-audit.mjs` 覆盖 `src/index.ts` 与 `package.json#exports`；12 个包的 `./application-server` dead export 已移除；白名单机制已落地 |
+| Track 5: typed API module context | **已闭环** | 12 个 feature `api/module.ts` 统一使用 `ServerModuleContext<PrismaClient>`；生产代码 `as PrismaClient` cast 已清零；`ServerModuleContext` 默认值已移除 |
+| Track 6: governance 活文档审计深化 | 已落地 | 持续维护中 |
+| Track 7: lint ratchet | 已超出 governance 试点 | 多个高价值包已升级为 error |
+
+### 完成判定审计（更新）
+
+| 完成要求 | 当前证据 | 结论 |
+| --- | --- | --- |
+| 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `daily-use:governance-check`；0 known violations | `已完成` |
+| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | 12 个永久豁免，0 个临时豁免；均有明确平台技术理由 | `已完成` |
+| 3. 测试边界不再整体豁免 module boundary rules | `@nx/enforce-module-boundaries` 仍对测试关闭（因 test-utils 跨层需求）；但 `no-restricted-imports` 保持活跃，`repository`/`ai` 有 package-specific 限制 | `部分完成` |
+| 4. `governance` 活文档审计能验证注释质量 | `governance-module-docs-audit.mjs` 检查文件级 JSDoc 内容量、`@internal`、公开导出 JSDoc | `已完成` |
+| 5. `governance` 和至少 3 个高价值 feature 包完成稳定 public surface 收缩 | `package-export-audit.mjs` 覆盖 `src/index.ts` 与 `package.json#exports`；12 个包的 `./application-server` 已移除 | `已完成` |
+| 6. 高价值模块开始使用目录级 lint ratchet | `eslint.config.ts` 已将多个高价值包生产代码目录的 `no-explicit-any` / `no-unused-vars` 升为 `error` | `已完成` |
+| 7. feature `api/module.ts` 的 `db: unknown` + `as PrismaClient` 模式被统一替换 | 12 个 feature `api/module.ts` 统一使用 `ServerModuleContext<PrismaClient>`；生产 cast 已清零；默认值已移除 | `已完成` |
+
+**结论：7 条完成要求中，6 条已判定为已完成，1 条部分完成（`@nx/enforce-module-boundaries` 因 test-utils 跨层需求仍对测试关闭）。当前状态可判定为"范式已基本统一收口"。**
+
+4. **Phase G 启动（历史判断，已被当前工作树反证）：tsconfig 分层统一**
+   - `tsconfig.workspace-dist.json` 已创建（空 paths，用于构建态边界解析）
+   - `apps/api/tsconfig.json` 已改为 editor-first：移除 `rootDir`、`outDir`、`noEmit: false`、`declaration` 等 build-only 字段；保留 `noEmit: true` + source-linking paths
+   - `apps/api/tsconfig.typecheck.json` 已简化：移除冗余 `rootDir` 覆盖；`@dailyuse/ai` 和 `@dailyuse/task` 保持指向 dist（因跨包 `@/` 别名无法在单 tsconfig 上下文中解析）
+   - `apps/web/tsconfig.json` 已清理：移除 `outDir`、`declaration`、`declarationMap`、`sourceMap` 等 build-only 字段
+   - `apps/desktop/tsconfig.json` 已清理：移除 `outDir`
+   - 验证：`api:typecheck` 通过，`web:typecheck` 通过，`governance-check` 全绿
+
+### 剩余工作（低优先级）
+
+1. `@nx/enforce-module-boundaries` 测试豁免：需要将 `@dailyuse/test-utils` 重新标记为可跨层访问的测试支持库，或为测试创建独立的 layer tag
+2. Phase G 剩余：library tsconfig 统一（`typecheck` target 显式 `-p`）、tsconfig shape audit
+3. 剩余 `as PrismaClient` 注释文本回收（2 处）
+
+## 2026-05-31 执行审计更新（历史记录，已失真）
+
+以下内容保留为当时的执行记录，**不再代表当前真值**。
 
 ### 本轮完成的工作
 
@@ -107,21 +905,37 @@ updated: 2026-05-31T12:00:00
 ### 当日重新验证的命令
 
 1. `pnpm nx run daily-use:governance-check`
-   - 2026-05-30 以 `--skip-nx-cache` 重新执行通过
+   - 2026-05-30 早些时候曾以 `--skip-nx-cache` 重新执行通过
    - 当前通过链路已包含：
      - `target-baseline-audit`
      - `governance-module-docs-audit`
      - `server-feature-shape-audit`
      - `package-internal-boundary-audit`
      - `package-export-audit`
-   - 最新复跑结果：**0 条 known package-internal violations**
+   - 但 2026-05-30 本轮最新复跑结果已经变化：
+     - `target-baseline-audit` 现在报告 **12** 个 documented exemptions
+     - `package-internal-boundary-audit` 仍保持 **0 条 known package-internal violations**
+     - `package-export-audit` 现在转为**红线失败**
+   - 最新失败原因：
+     - `packages/account/package.json` 仍导出 `./application-server`
+     - `packages/ai/package.json` 仍导出 `./application-server`
+     - `packages/authentication/package.json` 仍导出 `./application-server`
+     - `packages/editor/package.json` 仍导出 `./application-server`
+     - `packages/goal/package.json` 仍导出 `./application-server`
+     - `packages/governance/package.json` 仍导出 `./application-server`
+     - `packages/notification/package.json` 仍导出 `./application-server`
+     - `packages/reminder/package.json` 仍导出 `./application-server`
+     - `packages/repository/package.json` 仍导出 `./application-server`
+     - `packages/schedule/package.json` 仍导出 `./application-server`
+     - `packages/setting/package.json` 仍导出 `./application-server`
+     - `packages/task/package.json` 仍导出 `./application-server`
    - 2026-05-30 本轮已实际清掉：
      - `packages/ai/src/application-server/use-cases/commands/manage-ai-knowledge-note.use-case.ts`
      - `packages/schedule/src/application-server/source-executors/shared-source-executor.ts`
 
 2. `pnpm nx run daily-use:target-baseline-check`
    - 2026-05-30 重新执行通过
-   - 当前 documented exemptions 已从 2026-05-29 记录的 25 降到 **15**
+   - 当前 documented exemptions 已从 2026-05-29 记录的 25 降到 **12**
 
 3. `pnpm nx build api` / `pnpm nx build desktop`
    - 2026-05-30 重新执行，二者都失败
@@ -152,9 +966,9 @@ updated: 2026-05-31T12:00:00
 | Track | 当前状态 | 审计结论 |
 | --- | --- | --- |
 | Track 1: 包内分层约束机器化 | 已闭环第一版 | `project.json` 已把 `package-internal-boundary-audit.mjs` 接入 `daily-use:governance-check`；`docs/standards/architecture.md` 与 `ADR-031` 已改为“规则已落地”的表述；2026-05-30 本轮代码收口已把 known violation 从 4 压到 0 |
-| Track 2: target baseline 豁免收缩 | 已明显推进 | manifest 已升级到 v2，temporary exemption 强制 `owner` + `targetDate`；但当前仍有 15 个 documented exemption，尚未收敛到计划要求的 10 以内 |
+| Track 2: target baseline 豁免收缩 | 已明显推进 | manifest 已升级到 v2，temporary exemption 强制 `owner` + `targetDate`；当前 documented exemption 已降到 12，但尚未收敛到计划要求的 10 以内 |
 | Track 3: 测试边界治理收紧 | `repository + ai` 试点已落地，但 repo-wide 仍未闭环 | `packages/repository/src/testing/` 与 `packages/ai/src/testing/` 已落地；repository application tests 已迁移到 `../../testing`，AI application tests 已迁移到 `../../../../testing`；`eslint.config.ts` 已分别对 repository / ai tests 加入专用 `no-restricted-imports` 拦截 private infra/api import；但全仓测试层仍存在 `@nx/enforce-module-boundaries` 与 `no-restricted-imports` 的全局关闭，尚未进入 package-scoped allowlist 阶段 |
-| Track 4: 稳定公共 API 面收窄 | **audit 已扩展，dead exports 已清理** | `package-export-audit.mjs` 已扩展为同时审计 `src/index.ts` 与 `package.json#exports`；12 个包的 `./application-server` dead export 已移除；白名单机制已落地；`infrastructure-server` / `api` / `infrastructure-client` 保留（有活跃消费者） |
+| Track 4: 稳定公共 API 面收窄 | audit 已扩展，但当前已成为 governance 红线 | `package-export-audit.mjs` 已扩展为同时审计 `src/index.ts` 与 `package.json#exports`；但最新 `daily-use:governance-check` 已因 12 个包仍导出 `./application-server` 而失败，说明 Track 4 仍未收口，且已经从“结构欠账”升级为“当前门禁红线” |
 | Track 5: typed API module context | API module 基本完成，仓库 seam 未清零 | 12 个 feature `api/module.ts` 已统一使用 `ServerModuleContext<PrismaClient>`；但生产代码中仍存在 `as PrismaClient` cast，且 `ServerModuleContext<DbClient = unknown>` 仍保留兼容默认值 |
 | Track 6: governance 活文档审计深化 | 基本落地 | `governance-module-docs-audit.mjs` 已不再只是 existence check，当前会检查文件级 JSDoc 内容量、English-first / 中文 second、`@internal`、公开导出 JSDoc，且 2026-05-30 复跑通过 |
 | Track 7: lint ratchet | 已超出最初 `governance` 试点 | `eslint.config.ts` 已把多组高价值包生产代码目录的 `no-explicit-any` / `no-unused-vars` 升为 `error`，不再只局限于 `governance` |
@@ -169,8 +983,9 @@ updated: 2026-05-31T12:00:00
    - `package-internal-boundary-audit` 已经收口到 0 tracked known violations
    - 但测试边界、public surface、typed context、target baseline 仍未全部闭环
 
-2. **治理通过，但仍依赖制度化豁口**
-   - `target-baseline-audit` 仍保留 15 个 documented exemption
+2. **治理并非全绿，且仍依赖制度化豁口**
+   - `package-export-audit` 当前已经是红线失败
+   - `target-baseline-audit` 仍保留 12 个 documented exemption
    - 测试边界仍是宽泛豁免，而不是受控 seam
 
 3. **示范模块变强了，但 repo-wide 统一范式还没全部收口**
@@ -184,7 +999,7 @@ updated: 2026-05-31T12:00:00
 | 完成要求 | 当前证据 | 结论 | 仍缺什么 |
 | --- | --- | --- | --- |
 | 1. package-internal layering 不再主要靠文档约束 | `package-internal-boundary-audit.mjs` 已接入 `daily-use:governance-check`；`architecture.md` 与 `ADR-031` 已改为“规则已落地”口径；`goal`、`repository`、`ai`、`schedule` 的 4 条 tracked violation 已在 2026-05-30 全部清零 | `已完成` | 后续只需保持 `KNOWN_VIOLATIONS` 为空并防止回退 |
-| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | `target-baseline-manifest.json` 已升级到 v2；temporary exemption 强制 `owner` + `targetDate`；`daily-use:target-baseline-check` 当前报告 15 个 documented exemption | `部分完成` | 15 仍高于计划要求的 10 以内 |
+| 2. target baseline documented exemption 显著减少，并且临时豁免都有 owner 与收口时间 | `target-baseline-manifest.json` 已升级到 v2；temporary exemption 强制 `owner` + `targetDate`；`daily-use:target-baseline-check` 当前报告 12 个 documented exemption | `部分完成` | 12 仍高于计划要求的 10 以内 |
 | 3. 测试边界不再整体豁免 module boundary rules | `eslint.config.ts` 的全仓测试块仍对 `@nx/enforce-module-boundaries` 与 `no-restricted-imports` 做全局关闭；但 `repository` 与 `ai` 已新增 `src/testing` seam，application tests 已迁移到 test-support import，且 package-specific `no-restricted-imports` 已能拦截 private infra/api import | `未完成` | 需要把 `repository + ai` 试点扩展成真正的 package-scoped allowlist，并最终移除全局测试关闭 |
 | 4. `governance` 活文档审计能验证注释质量，而不只是 JSDoc 存在性 | `governance-module-docs-audit.mjs` 已检查文件级 JSDoc 内容量、English-first / 中文 second、`@internal`、公开导出 JSDoc；复跑通过 | `已完成` | 后续只需持续维护 |
 | 5. `governance` 和至少 3 个高价值 feature 包完成稳定 public surface 收缩 | `governance` 仅完成了 root barrel 第一层收窄；`governance`、`goal`、`task`、`repository` 的 `package.json#exports` 仍公开宽 surface | `未完成` | 需扩展 package export audit 到 `package.json#exports`，并同时收口 `governance` + 至少 3 个高价值包 |
@@ -245,15 +1060,22 @@ updated: 2026-05-31T12:00:00
 
 ### 当前剩余问题清单（按优先级）
 
-1. 把已在 `repository` 落地的 test-support seam + package-scoped lint 模式扩展到更多包，并最终移除“测试文件整体关闭边界规则”。
+1. 先修复 `package-export-audit` 当前暴露的 12 个 `./application-server` export 红线，让 `daily-use:governance-check` 恢复为绿。
 
-2. 扩大 package export audit 的定义，不再只禁止 `export * from './infrastructure-server'`，而是同时治理 `src/index.ts` 与 `package.json#exports` 的 public surface 白名单。
+2. 把已在 `repository` 和 `ai` 落地的 test-support seam + package-scoped lint 模式扩展到更多包，并最终移除“测试文件整体关闭边界规则”。
 
 3. 完成 typed context 第二阶段：
    - 移除生产代码残留的 `as PrismaClient`
    - 收紧 `ServerModuleContext<DbClient = unknown>` 的兼容默认值
 
-4. 继续收缩 target baseline exemptions，从 15 进一步压到 10 以内。
+4. 把 app-level TypeScript 配置从“编辑器 / 源码联调 / 构建意图混在 `tsconfig.json`”收成明确分层。
+   - 2026-05-30 当前审计显示 `apps/api/tsconfig.json` 同时包含：
+     - 开发态源码 alias（多个 `@dailyuse/* -> packages/*/src`）
+     - 构建态字段（`rootDir: "./src"`、`outDir: "./dist"`、`noEmit: false`）
+   - 但 `apps/api` 的实际构建目标已经由 `tsup` 驱动，CLI typecheck 又单独走 `tsconfig.typecheck.json`
+   - 这意味着当前 `tsconfig.json` 对 VS Code / tsserver 来说承担了错误的双重职责：编辑器默认只认它，不会自动叠加 `tsconfig.typecheck.json`
+
+5. 继续收缩 target baseline exemptions，从 12 进一步压到 10 以内。
 
 ### 修订后的后续优雅完整实现方案
 
@@ -532,19 +1354,313 @@ updated: 2026-05-31T12:00:00
    - `permanent` exemption 只保留真正平台天然例外
    - 在完成误分类回收后，再把 documented exemptions 总数从 15 压到 10 以内
 
+#### Phase G: 统一全仓 TypeScript 配置分层，拆开编辑器 / 开发运行时 / CLI typecheck / 构建意图
+
+1. 当前审计结论
+   - `apps/api/tsconfig.json` 仍是最典型的混写案例：
+     - 默认编辑器工程里同时保留 `rootDir: "./src"`、`outDir: "./dist"`、`noEmit: false`
+     - 同时又保留多个 `@dailyuse/* -> ../../packages/*/src` 的源码联调 alias
+     - `typecheck` 实际走 `tsconfig.typecheck.json`
+     - `build` 实际走 `tsup`
+   - `apps/web/tsconfig.json` 和 `apps/desktop/tsconfig.json` 已经比 `api` 更接近 editor-first，但仍保留了 `outDir` 等 build-like 字段，且 CLI typecheck 口径不统一：
+     - `web` 走 `vue-tsc --noEmit`
+     - `desktop` 走 `tsc --noEmit`
+     - 但两者默认 `tsconfig.json` 仍在承载部分构建意图
+   - package 层已经出现三种并存模式：
+     - `account/ai/.../repository` 等 tsup library 采用 `tsconfig.json + tsconfig.build.json`
+     - `domain-shared`、`ui-vue-shadcn` 额外保留 `tsconfig.typecheck.json`
+     - `utils/contracts/ui-core/app-vue` 等仍主要依赖单一 `tsconfig.json`
+   - 根层也还没有把“源码联调”与“真实包边界解析”拆成显式模板：
+     - `tsconfig.base.json` 是语言级基线
+     - `tsconfig.workspace-src.json` 承担源码联调 alias
+     - 但还没有一个与之对称的 workspace-level dist/export baseline
+
+1.1 当前仓库配置清单（2026-05-31 真值快照）
+   - 默认 `tsconfig.json` 仍携带 build-only 字段的项目至少有以下 17 个：
+     - `apps/api`
+       - `rootDir`、`outDir`、`noEmit: false`、`declaration`、`declarationMap`、`sourceMap`
+     - `apps/web`
+       - `outDir`、`declaration: false`、`declarationMap: false`、`sourceMap`
+     - `apps/desktop`
+       - `outDir`
+     - `packages/app-vue`
+       - `outDir`、`declaration`、`declarationMap`
+     - `packages/assets`
+       - `rootDir`、`outDir`
+     - `packages/authentication`
+       - `outDir`
+     - `packages/contracts`
+       - `rootDir`、`outDir`
+     - `packages/dashboard`
+       - `outDir`
+     - `packages/database`
+       - `rootDir`、`outDir`、`declaration`
+     - `packages/domain-shared`
+       - `rootDir`、`outDir`
+     - `packages/http-client`
+       - `outDir`
+     - `packages/ipc-client`
+       - `outDir`、`declaration`、`declarationMap`
+     - `packages/powersync-schema`
+       - `outDir`
+     - `packages/scheduler-server`
+       - `outDir`、`sourceMap`
+     - `packages/ui-core`
+       - `rootDir`、`outDir`、`declaration`、`declarationMap`
+     - `packages/ui-vue-shadcn`
+       - `rootDir`、`outDir`、`declaration`、`declarationMap`
+     - `packages/utils`
+       - `rootDir`、`outDir`
+   - 当前显式把 `typecheck` 绑定到具体工程文件的项目其实很少：
+     - `apps/api`
+       - `tsc --noEmit -p tsconfig.typecheck.json`
+     - `packages/domain-shared`
+       - `tsc --noEmit -p tsconfig.typecheck.json`
+     - `packages/ui-vue-shadcn`
+       - `vue-tsc --noEmit -p tsconfig.typecheck.json`
+     - `packages/contracts`
+       - 例外：当前用 `tsc --build packages/contracts/tsconfig.json`
+   - 其余多数项目仍是：
+     - `tsc --noEmit`
+     - `vue-tsc --noEmit`
+     - 或 `pnpm exec tsc --noEmit`
+     - 也就是仍默认依赖“最近的 `tsconfig.json`”而非显式绑定工程文件
+   - 真实 build authority 现在分成五类：
+     - Node app / feature libs：`tsup`
+       - `apps/api`
+       - `account`、`ai`、`authentication`、`contracts`、`dashboard`、`domain-shared`、`editor`、`goal`、`governance`、`http-client`、`ipc-client`、`notification`、`patterns`、`powersync-schema`、`reminder`、`repository`、`schedule`、`scheduler-server`、`setting`、`task`、`ui-core`、`utils`
+     - Vite app / package：
+       - `apps/web`（`@nx/vite:build`）
+       - `apps/desktop`（`vite build`）
+       - `packages/app-vue`
+       - `packages/assets`
+       - `packages/ui-vue-shadcn`
+     - TSC-first 特例：
+       - `packages/database`（`prisma generate && tsc --build`）
+     - Expo / Metro 或平台内建构建：
+       - `apps/mobile`
+       - `packages/app-react`
+       - `packages/ui-react-native`
+     - 无独立 build 目标或非 TypeScript 主导：
+       - `packages/test-utils`
+       - `apps/ai-service`
+   - 这也直接说明了：
+     - `apps/api` 最需要的是 editor/runtime/typecheck 分层，而不是先机械新增 `tsconfig.build.json`
+     - `apps/web` / `apps/desktop` 最需要的是去掉默认 `tsconfig.json` 的 build 噪音，并显式绑定 typecheck 工程
+     - 真正长期需要 `tsconfig.build.json` 的，主要是“`tsup + tsc --emitDeclarationOnly` 双阶段”的 Node/feature libraries
+     - `database`、`mobile`、`ui-react-native` 这类特例不应被硬套进同一模板
+
+2. 当前问题不是“每个项目都缺一个 `tsconfig.build.json`”，而是职责边界没有统一
+   - VS Code / tsserver 默认只认最近的 `tsconfig.json` 或 `jsconfig.json`
+   - `serve` / `vite` / `tsx` / `expo` 等开发运行时不一定和编辑器使用同一套 alias 语义
+   - `typecheck` 是 CLI 任务，应该显式绑定它自己的工程文件，而不是依赖编辑器默认工程碰巧可用
+   - `build` 是否依赖 `tsconfig`，取决于真实构建器：
+     - `tsup`、`vite`、`expo`、`tsc` 的权责不同
+   - 所以真正需要统一的是命名和职责：
+     - `tsconfig.json` 做什么
+     - `tsconfig.typecheck.json` 什么时候该有
+     - `tsconfig.build.json` 什么时候该有
+     - `tsconfig.runtime.json` / `tsconfig.node.json` 什么时候该有
+
+3. 推荐的全仓目标形态
+   - 根模板层
+     - `tsconfig.base.json`
+       - 只放语言级规则、strictness、module 语义、跨仓通用 compiler flags
+       - 不表达 workspace source-linking 策略
+     - `tsconfig.workspace-src.json`
+       - 只放“开发态源码联调” alias
+       - 不放 `rootDir`、`outDir`、`noEmit: false`、`declaration`
+     - 新增 `tsconfig.workspace-dist.json`
+       - 只放“按 package exports / dist / declared public surface 解析依赖”的 alias 基线
+       - 用于 build/typecheck 必须回到真实包边界的项目
+   - 每个项目的文件职责
+     - `tsconfig.json`
+       - 默认必须是 editor-first
+       - 服务 VS Code / tsserver / 日常编辑
+       - 允许 source-linking，但不表达 emit/build 语义
+     - `tsconfig.runtime.json`
+       - 仅在开发运行时与编辑器 alias 语义不同的时候存在
+       - 例如 `tsx`、Node side runtime、某些 Electron main/preload 入口
+     - `tsconfig.typecheck.json`
+       - 仅在 CLI typecheck 需要和编辑器不同的 `paths`、`include`、`rootDir`、tooling 选项时存在
+       - 不作为“绕过默认 `tsconfig.json` 设计问题”的长期补丁
+     - `tsconfig.build.json`
+       - 仅在 `tsc` 参与 declaration emit 或构建器显式消费 tsconfig 时存在
+       - 明确声明 `rootDir`、`outDir`、`declaration`、`emitDeclarationOnly`
+       - 不允许 sibling package `src` alias 污染构建边界
+
+4. 按项目 archetype 的落地建议
+   - Archetype A：Node/tsup library
+     - 适用：`account`、`ai`、`authentication`、`editor`、`goal`、`governance`、`notification`、`reminder`、`repository`、`schedule`、`setting`、`task`
+     - 目标：
+       - 保留 `tsconfig.json + tsconfig.build.json`
+       - `tsconfig.json` 只做 editor/typecheck 默认工程
+       - `tsconfig.build.json` 显式切到 dist/export 依赖
+       - `typecheck` target 显式写成 `tsc --noEmit -p tsconfig.json`
+   - Archetype B：基础 TypeScript library
+     - 适用：`utils`、`contracts`、`domain-shared`、`ui-core`、`http-client`、`ipc-client`、`patterns`、`scheduler-server`、`powersync-schema`、`test-utils`
+     - 目标：
+       - 默认只保留 editor-first `tsconfig.json`
+       - 只有当 declaration emit 或 CLI-only typecheck 确实需要时，才新增 `tsconfig.build.json` / `tsconfig.typecheck.json`
+       - 不为了形式统一而机械增文件
+   - Archetype C：Vite / Vue / Electron renderer app
+     - 适用：`apps/web`、`apps/desktop`
+     - 目标：
+       - `tsconfig.json` 保持 editor-first，不再保留 build-only 字段
+       - `tsconfig.typecheck.json` 显式服务 `vue-tsc` 或 renderer-side CLI 检查
+       - `tsconfig.node.json` 或 `tsconfig.runtime.json` 只服务 Vite config / Electron main / preload 等 Node-side 代码
+       - `vite build` 仍是 build authority，tsconfig 不再假装负责输出
+   - Archetype D：Node app with source-linking dev workflow
+     - 适用：`apps/api`
+     - 目标：
+       - `tsconfig.json` 负责编辑器
+       - `tsconfig.runtime.json` 负责 `tsx watch`，若 runtime 解析与编辑器不同
+       - `tsconfig.typecheck.json` 只保留真正 CLI-specific 差异
+       - `tsconfig.build.json` 只在 `tsup` / `tsc` declaration 需要时存在
+   - Archetype E：Expo / React Native app
+     - 适用：`apps/mobile`、`packages/ui-react-native`
+     - 目标：
+       - 尽量保持单一 `tsconfig.json`
+       - 只有当 Metro / Expo / Node scripts 的语义分叉时才引入额外工程
+       - 不把 web/vite/electron 的分层模板强灌给 Expo
+
+5. 全仓约束原则
+   - 默认 `tsconfig.json` 不应再出现以下 build-only 语义，除非该项目没有其他 tsconfig 且这个文件不承担编辑器默认工程：
+     - `noEmit: false`
+     - `emitDeclarationOnly`
+     - `declaration` 仅为发布产物而存在时
+     - `rootDir` / `outDir` 仅为 emit 服务时
+   - `typecheck` target 一律显式 `-p`
+     - `tsc --noEmit -p tsconfig.json`
+     - `tsc --noEmit -p tsconfig.typecheck.json`
+     - `vue-tsc --noEmit -p tsconfig.typecheck.json`
+   - `build` target 只指向真实 build authority
+     - `tsup` / `vite` / `expo` / `tsc`
+     - 若 `tsc` 参与声明输出，必须显式 `-p tsconfig.build.json`
+   - 构建态禁止默认回落到 sibling package `src`
+     - build/typecheck-back-to-boundary 工程只能指向 `dist`、`exports` 或显式批准的 public entry
+
+补充：按当前仓库真实构建器推导出的最终文件矩阵
+   - 根层统一只保留三层模板：
+     - `tsconfig.base.json`
+       - 语言级规则、strictness、module 语义
+       - 不承载 workspace alias 策略
+     - `tsconfig.workspace-src.json`
+       - 只承载 editor / 开发态源码联调 alias
+       - 不承载 emit、`rootDir`、`outDir`
+     - `tsconfig.workspace-dist.json`
+       - 新增
+       - 只承载“回到真实包边界”的最小 alias
+       - 默认尽量少配；优先让构建器按 package exports / dependencies 解析
+   - `apps/api`
+     - 推荐最终形态：
+       - `tsconfig.json`
+         - editor-first
+         - 不再保留 `rootDir`、`outDir`、`noEmit: false`、`declaration`
+         - 只放 `@/*` 和确实需要源码联调的少量白名单 alias
+       - `tsconfig.runtime.json`
+         - 仅在 `tsx watch` 需要与编辑器不同的 alias / include 时保留
+         - `serve` target 显式 `TS_NODE_PROJECT` / `--tsconfig` 绑定到它
+       - `tsconfig.typecheck.json`
+         - 仅在 CLI typecheck 需要“回到 dist/export 边界”时保留
+         - 不再只是为了绕过 `rootDir` 冲突而存在
+       - `tsconfig.build.json`
+         - **不是默认必需**
+         - 只有当 `tsup` 显式消费单独 tsconfig，或后续重新引入 `tsc` declaration/build 步骤时才新增
+     - 当前仓库结论：
+       - `api` 最急需的是把默认 `tsconfig.json` 收成 editor-first
+       - 不是先机械新增一个 `tsconfig.build.json`
+   - `apps/web`
+     - 推荐最终形态：
+       - `tsconfig.json`
+         - editor-first / `vue-tsc`-friendly
+         - 去掉 `outDir`、`declaration`、`declarationMap`、`sourceMap`
+       - `tsconfig.typecheck.json`
+         - 仅在 `vue-tsc` 需要与编辑器不同的 include / paths 时保留
+       - 不新增 `tsconfig.build.json`
+         - `vite build` 是唯一 build authority
+   - `apps/desktop`
+     - 推荐最终形态：
+       - `tsconfig.json`
+         - renderer/editor-first
+         - 去掉 `outDir`
+       - `tsconfig.node.json`
+         - 只服务 Vite config、Electron main/preload、Node-side scripts
+       - `tsconfig.typecheck.json`
+         - 仅在 renderer-side typecheck 与默认编辑器工程不一致时新增
+       - 不新增 `tsconfig.build.json`
+         - `vite` / `electron-builder` 才是真实构建链
+   - `apps/mobile` 与 `packages/ui-react-native`
+     - 推荐最终形态：
+       - 尽量维持单一 `tsconfig.json`
+       - 继续让 Expo / Metro 语义主导，不引入 web/electron 那套额外工程文件
+   - Node/tsup feature libraries
+     - 适用：
+       - `account`、`ai`、`authentication`、`editor`、`goal`、`governance`、`notification`、`reminder`、`repository`、`schedule`、`setting`、`task`
+     - 推荐最终形态：
+       - `tsconfig.json`
+         - editor-first / default typecheck project
+       - `tsconfig.build.json`
+         - 保留
+         - 专门给 `tsc --emitDeclarationOnly` 或 `tsup` 的 build-time tsconfig 使用
+         - 依赖解析优先走 `dist` / public exports，不回落 sibling `src`
+   - 基础 TS libraries
+     - 适用：
+       - `utils`、`contracts`、`domain-shared`、`ui-core`、`http-client`、`ipc-client`、`patterns`、`scheduler-server`、`powersync-schema`、`test-utils`
+     - 推荐最终形态：
+       - 默认只保留 `tsconfig.json`
+       - 只有 declaration emit 或 CLI-only typecheck 真有差异时才补 `tsconfig.build.json` / `tsconfig.typecheck.json`
+       - 重点是删掉“挂着 `outDir/rootDir/declaration`，但实际不负责 build”的伪 build 配置
+   - Vue/UI packages
+     - 适用：
+       - `ui-vue-shadcn`、`app-vue`、`assets`
+     - 推荐最终形态：
+       - `tsconfig.json`
+         - editor-first
+       - `tsconfig.typecheck.json`
+         - 只在 `vue-tsc` 或模板类型检查需要额外选项时保留
+       - 是否需要 `tsconfig.build.json`
+         - 取决于是否仍用 `tsc` 补 declaration emit
+         - 如果真实 build 完全交给 `vite` / `tsup` 且无额外 emit，则不应机械新增
+
+6. 推荐的 rollout 顺序
+   - Slice G1：定义 root-level 模板契约
+     - 收紧 `tsconfig.base.json`
+     - 明确 `tsconfig.workspace-src.json`
+     - 新增 `tsconfig.workspace-dist.json`
+   - Slice G2：先拿 `apps/api` 做 Node app pilot
+     - 拆成 editor/runtime/typecheck/build 明确四职分离
+   - Slice G3：再收 `apps/web + apps/desktop`
+     - 去掉默认 `tsconfig.json` 中的 build-like 字段
+     - 明确 `typecheck` 与 Node-side config 的职责
+   - Slice G4：统一 Node/tsup libraries
+     - 把 `typecheck` target 改成显式 `-p tsconfig.json`
+     - 收紧 `tsconfig.build.json` 的 dist/export 依赖语义
+   - Slice G5：只在必要处补 `tsconfig.typecheck.json`
+     - 优先处理 `domain-shared`、`ui-vue-shadcn` 这类已有差异的包
+     - 其余基础库保持最小文件数
+   - Slice G6：补治理脚本
+     - 新增 `tsconfig-shape-audit`
+     - 规则至少覆盖：
+       - 默认 `tsconfig.json` 禁止 build-only 字段
+       - `typecheck` target 必须显式 `-p`
+       - `build` target 若使用 `tsc`，必须显式 `-p tsconfig.build.json`
+
 ### 下一轮推荐执行顺序
 
 1. `Phase A` 已完成：文档真值漂移已回收
 2. `Phase B` 已完成：package-internal known violations 已清零
 3. `Phase C`：把测试边界改成受控 allowlist
 4. `Phase D`：扩大 root public surface audit 并收口 4 个高价值包
-5. `Phase E`：清掉生产代码 Prisma cast seam
-6. `Phase F`：继续压缩 target baseline exemptions
+5. `Phase D` 当前应优先收口：先让 package export audit 恢复为绿
+6. `Phase G`：统一全仓 tsconfig 的 editor/runtime/typecheck/build 分层
+7. `Phase E`：清掉生产代码 Prisma cast seam
+8. `Phase F`：继续压缩 target baseline exemptions
 
 这样推进的原因很直接：
 
-1. 文档真值已经回收，当前最值钱的是继续清规则内的已知例外
-2. 测试 seam、公开面和 typed context 现在都已具备足够清晰的收口切片
+1. 文档真值已经回收，但 `package-export-audit` 现在已经变成门禁红线，因此 Track 4 需要先恢复为绿
+2. 测试 seam、公开面、app-level tsconfig 分层和 typed context 现在都已具备足够清晰的收口切片
 3. 只有这些剩余切片完成，`governance` 的局部示范才能真正升级为 repo-wide 范式
 
 ### 建议按 PR 切片推进
@@ -675,6 +1791,175 @@ updated: 2026-05-31T12:00:00
    - 验证：
      - `pnpm nx run daily-use:target-baseline-check`
      - `pnpm nx run daily-use:governance-check`
+
+9. `PR-9` 建立全仓 tsconfig 模板契约，并拿 `apps/api` 做首个 pilot
+   - 目标文件：
+     - `tsconfig.base.json`
+     - `tsconfig.workspace-src.json`
+     - 新增 `tsconfig.workspace-dist.json`
+     - `apps/api/tsconfig.json`
+     - 需要时新增 `apps/api/tsconfig.runtime.json`
+     - 仅在 `tsup` / `tsc` 真的需要独立工程时新增 `apps/api/tsconfig.build.json`
+     - `apps/api/tsconfig.typecheck.json`
+     - `apps/api/project.json`
+     - 需要时 `apps/api/tsup.config.ts`
+   - 预期动作：
+     - 明确根层 `base / workspace-src / workspace-dist` 三层职责
+     - 让 `apps/api/tsconfig.json` 成为 editor-first / source-linking-first 配置
+     - 从默认 `tsconfig.json` 移除 `rootDir: "./src"`、`outDir: "./dist"`、emit 相关意图
+     - 只有当 `tsup` / `tsc` 的 build-time declaration 真的需要时，才把这些语义移到 `tsconfig.build.json`
+     - 若 `tsx` dev runtime 与编辑器语义不同，则显式拆出 `tsconfig.runtime.json`
+     - 重新审视 `tsconfig.typecheck.json` 与 dev config 的差异，清掉仅为绕过 rootDir 冲突而存在的补丁性配置
+   - 验证：
+     - `pnpm nx run api:typecheck`
+     - `pnpm nx build api`
+     - 用 VS Code / tsserver 视角检查 `apps/api/src` 的源码联调场景不再受 `rootDir: "./src"` 误约束
+
+10. `PR-10` 收紧 `apps/web + apps/desktop` 的 editor/typecheck/runtime 分层
+   - 目标文件：
+     - `apps/web/tsconfig.json`
+     - 需要时新增 `apps/web/tsconfig.typecheck.json`
+     - `apps/web/project.json`
+     - `apps/desktop/tsconfig.json`
+     - `apps/desktop/tsconfig.node.json`
+     - 需要时新增 `apps/desktop/tsconfig.typecheck.json`
+     - `apps/desktop/project.json`
+   - 预期动作：
+     - 去掉默认 `tsconfig.json` 中只为 build 服务的字段
+     - 把 `vue-tsc` / renderer-side typecheck 绑定到显式工程文件
+     - 把 Electron main/preload / Vite config 的 Node-side 语义收进 `tsconfig.node.json` 或等价 runtime config
+     - 保持 `vite` 作为唯一 build authority
+   - 验证：
+     - `pnpm nx run web:typecheck`
+     - `pnpm nx build web --configuration=production`
+     - `pnpm nx run desktop:typecheck`
+     - `pnpm nx build desktop`
+
+11. `PR-11` 统一 library tsconfig 约定并补 tsconfig shape audit
+   - 目标文件：
+     - `packages/*/tsconfig.json`
+     - `packages/*/tsconfig.build.json`
+     - `packages/*/tsconfig.typecheck.json`
+     - `packages/*/project.json`
+     - 新增 `tools/governance/tsconfig-shape-audit.mjs`
+     - `project.json`
+   - 预期动作：
+     - 把 Node/tsup libraries 的 `typecheck` target 统一成显式 `-p tsconfig.json`
+     - 只在确有 CLI-only 差异时保留 `tsconfig.typecheck.json`
+     - 收紧 build config 到 dist/export 语义
+     - 给默认 `tsconfig.json` 添加治理门禁，阻止新的 build/editor 混写回归
+   - 验证：
+     - `pnpm nx run-many -t typecheck --projects=account,ai,authentication,editor,goal,governance,notification,reminder,repository,schedule,setting,task,domain-shared,ui-vue-shadcn,utils,contracts,ui-core`
+     - `pnpm nx run daily-use:governance-check`
+
+### Phase G 子切片（进一步细化）
+
+为了避免 `PR-9 ~ PR-11` 再次落成“原则正确、实施发散”，这里把 tsconfig 收口拆成更细的子切片。目标不是统一文件数量，而是统一职责边界。
+
+1. `PR-9a` 根模板契约
+   - 目标文件：
+     - `tsconfig.base.json`
+     - `tsconfig.workspace-src.json`
+     - 新增 `tsconfig.workspace-dist.json`
+   - 预期动作：
+     - `base` 只保留语言级规则
+     - `workspace-src` 只保留开发态源码联调 alias
+     - `workspace-dist` 只保留回到真实包边界所需的最小 alias；默认尽量少配
+   - 完成证明：
+     - 根模板文件中不再出现 emit/build-only 语义
+     - `workspace-src` 与 `workspace-dist` 的职责文字写入注释或文档
+
+2. `PR-9b` `apps/api` editor / runtime 分离
+   - 目标文件：
+     - `apps/api/tsconfig.json`
+     - 需要时新增 `apps/api/tsconfig.runtime.json`
+     - `apps/api/project.json`
+   - 预期动作：
+     - 默认 `tsconfig.json` 去掉 `rootDir`、`outDir`、`noEmit: false`、`declaration`
+     - 保留 editor-first 的源码联调白名单 alias
+     - 若 `tsx watch` 需要不同解析语义，则让 `serve` target 显式绑定 `tsconfig.runtime.json`
+   - 完成证明：
+     - `apps/api/tsconfig.json` 不再携带 build-only 字段
+     - `serve` 命令若使用 runtime 工程，必须在 `project.json` 中显式可见
+
+3. `PR-9c` `apps/api` typecheck / build 边界
+   - 目标文件：
+     - `apps/api/tsconfig.typecheck.json`
+     - 仅在确有需要时新增 `apps/api/tsconfig.build.json`
+     - `apps/api/project.json`
+     - 需要时 `apps/api/tsup.config.ts`
+   - 预期动作：
+     - `typecheck` 只保留 CLI-specific 差异，不能继续承担“绕过默认 tsconfig 设计问题”的补丁职责
+     - 若 `build` 不消费独立 tsconfig，则不创建 `tsconfig.build.json`
+     - 若后续重新引入 `tsc` declaration 步骤，则 build target 必须显式 `-p tsconfig.build.json`
+   - 完成证明：
+     - `api:typecheck` 显式绑定具体工程文件
+     - `api` 的 build authority 仍然清晰落在 `tsup`
+
+4. `PR-10a` `apps/web` editor / vue-tsc 分离
+   - 目标文件：
+     - `apps/web/tsconfig.json`
+     - 需要时新增 `apps/web/tsconfig.typecheck.json`
+     - `apps/web/project.json`
+   - 预期动作：
+     - 默认 `tsconfig.json` 去掉 `outDir`、`declaration`、`declarationMap`、`sourceMap`
+     - 只有当 `vue-tsc` 需要不同 include / paths 时才新增 `tsconfig.typecheck.json`
+     - 无论是否新增 `tsconfig.typecheck.json`，`web:typecheck` 都应显式绑定工程文件，而不是继续依赖 `vue-tsc --noEmit` 的隐式默认解析
+   - 完成证明：
+     - `web` 默认工程只承载 editor / type-analysis 语义
+     - `vite build` 仍是唯一 build authority
+
+5. `PR-10b` `apps/desktop` renderer / node-side 分离
+   - 目标文件：
+     - `apps/desktop/tsconfig.json`
+     - `apps/desktop/tsconfig.node.json`
+     - 需要时新增 `apps/desktop/tsconfig.typecheck.json`
+     - `apps/desktop/project.json`
+   - 预期动作：
+     - 默认 `tsconfig.json` 去掉 `outDir`
+     - `tsconfig.node.json` 只服务 Vite config、Electron main/preload、Node-side scripts
+     - renderer-side typecheck 若需要单独工程，再新增 `tsconfig.typecheck.json`
+     - 无论是否新增 `tsconfig.typecheck.json`，`desktop:typecheck` 都应显式绑定工程文件，而不是继续裸跑 `tsc --noEmit`
+   - 完成证明：
+     - renderer 与 node-side 入口的职责分层在文件名上可见
+     - `desktop` 的 build authority 仍保持在 `vite` / `electron-builder`
+
+6. `PR-11a` Node/tsup feature libraries 归一化
+   - 适用：
+     - `account`、`ai`、`authentication`、`editor`、`goal`、`governance`、`notification`、`reminder`、`repository`、`schedule`、`setting`、`task`
+   - 预期动作：
+     - 默认 `tsconfig.json` 统一为 editor-first / default typecheck 工程
+     - `tsconfig.build.json` 统一只服务 declaration emit / build-time dist 边界
+     - `project.json` 的 `typecheck` target 统一显式 `tsc --noEmit -p tsconfig.json`
+   - 完成证明：
+     - 不再出现“默认工程既给编辑器用，又带 build-only 语义”的混写
+     - build 中若调用 `tsc`，必须显式 `-p tsconfig.build.json`
+
+7. `PR-11b` 基础库与 Vue/UI 包清理伪 build 配置
+   - 适用：
+     - `utils`、`contracts`、`domain-shared`、`ui-core`、`http-client`、`ipc-client`、`patterns`、`scheduler-server`、`powersync-schema`、`test-utils`
+     - `ui-vue-shadcn`、`app-vue`、`assets`
+   - 预期动作：
+     - 只在 declaration emit 或 `vue-tsc` 差异真实存在时保留额外工程
+     - 删除默认 `tsconfig.json` 中不再承担 build 的 `outDir` / `rootDir` / `declaration` 噪音
+     - 保留现有少量合理例外，例如 `domain-shared`、`ui-vue-shadcn` 的 CLI-only typecheck 差异
+     - 显式保留并记录少数结构性例外：
+       - `contracts` 当前 `typecheck` 走 `tsc --build packages/contracts/tsconfig.json`
+       - `database` 当前 build 走 `prisma generate && tsc --build`
+       - 这些项目不应被简单硬改成与普通 tsup library 完全同构
+   - 完成证明：
+     - 这些包的文件数量与职责复杂度匹配，不为“形式统一”机械增文件
+
+8. `PR-11c` tsconfig shape audit 治理门禁
+   - 目标文件：
+     - 新增 `tools/governance/tsconfig-shape-audit.mjs`
+     - `daily-use:governance-check`
+   - 预期动作：
+     - 拦截默认 `tsconfig.json` 再次引入 build-only 字段
+     - 拦截 `typecheck` target 未显式 `-p`
+     - 拦截使用 `tsc` 的 build target 未显式 `-p tsconfig.build.json`
+   - 完成证明：
+     - tsconfig 分层从“一次性重构”变成持续治理约束
 
 ### Slice 依赖图
 
