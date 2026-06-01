@@ -37,11 +37,14 @@
  * // 1. 导入契约层类型
  * import type { AuthIdentityServerDTO } from '@dailyuse/contracts/authentication';
  *
- * // 2. 导入聚合根
- * import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
+ * // 2. 导入公共聚合根与组合根
+ * import {
+ *   AuthIdentity,
+ *   AuthSession,
+ *   createAuthenticationModule,
+ * } from '@dailyuse/authentication';
  *
  * // 3. 使用组合根
- * import { createAuthenticationModule } from '@dailyuse/authentication/infrastructure-server';
  * const module = createAuthenticationModule({ identityRepository, sessionRepository, passwordHasher, tokenProvider });
  * const result = await module.api.login(data, cx);
  *
@@ -62,9 +65,7 @@ export { AuthSession } from './domain-server';
 export type { IAuthIdentityRepository, IAuthSessionRepository } from './domain-server';
 
 // ================= Application Layer (应用层) =================
-// Application-Server: Use cases (server-side)
 // Application-Client: Client services, API client ports
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================

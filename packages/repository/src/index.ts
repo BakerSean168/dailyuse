@@ -20,14 +20,14 @@
  * // 1. 导入契约
  * import type { RepositoryServerDTO } from '@dailyuse/contracts/repository';
  *
- * // 2. 导入服务端聚合根
- * import { Repository } from '@dailyuse/repository/domain-server';
+ * // 2. 导入公共聚合根与组合根
+ * import {
+ *   Repository,
+ *   createRepositoryModule,
+ *   type RepositoryModuleInstance,
+ * } from '@dailyuse/repository';
  *
  * // 3. 导入组合根（推荐）
- * import { createRepositoryModule } from '@dailyuse/repository/infrastructure-server';
- *
- * // 3b. 导入遗留类模块（向后兼容）
- * import { RepositoryModule } from '@dailyuse/repository/infrastructure-server';
  * ```
  */
 
@@ -37,13 +37,13 @@
 export * from './domain-server';
 
 // ================= Application Layer =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
 // Composition root, factories, and concrete adapters.
-// Note: memory adapters and RepositoryRepositoryFactory are NOT exported from root;
-// import from @dailyuse/repository/infrastructure-server if needed.
+// Note: memory adapters and RepositoryRepositoryFactory are NOT exported from root.
+// External consumers should use the package root helpers; package-internal code
+// should use relative imports instead of reopening internal layer subpaths.
 export {
   createRepositoryModule,
   createRepositoryUseCases,

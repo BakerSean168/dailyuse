@@ -20,7 +20,7 @@ import {
   createReminderPowerSyncModule,
   ReminderTemplatePowerSyncRepository,
 } from '../infrastructure-server/powersync';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
 import { ReminderController } from '../controllers/reminder.controller';
 import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils/logger';

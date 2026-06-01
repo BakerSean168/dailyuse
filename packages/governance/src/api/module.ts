@@ -23,8 +23,7 @@ import { createGovernanceRuntimeContribution } from './runtime';
 
 /**
  * Typed module context for governance registration.
- * Extends the shared ServerModuleContext with PrismaClient as the db type,
- * eliminating the `db: unknown` + `as PrismaClient` cast.
+ * Extends the shared ServerModuleContext with PrismaClient as the db type.
  */
 export type GovernanceApiModuleContext = ServerModuleContext<PrismaClient>;
 

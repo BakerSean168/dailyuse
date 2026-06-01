@@ -50,14 +50,11 @@ export class NotificationRepositoryFactory {
    */
   static create(dataSource: 'prisma', client: PrismaClient): ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories>;
   static create(dataSource: 'powersync', client: IElectronDatabase): ReturnType<typeof NotificationRepositoryFactory.createPowerSyncRepositories>;
-  static create(
-    dataSource: 'prisma' | 'powersync',
-    client: PrismaClient | IElectronDatabase,
-  ) {
+  static create(...args: ['prisma', PrismaClient] | ['powersync', IElectronDatabase]) {
+    const [dataSource, client] = args;
     if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient);
-    } else {
-      return this.createPowerSyncRepositories(client as IElectronDatabase);
+      return this.createPrismaRepositories(client);
     }
+    return this.createPowerSyncRepositories(client);
   }
 }

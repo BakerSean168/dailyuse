@@ -21,7 +21,7 @@
  * import type { AIConversationDTO } from '@dailyuse/contracts/ai';
  *
  * // 2. 使用组合根 (推荐)
- * import { createAIModule } from '@dailyuse/ai/infrastructure-server';
+ * import { createAIModule } from '@dailyuse/ai';
  * const module = createAIModule({
  *   conversationRepository,
  *   providerConfigRepository,
@@ -42,7 +42,6 @@ export * from '@dailyuse/contracts/ai';
 export * from './domain-server';
 
 // ================= Application Layer (应用层) =================
-export * from './application-server';
 // application-client is available via subpath export only
 // (e.g., @dailyuse/ai/application-client) to avoid name conflicts
 

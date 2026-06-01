@@ -27,3 +27,12 @@ export {
 } from './transport-handlers';
 export { createGoalRuntimeContribution } from './runtime';
 export { createGoalScheduleRuntimeContribution } from './schedule-runtime';
+export { createGoalPrismaModule, createGoalPowerSyncModule } from '../infrastructure-server';
+export { GoalPowerSyncRepository } from '../infrastructure-server';
+export { createGoalPrismaRepositories } from './prisma';
+export type {
+  GoalModuleInstance,
+  GoalModuleDependencies,
+  GoalApplicationPort,
+  GoalModuleUseCases,
+} from '../infrastructure-server';

@@ -2,8 +2,8 @@
  * Server Module Context — shared contract for API module registration.
  *
  * Feature packages extend this interface with their concrete DbClient type
- * (typically PrismaClient from @dailyuse/database) to eliminate the
- * `db: unknown` + `as PrismaClient` cast pattern.
+ * (typically PrismaClient from @dailyuse/database) so module registration
+ * receives the database dependency as a typed seam.
  *
  * @example
  * ```typescript
@@ -18,9 +18,8 @@
  * Typed base context for server-side API module registration.
  *
  * @typeParam DbClient - The concrete database client type (e.g. PrismaClient).
- *   Defaults to `unknown` for backward compatibility during migration.
  */
-export interface ServerModuleContext<DbClient = unknown> {
+export interface ServerModuleContext<DbClient> {
   readonly app: import('express').Express;
   readonly router: import('express').Router;
   readonly db: DbClient;

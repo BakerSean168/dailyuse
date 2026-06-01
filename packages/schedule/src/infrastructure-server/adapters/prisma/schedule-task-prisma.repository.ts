@@ -37,6 +37,13 @@ interface ScheduleTaskDb {
   scheduleExecution: PrismaClient['scheduleExecution'];
 }
 
+type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
+type ScheduleTaskRootDb = ScheduleTaskDb & PrismaTransactionRoot;
+
+function isScheduleTaskRootDb(db: ScheduleTaskDb | ScheduleTaskRootDb): db is ScheduleTaskRootDb {
+  return '$transaction' in db;
+}
+
 /**
  * Query options for ScheduleTask.
  */
@@ -60,14 +67,14 @@ export class ScheduleTaskPrismaRepository
   implements IScheduleTaskRepository
 {
   private readonly db: ScheduleTaskDb;
-  private readonly rootClient: PrismaClient | null;
+  private readonly rootClient: PrismaTransactionRoot | null;
 
   constructor(prisma: PrismaClient);
-  constructor(prisma: ScheduleTaskDb, rootClient?: PrismaClient);
-  constructor(prisma: ScheduleTaskDb | PrismaClient, rootClient?: PrismaClient) {
+  constructor(prisma: ScheduleTaskDb, rootClient?: PrismaTransactionRoot);
+  constructor(prisma: ScheduleTaskDb | PrismaClient, rootClient?: PrismaTransactionRoot) {
     super(eventBusAdapter);
     this.db = prisma;
-    this.rootClient = rootClient ?? ('$transaction' in prisma ? (prisma as PrismaClient) : null);
+    this.rootClient = rootClient ?? (isScheduleTaskRootDb(prisma) ? prisma : null);
   }
 
   // ===== Mapping =====

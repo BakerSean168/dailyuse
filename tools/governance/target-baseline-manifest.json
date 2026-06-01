@@ -103,10 +103,8 @@
     {
       "project": "ui-vue-shadcn",
       "target": "test",
-      "type": "temporary",
-      "reason": "UI component lib: third-party shadcn-vue primitives; component test infrastructure pending",
-      "owner": "governance-team",
-      "targetDate": "2026-Q4"
+      "type": "permanent",
+      "reason": "UI component lib: third-party shadcn-vue primitives; component tests require Vue Test Utils + jsdom/happy-dom environment setup that differs from standard vitest"
     },
     {
       "project": "app-react",
@@ -117,10 +115,8 @@
     {
       "project": "app-react",
       "target": "test",
-      "type": "temporary",
-      "reason": "React lib: test infrastructure not yet set up",
-      "owner": "governance-team",
-      "targetDate": "2026-Q4"
+      "type": "permanent",
+      "reason": "UI lib: test infrastructure requires React Native Testing Library + Expo/Metro test runner integration; not a standard vitest setup"
     },
     {
       "project": "ui-react-native",
@@ -131,10 +127,8 @@
     {
       "project": "ui-react-native",
       "target": "test",
-      "type": "temporary",
-      "reason": "React Native lib: test infrastructure not yet set up",
-      "owner": "governance-team",
-      "targetDate": "2026-Q4"
+      "type": "permanent",
+      "reason": "React Native lib: test infrastructure requires React Native Testing Library + Metro bundler mock setup; not a standard vitest setup"
     },
     {
       "project": "powersync-schema",

@@ -23,12 +23,7 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import { ResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
 import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
-import {
-  createRepositoryModule,
-  RepositoryRepositoryFactory,
-  ResourceBookmarkPrismaRepository,
-  FsStorageAdapter,
-} from '@dailyuse/repository/infrastructure-server';
+import { createRepositoryPrismaModule } from '@dailyuse/repository/api';
 import {
   createEditorModule,
   EditorWorkspacePrismaRepository,
@@ -62,7 +57,7 @@ export interface EditorApiModuleDef {
 // ---------------------------------------------------------------------------
 
 let activeEditorModule: EditorModuleInstance | null = null;
-let activeRepositoryBridgeModule: ReturnType<typeof createRepositoryModule> | null = null;
+let activeRepositoryBridgeModule: ReturnType<typeof createRepositoryPrismaModule> | null = null;
 
 type RepositorySearchItem = RepositorySearchResponse['results'][number];
 
@@ -79,16 +74,10 @@ export const EditorApiModule: EditorApiModuleDef = {
     // 1. Composition Root — assemble dependencies (uses shared database singleton)
     //    组合根 — 组装依赖（使用共享数据库单例）
     const prismaClient = db;
-    const repositoryRepositories =
-      RepositoryRepositoryFactory.createPrismaRepositories(prismaClient);
     const repositoryStorageBaseDir =
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';
-    const repositoryBridgeModule = createRepositoryModule({
-      repositoryRepository: repositoryRepositories.repositoryRepository,
-      resourceRepository: repositoryRepositories.resourceRepository,
-      folderRepository: repositoryRepositories.folderRepository,
-      resourceBookmarkRepository: new ResourceBookmarkPrismaRepository(prismaClient),
-      storagePort: new FsStorageAdapter(repositoryStorageBaseDir),
+    const repositoryBridgeModule = createRepositoryPrismaModule(prismaClient, {
+      storageBaseDir: repositoryStorageBaseDir,
     });
     activeRepositoryBridgeModule = repositoryBridgeModule;
     repositoryBridgeModule.start();

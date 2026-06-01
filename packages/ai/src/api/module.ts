@@ -57,7 +57,7 @@ import type {
   IAIAutomationToolExecutorPort,
   IKnowledgeNotePersistencePort,
   IKnowledgeSourcePort,
-} from '../application-server';
+} from '../ports';
 import { createAITransportHandlers } from './transport-handlers';
 import { getAIServiceRuntimeConfig } from '../shared/config/env';
 

@@ -59,14 +59,11 @@ export class RepositoryRepositoryFactory {
    */
   static create(dataSource: 'prisma', client: PrismaClient): RepositoryImplementations;
   static create(dataSource: 'powersync', client: IElectronDatabase): RepositoryImplementations;
-  static create(
-    dataSource: 'prisma' | 'powersync',
-    client: PrismaClient | IElectronDatabase,
-  ): RepositoryImplementations {
+  static create(...args: ['prisma', PrismaClient] | ['powersync', IElectronDatabase]): RepositoryImplementations {
+    const [dataSource, client] = args;
     if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient);
-    } else {
-      return this.createPowerSyncRepositories(client as IElectronDatabase);
+      return this.createPrismaRepositories(client);
     }
+    return this.createPowerSyncRepositories(client);
   }
 }

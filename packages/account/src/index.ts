@@ -44,15 +44,14 @@
  * // 1. Import contracts
  * import type { AccountClientDTO } from '@dailyuse/contracts/account';
  *
- * // 2. Import server-side aggregate root
- * import { Account } from '@dailyuse/account/domain-server';
+ * // 2. Import public aggregate + module facade
+ * import { Account, createAccountModule } from '@dailyuse/account';
  *
  * // 3. Import API module (in apps/api)
  * import { AccountApiModule } from '@dailyuse/account/api';
  * bootstrapper.register(AccountApiModule);
  *
  * // 4. Use composition root directly
- * import { createAccountModule } from '@dailyuse/account/infrastructure-server';
  * const module = createAccountModule({ accountRepository });
  * const profile = await module.api.getProfile(identityId);
  * ```
@@ -75,10 +74,8 @@ export type { IAccountRepository } from './domain-server';
 //   import { Account } from '@dailyuse/account/domain-client';
 
 // ================= Application Layer (应用层) =================
-// Application-Server: Use cases (server-side)
 // Application-Client: Client services, view model mappers
 // Note: DTOs are already exported from contracts layer
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================

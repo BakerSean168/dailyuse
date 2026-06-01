@@ -22,7 +22,7 @@ import { SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
 import {
   ScheduleTask,
   type IScheduleTaskRepository,
-} from '@dailyuse/schedule/domain-server';
+} from '@dailyuse/schedule/api';
 import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type { TaskModuleRuntimeContribution } from '../infrastructure-server';
 import type { ITaskInstanceRepository, ITaskTemplateRepository } from '../domain-server';

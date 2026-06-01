@@ -2,7 +2,7 @@ import { eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import { ReminderType, type ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTask, type IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
+import { ScheduleTask, type IScheduleTaskRepository } from '@dailyuse/schedule/api';
 import { ScheduleConfig, ScheduleTaskMetadata, Timezone } from '@dailyuse/schedule/domain-shared';
 import type { IReminderTemplateRepository } from '../domain-server/repositories/i-reminder-template-repository';
 import type { ReminderModuleRuntimeContribution } from '../infrastructure-server';

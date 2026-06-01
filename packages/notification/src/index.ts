@@ -38,11 +38,14 @@
  * // 2. 导入值对象
  * import { NotificationChannelId } from '@dailyuse/notification/domain-shared';
  *
- * // 3. 导入聚合根
- * import { Notification, INotificationRepository } from '@dailyuse/notification/domain-server';
+ * // 3. 导入公共聚合根和组合根
+ * import {
+ *   Notification,
+ *   type INotificationRepository,
+ *   createNotificationModule,
+ * } from '@dailyuse/notification';
  *
  * // 4. 使用组合根
- * import { createNotificationModule } from '@dailyuse/notification/infrastructure-server';
  * const module = createNotificationModule({
  *   notificationRepository, preferenceRepository, templateRepository,
  * });
@@ -65,9 +68,7 @@ export * from './domain-server';
 // to avoid name conflicts with server-side models.
 
 // ================= Application Layer (应用层) =================
-// Application-Server: Use cases (server-side)
 // Application-Client: Client services, view model mappers
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================

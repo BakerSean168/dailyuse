@@ -32,7 +32,7 @@ import {
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskFolderRepository,
 } from '../infrastructure-server/powersync';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/infrastructure-server';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
 
 const logger = createLogger('TaskElectron');
 

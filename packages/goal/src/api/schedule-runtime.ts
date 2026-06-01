@@ -10,7 +10,7 @@ import { SourceModule, TaskPriority } from '@dailyuse/contracts/schedule';
 import {
   ScheduleTask,
   type IScheduleTaskRepository,
-} from '@dailyuse/schedule/domain-server';
+} from '@dailyuse/schedule/api';
 import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type { IGoalRepository } from '../domain-server';
 import type { GoalModuleRuntimeContribution } from '../infrastructure-server';

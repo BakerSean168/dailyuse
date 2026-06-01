@@ -20,11 +20,10 @@
  * // 1. 导入契约
  * import type { GoalServerDTO } from '@dailyuse/contracts/goal';
  *
- * // 2. 导入服务端聚合根
- * import { Goal, GoalFolder } from '@dailyuse/goal/domain-server';
+ * // 2. 导入公共聚合根和组合根
+ * import { Goal, GoalFolder, createGoalModule } from '@dailyuse/goal';
  *
  * // 3. 使用组合根
- * import { createGoalModule } from '@dailyuse/goal/infrastructure-server';
  * const module = createGoalModule({ goalRepository, goalFolderRepository, goalRecordRepository });
  * const result = await module.useCases.createGoal.execute(req, cx);
  * ```
@@ -54,13 +53,10 @@ export type {
 // Domain Services
 export { FocusSessionPolicy, GoalPolicy, GoalProgressCalculator } from './domain-server';
 
-// ================= Application Layer =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
-// Composition root + types — concrete adapters imported via subpath:
-//   @dailyuse/goal/infrastructure-server
+// Composition root + types — stable public helpers live on the package root.
 export {
   // Composition root (externally consumed by apps/api, apps/desktop)
   createGoalModule,

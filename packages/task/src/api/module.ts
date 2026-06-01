@@ -29,7 +29,7 @@ import { registerTaskRoutes } from './routes';
 import { createTaskTransportHandlers } from './transport-handlers';
 import { createTaskRuntimeContribution } from './runtime';
 import { createTaskScheduleRuntimeContribution } from './schedule-runtime';
-import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
+import { createScheduleTaskPrismaRepository } from '@dailyuse/schedule/api';
 
 /**
  * Typed module context for task registration.
@@ -73,7 +73,7 @@ export const TaskApiModule: TaskApiModuleDef = {
         createTaskScheduleRuntimeContribution({
           taskTemplateRepository,
           taskInstanceRepository,
-          scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
+          scheduleTaskRepository: createScheduleTaskPrismaRepository(prismaClient),
         }),
       ],
     });

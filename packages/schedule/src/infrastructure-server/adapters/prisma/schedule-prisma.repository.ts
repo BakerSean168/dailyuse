@@ -23,15 +23,22 @@ interface ScheduleDb {
   schedule: PrismaClient['schedule'];
 }
 
+type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
+type ScheduleRootDb = ScheduleDb & PrismaTransactionRoot;
+
+function isScheduleRootDb(db: ScheduleDb | ScheduleRootDb): db is ScheduleRootDb {
+  return '$transaction' in db;
+}
+
 export class SchedulePrismaRepository implements IScheduleRepository {
   private readonly db: ScheduleDb;
-  private readonly rootClient: PrismaClient | null;
+  private readonly rootClient: PrismaTransactionRoot | null;
 
   constructor(prisma: PrismaClient);
-  constructor(prisma: ScheduleDb, rootClient?: PrismaClient);
-  constructor(prisma: ScheduleDb | PrismaClient, rootClient?: PrismaClient) {
+  constructor(prisma: ScheduleDb, rootClient?: PrismaTransactionRoot);
+  constructor(prisma: ScheduleDb | PrismaClient, rootClient?: PrismaTransactionRoot) {
     this.db = prisma;
-    this.rootClient = rootClient ?? ('$transaction' in prisma ? (prisma as PrismaClient) : null);
+    this.rootClient = rootClient ?? (isScheduleRootDb(prisma) ? prisma : null);
   }
 
   /**
@@ -145,4 +152,3 @@ export class SchedulePrismaRepository implements IScheduleRepository {
 }
 
 export default SchedulePrismaRepository;
-

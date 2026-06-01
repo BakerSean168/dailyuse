@@ -24,7 +24,7 @@ import {
 } from './transport-handlers';
 import { createGoalRuntimeContribution } from './runtime';
 import { createGoalScheduleRuntimeContribution } from './schedule-runtime';
-import { ScheduleTaskPrismaRepository } from '@dailyuse/schedule/infrastructure-server';
+import { createScheduleTaskPrismaRepository } from '@dailyuse/schedule/api';
 
 /**
  * Typed module context for goal registration.
@@ -53,7 +53,7 @@ export const GoalApiModule: GoalApiModuleDef = {
         createGoalRuntimeContribution(),
         createGoalScheduleRuntimeContribution({
           goalRepository,
-          scheduleTaskRepository: new ScheduleTaskPrismaRepository(db),
+          scheduleTaskRepository: createScheduleTaskPrismaRepository(db),
         }),
       ],
     });

@@ -29,11 +29,11 @@
  * // 1. Import contracts / 导入契约
  * import type { ReminderTemplateServerDTO } from '@dailyuse/contracts/reminder';
  *
- * // 2. Import server aggregates / 导入服务端聚合根
- * import { ReminderTemplate } from '@dailyuse/reminder/domain-server';
+ * // 2. Import public aggregate / 导入公共聚合根
+ * import { ReminderTemplate } from '@dailyuse/reminder';
  *
- * // 3. Import composition root / 导入组合根
- * import { createReminderModule } from '@dailyuse/reminder/infrastructure-server';
+ * // 3. Register the API seam / 注册稳定 API seam
+ * import { ReminderApiModule } from '@dailyuse/reminder/api';
  * ```
  */
 
@@ -43,7 +43,6 @@
 export * from './domain-server';
 
 // ================= Application Layer =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================

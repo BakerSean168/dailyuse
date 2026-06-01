@@ -29,11 +29,10 @@
  * // 1. 导入契约 / Import contracts
  * import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
  *
- * // 2. 导入服务端聚合根 / Import server aggregates
- * import { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-server';
+ * // 2. 导入公共聚合根和组合根 / Import public aggregates + composition root
+ * import { TaskTemplate, TaskInstance, createTaskModule } from '@dailyuse/task';
  *
  * // 3. 使用组合根 / Use composition root
- * import { createTaskModule } from '@dailyuse/task/infrastructure-server';
  * const module = createTaskModule({
  *   taskTemplateRepository,
  *   taskInstanceRepository,
@@ -46,13 +45,10 @@
 // ================= Domain Layer =================
 export * from './domain-server';
 
-// ================= Application Layer =================
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
-// Composition root + types — concrete adapters imported via subpath:
-//   @dailyuse/task/infrastructure-server
+// Composition root + types — stable public helpers live on the package root.
 export {
   createTaskModule,
   createTaskPowerSyncModule,

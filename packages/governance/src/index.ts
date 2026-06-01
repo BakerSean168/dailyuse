@@ -41,11 +41,8 @@
  * // 2. 导入值对象工厂
  * import { RuleIdFactory } from '@dailyuse/governance/domain-shared';
  *
- * // 3. 导入聚合根
- * import { Rule, IRuleRepository } from '@dailyuse/governance/domain-server';
- *
- * // 4. 使用组合根
- * import { createGovernanceModule } from '@dailyuse/governance/infrastructure-server';
+ * // 3. 使用稳定组合根
+ * import { createGovernanceModule } from '@dailyuse/governance';
  * const module = createGovernanceModule({ ruleRepository, revisionRepository });
  * const result = await module.api.createRule(props, context);
  * ```
@@ -65,25 +62,23 @@ export * from './contracts';
 // because contracts/primitives already exports the type-only branded ID types.
 // Enums (Language, SnippetType, ChangeType, RuleStatus, RuleSeverity) are already
 // re-exported via './contracts/value-objects'.
-// Consumers who need concrete implementations should import from specific subpaths
-// e.g. '@dailyuse/governance/domain-shared' or '@dailyuse/governance/domain-server'
+// Consumers who need richer value objects should use stable public seams such as
+// '@dailyuse/governance/domain-shared'. Server-side assembly should use the
+// root-exported createGovernanceModule rather than internal layer subpaths.
 
 // Note: domain-client exports Rule and RuleRevision classes with same names
 // Consumers should import from specific paths to avoid conflicts
 // export * from './domain-client';
 
 // ================= Application Layer (应用层) =================
-// Application-Server: Use cases (server-side)
 // Application-Client: Client services, view model mappers
 // Note: DTOs are already exported from contracts layer
-export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer (基础设施层) =================
 // Stable composition root types only — concrete adapters are NOT re-exported
-// from the root barrel. Consumers should import from specific subpaths:
-//   @dailyuse/governance/infrastructure-server  (server adapters + module factory)
-//   @dailyuse/governance/infrastructure-client  (client adapters)
+// from the root barrel. Client adapters remain available via the explicit
+// infrastructure-client seam when a transport adapter is needed.
 export {
   createGovernanceModule,
   createGovernancePowerSyncModule,

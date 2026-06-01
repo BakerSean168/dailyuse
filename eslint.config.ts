@@ -43,11 +43,16 @@ const moduleBoundaryDepConstraints = [
       'layer:app',
     ],
   },
+  {
+    // testing: test support libraries, can consume shared layer
+    sourceTag: 'layer:testing',
+    onlyDependOnLibsWithTags: ['layer:shared', 'layer:testing'],
+  },
 ] as const;
 
 const moduleBoundaryOptions = {
   enforceBuildableLibDependency: true,
-  allow: ['./generated/prisma/**'],
+  allow: ['./generated/prisma/**', '@dailyuse/test-utils', '@dailyuse/test-utils/*'],
   checkDynamicDependenciesExceptions: ['@dailyuse/database'],
   depConstraints: moduleBoundaryDepConstraints,
 } as const;
@@ -104,6 +109,32 @@ export default tseslint.config(
       ],
       rules: {
         'no-restricted-imports': ['error', utilsRootImportRestriction],
+      },
+    },
+    {
+      files: [
+        'apps/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+        'packages/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+      ],
+      ignores: [
+        '**/__tests__/**',
+        '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        '**/e2e/**',
+        '**/src/test/**',
+        'packages/test-utils/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['@dailyuse/test-utils', '@dailyuse/test-utils/*'],
+                message: 'Production code must not import test-only utilities.',
+              },
+            ],
+          },
+        ],
       },
     },
     {
@@ -170,11 +201,9 @@ export default tseslint.config(
       },
     },
     {
-      // Test exemption: @nx/enforce-module-boundaries disabled
-      // (tests are entry points that legitimately cross package boundaries for mocking/fixture setup).
-      // no-restricted-imports is NOT disabled — tests inherit the default subpath import rule
-      // and package-specific test restrictions (repository, ai) remain enforced.
-      // File matching is precise — no glob leakage into production code.
+      // Test files still inherit @nx/enforce-module-boundaries.
+      // Only @dailyuse/test-utils is allowlisted by moduleBoundaryOptions, and
+      // production files are explicitly blocked from importing it above.
       files: [
         '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
@@ -183,6 +212,13 @@ export default tseslint.config(
         'packages/test-utils/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       ],
       plugins: { '@nx': nxPlugin },
+      rules: {},
+    },
+    {
+      // Web mock handler contract tests need to import from packages that are
+      // lazy-loaded in the app's DI configuration. These are contract verification
+      // tests, not production code, so the lazy-load boundary doesn't apply.
+      files: ['apps/web/src/mocks/handlers/**/*.spec.ts'],
       rules: {
         '@nx/enforce-module-boundaries': 'off',
       },

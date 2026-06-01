@@ -6,6 +6,7 @@
  * Two layers of audit:
  *
  * 1. Root barrel (src/index.ts):
+ *    - Forbids `export * from './application-server'`
  *    - Forbids `export * from './infrastructure-server'`
  *    - Forbids re-exporting concrete infra adapter classes (Prisma/PowerSync/Adapter/Repository)
  *
@@ -15,10 +16,13 @@
  *
  * Allowed subpath whitelist strategy:
  *  - Default allowed: ., ./domain-shared, ./domain-server, ./domain-client,
- *    ./infrastructure-server, ./infrastructure-client, ./api, ./electron-entry
+ *    ./infrastructure-client, ./api, ./electron-entry
  *  - Package-specific additions (contracts, mocks, testing, schema, etc.)
  *  - ./application-server is NOT in the default whitelist — it has zero external
  *    consumers and should not be part of the stable public surface.
+ *  - ./infrastructure-server is NOT in the default whitelist — concrete adapters
+ *    should not be part of the stable public surface. Apps resolve via tsconfig
+ *    path aliases for composition root wiring.
  */
 
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
@@ -36,7 +40,6 @@ const DEFAULT_ALLOWED_SUBPATHS = [
   './domain-server',
   './domain-client',
   './application-client',
-  './infrastructure-server',
   './infrastructure-client',
   './api',
   './electron-entry',
@@ -45,11 +48,12 @@ const DEFAULT_ALLOWED_SUBPATHS = [
 /** Per-package additions to the default whitelist */
 const PACKAGE_SPECIFIC_SUBPATHS = {
   governance: ['./contracts', './mocks'],
-  task: ['./testing', './schema'],
-  ai: ['./schema'],
+  goal: ['./analytics', './events'],
+  task: ['./analytics', './testing', './schema'],
+  ai: ['./ports', './schema'],
   repository: ['./schema'],
   authentication: ['./schema'],
-  notification: ['./schema'],
+  notification: ['./commands', './schema'],
   reminder: ['./schema'],
   schedule: ['./schema'],
   setting: ['./schema'],
@@ -116,7 +120,11 @@ function auditRootBarrel(pkg, violations) {
   const content = readFileSync(indexPath, 'utf8');
   const rel = path.relative(ROOT, indexPath).replaceAll('\\', '/');
 
-  // forbid export * from './infrastructure-server'
+  // forbid root barrel leaks of server application/infrastructure surfaces
+  if (/export\s*\*\s*from\s+['"]\.\/application-server['"]/m.test(content)) {
+    violations.push(`${rel} root barrel must not use "export * from './application-server'"`);
+  }
+
   if (/export\s*\*\s*from\s+['"]\.\/infrastructure-server['"]/m.test(content)) {
     violations.push(`${rel} root barrel must not use "export * from './infrastructure-server'"`);
   }
