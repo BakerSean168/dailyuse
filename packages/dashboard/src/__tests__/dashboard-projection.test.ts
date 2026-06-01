@@ -163,9 +163,13 @@ describe('getDashboardData', () => {
     });
 
     const data = await getDashboardData('user1', source);
-    expect(data.goalProgress[0].progress).toBe(0);
-    expect(data.goalProgress[1].progress).toBe(100);
-    expect(data.goalProgress[2].progress).toBe(0);
+    const progressById = Object.fromEntries(
+      data.goalProgress.map((goal) => [goal.id, goal.progress]),
+    );
+
+    expect(progressById.g1).toBe(0);
+    expect(progressById.g2).toBe(100);
+    expect(progressById.g3).toBe(0);
   });
 
   it('filters out deleted and archived task templates', async () => {
