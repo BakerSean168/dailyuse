@@ -6,7 +6,7 @@
 
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ILogger } from '@dailyuse/utils/logger';
-import type { AuthSession, IAuthSessionRepository } from '@dailyuse/authentication/domain-server';
+import type { AuthSession, IAuthSessionRepository } from '@dailyuse/authentication/api';
 import type {
   RefreshSessionRequest,
   RefreshSessionResponse,

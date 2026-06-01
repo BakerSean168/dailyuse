@@ -3,7 +3,7 @@
  */
 
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
-import type { AuthSession } from '@dailyuse/authentication/domain-server';
+import type { AuthSession } from '@dailyuse/authentication/api';
 import type { IdentityId } from '@dailyuse/contracts/authentication';
 import {
   DeviceType,

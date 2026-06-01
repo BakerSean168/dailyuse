@@ -1,7 +1,7 @@
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/domain-server';
+} from '@dailyuse/authentication/api';
 import {
   AuthRuntimeState,
   transitionAuthState,

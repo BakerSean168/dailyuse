@@ -24,8 +24,8 @@ import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/domain-server';
-import type { IAccountRepository } from '@dailyuse/account/domain-server';
+} from '@dailyuse/authentication/api';
+import type { IAccountRepository } from '@dailyuse/account/api';
 import {
   type IpcResult,
   toIpcResult,
@@ -245,7 +245,7 @@ export class AuthDesktopApplicationService {
    * 将 IAuthIdentityRepository + IPasswordHasher 传递给 SessionManager
    */
   setOfflineAuthDependencies(
-    identityRepository: import('@dailyuse/authentication/domain-server').IAuthIdentityRepository,
+    identityRepository: import('@dailyuse/authentication/api').IAuthIdentityRepository,
     passwordHasher: import('@dailyuse/authentication/domain-shared').IPasswordHasher,
   ): void {
     if (this.sessionManager) {

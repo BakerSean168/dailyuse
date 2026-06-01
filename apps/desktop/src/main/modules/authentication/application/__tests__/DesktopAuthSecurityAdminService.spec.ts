@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ILogger } from '@dailyuse/utils/logger';
-import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyuse/authentication/domain-server';
+import type { IAuthIdentityRepository, IAuthSessionRepository } from '@dailyuse/authentication';
 import type { TokenManager } from '../../infrastructure/token-manager';
 import type { SessionManager } from '../../infrastructure/session-manager';
 import type { AuthState } from '../desktop-credential-auth-coordinator';
@@ -19,7 +19,7 @@ function createService(opts: {
   logger?: ILogger;
   sessionManager?: SessionManager | null;
   tokenManager?: TokenManager;
-  credentialRepo?: IAuthCredentialRepository | null;
+  credentialRepo?: IAuthIdentityRepository | null;
   sessionRepo?: IAuthSessionRepository | null;
   authState?: AuthState;
 } = {}) {

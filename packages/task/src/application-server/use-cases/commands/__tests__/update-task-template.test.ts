@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/task/testing';
+import { aOneTimeTask, aLoadedTaskTemplate } from '../../../../testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import { UpdateTaskTemplateUseCase } from '../update-task-template.use-case';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';

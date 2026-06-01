@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import { createSmokeApp, TEST_IDENTITY_ID, type SmokeTestApp } from '../helpers/create-smoke-app';
-import { TaskInstance } from '@dailyuse/task/domain-server';
+import { TaskInstance } from '@dailyuse/task';
 import { TaskTimeConfig, TaskTemplateId } from '@dailyuse/task/domain-shared';
 
 // Mock eventBus to prevent console noise and import side-effects from fire-and-forget events

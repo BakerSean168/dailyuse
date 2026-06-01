@@ -9,7 +9,7 @@
  */
 
 import { eventBus } from '@dailyuse/utils/domain';
-import { CreateGoalRecordUseCase } from '@dailyuse/goal';
+import { CreateGoalRecordUseCase } from '@dailyuse/goal/events';
 import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
 import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
 import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';

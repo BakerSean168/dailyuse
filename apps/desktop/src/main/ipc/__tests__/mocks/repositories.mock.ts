@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import { Goal } from '@dailyuse/goal/domain-server';
+import { Goal } from '@dailyuse/goal';
 import { GoalStatus, type GoalServerDTO, type GoalId } from '@dailyuse/contracts/goal';
 import type { IdentityId } from '@dailyuse/contracts/authentication';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';

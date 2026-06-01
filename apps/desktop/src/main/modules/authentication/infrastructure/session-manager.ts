@@ -13,11 +13,11 @@
 import { app } from 'electron';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ILogger } from '@dailyuse/utils/logger';
-import type { AuthSession } from '@dailyuse/authentication/domain-server';
+import type { AuthSession } from '@dailyuse/authentication/api';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository,
-} from '@dailyuse/authentication/domain-server';
+} from '@dailyuse/authentication/api';
 import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
 import type {
   RefreshSessionRequest,

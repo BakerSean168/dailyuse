@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ILogger } from '@dailyuse/utils/logger';
-import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyuse/authentication/domain-server';
+import type { IAuthIdentityRepository, IAuthSessionRepository } from '@dailyuse/authentication';
 import type { TokenManager } from '../../infrastructure/token-manager';
 import type { SessionManager } from '../../infrastructure/session-manager';
 import type { NetworkStateManager } from '../../infrastructure/network-state-manager';
@@ -100,7 +100,7 @@ function createCoordinator(
   rememberedAccountService: DesktopRememberedAccountService,
   authState: AuthState,
   isInitializedRef: { value: boolean },
-  credentialRepo: IAuthCredentialRepository | null = null,
+  credentialRepo: IAuthIdentityRepository | null = null,
   sessionRepo: IAuthSessionRepository | null = null,
 ) {
   return new DesktopAuthLifecycleCoordinator(

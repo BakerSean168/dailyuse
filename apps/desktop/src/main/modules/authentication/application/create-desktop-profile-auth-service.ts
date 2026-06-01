@@ -3,8 +3,8 @@ import {
   PowerSyncAuthIdentityRepository,
   PowerSyncAuthSessionRepository,
   Argon2Hasher,
-} from '@dailyuse/authentication/infrastructure-server';
-import { PowerSyncAccountRepository } from '@dailyuse/account/infrastructure-server';
+} from '@dailyuse/authentication/api';
+import { PowerSyncAccountRepository } from '@dailyuse/account/api';
 import { createLogger } from '@dailyuse/utils/logger';
 import { AuthDesktopApplicationService } from './auth-desktop-application-service';
 import type { TokenManager, RememberedAccountsService, NetworkStateManager } from '../infrastructure';

@@ -24,30 +24,16 @@ import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
 import { AuthenticationApiModule } from '@dailyuse/authentication/api';
 import { EditorApiModule } from '@dailyuse/editor/api';
-import { GoalApiModule } from '@dailyuse/goal/api';
-import { GoalPrismaRepository } from '@dailyuse/goal/infrastructure-server';
-import { NotificationApiModule } from '@dailyuse/notification/api';
-import {
-  NotificationPreferencePrismaRepository,
-  NotificationPrismaRepository,
-  NotificationTemplatePrismaRepository,
-} from '@dailyuse/notification/infrastructure-server';
-import { CreateNotificationUseCase } from '@dailyuse/notification/application-server';
-import { ReminderApiModule } from '@dailyuse/reminder/api';
-import { ReminderTemplatePrismaRepository } from '@dailyuse/reminder/infrastructure-server';
+import { GoalApiModule, createGoalPrismaRepositories } from '@dailyuse/goal/api';
+import { NotificationApiModule, createNotificationPrismaRepositories } from '@dailyuse/notification/api';
+import { CreateNotificationUseCase } from '@dailyuse/notification/commands';
+import { ReminderApiModule, createReminderPrismaRepositories } from '@dailyuse/reminder/api';
 import { RepositoryApiModule } from '@dailyuse/repository/api';
-import { createScheduleApiModule } from '@dailyuse/schedule/api';
-import { createSharedSourceExecutor } from '@dailyuse/schedule/application-server';
-import { SettingApiModule } from '@dailyuse/setting/api';
-import { TaskApiModule } from '@dailyuse/task/api';
-import {
-  TaskInstancePrismaRepository,
-  TaskTemplatePrismaRepository,
-} from '@dailyuse/task/infrastructure-server';
+import { createScheduleApiModule, createSharedSourceExecutor } from '@dailyuse/schedule/api';
+import { SettingApiModule, createSettingPrismaModule } from '@dailyuse/setting/api';
+import { TaskApiModule, createTaskPrismaRepositories } from '@dailyuse/task/api';
 import { createAIApiModule } from '@dailyuse/ai';
 import type { AIApiModuleContext } from '@dailyuse/ai/api';
-import { createSettingModule } from '@dailyuse/setting';
-import { UserSettingPrismaRepository } from '@dailyuse/setting/infrastructure-server';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
@@ -86,9 +72,7 @@ const AIApiModule = createAIApiModule({
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
   getKnowledgeNoteSubpath: async (identityId: string, context: AIApiModuleContext) => {
-    const settingModule = createSettingModule({
-      userSettingRepository: new UserSettingPrismaRepository(context.db as typeof prisma),
-    });
+    const settingModule = createSettingPrismaModule(context.db as typeof prisma);
     const setting = await settingModule.api.getUserSetting(identityId);
     return setting.preferences.ai.knowledgeNoteSubpath;
   },
@@ -119,16 +103,20 @@ async function bootstrap(): Promise<void> {
 
   // 2. 白名单注册 & 启动
   bootstrapper = new ApiBootstrapper(prisma);
+  const goalRepos = createGoalPrismaRepositories(prisma);
+  const taskRepos = createTaskPrismaRepositories(prisma);
+  const reminderRepos = createReminderPrismaRepositories(prisma);
+  const notificationRepos = createNotificationPrismaRepositories(prisma);
   const scheduleApiModule = createScheduleApiModule({
     sourceExecutor: createSharedSourceExecutor({
-      reminderRepository: new ReminderTemplatePrismaRepository(prisma),
-      goalRepository: new GoalPrismaRepository(prisma),
-      taskInstanceRepository: new TaskInstancePrismaRepository(prisma),
-      taskTemplateRepository: new TaskTemplatePrismaRepository(prisma),
+      reminderRepository: reminderRepos.reminderTemplateRepository,
+      goalRepository: goalRepos.goalRepository,
+      taskInstanceRepository: taskRepos.taskInstanceRepository,
+      taskTemplateRepository: taskRepos.taskTemplateRepository,
       createNotification: new CreateNotificationUseCase(
-        new NotificationPrismaRepository(prisma),
-        new NotificationTemplatePrismaRepository(prisma),
-        new NotificationPreferencePrismaRepository(prisma),
+        notificationRepos.notificationRepository,
+        notificationRepos.notificationTemplateRepository,
+        notificationRepos.notificationPreferenceRepository,
       ),
     }),
   });

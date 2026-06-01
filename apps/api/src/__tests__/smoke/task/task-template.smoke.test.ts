@@ -20,7 +20,7 @@ import {
   TEST_IDENTITY_ID,
   type SmokeTestApp,
 } from '../helpers/create-smoke-app';
-import { TaskTemplate } from '@dailyuse/task/domain-server';
+import { TaskTemplate } from '@dailyuse/task';
 import { TaskTimeConfig } from '@dailyuse/task/domain-shared';
 import jwt from 'jsonwebtoken';
 

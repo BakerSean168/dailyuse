@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TokenManager } from '../token-manager';
-import type { AuthSession } from '@dailyuse/authentication/domain-server';
+import type { AuthSession } from '@dailyuse/authentication';
 import type { RefreshSessionRequest, RefreshSessionResponse } from '@dailyuse/contracts/authentication';
 
 let userDataPath = '';

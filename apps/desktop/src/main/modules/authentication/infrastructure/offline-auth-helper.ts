@@ -7,9 +7,9 @@
  * @module authentication/infrastructure/offline-auth-helper
  */
 
-import { AuthIdentity } from '@dailyuse/authentication/domain-server';
+import { AuthIdentity } from '@dailyuse/authentication/api';
 import type { IdentityId } from '@dailyuse/contracts/authentication';
-import type { IAuthIdentityRepository } from '@dailyuse/authentication/domain-server';
+import type { IAuthIdentityRepository } from '@dailyuse/authentication/api';
 import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';

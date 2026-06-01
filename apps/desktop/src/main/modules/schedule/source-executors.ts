@@ -17,19 +17,19 @@ import {
   NotificationChannelType,
   RelatedEntityType,
 } from '@dailyuse/contracts/notification';
-import { CreateNotificationUseCase } from '@dailyuse/notification/application-server';
+import { CreateNotificationUseCase } from '@dailyuse/notification/commands';
 import {
   PowerSyncNotificationRepository,
   PowerSyncNotificationTemplateRepository,
   PowerSyncNotificationPreferenceRepository,
-} from '@dailyuse/notification/infrastructure-server';
-import { ReminderTemplatePowerSyncRepository } from '@dailyuse/reminder/infrastructure-server';
-import { GoalPowerSyncRepository } from '@dailyuse/goal/infrastructure-server';
+} from '@dailyuse/notification/api';
+import { ReminderTemplatePowerSyncRepository } from '@dailyuse/reminder/api';
+import { GoalPowerSyncRepository } from '@dailyuse/goal/api';
 import {
   PowerSyncTaskInstanceRepository,
   PowerSyncTaskTemplateRepository,
-} from '@dailyuse/task/infrastructure-server';
-import type { ScheduleTask } from '@dailyuse/schedule/domain-server';
+} from '@dailyuse/task/api';
+import type { ScheduleTask } from '@dailyuse/schedule/api';
 import { createLogger } from '@dailyuse/utils/logger';
 
 interface SourceExecutionResult {

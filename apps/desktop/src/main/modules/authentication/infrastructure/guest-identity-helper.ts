@@ -7,11 +7,11 @@
  * @module authentication/infrastructure/guest-identity-helper
  */
 
-import { AuthSession } from '@dailyuse/authentication/domain-server';
+import { AuthSession } from '@dailyuse/authentication/api';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
 import type { IdentityId, AuthSessionId, DeviceInfoClientDTO, DeviceInfoDTO } from '@dailyuse/contracts/authentication';
 import { DeviceType } from '@dailyuse/contracts/authentication';
-import type { IAuthSessionRepository } from '@dailyuse/authentication/domain-server';
+import type { IAuthSessionRepository } from '@dailyuse/authentication/api';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { generateUUID } from '@dailyuse/utils/shared';

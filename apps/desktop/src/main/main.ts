@@ -30,7 +30,7 @@ import { NotificationElectronModule } from '@dailyuse/notification/electron-entr
 import { SettingElectronModule } from '@dailyuse/setting/electron-entry';
 import { createAIElectronModule } from '@dailyuse/ai/electron-entry';
 import { createRepositoryElectronModule } from '@dailyuse/repository/electron-entry';
-import { createRepositoryPowerSyncModule, FsStorageAdapter } from '@dailyuse/repository/infrastructure-server';
+import { createRepositoryPowerSyncModule, createFsStorageAdapter } from '@dailyuse/repository/api';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
@@ -71,7 +71,7 @@ async function registerBusinessModules(
 
   const repositoryStorageDir = profilePaths.repositoryStorageDir;
   const editorRepositoryModule = createRepositoryPowerSyncModule(db, {
-    storagePort: new FsStorageAdapter(repositoryStorageDir),
+    storagePort: createFsStorageAdapter(repositoryStorageDir),
   });
 
   const searchAdapter = createDesktopRepositorySearchAdapter(db, repositoryStorageDir);

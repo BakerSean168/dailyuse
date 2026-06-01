@@ -7,8 +7,8 @@
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { generateUUID } from '@dailyuse/utils/shared';
-import { AuthSession } from '@dailyuse/authentication/domain-server';
-import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/domain-server';
+import { AuthSession } from '@dailyuse/authentication/api';
+import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/api';
 import type { AuthSessionId } from '@dailyuse/contracts/authentication';
 import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';

@@ -1,17 +1,12 @@
 import { createHash } from 'node:crypto';
 
-import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/application-server';
+import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/ports';
 import type { PrismaClient } from '@dailyuse/database';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import {
-  createRepositoryModule,
-  FolderPrismaRepository,
-  FsStorageAdapter,
-  RepositoryPrismaRepository,
-  ResourceBookmarkPrismaRepository,
-  ResourcePrismaRepository,
+  createRepositoryPrismaModule,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository/infrastructure-server';
+} from '@dailyuse/repository/api';
 
 function tokenize(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
@@ -49,12 +44,8 @@ export class RepositoryKnowledgeSourceAdapter implements IKnowledgeSourcePort {
   private readonly repositoryModule: RepositoryModuleInstance;
 
   constructor(db: PrismaClient, storageBaseDir: string) {
-    this.repositoryModule = createRepositoryModule({
-      repositoryRepository: new RepositoryPrismaRepository(db),
-      resourceRepository: new ResourcePrismaRepository(db),
-      folderRepository: new FolderPrismaRepository(db),
-      resourceBookmarkRepository: new ResourceBookmarkPrismaRepository(db),
-      storagePort: new FsStorageAdapter(storageBaseDir),
+    this.repositoryModule = createRepositoryPrismaModule(db, {
+      storageBaseDir,
     });
   }
 
