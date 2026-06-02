@@ -42,6 +42,13 @@ Memoflow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，当前同�
 │   └── utils/ assets/ test-utils/
 ├── tools/
 ├── docs/
+│   ├── product/
+│   ├── architecture/
+│   ├── standards/
+│   ├── guides/
+│   ├── test/
+│   ├── governance/
+│   └── plan/
 ├── nx.json
 ├── eslint.config.ts
 ├── project.json
@@ -63,6 +70,7 @@ pnpm nx run daily-use:docs-check
 ## 文档导航
 
 - 入门：[`docs/getting-started/README.md`](docs/getting-started/README.md)
+- 产品功能资产：[`docs/product/README.md`](docs/product/README.md)
 - 架构：[`docs/architecture/README.md`](docs/architecture/README.md)
 - ADR 索引：[`docs/architecture/adr/README.md`](docs/architecture/adr/README.md)
 - 规范：[`docs/standards/README.md`](docs/standards/README.md)

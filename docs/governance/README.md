@@ -25,6 +25,7 @@ updated: 2026-04-26T00:00:00
 - `docs/` 是唯一维护中的正式文档入口。
 - `AGENT.md` 是唯一维护中的 AI 协作入口。
 - `README.md` 只保留项目概览、真实目录结构、真实技术栈和文档导航。
+- `docs/product` 负责维护业务功能资产底图，服务优化前的功能边界、用户路径和代码落点确认。
 - `docs/standards` 负责定义规则是什么。
 - `docs/guides` 负责定义日常开发怎么做。
 - `docs/test` 负责定义测试类型与入口。
@@ -54,6 +55,7 @@ updated: 2026-04-26T00:00:00
 ## 相关资料
 
 - 仓库级决策：[`../architecture/adr/README.md`](../architecture/adr/README.md)
+- 产品功能资产：[`../product/README.md`](../product/README.md)
 - 规则入口：[`../standards/README.md`](../standards/README.md)
 - 开发入口：[`../guides/development/README.md`](../guides/development/README.md)
 - 配置治理：[`./configuration-governance.md`](./configuration-governance.md)
