@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
 import { createSharedConfig } from '../../vitest.shared';
-import { createWorkspaceSourceAliasEntries } from '../../vite.workspace-aliases';
+import {
+  createAppVueSourceAliasEntries,
+  createWorkspaceSourceAliasEntries,
+} from '../../vite.workspace-aliases';
 
 // Desktop renderer tests import many workspace packages through their source
 // entrypoints so Electron-specific adapters stay aligned with local edits.
@@ -76,8 +79,6 @@ const desktopTestWorkspaceEntries = [
   ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
   ['@dailyuse/ai/electron-entry', 'packages/ai/src/electron-entry/index.ts'],
   ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
-  ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
-  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   ['@dailyuse/dashboard', 'packages/dashboard/src/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
 ] as const;
@@ -86,10 +87,10 @@ const sharedConfig = createSharedConfig({
   // The desktop app pulls in Electron-facing modules and workspace aliases
   // that behave more predictably under the Node test environment.
   environment: 'node',
-  aliasEntries: createWorkspaceSourceAliasEntries(
-    __dirname + '/../..',
-    desktopTestWorkspaceEntries,
-  ),
+  aliasEntries: [
+    ...createAppVueSourceAliasEntries(__dirname + '/../..'),
+    ...createWorkspaceSourceAliasEntries(__dirname + '/../..', desktopTestWorkspaceEntries),
+  ],
 }) as Record<string, unknown>;
 
 export default defineConfig({

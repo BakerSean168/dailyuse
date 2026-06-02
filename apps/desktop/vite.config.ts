@@ -10,6 +10,7 @@ import {
   electronNativeModules,
 } from './runtime-external.config.mjs';
 import {
+  createAppVueSourceAliasEntries,
   createAssetsAliasEntries,
   createContractsAliasEntries,
   createUiVueSourceAliasEntries,
@@ -17,8 +18,6 @@ import {
 } from '../../vite.workspace-aliases';
 
 const desktopRendererDevWorkspaceEntries = [
-  ['@dailyuse/app-vue/web-overlays', 'packages/app-vue/src/web-overlays.ts'],
-  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
   ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
@@ -62,6 +61,7 @@ export default defineConfig(({ command, mode }) => {
   const workspaceRoot = path.resolve(__dirname, '../..');
   const devWorkspaceAliases = isDev
     ? [
+        ...createAppVueSourceAliasEntries(workspaceRoot),
         ...createAssetsAliasEntries(workspaceRoot),
         ...createUiVueSourceAliasEntries(workspaceRoot),
         ...createContractsAliasEntries(workspaceRoot),

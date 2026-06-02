@@ -19,6 +19,45 @@ export function createWorkspaceSourceAliasEntries(
   }));
 }
 
+export function createAppVueSourceAliasEntries(workspaceRoot: string): Alias[] {
+  const appVueRoot = resolveFromWorkspace(workspaceRoot, 'packages/app-vue/src');
+
+  return [
+    {
+      find: /^@dailyuse\/app-vue\/web-overlays$/,
+      replacement: `${appVueRoot}/web-overlays.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue\/di$/,
+      replacement: `${appVueRoot}/di/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue\/desktop$/,
+      replacement: `${appVueRoot}/desktop.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue\/plugins\/i18n$/,
+      replacement: `${appVueRoot}/plugins/i18n.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue\/router$/,
+      replacement: `${appVueRoot}/router/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue\/modules\/dashboard\/adapters$/,
+      replacement: `${appVueRoot}/modules/dashboard/adapters/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue\/modules\/(.+)$/,
+      replacement: `${appVueRoot}/modules/$1/index.ts`,
+    },
+    {
+      find: /^@dailyuse\/app-vue$/,
+      replacement: `${appVueRoot}/index.ts`,
+    },
+  ];
+}
+
 export function createContractsAliasEntries(workspaceRoot: string): Alias[] {
   const contractsRoot = resolveFromWorkspace(workspaceRoot, 'packages/contracts/src');
 
