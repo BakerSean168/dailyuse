@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.8.0](https://github.com/BakerSean168/dailyuse/compare/v0.7.0...v0.8.0) (2026-06-02)
+
+
+### Features
+
+* **api:** add powersync profile snapshot pipeline ([e0375de](https://github.com/BakerSean168/dailyuse/commit/e0375de160df6bc95cca3d193f0f3ae6ff3780d2))
+* **desktop:** add shared user files settings flow ([9b51e52](https://github.com/BakerSean168/dailyuse/commit/9b51e523a5afc3b546edc637ce27b822f26177c4))
+* **setting:** implement file picker for importing settings in UserSettingsView ([ca42567](https://github.com/BakerSean168/dailyuse/commit/ca42567283689d20c7e819ff1db5cb23e096432d))
+
+
+### Bug Fixes
+
+* **ai:** use workspace database export ([3c81441](https://github.com/BakerSean168/dailyuse/commit/3c814419af2ef0bfa0ab364befd276fde1f75786))
+* **nx:** address code review findings for target governance ([4ff3830](https://github.com/BakerSean168/dailyuse/commit/4ff3830830a2da0d466ef21225b78c60752eae3f))
+* **test:** restore AIChatView goal workflow test rendering ([bef8d46](https://github.com/BakerSean168/dailyuse/commit/bef8d467b6b4d02db04bc0e3ab8340f2464f3def))
+* **web:** add eslint-disable for governance mock boundary import ([8d14846](https://github.com/BakerSean168/dailyuse/commit/8d1484600b5fc525084ac3d855e3f60bd24996d2))
+* 修复desktop 的 Vite dev alias 配置错误 ([62d4dc1](https://github.com/BakerSean168/dailyuse/commit/62d4dc15be26a8e48ff4fe6d52829060b4d36794))
+
+
+### Performance Improvements
+
+* 修改文件名 ([92f41cb](https://github.com/BakerSean168/dailyuse/commit/92f41cb52e91441cd65c1ac3b72837ee04b825b3))
+* 修正 desktop 开发模式热更新失效与启动前全量依赖构建的问题 ([e1cc94b](https://github.com/BakerSean168/dailyuse/commit/e1cc94b77898382df58eff7d450a4141a4755ed7))
+* 登录界面样式优化 ([6cb065e](https://github.com/BakerSean168/dailyuse/commit/6cb065ea688d05a4db6ab95335cefe66b217a3f1))
+
 ## [0.7.0](https://github.com/BakerSean168/dailyuse/compare/v0.6.0...v0.7.0) (2026-05-15)
 
 
