@@ -9,6 +9,7 @@
     "@dailyuse/ai": "workspace:*",
     "@dailyuse/authentication": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/data-portability": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/dashboard": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",

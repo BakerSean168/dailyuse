@@ -25,6 +25,9 @@
       "@dailyuse/ai/infrastructure-client": [
         "packages/ai/dist/infrastructure-client/index.d.ts"
       ],
+      "@dailyuse/data-portability/application-client": [
+        "packages/data-portability/dist/application-client/index.d.ts"
+      ],
       "@dailyuse/ui-vue-shadcn/components/ui/*": [
         "packages/ui-vue-shadcn/dist/components/ui/*/index.d.ts"
       ],

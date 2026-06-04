@@ -31,6 +31,7 @@ import { ReminderApiModule, createReminderPrismaRepositories } from '@dailyuse/r
 import { RepositoryApiModule } from '@dailyuse/repository/api';
 import { createScheduleApiModule, createSharedSourceExecutor } from '@dailyuse/schedule/api';
 import { SettingApiModule, createSettingPrismaModule } from '@dailyuse/setting/api';
+import { DataPortabilityApiModule } from '@dailyuse/data-portability/api';
 import { TaskApiModule, createTaskPrismaRepositories } from '@dailyuse/task/api';
 import { createAIApiModule } from '@dailyuse/ai';
 import type { AIApiModuleContext } from '@dailyuse/ai/api';
@@ -135,6 +136,7 @@ async function bootstrap(): Promise<void> {
     .register(TaskApiModule) // ✅ 任务模块
     .register(AIApiModule) // ✅ AI 模块
     .register(GoalApiModule) // ✅ 目标模块
+    .register(DataPortabilityApiModule) // ✅ 数据导入导出模块
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块
     .init();

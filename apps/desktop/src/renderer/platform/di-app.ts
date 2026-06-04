@@ -16,6 +16,7 @@ import { EditorClientService } from '@dailyuse/editor/application-client';
 import { NotificationClientService } from '@dailyuse/notification/application-client';
 import { SettingClientService } from '@dailyuse/setting/application-client';
 import { AIClientService } from '@dailyuse/ai/application-client';
+import { DataPortabilityClientService } from '@dailyuse/data-portability/application-client';
 import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
@@ -30,6 +31,7 @@ import {
   AI_SERVICE_KEY,
   RULE_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
+  DATA_PORTABILITY_SERVICE_KEY,
   DESKTOP_AUTH_API_KEY,
   DESKTOP_BRIDGE_KEY,
   MAIN_NAVIGATION_KEY,
@@ -53,6 +55,7 @@ import { createNotificationIpcAdapters } from '@dailyuse/notification/infrastruc
 import { createSettingIpcAdapters } from '@dailyuse/setting/infrastructure-client';
 import { createAIIpcAdapters } from '@dailyuse/ai/infrastructure-client';
 import { createGovernanceIpcAdapters } from '@dailyuse/governance/infrastructure-client';
+import { DataPortabilityIpcAdapter } from '@dailyuse/data-portability/infrastructure-client';
 
 export function installDesktopAppServices(app: App): void {
   const bridge = window.electronAPI;
@@ -124,6 +127,9 @@ export function installDesktopAppServices(app: App): void {
 
   const governanceAdapters = createGovernanceIpcAdapters(resultIpcClient);
   app.provide(RULE_SERVICE_KEY, new GovernanceClientService(governanceAdapters.rule));
+
+  const dataPortabilityAdapter = new DataPortabilityIpcAdapter(resultIpcClient);
+  app.provide(DATA_PORTABILITY_SERVICE_KEY, new DataPortabilityClientService(dataPortabilityAdapter));
 
   app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);

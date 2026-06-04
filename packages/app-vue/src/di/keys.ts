@@ -18,6 +18,7 @@ import type {
   IEditorService,
   INotificationService,
   ISettingService,
+  IDataPortabilityService,
   IAIService,
   IRuleService,
   IDashboardService,
@@ -36,6 +37,8 @@ export const EDITOR_SERVICE_KEY: InjectionKey<IEditorService> = Symbol('EditorSe
 export const NOTIFICATION_SERVICE_KEY: InjectionKey<INotificationService> =
   Symbol('NotificationService');
 export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('SettingService');
+export const DATA_PORTABILITY_SERVICE_KEY: InjectionKey<IDataPortabilityService> =
+  Symbol('DataPortabilityService');
 export const AI_SERVICE_KEY: InjectionKey<IAIService> = Symbol('AIService');
 export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService');
 export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('DashboardService');

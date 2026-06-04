@@ -33,6 +33,7 @@ import { createRepositoryElectronModule } from '@dailyuse/repository/electron-en
 import { createRepositoryPowerSyncModule, createFsStorageAdapter } from '@dailyuse/repository/api';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
+import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron-entry';
 import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
@@ -105,6 +106,7 @@ async function registerBusinessModules(
     .register(AccountElectronModule)
     .register(SettingElectronModule)
     .register(NotificationElectronModule)
+    .register(DataPortabilityElectronModule)
     // Feature modules
     .register(GoalElectronModule)
     .register(TaskElectronModule)

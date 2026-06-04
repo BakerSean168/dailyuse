@@ -23,6 +23,7 @@ import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
 import UserFilesSettings from '../components/UserFilesSettings.vue';
 
 import { useUserSetting } from '../composables/useUserSetting';
+import { useDataPortability } from '../composables/useDataPortability';
 import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import type { AppLocale } from '../../../plugins/i18n';
@@ -43,6 +44,15 @@ const {
   importSettings,
   updateCategory,
 } = useUserSetting();
+
+const {
+  isAvailable: isDataPortabilityAvailable,
+  isExporting: isExportingData,
+  isImporting: isImportingData,
+  lastResult: dataPortabilityResult,
+  exportAllData,
+  importAllData,
+} = useDataPortability();
 
 const activeTab = ref('appearance');
 const isHydratingAppearance = ref(true);
@@ -366,8 +376,14 @@ const tabs = computed(() => [
               :backups="backups"
               :sync-status="syncStatus"
               :syncing="syncing"
+              :exporting-data="isExportingData"
+              :importing-data="isImportingData"
+              :data-portability-available="isDataPortabilityAvailable"
+              :data-portability-result="dataPortabilityResult"
               @export-j-s-o-n="handleExportJson"
               @import="handleImport"
+              @export-all-data="exportAllData"
+              @import-all-data="importAllData"
             />
           </TabsContent>
         </div>

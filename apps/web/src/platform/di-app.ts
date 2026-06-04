@@ -19,6 +19,7 @@ import {
   RULE_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
+  DATA_PORTABILITY_SERVICE_KEY,
   AI_SERVICE_KEY,
   TASK_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
@@ -103,6 +104,13 @@ const settingService = createLazyService(async () => {
   return createSettingServiceFromHttpClient(resultHttpClient);
 });
 
+const dataPortabilityService = createLazyService(async () => {
+  const { createDataPortabilityServiceFromHttpClient } = await import(
+    '@dailyuse/data-portability/application-client'
+  );
+  return createDataPortabilityServiceFromHttpClient(resultHttpClient);
+});
+
 const aiService = createLazyService(async () => {
   const { createAIServiceFromHttpClient } = await import(
     '@dailyuse/ai/application-client'
@@ -133,6 +141,7 @@ export function installAppServices(app: App): void {
   app.provide(EDITOR_SERVICE_KEY, editorService);
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
+  app.provide(DATA_PORTABILITY_SERVICE_KEY, dataPortabilityService);
   app.provide(AI_SERVICE_KEY, aiService);
   app.provide(TASK_SERVICE_KEY, taskService);
 

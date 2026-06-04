@@ -24,6 +24,7 @@ import type { RepositoryClientPort } from '@dailyuse/repository/application-clie
 import type { ScheduleClientPort } from '@dailyuse/schedule/application-client';
 import type { SettingClientPort } from '@dailyuse/setting/application-client';
 import type { TaskClientPort } from '@dailyuse/task/application-client';
+import type { DataPortabilityClientPort } from '@dailyuse/data-portability/application-client';
 import type { Component } from 'vue';
 
 /**
@@ -44,6 +45,7 @@ export type IRepositoryService = RepositoryClientPort;
 export type IEditorService = EditorClientPort;
 export type INotificationService = NotificationClientPort;
 export type ISettingService = SettingClientPort;
+export type IDataPortabilityService = DataPortabilityClientPort;
 export type IAIService = AIClientPort;
 
 // ── Governance（结构化 service interface）──
