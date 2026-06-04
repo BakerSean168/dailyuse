@@ -330,6 +330,11 @@ export const DevChannels = {
   MEMORY_FORCE_GC: 'dev:memory:force-gc',
 } as const;
 
+export const DataPortabilityChannels = {
+  EXPORT: 'data-portability:export',
+  IMPORT: 'data-portability:import',
+} as const;
+
 export const WindowChannels = {
   TRANSITION_TO_MAIN: 'window:transition-to-main',
   TRANSITION_TO_LOGIN: 'window:transition-to-login',
