@@ -4,6 +4,7 @@ import {
   AIStreamChannels,
   AuthChannels,
   DashboardChannels,
+  DataPortabilityChannels,
   DesktopFeatureChannels,
   EditorChannels,
   GoalChannels,
@@ -38,6 +39,7 @@ export const ALLOWED_CHANNELS = [
   ...Object.values(GovernanceChannels),
   ...Object.values(AIChannels),
   ...Object.values(AIStreamChannels),
+  ...Object.values(DataPortabilityChannels),
 ] as const;
 
 export type AllowedIpcChannel = (typeof ALLOWED_CHANNELS)[number];
