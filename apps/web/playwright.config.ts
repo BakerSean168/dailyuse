@@ -21,6 +21,7 @@ export default defineConfig({
     '**/task/task-template-crud.spec.ts',
     '**/user-settings/notifications.spec.ts',
     '**/user-settings/persistence.spec.ts',
+    '**/user-settings/data-portability.spec.ts',
   ],
   testIgnore: [
     'sync/**',
