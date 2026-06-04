@@ -4,6 +4,7 @@ import {
   AIChannels,
   AuthChannels,
   DashboardChannels,
+  DataPortabilityChannels,
   DesktopFeatureChannels,
   EditorChannels,
   GoalChannels,
@@ -20,6 +21,7 @@ import {
 import { ALLOWED_CHANNELS } from '../allowed-channels';
 import { AccountIpcAdapter } from '@dailyuse/account/infrastructure-client';
 import { AuthIpcAdapter } from '@dailyuse/authentication/infrastructure-client';
+import { DataPortabilityIpcAdapter } from '@dailyuse/data-portability/infrastructure-client';
 import {
   AIConversationIpcAdapter,
   AIMessageIpcAdapter,
@@ -137,6 +139,10 @@ describe('desktop IPC contract alignment', () => {
 
   it('keeps shared window channels aligned with preload allowlist', () => {
     expect(allowedByPrefix('window:')).toEqual(channelSet(WindowChannels));
+  });
+
+  it('keeps shared data-portability channels aligned with preload allowlist', () => {
+    expect(allowedByPrefix('data-portability:')).toEqual(channelSet(DataPortabilityChannels));
   });
 
   it('keeps supported notification channels aligned with preload allowlist', () => {
@@ -423,6 +429,16 @@ describe('desktop IPC contract alignment', () => {
     await adapter.getRevisions({} as never);
 
     expectChannelsRegistered(recorder.channels(), channelSet(GovernanceChannels));
+  });
+
+  it('data-portability adapter only invokes registered desktop data-portability channels', async () => {
+    const recorder = createIpcRecorder();
+    const adapter = new DataPortabilityIpcAdapter(recorder as never);
+
+    await adapter.exportUserData({} as never);
+    await adapter.importUserData({} as never);
+
+    expectChannelsRegistered(recorder.channels(), channelSet(DataPortabilityChannels));
   });
 
   it('ai adapters only invoke registered desktop ai channels', async () => {

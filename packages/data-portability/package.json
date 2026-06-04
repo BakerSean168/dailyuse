@@ -1,0 +1,53 @@
+{
+  "name": "@dailyuse/data-portability",
+  "version": "0.0.1",
+  "description": "数据可迁移性模块 - 用户数据导入导出",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./application-client": {
+      "types": "./dist/application-client/index.d.ts",
+      "import": "./dist/application-client/index.js"
+    },
+    "./infrastructure-client": {
+      "types": "./dist/infrastructure-client/index.d.ts",
+      "import": "./dist/infrastructure-client/index.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
+    },
+    "./electron-entry": {
+      "types": "./dist/electron-entry/index.d.ts",
+      "import": "./dist/electron-entry/index.js"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/database": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
+    "@dailyuse/goal": "workspace:*",
+    "@dailyuse/task": "workspace:*",
+    "@dailyuse/reminder": "workspace:*",
+    "@dailyuse/repository": "workspace:*",
+    "@dailyuse/schedule": "workspace:*",
+    "@dailyuse/editor": "workspace:*",
+    "@dailyuse/ai": "workspace:*",
+    "@dailyuse/notification": "workspace:*",
+    "@dailyuse/setting": "workspace:*",
+    "express": "^5.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
+  }
+}

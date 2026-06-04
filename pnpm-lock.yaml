@@ -309,6 +309,9 @@ importers:
       '@dailyuse/dashboard':
         specifier: workspace:*
         version: link:../../packages/dashboard
+      '@dailyuse/data-portability':
+        specifier: workspace:*
+        version: link:../../packages/data-portability
       '@dailyuse/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -481,6 +484,9 @@ importers:
       '@dailyuse/dashboard':
         specifier: workspace:*
         version: link:../../packages/dashboard
+      '@dailyuse/data-portability':
+        specifier: workspace:*
+        version: link:../../packages/data-portability
       '@dailyuse/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -867,6 +873,9 @@ importers:
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@dailyuse/data-portability':
+        specifier: workspace:*
+        version: link:../../packages/data-portability
       '@dailyuse/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -1138,6 +1147,9 @@ importers:
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@dailyuse/data-portability':
+        specifier: workspace:*
+        version: link:../data-portability
       '@dailyuse/editor':
         specifier: workspace:*
         version: link:../editor
@@ -1352,6 +1364,61 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/data-portability:
+    dependencies:
+      '@dailyuse/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/database':
+        specifier: workspace:*
+        version: link:../database
+      '@dailyuse/domain-shared':
+        specifier: workspace:*
+        version: link:../domain-shared
+      '@dailyuse/editor':
+        specifier: workspace:*
+        version: link:../editor
+      '@dailyuse/goal':
+        specifier: workspace:*
+        version: link:../goal
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
+      '@dailyuse/notification':
+        specifier: workspace:*
+        version: link:../notification
+      '@dailyuse/reminder':
+        specifier: workspace:*
+        version: link:../reminder
+      '@dailyuse/repository':
+        specifier: workspace:*
+        version: link:../repository
+      '@dailyuse/schedule':
+        specifier: workspace:*
+        version: link:../schedule
+      '@dailyuse/setting':
+        specifier: workspace:*
+        version: link:../setting
+      '@dailyuse/task':
+        specifier: workspace:*
+        version: link:../task
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
+      express:
+        specifier: ^5.1.0
+        version: 5.2.1
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.6
 
   packages/database:
     dependencies:

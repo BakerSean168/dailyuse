@@ -37,6 +37,21 @@
         </Button>
       </div>
 
+      <!-- Export/Import All User Data -->
+      <div v-if="dataPortabilityAvailable" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Button variant="outline" class="w-full" :disabled="exportingData" @click="emit('exportAllData')">
+          <Download class="h-4 w-4 mr-2" />
+          {{ exportingData ? 'Exporting...' : 'Export All Data' }}
+        </Button>
+
+        <Button variant="outline" class="w-full" :disabled="importingData" @click="emit('importAllData')">
+          <Upload class="h-4 w-4 mr-2" />
+          {{ importingData ? 'Importing...' : 'Import All Data' }}
+        </Button>
+      </div>
+
+      <p v-if="dataPortabilityResult" class="text-xs text-muted-foreground">{{ dataPortabilityResult }}</p>
+
       <!-- Backup & Restore -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Button variant="outline" class="w-full" @click="emit('createBackup')">
@@ -154,6 +169,10 @@ interface Props {
   backups?: Backup[];
   syncStatus?: SyncStatus | null;
   syncing?: boolean;
+  exportingData?: boolean;
+  importingData?: boolean;
+  dataPortabilityAvailable?: boolean;
+  dataPortabilityResult?: string | null;
 }
 
 defineProps<Props>();
@@ -162,6 +181,8 @@ const emit = defineEmits<{
   exportJSON: [];
   exportCSV: [];
   import: [];
+  exportAllData: [];
+  importAllData: [];
   createBackup: [];
   restoreBackup: [key: string];
   cloudSync: [];

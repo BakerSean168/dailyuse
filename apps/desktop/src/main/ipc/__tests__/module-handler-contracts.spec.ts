@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AIChannels,
   AuthChannels,
+  DataPortabilityChannels,
   GovernanceChannels,
   NotificationChannels,
   AccountChannels,
@@ -83,5 +84,10 @@ describe('desktop main handler contracts', () => {
   it('setting electron entry covers all shared setting channels', () => {
     const source = readWorkspaceFile('packages/setting/src/electron-entry/index.ts');
     expectChannelsInSource(source, SettingChannels);
+  });
+
+  it('data-portability electron entry covers all shared data-portability channels', () => {
+    const source = readWorkspaceFile('packages/data-portability/src/electron-entry/index.ts');
+    expectChannelsInSource(source, DataPortabilityChannels);
   });
 });
