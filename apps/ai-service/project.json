@@ -40,7 +40,7 @@
     "serve": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uv run uvicorn ai_service.main:create_app --factory --reload --host 0.0.0.0 --port 8100",
+        "command": "uv run uvicorn ai_service.main:create_app --factory --reload --host 0.0.0.0 --port ${AI_SERVICE_PORT:-8100}",
         "cwd": "{projectRoot}/src"
       }
     },

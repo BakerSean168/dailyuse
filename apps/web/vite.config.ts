@@ -133,7 +133,7 @@ export default defineConfig(({ mode, command }) => {
       tailwindcss(),
     ].filter(Boolean),
     server: {
-      port: 5173,
+      port: Number(env.VITE_DEV_PORT) || 5173,
       open: false,
       middlewareMode: false,
       // 完全禁用 Vite 的压缩中间件，避免破坏 SSE 流
@@ -150,7 +150,7 @@ export default defineConfig(({ mode, command }) => {
           : undefined,
     },
     preview: {
-      port: 5173,
+      port: Number(env.VITE_DEV_PORT) || 5173,
       open: false,
     },
     build: {
