@@ -125,6 +125,7 @@ import { AccountDTO } from '@dailyuse/contracts/account';
 | `@dailyuse/contracts/notification`   | 通知模块契约   |
 | `@dailyuse/contracts/ai`             | AI 模块契约    |
 | `@dailyuse/contracts/dashboard`      | 仪表盘模块契约 |
+| `@dailyuse/contracts/data-portability` | 数据可移植性契约 |
 | `@dailyuse/contracts/response`       | API 响应类型   |
 | `@dailyuse/contracts/shared`         | 共享基础类型   |
 
