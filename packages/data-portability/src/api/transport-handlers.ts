@@ -5,7 +5,7 @@
  */
 
 import { ok } from '@dailyuse/contracts/result';
-import type { ExportUserDataReq, ImportUserDataReq } from '../contracts/portable-schema';
+import type { ExportUserDataReq, ImportUserDataReq, ExportUserDataRes, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
 import type { DataPortabilityUseCases } from './controller';
 import type { ExportUserDataUseCase } from '../application-server/use-cases/export-user-data.use-case';
 import type { ImportUserDataUseCase } from '../application-server/use-cases/import-user-data.use-case';

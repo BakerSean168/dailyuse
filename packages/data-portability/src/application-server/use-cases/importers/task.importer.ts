@@ -2,7 +2,8 @@
  * Task module importer — handles task folders, templates, dependencies, and instances.
  */
 
-import type { ImportContext, PortableTaskData } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
+import type { PortableTaskData } from '@dailyuse/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, resolveRef, optRef, jsonStringify, inc, rec, timestamps } from './import-helpers';
 

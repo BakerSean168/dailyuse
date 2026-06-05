@@ -15,7 +15,7 @@ import {
   ImportUserDataReqSchema,
   type ExportUserDataReq,
   type ImportUserDataReq,
-} from '../contracts/portable-schema';
+} from '@dailyuse/contracts/data-portability';
 import { ExportUserDataUseCase } from '../application-server/use-cases/export-user-data.use-case';
 import { ImportUserDataUseCase } from '../application-server/use-cases/import-user-data.use-case';
 import { createPowerSyncDataPortabilityDependencies } from '../infrastructure-server/powersync/powersync-export-dependencies';

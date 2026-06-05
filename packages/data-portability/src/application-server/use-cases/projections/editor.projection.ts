@@ -2,7 +2,8 @@
  * Editor Module — Export Projections
  */
 
-import type { ExportContext, PortableEditorWorkspace, PortableEditorSession, PortableEditorGroup, PortableEditorTab } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableEditorWorkspace, PortableEditorSession, PortableEditorGroup, PortableEditorTab } from '@dailyuse/contracts/data-portability';
 import type { DataPortabilityDependencies } from '../../data-portability.dependencies';
 import { parseJsonField, toBoolean, toDateString, toRecord } from './projection-helpers';
 

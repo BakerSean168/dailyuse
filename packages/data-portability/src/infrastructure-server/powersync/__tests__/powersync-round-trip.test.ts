@@ -3,7 +3,9 @@ import type {
   IElectronDatabaseQueryResult,
   IElectronDatabaseTransaction,
 } from '@dailyuse/contracts/electron';
-import { describe, expect, it } from 'vitest';
+import { DataPortabilityEventTopics } from '@dailyuse/contracts/data-portability';
+import { eventBus } from '@dailyuse/utils/domain';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExportUserDataUseCase } from '../../../application-server/use-cases/export-user-data.use-case';
 import { ImportUserDataUseCase } from '../../../application-server/use-cases/import-user-data.use-case';
@@ -29,7 +31,12 @@ const now = '2026-06-04T00:00:00.000Z';
 const later = '2026-06-04T01:00:00.000Z';
 
 describe('PowerSync desktop data portability round trip', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('exports one profile, imports into another profile with remapped ids, and appends repeated imports', async () => {
+    const eventSpy = vi.spyOn(eventBus, 'send');
     const sourceDb = new FakePowerSyncDb(seedProfile(identityA));
     const exportUseCase = new ExportUserDataUseCase(
       createPowerSyncDataPortabilityDependencies(sourceDb.asElectronDatabase()),
@@ -119,6 +126,29 @@ describe('PowerSync desktop data portability round trip', () => {
 
     expect(secondRepository.id).not.toBe(repository.id);
     expect(secondTaskTemplate.id).not.toBe(taskTemplate.id);
+
+    expect(eventSpy).toHaveBeenCalledWith(
+      DataPortabilityEventTopics.EXPORTED,
+      expect.objectContaining({
+        identityId: identityA,
+        fileName: exported.fileName,
+      }),
+    );
+
+    const importedEvents = eventSpy.mock.calls.filter(
+      ([topic]) => topic === DataPortabilityEventTopics.IMPORTED,
+    );
+    expect(importedEvents).toHaveLength(2);
+    expect(importedEvents[0]?.[1]).toEqual(
+      expect.objectContaining({
+        identityId: identityB,
+        updatedSingletons: expect.objectContaining({
+          settings: 1,
+          notificationPreference: 1,
+          userReminderPreference: 1,
+        }),
+      }),
+    );
   });
 
   it('rejects forbidden identity fields before writing', async () => {
@@ -158,6 +188,33 @@ describe('PowerSync desktop data portability round trip', () => {
       'simulated write failure',
     );
     expect(targetDb.committedStatements).toHaveLength(0);
+  });
+
+  it('emits dry-run validated event without writing import rows', async () => {
+    const eventSpy = vi.spyOn(eventBus, 'send');
+    const exported = await exportProfile(identityA);
+    const targetDb = new FakePowerSyncDb({}, { existingSingletonsIdentityId: identityB });
+    const importUseCase = new ImportUserDataUseCase(
+      new PowerSyncDataPortabilityImportStore(targetDb.asElectronDatabase()),
+    );
+
+    const result = await importUseCase.execute(identityB, exported.content, true);
+
+    expect(result.dryRun).toBe(true);
+    expect(targetDb.committedStatements).toHaveLength(0);
+    expect(eventSpy).toHaveBeenCalledWith(
+      DataPortabilityEventTopics.IMPORT_DRY_RUN_VALIDATED,
+      expect.objectContaining({
+        identityId: identityB,
+        batchId: result.batchId,
+        created: {},
+        updatedSingletons: {},
+        skipped: {},
+      }),
+    );
+    expect(
+      eventSpy.mock.calls.some(([topic]) => topic === DataPortabilityEventTopics.IMPORTED),
+    ).toBe(false);
   });
 });
 

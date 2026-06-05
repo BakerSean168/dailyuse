@@ -2,7 +2,8 @@
  * Schedule module importer — handles schedule entries and schedule tasks.
  */
 
-import type { ImportContext, PortableScheduleData } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
+import type { PortableScheduleData } from '@dailyuse/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, optRef, jsonStringify, inc, rec, timestamps } from './import-helpers';
 

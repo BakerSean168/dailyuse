@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { IResultIpcClient } from '../../types';
-import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '../../../../contracts/portable-schema';
+import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
 import type { Result } from '@dailyuse/contracts/result';
 import { DataPortabilityIpcAdapter } from '../data-portability-ipc.adapter';
 

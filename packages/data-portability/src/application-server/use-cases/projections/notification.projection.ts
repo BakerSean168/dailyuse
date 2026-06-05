@@ -2,7 +2,7 @@
  * Notification Module — Export Projections
  */
 
-import type { PortableNotificationPreference } from '../../portable-types';
+import type { PortableNotificationPreference } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toBoolean } from './projection-helpers';
 
 export function projectNotificationPreference(pref: unknown): PortableNotificationPreference {

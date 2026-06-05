@@ -2,7 +2,8 @@
  * AI Module — Export Projections
  */
 
-import type { ExportContext, PortableAIConversation } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableAIConversation } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toDateString } from './projection-helpers';
 
 function tokenCountFromUsage(value: unknown): number | null | undefined {

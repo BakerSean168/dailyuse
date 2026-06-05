@@ -8,9 +8,11 @@
  */
 
 import { newId } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
-import type { ImportContext, ImportResult, RefMap, UserDataExportEnvelopeV1 } from '../portable-types';
-import { validateEnvelope } from '../../contracts/portable-schema';
+import type { DataPortabilityEventMap, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
+import type { ImportContext, RefMap } from '../portable-runtime';
+import { DataPortabilityEventTopics, parseUserDataExportEnvelope } from '@dailyuse/contracts/data-portability';
 import type { DataPortabilityImportStore } from '../import-store/data-portability-import-store';
 import { importSettings, importNotificationPreference, importUserReminderPreference } from './importers/settings.importer';
 import { importRepositories } from './importers/repository.importer';
@@ -27,7 +29,7 @@ const logger = createLogger('ImportUserData');
 export class ImportUserDataUseCase {
   constructor(private readonly importStore: DataPortabilityImportStore) {}
 
-  async execute(identityId: string, content: string, dryRun = false): Promise<ImportResult> {
+  async execute(identityId: string, content: string, dryRun = false): Promise<ImportUserDataRes> {
     let raw: unknown;
     try {
       raw = JSON.parse(content);
@@ -35,13 +37,12 @@ export class ImportUserDataUseCase {
       throwValidationError('Invalid JSON content');
     }
 
-    const validation = validateEnvelope(raw);
-    if (!validation.ok) {
-      throwValidationError(validation.error);
+    const parsed = parseUserDataExportEnvelope(raw);
+    if (!parsed.ok) {
+      throwValidationError(parsed.error);
     }
 
-    const envelope = raw as UserDataExportEnvelopeV1;
-    const data = envelope.data;
+    const data = parsed.envelope.data;
 
     this.validateRefUniqueness(data as Record<string, unknown>);
 
@@ -59,6 +60,15 @@ export class ImportUserDataUseCase {
 
     if (dryRun) {
       this.validateRefs(data as Record<string, unknown>, ctx);
+      const dryRunValidatedEvent: DataPortabilityEventMap[typeof DataPortabilityEventTopics.IMPORT_DRY_RUN_VALIDATED] = {
+        identityId,
+        batchId,
+        created: {},
+        updatedSingletons: {},
+        skipped: {},
+        warnings: ctx.warnings,
+      };
+      eventBus.send(DataPortabilityEventTopics.IMPORT_DRY_RUN_VALIDATED, dryRunValidatedEvent);
       return { batchId, dryRun: true, created: {}, updatedSingletons: {}, skipped: {}, warnings: ctx.warnings };
     }
 
@@ -79,6 +89,16 @@ export class ImportUserDataUseCase {
     });
 
     logger.info('Import completed', { identityId, batchId, created: ctx.created, updatedSingletons: ctx.updatedSingletons });
+
+    const importedEvent: DataPortabilityEventMap[typeof DataPortabilityEventTopics.IMPORTED] = {
+      identityId,
+      batchId,
+      created: ctx.created,
+      updatedSingletons: ctx.updatedSingletons,
+      skipped: ctx.skipped,
+      warnings: ctx.warnings,
+    };
+    eventBus.send(DataPortabilityEventTopics.IMPORTED, importedEvent);
 
     return {
       batchId,

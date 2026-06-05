@@ -2,7 +2,8 @@
  * Repository Module — Export Projections
  */
 
-import type { ExportContext, PortableRepository, PortableResourceFolder, PortableResource } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableRepository, PortableResourceFolder, PortableResource } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toBoolean, toDateString } from './projection-helpers';
 
 const SENSITIVE_CONFIG_KEYS = ['token', 'password', 'secret', 'apiKey', 'sshKey', 'privateKey', 'credential', 'auth'];

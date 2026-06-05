@@ -6,6 +6,8 @@ import type { AuthEventMap } from '../modules/authentication/protocol/auth-event
 import type { AuthRpcMap } from '../modules/authentication/protocol/auth-rpc-map';
 import type { EditorEventMap } from '../modules/editor/protocol/editor-event-map';
 import type { EditorRpcMap } from '../modules/editor/protocol/editor-rpc-map';
+import type { DataPortabilityEventMap } from '../modules/data-portability/protocol/data-portability-event-map';
+import type { DataPortabilityRpcMap } from '../modules/data-portability/protocol/data-portability-rpc-map';
 import type { GoalEventMap } from '../modules/goal/protocol/goal-event-map';
 import type { GoalRpcMap } from '../modules/goal/protocol/goal-rpc-map';
 import type { NotificationEventMap } from '../modules/notification/protocol/notification-event-map';
@@ -42,6 +44,7 @@ export interface AppRpcRegistryExtensions extends Record<string, [unknown, unkno
 type CoreAppEventRegistry = AccountEventMap &
   AIEventMap &
   AuthEventMap &
+  DataPortabilityEventMap &
   EditorEventMap &
   GoalEventMap &
   NotificationEventMap &
@@ -57,6 +60,7 @@ export type AppEventRegistry = CoreAppEventRegistry & AppEventRegistryExtensions
 type CoreAppRpcRegistry = AccountRpcMap &
   AIRpcMap &
   AuthRpcMap &
+  DataPortabilityRpcMap &
   EditorRpcMap &
   GoalRpcMap &
   NotificationRpcMap &

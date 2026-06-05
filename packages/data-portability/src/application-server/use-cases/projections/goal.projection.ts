@@ -2,7 +2,8 @@
  * Goal Module — Export Projections
  */
 
-import type { ExportContext, PortableGoal, PortableGoalFolder, PortableGoalRecord, PortableKeyResult, PortableGoalReview, PortableFocusSession, PortableFocusMode } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableGoal, PortableGoalFolder, PortableGoalRecord, PortableKeyResult, PortableGoalReview, PortableFocusSession, PortableFocusMode } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toBoolean, toDateString, toRecord, toStringArray } from './projection-helpers';
 
 // ─── Goal Folders ───

@@ -4,7 +4,7 @@
 
 import { newId } from '@dailyuse/utils';
 import { ResultCode, ResultErrorException } from '@dailyuse/contracts/result';
-import type { ImportContext } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
 import type { DataPortabilityImportTx } from '../../import-store/data-portability-import-store';
 
 export type TxClient = DataPortabilityImportTx;

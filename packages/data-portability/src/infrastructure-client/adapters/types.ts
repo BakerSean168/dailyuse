@@ -4,7 +4,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '../../contracts/portable-schema';
+import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
 
 export type { IResultHttpClient };
 

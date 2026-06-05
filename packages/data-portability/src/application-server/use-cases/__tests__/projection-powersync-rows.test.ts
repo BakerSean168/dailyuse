@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RefAllocator, type ExportContext } from '../../portable-types';
+import { RefAllocator, type ExportContext } from '../../portable-runtime';
 import { projectGoalRecords, projectGoals } from '../projections/goal.projection';
 import { projectEditorWorkspaces } from '../projections/editor.projection';
 import { projectReminderResponses, projectReminderTemplates } from '../projections/reminder.projection';

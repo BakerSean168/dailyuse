@@ -2,7 +2,8 @@
  * Task Module — Export Projections
  */
 
-import type { ExportContext, PortableTaskFolder, PortableTaskTemplate, PortableTaskInstance, PortableTaskDependency } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableTaskFolder, PortableTaskTemplate, PortableTaskInstance, PortableTaskDependency } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toDateString, toRecord, toStringArray, toTimestamp } from './projection-helpers';
 
 function buildTimeConfig(entity: Record<string, unknown>): unknown {

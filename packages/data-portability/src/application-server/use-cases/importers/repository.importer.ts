@@ -4,7 +4,8 @@
  * Conflict strategy: all paths get a batch suffix to avoid unique constraint violations.
  */
 
-import type { ImportContext, PortableRepositoryData } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
+import type { PortableRepositoryData } from '@dailyuse/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, resolveRef, optRef, inc, rec, timestamps } from './import-helpers';
 

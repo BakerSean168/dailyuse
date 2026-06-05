@@ -14,7 +14,7 @@ import {
   ImportUserDataReqSchema,
   ExportUserDataResSchema,
   ImportUserDataResSchema,
-} from '../contracts/portable-schema';
+} from '@dailyuse/contracts/data-portability';
 import { DataPortabilityController } from './controller';
 import type { DataPortabilityUseCases } from './controller';
 

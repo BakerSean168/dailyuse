@@ -2,7 +2,8 @@
  * Schedule Module — Export Projections
  */
 
-import type { ExportContext, PortableSchedule, PortableScheduleTask } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableSchedule, PortableScheduleTask } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toBoolean, toDateString, toStringArray } from './projection-helpers';
 
 export function projectCalendarEntries(entries: unknown[], ctx: ExportContext): PortableSchedule[] {

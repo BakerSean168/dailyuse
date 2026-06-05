@@ -3,7 +3,8 @@
  */
 
 import { newId } from '@dailyuse/utils';
-import type { ImportContext, PortableSettings, PortableNotificationPreference, PortableUserReminderPreference } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
+import type { PortableSettings, PortableNotificationPreference, PortableUserReminderPreference } from '@dailyuse/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { jsonStringify, incSingleton } from './import-helpers';
 

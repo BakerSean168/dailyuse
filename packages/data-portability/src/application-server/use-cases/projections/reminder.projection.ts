@@ -2,7 +2,8 @@
  * Reminder Module — Export Projections
  */
 
-import type { ExportContext, PortableReminderGroup, PortableReminderTemplate, PortableReminderResponse, PortableUserReminderPreference } from '../../portable-types';
+import type { ExportContext } from '../../portable-runtime';
+import type { PortableReminderGroup, PortableReminderTemplate, PortableReminderResponse, PortableUserReminderPreference } from '@dailyuse/contracts/data-portability';
 import { parseJsonField, toBoolean, toDateString, toStringArray } from './projection-helpers';
 
 function responseTimeToPortable(value: unknown): string | null | undefined {

@@ -2,7 +2,8 @@
  * AI module importer — handles conversations and messages.
  */
 
-import type { ImportContext, PortableAIData } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
+import type { PortableAIData } from '@dailyuse/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, jsonStringify, inc, rec, timestamps, createdTimestamp } from './import-helpers';
 

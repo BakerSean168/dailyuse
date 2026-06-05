@@ -2,7 +2,8 @@
  * Reminder module importer — handles groups, templates, and responses.
  */
 
-import type { ImportContext, PortableReminderData } from '../../portable-types';
+import type { ImportContext } from '../../portable-runtime';
+import type { PortableReminderData } from '@dailyuse/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, resolveRef, optRef, jsonStringify, inc, rec, timestamps } from './import-helpers';
 

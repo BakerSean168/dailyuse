@@ -6,14 +6,17 @@
  */
 
 import { createLogger } from '@dailyuse/utils/logger';
+import { eventBus } from '@dailyuse/utils/domain';
 import type {
+  DataPortabilityEventMap,
   UserDataExportEnvelopeV1,
   PortableUserDataV1,
-  ExportContext,
-  ExportResult,
   ExportableModule,
-} from '../portable-types';
-import { RefAllocator, ALL_MODULES } from '../portable-types';
+  ExportUserDataRes,
+} from '@dailyuse/contracts/data-portability';
+import { ALL_EXPORTABLE_MODULES, DataPortabilityEventTopics } from '@dailyuse/contracts/data-portability';
+import type { ExportContext } from '../portable-runtime';
+import { RefAllocator } from '../portable-runtime';
 import type { DataPortabilityDependencies } from '../data-portability.dependencies';
 import { sanitizeSensitiveFields } from '../sanitize';
 import { projectGoals, projectGoalFolders, projectGoalRecords, projectFocusSessions, projectFocusModes } from './projections/goal.projection';
@@ -36,8 +39,8 @@ export class ExportUserDataUseCase {
   async execute(
     identityId: string,
     include?: ExportableModule[],
-  ): Promise<ExportResult> {
-    const modules = include ?? ALL_MODULES;
+  ): Promise<ExportUserDataRes> {
+    const modules = include ?? ALL_EXPORTABLE_MODULES;
     const exportedAt = new Date().toISOString();
     const refAllocator = new RefAllocator();
     const refToIdMap = new Map<string, string>();
@@ -238,6 +241,15 @@ export class ExportUserDataUseCase {
     const fileName = `memoflow-user-data-v1-${timestamp}.json`;
 
     logger.info('Export completed', { identityId, entityCounts, warnings: warnings.length });
+
+    const exportedEvent: DataPortabilityEventMap[typeof DataPortabilityEventTopics.EXPORTED] = {
+      identityId,
+      requestedModules: modules,
+      fileName,
+      entityCounts,
+      warnings,
+    };
+    eventBus.send(DataPortabilityEventTopics.EXPORTED, exportedEvent);
 
     return {
       fileName,
