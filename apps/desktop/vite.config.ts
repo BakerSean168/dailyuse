@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
@@ -59,6 +59,7 @@ const workspacePkgs = [
 export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode !== 'production';
   const workspaceRoot = path.resolve(__dirname, '../..');
+  const env = loadEnv(mode, workspaceRoot, '');
   const devWorkspaceAliases = isDev
     ? [
         ...createAppVueSourceAliasEntries(workspaceRoot),
@@ -127,7 +128,7 @@ export default defineConfig(({ command, mode }) => {
       exclude: [...nativeModules, ...workspacePkgs],
     },
     server: {
-      port: 5173,
+      port: Number(env.VITE_DEV_PORT) || 5173,
       open: false,
       fs: {
         allow: [workspaceRoot],

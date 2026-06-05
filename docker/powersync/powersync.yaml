@@ -29,7 +29,7 @@ storage:
   sslmode: disable
 
 # PowerSync API server port
-port: 8080
+port: !env POWERSYNC_PORT
 
 # Sync Streams live in a separate file, which is the recommended self-hosted
 # layout in current PowerSync docs.

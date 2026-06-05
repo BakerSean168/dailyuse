@@ -94,6 +94,7 @@ services:
     environment:
       NODE_ENV: production
       SERVICE_NAME: dailyuse-ai-service
+      AI_SERVICE_PORT: ${AI_SERVICE_PORT:-8100}
       APP_VERSION: ${APP_VERSION:-0.3.0}
       SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
       DEBUG: ${DEBUG:-false}
@@ -109,7 +110,7 @@ services:
       AI_SERVICE_EVAL_BASE_URL: ${AI_SERVICE_EVAL_BASE_URL:-}
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - '8100:8100'
+      - '${AI_SERVICE_HOST_PORT:-8100}:${AI_SERVICE_PORT:-8100}'
     networks:
       - dailyuse-local-network
     healthcheck:
@@ -118,7 +119,7 @@ services:
           'CMD',
           'python',
           '-c',
-          "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8100/healthz').status == 200 else 1)",
+          "import os,urllib.request,sys;port=os.getenv('AI_SERVICE_PORT','8100');sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{port}/healthz').status == 200 else 1)",
         ]
       interval: 30s
       timeout: 10s
@@ -172,7 +173,7 @@ services:
       QI_NIU_YUN_API_KEY: ${QI_NIU_YUN_API_KEY:-}
       QI_NIU_YUN_BASE_URL: ${QI_NIU_YUN_BASE_URL:-}
       QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
-      AI_SERVICE_BASE_URL: http://ai-service:8100
+      AI_SERVICE_BASE_URL: http://ai-service:${AI_SERVICE_PORT:-8100}
       AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
       AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-dailyuse-api}
       AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
@@ -186,7 +187,7 @@ services:
       SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - '3000:3000'
+      - '${API_HOST_PORT:-3000}:3000'
     volumes:
       - api-local-logs:/app/apps/api/logs
       - api-local-uploads:/app/uploads
@@ -215,6 +216,7 @@ services:
         condition: service_healthy
     command: ['start', '-c', '/config/powersync.yaml']
     environment:
+      POWERSYNC_PORT: ${POWERSYNC_PORT:-8080}
       PS_SOURCE_HOSTNAME: postgres
       PS_SOURCE_PORT: 5432
       PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
@@ -230,7 +232,7 @@ services:
       PS_JWK_KID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - '${POWERSYNC_HOST_PORT:-8081}:8080'
+      - '${POWERSYNC_HOST_PORT:-8081}:${POWERSYNC_PORT:-8080}'
     volumes:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
       - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
@@ -242,7 +244,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "const http = require('http'); const req = http.get('http://127.0.0.1:8080/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+          "const port = process.env.POWERSYNC_PORT || '8080'; const http = require('http'); const req = http.get(`http://127.0.0.1:${port}/probes/liveness`, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
         ]
       interval: 15s
       timeout: 5s
@@ -262,7 +264,7 @@ services:
       api:
         condition: service_healthy
     ports:
-      - '8080:80'
+      - '${WEB_HOST_PORT:-8080}:80'
     networks:
       - dailyuse-local-network
     healthcheck:

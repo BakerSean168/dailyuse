@@ -3,7 +3,7 @@
 # =============================================================================
 # Caddy 自动申请和续期 Let's Encrypt HTTPS 证书。
 # 主站域名通过 HTTPS 进入 Caddy，再转发到内部 Nginx (web:80)。
-# 同步子域名通过 HTTPS 进入 Caddy，再转发到 PowerSync (powersync:8080)。
+# 同步子域名通过 HTTPS 进入 Caddy，再转发到 PowerSync (powersync:{$POWERSYNC_PORT:8080})。
 # Nginx 负责静态文件服务、SPA 路由和 /api/ 反向代理。
 # =============================================================================
 
@@ -31,7 +31,7 @@
 }
 
 {$POWERSYNC_DOMAIN} {
-	reverse_proxy powersync:8080
+	reverse_proxy powersync:{$POWERSYNC_PORT:8080}
 
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
