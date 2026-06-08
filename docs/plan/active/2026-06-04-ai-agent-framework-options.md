@@ -201,14 +201,21 @@ LangGraph 最适合作为这个 runtime 的优先验证对象。PydanticAI 更�
 
 - Workflow runtime：LangGraph。
 - Structured output：继续使用 Pydantic schemas；可逐步引入 PydanticAI。
-- Provider abstraction：保留当前 `ChatService` / `LLMProvider`。
-- Tool boundary：保留并升级现有 `ToolRegistry`。
+- Provider abstraction：保留当前 `ChatService` / `LLMProvider` 作为业务侧 provider facade；LangGraph 节点内部只通过 adapter 调用它，不直接取代现有 provider 配置与模型路由。
+- Tool boundary：保留并升级现有 `ToolRegistry` 作为工具权限、分类、确认和业务 executor 边界；LangGraph / LangChain 的 tool 抽象只作为运行时适配层。
 - Business writes：继续由 TS application layer 和业务模块 executor 负责。
 - UI inspiration：参考 Pi / Claude 类 agent session 体验。
 
+补充说明：
+
+- LangGraph / LangChain 体系本身包含 chat model、tool calling、`ToolNode` 等通用抽象，但这些抽象主要服务 agent runtime 内部执行。
+- 当前项目的 provider abstraction 承载用户配置、默认模型、OpenAI / Anthropic / OpenAI-compatible 兼容、错误归一和后续成本/审计策略，不应被 runtime 细节替代。
+- 当前项目的 `ToolRegistry` 承载产品级权限边界：哪些 tool 可读、哪些 action 有副作用、哪些必须等待用户确认、哪些只能由 TS application layer 执行写入。
+- 因此推荐做法不是把工具和 provider 全量迁入 LangGraph，而是在 LangGraph node 与现有 provider/tool 层之间增加薄 adapter。
+
 核心原则：
 
-- Agent runtime 只负责状态、节点、工具调用、暂停恢复和事件。
+- Agent runtime 只负责状态、节点编排、工具调用适配、暂停恢复和事件。
 - 业务模块仍是数据真值。
 - 模型不能直接写数据库。
 - 所有 side-effect actions 必须先形成 plan，再由用户确认。
