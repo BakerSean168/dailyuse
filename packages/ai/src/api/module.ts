@@ -23,6 +23,7 @@ import {
   AIEvaluationReportFileAdapter,
   AIKnowledgeIndexPrismaRepository,
   AIServiceAnalyticsQueryAdapter,
+  AIServiceAgentRuntimeAdapter,
   AIServiceGoalAutomationAdapter,
   createAIModule,
   AIConversationPrismaRepository,
@@ -34,7 +35,10 @@ import {
   AIServiceKnowledgeQueryAdapter,
   AIServiceKnowledgeNoteGenerationAdapter,
 } from '../infrastructure-server';
+import { AgentCheckpointPrismaAdapter } from '../infrastructure-server/adapters/prisma/agent-checkpoint-prisma.adapter';
 import {
+  registerAIAgentCheckpointRoutes,
+  registerAIAgentRuntimeRoutes,
   registerAICapabilitiesRoutes,
   registerAIAnalyticsQueryRoutes,
   registerAIEvaluationReportRoutes,
@@ -45,6 +49,8 @@ import {
   registerAIKnowledgeNoteRoutes,
 } from './routes';
 import { AICapabilitiesController } from '../controllers/ai-capabilities.controller';
+import { AIAgentCheckpointController } from '../controllers/ai-agent-checkpoint.controller';
+import { AIAgentRuntimeController } from '../controllers/ai-agent-runtime.controller';
 import { AIAnalyticsQueryController } from '../controllers/ai-analytics-query.controller';
 import { AIEvaluationReportController } from '../controllers/ai-evaluation-report.controller';
 import { AIGoalGenerationController } from '../controllers/ai-goal-generation.controller';
@@ -134,6 +140,9 @@ export function createAIApiModule(options: {
         analyticsQueryPort: aiServiceRuntimeConfig
           ? new AIServiceAnalyticsQueryAdapter(aiServiceRuntimeConfig)
           : undefined,
+        agentRuntimePort: aiServiceRuntimeConfig
+          ? new AIServiceAgentRuntimeAdapter(aiServiceRuntimeConfig)
+          : undefined,
         executionLogPort: new AIExecutionLogPrismaAdapter(prismaClient),
         evaluationReportPort: new AIEvaluationReportFileAdapter(),
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(context),
@@ -162,6 +171,13 @@ export function createAIApiModule(options: {
       });
       const capabilitiesController = new AICapabilitiesController({
         getCapabilities: handlers.getCapabilities,
+      });
+      const agentRuntimeController = new AIAgentRuntimeController({
+        listAgentRuns: handlers.listAgentRuns,
+        startAgentRun: handlers.startAgentRun,
+        resumeAgentRun: handlers.resumeAgentRun,
+        getAgentRun: handlers.getAgentRun,
+        getAgentEvents: handlers.getAgentEvents,
       });
       const providerController = new AIProviderConfigController({
         createProvider: handlers.createProvider,
@@ -205,6 +221,10 @@ export function createAIApiModule(options: {
         getEvaluationOverview: handlers.getEvaluationOverview,
       });
 
+      // Agent checkpoint controller (direct database adapter, not through aiModule)
+      const checkpointAdapter = new AgentCheckpointPrismaAdapter(prismaClient);
+      const checkpointController = new AIAgentCheckpointController(checkpointAdapter);
+
       // ---------------------------------------------------------------
       // 3. 创建路由（注入平台中间件）并挂载到主路由
       //    Create routes (inject platform middleware) and mount them.
@@ -212,6 +232,11 @@ export function createAIApiModule(options: {
       const goalRoutes = registerAIGoalGenerationRoutes(goalController, middleware);
       const capabilityRoutes = registerAICapabilitiesRoutes(
         capabilitiesController,
+        middleware,
+        context.openApiRegistry,
+      );
+      const agentRuntimeRoutes = registerAIAgentRuntimeRoutes(
+        agentRuntimeController,
         middleware,
         context.openApiRegistry,
       );
@@ -241,16 +266,23 @@ export function createAIApiModule(options: {
         middleware,
         context.openApiRegistry,
       );
+      const checkpointRoutes = registerAIAgentCheckpointRoutes(
+        checkpointController,
+        middleware,
+        context.openApiRegistry,
+      );
 
       // 挂载到主路由（模块自决前缀）
       router.use('/ai/providers', providerRoutes);
       router.use('/ai', capabilityRoutes);
+      router.use('/ai/agents', agentRuntimeRoutes);
       router.use('/ai/chat', chatRoutes);
       router.use('/ai/knowledge', knowledgeQueryRoutes);
       router.use('/ai/knowledge-notes', knowledgeNoteRoutes);
       router.use('/ai/analytics', analyticsQueryRoutes);
       router.use('/ai', evaluationReportRoutes);
       router.use('/ai/generate', goalRoutes);
+      router.use('/internal/agents/checkpoints', checkpointRoutes);
     },
 
     destroy() {

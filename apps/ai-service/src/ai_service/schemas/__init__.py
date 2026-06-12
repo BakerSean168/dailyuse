@@ -1,5 +1,21 @@
 """Schemas module for the AI Service."""
 
+from .agent import (
+    AgentAction,
+    AgentActionPlan,
+    AgentArtifact,
+    AgentCitation,
+    AgentEvent,
+    AgentExecutedAction,
+    AgentMessage,
+    AgentResumePayload,
+    AgentRun,
+    AgentRunResult,
+    AgentRunStatus,
+    AgentStartRunRequest,
+    AgentState,
+    AgentUsage,
+)
 from .analytics import (
     AnalyticsQueryContext,
     AnalyticsQueryRequest,
@@ -32,6 +48,7 @@ from .goals import (
     GoalPlanningResponse,
     KeyResultDraft,
     PlannedGoal,
+    ReminderDraft,
     TaskTemplateDraft,
 )
 from .knowledge import (
@@ -53,6 +70,20 @@ __all__ = [
     "AnalyticsQueryContext",
     "AnalyticsQueryRequest",
     "AnalyticsQueryResponse",
+    "AgentAction",
+    "AgentActionPlan",
+    "AgentArtifact",
+    "AgentCitation",
+    "AgentEvent",
+    "AgentExecutedAction",
+    "AgentMessage",
+    "AgentResumePayload",
+    "AgentRun",
+    "AgentRunResult",
+    "AgentRunStatus",
+    "AgentState",
+    "AgentStartRunRequest",
+    "AgentUsage",
     "ChatCompleteRequest",
     "ChatCompleteResponse",
     "ChatMessage",
@@ -91,4 +122,5 @@ __all__ = [
     "PlannedGoal",
     "TaskTemplateDraft",
     "ProviderConfig",
+    "ReminderDraft",
 ]

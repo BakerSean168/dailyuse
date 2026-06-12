@@ -8,14 +8,14 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --build packages/contracts/tsconfig.json"
+        "command": "node ../../node_modules/typescript/bin/tsc --build packages/contracts/tsconfig.json"
       }
     },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/contracts/dist"],
       "options": {
-        "command": "tsup",
+        "command": "node ../../node_modules/tsup/dist/cli-default.js",
         "cwd": "packages/contracts"
       },
       "cache": true
@@ -23,7 +23,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsup --watch",
+        "command": "node ../../node_modules/tsup/dist/cli-default.js --watch",
         "cwd": "packages/contracts"
       }
     },

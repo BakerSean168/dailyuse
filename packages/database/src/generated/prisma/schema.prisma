@@ -80,6 +80,7 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
+  agentRunCheckpoints             AgentRunCheckpoint[]
 
   // PowerSync: denormalized identity relations
   keyResults               KeyResult[]               @relation("AccountKeyResults")
@@ -283,6 +284,34 @@ model DashboardConfig {
 
   @@index([identityId])
   @@map("dashboard_configs")
+}
+
+model AgentRunCheckpoint {
+  id             String    @id
+  runId          String    @unique @map("run_id")
+  identityId     String    @map("identity_id")
+  conversationId String?   @map("conversation_id")
+  threadId       String    @map("thread_id")
+  agentType      String    @map("agent_type")
+  status         String // pending, running, waiting_clarification, waiting_approval, waiting_execution, completed, failed, cancelled
+  runMetadata    Json      @map("run_metadata") // AgentRun JSON
+  stateSnapshot  Json?     @map("state_snapshot") // AgentState JSON
+  events         Json      @default("[]") // AgentEvent[] JSON
+  interrupts     Json      @default("[]") // interrupt data JSON
+  version        Int       @default(1)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@index([conversationId])
+  @@index([status])
+  @@index([agentType])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("agent_run_checkpoints")
 }
 
 // ==========================================

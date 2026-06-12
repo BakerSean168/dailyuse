@@ -39,18 +39,25 @@
                     {{ t('aiAssistant.chatPage.workflow.tools.chat') }}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    data-testid="ai-chat-tool-goal"
-                    @click="$emit('start-conversation', 'goal')"
+                    data-testid="ai-chat-tool-goal-create"
+                    @click="$emit('start-conversation', 'goal-create')"
                   >
                     <Sparkles class="mr-2 h-4 w-4" />
-                    {{ t('aiAssistant.chatPage.workflow.tools.goal') }}
+                    {{ t('aiAssistant.chatPage.workflow.tools.goalCreate') }}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    data-testid="ai-chat-tool-knowledge-note"
-                    @click="$emit('start-conversation', 'knowledge-note')"
+                    data-testid="ai-chat-tool-knowledge-qa"
+                    @click="$emit('start-conversation', 'knowledge-qa')"
+                  >
+                    <Search class="mr-2 h-4 w-4" />
+                    {{ t('aiAssistant.chatPage.workflow.tools.knowledgeQa') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    data-testid="ai-chat-tool-knowledge-generate"
+                    @click="$emit('start-conversation', 'knowledge-generate')"
                   >
                     <NotebookPen class="mr-2 h-4 w-4" />
-                    {{ t('aiAssistant.chatPage.workflow.tools.knowledgeNote') }}
+                    {{ t('aiAssistant.chatPage.workflow.tools.knowledgeGenerate') }}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem disabled>
@@ -60,10 +67,6 @@
                   <DropdownMenuItem disabled>
                     <NotebookPen class="mr-2 h-4 w-4" />
                     {{ t('aiAssistant.actions.expandDraft') }}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem disabled>
-                    <Search class="mr-2 h-4 w-4" />
-                    {{ t('aiAssistant.actions.askKnowledge') }}
                   </DropdownMenuItem>
                   <DropdownMenuItem disabled>
                     <BarChart3 class="mr-2 h-4 w-4" />

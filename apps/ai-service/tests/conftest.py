@@ -2,7 +2,10 @@
 
 import json
 import os
+import shutil
+import tempfile
 import time
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -19,8 +22,30 @@ from ai_service.security import (
 )
 
 
+def _safe_temp_root() -> Path:
+    """Keep pytest temp directories inside a writable repository-local root."""
+
+    override = os.environ.get("PYTEST_SAFE_TEMP_ROOT")
+    if override:
+        return Path(override)
+    return Path(__file__).resolve().parents[1] / ".pytest-temp"
+
+
+@pytest.fixture
+def tmp_path():
+    """Provide a writable tmp_path even when the system temp dir is restricted."""
+
+    root = _safe_temp_root()
+    root.mkdir(parents=True, exist_ok=True)
+    path = Path(tempfile.mkdtemp(prefix="pytest-", dir=root))
+    try:
+        yield path
+    finally:
+        shutil.rmtree(path, ignore_errors=True)
+
+
 @pytest.fixture(autouse=True)
-def set_test_env():
+def set_test_env(tmp_path):
     """Set test environment variables and restore them after each test."""
 
     original_env = os.environ.copy()
@@ -30,6 +55,7 @@ def set_test_env():
     os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
     os.environ["INTERNAL_REQUEST_MAX_SKEW_SECONDS"] = "300"
+    os.environ["AGENT_CHECKPOINT_DIR"] = str(tmp_path / "agent-checkpoints")
 
     get_settings.cache_clear()
 

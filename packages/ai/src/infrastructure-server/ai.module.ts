@@ -24,6 +24,7 @@ import type {
   IAIExecutionLogPort,
   IAIEvaluationReportPort,
   IAIAutomationToolExecutorPort,
+  IAgentRuntimePort,
   IAnalyticsQueryPort,
   IAnalyticsReadPort,
   IAIChatExecutionPort,
@@ -51,6 +52,12 @@ import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtim
 import type { Result } from '@dailyuse/contracts/result';
 import type {
   AICapabilities,
+  AgentEvent,
+  AgentResumePayload,
+  AgentRun,
+  AgentRunListParams,
+  AgentRunResult,
+  AgentStartRunRequest,
   AIConversationClientDTO,
   ConversationListRes,
   SendMessageRes,
@@ -136,6 +143,7 @@ export interface AIModuleDependencies {
   readonly analyticsReadPort?: IAnalyticsReadPort;
   readonly executionLogPort?: IAIExecutionLogPort;
   readonly evaluationReportPort?: IAIEvaluationReportPort;
+  readonly agentRuntimePort?: IAgentRuntimePort;
 
   /**
    * Knowledge-note persistence is an external collaborator.
@@ -292,6 +300,41 @@ export interface AIEvaluationReportService {
   ): Promise<Result<GetAIEvaluationOverviewRes>>;
 }
 
+export interface AIAgentRuntimeService {
+  readonly isAvailable: boolean;
+  startRun(
+    req: AgentStartRunRequest,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRunResult>>;
+  resumeRun(
+    runId: string,
+    payload: AgentResumePayload,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRunResult>>;
+  getRun(
+    runId: string,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRunResult>>;
+  listRuns(
+    params: AgentRunListParams,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRun[]>>;
+  getEvents(
+    runId: string,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentEvent[]>>;
+}
+
 /**
  * Higher-level assembled services used by controllers.
  * 控制器使用的高层服务集合。
@@ -309,6 +352,7 @@ export interface AIModuleServices {
   readonly knowledgeQueryServices: AIKnowledgeQueryServices;
   readonly analyticsQueryService: AIAnalyticsQueryService;
   readonly evaluationReportService: AIEvaluationReportService;
+  readonly agentRuntimeService: AIAgentRuntimeService;
 }
 
 // ---------------------------------------------------------------------------
@@ -383,6 +427,37 @@ export interface AIApplicationPort {
   reindexKnowledge(req: ReindexKnowledgeReq, cx: ExecutionContext): Promise<Result<ReindexKnowledgeRes>>;
   queryAnalytics(req: QueryAnalyticsReq, cx: ExecutionContext): Promise<Result<QueryAnalyticsRes>>;
   getEvaluationOverview(req?: GetAIEvaluationOverviewReq): Promise<Result<GetAIEvaluationOverviewRes>>;
+  startAgentRun(
+    req: AgentStartRunRequest,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRunResult>>;
+  resumeAgentRun(
+    runId: string,
+    payload: AgentResumePayload,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRunResult>>;
+  getAgentRun(
+    runId: string,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRunResult>>;
+  listAgentRuns(
+    params: AgentRunListParams,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentRun[]>>;
+  getAgentEvents(
+    runId: string,
+    cx: ExecutionContext,
+    requestId?: string,
+    signal?: AbortSignal,
+  ): Promise<Result<AgentEvent[]>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -492,7 +567,8 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       dependencies.knowledgeIngestionPort ||
       dependencies.knowledgeQueryPort ||
       dependencies.knowledgeNoteGenerationPort ||
-      dependencies.analyticsQueryPort,
+      dependencies.analyticsQueryPort ||
+      dependencies.agentRuntimePort,
   );
 
   const runtime = isRemoteMode
@@ -585,6 +661,16 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     reindexKnowledge: (req, cx) => services.knowledgeQueryServices.reindex.execute(req, cx),
     queryAnalytics: (req, cx) => services.analyticsQueryService.queryAnalytics(req, cx),
     getEvaluationOverview: (req = {}) => services.evaluationReportService.getOverview(req),
+    startAgentRun: (req, cx, requestId, signal) =>
+      services.agentRuntimeService.startRun(req, cx, requestId, signal),
+    resumeAgentRun: (runId, payload, cx, requestId, signal) =>
+      services.agentRuntimeService.resumeRun(runId, payload, cx, requestId, signal),
+    getAgentRun: (runId, cx, requestId, signal) =>
+      services.agentRuntimeService.getRun(runId, cx, requestId, signal),
+    listAgentRuns: (params, cx, requestId, signal) =>
+      services.agentRuntimeService.listRuns(params, cx, requestId, signal),
+    getAgentEvents: (runId, cx, requestId, signal) =>
+      services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
   };
 
   return {

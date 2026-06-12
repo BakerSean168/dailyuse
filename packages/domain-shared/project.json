@@ -10,14 +10,14 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/domain-shared/dist"],
       "options": {
-        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && node ../../node_modules/tsup/dist/cli-default.js --clean=false",
         "cwd": "packages/domain-shared"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsup --watch",
+        "command": "node ../../node_modules/tsup/dist/cli-default.js --watch",
         "cwd": "packages/domain-shared"
       }
     },
@@ -31,7 +31,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --noEmit -p tsconfig.typecheck.json",
+        "command": "node ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.typecheck.json",
         "cwd": "packages/domain-shared"
       }
     },

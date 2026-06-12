@@ -10,14 +10,14 @@
       "outputs": ["{workspaceRoot}/packages/ui-vue-shadcn/dist"],
       "dependsOn": ["^build"],
       "options": {
-        "command": "vite build",
+        "command": "node ../../node_modules/vite/bin/vite.js build",
         "cwd": "packages/ui-vue-shadcn"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vite build --watch",
+        "command": "node ../../node_modules/vite/bin/vite.js build --watch",
         "cwd": "packages/ui-vue-shadcn"
       }
     },
@@ -38,7 +38,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vue-tsc --noEmit -p tsconfig.typecheck.json",
+        "command": "node ../../node_modules/vue-tsc/bin/vue-tsc.js --noEmit -p tsconfig.typecheck.json",
         "cwd": "packages/ui-vue-shadcn"
       }
     }

@@ -1,4 +1,5 @@
 export { AICapabilitiesController } from './ai-capabilities.controller';
+export { AIAgentRuntimeController } from './ai-agent-runtime.controller';
 export { AIAnalyticsQueryController } from './ai-analytics-query.controller';
 export { AIEvaluationReportController } from './ai-evaluation-report.controller';
 export { AIGoalGenerationController } from './ai-goal-generation.controller';

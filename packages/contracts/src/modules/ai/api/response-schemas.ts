@@ -5,6 +5,7 @@ import { GoalCategory } from '../dtos/goal-generation-result.dto';
 import {
   GoalAutomationActionSchema,
   GoalAutomationExecutedActionSchema,
+  GoalAutomationReminderPreviewSchema,
   GoalAutomationTaskTemplatePreviewSchema,
 } from './ai-goal-automation.dto';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
@@ -88,6 +89,7 @@ const GoalWorkflowPlanPayloadSchema = z.object({
     goal: GeneratedGoalDraftSchema,
     keyResults: z.array(KeyResultPreviewSchema).optional(),
     taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
+    reminders: z.array(GoalAutomationReminderPreviewSchema).optional(),
   }),
   actions: z.array(GoalAutomationActionSchema),
   tokenUsage: TokenUsageSchema,
@@ -274,6 +276,7 @@ const ResourceClientResSchema = z.object({
 export const CreateKnowledgeNoteResSchema = z.object({
   resource: ResourceClientResSchema,
   resolvedPath: z.string(),
+  indexStatus: z.enum(['pending', 'indexed', 'failed']),
   tokenUsage: TokenUsageSchema,
   providerId: brandedId<AiProviderConfigId>(),
   processingTimeMs: z.number(),

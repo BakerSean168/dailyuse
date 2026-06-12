@@ -10,6 +10,11 @@ from typing import cast
 
 from fastapi import Request
 
+from ai_service.agent_runtime import (
+    GoalCreateAgentRuntime,
+    KnowledgeGenerateAgentRuntime,
+    KnowledgeQaAgentRuntime,
+)
 from ai_service.config import Settings
 from ai_service.orchestrator.orchestrator import AIWorkflowOrchestrator
 from ai_service.services import (
@@ -73,6 +78,28 @@ def get_analytics_query_service(request: Request) -> AnalyticsQueryService:
 
     return cast(AnalyticsQueryService, request.app.state.analytics_query_service)
 
+
+def get_goal_create_agent_runtime(request: Request) -> GoalCreateAgentRuntime:
+    """Read the experimental goal.create Agent runtime from app state."""
+
+    return cast(GoalCreateAgentRuntime, request.app.state.goal_create_agent_runtime)
+
+
+def get_knowledge_qa_agent_runtime(request: Request) -> KnowledgeQaAgentRuntime:
+    """Read the experimental knowledge.qa Agent runtime from app state."""
+
+    return cast(KnowledgeQaAgentRuntime, request.app.state.knowledge_qa_agent_runtime)
+
+
+def get_knowledge_generate_agent_runtime(
+    request: Request,
+) -> KnowledgeGenerateAgentRuntime:
+    """Read the experimental knowledge.generate Agent runtime from app state."""
+
+    return cast(
+        KnowledgeGenerateAgentRuntime,
+        request.app.state.knowledge_generate_agent_runtime,
+    )
 
 
 def get_workflow_orchestrator(request: Request) -> AIWorkflowOrchestrator:

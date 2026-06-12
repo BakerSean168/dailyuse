@@ -11,6 +11,7 @@
 
 import type {
   IAICapabilitiesApiClient,
+  AIAgentRuntimeApiClient,
   AIEvaluationReportApiClient,
   AIAnalyticsQueryApiClient,
   AIKnowledgeNoteApiClient,
@@ -35,6 +36,9 @@ import type {
   TestAIProviderReq,
   UpdateConversationReq,
   UpdateAIProviderConfigReq,
+  AgentResumePayload,
+  AgentRunListParams,
+  AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -54,6 +58,7 @@ export class AIClientService implements AIClientPort {
     private readonly knowledgeQueryApi: AIKnowledgeQueryApiClient,
     private readonly knowledgeNoteApi: AIKnowledgeNoteApiClient,
     private readonly analyticsQueryApi: AIAnalyticsQueryApiClient,
+    private readonly agentRuntimeApi: AIAgentRuntimeApiClient,
   ) {
     this.getCapabilities = this.getCapabilities.bind(this);
     this.getEvaluationOverview = this.getEvaluationOverview.bind(this);
@@ -79,6 +84,11 @@ export class AIClientService implements AIClientPort {
     this.reindexKnowledge = this.reindexKnowledge.bind(this);
     this.createKnowledgeNote = this.createKnowledgeNote.bind(this);
     this.queryAnalytics = this.queryAnalytics.bind(this);
+    this.listAgentRuns = this.listAgentRuns.bind(this);
+    this.startAgentRun = this.startAgentRun.bind(this);
+    this.resumeAgentRun = this.resumeAgentRun.bind(this);
+    this.getAgentRun = this.getAgentRun.bind(this);
+    this.getAgentEvents = this.getAgentEvents.bind(this);
   }
 
   getCapabilities() {
@@ -181,6 +191,26 @@ export class AIClientService implements AIClientPort {
   queryAnalytics(request: QueryAnalyticsReq) {
     return this.analyticsQueryApi.queryAnalytics(request);
   }
+
+  listAgentRuns(params?: AgentRunListParams) {
+    return this.agentRuntimeApi.listAgentRuns(params);
+  }
+
+  startAgentRun(request: AgentStartRunClientRequest) {
+    return this.agentRuntimeApi.startAgentRun(request);
+  }
+
+  resumeAgentRun(runId: string, payload: AgentResumePayload) {
+    return this.agentRuntimeApi.resumeAgentRun(runId, payload);
+  }
+
+  getAgentRun(runId: string) {
+    return this.agentRuntimeApi.getAgentRun(runId);
+  }
+
+  getAgentEvents(runId: string) {
+    return this.agentRuntimeApi.getAgentEvents(runId);
+  }
 }
 
 // ===== Factory =====
@@ -195,6 +225,7 @@ export function createAIClientService(
   knowledgeQueryApi: AIKnowledgeQueryApiClient,
   knowledgeNoteApi: AIKnowledgeNoteApiClient,
   analyticsQueryApi: AIAnalyticsQueryApiClient,
+  agentRuntimeApi: AIAgentRuntimeApiClient,
 ): AIClientService {
   return new AIClientService(
     capabilitiesApi,
@@ -206,5 +237,6 @@ export function createAIClientService(
     knowledgeQueryApi,
     knowledgeNoteApi,
     analyticsQueryApi,
+    agentRuntimeApi,
   );
 }

@@ -14,6 +14,9 @@
 ## 工作方式
 
 - 先读代码和配置，再修改。
+- 日常代码探索优先使用 CodeGraph 查询符号、入口、调用链和影响范围；确认具体文件后再读取实现。
+- 涉及 Nx workspace、project、target、affected 或任务依赖时使用 nx-mcp。
+- 写简历、README、项目介绍或面试材料时，优先用 Repomix 生成阶段性项目快照；不要把 Repomix 当作日常开发的主探索方式。
 - 优先使用 `pnpm` 而非 `npm`
 - 所有 Nx 命令统一使用 `pnpm nx ...`。
 - 需要 build、lint、test、e2e 时，优先运行离改动最近的 Nx target。

@@ -5,6 +5,7 @@ export { useAIDraftPersistence } from './useAIDraftPersistence';
 export { useAIFormatters } from './useAIFormatters';
 export { useAIGoalWorkflow } from './useAIGoalWorkflow';
 export { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
+export { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 export { useAIModelSelection } from './useAIModelSelection';
 export { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 export type {
@@ -15,14 +16,20 @@ export type {
   EditableGoal,
   EditableKeyResult,
   GoalAutomationResult,
+  GoalAgentAction,
+  GoalAgentArtifact,
+  GoalAgentExecutedAction,
+  GoalAgentRunResult,
   GoalClarification,
   GoalDraft,
   GoalExecutedAction,
   GoalWorkflowStage,
+  KnowledgeAnswer,
+  KnowledgeQaAgentRunResult,
   MessageStatus,
   NoteSummary,
   PersistedWorkflowEntry,
   ProviderListItem,
   WorkflowMode,
 } from './types';
-export { createEmptyGoalDraft, getToolLocaleKey } from './types';
+export { createEmptyGoalDraft, getToolLocaleKey, normalizeWorkflowMode } from './types';

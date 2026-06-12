@@ -21,6 +21,7 @@ export type {
   AIKnowledgeNoteApiClient,
   AIKnowledgeQueryApiClient,
   AIAnalyticsQueryApiClient,
+  AIAgentRuntimeApiClient,
   IAIProviderConfigApiClient,
 } from '../../application-client/ports/ai-api-client.port';
 

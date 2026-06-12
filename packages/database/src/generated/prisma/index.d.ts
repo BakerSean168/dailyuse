@@ -59,6 +59,11 @@ export type AiKnowledgeIndexEntry = $Result.DefaultSelection<Prisma.$AiKnowledge
  */
 export type DashboardConfig = $Result.DefaultSelection<Prisma.$DashboardConfigPayload>
 /**
+ * Model AgentRunCheckpoint
+ * 
+ */
+export type AgentRunCheckpoint = $Result.DefaultSelection<Prisma.$AgentRunCheckpointPayload>
+/**
  * Model AuthIdentity
  * 
  */
@@ -543,6 +548,16 @@ export class PrismaClient<
     * ```
     */
   get dashboardConfig(): Prisma.DashboardConfigDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agentRunCheckpoint`: Exposes CRUD operations for the **AgentRunCheckpoint** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgentRunCheckpoints
+    * const agentRunCheckpoints = await prisma.agentRunCheckpoint.findMany()
+    * ```
+    */
+  get agentRunCheckpoint(): Prisma.AgentRunCheckpointDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.authIdentity`: Exposes CRUD operations for the **AuthIdentity** model.
@@ -1506,6 +1521,7 @@ export namespace Prisma {
     KnowledgeGenerationTask: 'KnowledgeGenerationTask',
     AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
     DashboardConfig: 'DashboardConfig',
+    AgentRunCheckpoint: 'AgentRunCheckpoint',
     AuthIdentity: 'AuthIdentity',
     AuthIdentifier: 'AuthIdentifier',
     AuthOAuthBinding: 'AuthOAuthBinding',
@@ -1573,7 +1589,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
+      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "aiKnowledgeIndexEntry" | "dashboardConfig" | "agentRunCheckpoint" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2240,6 +2256,80 @@ export namespace Prisma {
           count: {
             args: Prisma.DashboardConfigCountArgs<ExtArgs>
             result: $Utils.Optional<DashboardConfigCountAggregateOutputType> | number
+          }
+        }
+      }
+      AgentRunCheckpoint: {
+        payload: Prisma.$AgentRunCheckpointPayload<ExtArgs>
+        fields: Prisma.AgentRunCheckpointFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgentRunCheckpointFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgentRunCheckpointFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
+          }
+          findFirst: {
+            args: Prisma.AgentRunCheckpointFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgentRunCheckpointFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
+          }
+          findMany: {
+            args: Prisma.AgentRunCheckpointFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>[]
+          }
+          create: {
+            args: Prisma.AgentRunCheckpointCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
+          }
+          createMany: {
+            args: Prisma.AgentRunCheckpointCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgentRunCheckpointCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>[]
+          }
+          delete: {
+            args: Prisma.AgentRunCheckpointDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
+          }
+          update: {
+            args: Prisma.AgentRunCheckpointUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
+          }
+          deleteMany: {
+            args: Prisma.AgentRunCheckpointDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgentRunCheckpointUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgentRunCheckpointUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>[]
+          }
+          upsert: {
+            args: Prisma.AgentRunCheckpointUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunCheckpointPayload>
+          }
+          aggregate: {
+            args: Prisma.AgentRunCheckpointAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgentRunCheckpoint>
+          }
+          groupBy: {
+            args: Prisma.AgentRunCheckpointGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgentRunCheckpointGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgentRunCheckpointCountArgs<ExtArgs>
+            result: $Utils.Optional<AgentRunCheckpointCountAggregateOutputType> | number
           }
         }
       }
@@ -6208,6 +6298,7 @@ export namespace Prisma {
     knowledgeGenerationTask?: KnowledgeGenerationTaskOmit
     aiKnowledgeIndexEntry?: AiKnowledgeIndexEntryOmit
     dashboardConfig?: DashboardConfigOmit
+    agentRunCheckpoint?: AgentRunCheckpointOmit
     authIdentity?: AuthIdentityOmit
     authIdentifier?: AuthIdentifierOmit
     authOAuthBinding?: AuthOAuthBindingOmit
@@ -6364,6 +6455,7 @@ export namespace Prisma {
     aiGenerationTasks: number
     aiKnowledgeIndexEntries: number
     aiProviderConfigs: number
+    agentRunCheckpoints: number
     keyResults: number
     goalRecords: number
     goalReviews: number
@@ -6406,6 +6498,7 @@ export namespace Prisma {
     aiGenerationTasks?: boolean | AccountCountOutputTypeCountAiGenerationTasksArgs
     aiKnowledgeIndexEntries?: boolean | AccountCountOutputTypeCountAiKnowledgeIndexEntriesArgs
     aiProviderConfigs?: boolean | AccountCountOutputTypeCountAiProviderConfigsArgs
+    agentRunCheckpoints?: boolean | AccountCountOutputTypeCountAgentRunCheckpointsArgs
     keyResults?: boolean | AccountCountOutputTypeCountKeyResultsArgs
     goalRecords?: boolean | AccountCountOutputTypeCountGoalRecordsArgs
     goalReviews?: boolean | AccountCountOutputTypeCountGoalReviewsArgs
@@ -6600,6 +6693,13 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountAiProviderConfigsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiProviderConfigWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountAgentRunCheckpointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentRunCheckpointWhereInput
   }
 
   /**
@@ -7788,6 +7888,7 @@ export namespace Prisma {
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
+    agentRunCheckpoints?: boolean | Account$agentRunCheckpointsArgs<ExtArgs>
     keyResults?: boolean | Account$keyResultsArgs<ExtArgs>
     goalRecords?: boolean | Account$goalRecordsArgs<ExtArgs>
     goalReviews?: boolean | Account$goalReviewsArgs<ExtArgs>
@@ -7904,6 +8005,7 @@ export namespace Prisma {
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
+    agentRunCheckpoints?: boolean | Account$agentRunCheckpointsArgs<ExtArgs>
     keyResults?: boolean | Account$keyResultsArgs<ExtArgs>
     goalRecords?: boolean | Account$goalRecordsArgs<ExtArgs>
     goalReviews?: boolean | Account$goalReviewsArgs<ExtArgs>
@@ -7965,6 +8067,7 @@ export namespace Prisma {
       aiUsageQuotas: Prisma.$AiUsageQuotaPayload<ExtArgs> | null
       aiProviderConfigs: Prisma.$AiProviderConfigPayload<ExtArgs>[]
       dashboardConfigs: Prisma.$DashboardConfigPayload<ExtArgs> | null
+      agentRunCheckpoints: Prisma.$AgentRunCheckpointPayload<ExtArgs>[]
       keyResults: Prisma.$KeyResultPayload<ExtArgs>[]
       goalRecords: Prisma.$GoalRecordPayload<ExtArgs>[]
       goalReviews: Prisma.$GoalReviewPayload<ExtArgs>[]
@@ -8427,6 +8530,7 @@ export namespace Prisma {
     aiUsageQuotas<T extends Account$aiUsageQuotasArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiUsageQuotasArgs<ExtArgs>>): Prisma__AiUsageQuotaClient<$Result.GetResult<Prisma.$AiUsageQuotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     aiProviderConfigs<T extends Account$aiProviderConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiProviderConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dashboardConfigs<T extends Account$dashboardConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$dashboardConfigsArgs<ExtArgs>>): Prisma__DashboardConfigClient<$Result.GetResult<Prisma.$DashboardConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    agentRunCheckpoints<T extends Account$agentRunCheckpointsArgs<ExtArgs> = {}>(args?: Subset<T, Account$agentRunCheckpointsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     keyResults<T extends Account$keyResultsArgs<ExtArgs> = {}>(args?: Subset<T, Account$keyResultsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeyResultPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     goalRecords<T extends Account$goalRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Account$goalRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     goalReviews<T extends Account$goalReviewsArgs<ExtArgs> = {}>(args?: Subset<T, Account$goalReviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9628,6 +9732,30 @@ export namespace Prisma {
      */
     include?: DashboardConfigInclude<ExtArgs> | null
     where?: DashboardConfigWhereInput
+  }
+
+  /**
+   * Account.agentRunCheckpoints
+   */
+  export type Account$agentRunCheckpointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    where?: AgentRunCheckpointWhereInput
+    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
+    cursor?: AgentRunCheckpointWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
   }
 
   /**
@@ -19368,6 +19496,1212 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DashboardConfigInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AgentRunCheckpoint
+   */
+
+  export type AggregateAgentRunCheckpoint = {
+    _count: AgentRunCheckpointCountAggregateOutputType | null
+    _avg: AgentRunCheckpointAvgAggregateOutputType | null
+    _sum: AgentRunCheckpointSumAggregateOutputType | null
+    _min: AgentRunCheckpointMinAggregateOutputType | null
+    _max: AgentRunCheckpointMaxAggregateOutputType | null
+  }
+
+  export type AgentRunCheckpointAvgAggregateOutputType = {
+    version: number | null
+  }
+
+  export type AgentRunCheckpointSumAggregateOutputType = {
+    version: number | null
+  }
+
+  export type AgentRunCheckpointMinAggregateOutputType = {
+    id: string | null
+    runId: string | null
+    identityId: string | null
+    conversationId: string | null
+    threadId: string | null
+    agentType: string | null
+    status: string | null
+    version: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type AgentRunCheckpointMaxAggregateOutputType = {
+    id: string | null
+    runId: string | null
+    identityId: string | null
+    conversationId: string | null
+    threadId: string | null
+    agentType: string | null
+    status: string | null
+    version: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type AgentRunCheckpointCountAggregateOutputType = {
+    id: number
+    runId: number
+    identityId: number
+    conversationId: number
+    threadId: number
+    agentType: number
+    status: number
+    runMetadata: number
+    stateSnapshot: number
+    events: number
+    interrupts: number
+    version: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type AgentRunCheckpointAvgAggregateInputType = {
+    version?: true
+  }
+
+  export type AgentRunCheckpointSumAggregateInputType = {
+    version?: true
+  }
+
+  export type AgentRunCheckpointMinAggregateInputType = {
+    id?: true
+    runId?: true
+    identityId?: true
+    conversationId?: true
+    threadId?: true
+    agentType?: true
+    status?: true
+    version?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type AgentRunCheckpointMaxAggregateInputType = {
+    id?: true
+    runId?: true
+    identityId?: true
+    conversationId?: true
+    threadId?: true
+    agentType?: true
+    status?: true
+    version?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type AgentRunCheckpointCountAggregateInputType = {
+    id?: true
+    runId?: true
+    identityId?: true
+    conversationId?: true
+    threadId?: true
+    agentType?: true
+    status?: true
+    runMetadata?: true
+    stateSnapshot?: true
+    events?: true
+    interrupts?: true
+    version?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type AgentRunCheckpointAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentRunCheckpoint to aggregate.
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRunCheckpoints to fetch.
+     */
+    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgentRunCheckpointWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRunCheckpoints from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRunCheckpoints.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgentRunCheckpoints
+    **/
+    _count?: true | AgentRunCheckpointCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AgentRunCheckpointAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AgentRunCheckpointSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgentRunCheckpointMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgentRunCheckpointMaxAggregateInputType
+  }
+
+  export type GetAgentRunCheckpointAggregateType<T extends AgentRunCheckpointAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgentRunCheckpoint]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgentRunCheckpoint[P]>
+      : GetScalarType<T[P], AggregateAgentRunCheckpoint[P]>
+  }
+
+
+
+
+  export type AgentRunCheckpointGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentRunCheckpointWhereInput
+    orderBy?: AgentRunCheckpointOrderByWithAggregationInput | AgentRunCheckpointOrderByWithAggregationInput[]
+    by: AgentRunCheckpointScalarFieldEnum[] | AgentRunCheckpointScalarFieldEnum
+    having?: AgentRunCheckpointScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgentRunCheckpointCountAggregateInputType | true
+    _avg?: AgentRunCheckpointAvgAggregateInputType
+    _sum?: AgentRunCheckpointSumAggregateInputType
+    _min?: AgentRunCheckpointMinAggregateInputType
+    _max?: AgentRunCheckpointMaxAggregateInputType
+  }
+
+  export type AgentRunCheckpointGroupByOutputType = {
+    id: string
+    runId: string
+    identityId: string
+    conversationId: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonValue
+    stateSnapshot: JsonValue | null
+    events: JsonValue
+    interrupts: JsonValue
+    version: number
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: AgentRunCheckpointCountAggregateOutputType | null
+    _avg: AgentRunCheckpointAvgAggregateOutputType | null
+    _sum: AgentRunCheckpointSumAggregateOutputType | null
+    _min: AgentRunCheckpointMinAggregateOutputType | null
+    _max: AgentRunCheckpointMaxAggregateOutputType | null
+  }
+
+  type GetAgentRunCheckpointGroupByPayload<T extends AgentRunCheckpointGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgentRunCheckpointGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgentRunCheckpointGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgentRunCheckpointGroupByOutputType[P]>
+            : GetScalarType<T[P], AgentRunCheckpointGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgentRunCheckpointSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    runId?: boolean
+    identityId?: boolean
+    conversationId?: boolean
+    threadId?: boolean
+    agentType?: boolean
+    status?: boolean
+    runMetadata?: boolean
+    stateSnapshot?: boolean
+    events?: boolean
+    interrupts?: boolean
+    version?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentRunCheckpoint"]>
+
+  export type AgentRunCheckpointSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    runId?: boolean
+    identityId?: boolean
+    conversationId?: boolean
+    threadId?: boolean
+    agentType?: boolean
+    status?: boolean
+    runMetadata?: boolean
+    stateSnapshot?: boolean
+    events?: boolean
+    interrupts?: boolean
+    version?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentRunCheckpoint"]>
+
+  export type AgentRunCheckpointSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    runId?: boolean
+    identityId?: boolean
+    conversationId?: boolean
+    threadId?: boolean
+    agentType?: boolean
+    status?: boolean
+    runMetadata?: boolean
+    stateSnapshot?: boolean
+    events?: boolean
+    interrupts?: boolean
+    version?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentRunCheckpoint"]>
+
+  export type AgentRunCheckpointSelectScalar = {
+    id?: boolean
+    runId?: boolean
+    identityId?: boolean
+    conversationId?: boolean
+    threadId?: boolean
+    agentType?: boolean
+    status?: boolean
+    runMetadata?: boolean
+    stateSnapshot?: boolean
+    events?: boolean
+    interrupts?: boolean
+    version?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type AgentRunCheckpointOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "runId" | "identityId" | "conversationId" | "threadId" | "agentType" | "status" | "runMetadata" | "stateSnapshot" | "events" | "interrupts" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["agentRunCheckpoint"]>
+  export type AgentRunCheckpointInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type AgentRunCheckpointIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+  export type AgentRunCheckpointIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+  }
+
+  export type $AgentRunCheckpointPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgentRunCheckpoint"
+    objects: {
+      account: Prisma.$AccountPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      runId: string
+      identityId: string
+      conversationId: string | null
+      threadId: string
+      agentType: string
+      status: string
+      runMetadata: Prisma.JsonValue
+      stateSnapshot: Prisma.JsonValue | null
+      events: Prisma.JsonValue
+      interrupts: Prisma.JsonValue
+      version: number
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["agentRunCheckpoint"]>
+    composites: {}
+  }
+
+  type AgentRunCheckpointGetPayload<S extends boolean | null | undefined | AgentRunCheckpointDefaultArgs> = $Result.GetResult<Prisma.$AgentRunCheckpointPayload, S>
+
+  type AgentRunCheckpointCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgentRunCheckpointFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgentRunCheckpointCountAggregateInputType | true
+    }
+
+  export interface AgentRunCheckpointDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgentRunCheckpoint'], meta: { name: 'AgentRunCheckpoint' } }
+    /**
+     * Find zero or one AgentRunCheckpoint that matches the filter.
+     * @param {AgentRunCheckpointFindUniqueArgs} args - Arguments to find a AgentRunCheckpoint
+     * @example
+     * // Get one AgentRunCheckpoint
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgentRunCheckpointFindUniqueArgs>(args: SelectSubset<T, AgentRunCheckpointFindUniqueArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgentRunCheckpoint that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgentRunCheckpointFindUniqueOrThrowArgs} args - Arguments to find a AgentRunCheckpoint
+     * @example
+     * // Get one AgentRunCheckpoint
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgentRunCheckpointFindUniqueOrThrowArgs>(args: SelectSubset<T, AgentRunCheckpointFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentRunCheckpoint that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointFindFirstArgs} args - Arguments to find a AgentRunCheckpoint
+     * @example
+     * // Get one AgentRunCheckpoint
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgentRunCheckpointFindFirstArgs>(args?: SelectSubset<T, AgentRunCheckpointFindFirstArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentRunCheckpoint that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointFindFirstOrThrowArgs} args - Arguments to find a AgentRunCheckpoint
+     * @example
+     * // Get one AgentRunCheckpoint
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgentRunCheckpointFindFirstOrThrowArgs>(args?: SelectSubset<T, AgentRunCheckpointFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgentRunCheckpoints that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgentRunCheckpoints
+     * const agentRunCheckpoints = await prisma.agentRunCheckpoint.findMany()
+     * 
+     * // Get first 10 AgentRunCheckpoints
+     * const agentRunCheckpoints = await prisma.agentRunCheckpoint.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agentRunCheckpointWithIdOnly = await prisma.agentRunCheckpoint.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgentRunCheckpointFindManyArgs>(args?: SelectSubset<T, AgentRunCheckpointFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgentRunCheckpoint.
+     * @param {AgentRunCheckpointCreateArgs} args - Arguments to create a AgentRunCheckpoint.
+     * @example
+     * // Create one AgentRunCheckpoint
+     * const AgentRunCheckpoint = await prisma.agentRunCheckpoint.create({
+     *   data: {
+     *     // ... data to create a AgentRunCheckpoint
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgentRunCheckpointCreateArgs>(args: SelectSubset<T, AgentRunCheckpointCreateArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgentRunCheckpoints.
+     * @param {AgentRunCheckpointCreateManyArgs} args - Arguments to create many AgentRunCheckpoints.
+     * @example
+     * // Create many AgentRunCheckpoints
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgentRunCheckpointCreateManyArgs>(args?: SelectSubset<T, AgentRunCheckpointCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgentRunCheckpoints and returns the data saved in the database.
+     * @param {AgentRunCheckpointCreateManyAndReturnArgs} args - Arguments to create many AgentRunCheckpoints.
+     * @example
+     * // Create many AgentRunCheckpoints
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgentRunCheckpoints and only return the `id`
+     * const agentRunCheckpointWithIdOnly = await prisma.agentRunCheckpoint.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgentRunCheckpointCreateManyAndReturnArgs>(args?: SelectSubset<T, AgentRunCheckpointCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgentRunCheckpoint.
+     * @param {AgentRunCheckpointDeleteArgs} args - Arguments to delete one AgentRunCheckpoint.
+     * @example
+     * // Delete one AgentRunCheckpoint
+     * const AgentRunCheckpoint = await prisma.agentRunCheckpoint.delete({
+     *   where: {
+     *     // ... filter to delete one AgentRunCheckpoint
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgentRunCheckpointDeleteArgs>(args: SelectSubset<T, AgentRunCheckpointDeleteArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgentRunCheckpoint.
+     * @param {AgentRunCheckpointUpdateArgs} args - Arguments to update one AgentRunCheckpoint.
+     * @example
+     * // Update one AgentRunCheckpoint
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgentRunCheckpointUpdateArgs>(args: SelectSubset<T, AgentRunCheckpointUpdateArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgentRunCheckpoints.
+     * @param {AgentRunCheckpointDeleteManyArgs} args - Arguments to filter AgentRunCheckpoints to delete.
+     * @example
+     * // Delete a few AgentRunCheckpoints
+     * const { count } = await prisma.agentRunCheckpoint.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgentRunCheckpointDeleteManyArgs>(args?: SelectSubset<T, AgentRunCheckpointDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentRunCheckpoints.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgentRunCheckpoints
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgentRunCheckpointUpdateManyArgs>(args: SelectSubset<T, AgentRunCheckpointUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentRunCheckpoints and returns the data updated in the database.
+     * @param {AgentRunCheckpointUpdateManyAndReturnArgs} args - Arguments to update many AgentRunCheckpoints.
+     * @example
+     * // Update many AgentRunCheckpoints
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgentRunCheckpoints and only return the `id`
+     * const agentRunCheckpointWithIdOnly = await prisma.agentRunCheckpoint.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgentRunCheckpointUpdateManyAndReturnArgs>(args: SelectSubset<T, AgentRunCheckpointUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgentRunCheckpoint.
+     * @param {AgentRunCheckpointUpsertArgs} args - Arguments to update or create a AgentRunCheckpoint.
+     * @example
+     * // Update or create a AgentRunCheckpoint
+     * const agentRunCheckpoint = await prisma.agentRunCheckpoint.upsert({
+     *   create: {
+     *     // ... data to create a AgentRunCheckpoint
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgentRunCheckpoint we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgentRunCheckpointUpsertArgs>(args: SelectSubset<T, AgentRunCheckpointUpsertArgs<ExtArgs>>): Prisma__AgentRunCheckpointClient<$Result.GetResult<Prisma.$AgentRunCheckpointPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgentRunCheckpoints.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointCountArgs} args - Arguments to filter AgentRunCheckpoints to count.
+     * @example
+     * // Count the number of AgentRunCheckpoints
+     * const count = await prisma.agentRunCheckpoint.count({
+     *   where: {
+     *     // ... the filter for the AgentRunCheckpoints we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgentRunCheckpointCountArgs>(
+      args?: Subset<T, AgentRunCheckpointCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgentRunCheckpointCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgentRunCheckpoint.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgentRunCheckpointAggregateArgs>(args: Subset<T, AgentRunCheckpointAggregateArgs>): Prisma.PrismaPromise<GetAgentRunCheckpointAggregateType<T>>
+
+    /**
+     * Group by AgentRunCheckpoint.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCheckpointGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgentRunCheckpointGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgentRunCheckpointGroupByArgs['orderBy'] }
+        : { orderBy?: AgentRunCheckpointGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgentRunCheckpointGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgentRunCheckpointGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgentRunCheckpoint model
+   */
+  readonly fields: AgentRunCheckpointFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgentRunCheckpoint.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgentRunCheckpointClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgentRunCheckpoint model
+   */
+  interface AgentRunCheckpointFieldRefs {
+    readonly id: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly runId: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly identityId: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly conversationId: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly threadId: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly agentType: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly status: FieldRef<"AgentRunCheckpoint", 'String'>
+    readonly runMetadata: FieldRef<"AgentRunCheckpoint", 'Json'>
+    readonly stateSnapshot: FieldRef<"AgentRunCheckpoint", 'Json'>
+    readonly events: FieldRef<"AgentRunCheckpoint", 'Json'>
+    readonly interrupts: FieldRef<"AgentRunCheckpoint", 'Json'>
+    readonly version: FieldRef<"AgentRunCheckpoint", 'Int'>
+    readonly createdAt: FieldRef<"AgentRunCheckpoint", 'DateTime'>
+    readonly updatedAt: FieldRef<"AgentRunCheckpoint", 'DateTime'>
+    readonly deletedAt: FieldRef<"AgentRunCheckpoint", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgentRunCheckpoint findUnique
+   */
+  export type AgentRunCheckpointFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRunCheckpoint to fetch.
+     */
+    where: AgentRunCheckpointWhereUniqueInput
+  }
+
+  /**
+   * AgentRunCheckpoint findUniqueOrThrow
+   */
+  export type AgentRunCheckpointFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRunCheckpoint to fetch.
+     */
+    where: AgentRunCheckpointWhereUniqueInput
+  }
+
+  /**
+   * AgentRunCheckpoint findFirst
+   */
+  export type AgentRunCheckpointFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRunCheckpoint to fetch.
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRunCheckpoints to fetch.
+     */
+    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentRunCheckpoints.
+     */
+    cursor?: AgentRunCheckpointWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRunCheckpoints from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRunCheckpoints.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentRunCheckpoints.
+     */
+    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
+  }
+
+  /**
+   * AgentRunCheckpoint findFirstOrThrow
+   */
+  export type AgentRunCheckpointFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRunCheckpoint to fetch.
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRunCheckpoints to fetch.
+     */
+    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentRunCheckpoints.
+     */
+    cursor?: AgentRunCheckpointWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRunCheckpoints from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRunCheckpoints.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentRunCheckpoints.
+     */
+    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
+  }
+
+  /**
+   * AgentRunCheckpoint findMany
+   */
+  export type AgentRunCheckpointFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRunCheckpoints to fetch.
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRunCheckpoints to fetch.
+     */
+    orderBy?: AgentRunCheckpointOrderByWithRelationInput | AgentRunCheckpointOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgentRunCheckpoints.
+     */
+    cursor?: AgentRunCheckpointWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRunCheckpoints from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRunCheckpoints.
+     */
+    skip?: number
+    distinct?: AgentRunCheckpointScalarFieldEnum | AgentRunCheckpointScalarFieldEnum[]
+  }
+
+  /**
+   * AgentRunCheckpoint create
+   */
+  export type AgentRunCheckpointCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgentRunCheckpoint.
+     */
+    data: XOR<AgentRunCheckpointCreateInput, AgentRunCheckpointUncheckedCreateInput>
+  }
+
+  /**
+   * AgentRunCheckpoint createMany
+   */
+  export type AgentRunCheckpointCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgentRunCheckpoints.
+     */
+    data: AgentRunCheckpointCreateManyInput | AgentRunCheckpointCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgentRunCheckpoint createManyAndReturn
+   */
+  export type AgentRunCheckpointCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgentRunCheckpoints.
+     */
+    data: AgentRunCheckpointCreateManyInput | AgentRunCheckpointCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentRunCheckpoint update
+   */
+  export type AgentRunCheckpointUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgentRunCheckpoint.
+     */
+    data: XOR<AgentRunCheckpointUpdateInput, AgentRunCheckpointUncheckedUpdateInput>
+    /**
+     * Choose, which AgentRunCheckpoint to update.
+     */
+    where: AgentRunCheckpointWhereUniqueInput
+  }
+
+  /**
+   * AgentRunCheckpoint updateMany
+   */
+  export type AgentRunCheckpointUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgentRunCheckpoints.
+     */
+    data: XOR<AgentRunCheckpointUpdateManyMutationInput, AgentRunCheckpointUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentRunCheckpoints to update
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * Limit how many AgentRunCheckpoints to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentRunCheckpoint updateManyAndReturn
+   */
+  export type AgentRunCheckpointUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * The data used to update AgentRunCheckpoints.
+     */
+    data: XOR<AgentRunCheckpointUpdateManyMutationInput, AgentRunCheckpointUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentRunCheckpoints to update
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * Limit how many AgentRunCheckpoints to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentRunCheckpoint upsert
+   */
+  export type AgentRunCheckpointUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgentRunCheckpoint to update in case it exists.
+     */
+    where: AgentRunCheckpointWhereUniqueInput
+    /**
+     * In case the AgentRunCheckpoint found by the `where` argument doesn't exist, create a new AgentRunCheckpoint with this data.
+     */
+    create: XOR<AgentRunCheckpointCreateInput, AgentRunCheckpointUncheckedCreateInput>
+    /**
+     * In case the AgentRunCheckpoint was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgentRunCheckpointUpdateInput, AgentRunCheckpointUncheckedUpdateInput>
+  }
+
+  /**
+   * AgentRunCheckpoint delete
+   */
+  export type AgentRunCheckpointDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
+    /**
+     * Filter which AgentRunCheckpoint to delete.
+     */
+    where: AgentRunCheckpointWhereUniqueInput
+  }
+
+  /**
+   * AgentRunCheckpoint deleteMany
+   */
+  export type AgentRunCheckpointDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentRunCheckpoints to delete
+     */
+    where?: AgentRunCheckpointWhereInput
+    /**
+     * Limit how many AgentRunCheckpoints to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentRunCheckpoint without action
+   */
+  export type AgentRunCheckpointDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRunCheckpoint
+     */
+    select?: AgentRunCheckpointSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRunCheckpoint
+     */
+    omit?: AgentRunCheckpointOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunCheckpointInclude<ExtArgs> | null
   }
 
 
@@ -84186,6 +85520,27 @@ export namespace Prisma {
   export type DashboardConfigScalarFieldEnum = (typeof DashboardConfigScalarFieldEnum)[keyof typeof DashboardConfigScalarFieldEnum]
 
 
+  export const AgentRunCheckpointScalarFieldEnum: {
+    id: 'id',
+    runId: 'runId',
+    identityId: 'identityId',
+    conversationId: 'conversationId',
+    threadId: 'threadId',
+    agentType: 'agentType',
+    status: 'status',
+    runMetadata: 'runMetadata',
+    stateSnapshot: 'stateSnapshot',
+    events: 'events',
+    interrupts: 'interrupts',
+    version: 'version',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type AgentRunCheckpointScalarFieldEnum = (typeof AgentRunCheckpointScalarFieldEnum)[keyof typeof AgentRunCheckpointScalarFieldEnum]
+
+
   export const AuthIdentityScalarFieldEnum: {
     id: 'id',
     status: 'status',
@@ -85440,6 +86795,7 @@ export namespace Prisma {
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
+    agentRunCheckpoints?: AgentRunCheckpointListRelationFilter
     keyResults?: KeyResultListRelationFilter
     goalRecords?: GoalRecordListRelationFilter
     goalReviews?: GoalReviewListRelationFilter
@@ -85509,6 +86865,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaOrderByWithRelationInput
     aiProviderConfigs?: AiProviderConfigOrderByRelationAggregateInput
     dashboardConfigs?: DashboardConfigOrderByWithRelationInput
+    agentRunCheckpoints?: AgentRunCheckpointOrderByRelationAggregateInput
     keyResults?: KeyResultOrderByRelationAggregateInput
     goalRecords?: GoalRecordOrderByRelationAggregateInput
     goalReviews?: GoalReviewOrderByRelationAggregateInput
@@ -85581,6 +86938,7 @@ export namespace Prisma {
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
+    agentRunCheckpoints?: AgentRunCheckpointListRelationFilter
     keyResults?: KeyResultListRelationFilter
     goalRecords?: GoalRecordListRelationFilter
     goalReviews?: GoalReviewListRelationFilter
@@ -86375,6 +87733,113 @@ export namespace Prisma {
     widgetConfig?: JsonWithAggregatesFilter<"DashboardConfig">
     createdAt?: DateTimeWithAggregatesFilter<"DashboardConfig"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DashboardConfig"> | Date | string
+  }
+
+  export type AgentRunCheckpointWhereInput = {
+    AND?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
+    OR?: AgentRunCheckpointWhereInput[]
+    NOT?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
+    id?: StringFilter<"AgentRunCheckpoint"> | string
+    runId?: StringFilter<"AgentRunCheckpoint"> | string
+    identityId?: StringFilter<"AgentRunCheckpoint"> | string
+    conversationId?: StringNullableFilter<"AgentRunCheckpoint"> | string | null
+    threadId?: StringFilter<"AgentRunCheckpoint"> | string
+    agentType?: StringFilter<"AgentRunCheckpoint"> | string
+    status?: StringFilter<"AgentRunCheckpoint"> | string
+    runMetadata?: JsonFilter<"AgentRunCheckpoint">
+    stateSnapshot?: JsonNullableFilter<"AgentRunCheckpoint">
+    events?: JsonFilter<"AgentRunCheckpoint">
+    interrupts?: JsonFilter<"AgentRunCheckpoint">
+    version?: IntFilter<"AgentRunCheckpoint"> | number
+    createdAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"AgentRunCheckpoint"> | Date | string | null
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }
+
+  export type AgentRunCheckpointOrderByWithRelationInput = {
+    id?: SortOrder
+    runId?: SortOrder
+    identityId?: SortOrder
+    conversationId?: SortOrderInput | SortOrder
+    threadId?: SortOrder
+    agentType?: SortOrder
+    status?: SortOrder
+    runMetadata?: SortOrder
+    stateSnapshot?: SortOrderInput | SortOrder
+    events?: SortOrder
+    interrupts?: SortOrder
+    version?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    account?: AccountOrderByWithRelationInput
+  }
+
+  export type AgentRunCheckpointWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    runId?: string
+    AND?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
+    OR?: AgentRunCheckpointWhereInput[]
+    NOT?: AgentRunCheckpointWhereInput | AgentRunCheckpointWhereInput[]
+    identityId?: StringFilter<"AgentRunCheckpoint"> | string
+    conversationId?: StringNullableFilter<"AgentRunCheckpoint"> | string | null
+    threadId?: StringFilter<"AgentRunCheckpoint"> | string
+    agentType?: StringFilter<"AgentRunCheckpoint"> | string
+    status?: StringFilter<"AgentRunCheckpoint"> | string
+    runMetadata?: JsonFilter<"AgentRunCheckpoint">
+    stateSnapshot?: JsonNullableFilter<"AgentRunCheckpoint">
+    events?: JsonFilter<"AgentRunCheckpoint">
+    interrupts?: JsonFilter<"AgentRunCheckpoint">
+    version?: IntFilter<"AgentRunCheckpoint"> | number
+    createdAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"AgentRunCheckpoint"> | Date | string | null
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+  }, "id" | "runId">
+
+  export type AgentRunCheckpointOrderByWithAggregationInput = {
+    id?: SortOrder
+    runId?: SortOrder
+    identityId?: SortOrder
+    conversationId?: SortOrderInput | SortOrder
+    threadId?: SortOrder
+    agentType?: SortOrder
+    status?: SortOrder
+    runMetadata?: SortOrder
+    stateSnapshot?: SortOrderInput | SortOrder
+    events?: SortOrder
+    interrupts?: SortOrder
+    version?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: AgentRunCheckpointCountOrderByAggregateInput
+    _avg?: AgentRunCheckpointAvgOrderByAggregateInput
+    _max?: AgentRunCheckpointMaxOrderByAggregateInput
+    _min?: AgentRunCheckpointMinOrderByAggregateInput
+    _sum?: AgentRunCheckpointSumOrderByAggregateInput
+  }
+
+  export type AgentRunCheckpointScalarWhereWithAggregatesInput = {
+    AND?: AgentRunCheckpointScalarWhereWithAggregatesInput | AgentRunCheckpointScalarWhereWithAggregatesInput[]
+    OR?: AgentRunCheckpointScalarWhereWithAggregatesInput[]
+    NOT?: AgentRunCheckpointScalarWhereWithAggregatesInput | AgentRunCheckpointScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
+    runId?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
+    identityId?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
+    conversationId?: StringNullableWithAggregatesFilter<"AgentRunCheckpoint"> | string | null
+    threadId?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
+    agentType?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
+    status?: StringWithAggregatesFilter<"AgentRunCheckpoint"> | string
+    runMetadata?: JsonWithAggregatesFilter<"AgentRunCheckpoint">
+    stateSnapshot?: JsonNullableWithAggregatesFilter<"AgentRunCheckpoint">
+    events?: JsonWithAggregatesFilter<"AgentRunCheckpoint">
+    interrupts?: JsonWithAggregatesFilter<"AgentRunCheckpoint">
+    version?: IntWithAggregatesFilter<"AgentRunCheckpoint"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"AgentRunCheckpoint"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AgentRunCheckpoint"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"AgentRunCheckpoint"> | Date | string | null
   }
 
   export type AuthIdentityWhereInput = {
@@ -91971,6 +93436,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -92039,6 +93505,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -92107,6 +93574,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -92175,6 +93643,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -93075,6 +94544,131 @@ export namespace Prisma {
     widgetConfig?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunCheckpointCreateInput = {
+    id: string
+    runId: string
+    conversationId?: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    account: AccountCreateNestedOneWithoutAgentRunCheckpointsInput
+  }
+
+  export type AgentRunCheckpointUncheckedCreateInput = {
+    id: string
+    runId: string
+    identityId: string
+    conversationId?: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AgentRunCheckpointUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    account?: AccountUpdateOneRequiredWithoutAgentRunCheckpointsNestedInput
+  }
+
+  export type AgentRunCheckpointUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AgentRunCheckpointCreateManyInput = {
+    id: string
+    runId: string
+    identityId: string
+    conversationId?: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AgentRunCheckpointUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AgentRunCheckpointUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AuthIdentityCreateInput = {
@@ -99710,6 +101304,12 @@ export namespace Prisma {
     isNot?: DashboardConfigWhereInput | null
   }
 
+  export type AgentRunCheckpointListRelationFilter = {
+    every?: AgentRunCheckpointWhereInput
+    some?: AgentRunCheckpointWhereInput
+    none?: AgentRunCheckpointWhereInput
+  }
+
   export type KeyResultListRelationFilter = {
     every?: KeyResultWhereInput
     some?: KeyResultWhereInput
@@ -99898,6 +101498,10 @@ export namespace Prisma {
   }
 
   export type AiProviderConfigOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgentRunCheckpointOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -100651,6 +102255,60 @@ export namespace Prisma {
 
   export type DashboardConfigSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+
+  export type AgentRunCheckpointCountOrderByAggregateInput = {
+    id?: SortOrder
+    runId?: SortOrder
+    identityId?: SortOrder
+    conversationId?: SortOrder
+    threadId?: SortOrder
+    agentType?: SortOrder
+    status?: SortOrder
+    runMetadata?: SortOrder
+    stateSnapshot?: SortOrder
+    events?: SortOrder
+    interrupts?: SortOrder
+    version?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type AgentRunCheckpointAvgOrderByAggregateInput = {
+    version?: SortOrder
+  }
+
+  export type AgentRunCheckpointMaxOrderByAggregateInput = {
+    id?: SortOrder
+    runId?: SortOrder
+    identityId?: SortOrder
+    conversationId?: SortOrder
+    threadId?: SortOrder
+    agentType?: SortOrder
+    status?: SortOrder
+    version?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type AgentRunCheckpointMinOrderByAggregateInput = {
+    id?: SortOrder
+    runId?: SortOrder
+    identityId?: SortOrder
+    conversationId?: SortOrder
+    threadId?: SortOrder
+    agentType?: SortOrder
+    status?: SortOrder
+    version?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type AgentRunCheckpointSumOrderByAggregateInput = {
+    version?: SortOrder
   }
 
   export type AuthIdentifierListRelationFilter = {
@@ -104376,6 +106034,13 @@ export namespace Prisma {
     connect?: DashboardConfigWhereUniqueInput
   }
 
+  export type AgentRunCheckpointCreateNestedManyWithoutAccountInput = {
+    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
+    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
+    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+  }
+
   export type KeyResultCreateNestedManyWithoutIdentityInput = {
     create?: XOR<KeyResultCreateWithoutIdentityInput, KeyResultUncheckedCreateWithoutIdentityInput> | KeyResultCreateWithoutIdentityInput[] | KeyResultUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: KeyResultCreateOrConnectWithoutIdentityInput | KeyResultCreateOrConnectWithoutIdentityInput[]
@@ -104701,6 +106366,13 @@ export namespace Prisma {
     create?: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
     connectOrCreate?: DashboardConfigCreateOrConnectWithoutAccountInput
     connect?: DashboardConfigWhereUniqueInput
+  }
+
+  export type AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
+    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
+    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
   }
 
   export type KeyResultUncheckedCreateNestedManyWithoutIdentityInput = {
@@ -105272,6 +106944,20 @@ export namespace Prisma {
     delete?: DashboardConfigWhereInput | boolean
     connect?: DashboardConfigWhereUniqueInput
     update?: XOR<XOR<DashboardConfigUpdateToOneWithWhereWithoutAccountInput, DashboardConfigUpdateWithoutAccountInput>, DashboardConfigUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type AgentRunCheckpointUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
+    upsert?: AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
+    set?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    disconnect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    delete?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    update?: AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput | AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
   }
 
   export type KeyResultUpdateManyWithoutIdentityNestedInput = {
@@ -105910,6 +107596,20 @@ export namespace Prisma {
     update?: XOR<XOR<DashboardConfigUpdateToOneWithWhereWithoutAccountInput, DashboardConfigUpdateWithoutAccountInput>, DashboardConfigUncheckedUpdateWithoutAccountInput>
   }
 
+  export type AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput> | AgentRunCheckpointCreateWithoutAccountInput[] | AgentRunCheckpointUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: AgentRunCheckpointCreateOrConnectWithoutAccountInput | AgentRunCheckpointCreateOrConnectWithoutAccountInput[]
+    upsert?: AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: AgentRunCheckpointCreateManyAccountInputEnvelope
+    set?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    disconnect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    delete?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    connect?: AgentRunCheckpointWhereUniqueInput | AgentRunCheckpointWhereUniqueInput[]
+    update?: AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput | AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput | AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
+  }
+
   export type KeyResultUncheckedUpdateManyWithoutIdentityNestedInput = {
     create?: XOR<KeyResultCreateWithoutIdentityInput, KeyResultUncheckedCreateWithoutIdentityInput> | KeyResultCreateWithoutIdentityInput[] | KeyResultUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: KeyResultCreateOrConnectWithoutIdentityInput | KeyResultCreateOrConnectWithoutIdentityInput[]
@@ -106289,6 +107989,20 @@ export namespace Prisma {
     upsert?: AccountUpsertWithoutDashboardConfigsInput
     connect?: AccountWhereUniqueInput
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDashboardConfigsInput, AccountUpdateWithoutDashboardConfigsInput>, AccountUncheckedUpdateWithoutDashboardConfigsInput>
+  }
+
+  export type AccountCreateNestedOneWithoutAgentRunCheckpointsInput = {
+    create?: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutAgentRunCheckpointsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type AccountUpdateOneRequiredWithoutAgentRunCheckpointsNestedInput = {
+    create?: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutAgentRunCheckpointsInput
+    upsert?: AccountUpsertWithoutAgentRunCheckpointsInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutAgentRunCheckpointsInput, AccountUpdateWithoutAgentRunCheckpointsInput>, AccountUncheckedUpdateWithoutAgentRunCheckpointsInput>
   }
 
   export type AuthIdentifierCreateNestedManyWithoutIdentityInput = {
@@ -110987,6 +112701,50 @@ export namespace Prisma {
     create: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
   }
 
+  export type AgentRunCheckpointCreateWithoutAccountInput = {
+    id: string
+    runId: string
+    conversationId?: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AgentRunCheckpointUncheckedCreateWithoutAccountInput = {
+    id: string
+    runId: string
+    conversationId?: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AgentRunCheckpointCreateOrConnectWithoutAccountInput = {
+    where: AgentRunCheckpointWhereUniqueInput
+    create: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput>
+  }
+
+  export type AgentRunCheckpointCreateManyAccountInputEnvelope = {
+    data: AgentRunCheckpointCreateManyAccountInput | AgentRunCheckpointCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type KeyResultCreateWithoutIdentityInput = {
     id: string
     title: string
@@ -112900,6 +114658,43 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AgentRunCheckpointUpsertWithWhereUniqueWithoutAccountInput = {
+    where: AgentRunCheckpointWhereUniqueInput
+    update: XOR<AgentRunCheckpointUpdateWithoutAccountInput, AgentRunCheckpointUncheckedUpdateWithoutAccountInput>
+    create: XOR<AgentRunCheckpointCreateWithoutAccountInput, AgentRunCheckpointUncheckedCreateWithoutAccountInput>
+  }
+
+  export type AgentRunCheckpointUpdateWithWhereUniqueWithoutAccountInput = {
+    where: AgentRunCheckpointWhereUniqueInput
+    data: XOR<AgentRunCheckpointUpdateWithoutAccountInput, AgentRunCheckpointUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type AgentRunCheckpointUpdateManyWithWhereWithoutAccountInput = {
+    where: AgentRunCheckpointScalarWhereInput
+    data: XOR<AgentRunCheckpointUpdateManyMutationInput, AgentRunCheckpointUncheckedUpdateManyWithoutAccountInput>
+  }
+
+  export type AgentRunCheckpointScalarWhereInput = {
+    AND?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
+    OR?: AgentRunCheckpointScalarWhereInput[]
+    NOT?: AgentRunCheckpointScalarWhereInput | AgentRunCheckpointScalarWhereInput[]
+    id?: StringFilter<"AgentRunCheckpoint"> | string
+    runId?: StringFilter<"AgentRunCheckpoint"> | string
+    identityId?: StringFilter<"AgentRunCheckpoint"> | string
+    conversationId?: StringNullableFilter<"AgentRunCheckpoint"> | string | null
+    threadId?: StringFilter<"AgentRunCheckpoint"> | string
+    agentType?: StringFilter<"AgentRunCheckpoint"> | string
+    status?: StringFilter<"AgentRunCheckpoint"> | string
+    runMetadata?: JsonFilter<"AgentRunCheckpoint">
+    stateSnapshot?: JsonNullableFilter<"AgentRunCheckpoint">
+    events?: JsonFilter<"AgentRunCheckpoint">
+    interrupts?: JsonFilter<"AgentRunCheckpoint">
+    version?: IntFilter<"AgentRunCheckpoint"> | number
+    createdAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentRunCheckpoint"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"AgentRunCheckpoint"> | Date | string | null
+  }
+
   export type KeyResultUpsertWithWhereUniqueWithoutIdentityInput = {
     where: KeyResultWhereUniqueInput
     update: XOR<KeyResultUpdateWithoutIdentityInput, KeyResultUncheckedUpdateWithoutIdentityInput>
@@ -113448,6 +115243,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -113515,6 +115311,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -113626,6 +115423,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -113693,6 +115491,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -113777,6 +115576,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -113844,6 +115644,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -113958,6 +115759,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -114025,6 +115827,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -114128,6 +115931,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -114195,6 +115999,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -114278,6 +116083,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -114345,6 +116151,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -114412,6 +116219,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -114479,6 +116287,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -114562,6 +116371,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -114629,6 +116439,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -114696,6 +116507,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -114763,6 +116575,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -114846,6 +116659,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -114913,6 +116727,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -114980,6 +116795,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -115047,6 +116863,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -115130,6 +116947,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -115197,6 +117015,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -115264,6 +117083,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -115331,6 +117151,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -115414,6 +117235,7 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -115481,6 +117303,295 @@ export namespace Prisma {
     aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
+    keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
+    goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
+    goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
+    taskDependencies?: TaskDependencyUncheckedUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationChannels?: NotificationChannelUncheckedUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUncheckedUpdateManyWithoutIdentityNestedInput
+    aiMessages?: AiMessageUncheckedUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUncheckedUpdateManyWithoutIdentityNestedInput
+  }
+
+  export type AccountCreateWithoutAgentRunCheckpointsInput = {
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
+    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
+    goals?: GoalCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
+    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
+    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleCreateNestedManyWithoutAccountInput
+    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
+    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
+    notifications?: NotificationCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
+    goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
+    goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
+    taskDependencies?: TaskDependencyCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseCreateNestedManyWithoutIdentityInput
+    notificationChannels?: NotificationChannelCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryCreateNestedManyWithoutIdentityInput
+    aiMessages?: AiMessageCreateNestedManyWithoutIdentityInput
+    folders?: FolderCreateNestedManyWithoutIdentityInput
+    resources?: ResourceCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceCreateNestedManyWithoutIdentityInput
+  }
+
+  export type AccountUncheckedCreateWithoutAgentRunCheckpointsInput = {
+    id: string
+    status?: string
+    profile: JsonNullValueInput | InputJsonValue
+    settings: JsonNullValueInput | InputJsonValue
+    emailAddress: string
+    emailIsVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    emailIsPrimary?: boolean
+    phoneCountryCode?: string | null
+    phoneNumber?: string | null
+    phoneFullNumber?: string | null
+    phoneIsVerified?: boolean | null
+    phoneVerifiedAt?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
+    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
+    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
+    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
+    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
+    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
+    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
+    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
+    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
+    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
+    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
+    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
+    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
+    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
+    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
+    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
+    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
+    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
+    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
+    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
+    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
+    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedCreateNestedManyWithoutAccountInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
+    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
+    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
+    goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
+    goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
+    taskDependencies?: TaskDependencyUncheckedCreateNestedManyWithoutIdentityInput
+    taskTemplateHistory?: TaskTemplateHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    scheduleExecutions?: ScheduleExecutionUncheckedCreateNestedManyWithoutIdentityInput
+    reminderHistory?: ReminderHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    reminderResponses?: ReminderResponseUncheckedCreateNestedManyWithoutIdentityInput
+    notificationChannels?: NotificationChannelUncheckedCreateNestedManyWithoutIdentityInput
+    notificationHistory?: NotificationHistoryUncheckedCreateNestedManyWithoutIdentityInput
+    aiMessages?: AiMessageUncheckedCreateNestedManyWithoutIdentityInput
+    folders?: FolderUncheckedCreateNestedManyWithoutIdentityInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutIdentityInput
+    repositoryResources?: RepositoryResourceUncheckedCreateNestedManyWithoutIdentityInput
+  }
+
+  export type AccountCreateOrConnectWithoutAgentRunCheckpointsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
+  }
+
+  export type AccountUpsertWithoutAgentRunCheckpointsInput = {
+    update: XOR<AccountUpdateWithoutAgentRunCheckpointsInput, AccountUncheckedUpdateWithoutAgentRunCheckpointsInput>
+    create: XOR<AccountCreateWithoutAgentRunCheckpointsInput, AccountUncheckedCreateWithoutAgentRunCheckpointsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutAgentRunCheckpointsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutAgentRunCheckpointsInput, AccountUncheckedUpdateWithoutAgentRunCheckpointsInput>
+  }
+
+  export type AccountUpdateWithoutAgentRunCheckpointsInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
+    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
+    goals?: GoalUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
+    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
+    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
+    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
+    goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
+    goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
+    keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
+    taskDependencies?: TaskDependencyUpdateManyWithoutIdentityNestedInput
+    taskTemplateHistory?: TaskTemplateHistoryUpdateManyWithoutIdentityNestedInput
+    scheduleExecutions?: ScheduleExecutionUpdateManyWithoutIdentityNestedInput
+    reminderHistory?: ReminderHistoryUpdateManyWithoutIdentityNestedInput
+    reminderResponses?: ReminderResponseUpdateManyWithoutIdentityNestedInput
+    notificationChannels?: NotificationChannelUpdateManyWithoutIdentityNestedInput
+    notificationHistory?: NotificationHistoryUpdateManyWithoutIdentityNestedInput
+    aiMessages?: AiMessageUpdateManyWithoutIdentityNestedInput
+    folders?: FolderUpdateManyWithoutIdentityNestedInput
+    resources?: ResourceUpdateManyWithoutIdentityNestedInput
+    repositoryResources?: RepositoryResourceUpdateManyWithoutIdentityNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutAgentRunCheckpointsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    profile?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    emailAddress?: StringFieldUpdateOperationsInput | string
+    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
+    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
+    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
+    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
+    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
+    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
+    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
+    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
+    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
+    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
+    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
+    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
+    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
+    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
+    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
+    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
+    aiKnowledgeIndexEntries?: AiKnowledgeIndexEntryUncheckedUpdateManyWithoutAccountNestedInput
+    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
+    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
+    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -115686,6 +117797,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -115753,6 +117865,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -116354,6 +118467,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -116421,6 +118535,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -116520,6 +118635,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -116587,6 +118703,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -116692,6 +118809,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -116759,6 +118877,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -116897,6 +119016,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -116964,6 +119084,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -117122,6 +119243,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -117189,6 +119311,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -117319,6 +119442,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -117386,6 +119510,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -117490,6 +119615,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -117557,6 +119683,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -117673,6 +119800,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -117740,6 +119868,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -117846,6 +119975,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -117913,6 +120043,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -118362,6 +120493,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -118429,6 +120561,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -118700,6 +120833,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -118767,6 +120901,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -119017,6 +121152,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -119084,6 +121220,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -119235,6 +121372,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
@@ -119302,6 +121440,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
@@ -119524,6 +121663,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
@@ -119591,6 +121731,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
@@ -119763,6 +121904,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
@@ -119830,6 +121972,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
@@ -119960,6 +122103,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
@@ -120027,6 +122171,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
@@ -120147,6 +122292,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotCreateNestedManyWithoutIdentityInput
@@ -120214,6 +122360,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedCreateNestedManyWithoutIdentityInput
@@ -120364,6 +122511,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUpdateManyWithoutIdentityNestedInput
@@ -120431,6 +122579,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     keyResultWeightSnapshots?: KeyResultWeightSnapshotUncheckedUpdateManyWithoutIdentityNestedInput
@@ -120571,6 +122720,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -120638,6 +122788,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -120835,6 +122986,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -120902,6 +123054,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -121094,6 +123247,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -121161,6 +123315,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -121311,6 +123466,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -121378,6 +123534,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -121518,6 +123675,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -121585,6 +123743,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -121668,6 +123827,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -121735,6 +123895,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -121802,6 +123963,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -121869,6 +124031,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -121952,6 +124115,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -122019,6 +124183,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -122299,6 +124464,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -122366,6 +124532,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -122481,6 +124648,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -122548,6 +124716,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -122616,6 +124785,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -122683,6 +124853,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -122821,6 +124992,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -122888,6 +125060,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -123016,6 +125189,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -123083,6 +125257,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -123221,6 +125396,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -123288,6 +125464,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -123511,6 +125688,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -123578,6 +125756,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -123750,6 +125929,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -123817,6 +125997,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -123931,6 +126112,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -123998,6 +126180,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -124175,6 +126358,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -124242,6 +126426,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -124325,6 +126510,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -124392,6 +126578,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -124564,6 +126751,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -124631,6 +126819,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -124794,6 +126983,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -124861,6 +127051,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -125033,6 +127224,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -125100,6 +127292,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -125261,6 +127454,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -125328,6 +127522,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -125411,6 +127606,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -125478,6 +127674,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -125546,6 +127743,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -125613,6 +127811,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -125785,6 +127984,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -125852,6 +128052,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -126013,6 +128214,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -126080,6 +128282,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -126163,6 +128366,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -126230,6 +128434,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -126297,6 +128502,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -126364,6 +128570,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -126635,6 +128842,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -126702,6 +128910,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -126834,6 +129043,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -126901,6 +129111,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -127106,6 +129317,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -127173,6 +129385,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -127352,6 +129565,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -127419,6 +129633,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -127553,6 +129768,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -127620,6 +129836,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -127786,6 +130003,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -127853,6 +130071,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -128083,6 +130302,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -128150,6 +130370,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -128631,6 +130852,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -128698,6 +130920,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -128832,6 +131055,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -128899,6 +131123,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -129023,6 +131248,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -129090,6 +131316,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -129173,6 +131400,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -129240,6 +131468,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -129307,6 +131536,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -129374,6 +131604,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -129457,6 +131688,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -129524,6 +131756,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -129591,6 +131824,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -129658,6 +131892,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -129741,6 +131976,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -129808,6 +132044,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -129909,6 +132146,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -129976,6 +132214,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -130075,6 +132314,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -130142,6 +132382,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -130210,6 +132451,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -130277,6 +132519,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -130435,6 +132678,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -130502,6 +132746,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -130649,6 +132894,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -130716,6 +132962,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -130799,6 +133046,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -130866,6 +133114,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -130933,6 +133182,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -131000,6 +133250,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -131083,6 +133334,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -131150,6 +133402,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -131217,6 +133470,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -131284,6 +133538,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -131471,6 +133726,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -131538,6 +133794,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -131621,6 +133878,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -131688,6 +133946,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -132143,6 +134402,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -132210,6 +134470,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -132499,6 +134760,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -132566,6 +134828,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -132748,6 +135011,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -132815,6 +135079,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -132988,6 +135253,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -133055,6 +135321,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -133336,6 +135603,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -133403,6 +135671,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -133680,6 +135949,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -133747,6 +136017,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -133929,6 +136200,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -133996,6 +136268,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -134167,6 +136440,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewCreateNestedManyWithoutIdentityInput
@@ -134234,6 +136508,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedCreateNestedManyWithoutAccountInput
     keyResults?: KeyResultUncheckedCreateNestedManyWithoutIdentityInput
     goalRecords?: GoalRecordUncheckedCreateNestedManyWithoutIdentityInput
     goalReviews?: GoalReviewUncheckedCreateNestedManyWithoutIdentityInput
@@ -134317,6 +136592,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -134384,6 +136660,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput
@@ -134859,6 +137136,23 @@ export namespace Prisma {
     isActive?: boolean
     isDefault?: boolean
     priority?: number
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type AgentRunCheckpointCreateManyAccountInput = {
+    id: string
+    runId: string
+    conversationId?: string | null
+    threadId: string
+    agentType: string
+    status: string
+    runMetadata: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -136511,6 +138805,57 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type AgentRunCheckpointUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AgentRunCheckpointUncheckedUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AgentRunCheckpointUncheckedUpdateManyWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    runId?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    threadId?: StringFieldUpdateOperationsInput | string
+    agentType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    runMetadata?: JsonNullValueInput | InputJsonValue
+    stateSnapshot?: NullableJsonNullValueInput | InputJsonValue
+    events?: JsonNullValueInput | InputJsonValue
+    interrupts?: JsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type KeyResultUpdateWithoutIdentityInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -137418,6 +139763,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUpdateManyWithoutIdentityNestedInput
@@ -137485,6 +139831,7 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
+    agentRunCheckpoints?: AgentRunCheckpointUncheckedUpdateManyWithoutAccountNestedInput
     keyResults?: KeyResultUncheckedUpdateManyWithoutIdentityNestedInput
     goalRecords?: GoalRecordUncheckedUpdateManyWithoutIdentityNestedInput
     goalReviews?: GoalReviewUncheckedUpdateManyWithoutIdentityNestedInput

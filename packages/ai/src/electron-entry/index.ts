@@ -22,6 +22,7 @@ import { AIStreamChannels } from '@dailyuse/contracts/electron';
 import { fail, ok } from '@dailyuse/contracts/result';
 import {
   AIServiceAnalyticsQueryAdapter,
+  AIServiceAgentRuntimeAdapter,
   AIEvaluationReportFileAdapter,
   createAIPowerSyncModule,
   type AIModuleInstance,
@@ -76,6 +77,11 @@ const Ch = {
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
   KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
   ANALYTICS_QUERY: 'ai:analytics:query',
+  AGENT_RUN_LIST: 'ai:agent:run:list',
+  AGENT_RUN_START: 'ai:agent:run:start',
+  AGENT_RUN_RESUME: 'ai:agent:run:resume',
+  AGENT_RUN_GET: 'ai:agent:run:get',
+  AGENT_EVENTS_GET: 'ai:agent:events:get',
   EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
 } as const;
 
@@ -166,6 +172,9 @@ export function createAIElectronModule(options: {
           : undefined,
         analyticsQueryPort: aiServiceRuntimeConfig
           ? new AIServiceAnalyticsQueryAdapter(aiServiceRuntimeConfig)
+          : undefined,
+        agentRuntimePort: aiServiceRuntimeConfig
+          ? new AIServiceAgentRuntimeAdapter(aiServiceRuntimeConfig)
           : undefined,
         evaluationReportPort: new AIEvaluationReportFileAdapter(),
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(ctx),
@@ -394,6 +403,41 @@ export function createAIElectronModule(options: {
       ipcMain.handle(Ch.ANALYTICS_QUERY, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.queryAnalytics(dto, { identityId: requestContext.identityId }),
+        ),
+      );
+      ipcMain.handle(Ch.AGENT_RUN_LIST, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.listAgentRuns(dto ?? {}, { identityId: requestContext.identityId }),
+        ),
+      );
+      ipcMain.handle(Ch.AGENT_RUN_START, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.startAgentRun(
+            {
+              ...dto,
+              identityId: requestContext.identityId,
+            },
+            { identityId: requestContext.identityId },
+          ),
+        ),
+      );
+      ipcMain.handle(Ch.AGENT_RUN_RESUME, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.resumeAgentRun(
+            String(dto.runId),
+            dto.payload,
+            { identityId: requestContext.identityId },
+          ),
+        ),
+      );
+      ipcMain.handle(Ch.AGENT_RUN_GET, async (_, runId) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.getAgentRun(String(runId), { identityId: requestContext.identityId }),
+        ),
+      );
+      ipcMain.handle(Ch.AGENT_EVENTS_GET, async (_, runId) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.getAgentEvents(String(runId), { identityId: requestContext.identityId }),
         ),
       );
       ipcMain.handle(Ch.EVALUATION_OVERVIEW_GET, async (_, dto) =>

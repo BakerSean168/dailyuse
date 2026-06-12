@@ -7,7 +7,7 @@ import type { GeneratedGoalDraft, KeyResultPreview } from '../dtos/goal-generati
 import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
 
-const GeneratedGoalDraftSchema = z.object({
+export const GeneratedGoalDraftSchema = z.object({
   title: z.string(),
   description: z.string(),
   motivation: z.string().optional(),
@@ -20,7 +20,7 @@ const GeneratedGoalDraftSchema = z.object({
   aiInsights: z.string().optional(),
 });
 
-const KeyResultPreviewSchema = z.object({
+export const KeyResultPreviewSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   valueType: z.enum(Object.values(KeyResultValueType)),
@@ -39,6 +39,21 @@ export const GoalAutomationTaskTemplatePreviewSchema = z.object({
   cadence: z.enum(['daily', 'weekly', 'once']),
 });
 
+export const GoalAutomationReminderPreviewSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  importance: z.nativeEnum(ImportanceLevel),
+  cadence: z.enum(['daily', 'weekly', 'once']),
+  timeOfDay: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+});
+
+export const GoalAutomationPlanSchema = z.object({
+  goal: GeneratedGoalDraftSchema,
+  keyResults: z.array(KeyResultPreviewSchema).optional(),
+  taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
+  reminders: z.array(GoalAutomationReminderPreviewSchema).optional(),
+});
+
 export const GenerateGoalAutomationSchema = z.object({
   idea: z.string().trim().min(10, '描述至少需要 10 个字符'),
   category: z.string().trim().optional(),
@@ -47,13 +62,7 @@ export const GenerateGoalAutomationSchema = z.object({
   includeTaskTemplates: z.boolean().default(true).optional(),
   confirm: z.boolean().default(false).optional(),
   approvedSummary: z.string().trim().min(1).optional(),
-  approvedPlan: z
-    .object({
-      goal: GeneratedGoalDraftSchema,
-      keyResults: z.array(KeyResultPreviewSchema).optional(),
-      taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
-    })
-    .optional(),
+  approvedPlan: GoalAutomationPlanSchema.optional(),
   approvedActions: z.array(z.lazy(() => GoalAutomationActionSchema)).optional(),
   providerId: brandedId<AiProviderConfigId>().optional(),
 });
@@ -67,10 +76,19 @@ export interface GoalAutomationTaskTemplatePreview {
   cadence: 'daily' | 'weekly' | 'once';
 }
 
+export interface GoalAutomationReminderPreview {
+  title: string;
+  description?: string;
+  importance: ImportanceLevel;
+  cadence: 'daily' | 'weekly' | 'once';
+  timeOfDay?: string;
+}
+
 export const GoalAutomationActionToolSchema = z.enum([
   'create_goal',
   'create_key_result',
   'create_task_template',
+  'create_reminder',
   'search_notes',
   'fetch_stats',
 ]);
@@ -98,6 +116,7 @@ export interface GoalAutomationPlanDTO {
   goal: GeneratedGoalDraft;
   keyResults?: KeyResultPreview[];
   taskTemplates?: GoalAutomationTaskTemplatePreview[];
+  reminders?: GoalAutomationReminderPreview[];
 }
 
 export interface GenerateGoalAutomationRes {

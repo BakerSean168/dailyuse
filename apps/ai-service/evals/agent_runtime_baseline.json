@@ -1,0 +1,252 @@
+{
+  "generated_at": "2026-06-09T00:00:00+00:00",
+  "mode": "deterministic",
+  "provider": null,
+  "model": null,
+  "base_url": null,
+  "cases_path": "evals/agent_runtime_cases.json",
+  "total_cases": 3,
+  "passed_cases": 3,
+  "failed_cases": 0,
+  "pass_rate": 1.0,
+  "by_type": {
+    "agent_runtime_goal_create": 1,
+    "agent_runtime_knowledge_generate": 1,
+    "agent_runtime_knowledge_qa": 1
+  },
+  "failed_case_ids": [],
+  "gate_passed": true,
+  "gate_failures": [],
+  "baseline_path": null,
+  "archive_path": null,
+  "results": [
+    {
+      "id": "agent-runtime-goal-create-planner-draft",
+      "type": "agent_runtime_goal_create",
+      "description": "goal.create runtime should turn a planner response into an approval-gated goal draft and action plan.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "run_status_matches",
+          "passed": true,
+          "detail": "Run status matches expectations."
+        },
+        {
+          "name": "stage_matches",
+          "passed": true,
+          "detail": "Runtime stage matches expectations."
+        },
+        {
+          "name": "goal_draft_artifact_present",
+          "passed": true,
+          "detail": "Goal draft artifact is present."
+        },
+        {
+          "name": "key_result_count_at_least_minimum",
+          "passed": true,
+          "detail": "Key result count 2 meets expectations."
+        },
+        {
+          "name": "approval_interrupt_present",
+          "passed": true,
+          "detail": "Approval interrupt is present."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Action tools match expectations."
+        },
+        {
+          "name": "usage_total_tokens_matches",
+          "passed": true,
+          "detail": "Total token usage matches expectations."
+        },
+        {
+          "name": "goal_mentions:Agent runtime",
+          "passed": true,
+          "detail": "Goal draft mentions \"Agent runtime\"."
+        },
+        {
+          "name": "goal_mentions:checkpoint",
+          "passed": true,
+          "detail": "Goal draft mentions \"checkpoint\"."
+        },
+        {
+          "name": "goal_mentions:approval",
+          "passed": true,
+          "detail": "Goal draft mentions \"approval\"."
+        }
+      ],
+      "metadata": {
+        "run_status": "waiting_approval",
+        "stage": "approval",
+        "goal_title": "Ship Agent runtime checkpoint evals",
+        "key_result_count": 2,
+        "action_tools": [
+          "create_goal",
+          "create_key_result",
+          "create_key_result",
+          "create_task_template",
+          "create_task_template",
+          "create_reminder"
+        ],
+        "usage": {
+          "promptTokens": 11,
+          "completionTokens": 7,
+          "totalTokens": 18
+        }
+      }
+    },
+    {
+      "id": "agent-runtime-knowledge-qa-grounded-citations",
+      "type": "agent_runtime_knowledge_qa",
+      "description": "knowledge.qa runtime should preserve grounded citations and usage metadata in the answer artifact.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "run_completed",
+          "passed": true,
+          "detail": "Knowledge QA runtime completed."
+        },
+        {
+          "name": "knowledge_answer_artifact_present",
+          "passed": true,
+          "detail": "Knowledge answer artifact is present."
+        },
+        {
+          "name": "evidence_status_matches",
+          "passed": true,
+          "detail": "Evidence status matches expectations."
+        },
+        {
+          "name": "citation_presence_matches_expectation",
+          "passed": true,
+          "detail": "Citation presence matches expectations."
+        },
+        {
+          "name": "cites_expected_path:docs/agent-runtime.md",
+          "passed": true,
+          "detail": "Citation for \"docs/agent-runtime.md\" was returned."
+        },
+        {
+          "name": "answer_mentions:cite repository resources",
+          "passed": true,
+          "detail": "Answer mentions \"cite repository resources\"."
+        },
+        {
+          "name": "answer_mentions:grounding evidence",
+          "passed": true,
+          "detail": "Answer mentions \"grounding evidence\"."
+        },
+        {
+          "name": "usage_total_tokens_matches",
+          "passed": true,
+          "detail": "Total token usage matches expectations."
+        },
+        {
+          "name": "matched_resource_count_at_least_minimum",
+          "passed": true,
+          "detail": "Matched resource count meets expectations."
+        }
+      ],
+      "metadata": {
+        "run_status": "completed",
+        "stage": "result",
+        "evidence_status": "grounded",
+        "citation_count": 1,
+        "cited_paths": [
+          "docs/agent-runtime.md"
+        ],
+        "matched_resource_count": 1,
+        "answer_preview": "Agent runtime answers should cite repository resources and expose grounding evidence.",
+        "usage": {
+          "promptTokens": 20,
+          "completionTokens": 10,
+          "totalTokens": 30
+        }
+      }
+    },
+    {
+      "id": "agent-runtime-knowledge-generate-draft-save-plan",
+      "type": "agent_runtime_knowledge_generate",
+      "description": "knowledge.generate runtime should produce an approval-gated knowledge note draft and repository save plan.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "run_status_matches",
+          "passed": true,
+          "detail": "Run status matches expectations."
+        },
+        {
+          "name": "stage_matches",
+          "passed": true,
+          "detail": "Runtime stage matches expectations."
+        },
+        {
+          "name": "knowledge_note_draft_artifact_present",
+          "passed": true,
+          "detail": "Knowledge note draft artifact is present."
+        },
+        {
+          "name": "approval_interrupt_present",
+          "passed": true,
+          "detail": "Approval interrupt is present."
+        },
+        {
+          "name": "draft_title_matches",
+          "passed": true,
+          "detail": "Draft title matches expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Action tools match expectations."
+        },
+        {
+          "name": "target_subpath_matches",
+          "passed": true,
+          "detail": "Target subpath matches expectations."
+        },
+        {
+          "name": "post_save_index_status_matches",
+          "passed": true,
+          "detail": "Post-save index status matches expectations."
+        },
+        {
+          "name": "topic_mentions:repository citations",
+          "passed": true,
+          "detail": "Topic mentions \"repository citations\"."
+        },
+        {
+          "name": "markdown_mentions:Grounded knowledge answers",
+          "passed": true,
+          "detail": "Markdown mentions \"Grounded knowledge answers\"."
+        },
+        {
+          "name": "markdown_mentions:repository resources",
+          "passed": true,
+          "detail": "Markdown mentions \"repository resources\"."
+        },
+        {
+          "name": "markdown_mentions:grounding evidence",
+          "passed": true,
+          "detail": "Markdown mentions \"grounding evidence\"."
+        }
+      ],
+      "metadata": {
+        "run_status": "waiting_approval",
+        "stage": "approval",
+        "draft_title": "Grounded knowledge answers",
+        "action_tools": [
+          "create_knowledge_note"
+        ],
+        "target_subpath": "notes/ai",
+        "index_status": "pending",
+        "markdown_preview": "# Grounded knowledge answers\n\n## Topic\nGrounding knowledge answers in repository citations\n\n## Draft\nThis note draft was generated by the experimental knowledge"
+      }
+    }
+  ]
+}

@@ -104,11 +104,12 @@ function createResource(input: CreateKnowledgeNotePersistenceInput): ResourceCli
 }
 
 describe('AIKnowledgeNoteService', () => {
-  it('generates markdown through the execution port and persists the note', async () => {
-    const executionPort = new StubKnowledgeNoteGenerationPort();
-    const persistencePort = new StubKnowledgeNotePersistencePort();
-    const executionLogPort = new StubExecutionLogPort();
-    const service = new ManageAIKnowledgeNoteUseCase(
+  function createService(dependencies: {
+    executionPort: StubKnowledgeNoteGenerationPort;
+    persistencePort: StubKnowledgeNotePersistencePort;
+    executionLogPort: StubExecutionLogPort;
+  }) {
+    return new ManageAIKnowledgeNoteUseCase(
       new StubProviderConfigRepository({
         id: 'provider-1',
         identityId: 'identity-1',
@@ -119,12 +120,23 @@ describe('AIKnowledgeNoteService', () => {
         isActive: true,
         name: 'Main provider',
       }) as unknown as IAIProviderConfigRepository,
-      executionPort,
-      persistencePort,
+      dependencies.executionPort,
+      dependencies.persistencePort,
       async () => 'python',
       new AIKnowledgeNotePathResolver(),
-      executionLogPort,
+      dependencies.executionLogPort,
     );
+  }
+
+  it('generates markdown through the execution port and persists the note', async () => {
+    const executionPort = new StubKnowledgeNoteGenerationPort();
+    const persistencePort = new StubKnowledgeNotePersistencePort();
+    const executionLogPort = new StubExecutionLogPort();
+    const service = createService({
+      executionPort,
+      persistencePort,
+      executionLogPort,
+    });
 
     const result = await service.createKnowledgeNote({
       topic: 'Python tooling',
@@ -158,6 +170,7 @@ describe('AIKnowledgeNoteService', () => {
     expect(result.data.providerId).toBe('provider-1');
     expect(result.data.tokenUsage.totalTokens).toBe(30);
     expect(result.data.resolvedPath).toBe('/notes/python/Python-Tooling.md');
+    expect(result.data.indexStatus).toBe('pending');
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
         taskType: 'KNOWLEDGE_NOTE_GENERATION',
@@ -166,6 +179,51 @@ describe('AIKnowledgeNoteService', () => {
         providerName: 'Main provider',
         model: 'gpt-4o-mini',
         requestId: expect.any(String),
+      }),
+    );
+  });
+
+  it('persists reviewed markdown directly without regenerating the note', async () => {
+    const executionPort = new StubKnowledgeNoteGenerationPort();
+    const persistencePort = new StubKnowledgeNotePersistencePort();
+    const executionLogPort = new StubExecutionLogPort();
+    const service = createService({
+      executionPort,
+      persistencePort,
+      executionLogPort,
+    });
+
+    const result = await service.createKnowledgeNote({
+      topic: 'Agent note draft',
+      title: 'Agent Note Draft',
+      contentMarkdown: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
+    }, { identityId: 'identity-1' });
+
+    expect(executionPort.generate).not.toHaveBeenCalled();
+    expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      path: '/notes/python/Agent-Note-Draft.md',
+      fileName: 'Agent-Note-Draft.md',
+      content: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.tokenUsage).toEqual({
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+    });
+    expect(result.data.resolvedPath).toBe('/notes/python/Agent-Note-Draft.md');
+    expect(result.data.indexStatus).toBe('pending');
+    expect(executionLogPort.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskType: 'KNOWLEDGE_NOTE_GENERATION',
+        status: 'COMPLETED',
+        input: expect.objectContaining({
+          topic: 'Agent note draft',
+          contentMarkdownLength: 61,
+        }),
       }),
     );
   });

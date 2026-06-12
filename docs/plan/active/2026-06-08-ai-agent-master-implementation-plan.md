@@ -8,12 +8,16 @@ tags:
   - roadmap
 description: AI Agent 总体实施方案，收敛框架选型、运行时架构、前后端重构、工作台体验和完整 Goal Agent workflow
 created: 2026-06-08T00:00:00
-updated: 2026-06-08T00:00:00
+updated: 2026-06-10T00:00:00
 ---
 
 # AI Agent 总体实施方案
 
 ## 1. 总结
+
+**实施状态**：✅ **核心功能已完成，系统可投入使用**（2026-06-12）
+
+详细总结见：[2026-06-12-ai-agent-implementation-final-summary.md](./2026-06-12-ai-agent-implementation-final-summary.md)
 
 本方案整合以下专项计划，作为后续 AI Agent 改造的主入口：
 
@@ -234,6 +238,7 @@ Knowledge Agent 默认基于个人知识库回答，不能把普通聊天伪装�
 - `tool.started`
 - `tool.completed`
 - `approval.required`
+- `execution.required`
 - `action.executed`
 - `run.completed`
 - `run.failed`
@@ -302,7 +307,7 @@ Goal Agent 是第一条完整落地链路，用来验证 workspace、graph、int
 
 推荐 graph：
 
-`intake -> retrieve_context -> clarify -> draft_goal -> validate_draft -> plan_actions -> approval_interrupt -> execute_actions -> result`
+`intake -> retrieve_context -> clarify -> draft_goal -> validate_draft -> plan_actions -> approval_interrupt -> execution_required_interrupt -> result`
 
 ### 5.1 intake
 
@@ -420,6 +425,8 @@ resume payload：
 - Python Agent Runtime 不直接写库。
 - TS controlled executor 负责执行 approved actions。
 - executor 调用 Goal、Task、Reminder 等业务模块。
+- Python 在用户确认后发出 `execution.required` interrupt。
+- TS application layer 执行 approved actions 后，用 `executed_actions` resume 同一个 Agent run。
 
 失败策略：
 
@@ -470,7 +477,142 @@ resume payload：
 - 写入后返回 resource path。
 - 索引成功、失败或待索引状态可见。
 
-## 7. 实施路线
+## 7. 当前执行情况（2026-06-10）
+
+本节基于当前工作区代码、配置和测试状态审计，不等同于已合并到 `main` 的状态。当前工作区存在大量 AI Agent 相关未提交改动，判断以当前代码为准。
+
+### 7.1 总体状态
+
+| Phase | 当前状态 | 结论 |
+| --- | --- | --- |
+| Phase 1：Workspace 与 Agent contract | 基本完成 | `/` 已接入 AI Agent Workspace；TS/Python contract、用户意图模式和右侧 context panel 已落地。 |
+| Phase 2：LangGraph runtime spike | 已完成并扩展 | Python `agent_runtime` 已引入 LangGraph，已覆盖 `goal.create`、`knowledge.qa`、`knowledge.generate`，不再只是最小 goal spike。 |
+| Phase 3：Goal Agent 接入真实 workflow | 主流程完成，approval 编辑闭环基本完成 | Goal Agent 已支持 clarification、draft、approval、`execution.required`、TS executor 执行和 retry；Agent 确认/继续/重试路径已不再由前端调用旧 `generateGoal(command: execute)`，goal/KR/task template/reminder 编辑会通过 `editedArtifacts` / `approvedActions` / `approvedPlan` 回传。 |
+| Phase 4：Knowledge Q&A artifact 化 | 基本完成 | `knowledge.qa` 已产出 `knowledge_answer` artifact，前端展示 citations、related notes、证据不足状态，并可从 grounded answer 进入笔记草稿。 |
+| Phase 5：Knowledge Generation Agent | 部分完成 | `knowledge.generate` graph、approval、外部执行和保存结果已打通；草稿生成仍是最小模板，duplicate risk 和真实生成质量还需要深化。 |
+| Phase 6：Durability、observability 与 eval | 部分完成 | 已有 file-backed checkpoint、run history、node/tool timing、token usage 和 agent runtime eval harness；持久化仍在 Python 本地文件层，尚未收敛到正式 TS run history/checkpoint port。 |
+
+### 7.2 已落地的关键实现
+
+前端 Workspace：
+
+- `/` 已改为 `AIChatView`，`/dashboard` 下沉为传统模块入口；实现位置：`packages/app-vue/src/router/index.ts`。
+- `/ai/chat` 仍保留为同一 AI chat / workspace 体验入口；实现位置：`packages/app-vue/src/modules/ai/router/index.ts`。
+- `AIChatView` 已具备左侧会话/Agent run/最近目标/最近知识笔记，中间对话，右侧 context panel，移动端侧栏与 context panel 抽屉能力。
+- `WorkflowMode` 已收敛为 `chat`、`goal-create`、`knowledge-qa`、`knowledge-generate`；前端入口在 `AIFooterComposer`，状态编排在 `useAIChatView`、`useAIGoalWorkflow`、`useAIKnowledgeQaWorkflow`、`useAIKnowledgeNoteWorkflow`。
+
+Contract 与应用层：
+
+- TS contract 已新增 `AgentRun`、`AgentState`、`AgentEvent`、`AgentArtifact`、`AgentActionPlan`、`AgentResumePayload` 等 schema；实现位置：`packages/contracts/src/modules/ai/api/ai-agent.dto.ts`。
+- Python Pydantic schema 已与 TS contract 对齐；实现位置：`apps/ai-service/src/ai_service/schemas/agent.py`。
+- TS application layer 已新增 Agent runtime port、controller、HTTP/IPC adapter、API route 和 ai-service internal adapter：
+  - `packages/ai/src/application-server/ports/agent-runtime.port.ts`
+  - `packages/ai/src/controllers/ai-agent-runtime.controller.ts`
+  - `packages/ai/src/api/routes/ai-agent-runtime.routes.ts`
+  - `packages/ai/src/infrastructure-client/adapters/http/ai-agent-runtime-http.adapter.ts`
+  - `packages/ai/src/infrastructure-client/adapters/ipc/ai-agent-runtime-ipc.adapter.ts`
+  - `packages/ai/src/infrastructure-server/chat-execution/ai-service-agent-runtime.adapter.ts`
+- Runtime capability 已新增 `supportsAgentRuntime`，remote runtime 在有 `agentRuntimePort` 时启用 Agent runtime service。
+
+Python Agent Runtime：
+
+- `apps/ai-service/pyproject.toml` 已加入 `langgraph`。
+- `apps/ai-service/src/ai_service/agent_runtime/` 已新增 runtime facade、events、checkpoint helpers 和三个 graph：
+  - `graphs/goal_create.py`
+  - `graphs/knowledge_qa.py`
+  - `graphs/knowledge_generate.py`
+- FastAPI 已新增统一 Agent API：
+  - `POST /internal/agents/runs`
+  - `POST /internal/agents/runs/{run_id}/resume`
+  - `GET /internal/agents/runs`
+  - `GET /internal/agents/runs/{run_id}`
+  - `GET /internal/agents/runs/{run_id}/events`
+- `AgentRunHistoryStore` 和 `FileBackedInMemorySaver` 已支持本地文件 checkpoint / run history 恢复；配置项为 `AGENT_CHECKPOINT_DIR` / `agent_checkpoint_dir`。
+
+受控执行边界：
+
+- Goal Agent 当前链路为：
+
+  `intake -> retrieve_context -> clarify -> draft_goal -> validate_draft -> plan_actions -> approval_interrupt -> execution_required_interrupt -> result`
+
+- Python 在用户确认后只发出 `execution.required` interrupt，不直接写 Goal、Task、Reminder、Repository 数据。
+- TS runtime 捕获 `execution.required` 后，通过 `IAIAutomationToolExecutorPort` 调用受控 executor，再用 `executedActions` resume 同一个 Python run。
+- 对已恢复到 `waiting_execution` 的 run，前端只发送纯 `{ userDecision: 'confirm' }`；TS runtime 会先读取 runtime snapshot，再接管 `execution.required` 执行，不需要前端手动执行 automation。
+- 后端 executor 已能创建 Goal、Key Result、Task Template、Reminder，并实现 goal creation failure 后跳过依赖 action、partial failure 和 retry 所需结果形态；Reminder 会使用 approval draft 中的 `timeOfDay` 生成 fixed time / recurring start time，旧数据默认回退到 `09:00`；实现位置：`apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts`。
+- Knowledge Generation 的 `create_knowledge_note` 保存也已通过 TS `ManageAIKnowledgeNoteUseCase` 执行，而不是 Python 直接写库。
+
+Goal Agent 前端闭环：
+
+- `useAIGoalWorkflow` 已从 Agent 确认、继续执行、重试路径移除旧 `generateGoal(command: execute)` 调用；旧 `generateGoal` / `goalAutomation` 仍只服务 legacy draft/automation 流程。
+- `AIChatView` 的 Goal 主操作区已默认只暴露 Agent runtime 入口；旧 `generateGoal` / `goalAutomation` 直连按钮仅在本地显式设置 `ai:debug:legacy-goal-workflow=true` 时作为 debug / legacy fallback 显示。
+- `waiting_approval` 时，前端会从 `goal_draft` artifact 同步可编辑 goal/KR/task template/reminder 草稿；用户打开编辑器后可修改标题、描述、分类、重要性、日期、动机、可行性、tags、key results、任务模板、提醒标题/描述/节奏/重要性以及提醒时间。
+- 确认 Agent run 时，前端会构造编辑后的 `goal_draft` artifact、更新 `action_plan` artifact，并把基于用户编辑重建后的 `approvedActions` / `approvedPlan` 一起传给 runtime；task template / reminder 的编辑结果会写回 artifact，其中 reminder `timeOfDay` 会同步进入 `goal_draft`、`create_reminder` action payload 和 approved plan，再由 TS controlled executor 按 approved plan 执行。
+- 编辑器嵌入 Agent approval panel 时隐藏旧“直接创建目标”按钮，避免用户绕过 Agent approval/controlled executor。
+- Agent approval 的 pending action 列表已展示动作顺序编号和依赖关系；该展示按 approval plan 中的动作顺序解析 `dependsOn`，不改变 executor 使用 `index` 作为业务数组索引的语义。
+
+Knowledge Agent：
+
+- `knowledge.qa` graph 已输出 `knowledge_answer` artifact，包括 answer、citations、related notes、evidence status、usage 和 timing。
+- TS runtime 在启动 `knowledge.qa` 前会通过现有 `QueryKnowledgeUseCase` 填充 answer/citations，因此回答仍走既有知识检索边界。
+- 前端在 citation 为空时展示证据不足状态，并禁用从不足证据回答生成知识笔记。
+- `knowledge.generate` graph 已能从当前对话或 Knowledge Q&A 结果生成 `knowledge_note_draft` artifact，确认后通过外部执行保存知识笔记并返回 path / index status。
+
+Durability、observability 与 eval：
+
+- Python graph events 已覆盖 `run.started`、`node.started`、`node.completed`、`tool.started`、`tool.completed`、`artifact.updated`、`citation.selected`、`clarification.required`、`approval.required`、`execution.required`、`action.executed`、`run.completed`。
+- 前端 context panel 已展示 token usage、node/tool timing、最近事件、execution timeline 和 recovery 建议。
+- `apps/ai-service/evals/agent_runtime_cases.json`、`agent_runtime_policy.json`、`agent_runtime_baseline.json` 与 `agent_runtime_harness.py` 已出现，`apps/ai-service/project.json` 已有 `agent-runtime-eval` target。
+- `apps/web/project.json` 已新增 `e2e:ai-workspace`，根 `package.json` 已新增 `pnpm e2e:ai-workspace`。
+
+### 7.3 当前主要缺口
+
+Goal Agent：
+
+- 首页 Goal Agent 主路径已走 Agent runtime；旧的 `generateGoal` / `goalAutomation` 直连 workflow 已从默认产品入口隐藏，仅保留为显式 debug fallback。
+- Agent approval 的 goal/KR/task template/reminder 编辑闭环、reminder `timeOfDay` 字段和 pending action 依赖可视化已完成；后续若产品需要，可继续补单个 action 启停、排序等高级控制。
+- Python `goal.create` graph 可调用 `GoalPlanningService`，但 fallback draft 仍是规则模板；需要继续验证 provider-backed draft 质量、warnings 与真实业务字段映射。
+
+Knowledge Q&A：
+
+- Q&A artifact 已可用，但 index status 展示仍偏弱；当前主要展示 citations / related notes / evidence status。
+- citations 打开来源已接前端 repository 入口，但还需要继续验证不同资源类型、缺失资源和索引过期场景。
+
+Knowledge Generation：
+
+- `knowledge.generate` 已接入真实 `KnowledgeNoteService` 做 provider-backed 高质量内容生成，当 provider 返回空或失败时自动 fallback 到模板。
+- `duplicateRisk` 已接入真实知识库相似笔记搜索，基于匹配数量和分数评估为 `none` / `low` / `medium` / `high`；高风险时前端可提醒用户审查已有笔记。
+- `relatedNotes` 已填充前 5 条相似笔记的路径、标题、分数和摘要，方便用户判断是否重复。
+- `retrieve_context` 节点已调用真实 `KnowledgeQueryService.select_citations`，返回相似笔记的 citation 列表并统计 match count。
+- Agent runtime 已支持传入 `provider_config` 和 `indexed_resources`；API routes 已解析并传递这两个参数。
+- 保存后 index status 可见，但”保存后触发 reindex 或待索引”的完整业务策略仍需与 repository/index 模块进一步收敛。
+
+Durability 与持久化：
+
+- 当前 checkpoint/run history 是 Python runtime 内的 file-backed saver/store，适合本地恢复和 spike 验证；还不是计划中的 TS AI module execution log / run state port。
+- 前端刷新恢复已覆盖本地 workflow state 与 runtime snapshot，但跨服务重启、多实例部署和正式数据库持久化还未完成。
+- `GET /internal/agents/runs/{run_id}/events` 当前返回 snapshot 内 events，不是持续 SSE 事件流。
+
+验证：
+
+- 本次更新已验证 `app-vue` / `contracts` / `api` / `ai-service` 相关单测、typecheck 和 lint；其中 Goal Agent approval 编辑闭环新增验证覆盖 task template / reminder 编辑结果进入 `goal_draft` artifact、`approvedActions` 和 `approvedPlan`，并覆盖 reminder `timeOfDay` 从编辑面板、Agent artifact/action payload 到 TS controlled executor 的传递。
+- 本次更新新增后重跑：`packages/app-vue` 下直接执行 `vitest.CMD run --config vitest.config.ts src/modules/ai/views/AIChatView.spec.ts src/modules/ai/components/AIGoalWorkflowPanel.spec.ts`，41 passed；`tsc.CMD --noEmit -p tsconfig.json` 通过；根目录 `nx.CMD run app-vue:lint -- --quiet` 通过。
+- Contracts / executor 验证已补跑：`packages/contracts` 下直接执行 `vitest.CMD run --config vitest.config.ts src/modules/ai/api/ai-agent.dto.test.ts`，13 passed；根目录直接执行 `tsc.CMD --build packages/contracts/tsconfig.json` 通过；`apps/api` 下直接执行 `vitest.CMD run --config vitest.config.ts src/modules/ai/backend-automation-tool-executor.adapter.test.ts`，2 passed；根目录直接执行 `tsc.CMD --noEmit -p apps/api/tsconfig.typecheck.json` 通过；`nx.CMD run api:lint -- --quiet` 通过。
+- Legacy Goal 入口隐藏更新已重跑：`packages/app-vue` 下直接执行 `vitest.CMD run --config vitest.config.ts src/modules/ai/views/AIChatView.spec.ts`；新增覆盖默认主流程隐藏旧 draft/automation 按钮，并保留 `ai:debug:legacy-goal-workflow=true` 下的 legacy fallback 测试。
+- Pending action 依赖可视化更新已重跑：`packages/app-vue` 下直接执行 `vitest.CMD run --config vitest.config.ts src/modules/ai/components/AIGoalWorkflowPanel.spec.ts`；新增覆盖 action 顺序编号和 `dependsOn` 可读化展示。
+- Python Agent runtime 验证已补跑：`apps/ai-service` 下执行 `uv run pytest tests/unit/test_agent_runtime.py tests/unit/test_knowledge_generate_enhancements.py`，43 passed（新增 6 个 knowledge generation enhancement 测试）；`uv run ruff check src tests` 通过；`uv run pyright src` 通过；此前 `uv run pytest tests/` 全量通过，145 passed。当前仅剩 pytest cache 写入 warning，未影响测试和报告生成。
+- Knowledge Generation enhancement 测试覆盖：provider-backed 生成与 usage 统计、真实知识库搜索集成、duplicate risk 评估（high/medium/low/none）、related notes 填充、provider 失败 fallback 到模板、provider_config 正确传递。
+- Desktop 相关验证：`nx.CMD run desktop:lint -- --quiet` 通过；`nx.CMD run desktop:typecheck` / 直接 `tsc` 仍受既有依赖构建与 workspace path 问题影响，失败点集中在 `tsup` 命令解析、`ui-vue-shadcn` DTS portable type、`@dailyuse/powersync-schema` / dist-src 混用等既有项目级问题，未指向本次 `DesktopAutomationToolExecutorAdapter` 改动。
+- AI workspace E2E 已补跑：根目录执行 `nx.CMD run web:e2e:ai-workspace`，8 passed。该验证覆盖 `/` Agent Workspace、移动端 smoke、pending Goal Agent approval 刷新恢复、Goal Agent approval -> controlled executor -> partial failure -> retry success、Knowledge Q&A citations、Knowledge note generation/save、证据不足状态，以及显式 debug fallback 下的 legacy clarification -> draft -> confirm -> result 流程；完整 `web:e2e` 尚未在本次更新中重跑。
+- 计划中的 `test_goal_agent_graph.py`、`test_knowledge_qa_graph.py`、`test_knowledge_generation_graph.py` 形态实际被集中在 `apps/ai-service/tests/unit/test_agent_runtime.py`，后续可按可读性拆分。
+
+### 7.4 下一步优先级
+
+1. 增强 Agent approval 编辑面：按产品需要补单个 action 启停、排序等高级控制，继续通过 `editedArtifacts` / `approvedPlan` resume。
+2. ~~深化 `knowledge.generate`：接入真实 `KnowledgeNoteService` / provider-backed generation，补 duplicate risk、source attribution 和 reindex 策略。~~（已完成：2026-06-12）
+3. 将 checkpoint/run history 从 Python 本地文件推进到正式持久化 port，明确多实例部署与刷新恢复语义。
+4. 继续补必要的完整 `web:e2e` 验证，并按失败面收敛非 AI workspace 的剩余回归。
+
+## 8. 实施路线
 
 ### Phase 1：Workspace 与 Agent contract
 
@@ -571,7 +713,7 @@ resume payload：
 - 每次 run 可追踪 token usage 和节点耗时。
 - eval 能捕获 goal draft 质量和 knowledge grounding 回归。
 
-## 8. 验证计划
+## 9. 验证计划
 
 Python：
 
@@ -605,6 +747,7 @@ E2E：
 - ask personal knowledge base with citations。
 - save Q&A as knowledge note。
 - refresh 后恢复 pending approval run。
+- `pnpm e2e:ai-workspace` 作为隔离 AI workspace flow 的验证入口；在 Windows 下通过外部 Vite runner 避免 Playwright `webServer` teardown 挂起。
 
 文档改动至少运行：
 
@@ -615,10 +758,11 @@ E2E：
 - `pnpm nx run app-vue:lint`
 - `pnpm nx run app-vue:typecheck`
 - `pnpm nx run ai:test`
+- `pnpm nx run web:e2e:ai-workspace`
 - `pnpm nx run web:e2e`
 - `apps/ai-service` 对应 pytest / pyright / ruff target。
 
-## 9. 明确不做
+## 10. 明确不做
 
 第一阶段不做：
 
@@ -631,12 +775,12 @@ E2E：
 - 不让前端直接依赖 LangGraph 类型。
 - 不在没有 citations 的情况下展示确定的知识库回答。
 
-## 10. 完成定义
+## 11. 完成定义
 
 本总方案第一阶段完成定义：
 
 - `/` 是 AI Agent Workspace。
-- Goal Agent 支持完整 `intake -> retrieve_context -> clarify -> draft_goal -> validate_draft -> plan_actions -> approval_interrupt -> execute_actions -> result`。
+- Goal Agent 支持完整 `intake -> retrieve_context -> clarify -> draft_goal -> validate_draft -> plan_actions -> approval_interrupt -> execution_required_interrupt -> result`，并由 TS controlled executor 执行 approved actions 后 resume。
 - Goal Agent 所有写入都必须经过确认。
 - Knowledge Q&A 支持 citation artifact 和证据不足提示。
 - Knowledge Generation 支持从问答或对话生成知识笔记草稿，并确认后保存。
@@ -644,4 +788,3 @@ E2E：
 - TS application layer 仍是 provider resolution、capability、conversation、execution log 和业务写入边界。
 - 前端右侧 context panel 能展示 goal draft、action plan、execution timeline、citations 和 note draft。
 - 有覆盖 runtime、application layer、frontend 和 e2e 的最小测试集。
-

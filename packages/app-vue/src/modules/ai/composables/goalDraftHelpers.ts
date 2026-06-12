@@ -15,6 +15,8 @@ import {
   createEmptyGoalDraft,
   type EditableGoal,
   type EditableKeyResult,
+  type EditableGoalReminder,
+  type EditableGoalTaskTemplate,
   type GoalAutomationResult,
   type GoalClarification,
   type GoalDraft,
@@ -31,6 +33,8 @@ export interface GoalDraftState {
   showGoalDraftEditor: boolean;
   editableGoal: EditableGoal;
   editableKeyResults: EditableKeyResult[];
+  editableTaskTemplates: EditableGoalTaskTemplate[];
+  editableReminders: EditableGoalReminder[];
 }
 
 /** Vue refs that back the GoalDraftState proxy. */
@@ -43,6 +47,8 @@ export interface GoalDraftRefs {
   showGoalDraftEditor: import('vue').Ref<boolean>;
   editableGoal: import('vue').Ref<EditableGoal>;
   editableKeyResults: import('vue').Ref<EditableKeyResult[]>;
+  editableTaskTemplates: import('vue').Ref<EditableGoalTaskTemplate[]>;
+  editableReminders: import('vue').Ref<EditableGoalReminder[]>;
 }
 
 /** Creates a GoalDraftState proxy that bridges Vue refs to a plain mutable object. */
@@ -64,6 +70,10 @@ export function createDraftStateProxy(refs: GoalDraftRefs): GoalDraftState {
     set editableGoal(v) { refs.editableGoal.value = v; },
     get editableKeyResults() { return refs.editableKeyResults.value; },
     set editableKeyResults(v) { refs.editableKeyResults.value = v; },
+    get editableTaskTemplates() { return refs.editableTaskTemplates.value; },
+    set editableTaskTemplates(v) { refs.editableTaskTemplates.value = v; },
+    get editableReminders() { return refs.editableReminders.value; },
+    set editableReminders(v) { refs.editableReminders.value = v; },
   };
 }
 
@@ -102,6 +112,8 @@ export function applyGoalDraft(state: GoalDraftState, nextDraft: GoalDraft): voi
       unit: item.unit,
       weight: item.weight ?? 1,
     })) ?? [];
+  state.editableTaskTemplates = [];
+  state.editableReminders = [];
 }
 
 /** Applies a goal clarification to the workflow state. */
@@ -115,6 +127,8 @@ export function applyGoalClarification(
   state.showGoalDraftEditor = false;
   state.editableGoal = createEmptyGoalDraft();
   state.editableKeyResults = [];
+  state.editableTaskTemplates = [];
+  state.editableReminders = [];
   state.goalClarification = nextClarification;
   state.clarificationAnswers = nextClarification.questions.map(
     (_, index) => state.clarificationAnswers[index] ?? '',
@@ -141,6 +155,8 @@ export function resetGoalArtifacts(state: GoalDraftState): void {
   state.showGoalDraftEditor = false;
   state.editableGoal = createEmptyGoalDraft();
   state.editableKeyResults = [];
+  state.editableTaskTemplates = [];
+  state.editableReminders = [];
 }
 
 /** Creates a key result draft with defaults. */

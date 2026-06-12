@@ -34,6 +34,13 @@ export interface AIServiceInternalRequestOptions<TBody> {
   signal?: AbortSignal;
 }
 
+export interface AIServiceInternalGetRequestOptions {
+  path: string;
+  identityId: string;
+  requestId?: string;
+  signal?: AbortSignal;
+}
+
 export class AIServiceInternalRequestError extends Error {
   constructor(
     message: string,
@@ -60,6 +67,17 @@ export class AIServiceInternalClient {
     return (await response.json()) as TResponse;
   }
 
+  async getJson<TResponse>(
+    request: AIServiceInternalGetRequestOptions,
+  ): Promise<TResponse> {
+    const response = await this.request({
+      ...request,
+      method: 'GET',
+      body: '',
+    });
+    return (await response.json()) as TResponse;
+  }
+
   async postStream<TBody>(
     request: AIServiceInternalRequestOptions<TBody>,
   ): Promise<Response> {
@@ -69,15 +87,29 @@ export class AIServiceInternalClient {
   private async post<TBody>(
     request: AIServiceInternalRequestOptions<TBody>,
   ): Promise<Response> {
+    return this.request({
+      ...request,
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  private async request(request: {
+    method: 'GET' | 'POST';
+    path: string;
+    identityId: string;
+    requestId?: string;
+    body: string;
+    signal?: AbortSignal;
+  }): Promise<Response> {
     const requestId = request.requestId ?? randomUUID();
-    const body = JSON.stringify(request.body);
     const timestamp = Math.floor(Date.now() / 1000);
     const signing = signInternalRequest({
       serviceName: this.options.serviceName,
-      method: 'POST',
+      method: request.method,
       path: request.path,
       timestamp,
-      body,
+      body: request.body,
       secret: this.options.serviceSecret,
     });
 
@@ -92,10 +124,10 @@ export class AIServiceInternalClient {
         identityId: request.identityId,
         baseUrl: this.options.baseUrl,
         timeoutMs: this.timeoutMs,
-        bodyPreview: previewText(body),
+        bodyPreview: previewText(request.body),
       });
       const response = await fetch(new URL(request.path, this.options.baseUrl).toString(), {
-        method: 'POST',
+        method: request.method,
         headers: {
           'Content-Type': 'application/json',
           [INTERNAL_SERVICE_HEADER]: this.options.serviceName,
@@ -105,7 +137,7 @@ export class AIServiceInternalClient {
           'X-Request-Id': requestId,
           'X-Identity-Id': request.identityId,
         },
-        body,
+        body: request.method === 'POST' ? request.body : undefined,
         signal,
       });
 

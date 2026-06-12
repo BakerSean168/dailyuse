@@ -15,5 +15,6 @@ export function createAIServiceFromHttpClient(httpClient: IResultHttpClient): AI
     adapters.knowledge,
     adapters.knowledgeNote,
     adapters.analytics,
+    adapters.agentRuntime,
   );
 }

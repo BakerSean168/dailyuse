@@ -73,13 +73,22 @@ export class ManageAIKnowledgeNoteUseCase {
       const subpath = request.targetSubpath ?? (await this.getKnowledgeNoteSubpath(cx.identityId));
       const pathInfo = this.pathResolver.resolve(subpath, request.title ?? request.topic);
 
-      const completion = await this.knowledgeNoteGenerationPort.generate({
-        identityId: cx.identityId,
-        providerConfig: executionProviderConfig,
-        topic: request.topic,
-        title: request.title,
-        requestId,
-      });
+      const completion = request.contentMarkdown
+        ? {
+            content: request.contentMarkdown,
+            usage: {
+              promptTokens: 0,
+              completionTokens: 0,
+              totalTokens: 0,
+            },
+          }
+        : await this.knowledgeNoteGenerationPort.generate({
+            identityId: cx.identityId,
+            providerConfig: executionProviderConfig,
+            topic: request.topic,
+            title: request.title,
+            requestId,
+          });
 
       const persisted = await this.persistencePort.createKnowledgeNote({
         identityId: cx.identityId,
@@ -88,9 +97,10 @@ export class ManageAIKnowledgeNoteUseCase {
         content: completion.content,
       });
 
-      const result = {
+      const result: CreateKnowledgeNoteRes = {
         resource: persisted.resource,
         resolvedPath: pathInfo.path,
+        indexStatus: 'pending',
         tokenUsage: completion.usage,
         providerId: provider.id,
         processingTimeMs: Date.now() - startedAt,
@@ -109,10 +119,12 @@ export class ManageAIKnowledgeNoteUseCase {
           targetSubpath: request.targetSubpath,
           selectedProviderId: request.providerId,
           selectedModel: request.model,
+          contentMarkdownLength: request.contentMarkdown?.length,
         },
         result: {
           resolvedPath: result.resolvedPath,
           resourceId: String(result.resource.id),
+          indexStatus: result.indexStatus,
         },
         tokenUsage: result.tokenUsage,
         processingMs: result.processingTimeMs,
@@ -133,6 +145,7 @@ export class ManageAIKnowledgeNoteUseCase {
           targetSubpath: request.targetSubpath,
           selectedProviderId: request.providerId,
           selectedModel: request.model,
+          contentMarkdownLength: request.contentMarkdown?.length,
         },
         error: err instanceof Error ? err.message : 'Knowledge note generation failed',
         processingMs: Date.now() - startedAt,

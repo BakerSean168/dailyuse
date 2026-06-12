@@ -61,7 +61,7 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
     './task', './goal', './reminder', './editor', './repository',
     './account', './authentication', './schedule', './setting',
     './notification', './ai', './dashboard', './response', './result',
-    './shared', './primitives', './electron', './mocks',
+    './data-portability', './shared', './primitives', './electron', './mocks',
   ],
   database: ['./prisma'],
   'domain-shared': ['./shared'],

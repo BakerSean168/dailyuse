@@ -34,12 +34,13 @@ describe('createDirectProviderAIRuntime', () => {
     expect(runtime.capabilities.supportsGoalGeneration).toBe(true);
   });
 
-  it('does not support knowledge query, analytics, goal automation, or evaluation reports', () => {
+  it('does not support knowledge query, analytics, goal automation, agent runtime, or evaluation reports', () => {
     const runtime = createDirectProviderAIRuntime(createMockDeps());
     expect(runtime.capabilities.supportsKnowledgeQuery).toBe(false);
     expect(runtime.capabilities.supportsKnowledgeReindex).toBe(false);
     expect(runtime.capabilities.supportsAnalyticsQuery).toBe(false);
     expect(runtime.capabilities.supportsGoalAutomation).toBe(false);
+    expect(runtime.capabilities.supportsAgentRuntime).toBe(false);
     expect(runtime.capabilities.supportsEvaluationReports).toBe(false);
   });
 
@@ -97,6 +98,7 @@ describe('createDirectProviderAIRuntime', () => {
     expect(runtime.services.knowledgeQueryServices.isAvailable).toBe(false);
     expect(runtime.services.analyticsQueryService.isAvailable).toBe(false);
     expect(runtime.services.evaluationReportService.isAvailable).toBe(false);
+    expect(runtime.services.agentRuntimeService.isAvailable).toBe(false);
   });
 
   // --- Runtime contributions ---
@@ -123,6 +125,7 @@ describe('createDirectProviderAIRuntime', () => {
     expect(capabilities.supportsKnowledgeQuery).toBe(services.knowledgeQueryServices.isAvailable);
     expect(capabilities.supportsAnalyticsQuery).toBe(services.analyticsQueryService.isAvailable);
     expect(capabilities.supportsGoalAutomation).toBe(false);
+    expect(capabilities.supportsAgentRuntime).toBe(services.agentRuntimeService.isAvailable);
     expect(capabilities.supportsEvaluationReports).toBe(
       services.evaluationReportService.isAvailable,
     );

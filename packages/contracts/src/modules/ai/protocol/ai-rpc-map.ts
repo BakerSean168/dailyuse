@@ -31,6 +31,12 @@ import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '../api/ai-k
 import type { ExpandKnowledgeReq, ExpandKnowledgeRes } from '../api/ai-knowledge-expansion.dto';
 import type { QueryAnalyticsReq, QueryAnalyticsRes } from '../api/ai-analytics-query.dto';
 import type { QueryKnowledgeReq, QueryKnowledgeRes } from '../api/ai-knowledge-query.dto';
+import type {
+  AgentEvent,
+  AgentResumePayload,
+  AgentRunResult,
+  AgentStartRunClientRequest,
+} from '../api/ai-agent.dto';
 import type { AiProviderConfigId, AiConversationId } from '../../../primitives';
 
 export type AIRpcMap = {
@@ -58,4 +64,8 @@ export type AIRpcMap = {
   'ai:knowledge:expand': [ExpandKnowledgeReq, ExpandKnowledgeRes];
   'ai:knowledge:query': [QueryKnowledgeReq, QueryKnowledgeRes];
   'ai:analytics:query': [QueryAnalyticsReq, QueryAnalyticsRes];
+  'ai:agent:run:start': [AgentStartRunClientRequest, AgentRunResult];
+  'ai:agent:run:resume': [{ runId: string; payload: AgentResumePayload }, AgentRunResult];
+  'ai:agent:run:get': [string, AgentRunResult];
+  'ai:agent:events:get': [string, AgentEvent[]];
 };

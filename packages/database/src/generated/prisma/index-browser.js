@@ -259,6 +259,24 @@ exports.Prisma.DashboardConfigScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AgentRunCheckpointScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  identityId: 'identityId',
+  conversationId: 'conversationId',
+  threadId: 'threadId',
+  agentType: 'agentType',
+  status: 'status',
+  runMetadata: 'runMetadata',
+  stateSnapshot: 'stateSnapshot',
+  events: 'events',
+  interrupts: 'interrupts',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.AuthIdentityScalarFieldEnum = {
   id: 'id',
   status: 'status',
@@ -1196,6 +1214,7 @@ exports.Prisma.ModelName = {
   KnowledgeGenerationTask: 'KnowledgeGenerationTask',
   AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
   DashboardConfig: 'DashboardConfig',
+  AgentRunCheckpoint: 'AgentRunCheckpoint',
   AuthIdentity: 'AuthIdentity',
   AuthIdentifier: 'AuthIdentifier',
   AuthOAuthBinding: 'AuthOAuthBinding',

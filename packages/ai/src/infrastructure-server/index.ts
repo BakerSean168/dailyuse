@@ -67,6 +67,7 @@ export {
 // ---------------------------------------------------------------------------
 export {
   AIServiceAnalyticsQueryAdapter,
+  AIServiceAgentRuntimeAdapter,
   AIServiceChatExecutionAdapter,
   AIServiceGoalAutomationAdapter,
   AIServiceGoalPlanningAdapter,

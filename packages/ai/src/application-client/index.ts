@@ -9,6 +9,7 @@ export type {
   AIKnowledgeNoteApiClient,
   IAIProviderConfigApiClient,
   AIEvaluationReportApiClient,
+  AIAgentRuntimeApiClient,
 } from './ports/ai-api-client.port';
 export type { AIClientPort } from './ai-client.port';
 

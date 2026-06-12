@@ -1,5 +1,6 @@
 import type {
   GoalAutomationAction,
+  GoalAutomationReminderPreview,
   GoalAutomationTaskTemplatePreview,
   GeneratedGoalDraft,
   KeyResultPreview,
@@ -27,6 +28,7 @@ export interface GoalAutomationPlanningResult {
   goal: GeneratedGoalDraft;
   keyResults?: KeyResultPreview[];
   taskTemplates?: GoalAutomationTaskTemplatePreview[];
+  reminders?: GoalAutomationReminderPreview[];
   actions: GoalAutomationAction[];
   usage: ChatExecutionUsage;
 }

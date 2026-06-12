@@ -63,6 +63,7 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
+  agentRunCheckpoints             AgentRunCheckpoint[]
 
   // PowerSync: denormalized identity relations
   keyResults                      KeyResult[]                @relation("AccountKeyResults")

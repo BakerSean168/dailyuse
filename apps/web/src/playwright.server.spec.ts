@@ -1,6 +1,11 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const originalEnv = { ...process.env };
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const workspaceRoot = resolve(__dirname, '../../..');
 
 function resetEnv() {
   for (const key of Object.keys(process.env)) {
@@ -77,7 +82,9 @@ describe('playwright.server', () => {
       'http://localhost:4173,http://localhost:5173,http://127.0.0.1:5173',
     );
     expect(webServer.url).toBe('http://localhost:4173/auth');
-    expect(webServer.command).toBe('pnpm exec vite --config vite.config.ts --host localhost --port 4173');
+    expect(webServer.command).toBe(
+      `"${process.execPath}" "${resolve(workspaceRoot, 'node_modules/vite/bin/vite.js')}" --config vite.config.ts --host localhost --port 4173`,
+    );
     expect(webServer.env?.PROXY_TARGET_URL).toBe('http://127.0.0.1:3001');
     expect(process.env.E2E_API_FULL_URL).toBe('http://127.0.0.1:3001/api/v1');
   });

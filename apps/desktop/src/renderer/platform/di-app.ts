@@ -122,6 +122,7 @@ export function installDesktopAppServices(app: App): void {
       aiAdapters.knowledge,
       aiAdapters.knowledgeNote,
       aiAdapters.analytics,
+      aiAdapters.agentRuntime,
     ),
   );
 
