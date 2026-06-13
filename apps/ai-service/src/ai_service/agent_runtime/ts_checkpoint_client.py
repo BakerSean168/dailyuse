@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from ai_service.schemas import AgentRun, AgentRunResult, AgentState
+from ai_service.schemas import AgentEvent, AgentRun, AgentRunResult, AgentState
 
 
 class TSCheckpointClient:
@@ -42,6 +42,8 @@ class TSCheckpointClient:
         run: AgentRun,
         state: AgentState | None = None,
         thread_id: str | None = None,
+        events: list[AgentEvent] | None = None,
+        interrupts: list[dict] | None = None,
         request_id: str | None = None,
     ) -> None:
         """Persist an Agent run checkpoint."""
@@ -50,6 +52,8 @@ class TSCheckpointClient:
             "run": run.model_dump(by_alias=True),
             "state": state.model_dump(by_alias=True) if state else None,
             "threadId": thread_id,
+            "events": [e.model_dump(by_alias=True) for e in events] if events else [],
+            "interrupts": interrupts if interrupts else [],
         }
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(

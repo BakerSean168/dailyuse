@@ -22,8 +22,10 @@ from ai_service.agent_runtime import (
     GoalCreateAgentRuntime,
     KnowledgeGenerateAgentRuntime,
     KnowledgeQaAgentRuntime,
-    build_file_backed_run_history_store,
-    build_file_backed_saver,
+)
+from ai_service.agent_runtime.checkpoint_factory import (
+    build_checkpointer,
+    build_run_history_store,
 )
 from ai_service.api.error_handlers import register_exception_handlers
 from ai_service.api.routes import agents, chat, health, workflows
@@ -92,47 +94,46 @@ async def lifespan(app: FastAPI):
     # - local (default): file-backed, suitable for single-instance development
     # - ts: HTTP + database, suitable for production multi-instance deployment
     #
-    # Note: When using 'ts' strategy, run_history_store requires identity_id at
-    # request time, not at startup. For production, consider creating runtime
-    # instances per-request or using a factory pattern.
+    # Set via environment variable:
+    #   AGENT_CHECKPOINT_STRATEGY=local  (default)
+    #   AGENT_CHECKPOINT_STRATEGY=ts     (requires TS_API_BASE_URL)
     #
-    # For now, we use the legacy builder which defaults to 'local' strategy.
-    # To enable 'ts' strategy in production, set:
-    #   AGENT_CHECKPOINT_STRATEGY=ts
-    #   TS_API_BASE_URL=http://api:3001
-    #
-    # Then refactor to use build_checkpointer/build_run_history_store with
-    # per-request identity_id.
+    # Note: 'ts' strategy requires identity_id at runtime. For simplicity, we pass
+    # None here (which works for 'local'). When 'ts' is enabled, the runtime will
+    # lazily construct the run_history_store per request with the actual identity_id.
 
     goal_create_agent_runtime = GoalCreateAgentRuntime(
-        checkpointer=build_file_backed_saver(
-            checkpoint_dir=settings.agent_checkpoint_dir,
+        checkpointer=build_checkpointer(
+            settings=settings,
             name="goal-create",
         ),
-        run_history=build_file_backed_run_history_store(
-            checkpoint_dir=settings.agent_checkpoint_dir,
+        run_history=build_run_history_store(
+            settings=settings,
             name="goal-create",
+            identity_id=None,  # Lazily constructed per-request for 'ts' strategy
         ),
         goal_planning_service=goal_planning_service,
     )
     knowledge_qa_agent_runtime = KnowledgeQaAgentRuntime(
-        checkpointer=build_file_backed_saver(
-            checkpoint_dir=settings.agent_checkpoint_dir,
+        checkpointer=build_checkpointer(
+            settings=settings,
             name="knowledge-qa",
         ),
-        run_history=build_file_backed_run_history_store(
-            checkpoint_dir=settings.agent_checkpoint_dir,
+        run_history=build_run_history_store(
+            settings=settings,
             name="knowledge-qa",
+            identity_id=None,
         ),
     )
     knowledge_generate_agent_runtime = KnowledgeGenerateAgentRuntime(
-        checkpointer=build_file_backed_saver(
-            checkpoint_dir=settings.agent_checkpoint_dir,
+        checkpointer=build_checkpointer(
+            settings=settings,
             name="knowledge-generate",
         ),
-        run_history=build_file_backed_run_history_store(
-            checkpoint_dir=settings.agent_checkpoint_dir,
+        run_history=build_run_history_store(
+            settings=settings,
             name="knowledge-generate",
+            identity_id=None,
         ),
         knowledge_note_service=knowledge_note_service,
         knowledge_query_service=knowledge_query_service,

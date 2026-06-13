@@ -965,7 +965,7 @@ def test_start_knowledge_generate_agent_run_completes_with_note_draft_artifact(
     )
     assert artifact["data"]["targetSubpath"] == "notes/ai"
     assert artifact["data"]["tags"] == []
-    assert artifact["data"]["duplicateRisk"] == "unknown"
+    assert artifact["data"]["duplicateRisk"] == "none"
     assert artifact["data"]["indexStatus"] == "draft"
     pending_action = artifact["data"]["savePlan"]["pendingAction"]
     assert pending_action["tool"] == "create_knowledge_note"

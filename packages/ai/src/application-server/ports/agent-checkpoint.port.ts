@@ -1,4 +1,9 @@
-import type { AgentRun, AgentRunResult, AgentState } from '@dailyuse/contracts/ai';
+import type {
+  AgentEvent,
+  AgentRun,
+  AgentRunResult,
+  AgentState,
+} from '@dailyuse/contracts/ai';
 
 /**
  * Agent checkpoint 持久化边界
@@ -12,6 +17,8 @@ export interface AgentCheckpointUpsertInput {
   run: AgentRun;
   state?: AgentState;
   threadId?: string;
+  events?: AgentEvent[];
+  interrupts?: Record<string, unknown>[];
   requestId?: string;
 }
 

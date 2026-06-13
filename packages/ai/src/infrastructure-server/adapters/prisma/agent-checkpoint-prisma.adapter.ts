@@ -17,7 +17,7 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
   constructor(private readonly prisma: PrismaClient) {}
 
   async upsert(input: AgentCheckpointUpsertInput): Promise<void> {
-    const { identityId, run, state, threadId } = input;
+    const { identityId, run, state, threadId, events, interrupts } = input;
 
     try {
       await this.prisma.agentRunCheckpoint.upsert({
@@ -32,13 +32,15 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
           status: run.status,
           runMetadata: run as any,
           stateSnapshot: state ? (state as any) : null,
-          events: [],
-          interrupts: [],
+          events: events ? (events as any) : [],
+          interrupts: interrupts ? (interrupts as any) : [],
         },
         update: {
           status: run.status,
           runMetadata: run as any,
           stateSnapshot: state ? (state as any) : null,
+          events: events ? (events as any) : undefined,
+          interrupts: interrupts ? (interrupts as any) : undefined,
           updatedAt: new Date(),
         },
       });

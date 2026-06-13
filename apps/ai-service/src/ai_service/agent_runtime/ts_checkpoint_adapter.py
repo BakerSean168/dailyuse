@@ -29,6 +29,8 @@ class TSCheckpointAdapter:
                     run=result.run,
                     state=result.state,
                     thread_id=result.run.thread_id,
+                    events=result.events,
+                    interrupts=result.interrupts,
                 )
             )
         else:
@@ -37,21 +39,33 @@ class TSCheckpointAdapter:
                     run=result.run,
                     state=result.state,
                     thread_id=result.run.thread_id,
+                    events=result.events,
+                    interrupts=result.interrupts,
                 )
             )
 
     def list_runs(self) -> list[AgentRun]:
-        """List all runs for the current identity."""
+        """List all runs for the current identity.
+
+        This method works in both sync and async contexts. When called from an
+        async context (e.g., FastAPI route), it delegates to a thread pool to
+        avoid blocking the event loop.
+        """
         import asyncio
 
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
+            # No event loop: directly use asyncio.run
             return asyncio.run(self.client.list_checkpoints())
         else:
-            raise RuntimeError(
-                "Cannot call list_runs from within an event loop. Use alist_runs instead."
-            )
+            # Event loop running: run in thread pool to avoid blocking
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(
+                    asyncio.run, self.client.list_checkpoints()
+                )
+                return future.result()
 
     async def alist_runs(self) -> list[AgentRun]:
         """Async variant of list_runs."""
@@ -63,24 +77,29 @@ class TSCheckpointAdapter:
         Note: This requires fetching all runs and filtering client-side,
         as the TS checkpoint API doesn't expose a thread_id filter yet.
         For production, consider extending the API if this becomes a bottleneck.
+
+        This method works in both sync and async contexts.
         """
         import asyncio
+
+        async def _fetch() -> AgentRunResult | None:
+            runs = await self.client.list_checkpoints()
+            for run in runs:
+                if run.thread_id == thread_id:
+                    return await self.client.get_checkpoint(run_id=run.run_id)
+            return None
 
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
-            runs = asyncio.run(self.client.list_checkpoints())
+            # No event loop: directly use asyncio.run
+            return asyncio.run(_fetch())
         else:
-            raise RuntimeError(
-                "Cannot call get_result_by_thread_id from within an event loop. "
-                "Use aget_result_by_thread_id instead."
-            )
-
-        for run in runs:
-            if run.thread_id == thread_id:
-                result = asyncio.run(self.client.get_checkpoint(run_id=run.run_id))
-                return result
-        return None
+            # Event loop running: run in thread pool
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, _fetch())
+                return future.result()
 
     async def aget_result_by_thread_id(
         self, *, thread_id: str
@@ -93,18 +112,25 @@ class TSCheckpointAdapter:
         return None
 
     def thread_index(self) -> dict[str, str]:
-        """Retrieve the runId -> threadId index."""
+        """Retrieve the runId -> threadId index.
+
+        This method works in both sync and async contexts.
+        """
         import asyncio
 
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
+            # No event loop: directly use asyncio.run
             return asyncio.run(self.client.get_thread_index())
         else:
-            raise RuntimeError(
-                "Cannot call thread_index from within an event loop. "
-                "Use athread_index instead."
-            )
+            # Event loop running: run in thread pool
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(
+                    asyncio.run, self.client.get_thread_index()
+                )
+                return future.result()
 
     async def athread_index(self) -> dict[str, str]:
         """Async variant of thread_index."""
