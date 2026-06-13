@@ -1,8 +1,11 @@
 # Checkpoint 持久化收口 - 完成报告
 
+> ⚠️ **已废弃**: 本文档的部分结论已被证实不准确（特别是关于"多实例部署已就绪"和"100% 完成"的表述）。  
+> 请参考 [`2026-06-13-checkpoint-final-remediation-completion.md`](./2026-06-13-checkpoint-final-remediation-completion.md) 获取准确的实施状态。
+
 **日期**: 2026-06-13  
 **Commit**: `b0e971d9c`  
-**状态**: ✅ 已完成
+**状态**: ⚠️ 部分准确（已被后续修复覆盖）
 
 ---
 

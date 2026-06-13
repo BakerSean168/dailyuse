@@ -286,6 +286,17 @@ class GoalCreateAgentRuntime:
         thread_id: str,
         payload: AgentResumePayload,
     ) -> AgentRuntimeResult:
+        # Check if graph checkpoint exists
+        snapshot = self._graph.get_state(self._config(thread_id))
+        if not snapshot.values:
+            # Graph checkpoint missing - cannot resume execution
+            # (We only have persisted snapshot, not executable graph state)
+            raise ValueError(
+                f"Cannot resume run: LangGraph checkpoint missing for thread {thread_id}. "
+                "The run snapshot is available but execution state was lost (likely due to "
+                "service restart). This run can be viewed but not resumed."
+            )
+
         retry_command = self._retry_execution_command(
             thread_id=thread_id,
             payload=payload,
@@ -739,6 +750,16 @@ class KnowledgeGenerateAgentRuntime:
         thread_id: str,
         payload: AgentResumePayload,
     ) -> AgentRuntimeResult:
+        # Check if graph checkpoint exists
+        snapshot = self._graph.get_state(self._config(thread_id))
+        if not snapshot.values:
+            # Graph checkpoint missing - cannot resume execution
+            raise ValueError(
+                f"Cannot resume run: LangGraph checkpoint missing for thread {thread_id}. "
+                "The run snapshot is available but execution state was lost (likely due to "
+                "service restart). This run can be viewed but not resumed."
+            )
+
         retry_command = self._retry_execution_command(
             thread_id=thread_id,
             payload=payload,

@@ -411,7 +411,18 @@ async def resume_agent_run(
                 payload=request,
             )
         except ValueError as exc:
-            if str(exc) in {
+            error_message = str(exc)
+            # Check for checkpoint missing error (durable resume not available)
+            if "LangGraph checkpoint missing" in error_message:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": "runtime_checkpoint_missing",
+                        "message": error_message,
+                    },
+                ) from exc
+            # Check for validation errors
+            if error_message in {
                 (
                     "Knowledge Generation approval can only resume with confirm, "
                     "edit, or cancel decisions."
@@ -437,7 +448,18 @@ async def resume_agent_run(
             payload=request,
         )
     except ValueError as exc:
-        if str(exc) in {
+        error_message = str(exc)
+        # Check for checkpoint missing error (durable resume not available)
+        if "LangGraph checkpoint missing" in error_message:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "runtime_checkpoint_missing",
+                    "message": error_message,
+                },
+            ) from exc
+        # Check for validation errors
+        if error_message in {
             "Executed actions are required to finish Agent execution.",
             (
                 "Clarification answers are required to continue Goal Agent "

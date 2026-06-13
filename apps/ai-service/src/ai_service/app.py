@@ -91,53 +91,57 @@ async def lifespan(app: FastAPI):
     )
 
     # Agent runtime checkpoint strategy:
-    # - local (default): file-backed, suitable for single-instance development
-    # - ts: HTTP + database, suitable for production multi-instance deployment
+    # - local (default): file-backed, app-scoped singleton runtime
+    # - ts: HTTP + database, identity-aware runtime constructed per-request
     #
     # Set via environment variable:
     #   AGENT_CHECKPOINT_STRATEGY=local  (default)
     #   AGENT_CHECKPOINT_STRATEGY=ts     (requires TS_API_BASE_URL)
-    #
-    # Note: 'ts' strategy requires identity_id at runtime. For simplicity, we pass
-    # None here (which works for 'local'). When 'ts' is enabled, the runtime will
-    # lazily construct the run_history_store per request with the actual identity_id.
 
-    goal_create_agent_runtime = GoalCreateAgentRuntime(
-        checkpointer=build_checkpointer(
-            settings=settings,
-            name="goal-create",
-        ),
-        run_history=build_run_history_store(
-            settings=settings,
-            name="goal-create",
-            identity_id=None,  # Lazily constructed per-request for 'ts' strategy
-        ),
-        goal_planning_service=goal_planning_service,
-    )
-    knowledge_qa_agent_runtime = KnowledgeQaAgentRuntime(
-        checkpointer=build_checkpointer(
-            settings=settings,
-            name="knowledge-qa",
-        ),
-        run_history=build_run_history_store(
-            settings=settings,
-            name="knowledge-qa",
-            identity_id=None,
-        ),
-    )
-    knowledge_generate_agent_runtime = KnowledgeGenerateAgentRuntime(
-        checkpointer=build_checkpointer(
-            settings=settings,
-            name="knowledge-generate",
-        ),
-        run_history=build_run_history_store(
-            settings=settings,
-            name="knowledge-generate",
-            identity_id=None,
-        ),
-        knowledge_note_service=knowledge_note_service,
-        knowledge_query_service=knowledge_query_service,
-    )
+    if settings.agent_checkpoint_strategy.lower() == "local":
+        # local strategy: construct app-scoped singleton runtimes
+        goal_create_agent_runtime = GoalCreateAgentRuntime(
+            checkpointer=build_checkpointer(
+                settings=settings,
+                name="goal-create",
+            ),
+            run_history=build_run_history_store(
+                settings=settings,
+                name="goal-create",
+                identity_id=None,
+            ),
+            goal_planning_service=goal_planning_service,
+        )
+        knowledge_qa_agent_runtime = KnowledgeQaAgentRuntime(
+            checkpointer=build_checkpointer(
+                settings=settings,
+                name="knowledge-qa",
+            ),
+            run_history=build_run_history_store(
+                settings=settings,
+                name="knowledge-qa",
+                identity_id=None,
+            ),
+        )
+        knowledge_generate_agent_runtime = KnowledgeGenerateAgentRuntime(
+            checkpointer=build_checkpointer(
+                settings=settings,
+                name="knowledge-generate",
+            ),
+            run_history=build_run_history_store(
+                settings=settings,
+                name="knowledge-generate",
+                identity_id=None,
+            ),
+            knowledge_note_service=knowledge_note_service,
+            knowledge_query_service=knowledge_query_service,
+        )
+    else:
+        # ts strategy: runtimes are constructed per-request in dependencies
+        # Set None placeholders for app state (not used in ts mode)
+        goal_create_agent_runtime = None  # type: ignore
+        knowledge_qa_agent_runtime = None  # type: ignore
+        knowledge_generate_agent_runtime = None  # type: ignore
 
     orchestrator = AIWorkflowOrchestrator()
     goal_handler = GoalWorkflowHandler(goal_planning_service)

@@ -8,7 +8,7 @@ import {
   successResponse,
   ok,
 } from '@dailyuse/utils/result';
-import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema } from '@dailyuse/contracts/ai';
+import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@dailyuse/contracts/ai';
 import type { AIAgentCheckpointController } from '../../controllers/ai-agent-checkpoint.controller';
 
 interface PlatformMiddleware {
@@ -38,6 +38,8 @@ export function registerAIAgentCheckpointRoutes(
     run: AgentRunSchema,
     state: AgentStateSchema.optional(),
     threadId: z.string().optional(),
+    events: z.array(AgentEventSchema).optional(),
+    interrupts: z.array(z.record(z.string(), z.unknown())).optional(),
   });
 
   const ListCheckpointsQuerySchema = z.object({
@@ -68,6 +70,8 @@ export function registerAIAgentCheckpointRoutes(
         run: body.run,
         state: body.state,
         threadId: body.threadId,
+        events: body.events,
+        interrupts: body.interrupts,
         requestId: getRequestId(req),
       });
       return ok(undefined);
