@@ -83,6 +83,10 @@ jobs:
         with:
           python-version-file: apps/desktop/.python-version
 
+      - name: Setup MSBuild (Windows)
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v2
+
       - name: Install Linux packaging dependencies
         if: runner.os == 'Linux'
         run: |
