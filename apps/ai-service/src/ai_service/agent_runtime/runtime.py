@@ -6,6 +6,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any
 
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
@@ -153,7 +154,7 @@ class GoalCreateAgentRuntime:
     def __init__(
         self,
         *,
-        checkpointer: InMemorySaver | None = None,
+        checkpointer: BaseCheckpointSaver[Any] | None = None,
         run_history: AgentRunHistoryPort | None = None,
         clock: Any | None = None,
         goal_planning_service: Any | None = None,
@@ -292,8 +293,10 @@ class GoalCreateAgentRuntime:
             # Graph checkpoint missing - cannot resume execution
             # (We only have persisted snapshot, not executable graph state)
             raise ValueError(
-                f"Cannot resume run: LangGraph checkpoint missing for thread {thread_id}. "
-                "The run snapshot is available but execution state was lost (likely due to "
+                "Cannot resume run: LangGraph checkpoint missing for "
+                f"thread {thread_id}. "
+                "The run snapshot is available but execution state was lost "
+                "(likely due to "
                 "service restart). This run can be viewed but not resumed."
             )
 
@@ -452,7 +455,7 @@ class KnowledgeQaAgentRuntime:
     def __init__(
         self,
         *,
-        checkpointer: InMemorySaver | None = None,
+        checkpointer: BaseCheckpointSaver[Any] | None = None,
         run_history: AgentRunHistoryPort | None = None,
         clock: Any | None = None,
     ) -> None:
@@ -602,7 +605,7 @@ class KnowledgeGenerateAgentRuntime:
     def __init__(
         self,
         *,
-        checkpointer: InMemorySaver | None = None,
+        checkpointer: BaseCheckpointSaver[Any] | None = None,
         run_history: AgentRunHistoryPort | None = None,
         clock: Any | None = None,
         knowledge_note_service: Any | None = None,
@@ -755,8 +758,10 @@ class KnowledgeGenerateAgentRuntime:
         if not snapshot.values:
             # Graph checkpoint missing - cannot resume execution
             raise ValueError(
-                f"Cannot resume run: LangGraph checkpoint missing for thread {thread_id}. "
-                "The run snapshot is available but execution state was lost (likely due to "
+                "Cannot resume run: LangGraph checkpoint missing for "
+                f"thread {thread_id}. "
+                "The run snapshot is available but execution state was lost "
+                "(likely due to "
                 "service restart). This run can be viewed but not resumed."
             )
 

@@ -1,4 +1,5 @@
 export * from './ai-agent-checkpoint.routes';
+export * from './ai-langgraph-checkpoint.routes';
 export * from './ai-capabilities.routes';
 export * from './ai-agent-runtime.routes';
 export * from './ai-analytics-query.routes';

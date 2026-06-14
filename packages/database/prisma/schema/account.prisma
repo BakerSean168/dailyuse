@@ -64,6 +64,8 @@ model Account {
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
   agentRunCheckpoints             AgentRunCheckpoint[]
+  langGraphCheckpoints            LangGraphCheckpoint[]
+  langGraphCheckpointWrites       LangGraphCheckpointWrite[]
 
   // PowerSync: denormalized identity relations
   keyResults                      KeyResult[]                @relation("AccountKeyResults")

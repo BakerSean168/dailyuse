@@ -1,8 +1,9 @@
-"""Tests for knowledge.generate Agent enhancements: real search and provider-backed generation."""
+"""Tests for knowledge.generate Agent enhancements.
+
+Real search and provider-backed generation.
+"""
 
 from __future__ import annotations
-
-import pytest
 
 from ai_service.agent_runtime.graphs.knowledge_generate import (
     build_knowledge_generate_graph,
@@ -24,7 +25,11 @@ def _mock_knowledge_note_generator(
 ) -> dict[str, object]:
     """Mock provider-backed note generation."""
     return {
-        "content": f"# {title or topic}\n\nThis is a provider-generated note about {topic}.\n\nIt has real content from the model.",
+        "content": (
+            f"# {title or topic}\n\n"
+            f"This is a provider-generated note about {topic}.\n\n"
+            "It has real content from the model."
+        ),
         "usage": {"prompt_tokens": 50, "completion_tokens": 30, "total_tokens": 80},
     }
 

@@ -17,6 +17,18 @@ export type {
   IAgentCheckpointPort,
 } from './agent-checkpoint.port';
 export type {
+  ILangGraphCheckpointPort,
+  LangGraphCheckpointDeleteThreadInput,
+  LangGraphCheckpointGetInput,
+  LangGraphCheckpointListInput,
+  LangGraphCheckpointPutInput,
+  LangGraphCheckpointPutWritesInput,
+  LangGraphCheckpointRecord,
+  LangGraphCheckpointTupleRecord,
+  LangGraphCheckpointWriteRecord,
+  SerializedLangGraphValue,
+} from './langgraph-checkpoint.port';
+export type {
   AgentRuntimeListInput,
   AgentRuntimeResumeInput,
   AgentRuntimeRunInput,

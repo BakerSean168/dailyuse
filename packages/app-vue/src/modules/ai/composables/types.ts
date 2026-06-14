@@ -190,6 +190,7 @@ export type EditableGoalTaskTemplate = {
   description: string;
   importance: GoalAutomationTaskTemplatePreview['importance'];
   cadence: GoalAutomationTaskTemplatePreview['cadence'];
+  timeOfDay: string;
 };
 
 export type EditableGoalReminder = {
@@ -241,6 +242,7 @@ export function createEmptyGoalTaskTemplateDraft(): EditableGoalTaskTemplate {
     description: '',
     importance: 'Moderate' as EditableGoalTaskTemplate['importance'],
     cadence: 'weekly',
+    timeOfDay: '09:00',
   };
 }
 

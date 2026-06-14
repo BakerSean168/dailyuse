@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   errorResponse,
   successResponse,
   ok,
+  fail,
 } from '@dailyuse/utils/result';
 import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@dailyuse/contracts/ai';
 import type { AIAgentCheckpointController } from '../../controllers/ai-agent-checkpoint.controller';
@@ -43,6 +43,7 @@ export function registerAIAgentCheckpointRoutes(
   });
 
   const ListCheckpointsQuerySchema = z.object({
+    agentType: z.string().optional(),
     conversationId: z.string().optional(),
     status: z.array(z.string()).optional(),
     activeOnly: z.string().optional(),
@@ -102,7 +103,7 @@ export function registerAIAgentCheckpointRoutes(
       });
 
       if (!result) {
-        throw new Error('Checkpoint not found');
+        return fail({ code: 'NOT_FOUND', message: 'Checkpoint not found' });
       }
 
       return ok(result);
@@ -131,6 +132,7 @@ export function registerAIAgentCheckpointRoutes(
 
       const runs = await controller.listCheckpoints({
         identityId: ctx.identityId,
+        agentType: query.agentType,
         conversationId: query.conversationId,
         statuses,
         activeOnly,
@@ -179,7 +181,8 @@ export function registerAIAgentCheckpointRoutes(
     },
     [auth],
     async (req, ctx) => {
-      const index = await controller.getThreadIndex(ctx.identityId);
+      const query = req.query as { agentType?: string };
+      const index = await controller.getThreadIndex(ctx.identityId, query.agentType);
       return ok(index);
     },
   );

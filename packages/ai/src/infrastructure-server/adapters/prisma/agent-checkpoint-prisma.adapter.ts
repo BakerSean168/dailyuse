@@ -1,8 +1,9 @@
 import type { PrismaClient } from '@dailyuse/database';
-import type { AgentRun, AgentRunResult, AgentState } from '@dailyuse/contracts/ai';
+import type { AgentRun, AgentRunResult } from '@dailyuse/contracts/ai';
 import { AgentRunSchema, AgentRunResultSchema, AgentStateSchema } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
 import { randomUUID } from 'node:crypto';
+import { Prisma } from '@dailyuse/database/prisma';
 import type {
   AgentCheckpointDeleteInput,
   AgentCheckpointGetInput,
@@ -12,6 +13,16 @@ import type {
 } from '../../../application-server/ports';
 
 const logger = createLogger('AgentCheckpointPrismaAdapter');
+
+function toPrismaJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function toNullablePrismaJson(
+  value: unknown,
+): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput {
+  return value == null ? Prisma.NullableJsonNullValueInput.DbNull : toPrismaJson(value);
+}
 
 export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
   constructor(private readonly prisma: PrismaClient) {}
@@ -30,17 +41,17 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
           threadId: threadId ?? run.threadId,
           agentType: run.agentType,
           status: run.status,
-          runMetadata: run as any,
-          stateSnapshot: state ? (state as any) : null,
-          events: events ? (events as any) : [],
-          interrupts: interrupts ? (interrupts as any) : [],
+          runMetadata: toPrismaJson(run),
+          stateSnapshot: toNullablePrismaJson(state),
+          events: toPrismaJson(events ?? []),
+          interrupts: toPrismaJson(interrupts ?? []),
         },
         update: {
           status: run.status,
-          runMetadata: run as any,
-          stateSnapshot: state ? (state as any) : null,
-          events: events ? (events as any) : undefined,
-          interrupts: interrupts ? (interrupts as any) : undefined,
+          runMetadata: toPrismaJson(run),
+          stateSnapshot: toNullablePrismaJson(state),
+          events: events ? toPrismaJson(events) : undefined,
+          interrupts: interrupts ? toPrismaJson(interrupts) : undefined,
           updatedAt: new Date(),
         },
       });
@@ -98,11 +109,12 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
   }
 
   async list(input: AgentCheckpointListInput): Promise<AgentRun[]> {
-    const { identityId, conversationId, statuses, activeOnly, limit } = input;
+    const { identityId, agentType, conversationId, statuses, activeOnly, limit } = input;
 
     try {
       const where = {
         identityId,
+        ...(agentType ? { agentType } : {}),
         deletedAt: null,
         ...(conversationId ? { conversationId } : {}),
         ...(statuses && statuses.length > 0 ? { status: { in: statuses } } : {}),
@@ -168,11 +180,15 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
     }
   }
 
-  async getThreadIndex(identityId: string): Promise<Record<string, string>> {
+  async getThreadIndex(
+    identityId: string,
+    agentType?: string,
+  ): Promise<Record<string, string>> {
     try {
       const checkpoints = await this.prisma.agentRunCheckpoint.findMany({
         where: {
           identityId,
+          ...(agentType ? { agentType } : {}),
           deletedAt: null,
         },
         select: {

@@ -69,7 +69,8 @@ class Settings(BaseSettings):
     log_dir: str | None = None
     agent_checkpoint_dir: str | None = ".ai-service/agent-checkpoints"
 
-    # Agent checkpoint persistence strategy: "local" (file-backed) or "ts" (TS checkpoint port via HTTP).
+    # Agent checkpoint persistence strategy:
+    # "local" (file-backed) or "ts" (TS checkpoint port via HTTP).
     agent_checkpoint_strategy: str = "local"
 
     # Base URL for calling TS API services (used when checkpoint_strategy is "ts").

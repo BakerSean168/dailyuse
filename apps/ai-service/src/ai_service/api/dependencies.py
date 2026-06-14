@@ -106,6 +106,7 @@ def get_goal_create_agent_runtime(request: Request) -> GoalCreateAgentRuntime:
             checkpointer=build_checkpointer(
                 settings=settings,
                 name="goal-create",
+                identity_id=identity_id,
             ),
             run_history=build_run_history_store(
                 settings=settings,
@@ -140,6 +141,7 @@ def get_knowledge_qa_agent_runtime(request: Request) -> KnowledgeQaAgentRuntime:
             checkpointer=build_checkpointer(
                 settings=settings,
                 name="knowledge-qa",
+                identity_id=identity_id,
             ),
             run_history=build_run_history_store(
                 settings=settings,
@@ -178,6 +180,7 @@ def get_knowledge_generate_agent_runtime(
             checkpointer=build_checkpointer(
                 settings=settings,
                 name="knowledge-generate",
+                identity_id=identity_id,
             ),
             run_history=build_run_history_store(
                 settings=settings,

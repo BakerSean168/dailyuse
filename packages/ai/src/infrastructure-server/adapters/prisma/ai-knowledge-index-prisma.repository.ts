@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import { Prisma, type PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
+import { Prisma } from '@dailyuse/database/prisma';
 import type {
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,

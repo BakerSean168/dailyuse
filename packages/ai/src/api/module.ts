@@ -36,8 +36,10 @@ import {
   AIServiceKnowledgeNoteGenerationAdapter,
 } from '../infrastructure-server';
 import { AgentCheckpointPrismaAdapter } from '../infrastructure-server/adapters/prisma/agent-checkpoint-prisma.adapter';
+import { LangGraphCheckpointPrismaAdapter } from '../infrastructure-server/adapters/prisma/langgraph-checkpoint-prisma.adapter';
 import {
   registerAIAgentCheckpointRoutes,
+  registerAILangGraphCheckpointRoutes,
   registerAIAgentRuntimeRoutes,
   registerAICapabilitiesRoutes,
   registerAIAnalyticsQueryRoutes,
@@ -50,6 +52,7 @@ import {
 } from './routes';
 import { AICapabilitiesController } from '../controllers/ai-capabilities.controller';
 import { AIAgentCheckpointController } from '../controllers/ai-agent-checkpoint.controller';
+import { AILangGraphCheckpointController } from '../controllers/ai-langgraph-checkpoint.controller';
 import { AIAgentRuntimeController } from '../controllers/ai-agent-runtime.controller';
 import { AIAnalyticsQueryController } from '../controllers/ai-analytics-query.controller';
 import { AIEvaluationReportController } from '../controllers/ai-evaluation-report.controller';
@@ -224,6 +227,10 @@ export function createAIApiModule(options: {
       // Agent checkpoint controller (direct database adapter, not through aiModule)
       const checkpointAdapter = new AgentCheckpointPrismaAdapter(prismaClient);
       const checkpointController = new AIAgentCheckpointController(checkpointAdapter);
+      const langGraphCheckpointAdapter = new LangGraphCheckpointPrismaAdapter(prismaClient);
+      const langGraphCheckpointController = new AILangGraphCheckpointController(
+        langGraphCheckpointAdapter,
+      );
 
       // ---------------------------------------------------------------
       // 3. 创建路由（注入平台中间件）并挂载到主路由
@@ -271,6 +278,11 @@ export function createAIApiModule(options: {
         middleware,
         context.openApiRegistry,
       );
+      const langGraphCheckpointRoutes = registerAILangGraphCheckpointRoutes(
+        langGraphCheckpointController,
+        middleware,
+        context.openApiRegistry,
+      );
 
       // 挂载到主路由（模块自决前缀）
       router.use('/ai/providers', providerRoutes);
@@ -283,6 +295,7 @@ export function createAIApiModule(options: {
       router.use('/ai', evaluationReportRoutes);
       router.use('/ai/generate', goalRoutes);
       router.use('/internal/agents/checkpoints', checkpointRoutes);
+      router.use('/internal/agents/langgraph-checkpoints', langGraphCheckpointRoutes);
     },
 
     destroy() {

@@ -26,7 +26,7 @@ export class AIAgentCheckpointController {
     await this.checkpointPort.delete(input);
   }
 
-  async getThreadIndex(identityId: string): Promise<Record<string, string>> {
-    return this.checkpointPort.getThreadIndex(identityId);
+  async getThreadIndex(identityId: string, agentType?: string): Promise<Record<string, string>> {
+    return this.checkpointPort.getThreadIndex(identityId, agentType);
   }
 }

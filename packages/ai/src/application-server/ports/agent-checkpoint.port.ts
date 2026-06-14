@@ -30,6 +30,7 @@ export interface AgentCheckpointGetInput {
 
 export interface AgentCheckpointListInput {
   identityId: string;
+  agentType?: string;
   conversationId?: string;
   statuses?: string[];
   activeOnly?: boolean;
@@ -67,5 +68,5 @@ export interface IAgentCheckpointPort {
   /**
    * 获取 runId -> threadId 映射
    */
-  getThreadIndex(identityId: string): Promise<Record<string, string>>;
+  getThreadIndex(identityId: string, agentType?: string): Promise<Record<string, string>>;
 }

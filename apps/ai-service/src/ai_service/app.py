@@ -104,6 +104,7 @@ async def lifespan(app: FastAPI):
             checkpointer=build_checkpointer(
                 settings=settings,
                 name="goal-create",
+                identity_id=None,
             ),
             run_history=build_run_history_store(
                 settings=settings,
@@ -116,6 +117,7 @@ async def lifespan(app: FastAPI):
             checkpointer=build_checkpointer(
                 settings=settings,
                 name="knowledge-qa",
+                identity_id=None,
             ),
             run_history=build_run_history_store(
                 settings=settings,
@@ -127,6 +129,7 @@ async def lifespan(app: FastAPI):
             checkpointer=build_checkpointer(
                 settings=settings,
                 name="knowledge-generate",
+                identity_id=None,
             ),
             run_history=build_run_history_store(
                 settings=settings,

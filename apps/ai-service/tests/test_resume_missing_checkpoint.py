@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, patch
 from langgraph.checkpoint.memory import InMemorySaver
 
-from ai_service.agent_runtime import GoalCreateAgentRuntime, KnowledgeGenerateAgentRuntime
+from ai_service.agent_runtime import (
+    GoalCreateAgentRuntime,
+    KnowledgeGenerateAgentRuntime,
+)
 from ai_service.schemas import AgentResumePayload
 
 
@@ -91,7 +95,8 @@ def test_resume_with_valid_graph_checkpoint_proceeds_normally():
     """
     mock_graph = MagicMock()
     mock_snapshot = MagicMock()
-    mock_snapshot.values = {"stage": "approval", "status": "waiting_approval"}  # Valid checkpoint
+    # Valid checkpoint
+    mock_snapshot.values = {"stage": "approval", "status": "waiting_approval"}
     mock_graph.get_state.return_value = mock_snapshot
 
     runtime = GoalCreateAgentRuntime(
@@ -125,8 +130,9 @@ def test_resume_with_valid_graph_checkpoint_proceeds_normally():
 def test_resume_route_returns_409_for_missing_checkpoint():
     """Verify API route returns HTTP 409 when checkpoint is missing."""
     # This test verifies the route has 409 error handling logic
-    from ai_service.api.routes import agents
     import inspect
+
+    from ai_service.api.routes import agents
 
     source = inspect.getsource(agents.resume_agent_run)
 

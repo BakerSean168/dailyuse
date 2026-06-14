@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -243,7 +244,8 @@ async def start_agent_run(
                 detail='Agent input must include a non-empty "question" or "message".',
             )
 
-        result = knowledge_runtime.start_knowledge_qa(
+        result = await asyncio.to_thread(
+            knowledge_runtime.start_knowledge_qa,
             run_id=request.run_id,
             thread_id=request.thread_id,
             conversation_id=request.conversation_id,
@@ -278,7 +280,8 @@ async def start_agent_run(
                 detail='Agent input must include a non-empty "topic" or "message".',
             )
 
-        result = knowledge_generate_runtime.start_knowledge_generate(
+        result = await asyncio.to_thread(
+            knowledge_generate_runtime.start_knowledge_generate,
             run_id=request.run_id,
             thread_id=request.thread_id,
             conversation_id=request.conversation_id,
@@ -358,26 +361,35 @@ async def list_agent_runs(
     if status:
         statuses = {str(item) for item in status}
     runs = [
-        *goal_runtime.list_runs(
-            identity_id=resolved_identity_id,
-            conversation_id=conversation_id,
-            statuses=statuses,
-            active_only=active_only,
-            limit=limit,
+        *(
+            await asyncio.to_thread(
+                goal_runtime.list_runs,
+                identity_id=resolved_identity_id,
+                conversation_id=conversation_id,
+                statuses=statuses,
+                active_only=active_only,
+                limit=limit,
+            )
         ),
-        *knowledge_runtime.list_runs(
-            identity_id=resolved_identity_id,
-            conversation_id=conversation_id,
-            statuses=statuses,
-            active_only=active_only,
-            limit=limit,
+        *(
+            await asyncio.to_thread(
+                knowledge_runtime.list_runs,
+                identity_id=resolved_identity_id,
+                conversation_id=conversation_id,
+                statuses=statuses,
+                active_only=active_only,
+                limit=limit,
+            )
         ),
-        *knowledge_generate_runtime.list_runs(
-            identity_id=resolved_identity_id,
-            conversation_id=conversation_id,
-            statuses=statuses,
-            active_only=active_only,
-            limit=limit,
+        *(
+            await asyncio.to_thread(
+                knowledge_generate_runtime.list_runs,
+                identity_id=resolved_identity_id,
+                conversation_id=conversation_id,
+                statuses=statuses,
+                active_only=active_only,
+                limit=limit,
+            )
         ),
     ]
     runs.sort(key=lambda run: run.updated_at, reverse=True)
@@ -406,7 +418,8 @@ async def resume_agent_run(
     )
     if agent_type == "knowledge.generate":
         try:
-            result = knowledge_generate_runtime.resume_knowledge_generate(
+            result = await asyncio.to_thread(
+                knowledge_generate_runtime.resume_knowledge_generate,
                 thread_id=thread_id,
                 payload=request,
             )
@@ -496,12 +509,25 @@ async def get_agent_run(
         knowledge_generate_runtime=knowledge_generate_runtime,
     )
     if agent_type == "knowledge.qa":
-        return knowledge_runtime.get_snapshot(thread_id=thread_id).to_response()
-    if agent_type == "knowledge.generate":
-        return knowledge_generate_runtime.get_snapshot(
-            thread_id=thread_id,
+        return (
+            await asyncio.to_thread(
+                knowledge_runtime.get_snapshot,
+                thread_id=thread_id,
+            )
         ).to_response()
-    return goal_runtime.get_snapshot(thread_id=thread_id).to_response()
+    if agent_type == "knowledge.generate":
+        return (
+            await asyncio.to_thread(
+                knowledge_generate_runtime.get_snapshot,
+                thread_id=thread_id,
+            )
+        ).to_response()
+    return (
+        await asyncio.to_thread(
+            goal_runtime.get_snapshot,
+            thread_id=thread_id,
+        )
+    ).to_response()
 
 
 @router.get("/runs/{run_id}/events", response_model=list[AgentEvent])
@@ -524,7 +550,22 @@ async def get_agent_run_events(
         knowledge_generate_runtime=knowledge_generate_runtime,
     )
     if agent_type == "knowledge.qa":
-        return knowledge_runtime.get_snapshot(thread_id=thread_id).events
+        return (
+            await asyncio.to_thread(
+                knowledge_runtime.get_snapshot,
+                thread_id=thread_id,
+            )
+        ).events
     if agent_type == "knowledge.generate":
-        return knowledge_generate_runtime.get_snapshot(thread_id=thread_id).events
-    return goal_runtime.get_snapshot(thread_id=thread_id).events
+        return (
+            await asyncio.to_thread(
+                knowledge_generate_runtime.get_snapshot,
+                thread_id=thread_id,
+            )
+        ).events
+    return (
+        await asyncio.to_thread(
+            goal_runtime.get_snapshot,
+            thread_id=thread_id,
+        )
+    ).events

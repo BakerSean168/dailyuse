@@ -339,6 +339,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         description: getString(item, 'description'),
         importance: normalizeImportance(getString(item, 'importance')),
         cadence: normalizeCadence(getString(item, 'cadence')),
+        timeOfDay: getString(item, 'timeOfDay') || '09:00',
       }))
       .filter((item) => item.name);
   }

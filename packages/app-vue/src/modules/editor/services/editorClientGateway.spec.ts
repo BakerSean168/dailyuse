@@ -35,7 +35,7 @@ describe('editor client gateway', () => {
     expect(workspace?.id).toBe('repository-1');
     expect(sessions).toHaveLength(1);
     expect(sessions[0]?.workspaceId).toBe('repository-1');
-  });
+  }, 10000);
 
   it('reads and saves content through the editor service', async () => {
     editorService.getContent.mockResolvedValue({

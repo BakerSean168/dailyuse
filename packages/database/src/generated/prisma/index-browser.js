@@ -277,6 +277,37 @@ exports.Prisma.AgentRunCheckpointScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.LangGraphCheckpointScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  agentType: 'agentType',
+  threadId: 'threadId',
+  checkpointNs: 'checkpointNs',
+  checkpointId: 'checkpointId',
+  parentCheckpointId: 'parentCheckpointId',
+  checkpointType: 'checkpointType',
+  checkpointBlob: 'checkpointBlob',
+  metadataType: 'metadataType',
+  metadataBlob: 'metadataBlob',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LangGraphCheckpointWriteScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  agentType: 'agentType',
+  threadId: 'threadId',
+  checkpointNs: 'checkpointNs',
+  checkpointId: 'checkpointId',
+  taskId: 'taskId',
+  taskPath: 'taskPath',
+  idx: 'idx',
+  channel: 'channel',
+  valueType: 'valueType',
+  valueBlob: 'valueBlob',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AuthIdentityScalarFieldEnum = {
   id: 'id',
   status: 'status',
@@ -1215,6 +1246,8 @@ exports.Prisma.ModelName = {
   AiKnowledgeIndexEntry: 'AiKnowledgeIndexEntry',
   DashboardConfig: 'DashboardConfig',
   AgentRunCheckpoint: 'AgentRunCheckpoint',
+  LangGraphCheckpoint: 'LangGraphCheckpoint',
+  LangGraphCheckpointWrite: 'LangGraphCheckpointWrite',
   AuthIdentity: 'AuthIdentity',
   AuthIdentifier: 'AuthIdentifier',
   AuthOAuthBinding: 'AuthOAuthBinding',

@@ -8,7 +8,8 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node ../../node_modules/typescript/bin/tsc --build packages/contracts/tsconfig.json"
+        "command": "tsc --build",
+        "cwd": "packages/contracts"
       }
     },
     "build": {

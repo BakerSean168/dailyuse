@@ -217,6 +217,7 @@ services:
     command: ['start', '-c', '/config/powersync.yaml']
     environment:
       POWERSYNC_PORT: ${POWERSYNC_PORT:-8080}
+      PS_PORT: ${POWERSYNC_PORT:-8080}
       PS_SOURCE_HOSTNAME: postgres
       PS_SOURCE_PORT: 5432
       PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
@@ -244,7 +245,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "const port = process.env.POWERSYNC_PORT || '8080'; const http = require('http'); const req = http.get(`http://127.0.0.1:${port}/probes/liveness`, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+          "const port = process.env.POWERSYNC_PORT || '8080'; const http = require('http'); const req = http.get('http://127.0.0.1:' + port + '/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
         ]
       interval: 15s
       timeout: 5s

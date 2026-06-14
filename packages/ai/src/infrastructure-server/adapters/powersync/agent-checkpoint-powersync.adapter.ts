@@ -1,9 +1,7 @@
 // NOTE: PowerSync adapter is currently disabled until PowerSync SDK dependencies are resolved
 // import type { AbstractPowerSyncDatabase } from '@journeyapps/powersync-sdk-web';
-import type { AgentRun, AgentRunResult, AgentState } from '@dailyuse/contracts/ai';
-import { AgentRunSchema, AgentRunResultSchema, AgentStateSchema } from '@dailyuse/contracts/ai';
+import type { AgentRun, AgentRunResult } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
-import { randomUUID } from 'node:crypto';
 import type {
   AgentCheckpointDeleteInput,
   AgentCheckpointGetInput,
@@ -16,7 +14,7 @@ const logger = createLogger('AgentCheckpointPowerSyncAdapter');
 
 // Temporary stub - will be implemented when PowerSync dependencies are available
 export class AgentCheckpointPowerSyncAdapter implements IAgentCheckpointPort {
-  constructor(private readonly db: any) {
+  constructor(private readonly db: unknown) {
     logger.warn('PowerSync checkpoint adapter is not yet implemented');
   }
 
