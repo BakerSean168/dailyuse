@@ -83,9 +83,15 @@ jobs:
         with:
           python-version-file: apps/desktop/.python-version
 
-      - name: Setup MSBuild (Windows)
+      - name: Setup Visual Studio Build Tools (Windows)
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
+
+      - name: Configure node-gyp for VS 2022 (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          npm config set msvs_version 2022
+          npm config set node_gyp_force_process_config 1
 
       - name: Install Linux packaging dependencies
         if: runner.os == 'Linux'
