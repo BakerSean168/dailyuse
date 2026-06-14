@@ -3,11 +3,20 @@ import {
   type IAIAutomationToolExecutorPort,
 } from '@dailyuse/ai/ports';
 import type { IdentityId } from '@dailyuse/contracts';
-import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
+import type {
+  GoalAutomationExecutedAction,
+  GoalAutomationReminderPreview,
+} from '@dailyuse/contracts/ai';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import { createGoalPowerSyncModule } from '@dailyuse/goal/api';
+import { createReminderPowerSyncModule } from '@dailyuse/reminder/api';
 import { createTaskPowerSyncModule } from '@dailyuse/task/api';
+import {
+  NotificationChannel,
+  ReminderType,
+  TriggerType,
+} from '@dailyuse/contracts/reminder';
 import {
   DayOfWeek,
   RecurrenceFrequency,
@@ -21,6 +30,10 @@ import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
 
 const logger = createLogger('DesktopAutomationToolExecutor');
+const DAILY_REVIEW_INTERVAL_MINUTES = 24 * 60;
+const WEEKLY_REVIEW_INTERVAL_MINUTES = 7 * DAILY_REVIEW_INTERVAL_MINUTES;
+const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
+const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function readNestedNumber(source: unknown, path: readonly string[]): number {
   let current = source;
@@ -35,15 +48,78 @@ function readNestedNumber(source: unknown, path: readonly string[]): number {
   return typeof current === 'number' ? current : 0;
 }
 
+function normalizeReminderTimeOfDay(value: string | undefined): string {
+  return value && REMINDER_TIME_OF_DAY_PATTERN.test(value)
+    ? value
+    : DEFAULT_REMINDER_TIME_OF_DAY;
+}
+
+function buildReminderStartTimestamp(timeOfDay: string, now = Date.now()): number {
+  const [hours = 9, minutes = 0] = timeOfDay.split(':').map((item) => Number(item));
+  const start = new Date(now);
+  start.setHours(hours, minutes, 0, 0);
+  if (start.getTime() < now) {
+    start.setDate(start.getDate() + 1);
+  }
+  return start.getTime();
+}
+
+function buildReminderTemplateInput(reminder: GoalAutomationReminderPreview, now = Date.now()) {
+  const isOneTime = reminder.cadence === 'once';
+  const timeOfDay = normalizeReminderTimeOfDay(reminder.timeOfDay);
+  const startTime = buildReminderStartTimestamp(timeOfDay, now);
+  return {
+    title: reminder.title,
+    description: reminder.description,
+    type: isOneTime ? ReminderType.OneTime : ReminderType.Recurring,
+    trigger: isOneTime
+      ? {
+          type: TriggerType.FixedTime,
+          fixedTime: {
+            time: timeOfDay,
+            timezone: null,
+          },
+          interval: null,
+        }
+      : {
+          type: TriggerType.Interval,
+          fixedTime: null,
+          interval: {
+            minutes:
+              reminder.cadence === 'daily'
+                ? DAILY_REVIEW_INTERVAL_MINUTES
+                : WEEKLY_REVIEW_INTERVAL_MINUTES,
+            startTime,
+          },
+        },
+    activeTime: {
+      startDate: startTime,
+      endDate: null,
+    },
+    notificationConfig: {
+      channels: [NotificationChannel.InApp],
+      title: reminder.title,
+      body: reminder.description ?? null,
+      sound: null,
+      vibration: null,
+      actions: null,
+    },
+    importanceLevel: reminder.importance,
+    tags: ['goal-agent'],
+  };
+}
+
 export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;
   private readonly taskModule;
+  private readonly reminderModule;
   private readonly knowledgeSource;
   private readonly analyticsRead;
 
   constructor(db: IElectronDatabase, repositoryStorageDir: string) {
     this.goalModule = createGoalPowerSyncModule(db);
     this.taskModule = createTaskPowerSyncModule(db);
+    this.reminderModule = createReminderPowerSyncModule(db);
     this.knowledgeSource = new DesktopKnowledgeSourceAdapter(db, repositoryStorageDir);
     this.analyticsRead = new DesktopAnalyticsReadAdapter();
   }
@@ -54,6 +130,24 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
     const actions: GoalAutomationExecutedAction[] = [];
     let createdGoalId: GoalId | null = null;
     const createdKeyResultIds = new Map<number, KeyResultId>();
+    let goalCreationFailed = false;
+    const failedKeyResultIndexes = new Set<number>();
+    const skipAction = (
+      action: GoalAutomationExecutionInput['actions'][number],
+      message: string,
+    ) => {
+      actions.push({
+        tool: action.tool,
+        status: 'skipped',
+        message,
+      });
+      logger.info('Goal automation executor action skipped', {
+        identityId: input.identityId,
+        tool: action.tool,
+        index: action.index ?? null,
+        message,
+      });
+    };
 
     for (const action of input.actions) {
       try {
@@ -87,6 +181,10 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
         }
 
         if (action.tool === 'create_key_result') {
+          if (goalCreationFailed) {
+            skipAction(action, 'Skipped because goal creation failed.');
+            continue;
+          }
           if (!createdGoalId) {
             throw new Error('Cannot create key result before goal creation');
           }
@@ -97,13 +195,13 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
 
           const result = await this.goalModule.api.addKeyResult(createdGoalId, {
             title: keyResult.title,
-            valueType: 'Incremental',
-            aggregationMethod: 'Last',
-            startValue: 0,
-            currentValue: 0,
+            valueType: keyResult.valueType,
+            aggregationMethod: keyResult.calculationMethod,
+            startValue: keyResult.startValue,
+            currentValue: keyResult.currentValue,
             targetValue: keyResult.targetValue,
             unit: keyResult.unit,
-            weight: this.resolveWeight(input.plan.keyResults?.length ?? 1),
+            weight: keyResult.weight,
           });
 
           const createdKeyResult = unwrapOrThrowError(result);
@@ -118,6 +216,20 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
         }
 
         if (action.tool === 'create_task_template') {
+          if (goalCreationFailed) {
+            skipAction(action, 'Skipped because goal creation failed.');
+            continue;
+          }
+          if (
+            typeof action.index === 'number' &&
+            failedKeyResultIndexes.has(action.index)
+          ) {
+            skipAction(
+              action,
+              `Skipped because key result ${action.index} creation failed.`,
+            );
+            continue;
+          }
           const taskTemplate = input.plan.taskTemplates?.[action.index ?? -1];
           if (!taskTemplate) {
             throw new Error(`Missing task template draft for index ${action.index ?? -1}`);
@@ -162,6 +274,35 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
           continue;
         }
 
+        if (action.tool === 'create_reminder') {
+          if (goalCreationFailed) {
+            skipAction(action, 'Skipped because goal creation failed.');
+            continue;
+          }
+          const reminder = input.plan.reminders?.[action.index ?? -1];
+          if (!reminder) {
+            throw new Error(`Missing reminder draft for index ${action.index ?? -1}`);
+          }
+
+          const result = await this.reminderModule.api.createTemplate(
+            buildReminderTemplateInput(reminder),
+            {
+              identityId: input.identityId,
+            },
+          );
+          const createdReminder = unwrapOrThrowError(result) as {
+            id?: string;
+            name?: string;
+          };
+          actions.push({
+            tool: action.tool,
+            status: 'executed',
+            entityId: createdReminder.id,
+            message: `Created reminder "${createdReminder.name ?? reminder.title}"`,
+          });
+          continue;
+        }
+
         if (action.tool === 'search_notes') {
           const resources = await this.knowledgeSource.listRelevantResources(
             input.identityId,
@@ -199,6 +340,12 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
           action,
           identityId: input.identityId,
         });
+        if (action.tool === 'create_goal') {
+          goalCreationFailed = true;
+        }
+        if (action.tool === 'create_key_result' && typeof action.index === 'number') {
+          failedKeyResultIndexes.add(action.index);
+        }
         actions.push({
           tool: action.tool,
           status: 'failed',
@@ -208,14 +355,6 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
     }
 
     return actions;
-  }
-
-  private resolveWeight(count: number): number {
-    if (count <= 1) {
-      return 1;
-    }
-
-    return Math.max(1, Math.round(10 / count));
   }
 
   private buildRecurrenceRule(cadence: 'daily' | 'weekly' | 'once') {

@@ -18,8 +18,17 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from ai_service.agent_runtime import (
+    GoalCreateAgentRuntime,
+    KnowledgeGenerateAgentRuntime,
+    KnowledgeQaAgentRuntime,
+)
+from ai_service.agent_runtime.checkpoint_factory import (
+    build_checkpointer,
+    build_run_history_store,
+)
 from ai_service.api.error_handlers import register_exception_handlers
-from ai_service.api.routes import chat, health, workflows
+from ai_service.api.routes import agents, chat, health, workflows
 from ai_service.config import get_settings
 from ai_service.infrastructure.http_client import create_shared_async_client
 from ai_service.logging_utils import compact_log, configure_logging
@@ -81,6 +90,62 @@ async def lifespan(app: FastAPI):
         knowledge_indexing_service,
     )
 
+    # Agent runtime checkpoint strategy:
+    # - local (default): file-backed, app-scoped singleton runtime
+    # - ts: HTTP + database, identity-aware runtime constructed per-request
+    #
+    # Set via environment variable:
+    #   AGENT_CHECKPOINT_STRATEGY=local  (default)
+    #   AGENT_CHECKPOINT_STRATEGY=ts     (requires TS_API_BASE_URL)
+
+    if settings.agent_checkpoint_strategy.lower() == "local":
+        # local strategy: construct app-scoped singleton runtimes
+        goal_create_agent_runtime = GoalCreateAgentRuntime(
+            checkpointer=build_checkpointer(
+                settings=settings,
+                name="goal-create",
+                identity_id=None,
+            ),
+            run_history=build_run_history_store(
+                settings=settings,
+                name="goal-create",
+                identity_id=None,
+            ),
+            goal_planning_service=goal_planning_service,
+        )
+        knowledge_qa_agent_runtime = KnowledgeQaAgentRuntime(
+            checkpointer=build_checkpointer(
+                settings=settings,
+                name="knowledge-qa",
+                identity_id=None,
+            ),
+            run_history=build_run_history_store(
+                settings=settings,
+                name="knowledge-qa",
+                identity_id=None,
+            ),
+        )
+        knowledge_generate_agent_runtime = KnowledgeGenerateAgentRuntime(
+            checkpointer=build_checkpointer(
+                settings=settings,
+                name="knowledge-generate",
+                identity_id=None,
+            ),
+            run_history=build_run_history_store(
+                settings=settings,
+                name="knowledge-generate",
+                identity_id=None,
+            ),
+            knowledge_note_service=knowledge_note_service,
+            knowledge_query_service=knowledge_query_service,
+        )
+    else:
+        # ts strategy: runtimes are constructed per-request in dependencies
+        # Set None placeholders for app state (not used in ts mode)
+        goal_create_agent_runtime = None  # type: ignore
+        knowledge_qa_agent_runtime = None  # type: ignore
+        knowledge_generate_agent_runtime = None  # type: ignore
+
     orchestrator = AIWorkflowOrchestrator()
     goal_handler = GoalWorkflowHandler(goal_planning_service)
     goal_automation_handler = GoalAutomationWorkflowHandler(goal_planning_service)
@@ -109,6 +174,9 @@ async def lifespan(app: FastAPI):
     app.state.knowledge_expansion_service = knowledge_expansion_service
     app.state.analytics_query_service = analytics_query_service
     app.state.orchestrator = orchestrator
+    app.state.goal_create_agent_runtime = goal_create_agent_runtime
+    app.state.knowledge_qa_agent_runtime = knowledge_qa_agent_runtime
+    app.state.knowledge_generate_agent_runtime = knowledge_generate_agent_runtime
 
     logger.info(
         "AI service resources initialized | %s",
@@ -158,6 +226,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(chat.router)
     app.include_router(workflows.router)
+    app.include_router(agents.router)
     register_exception_handlers(app)
 
     logger.info(
@@ -187,4 +256,9 @@ def get_app_state(app: FastAPI) -> dict[str, Any]:
         "knowledge_expansion_service": app.state.knowledge_expansion_service,
         "analytics_query_service": app.state.analytics_query_service,
         "orchestrator": app.state.orchestrator,
+        "goal_create_agent_runtime": app.state.goal_create_agent_runtime,
+        "knowledge_qa_agent_runtime": app.state.knowledge_qa_agent_runtime,
+        "knowledge_generate_agent_runtime": (
+            app.state.knowledge_generate_agent_runtime
+        ),
     }

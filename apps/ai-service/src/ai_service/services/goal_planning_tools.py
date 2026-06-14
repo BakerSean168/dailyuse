@@ -23,8 +23,8 @@ def build_goal_automation_submission_tool() -> ChatToolDefinition:
                 "name": "submit_goal_automation_plan",
                 "description": (
                     "Submit the final goal automation plan, including draft goal, "
-                    "optional key results, optional task templates, "
-                    "and proposed tool calls."
+                    "optional key results, optional task templates, optional "
+                    "reminders, and proposed tool calls."
                 ),
                 "parameters": GoalAutomationLLMResponse.model_json_schema(
                     by_alias=True

@@ -1,0 +1,129 @@
+[
+  {
+    "id": "agent-runtime-goal-create-planner-draft",
+    "type": "agent_runtime_goal_create",
+    "description": "goal.create runtime should turn a planner response into an approval-gated goal draft and action plan.",
+    "initial_request": {
+      "idea": "Ship durable Agent runtime evaluation coverage with approval gates.",
+      "identity_id": "identity-1",
+      "category": "work",
+      "timeframe": "this quarter",
+      "request_id": "agent-runtime-eval-goal"
+    },
+    "planner_response": {
+      "goal": {
+        "title": "Ship Agent runtime checkpoint evals",
+        "description": "Add deterministic Agent runtime evals for checkpoint recovery and approval-gated execution.",
+        "motivation": "Runtime evals make graph regressions visible before release.",
+        "category": "work",
+        "importance": "Important",
+        "tags": ["agent", "runtime", "eval"],
+        "feasibilityAnalysis": "The current graph exposes artifacts and interrupts that are enough for deterministic checks.",
+        "aiInsights": "Start with approval and grounding checks before adding persistence-backed replay.",
+        "suggestedStartDate": 1000,
+        "suggestedEndDate": 1209601000
+      },
+      "keyResults": [
+        {
+          "title": "Cover goal draft quality",
+          "description": "Evaluate the goal draft artifact and action plan before side effects.",
+          "targetValue": 1,
+          "unit": "case"
+        },
+        {
+          "title": "Cover knowledge grounding",
+          "description": "Evaluate grounded answers and citation paths from runtime output.",
+          "targetValue": 1,
+          "unit": "case"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 11,
+        "completion_tokens": 7,
+        "total_tokens": 18
+      }
+    },
+    "expected": {
+      "run_status": "waiting_approval",
+      "stage": "approval",
+      "min_key_results": 2,
+      "expected_goal_terms": ["Agent runtime", "checkpoint", "approval"],
+      "expected_action_tools": [
+        "create_goal",
+        "create_key_result",
+        "create_key_result",
+        "create_task_template",
+        "create_task_template",
+        "create_reminder"
+      ],
+      "require_approval_interrupt": true,
+      "usage_total_tokens": 18
+    }
+  },
+  {
+    "id": "agent-runtime-knowledge-qa-grounded-citations",
+    "type": "agent_runtime_knowledge_qa",
+    "description": "knowledge.qa runtime should preserve grounded citations and usage metadata in the answer artifact.",
+    "question": "What should Agent runtime answers cite?",
+    "answer": "Agent runtime answers should cite repository resources and expose grounding evidence.",
+    "citations": [
+      {
+        "resourceId": "resource-agent-runtime",
+        "resourcePath": "docs/agent-runtime.md",
+        "title": "Agent Runtime Notes",
+        "chunkIndex": 0,
+        "excerpt": "Agent runtime answers cite repository resources when evidence exists.",
+        "score": 0.93
+      }
+    ],
+    "provider_id": "provider-1",
+    "token_usage": {
+      "promptTokens": 20,
+      "completionTokens": 10,
+      "totalTokens": 30
+    },
+    "processing_time_ms": 1234,
+    "matched_resource_count": 1,
+    "expected": {
+      "evidence_status": "grounded",
+      "expected_answer_substrings": [
+        "cite repository resources",
+        "grounding evidence"
+      ],
+      "expected_resource_paths": ["docs/agent-runtime.md"],
+      "expect_citations": true,
+      "usage_total_tokens": 30,
+      "min_matched_resource_count": 1
+    }
+  },
+  {
+    "id": "agent-runtime-knowledge-generate-draft-save-plan",
+    "type": "agent_runtime_knowledge_generate",
+    "description": "knowledge.generate runtime should produce an approval-gated knowledge note draft and repository save plan.",
+    "initial_request": {
+      "topic": "Grounding knowledge answers in repository citations",
+      "identity_id": "identity-1",
+      "conversation_id": "conversation-knowledge-generate",
+      "title": "Grounded knowledge answers",
+      "source": "Question: What should Agent runtime answers cite?\nAnswer: They should cite repository resources and expose grounding evidence.",
+      "target_subpath": "notes/ai",
+      "provider_id": "provider-1",
+      "model": "gpt-4o-mini"
+    },
+    "expected": {
+      "run_status": "waiting_approval",
+      "stage": "approval",
+      "expected_title": "Grounded knowledge answers",
+      "expected_topic_substrings": ["repository citations"],
+      "expected_markdown_substrings": [
+        "Grounded knowledge answers",
+        "repository resources",
+        "grounding evidence"
+      ],
+      "expected_action_tools": ["create_knowledge_note"],
+      "expected_target_subpath": "notes/ai",
+      "expected_index_status": "pending",
+      "require_approval_interrupt": true
+    }
+  }
+]

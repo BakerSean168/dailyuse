@@ -7,6 +7,11 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
+from ai_service.evals.agent_runtime_harness import (
+    AgentRuntimeGoalCreateEvalCase,
+    AgentRuntimeKnowledgeGenerateEvalCase,
+    AgentRuntimeKnowledgeQaEvalCase,
+)
 from ai_service.evals.goal_workflow_harness import GoalWorkflowEvalCase
 from ai_service.schemas import (
     ChatCompleteResponse,
@@ -139,6 +144,9 @@ EvalCase = Annotated[
     ChatSanityEvalCase
     | GoalPlanningEvalCase
     | KnowledgeGroundingEvalCase
+    | AgentRuntimeGoalCreateEvalCase
+    | AgentRuntimeKnowledgeGenerateEvalCase
+    | AgentRuntimeKnowledgeQaEvalCase
     | GoalWorkflowEvalCase,
     Field(discriminator="type"),
 ]

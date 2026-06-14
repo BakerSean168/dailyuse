@@ -14,7 +14,11 @@ export interface WorkflowStatusParams {
   automationLoading: boolean;
   automationExecuting: boolean;
   goalExecutionSummary: { status: string } | null;
+  knowledgeQueryLoading: boolean;
+  knowledgeAnswer: { evidenceStatus: 'grounded' | 'insufficient' } | null;
   noteCreating: boolean;
+  noteAgentLoading: boolean;
+  noteAgentDraftReady: boolean;
   noteSummary: { resolvedPath: string } | null;
 }
 
@@ -24,7 +28,7 @@ export function getWorkflowStatusText(
   t: (key: string, args?: Record<string, unknown>) => string,
   formatExecutionOutcome: (status: 'success' | 'partial' | 'failed') => string,
 ): string {
-  if (params.toolMode === 'goal') {
+  if (params.toolMode === 'goal-create') {
     if (params.goalDraftLoading) return t('aiAssistant.dialogs.generateGoal.generating');
     if (params.goalWorkflowStage === 'plan' || params.automationLoading)
       return t('aiAssistant.dialogs.automation.planning');
@@ -45,20 +49,37 @@ export function getWorkflowStatusText(
       return t('aiAssistant.chatPage.workflow.goalDraftReadyHint');
     return t('aiAssistant.chatPage.workflow.goalCollectingHint');
   }
-  if (params.toolMode === 'knowledge-note') {
+  if (params.toolMode === 'knowledge-generate') {
+    if (params.noteAgentLoading) return t('aiAssistant.dialogs.note.drafting');
     if (params.noteCreating) return t('aiAssistant.dialogs.note.creating');
     if (params.noteSummary)
       return t('aiAssistant.chatPage.workflow.noteCreatedHint', {
         path: params.noteSummary.resolvedPath,
       });
+    if (params.noteAgentDraftReady) return t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
     return t('aiAssistant.chatPage.workflow.noteCollectingHint');
+  }
+  if (params.toolMode === 'knowledge-qa') {
+    if (params.knowledgeQueryLoading) return t('aiAssistant.dialogs.knowledge.searching');
+    if (params.noteAgentLoading) return t('aiAssistant.dialogs.note.drafting');
+    if (params.noteCreating) return t('aiAssistant.dialogs.note.creating');
+    if (params.noteSummary)
+      return t('aiAssistant.chatPage.workflow.noteCreatedHint', {
+        path: params.noteSummary.resolvedPath,
+      });
+    if (params.noteAgentDraftReady) return t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
+    if (params.knowledgeAnswer?.evidenceStatus === 'grounded')
+      return t('aiAssistant.dialogs.knowledge.grounded');
+    if (params.knowledgeAnswer?.evidenceStatus === 'insufficient')
+      return t('aiAssistant.dialogs.knowledge.insufficientEvidence');
+    return t('aiAssistant.chatPage.workflow.knowledgeQaCollectingHint');
   }
   return '';
 }
 
 /** Parameters for the onMounted initialization. */
 export interface ChatViewInitContext {
-  initRepository: () => void;
+  initRepository: () => Promise<unknown> | unknown;
   loadProviders: () => Promise<unknown>;
   loadConversationList: () => Promise<unknown>;
   syncSelectedModel: (key?: string) => void;
@@ -150,7 +171,11 @@ export async function initializeChatView(ctx: ChatViewInitContext): Promise<void
     localStorage.getItem('ai:last-conversation-id') || '';
 
   try {
-    ctx.initRepository();
+    try {
+      await ctx.initRepository();
+    } catch (error) {
+      console.warn('[AIChatView] failed to initialize repository context', error);
+    }
     await ctx.loadProviders();
     ctx.syncSelectedModel(ctx.getPersistedModelKey());
     await ctx.loadConversationList();

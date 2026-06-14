@@ -52,6 +52,7 @@
     "governance:check": "pnpm nx run daily-use:governance-check",
     "// ========== E2E Testing ==========": "",
     "e2e": "pnpm nx run web:e2e",
+    "e2e:ai-workspace": "pnpm nx run web:e2e:ai-workspace",
     "e2e:headed": "pnpm nx run web:e2e --configuration=headed",
     "e2e:debug": "pnpm nx run web:e2e --configuration=debug",
     "e2e:ui": "pnpm nx run web:e2e:ui",

@@ -35,6 +35,7 @@ describe('AI runtime capability consistency', () => {
       expect(runtime.capabilities).toHaveProperty('supportsKnowledgeReindex');
       expect(runtime.capabilities).toHaveProperty('supportsAnalyticsQuery');
       expect(runtime.capabilities).toHaveProperty('supportsGoalAutomation');
+      expect(runtime.capabilities).toHaveProperty('supportsAgentRuntime');
       expect(runtime.capabilities).toHaveProperty('supportsEvaluationReports');
     }
   });
@@ -53,6 +54,7 @@ describe('AI runtime capability consistency', () => {
       expect(runtime.services).toHaveProperty('knowledgeQueryServices');
       expect(runtime.services).toHaveProperty('analyticsQueryService');
       expect(runtime.services).toHaveProperty('evaluationReportService');
+      expect(runtime.services).toHaveProperty('agentRuntimeService');
     }
   });
 
@@ -85,6 +87,12 @@ describe('AI runtime capability consistency', () => {
       analyticsQueryPort: { query: vi.fn() } as any,
       goalAutomationPlanningPort: { plan: vi.fn() } as any,
       automationToolExecutorPort: { execute: vi.fn() } as any,
+      agentRuntimePort: {
+        startRun: vi.fn(),
+        resumeRun: vi.fn(),
+        getRun: vi.fn(),
+        getEvents: vi.fn(),
+      } as any,
       knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
       getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
       evaluationReportPort: { getOverview: vi.fn() } as any,
@@ -99,6 +107,7 @@ describe('AI runtime capability consistency', () => {
     expect(capabilities.supportsKnowledgeNotes).toBe(services.knowledgeNoteService.isAvailable);
     expect(capabilities.supportsKnowledgeQuery).toBe(services.knowledgeQueryServices.isAvailable);
     expect(capabilities.supportsAnalyticsQuery).toBe(services.analyticsQueryService.isAvailable);
+    expect(capabilities.supportsAgentRuntime).toBe(services.agentRuntimeService.isAvailable);
     expect(capabilities.supportsEvaluationReports).toBe(
       services.evaluationReportService.isAvailable,
     );

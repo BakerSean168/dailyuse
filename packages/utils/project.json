@@ -9,14 +9,14 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/utils/dist"],
       "options": {
-        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && node ../../node_modules/tsup/dist/cli-default.js --clean=false",
         "cwd": "packages/utils"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsup --watch",
+        "command": "node ../../node_modules/tsup/dist/cli-default.js --watch",
         "cwd": "packages/utils"
       }
     },
@@ -31,7 +31,7 @@
       "executor": "nx:run-commands",
       "cache": true,
       "options": {
-        "command": "tsc --noEmit -p tsconfig.json",
+        "command": "node ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
         "cwd": "packages/utils"
       }
     },

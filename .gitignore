@@ -24,7 +24,9 @@ release
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-temp/
 .coverage
+.ai-service/
 
 # But don't ignore tools/build (it contains build configs, not build outputs)
 !tools/build/
@@ -126,6 +128,8 @@ LPT1
 # MCP tool outputs
 tmp/
 .tmp-*/
+.codegraph/
+repomix-output.*
 
 # 包管理器缓存
 .pnpm-store/

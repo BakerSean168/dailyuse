@@ -2,3 +2,4 @@ export { AIConversationPrismaRepository } from './ai-conversation-prisma.reposit
 export { AIProviderConfigPrismaRepository } from './ai-provider-config-prisma.repository';
 export { AIKnowledgeIndexPrismaRepository } from './ai-knowledge-index-prisma.repository';
 export { AIExecutionLogPrismaAdapter } from './ai-execution-log-prisma.adapter';
+export { LangGraphCheckpointPrismaAdapter } from './langgraph-checkpoint-prisma.adapter';

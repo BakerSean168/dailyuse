@@ -88,7 +88,7 @@ def build_goal_automation_system_prompt(
         ),
         (
             "Allowed tools: create_goal, create_key_result, "
-            "create_task_template, search_notes, fetch_stats."
+            "create_task_template, create_reminder, search_notes, fetch_stats."
         ),
         "Use create_goal exactly once.",
         (
@@ -161,6 +161,18 @@ def build_goal_automation_system_prompt(
                     '      "importance": "Vital" | "Important" | "Moderate" | '
                     '"Minor" | "Trivial",'
                 ),
+                '      "cadence": "daily" | "weekly" | "once",',
+                '      "timeOfDay": "HH:mm"',
+                "    }",
+                "  ],",
+                '  "reminders": [',
+                "    {",
+                '      "title": string,',
+                '      "description": string,',
+                (
+                    '      "importance": "Vital" | "Important" | "Moderate" | '
+                    '"Minor" | "Trivial",'
+                ),
                 '      "cadence": "daily" | "weekly" | "once"',
                 "    }",
                 "  ],",
@@ -168,7 +180,8 @@ def build_goal_automation_system_prompt(
                 "    {",
                 (
                     '      "tool": "create_goal" | "create_key_result" | '
-                    '"create_task_template" | "search_notes" | "fetch_stats",'
+                    '"create_task_template" | "create_reminder" | '
+                    '"search_notes" | "fetch_stats",'
                 ),
                 '      "index": number | null,',
                 '      "rationale": string',

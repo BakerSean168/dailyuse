@@ -198,6 +198,11 @@ export const AIChannels = {
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
   KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
   ANALYTICS_QUERY: 'ai:analytics:query',
+  AGENT_RUN_LIST: 'ai:agent:run:list',
+  AGENT_RUN_START: 'ai:agent:run:start',
+  AGENT_RUN_RESUME: 'ai:agent:run:resume',
+  AGENT_RUN_GET: 'ai:agent:run:get',
+  AGENT_EVENTS_GET: 'ai:agent:events:get',
   EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
 } as const;
 

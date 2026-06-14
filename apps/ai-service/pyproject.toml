@@ -9,11 +9,12 @@ show_missing = true
 [tool.pytest.ini_options]
 addopts = """
  --cov
- --cov-report html:'../../coverage/apps/ai-service/html'
- --cov-report xml:'../../coverage/apps/ai-service/coverage.xml'
- --html='../../reports/apps/ai-service/unittests/html/index.html'
- --junitxml='../../reports/apps/ai-service/unittests/junit.xml'
+ --cov-report html:'coverage/html'
+ --cov-report xml:'coverage/coverage.xml'
+ --html='reports/unittests/html/index.html'
+ --junitxml='reports/unittests/junit.xml'
 """
+cache_dir = ".pytest-temp/cache"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
@@ -30,6 +31,7 @@ dependencies = [
     "pydantic-settings>=2.6.0",
     "httpx>=0.28.0",
     "sse-starlette>=2.2.0",
+    "langgraph>=1.2.4",
 ]
 
 [project.optional-dependencies]

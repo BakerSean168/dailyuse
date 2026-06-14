@@ -1,5 +1,5 @@
 <template>
-  <aside class="hidden min-h-0 w-72 shrink-0 flex-col border-r bg-sidebar md:flex">
+  <aside :class="sidebarClass">
     <!-- Header -->
     <div class="flex h-14 items-center border-b px-4">
       <div class="flex items-center gap-2 font-semibold">
@@ -36,11 +36,118 @@
         >
           <Settings2 class="h-4 w-4" />
         </Button>
+        <Button
+          v-if="showClose"
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :title="t('aiAssistant.chatPage.sidebar.close')"
+          data-testid="ai-sidebar-close"
+          @click="$emit('close')"
+        >
+          <X class="h-4 w-4" />
+        </Button>
       </div>
     </div>
 
     <!-- Conversation list -->
     <div class="min-h-0 flex-1 overflow-y-auto p-2">
+      <section class="mb-3 border-b pb-3">
+        <div class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ t('aiAssistant.dialogs.agent.recentRuns') }}
+        </div>
+        <button
+          v-for="run in agentRuns"
+          :key="run.runId"
+          type="button"
+          class="mb-1 flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          data-testid="agent-run-list-item"
+          @click="$emit('select-agent-run', run)"
+        >
+          <Bot class="mt-0.5 h-4 w-4 shrink-0" />
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-medium text-foreground">
+              {{ formatAgentType(run.agentType) }}
+            </span>
+            <span class="block truncate text-xs">
+              {{ formatRunStatus(run.status) }}
+            </span>
+          </span>
+        </button>
+        <div
+          v-if="agentRunsLoading"
+          class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
+        >
+          {{ t('aiAssistant.dialogs.agent.loadingRuns') }}
+        </div>
+        <div
+          v-else-if="!agentRuns.length"
+          class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
+        >
+          {{ t('aiAssistant.dialogs.agent.noRecentRuns') }}
+        </div>
+      </section>
+
+      <section class="mb-3 border-b pb-3">
+        <div class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ t('aiAssistant.chatPage.sidebar.recentGoals') }}
+        </div>
+        <button
+          v-for="goal in recentGoals"
+          :key="goal.id"
+          type="button"
+          class="mb-1 flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          data-testid="ai-sidebar-recent-goal"
+          @click="$emit('select-goal', goal.id)"
+        >
+          <Target class="mt-0.5 h-4 w-4 shrink-0" />
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-medium text-foreground">
+              {{ goal.title || t('common.untitled') }}
+            </span>
+            <span class="block truncate text-xs">
+              {{ formatGoalMeta(goal) }}
+            </span>
+          </span>
+        </button>
+        <div
+          v-if="!recentGoals.length"
+          class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
+        >
+          {{ t('aiAssistant.chatPage.sidebar.noRecentGoals') }}
+        </div>
+      </section>
+
+      <section class="mb-3 border-b pb-3">
+        <div class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ t('aiAssistant.chatPage.sidebar.recentKnowledgeNotes') }}
+        </div>
+        <button
+          v-for="note in recentKnowledgeNotes"
+          :key="note.id"
+          type="button"
+          class="mb-1 flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          data-testid="ai-sidebar-recent-note"
+          @click="$emit('select-knowledge-note', note.id)"
+        >
+          <FileText class="mt-0.5 h-4 w-4 shrink-0" />
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-medium text-foreground">
+              {{ note.title || t('common.untitled') }}
+            </span>
+            <span class="block truncate text-xs">
+              {{ note.path }}
+            </span>
+          </span>
+        </button>
+        <div
+          v-if="!recentKnowledgeNotes.length"
+          class="rounded-lg px-3 py-2 text-sm text-muted-foreground"
+        >
+          {{ t('aiAssistant.chatPage.sidebar.noRecentKnowledgeNotes') }}
+        </div>
+      </section>
+
       <div
         v-for="item in conversations"
         :key="item.id"
@@ -81,24 +188,90 @@
 </template>
 
 <script setup lang="ts">
-import { Bot, MessageSquare, Plus, RefreshCcw, Settings2, Trash2 } from 'lucide-vue-next';
+import {
+  Bot,
+  FileText,
+  MessageSquare,
+  Plus,
+  RefreshCcw,
+  Settings2,
+  Target,
+  Trash2,
+  X,
+} from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import type { ConversationSummary } from '../composables/types';
+import type { AgentRun } from '@dailyuse/contracts/ai';
+import type {
+  AIWorkspaceRecentGoal,
+  AIWorkspaceRecentKnowledgeNote,
+  ConversationSummary,
+} from '../composables/types';
 
-defineProps<{
+const props = withDefaults(defineProps<{
   conversations: ConversationSummary[];
+  agentRuns: AgentRun[];
+  recentGoals: AIWorkspaceRecentGoal[];
+  recentKnowledgeNotes: AIWorkspaceRecentKnowledgeNote[];
   activeConversationId: string;
   loading: boolean;
-}>();
+  agentRunsLoading: boolean;
+  variant?: 'desktop' | 'mobile';
+  showClose?: boolean;
+}>(), {
+  variant: 'desktop',
+  showClose: false,
+});
 
 defineEmits<{
   'new-conversation': [];
   refresh: [];
   'open-settings': [];
+  close: [];
   select: [item: ConversationSummary];
+  'select-agent-run': [run: AgentRun];
+  'select-goal': [id: string];
+  'select-knowledge-note': [id: string];
   delete: [id: string];
 }>();
 
 const { t } = useI18n();
+
+const sidebarClass =
+  props.variant === 'mobile'
+    ? 'flex h-full min-h-0 w-full flex-col bg-sidebar'
+    : 'hidden min-h-0 w-72 shrink-0 flex-col border-r bg-sidebar md:flex';
+
+function formatAgentType(agentType: AgentRun['agentType']) {
+  const labels: Record<AgentRun['agentType'], string> = {
+    'goal.create': t('aiAssistant.dialogs.agent.typeLabels.goalCreate'),
+    'knowledge.qa': t('aiAssistant.dialogs.agent.typeLabels.knowledgeQa'),
+    'knowledge.generate': t('aiAssistant.dialogs.agent.typeLabels.knowledgeGenerate'),
+  };
+  return labels[agentType];
+}
+
+function formatRunStatus(status: AgentRun['status']) {
+  const labels: Record<AgentRun['status'], string> = {
+    pending: t('aiAssistant.dialogs.agent.statusLabels.pending'),
+    running: t('aiAssistant.dialogs.agent.statusLabels.running'),
+    waiting_clarification: t('aiAssistant.dialogs.agent.statusLabels.waitingClarification'),
+    waiting_approval: t('aiAssistant.dialogs.agent.statusLabels.waitingApproval'),
+    waiting_execution: t('aiAssistant.dialogs.agent.statusLabels.waitingExecution'),
+    completed: t('aiAssistant.dialogs.agent.statusLabels.completed'),
+    failed: t('aiAssistant.dialogs.agent.statusLabels.failed'),
+    cancelled: t('aiAssistant.dialogs.agent.statusLabels.cancelled'),
+  };
+  return labels[status];
+}
+
+function formatGoalMeta(goal: AIWorkspaceRecentGoal): string {
+  const parts = [goal.status];
+  if (typeof goal.progress === 'number') {
+    parts.push(t('aiAssistant.chatPage.sidebar.goalProgress', {
+      progress: Math.round(goal.progress),
+    }));
+  }
+  return parts.filter(Boolean).join(' · ');
+}
 </script>

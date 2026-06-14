@@ -36,6 +36,12 @@ import type {
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
   SendMessageRes,
+  AgentEvent,
+  AgentRun,
+  AgentRunListParams,
+  AgentResumePayload,
+  AgentRunResult,
+  AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
 
 export interface IAIConversationApiClient {
@@ -110,6 +116,14 @@ export interface AIKnowledgeQueryApiClient {
 
 export interface AIAnalyticsQueryApiClient {
   queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
+}
+
+export interface AIAgentRuntimeApiClient {
+  listAgentRuns(params?: AgentRunListParams): Promise<AgentRun[]>;
+  startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult>;
+  resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<AgentRunResult>;
+  getAgentRun(runId: string): Promise<AgentRunResult>;
+  getAgentEvents(runId: string): Promise<AgentEvent[]>;
 }
 
 export interface IAIProviderConfigApiClient {

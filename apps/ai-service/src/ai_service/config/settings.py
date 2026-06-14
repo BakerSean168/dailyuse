@@ -67,6 +67,14 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "INFO"
     log_dir: str | None = None
+    agent_checkpoint_dir: str | None = ".ai-service/agent-checkpoints"
+
+    # Agent checkpoint persistence strategy:
+    # "local" (file-backed) or "ts" (TS checkpoint port via HTTP).
+    agent_checkpoint_strategy: str = "local"
+
+    # Base URL for calling TS API services (used when checkpoint_strategy is "ts").
+    ts_api_base_url: str = "http://localhost:3001"
 
     # Outbound provider timeout controls.
     request_timeout_seconds: float = 60.0

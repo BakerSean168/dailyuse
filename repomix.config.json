@@ -1,0 +1,97 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "input": {
+    "maxFileSize": 2000000
+  },
+  "output": {
+    "filePath": "tmp/repomix/dailyuse-context.xml",
+    "style": "xml",
+    "parsableStyle": false,
+    "compress": true,
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 20,
+    "showLineNumbers": false,
+    "truncateBase64": true,
+    "tokenCountTree": 10000,
+    "git": {
+      "sortByChanges": true,
+      "sortByChangesMaxCommits": 100,
+      "includeDiffs": false,
+      "includeLogs": false,
+      "includeLogsCount": 20
+    }
+  },
+  "include": [
+    "README.md",
+    "AGENT.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "package.json",
+    "pnpm-workspace.yaml",
+    "nx.json",
+    "project.json",
+    "tsconfig*.json",
+    "eslint.config.ts",
+    "vite.workspace-aliases.ts",
+    "vitest*.ts",
+    "apps/api/**",
+    "apps/web/**",
+    "apps/desktop/**",
+    "apps/mobile/**",
+    "apps/ai-service/**",
+    "packages/**",
+    "tools/**",
+    "docs/product/**",
+    "docs/architecture/**",
+    "docs/standards/**",
+    "docs/guides/development/**",
+    "docs/test/**",
+    "docs/governance/**"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "node_modules/**",
+      ".git/**",
+      ".nx/**",
+      ".pnpm-store/**",
+      ".venv/**",
+      ".uv-cache/**",
+      "**/.pytest-temp/**",
+      "dist/**",
+      "dist-electron/**",
+      "coverage/**",
+      "reports/**",
+      "test-results/**",
+      "tmp/**",
+      ".tmp/**",
+      "**/*.png",
+      "**/*.jpg",
+      "**/*.jpeg",
+      "**/*.gif",
+      "**/*.webp",
+      "**/*.ico",
+      "**/*.icns",
+      "**/*.zip",
+      "**/*.wav",
+      "**/*.mp3",
+      "**/*.mp4",
+      "**/*.webm",
+      "**/*.local",
+      ".env*",
+      "!/.env.example"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

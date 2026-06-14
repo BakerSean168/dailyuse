@@ -25,6 +25,7 @@ import type {
 } from '../ai.module';
 import type { AIRuntimeOutput } from './ai-runtime';
 import {
+  createAgentRuntimeService,
   createAnalyticsRuntimeService,
   createEvaluationRuntimeService,
   createKnowledgeNoteRuntimeService,
@@ -241,6 +242,7 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
   const supportsGoalAutomation = Boolean(
     dependencies.goalAutomationPlanningPort && dependencies.automationToolExecutorPort,
   );
+  const supportsAgentRuntime = Boolean(dependencies.agentRuntimePort);
 
   const capabilities: AICapabilities = {
     runtimeMode: 'remote-ai-service',
@@ -251,9 +253,13 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     supportsKnowledgeReindex: supportsKnowledgeQuery,
     supportsAnalyticsQuery,
     supportsGoalAutomation,
+    supportsAgentRuntime,
     supportsEvaluationReports: Boolean(evaluationReportUseCase),
     advancedFeaturesReason:
-      supportsKnowledgeQuery && supportsAnalyticsQuery && supportsGoalAutomation
+      supportsKnowledgeQuery &&
+      supportsAnalyticsQuery &&
+      supportsGoalAutomation &&
+      supportsAgentRuntime
         ? undefined
         : ADVANCED_AI_REASON,
   };
@@ -273,6 +279,16 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     ),
     analyticsQueryService: createAnalyticsRuntimeService(analyticsQueryUseCase, capabilities),
     evaluationReportService: createEvaluationRuntimeService(evaluationReportUseCase),
+    agentRuntimeService: createAgentRuntimeService(
+      dependencies.agentRuntimePort,
+      dependencies.automationToolExecutorPort,
+      dependencies.providerConfigRepository,
+      dependencies.knowledgeSourcePort,
+      dependencies.analyticsReadPort,
+      knowledgeQueryUseCases?.query,
+      knowledgeNoteUseCase,
+      dependencies.executionLogPort,
+    ),
   };
 
   return { services, capabilities, runtimeContributions: [] };

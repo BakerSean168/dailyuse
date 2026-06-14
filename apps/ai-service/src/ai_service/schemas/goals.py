@@ -167,6 +167,22 @@ class TaskTemplateDraft(BaseModel):
     cadence: Literal["daily", "weekly", "once"] = "weekly"
 
 
+class ReminderDraft(BaseModel):
+    """Single reminder preview."""
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    title: str = Field(..., min_length=1)
+    description: str | None = None
+    importance: ImportanceLevel = "Important"
+    cadence: Literal["daily", "weekly", "once"] = "weekly"
+    time_of_day: str = Field(
+        default="09:00",
+        alias="timeOfDay",
+        pattern=r"^([01]\d|2[0-3]):[0-5]\d$",
+    )
+
+
 class GoalPlanningLLMResponse(BaseModel):
     """Structured JSON shape we expect from the LLM."""
 
@@ -188,6 +204,7 @@ class GoalAutomationToolCall(BaseModel):
         "create_goal",
         "create_key_result",
         "create_task_template",
+        "create_reminder",
         "search_notes",
         "fetch_stats",
     ]
@@ -209,6 +226,10 @@ class GoalAutomationLLMResponse(BaseModel):
     task_templates: list[TaskTemplateDraft] | None = Field(
         default=None,
         alias="taskTemplates",
+    )
+    reminders: list[ReminderDraft] | None = Field(
+        default=None,
+        alias="reminders",
     )
     tool_calls: list[GoalAutomationToolCall] = Field(alias="toolCalls")
 
@@ -278,6 +299,10 @@ class GoalAutomationResponse(BaseModel):
     task_templates: list[TaskTemplateDraft] | None = Field(
         default=None,
         alias="taskTemplates",
+    )
+    reminders: list[ReminderDraft] | None = Field(
+        default=None,
+        alias="reminders",
     )
     tool_calls: list[GoalAutomationToolCall] = Field(alias="toolCalls")
     usage: dict[str, Any] | None = None

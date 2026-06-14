@@ -7,9 +7,14 @@ import { expand } from 'dotenv-expand';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const WORKSPACE_ROOT = resolve(__dirname, '../..');
+const VITE_BIN_PATH = resolve(WORKSPACE_ROOT, 'node_modules/vite/bin/vite.js');
 const DEFAULT_API_ORIGIN = 'http://localhost:3000';
 const DEFAULT_WEB_ORIGIN = 'http://127.0.0.1:5173';
 const LEGACY_LOCALHOST_WEB_ORIGIN = 'http://localhost:5173';
+
+function quoteShellArgument(value: string): string {
+  return `"${value.replace(/"/g, '\\"')}"`;
+}
 
 function loadEnvFile(filePath: string): void {
   if (existsSync(filePath)) {
@@ -111,7 +116,9 @@ export function createWebServer(url = `${getWebOrigin()}/auth`) {
   const webServer = getWebServerRuntimeConfig();
 
   return {
-    command: `pnpm exec vite --config vite.config.ts --host ${webServer.host} --port ${webServer.port}`,
+    // Call the Vite entrypoint through the current Node binary so Playwright can
+    // tear the dev server down cleanly on Windows without leaving a pnpm/cmd tree behind.
+    command: `${quoteShellArgument(process.execPath)} ${quoteShellArgument(VITE_BIN_PATH)} --config vite.config.ts --host ${webServer.host} --port ${webServer.port}`,
     cwd: '.',
     url,
     env: {

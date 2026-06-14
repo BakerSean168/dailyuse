@@ -52,9 +52,9 @@ export function createAppRouter(options?: {
       children: [
         {
           path: '',
-          name: 'welcome',
-          component: () => import('../views/WelcomeView.vue'),
-          meta: { title: '首页' },
+          name: 'ai-workspace',
+          component: () => import('../modules/ai/views/AIChatView.vue'),
+          meta: { title: 'aiAssistant.chatPage.title' },
         },
         {
           path: 'dashboard',

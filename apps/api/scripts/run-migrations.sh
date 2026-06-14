@@ -98,13 +98,25 @@ echo ""
 
 cd /app
 
-if [ -d "packages/database/prisma/migrations" ] && [ -n "$(ls -A packages/database/prisma/migrations 2>/dev/null)" ]; then
+has_prisma_migration_dirs() {
+  [ -d "packages/database/prisma/migrations" ] || return 1
+
+  find "packages/database/prisma/migrations" \
+    -mindepth 2 \
+    -maxdepth 2 \
+    -type f \
+    -name "migration.sql" \
+    -print \
+    -quit | grep -q .
+}
+
+if has_prisma_migration_dirs; then
   echo "   Command: pnpm --dir /app/packages/database exec prisma migrate deploy --config ./prisma/prisma.config.ts"
   echo ""
   MIGRATION_RESULT=0
   MIGRATION_OUTPUT=$(pnpm --dir /app/packages/database exec prisma migrate deploy --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
 else
-  echo "${YELLOW}⚠️  No Prisma migrations found, falling back to schema push${NC}"
+  echo "${YELLOW}⚠️  No Prisma migration directories found, falling back to schema push${NC}"
   echo "   Command: pnpm --dir /app/packages/database exec prisma db push --config ./prisma/prisma.config.ts"
   echo ""
   MIGRATION_RESULT=0

@@ -10,6 +10,11 @@ from __future__ import annotations
 import json
 from typing import cast
 
+from ai_service.evals.agent_runtime_harness import (
+    run_agent_runtime_goal_create_case,
+    run_agent_runtime_knowledge_generate_case,
+    run_agent_runtime_knowledge_qa_case,
+)
 from ai_service.evals.eval_case_loader import (
     filter_eval_cases,
     load_eval_cases,
@@ -18,6 +23,9 @@ from ai_service.evals.eval_case_loader import (
 )
 from ai_service.evals.eval_models import (
     DEFAULT_PROVIDER,
+    AgentRuntimeGoalCreateEvalCase,
+    AgentRuntimeKnowledgeGenerateEvalCase,
+    AgentRuntimeKnowledgeQaEvalCase,
     ChatSanityEvalCase,
     EvalCase,
     EvalCheck,
@@ -31,6 +39,9 @@ from ai_service.evals.eval_models import (
 )
 from ai_service.evals.eval_reporter import (
     archive_report,
+    build_agent_runtime_goal_create_eval_result,
+    build_agent_runtime_knowledge_generate_eval_result,
+    build_agent_runtime_knowledge_qa_eval_result,
     build_chat_eval_result,
     build_eval_result,
     build_goal_planning_eval_result,
@@ -81,6 +92,9 @@ __all__ = [
     "LiveEvalConfig",
     "StubChatService",
     "archive_report",
+    "build_agent_runtime_goal_create_eval_result",
+    "build_agent_runtime_knowledge_generate_eval_result",
+    "build_agent_runtime_knowledge_qa_eval_result",
     "build_chat_eval_result",
     "build_eval_result",
     "build_goal_planning_eval_result",
@@ -193,6 +207,54 @@ async def evaluate_knowledge_grounding(
     )
 
 
+async def evaluate_agent_runtime_goal_create(
+    case: AgentRuntimeGoalCreateEvalCase,
+    *,
+    chat_service: ChatService | StubChatService | None = None,
+    provider_config: ProviderConfig | None = None,
+) -> EvalResult:
+    """Run deterministic goal.create Agent runtime checks."""
+
+    del chat_service, provider_config
+    response = await run_agent_runtime_goal_create_case(case)
+    return build_agent_runtime_goal_create_eval_result(
+        case=case,
+        response=response,
+    )
+
+
+async def evaluate_agent_runtime_knowledge_qa(
+    case: AgentRuntimeKnowledgeQaEvalCase,
+    *,
+    chat_service: ChatService | StubChatService | None = None,
+    provider_config: ProviderConfig | None = None,
+) -> EvalResult:
+    """Run deterministic knowledge.qa Agent runtime checks."""
+
+    del chat_service, provider_config
+    response = await run_agent_runtime_knowledge_qa_case(case)
+    return build_agent_runtime_knowledge_qa_eval_result(
+        case=case,
+        response=response,
+    )
+
+
+async def evaluate_agent_runtime_knowledge_generate(
+    case: AgentRuntimeKnowledgeGenerateEvalCase,
+    *,
+    chat_service: ChatService | StubChatService | None = None,
+    provider_config: ProviderConfig | None = None,
+) -> EvalResult:
+    """Run deterministic knowledge.generate Agent runtime checks."""
+
+    del chat_service, provider_config
+    response = run_agent_runtime_knowledge_generate_case(case)
+    return build_agent_runtime_knowledge_generate_eval_result(
+        case=case,
+        response=response,
+    )
+
+
 async def evaluate_cases_with_mode(
     cases: list[EvalCase],
     *,
@@ -215,6 +277,9 @@ async def evaluate_cases_with_mode(
         active_service = None
 
     evaluator_registry = {
+        "agent_runtime_goal_create": evaluate_agent_runtime_goal_create,
+        "agent_runtime_knowledge_generate": evaluate_agent_runtime_knowledge_generate,
+        "agent_runtime_knowledge_qa": evaluate_agent_runtime_knowledge_qa,
         "chat_sanity": evaluate_chat_sanity,
         "goal_planning": evaluate_goal_planning,
         "goal_workflow": evaluate_goal_workflow,

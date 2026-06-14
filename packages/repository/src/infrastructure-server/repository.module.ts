@@ -175,7 +175,7 @@ export interface RepositoryApplicationPort {
   listResources(
     repositoryId: string,
     filters?: { folderId?: string; status?: string },
-  ): Promise<Result<unknown>>;
+  ): Promise<Result<ResourceClientDTO[]>>;
   getResource(id: string): Promise<Result<unknown>>;
   updateResource(
     id: string,
@@ -454,7 +454,9 @@ function buildApplicationPort(
       });
     },
     listResources: async (repositoryId) => {
-      return useCases.listResources.execute({ repositoryId });
+      const result = await useCases.listResources.execute({ repositoryId });
+      if (!result.ok) return result;
+      return ok(result.data.resources);
     },
     getResource: async (id) => {
       const result = await useCases.getResource.execute({ id });

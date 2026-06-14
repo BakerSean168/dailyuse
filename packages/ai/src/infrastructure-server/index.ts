@@ -42,6 +42,7 @@ export {
   AIProviderConfigPrismaRepository,
   AIKnowledgeIndexPrismaRepository,
   AIExecutionLogPrismaAdapter,
+  LangGraphCheckpointPrismaAdapter,
 } from './adapters/prisma';
 
 // ---------------------------------------------------------------------------
@@ -67,6 +68,7 @@ export {
 // ---------------------------------------------------------------------------
 export {
   AIServiceAnalyticsQueryAdapter,
+  AIServiceAgentRuntimeAdapter,
   AIServiceChatExecutionAdapter,
   AIServiceGoalAutomationAdapter,
   AIServiceGoalPlanningAdapter,

@@ -46,11 +46,13 @@
           >
             <component
               :is="
-                toolMode === 'knowledge-note'
+                toolMode === 'knowledge-generate'
                   ? NotebookPen
-                  : toolMode === 'goal'
+                  : toolMode === 'goal-create'
                     ? Sparkles
-                    : Bot
+                    : toolMode === 'knowledge-qa'
+                      ? Search
+                      : Bot
               "
               class="h-5 w-5"
             />
@@ -72,15 +74,13 @@
         </div>
       </div>
 
-      <!-- Workflow panels (passed in via parent slot) -->
-      <slot name="panels" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Bot, NotebookPen, Sparkles } from 'lucide-vue-next';
+import { Bot, NotebookPen, Search, Sparkles } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { getToolLocaleKey, type ChatItem, type WorkflowMode } from '../composables/types';
 import { useAIFormatters } from '../composables/useAIFormatters';

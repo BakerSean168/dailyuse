@@ -162,6 +162,7 @@ async def execute_automation_strategy(
         ),
         keyResults=payload.key_results if include_key_results else None,
         taskTemplates=payload.task_templates if include_task_templates else None,
+        reminders=payload.reminders,
         toolCalls=payload.tool_calls,
         usage=completion.usage,
     )
@@ -172,6 +173,7 @@ async def execute_automation_strategy(
             goal_title=response.goal.title,
             action_count=len(response.tool_calls),
             tool_names=[tool.tool for tool in response.tool_calls],
+            reminder_count=len(response.reminders or []),
             usage=summarize_usage(response.usage),
         ),
     )

@@ -18,6 +18,7 @@ import type {
 } from '../ai.module';
 import type { AIRuntimeOutput } from './ai-runtime';
 import {
+  createAgentRuntimeService,
   createAnalyticsRuntimeService,
   createEvaluationRuntimeService,
   createKnowledgeNoteRuntimeService,
@@ -144,6 +145,7 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     supportsKnowledgeReindex: false,
     supportsAnalyticsQuery: false,
     supportsGoalAutomation: false,
+    supportsAgentRuntime: false,
     supportsEvaluationReports: false,
     advancedFeaturesReason: ADVANCED_AI_REASON,
   };
@@ -158,6 +160,7 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     knowledgeQueryServices: createKnowledgeQueryRuntimeServices(null, capabilities),
     analyticsQueryService: createAnalyticsRuntimeService(null, capabilities),
     evaluationReportService: createEvaluationRuntimeService(null),
+    agentRuntimeService: createAgentRuntimeService(undefined),
   };
 
   return { services, capabilities, runtimeContributions: [] };

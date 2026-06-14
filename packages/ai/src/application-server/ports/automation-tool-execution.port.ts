@@ -1,6 +1,7 @@
 import type {
   GoalAutomationAction,
   GoalAutomationExecutedAction,
+  GoalAutomationReminderPreview,
   GoalAutomationTaskTemplatePreview,
   GeneratedGoalDraft,
   KeyResultPreview,
@@ -17,6 +18,7 @@ export interface GoalAutomationExecutionInput {
     goal: GeneratedGoalDraft;
     keyResults?: KeyResultPreview[];
     taskTemplates?: GoalAutomationTaskTemplatePreview[];
+    reminders?: GoalAutomationReminderPreview[];
   };
   actions: GoalAutomationAction[];
 }

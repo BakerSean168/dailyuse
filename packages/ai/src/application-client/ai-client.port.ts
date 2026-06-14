@@ -26,6 +26,12 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
+  AgentEvent,
+  AgentRun,
+  AgentRunListParams,
+  AgentResumePayload,
+  AgentRunResult,
+  AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
 
 export interface AIClientPort {
@@ -72,4 +78,10 @@ export interface AIClientPort {
   createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
 
   queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
+
+  listAgentRuns(params?: AgentRunListParams): Promise<AgentRun[]>;
+  startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult>;
+  resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<AgentRunResult>;
+  getAgentRun(runId: string): Promise<AgentRunResult>;
+  getAgentEvents(runId: string): Promise<AgentEvent[]>;
 }

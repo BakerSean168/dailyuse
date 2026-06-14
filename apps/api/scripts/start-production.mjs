@@ -45,7 +45,13 @@ function hasMigrations() {
     return false;
   }
 
-  return readdirSync(migrationsDir).length > 0;
+  return readdirSync(migrationsDir, { withFileTypes: true }).some((entry) => {
+    if (!entry.isDirectory()) {
+      return false;
+    }
+
+    return existsSync(resolve(migrationsDir, entry.name, 'migration.sql'));
+  });
 }
 
 async function main() {
@@ -59,7 +65,7 @@ async function main() {
       databaseRoot,
     );
   } else {
-    console.log('[startup] No Prisma migrations found. Falling back to prisma db push.');
+    console.log('[startup] No Prisma migration directories found. Falling back to prisma db push.');
     run('pnpm', ['exec', 'prisma', 'db', 'push', '--config', './prisma/prisma.config.ts'], databaseRoot);
   }
 

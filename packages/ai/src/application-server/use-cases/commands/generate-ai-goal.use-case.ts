@@ -33,6 +33,7 @@ const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
   'create_goal',
   'create_key_result',
   'create_task_template',
+  'create_reminder',
 ]);
 
 function previewText(value: string | null | undefined, maxLength = 240): string | undefined {
@@ -397,6 +398,7 @@ export class GenerateAIGoalUseCase {
           goal: input.params.approvedPlan.goal,
           keyResults: input.params.approvedPlan.keyResults,
           taskTemplates: input.params.approvedPlan.taskTemplates,
+          reminders: input.params.approvedPlan.reminders,
         },
         actions: input.params.approvedActions,
       });
@@ -415,6 +417,7 @@ export class GenerateAIGoalUseCase {
           goal: input.params.approvedPlan.goal,
           keyResults: input.params.approvedPlan.keyResults,
           taskTemplates: input.params.approvedPlan.taskTemplates,
+          reminders: input.params.approvedPlan.reminders,
         },
         actions: input.params.approvedActions,
         executedActions,
@@ -471,6 +474,7 @@ export class GenerateAIGoalUseCase {
       goalTitle: plan.goal.title,
       keyResultCount: plan.keyResults?.length ?? 0,
       taskTemplateCount: plan.taskTemplates?.length ?? 0,
+      reminderCount: plan.reminders?.length ?? 0,
       actions: summarizeActions(plan.actions),
       requiresConfirmation,
       usage: plan.usage,
@@ -484,6 +488,7 @@ export class GenerateAIGoalUseCase {
           goal: plan.goal,
           keyResults: plan.keyResults,
           taskTemplates: plan.taskTemplates,
+          reminders: plan.reminders,
         },
         actions: plan.actions,
         tokenUsage: plan.usage,
@@ -511,6 +516,7 @@ export class GenerateAIGoalUseCase {
         goal: plan.goal,
         keyResults: plan.keyResults,
         taskTemplates: plan.taskTemplates,
+        reminders: plan.reminders,
       },
       actions: plan.actions,
     });
@@ -528,6 +534,7 @@ export class GenerateAIGoalUseCase {
         goal: plan.goal,
         keyResults: plan.keyResults,
         taskTemplates: plan.taskTemplates,
+        reminders: plan.reminders,
       },
       actions: plan.actions,
       executedActions,
@@ -684,6 +691,11 @@ export class GenerateAIGoalUseCase {
     if (failedActions.some((action) => action.tool === 'create_task_template')) {
       suggestions.add(
         'Review task template drafts and task module configuration before retrying execution.',
+      );
+    }
+    if (failedActions.some((action) => action.tool === 'create_reminder')) {
+      suggestions.add(
+        'Review reminder drafts and reminder module configuration before retrying execution.',
       );
     }
     if (failedActions.some((action) => action.tool === 'search_notes')) {

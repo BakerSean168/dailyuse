@@ -1,4 +1,5 @@
 export { AIServiceAnalyticsQueryAdapter } from './ai-service-analytics-query.adapter';
+export { AIServiceAgentRuntimeAdapter } from './ai-service-agent-runtime.adapter';
 export {
   AIServiceChatExecutionAdapter,
 } from './ai-service-chat-execution.adapter';

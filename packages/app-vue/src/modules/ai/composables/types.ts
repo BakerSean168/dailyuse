@@ -4,17 +4,27 @@ import type {
 } from '@dailyuse/contracts/goal';
 import type { Ref } from 'vue';
 import type {
+  AgentAction,
+  AgentArtifact,
+  AgentExecutedAction,
+  AgentRun,
+  AgentRunResult,
+  GoalAutomationReminderPreview,
+  GoalAutomationTaskTemplatePreview,
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
   GenerateGoalsRes,
+  KnowledgeNoteIndexStatus,
+  QueryKnowledgeRes,
 } from '@dailyuse/contracts/ai';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { IAIService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
 export interface UseAIGoalWorkflowOptions {
-  service: Pick<AIChatService, 'generateGoal'>;
+  service: Pick<AIChatService, 'generateGoal' | 'startAgentRun' | 'resumeAgentRun'>;
   selectedModel: Ref<ChatModelOption | null>;
+  chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;
   chatTimeline: Ref<ChatItem[]>;
   conversationTitle: Ref<string>;
@@ -26,7 +36,21 @@ export interface UseAIGoalWorkflowOptions {
   addKeyResult: (goalId: string, req: import('@dailyuse/contracts/goal').AddKeyResultReq) => Promise<unknown>;
 }
 
-export type WorkflowMode = 'chat' | 'goal' | 'knowledge-note';
+/** Options for useAIKnowledgeQaWorkflow composable. */
+export interface UseAIKnowledgeQaWorkflowOptions {
+  service: Pick<AIChatService, 'startAgentRun'>;
+  selectedModel: Ref<ChatModelOption | null>;
+  chatConversationId: Ref<string>;
+  chatLoading: Ref<boolean>;
+  chatTimeline: Ref<ChatItem[]>;
+  hasWorkflowUserMessages: Ref<boolean>;
+  scrollMessagesToBottom: () => void;
+  requestOpenResource: (id: string) => Promise<unknown>;
+}
+
+export type WorkflowMode = 'chat' | 'goal-create' | 'knowledge-qa' | 'knowledge-generate';
+export type LegacyWorkflowMode = 'goal' | 'knowledge-note';
+export type PersistedWorkflowMode = WorkflowMode | LegacyWorkflowMode;
 
 export type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
@@ -75,6 +99,12 @@ export type AIChatService = Pick<
   | 'deleteConversation'
   | 'streamMessage'
   | 'generateGoal'
+  | 'queryKnowledge'
+  | 'listAgentRuns'
+  | 'startAgentRun'
+  | 'resumeAgentRun'
+  | 'getAgentRun'
+  | 'getAgentEvents'
   | 'createKnowledgeNote'
 >;
 
@@ -82,6 +112,40 @@ export type GoalDraft = GoalWorkflowDraftResultDTO;
 export type GoalClarification = GoalClarificationDTO;
 export type GoalAutomationResult = Extract<GenerateGoalsRes, { state: 'confirm' | 'result' }>;
 export type GoalExecutedAction = Extract<GenerateGoalsRes, { state: 'result' }>['executedActions'][number];
+export type GoalAgentRunResult = AgentRunResult;
+export type AgentRunSummary = AgentRun;
+export type AIWorkspaceRecentGoal = {
+  id: string;
+  title: string;
+  status: string;
+  updatedAt: number;
+  targetDate: number | null;
+  progress: number | null;
+};
+export type AIWorkspaceRecentKnowledgeNote = {
+  id: string;
+  title: string;
+  path: string;
+  updatedAt: number;
+};
+export type GoalAgentArtifact = AgentArtifact;
+export type GoalAgentAction = AgentAction;
+export type GoalAgentExecutedAction = AgentExecutedAction;
+export type KnowledgeQaAgentRunResult = AgentRunResult;
+export type KnowledgeNoteAgentRunResult = AgentRunResult;
+export type KnowledgeNoteAgentArtifact = AgentArtifact;
+export type KnowledgeRelatedNote = {
+  resourceId: string;
+  resourcePath: string;
+  title?: string;
+  excerpt?: string;
+  score?: number;
+};
+export type KnowledgeAnswer = QueryKnowledgeRes & {
+  question: string;
+  evidenceStatus: 'grounded' | 'insufficient';
+  relatedNotes?: KnowledgeRelatedNote[];
+};
 export type GoalWorkflowStage =
   | 'collect'
   | 'clarification'
@@ -93,6 +157,7 @@ export type GoalWorkflowStage =
 
 export type NoteSummary = {
   resolvedPath: string;
+  indexStatus?: KnowledgeNoteIndexStatus;
   resource?: { id?: string; name?: string; content?: string | null };
 };
 
@@ -120,15 +185,37 @@ export type EditableKeyResult = {
   weight: number;
 };
 
+export type EditableGoalTaskTemplate = {
+  name: string;
+  description: string;
+  importance: GoalAutomationTaskTemplatePreview['importance'];
+  cadence: GoalAutomationTaskTemplatePreview['cadence'];
+  timeOfDay: string;
+};
+
+export type EditableGoalReminder = {
+  title: string;
+  description: string;
+  importance: GoalAutomationReminderPreview['importance'];
+  cadence: GoalAutomationReminderPreview['cadence'];
+  timeOfDay: string;
+};
+
 export type PersistedWorkflowEntry = {
-  mode: WorkflowMode;
+  mode: PersistedWorkflowMode;
   goalWorkflowStage?: GoalWorkflowStage;
   goalDraft: GoalDraft | null;
   goalClarification: GoalClarification | null;
   goalAutomationResult: GoalAutomationResult | null;
+  goalAgentRun?: GoalAgentRunResult | null;
+  knowledgeQaAgentRun?: KnowledgeQaAgentRunResult | null;
+  noteAgentRun?: KnowledgeNoteAgentRunResult | null;
+  knowledgeAnswer?: KnowledgeAnswer | null;
   clarificationAnswers: string[];
   editableGoal: EditableGoal;
   editableKeyResults: EditableKeyResult[];
+  editableTaskTemplates?: EditableGoalTaskTemplate[];
+  editableReminders?: EditableGoalReminder[];
   noteSummary: NoteSummary | null;
   showGoalDraftEditor: boolean;
 };
@@ -149,9 +236,40 @@ export function createEmptyGoalDraft(): EditableGoal {
   };
 }
 
+export function createEmptyGoalTaskTemplateDraft(): EditableGoalTaskTemplate {
+  return {
+    name: '',
+    description: '',
+    importance: 'Moderate' as EditableGoalTaskTemplate['importance'],
+    cadence: 'weekly',
+    timeOfDay: '09:00',
+  };
+}
+
+export function createEmptyGoalReminderDraft(): EditableGoalReminder {
+  return {
+    title: '',
+    description: '',
+    importance: 'Moderate' as EditableGoalReminder['importance'],
+    cadence: 'weekly',
+    timeOfDay: '09:00',
+  };
+}
+
 export function getToolLocaleKey(mode: WorkflowMode): string {
-  if (mode === 'knowledge-note') {
-    return 'knowledgeNote';
+  return {
+    chat: 'chat',
+    'goal-create': 'goalCreate',
+    'knowledge-qa': 'knowledgeQa',
+    'knowledge-generate': 'knowledgeGenerate',
+  }[mode];
+}
+
+export function normalizeWorkflowMode(mode: PersistedWorkflowMode | string | null | undefined): WorkflowMode {
+  if (mode === 'goal') return 'goal-create';
+  if (mode === 'knowledge-note') return 'knowledge-generate';
+  if (mode === 'goal-create' || mode === 'knowledge-qa' || mode === 'knowledge-generate') {
+    return mode;
   }
-  return mode;
+  return 'chat';
 }

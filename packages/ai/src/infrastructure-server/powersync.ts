@@ -13,6 +13,7 @@ import type {
   IAIExecutionLogPort,
   IAIEvaluationReportPort,
   IAIAutomationToolExecutorPort,
+  IAgentRuntimePort,
   IAnalyticsQueryPort,
   IAnalyticsReadPort,
   IAIChatExecutionPort,
@@ -47,6 +48,7 @@ export interface AIModulePowerSyncOptions {
   readonly knowledgeQueryPort?: IKnowledgeQueryPort;
   readonly knowledgeNoteGenerationPort?: IKnowledgeNoteGenerationPort;
   readonly analyticsQueryPort?: IAnalyticsQueryPort;
+  readonly agentRuntimePort?: IAgentRuntimePort;
   readonly executionLogPort?: IAIExecutionLogPort;
   readonly evaluationReportPort?: IAIEvaluationReportPort;
   readonly knowledgeNotePersistence?: IKnowledgeNotePersistencePort;
@@ -77,6 +79,7 @@ export function createAIPowerSyncModule(
     knowledgeQueryPort: options?.knowledgeQueryPort,
     knowledgeNoteGenerationPort: options?.knowledgeNoteGenerationPort,
     analyticsQueryPort: options?.analyticsQueryPort,
+    agentRuntimePort: options?.agentRuntimePort,
     executionLogPort: options?.executionLogPort ?? new AIExecutionLogPowerSyncAdapter(db),
     evaluationReportPort: options?.evaluationReportPort,
     knowledgeNotePersistence: options?.knowledgeNotePersistence,

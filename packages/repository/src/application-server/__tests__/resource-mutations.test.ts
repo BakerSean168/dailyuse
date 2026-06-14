@@ -267,6 +267,51 @@ describe('Repository resource mutations', () => {
     }
   });
 
+  it('lists resources as a public array from the module api', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-list-public-'));
+
+    try {
+      const { repositoryRepository, module } =
+        createRepositoryModuleForTests({ tempDir });
+
+      const repository = Repository.create({
+        identityId: 'user-1' as any,
+        name: 'Repo',
+        type: 'personal' as any,
+        path: '/repo',
+      });
+      await repositoryRepository.save(repository);
+
+      const created = await module.api.createResource(
+        {
+          repositoryId: String(repository.id),
+          name: 'note.md',
+          type: 'File',
+          content: '# Hello',
+        },
+        { identityId: 'user-1' } as any,
+      );
+      expect(created.ok).toBe(true);
+
+      const listed = await module.api.listResources(String(repository.id));
+
+      expect(listed.ok).toBe(true);
+      if (!listed.ok) {
+        throw new Error('Expected list resources result');
+      }
+
+      expect(Array.isArray(listed.data)).toBe(true);
+      expect(listed.data).toEqual([
+        expect.objectContaining({
+          name: 'note.md',
+          path: '/note.md',
+        }),
+      ]);
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   it('emits repository resource mutation events for create, content update, move, and delete', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-events-'));
     const receivedEvents: RepositoryResourceMutatedEvent[] = [];

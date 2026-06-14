@@ -26,6 +26,7 @@ interface AIServiceGoalAutomationResponse {
   goal: GoalAutomationPlanningResult['goal'];
   keyResults?: GoalAutomationPlanningResult['keyResults'];
   taskTemplates?: GoalAutomationPlanningResult['taskTemplates'];
+  reminders?: GoalAutomationPlanningResult['reminders'];
   toolCalls: GoalAutomationPlanningResult['actions'];
   usage?: {
     prompt_tokens?: number;
@@ -146,6 +147,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
       goalTitle: payload.goal.title,
       keyResultCount: payload.keyResults?.length ?? 0,
       taskTemplateCount: payload.taskTemplates?.length ?? 0,
+      reminderCount: payload.reminders?.length ?? 0,
       actionCount: payload.toolCalls.length,
       actionTools: payload.toolCalls.map((action) => action.tool),
       usage,
@@ -156,6 +158,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
       goal: payload.goal,
       keyResults: payload.keyResults,
       taskTemplates: payload.taskTemplates,
+      reminders: payload.reminders,
       actions: payload.toolCalls,
       usage,
     };

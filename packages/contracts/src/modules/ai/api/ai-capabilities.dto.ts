@@ -26,6 +26,7 @@ export const AICapabilitiesSchema = z.object({
   supportsKnowledgeReindex: z.boolean(),
   supportsAnalyticsQuery: z.boolean(),
   supportsGoalAutomation: z.boolean(),
+  supportsAgentRuntime: z.boolean(),
   supportsEvaluationReports: z.boolean(),
   advancedFeaturesReason: z.string().optional(),
   knowledgeIndexDiagnostics: AIKnowledgeIndexDiagnosticsSchema.optional(),

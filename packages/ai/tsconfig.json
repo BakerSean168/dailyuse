@@ -10,6 +10,7 @@
       "@/domain-server/*": ["./src/domain-server/*"],
       "@/domain-shared/*": ["./src/domain-shared/*"],
       "@dailyuse/database": ["../database/src/index.ts"],
+      "@dailyuse/database/prisma": ["../database/src/generated/prisma/client.d.ts"],
       "@dailyuse/http-client": ["../http-client/src/index.ts"],
       "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/shared": ["../domain-shared/src/shared/index.ts"],

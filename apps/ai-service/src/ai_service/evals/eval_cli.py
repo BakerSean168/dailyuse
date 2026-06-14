@@ -248,3 +248,7 @@ def resolve_live_eval_config(args: argparse.Namespace) -> LiveEvalConfig:
             temperature=args.temperature,
         )
     )
+
+
+if __name__ == "__main__":
+    main()

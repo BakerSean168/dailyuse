@@ -291,7 +291,12 @@
         {{ t('aiAssistant.goalDraft.addKeyResult') }}
       </Button>
 
-      <Button class="w-full" :disabled="isSubmitting || !goal.name.trim()" @click="$emit('confirm')">
+      <Button
+        v-if="showConfirmAction"
+        class="w-full"
+        :disabled="isSubmitting || !goal.name.trim()"
+        @click="$emit('confirm')"
+      >
         {{
           isSubmitting
             ? t('aiAssistant.goalDraft.creatingGoal')
@@ -366,6 +371,7 @@ const props = defineProps<{
   goal: GoalDraftState;
   keyResults: KeyResultDraftState[];
   isSubmitting: boolean;
+  showConfirmAction?: boolean;
 }>();
 
 const { t } = useI18n();
@@ -373,6 +379,8 @@ const { t } = useI18n();
 const hasDraft = computed(() =>
   Boolean(props.goal.name || props.goal.description || props.keyResults.length),
 );
+
+const showConfirmAction = computed(() => props.showConfirmAction !== false);
 
 const categoryOptions = computed(() => [
   { value: 'product', label: t('aiAssistant.goalDraft.categories.product') },

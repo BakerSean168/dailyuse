@@ -6,6 +6,7 @@ import { KnowledgeNoteSubpathSchema } from '../../setting/preferences/schemas/ai
 
 export const CreateKnowledgeNoteSchema = z.object({
   topic: z.string().trim().min(3).max(200),
+  contentMarkdown: z.string().trim().min(3).max(50_000).optional(),
   title: z.string().trim().min(1).max(200).optional(),
   providerId: brandedId<AiProviderConfigId>().optional(),
   model: z.string().trim().min(1).max(120).optional(),
@@ -14,9 +15,12 @@ export const CreateKnowledgeNoteSchema = z.object({
 
 export type CreateKnowledgeNoteReq = z.infer<typeof CreateKnowledgeNoteSchema>;
 
+export type KnowledgeNoteIndexStatus = 'pending' | 'indexed' | 'failed';
+
 export interface CreateKnowledgeNoteRes {
   resource: ResourceClientDTO;
   resolvedPath: string;
+  indexStatus: KnowledgeNoteIndexStatus;
   tokenUsage: {
     promptTokens: number;
     completionTokens: number;
