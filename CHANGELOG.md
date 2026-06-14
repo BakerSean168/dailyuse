@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0](https://github.com/BakerSean168/dailyuse/compare/v0.8.0...v0.9.0) (2026-06-08)
+
+
+### Features
+
+* Add AI Agent system architecture and workflow plans ([0115b45](https://github.com/BakerSean168/dailyuse/commit/0115b45ce3f4a6b67c6b19efa9fca1960ddac064))
+* **contracts:** add data portability contract module ([1096bbd](https://github.com/BakerSean168/dailyuse/commit/1096bbd81ccc0cc96fb007cabdef0d1b4026a3cf))
+* **data-portability:** add core package with use-cases, importers, projections, and tests ([640cff8](https://github.com/BakerSean168/dailyuse/commit/640cff808a336b0de0c47a8e04ca326c2bc99fc9))
+* **data-portability:** add DataPortabilityChannels to shared IPC contracts ([6f16ad8](https://github.com/BakerSean168/dailyuse/commit/6f16ad8c6fb2feea93cd71143f1d459b8bc8adfc))
+* **data-portability:** wire up platform DI, API module, and UI integration ([6c58539](https://github.com/BakerSean168/dailyuse/commit/6c58539bf81a11cb00cb70aedadeb9e0163853e9))
+
 ## [0.8.0](https://github.com/BakerSean168/dailyuse/compare/v0.7.0...v0.8.0) (2026-06-02)
 
 
