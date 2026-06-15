@@ -94,6 +94,12 @@ jobs:
           sudo apt-get install -y rpm fakeroot
 
       - name: Install dependencies
+        env:
+          # pnpm may build native deps during install because root package.json
+          # still whitelists argon2/better-sqlite3 in onlyBuiltDependencies.
+          PYTHON: ${{ env.pythonLocation }}/python
+          npm_config_python: ${{ env.pythonLocation }}/python
+          npm_config_msvs_version: 2022
         run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: Validate release version
