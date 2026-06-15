@@ -78,7 +78,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "pnpm exec electron-rebuild -f -w better-sqlite3,argon2",
+        "command": "pnpm exec electron-rebuild -f -o better-sqlite3",
         "cwd": "apps/desktop"
       }
     },
