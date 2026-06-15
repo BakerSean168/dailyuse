@@ -67,6 +67,12 @@ jobs:
         with:
           ref: ${{ needs.prepare-release.outputs.release_tag }}
 
+      - name: Restore desktop release build overrides from main
+        shell: bash
+        run: |
+          git fetch origin main --depth=1
+          git checkout origin/main -- apps/desktop/project.json
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
