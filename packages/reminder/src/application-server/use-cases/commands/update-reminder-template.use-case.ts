@@ -6,39 +6,57 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
 import type { IReminderGroupRepository } from '@/domain-server/repositories/i-reminder-group-repository';
 import type {
   ReminderTemplateClientDTO,
   UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
-import { ReminderPolicy } from '@/domain-server/services/index';
+import { ReminderDomainService, ReminderPolicy } from '@/domain-server/services/index';
+import { ReminderTemplateClientMapper } from '../../mappers/reminder-template-client.mapper';
 
 /**
  * Update Reminder Template Service
  */
 export class UpdateReminderTemplateUseCase {
+  private readonly reminderDomainService: ReminderDomainService;
+  private readonly templateMapper: ReminderTemplateClientMapper;
+
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
-    private readonly groupRepository?: IReminderGroupRepository,
-  ) {}
+    private readonly groupRepository: IReminderGroupRepository,
+    reminderDomainService?: ReminderDomainService,
+    templateMapper?: ReminderTemplateClientMapper,
+  ) {
+    this.reminderDomainService =
+      reminderDomainService ?? new ReminderDomainService(templateRepository, groupRepository);
+    this.templateMapper =
+      templateMapper ?? new ReminderTemplateClientMapper(this.reminderDomainService, groupRepository);
+  }
 
   async execute(
     id: string,
     request: UpdateReminderTemplateReq,
+    cx: ExecutionContext,
   ): Promise<Result<ReminderTemplateClientDTO>> {
     const template = await this.templateRepository.findById(id);
-    if (!template) {
+    if (!template || String(template.identityId) !== cx.identityId) {
       return error('NOT_FOUND', `Reminder Template ${id} not found`);
     }
 
     const policy = new ReminderPolicy();
+    const previousGroupId = template.groupId;
     const group =
-      request.groupId !== undefined && request.groupId !== null && this.groupRepository
+      request.groupId !== undefined && request.groupId !== null
         ? await this.groupRepository.findById(request.groupId)
         : null;
 
-    if (request.groupId !== undefined && request.groupId !== null && !group) {
+    if (
+      request.groupId !== undefined &&
+      request.groupId !== null &&
+      (!group || String(group.identityId) !== cx.identityId)
+    ) {
       return error('NOT_FOUND', `Invalid groupId: ${request.groupId}`);
     }
 
@@ -71,13 +89,16 @@ export class UpdateReminderTemplateUseCase {
       groupId: request.groupId,
     });
 
-    if (request.groupId !== undefined) {
-      template.setEffectiveEnabled(policy.calculateEffectiveEnabled(template, group));
-    }
-
-    // Save to repository
+    await this.reminderDomainService.syncTemplateEffectiveEnabled(template);
     await this.templateRepository.save(template);
 
-    return ok(template.toClientDTO());
+    if (previousGroupId && previousGroupId !== template.groupId) {
+      await this.reminderDomainService.updateGroupStats(previousGroupId);
+    }
+    if (template.groupId) {
+      await this.reminderDomainService.updateGroupStats(template.groupId);
+    }
+
+    return ok(await this.templateMapper.toDTO(template));
   }
 }

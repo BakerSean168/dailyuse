@@ -7,20 +7,36 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
+import type { IReminderGroupRepository } from '@/domain-server/repositories/i-reminder-group-repository';
+import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { ReminderDomainService } from '@/domain-server/services/reminder-domain-service';
+import { ReminderTemplateClientMapper } from '../../mappers/reminder-template-client.mapper';
 
 /**
  * Get Reminder Template Service
  */
 export class GetReminderTemplateUseCase {
+  private readonly templateMapper: ReminderTemplateClientMapper;
 
-  constructor(private readonly templateRepository: IReminderTemplateRepository) {}
+  constructor(
+    private readonly templateRepository: IReminderTemplateRepository,
+    groupRepository: IReminderGroupRepository,
+    templateMapper?: ReminderTemplateClientMapper,
+  ) {
+    this.templateMapper =
+      templateMapper ??
+      new ReminderTemplateClientMapper(
+        new ReminderDomainService(templateRepository, groupRepository),
+        groupRepository,
+      );
+  }
 
-  async execute(id: string): Promise<Result<ReminderTemplateClientDTO | null>> {
+  async execute(id: string, cx: ExecutionContext): Promise<Result<ReminderTemplateClientDTO>> {
     const template = await this.templateRepository.findById(id);
-    if (!template) {
+    if (!template || String(template.identityId) !== cx.identityId) {
       return error('NOT_FOUND', `Template ${id} not found`);
     }
-    return ok(template.toClientDTO());
+    return ok(await this.templateMapper.toDTO(template));
   }
 }

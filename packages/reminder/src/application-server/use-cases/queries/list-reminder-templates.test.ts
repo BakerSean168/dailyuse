@@ -7,19 +7,30 @@ describe('ListReminderTemplatesUseCase', () => {
     findActive: vi.fn(),
     findByIdentityId: vi.fn(),
   } as any;
+  const groupRepository = {
+    findByIds: vi.fn(),
+  } as any;
+  const templateMapper = {
+    toDTOList: vi.fn(),
+  } as any;
 
   const createTemplate = (id: string) => ({
-    toClientDTO: vi.fn().mockReturnValue({ id }),
+    id,
+    identityId: 'identity-1',
+    groupId: null,
   });
 
   beforeEach(() => {
     vi.clearAllMocks();
+    templateMapper.toDTOList.mockImplementation(async (templates: Array<{ id: string }>) =>
+      templates.map((template) => ({ id: template.id })),
+    );
   });
 
   it('queries by group id when group filter is provided', async () => {
     const t1 = createTemplate('t1');
     repository.findByGroupId.mockResolvedValue([t1]);
-    const useCase = new ListReminderTemplatesUseCase(repository);
+    const useCase = new ListReminderTemplatesUseCase(repository, groupRepository, templateMapper);
 
     const result = await useCase.execute({ groupId: 'group-1' }, { identityId: 'identity-1' });
 
@@ -33,6 +44,9 @@ describe('ListReminderTemplatesUseCase', () => {
       expect(result.data).toEqual({
         templates: [{ id: 't1' }],
         total: 1,
+        page: 1,
+        pageSize: 1,
+        hasMore: false,
       });
     }
   });
@@ -41,7 +55,7 @@ describe('ListReminderTemplatesUseCase', () => {
     const t1 = createTemplate('t1');
     const t2 = createTemplate('t2');
     repository.findActive.mockResolvedValue([t1, t2]);
-    const useCase = new ListReminderTemplatesUseCase(repository);
+    const useCase = new ListReminderTemplatesUseCase(repository, groupRepository, templateMapper);
 
     const result = await useCase.execute({ effectiveEnabled: true }, { identityId: 'identity-1' });
 
@@ -58,7 +72,7 @@ describe('ListReminderTemplatesUseCase', () => {
   it('queries by identity by default', async () => {
     const t1 = createTemplate('t1');
     repository.findByIdentityId.mockResolvedValue([t1]);
-    const useCase = new ListReminderTemplatesUseCase(repository);
+    const useCase = new ListReminderTemplatesUseCase(repository, groupRepository, templateMapper);
 
     const result = await useCase.execute(undefined, { identityId: 'identity-1' });
 
@@ -72,6 +86,9 @@ describe('ListReminderTemplatesUseCase', () => {
       expect(result.data).toEqual({
         templates: [{ id: 't1' }],
         total: 1,
+        page: 1,
+        pageSize: 1,
+        hasMore: false,
       });
     }
   });

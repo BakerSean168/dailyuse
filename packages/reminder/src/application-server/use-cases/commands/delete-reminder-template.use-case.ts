@@ -9,17 +9,26 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
 import { ReminderPolicy } from '@/domain-server/services/index';
+import type { ReminderDomainService } from '@/domain-server/services/reminder-domain-service';
 
 /**
  * Delete Reminder Template Service
  */
 export class DeleteReminderTemplateUseCase {
-  constructor(private readonly templateRepository: IReminderTemplateRepository) {}
+  constructor(
+    private readonly templateRepository: IReminderTemplateRepository,
+    private readonly reminderDomainService?: Pick<ReminderDomainService, 'deleteTemplate'>,
+  ) {}
 
-  async execute(id: string, _cx: ExecutionContext): Promise<Result<void>> {
+  async execute(id: string, cx: ExecutionContext): Promise<Result<void>> {
     const template = await this.templateRepository.findById(id);
-    if (!template) {
-      return ok(undefined); // 幂等性
+    if (!template || String(template.identityId) !== cx.identityId) {
+      return error('NOT_FOUND', `Reminder Template ${id} not found`);
+    }
+
+    if (this.reminderDomainService) {
+      await this.reminderDomainService.deleteTemplate(id, true);
+      return ok(undefined);
     }
 
     const policy = new ReminderPolicy();

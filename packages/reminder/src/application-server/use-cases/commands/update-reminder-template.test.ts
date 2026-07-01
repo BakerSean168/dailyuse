@@ -11,16 +11,29 @@ describe('UpdateReminderTemplateUseCase', () => {
   const groupRepository = {
     findById: vi.fn(),
   } as any;
+  const reminderDomainService = {
+    syncTemplateEffectiveEnabled: vi.fn(),
+    updateGroupStats: vi.fn(),
+  } as any;
+  const templateMapper = {
+    toDTO: vi.fn(),
+  } as any;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    templateMapper.toDTO.mockResolvedValue({ id: 'tpl-1', name: 'updated' });
   });
 
   it('returns NOT_FOUND when template does not exist', async () => {
     templateRepository.findById.mockResolvedValue(null);
-    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(
+      templateRepository,
+      groupRepository,
+      reminderDomainService,
+      templateMapper,
+    );
 
-    const result = await useCase.execute('tpl-1', {} as any);
+    const result = await useCase.execute('tpl-1', {} as any, { identityId: 'identity-1' });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -36,11 +49,16 @@ describe('UpdateReminderTemplateUseCase', () => {
       toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
     });
     groupRepository.findById.mockResolvedValue(null);
-    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(
+      templateRepository,
+      groupRepository,
+      reminderDomainService,
+      templateMapper,
+    );
 
     const result = await useCase.execute('tpl-1', {
       groupId: 'group-1',
-    } as any);
+    } as any, { identityId: 'identity-1' });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -51,17 +69,22 @@ describe('UpdateReminderTemplateUseCase', () => {
   it('updates template without group reassignment', async () => {
     const update = vi.fn();
     const setEffectiveEnabled = vi.fn();
-    const toClientDTO = vi.fn().mockReturnValue({ id: 'tpl-1', name: 'updated' });
 
     templateRepository.findById.mockResolvedValue({
+      id: 'tpl-1',
       identityId: 'identity-1',
+      groupId: null,
       status: ReminderStatus.Active,
       update,
       setEffectiveEnabled,
-      toClientDTO,
     });
     templateRepository.save.mockResolvedValue(undefined);
-    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
+    const useCase = new UpdateReminderTemplateUseCase(
+      templateRepository,
+      groupRepository,
+      reminderDomainService,
+      templateMapper,
+    );
 
     const result = await useCase.execute('tpl-1', {
       title: 'updated',
@@ -73,7 +96,7 @@ describe('UpdateReminderTemplateUseCase', () => {
         sound: { enabled: true, soundName: null },
         vibration: { enabled: true, pattern: null },
       },
-    } as any);
+    } as any, { identityId: 'identity-1' });
 
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -86,7 +109,7 @@ describe('UpdateReminderTemplateUseCase', () => {
         }),
       }),
     );
-    expect(setEffectiveEnabled).not.toHaveBeenCalled();
+    expect(reminderDomainService.syncTemplateEffectiveEnabled).toHaveBeenCalledTimes(1);
     expect(templateRepository.save).toHaveBeenCalledTimes(1);
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -95,16 +118,21 @@ describe('UpdateReminderTemplateUseCase', () => {
   });
 
   it('recalculates effective enabled when group reassigned', async () => {
-    const update = vi.fn();
     const setEffectiveEnabled = vi.fn();
-
-    templateRepository.findById.mockResolvedValue({
+    const template = {
+      id: 'tpl-1',
       identityId: 'identity-1',
+      groupId: null as string | null,
       status: ReminderStatus.Active,
-      update,
       setEffectiveEnabled,
-      toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
-    });
+      update: vi.fn((patch: { groupId?: string | null }) => {
+        if (patch.groupId !== undefined) {
+          template.groupId = patch.groupId;
+        }
+      }),
+    };
+
+    templateRepository.findById.mockResolvedValue(template);
 
     groupRepository.findById.mockResolvedValue({
       id: 'group-1',
@@ -113,15 +141,21 @@ describe('UpdateReminderTemplateUseCase', () => {
       status: ReminderStatus.Active,
     });
 
-    const useCase = new UpdateReminderTemplateUseCase(templateRepository, groupRepository);
-    await useCase.execute('tpl-1', { groupId: 'group-1' } as any);
+    const useCase = new UpdateReminderTemplateUseCase(
+      templateRepository,
+      groupRepository,
+      reminderDomainService,
+      templateMapper,
+    );
+    await useCase.execute('tpl-1', { groupId: 'group-1' } as any, { identityId: 'identity-1' });
 
     expect(groupRepository.findById).toHaveBeenCalledWith('group-1');
-    expect(update).toHaveBeenCalledWith(
+    expect(template.update).toHaveBeenCalledWith(
       expect.objectContaining({
         groupId: 'group-1',
       }),
     );
-    expect(setEffectiveEnabled).toHaveBeenCalledWith(true);
+    expect(reminderDomainService.syncTemplateEffectiveEnabled).toHaveBeenCalledTimes(1);
+    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith('group-1');
   });
 });

@@ -8,35 +8,46 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
-import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { IReminderGroupRepository } from '@/domain-server/repositories/i-reminder-group-repository';
+import type { ReminderTemplateListRes } from '@dailyuse/contracts/reminder';
+import { ReminderDomainService } from '@/domain-server/services/reminder-domain-service';
+import { ReminderTemplateClientMapper } from '../../mappers/reminder-template-client.mapper';
 
 export interface ListReminderTemplatesQuery {
   groupId?: string;
   effectiveEnabled?: boolean;
 }
 
-export interface ReminderTemplateListResult {
-  templates: ReminderTemplateClientDTO[];
-  total: number;
-}
-
 /**
  * List Reminder Templates Service
  */
 export class ListReminderTemplatesUseCase {
-  constructor(private readonly templateRepository: IReminderTemplateRepository) {}
+  private readonly templateMapper: ReminderTemplateClientMapper;
+
+  constructor(
+    private readonly templateRepository: IReminderTemplateRepository,
+    groupRepository: IReminderGroupRepository,
+    templateMapper?: ReminderTemplateClientMapper,
+  ) {
+    this.templateMapper =
+      templateMapper ??
+      new ReminderTemplateClientMapper(
+        new ReminderDomainService(templateRepository, groupRepository),
+        groupRepository,
+      );
+  }
 
   async execute(
     query: ListReminderTemplatesQuery | undefined,
     cx: ExecutionContext,
-  ): Promise<Result<ReminderTemplateListResult>> {
-    let templates: ReminderTemplate[];
+  ): Promise<Result<ReminderTemplateListRes>> {
+    let templates;
 
     if (query?.groupId) {
-      templates = await this.templateRepository.findByGroupId(query.groupId, {
+      const groupTemplates = await this.templateRepository.findByGroupId(query.groupId, {
         includeHistory: false,
       });
+      templates = groupTemplates.filter((template) => String(template.identityId) === cx.identityId);
     } else if (query?.effectiveEnabled) {
       templates = await this.templateRepository.findActive(cx.identityId);
     } else {
@@ -45,9 +56,14 @@ export class ListReminderTemplatesUseCase {
       });
     }
 
+    const data = await this.templateMapper.toDTOList(templates);
+
     return ok({
-      templates: templates.map((t) => t.toClientDTO()),
-      total: templates.length,
+      templates: data,
+      total: data.length,
+      page: 1,
+      pageSize: data.length,
+      hasMore: false,
     });
   }
 }

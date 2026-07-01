@@ -13,9 +13,11 @@
 // ============ Composition Root / 组合根 ============
 export {
   createReminderModule,
+  createReminderUseCases,
   type ReminderApplicationPort,
   type ReminderModuleDependencies,
   type ReminderModuleInstance,
+  type ReminderModuleUseCases,
   type ReminderModuleRuntimeContribution,
 } from './reminder.module';
 

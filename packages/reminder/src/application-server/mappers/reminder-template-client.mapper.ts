@@ -1,0 +1,64 @@
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
+import type { IReminderGroupRepository } from '@/domain-server/repositories/i-reminder-group-repository';
+import { ReminderDomainService } from '@/domain-server/services/reminder-domain-service';
+import type { ITemplateEffectiveStatus } from '@/domain-server/services';
+
+/**
+ * Maps reminder template aggregates to the enriched client DTO shape.
+ * 将提醒模板聚合映射为带控制状态补充字段的客户端 DTO。
+ */
+export class ReminderTemplateClientMapper {
+  constructor(
+    private readonly reminderDomainService: ReminderDomainService,
+    private readonly reminderGroupRepository: IReminderGroupRepository,
+  ) {}
+
+  async toDTO(template: ReminderTemplate): Promise<ReminderTemplateClientDTO> {
+    const group = template.groupId ? await this.reminderGroupRepository.findById(template.groupId) : null;
+    const effectiveStatus = await this.reminderDomainService
+      .getControlService()
+      .calculateEffectiveStatus(template, group);
+    const dto = template.toClientDTO();
+
+    dto.groupName = group?.name ?? null;
+    dto.controlledByGroup = effectiveStatus.lifecycleSource === 'group';
+    dto.lifecycleSource = effectiveStatus.lifecycleSource;
+    dto.effectiveEnabled = effectiveStatus.isEffectivelyEnabled;
+    dto.effectiveEnabledReason = effectiveStatus.statusReason;
+    dto.groupControlMode = effectiveStatus.controlMode;
+    dto.groupEnabled = effectiveStatus.groupEnabled;
+    dto.globalReminderEnabled = effectiveStatus.globalReminderEnabled;
+
+    return dto;
+  }
+
+  async toDTOList(templates: ReminderTemplate[]): Promise<ReminderTemplateClientDTO[]> {
+    const controlService = this.reminderDomainService.getControlService();
+    const groups = await this.reminderGroupRepository.findByIds(
+      Array.from(new Set(templates.map((template) => template.groupId).filter(Boolean) as string[])),
+    );
+    const groupMap = new Map(groups.map((group) => [group.id, group]));
+    const effectiveStatuses = await controlService.calculateEffectiveStatusBatch(templates);
+    const statusMap = new Map<string, ITemplateEffectiveStatus>(
+      effectiveStatuses.map((status) => [status.templateId, status]),
+    );
+
+    return templates.map((template) => {
+      const dto = template.toClientDTO();
+      const status = statusMap.get(template.id);
+      const group = template.groupId ? (groupMap.get(template.groupId) ?? null) : null;
+
+      dto.groupName = group?.name ?? null;
+      dto.controlledByGroup = status?.lifecycleSource === 'group';
+      dto.lifecycleSource = status?.lifecycleSource ?? 'template';
+      dto.effectiveEnabled = status?.isEffectivelyEnabled ?? template.effectiveEnabled;
+      dto.effectiveEnabledReason = status?.statusReason ?? '使用模板自身状态';
+      dto.groupControlMode = status?.controlMode ?? null;
+      dto.groupEnabled = status?.groupEnabled ?? null;
+      dto.globalReminderEnabled = status?.globalReminderEnabled ?? true;
+
+      return dto;
+    });
+  }
+}
