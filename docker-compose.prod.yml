@@ -203,6 +203,7 @@ services:
     command: ['start', '-c', '/config/powersync.yaml']
     environment:
       POWERSYNC_PORT: ${POWERSYNC_PORT:-8080}
+      PS_PORT: ${POWERSYNC_PORT:-8080}
       PS_SOURCE_HOSTNAME: postgres
       PS_SOURCE_PORT: 5432
       PS_SOURCE_DATABASE: ${DB_NAME:?set DB_NAME}
@@ -219,6 +220,7 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+      - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
     networks:
       - dailyuse-network
     healthcheck:
@@ -227,7 +229,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "const port = process.env.POWERSYNC_PORT || '8080'; const http = require('http'); const req = http.get(`http://127.0.0.1:${port}/probes/liveness`, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+          "const port = process.env.POWERSYNC_PORT || '8080'; const http = require('http'); const req = http.get('http://127.0.0.1:' + port + '/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
         ]
       interval: 15s
       timeout: 5s
@@ -268,7 +270,9 @@ services:
       - '443:443'
       - '443:443/udp'
     environment:
-      APP_DOMAIN: ${APP_DOMAIN:-dailyuse.bakersean.top}
+      APP_DOMAIN: ${APP_DOMAIN:-memoflow.bakersean.top}
+      LEGACY_DOMAIN: ${LEGACY_DOMAIN:-dailyuse.bakersean.top}
+      API_DOMAIN: ${API_DOMAIN:-memoflowapi.bakersean.top}
       POWERSYNC_DOMAIN: ${POWERSYNC_DOMAIN:?set POWERSYNC_DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL:-admin@bakersean.top}
     volumes:
@@ -282,6 +286,7 @@ services:
     image: containrrr/watchtower
     restart: unless-stopped
     environment:
+      DOCKER_API_VERSION: '1.44'
       WATCHTOWER_CLEANUP: 'true'
       WATCHTOWER_POLL_INTERVAL: ${WATCHTOWER_POLL_INTERVAL:-300}
       WATCHTOWER_LABEL_ENABLE: 'true'

@@ -12,7 +12,7 @@
 	email {$ACME_EMAIL:admin@bakersean.top}
 }
 
-{$APP_DOMAIN:dailyuse.bakersean.top} {
+{$APP_DOMAIN:memoflow.bakersean.top} {
 	reverse_proxy web:80
 
 	# 安全头（Caddy 层补充，Nginx 层也有）
@@ -30,7 +30,41 @@
 	}
 }
 
-{$POWERSYNC_DOMAIN} {
+{$LEGACY_DOMAIN:dailyuse.bakersean.top} {
+	reverse_proxy web:80
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+{$API_DOMAIN:memoflowapi.bakersean.top} {
+	reverse_proxy api:3000
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+{$POWERSYNC_DOMAIN:memoflowsync.bakersean.top} {
 	reverse_proxy powersync:{$POWERSYNC_PORT:8080}
 
 	header {
