@@ -57,23 +57,23 @@ let scheduler: CronSchedulerManager | null = null;
 const AIApiModule = createAIApiModule({
   createKnowledgeNotePersistence: (context: AIApiModuleContext) =>
     new RepositoryKnowledgeNotePersistenceAdapter(
-      context.db as typeof prisma,
+      context.db,
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
   createKnowledgeSourcePort: (context: AIApiModuleContext) =>
     new RepositoryKnowledgeSourceAdapter(
-      context.db as typeof prisma,
+      context.db,
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
   createAnalyticsReadPort: (context: AIApiModuleContext) =>
-    new ControlledAnalyticsReadAdapter(context.db as typeof prisma),
+    new ControlledAnalyticsReadAdapter(context.db),
   createAutomationToolExecutor: (context: AIApiModuleContext) =>
     new BackendAutomationToolExecutorAdapter(
-      context.db as typeof prisma,
+      context.db,
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
   getKnowledgeNoteSubpath: async (identityId: string, context: AIApiModuleContext) => {
-    const settingModule = createSettingPrismaModule(context.db as typeof prisma);
+    const settingModule = createSettingPrismaModule(context.db);
     const setting = await settingModule.api.getUserSetting(identityId);
     return setting.preferences.ai.knowledgeNoteSubpath;
   },

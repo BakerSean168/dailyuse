@@ -22,16 +22,17 @@
 
 import type { RequestHandler } from 'express';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import type { PrismaClient } from '@dailyuse/database';
 
 /**
  * 数据库客户端类型
  *
- * 使用宽泛类型允许不同 Prisma 生成器的客户端通过
- * （主数据库 @prisma/client 和 governance @prisma/client-governance）。
- * 各模块在 register() 内自行断言（as）到具体的 PrismaClient 类型。
+ * 当前 API runtime 使用 @dailyuse/database 暴露的共享 PrismaClient。
+ *
+ * 如果未来真的引入第二个生成客户端，请在这里扩展为明确 union 或能力接口，
+ * 不要回退到裸 any。
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DatabaseClient = any;
+export type DatabaseClient = PrismaClient;
 
 /**
  * API 中间件工厂

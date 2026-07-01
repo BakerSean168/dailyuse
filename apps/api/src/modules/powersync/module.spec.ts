@@ -4,7 +4,7 @@ import path from 'node:path';
 import express, { Router } from 'express';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { IApiModuleContext } from '../../shared/contracts/api-module.js';
+import type { DatabaseClient, IApiModuleContext } from '../../shared/contracts/api-module.js';
 import { env } from '../../shared/infrastructure/config/env.js';
 import { PowerSyncApiModule } from './module.js';
 import { computeProfileSnapshotKey } from './snapshot-storage.js';
@@ -37,14 +37,15 @@ async function createTestApp(): Promise<ReturnType<typeof express>> {
 
   const router = Router();
   app.use('/api/v1', router);
+  const db = {
+    $transaction: async (callback: (tx: Record<string, never>) => Promise<void>) =>
+      await callback({}),
+  } as unknown as DatabaseClient;
 
   const context: IApiModuleContext = {
     app,
     router,
-    db: {
-      $transaction: async (callback: (tx: Record<string, never>) => Promise<void>) =>
-        await callback({}),
-    },
+    db,
     middleware: {
       auth: (req, _res, next) => {
         const authenticated = req as typeof req & {

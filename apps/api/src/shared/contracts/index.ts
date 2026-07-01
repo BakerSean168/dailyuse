@@ -1,1 +1,1 @@
-export type { IApiModule, IApiModuleContext } from './api-module';
+export type { DatabaseClient, IApiModule, IApiModuleContext } from './api-module';

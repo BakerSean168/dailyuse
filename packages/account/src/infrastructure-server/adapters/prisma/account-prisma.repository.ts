@@ -7,7 +7,8 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient, Account as PrismaAccount } from '@dailyuse/database';
+import type { PrismaClient, Account as PrismaAccount, Prisma } from '@dailyuse/database';
+import type { AccountProfileDTO, AccountSettingsDTO } from '@dailyuse/contracts/account';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
@@ -22,6 +23,10 @@ const eventBusAdapter = createEventBusAdapter(eventBus);
  */
 interface AccountDb {
   account: PrismaClient['account'];
+}
+
+function toPrismaJson(value: AccountProfileDTO | AccountSettingsDTO): Prisma.InputJsonObject {
+  return value as unknown as Prisma.InputJsonObject;
 }
 
 export class PrismaAccountRepository
@@ -58,10 +63,8 @@ export class PrismaAccountRepository
         phoneFullNumber: account.phone?.fullNumber ?? null,
         phoneIsVerified: account.phone?.isVerified ?? null,
         phoneVerifiedAt: account.phone?.verifiedAt ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
-        profile: account.profile.toDTO() as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
-        settings: account.settings.toDTO() as any,
+        profile: toPrismaJson(account.profile.toDTO()),
+        settings: toPrismaJson(account.settings.toDTO()),
         version: account.version,
         updatedAt: account.updatedAt,
       },
@@ -77,10 +80,8 @@ export class PrismaAccountRepository
         phoneFullNumber: account.phone?.fullNumber ?? null,
         phoneIsVerified: account.phone?.isVerified ?? null,
         phoneVerifiedAt: account.phone?.verifiedAt ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
-        profile: account.profile.toDTO() as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma InputJsonValue cast for JSON column
-        settings: account.settings.toDTO() as any,
+        profile: toPrismaJson(account.profile.toDTO()),
+        settings: toPrismaJson(account.settings.toDTO()),
         version: account.version,
         createdAt: account.createdAt,
         updatedAt: account.updatedAt,
