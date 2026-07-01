@@ -45,6 +45,7 @@ export function toNotificationClientDTO(serverDTO: NotificationServerDTO): Notif
     status: serverDTO.status,
     actions: serverDTO.actions ?? null,
     metadata: serverDTO.metadata ?? null,
+    expiresAt: serverDTO.expiresAt ?? null,
     version: serverDTO.version,
     createdAt: serverDTO.createdAt,
     updatedAt: serverDTO.updatedAt,

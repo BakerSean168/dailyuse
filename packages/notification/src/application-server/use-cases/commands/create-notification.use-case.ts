@@ -55,6 +55,7 @@ export class CreateNotificationUseCase {
     relatedEntityType?: RelatedEntityType;
     relatedEntityId?: string;
     channels?: NotificationChannelType[];
+    expiresAt?: number | null;
   }): Promise<Result<NotificationClientDTO>> {
     logger.info('📬 [应用服务] 接收创建通知请求', {
       identityId: params.identityId,
@@ -85,6 +86,7 @@ export class CreateNotificationUseCase {
       content: params.content,
       type: params.type,
       category: params.category,
+      expiresAt: params.expiresAt,
     });
 
     for (const channelType of channels) {

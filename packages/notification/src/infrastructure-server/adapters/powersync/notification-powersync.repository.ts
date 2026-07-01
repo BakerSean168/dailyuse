@@ -25,6 +25,7 @@ interface NotificationRow {
   read_at: string | null;
   metadata: string | null;
   actions: string | null;
+  expires_at: string | null;
   version: number | null;
   created_at: string;
   updated_at: string;
@@ -60,6 +61,7 @@ function toServerDTO(row: NotificationRow): NotificationServerDTO {
     readAt: toTimestamp(row.read_at),
     actions: parseJson<NotificationServerDTO['actions']>(row.actions),
     metadata: parseJson<NotificationServerDTO['metadata']>(row.metadata),
+    expiresAt: toTimestamp(row.expires_at),
     version: row.version ?? 1,
     createdAt: toTimestamp(row.created_at) ?? Date.now(),
     updatedAt: toTimestamp(row.updated_at) ?? Date.now(),
@@ -84,6 +86,7 @@ function hydrateNotification(row: NotificationRow): Notification {
     readAt: dto.readAt ?? null,
     actions: dto.actions?.map((action) => NotificationAction.fromDTO(action)) ?? null,
     metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
+    expiresAt: dto.expiresAt ?? null,
     version: dto.version,
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     createdAt: new Date(dto.createdAt),
@@ -119,6 +122,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
                 related_entity_id = ?,
                 metadata = ?,
                 actions = ?,
+                expires_at = ?,
                 version = ?,
                 updated_at = ?,
                 deleted_at = ?
@@ -138,6 +142,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
           null,
           dto.metadata ? JSON.stringify(dto.metadata) : null,
           dto.actions ? JSON.stringify(dto.actions) : null,
+          dto.expiresAt ? new Date(dto.expiresAt).toISOString() : null,
           dto.version,
           new Date(dto.updatedAt).toISOString(),
           dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null,
@@ -162,11 +167,12 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
             related_entity_id,
             metadata,
             actions,
+            expires_at,
             version,
             created_at,
             updated_at,
             deleted_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           dto.id,
           dto.identityId,
@@ -183,6 +189,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
           null,
           dto.metadata ? JSON.stringify(dto.metadata) : null,
           dto.actions ? JSON.stringify(dto.actions) : null,
+          dto.expiresAt ? new Date(dto.expiresAt).toISOString() : null,
           dto.version,
           new Date(dto.createdAt).toISOString(),
           new Date(dto.updatedAt).toISOString(),

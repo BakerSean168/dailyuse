@@ -34,6 +34,7 @@ export interface NotificationClientDTO {
 
   actions?: NotificationActionDTO[] | null;
   metadata?: NotificationMetadataDTO | null;
+  expiresAt?: TransferDate | null;
 
   // 同步字段
   version: number;

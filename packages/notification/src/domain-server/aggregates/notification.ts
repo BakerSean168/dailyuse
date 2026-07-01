@@ -42,6 +42,7 @@ export interface NotificationState {
   readAt: number | null;
   actions: NotificationAction[] | null;
   metadata: NotificationMetadata | null;
+  expiresAt: number | null;
   version: number;
   deletedAt: Date | null;
   createdAt: Date;
@@ -105,6 +106,10 @@ export class Notification extends AggregateRoot<NotificationId> {
 
   public get metadata(): NotificationMetadata | null {
     return this._props.metadata;
+  }
+
+  public get expiresAt(): number | null {
+    return this._props.expiresAt;
   }
 
   public get version(): number {
@@ -223,6 +228,35 @@ export class Notification extends AggregateRoot<NotificationId> {
     this.emitStatusChanged(previousStatus, this._props.status);
   }
 
+  public updateDetails(patch: {
+    title?: string;
+    content?: string;
+    status?: NotificationStatus;
+    metadata?: NotificationMetadataDTO | null;
+    expiresAt?: number | null;
+  }): void {
+    const previousStatus = this._props.status;
+
+    if (patch.title !== undefined) {
+      this._props.title = patch.title;
+    }
+    if (patch.content !== undefined) {
+      this._props.content = patch.content;
+    }
+    if (patch.status !== undefined) {
+      this._props.status = patch.status;
+    }
+    if (patch.metadata !== undefined) {
+      this._props.metadata = patch.metadata ? NotificationMetadata.fromDTO(patch.metadata) : null;
+    }
+    if (patch.expiresAt !== undefined) {
+      this._props.expiresAt = patch.expiresAt;
+    }
+
+    this._props.updatedAt = new Date();
+    this.emitStatusChanged(previousStatus, this._props.status);
+  }
+
   public softDelete(): void {
     if (this._props.deletedAt) {
       return;
@@ -283,6 +317,7 @@ export class Notification extends AggregateRoot<NotificationId> {
       readAt: this._props.readAt,
       actions: this._props.actions?.map((a) => a.toDTO()) ?? null,
       metadata: this._props.metadata?.toDTO() ?? null,
+      expiresAt: this._props.expiresAt,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
@@ -308,6 +343,7 @@ export class Notification extends AggregateRoot<NotificationId> {
     importance?: ImportanceLevel;
     actions?: NotificationActionDTO[];
     metadata?: NotificationMetadataDTO;
+    expiresAt?: number | null;
   }): Notification {
     logger.info('🔨 [聚合根] 创建 Notification 实例', {
       identityId: String(params.identityId),
@@ -332,6 +368,7 @@ export class Notification extends AggregateRoot<NotificationId> {
       readAt: null,
       actions: params.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
       metadata: params.metadata ? NotificationMetadata.fromDTO(params.metadata) : null,
+      expiresAt: params.expiresAt ?? null,
       version: 1,
       deletedAt: null,
       createdAt: now,

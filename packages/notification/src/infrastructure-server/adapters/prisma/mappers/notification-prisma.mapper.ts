@@ -168,6 +168,7 @@ export class NotificationPrismaMapper {
       readAt: row.readAt ? row.readAt.getTime() : null,
       actions: actions ? actions.map((a) => NotificationAction.fromDTO(a)) : null,
       metadata: metadata ? NotificationMetadata.fromDTO(metadata) : null,
+      expiresAt: row.expiresAt ? row.expiresAt.getTime() : null,
       version: row.version,
       deletedAt: row.deletedAt,
       createdAt: row.createdAt,

@@ -24,15 +24,12 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import {
   CreateNotificationUseCase,
   MarkNotificationAsReadUseCase,
+  UpdateNotificationUseCase,
+  UpdateNotificationPreferenceUseCase,
   GetUserNotificationsUseCase,
   GetUnreadNotificationsUseCase,
   GetNotificationPreferenceUseCase,
 } from '../application-server';
-import {
-  toNotificationClientDTO,
-  toNotificationPreferenceClientDTO,
-} from '../application-server/use-cases/commands/notification-dto-converters';
-import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 
@@ -96,10 +93,12 @@ export interface NotificationModuleDependencies {
  */
 export interface NotificationModuleUseCases {
   readonly createNotification: CreateNotificationUseCase;
+  readonly updateNotification: UpdateNotificationUseCase;
   readonly markAsRead: MarkNotificationAsReadUseCase;
   readonly getUserNotifications: GetUserNotificationsUseCase;
   readonly getUnreadNotifications: GetUnreadNotificationsUseCase;
   readonly getNotificationPreference: GetNotificationPreferenceUseCase;
+  readonly updateNotificationPreference: UpdateNotificationPreferenceUseCase;
 }
 
 // ============ Application Port ============
@@ -172,10 +171,12 @@ export function createNotificationUseCases(
       templateRepository,
       preferenceRepository,
     ),
+    updateNotification: new UpdateNotificationUseCase(notificationRepository),
     markAsRead: new MarkNotificationAsReadUseCase(notificationRepository),
     getUserNotifications: new GetUserNotificationsUseCase(notificationRepository),
     getUnreadNotifications: new GetUnreadNotificationsUseCase(notificationRepository),
     getNotificationPreference: new GetNotificationPreferenceUseCase(preferenceRepository),
+    updateNotificationPreference: new UpdateNotificationPreferenceUseCase(preferenceRepository),
   };
 }
 
@@ -219,7 +220,7 @@ function normalizeRuntimeContributions(
 export function createNotificationModule(
   dependencies: NotificationModuleDependencies,
 ): NotificationModuleInstance {
-  const { notificationRepository, preferenceRepository, templateRepository, db } = dependencies;
+  const { notificationRepository, preferenceRepository, templateRepository } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
   const useCases = createNotificationUseCases(dependencies);
   let started = false;
@@ -227,10 +228,9 @@ export function createNotificationModule(
   // Build the transport-neutral application port.
   // 构建传输层无关的应用端口。
   //
-  // Every method delegates to assembled use cases, repositories, or
-  // direct persistence updates when a dedicated use case does not exist yet.
+  // Every method delegates to assembled use cases or repositories.
   //
-  // 每个方法都委托给已组装的用例、仓储，或在缺少专门用例时直接执行持久化更新。
+  // 每个方法都委托给已组装的用例或仓储。
   const api: NotificationApplicationPort = {
     // Delegate to CreateNotification use case.
     // 委托给 CreateNotification 用例。
@@ -282,54 +282,11 @@ export function createNotificationModule(
       return ok(notification);
     },
 
-    // Update through the persistence layer until a dedicated use case exists.
-    // 在专门用例落地前，先通过持久化层完成更新。
     updateNotification: async (id, data) => {
-      if (!db) {
-        return fail({
-          code: 'NOT_IMPLEMENTED',
-          message: 'Notification updates require database access',
-        });
-      }
-      const patch = (data ?? {}) as {
-        title?: string;
-        content?: string;
-        status?: string;
-        metadata?: Record<string, unknown>;
-        expiresAt?: number | null;
-      };
-      const notification = await notificationRepository.findById(id);
-      if (!notification) {
-        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
-      }
-
-      const current = notification.toServerDTO();
-      await db.execute(
-        `UPDATE notifications
-            SET title = ?,
-                content = ?,
-                status = ?,
-                metadata = ?,
-                expires_at = ?,
-                updated_at = ?
-          WHERE id = ?`,
-        [
-          patch.title ?? current.title,
-          patch.content ?? current.content,
-          patch.status ?? current.status,
-          JSON.stringify(patch.metadata ?? current.metadata ?? {}),
-          patch.expiresAt ? new Date(patch.expiresAt).toISOString() : null,
-          new Date().toISOString(),
-          id,
-        ],
+      return useCases.updateNotification.execute(
+        id,
+        data as Parameters<UpdateNotificationUseCase['execute']>[1],
       );
-
-      const updated = await notificationRepository.findById(id);
-      if (!updated) {
-        return fail({ code: 'NOT_FOUND', message: 'notification not found after update' });
-      }
-
-      return ok(toNotificationClientDTO(updated.toServerDTO()));
     },
 
     // Delete directly through the repository.
@@ -387,75 +344,10 @@ export function createNotificationModule(
       return useCases.getNotificationPreference.execute(identityId);
     },
 
-    // Persist preference updates directly until a dedicated use case exists.
-    // 在专门用例落地前，直接持久化偏好更新。
     updatePreferences: async (dto) => {
-      if (!db) {
-        return fail({
-          code: 'NOT_IMPLEMENTED',
-          message: 'Preference updates require database access',
-        });
-      }
-      const input = (dto ?? {}) as {
-        identityId?: string;
-        enabled?: boolean;
-        channels?: { inApp?: boolean; email?: boolean; push?: boolean; sms?: boolean };
-        categories?: Record<string, Record<string, boolean>>;
-        doNotDisturb?: unknown;
-        rateLimit?: unknown;
-      };
-      if (!input.identityId) {
-        return fail({ code: 'BAD_REQUEST', message: 'identityId is required' });
-      }
-
-      const preference = await preferenceRepository.getOrCreate(input.identityId);
-      const channelMap = {
-        inApp: NotificationChannelType.InApp,
-        email: NotificationChannelType.Email,
-        push: NotificationChannelType.Push,
-        sms: NotificationChannelType.Sms,
-      } as const;
-
-      const categories = input.categories ?? {};
-      for (const [moduleName, value] of Object.entries(categories)) {
-        const channels = Object.entries(channelMap)
-          .filter(([key]) => Boolean(value?.[key as keyof typeof value]))
-          .map(([, channel]) => channel);
-        preference.setModuleChannels(moduleName, input.enabled === false ? [] : channels);
-      }
-
-      if (input.channels && Object.keys(categories).length === 0) {
-        const fallbackChannels = Object.entries(channelMap)
-          .filter(([key]) => Boolean(input.channels?.[key as keyof typeof input.channels]))
-          .map(([, channel]) => channel);
-        for (const moduleName of ['task', 'goal', 'schedule', 'reminder', 'account', 'system']) {
-          preference.setModuleChannels(moduleName, input.enabled === false ? [] : fallbackChannels);
-        }
-      }
-
-      await preferenceRepository.save(preference);
-      await db.execute(
-        `UPDATE notification_preferences
-            SET enabled = ?,
-                channels = ?,
-                categories = ?,
-                do_not_disturb = ?,
-                rate_limit = ?,
-                updated_at = ?
-          WHERE identity_id = ?`,
-        [
-          input.enabled === false ? 0 : 1,
-          JSON.stringify(input.channels ?? null),
-          JSON.stringify(input.categories ?? null),
-          JSON.stringify(input.doNotDisturb ?? null),
-          JSON.stringify(input.rateLimit ?? null),
-          new Date().toISOString(),
-          input.identityId,
-        ],
+      return useCases.updateNotificationPreference.execute(
+        dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[0],
       );
-
-      const updated = await preferenceRepository.getOrCreate(input.identityId);
-      return ok(toNotificationPreferenceClientDTO(updated.toServerDTO()));
     },
   };
 

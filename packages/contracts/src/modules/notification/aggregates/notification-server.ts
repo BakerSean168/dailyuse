@@ -42,6 +42,7 @@ export interface NotificationServerDTO {
 
   actions?: NotificationActionDTO[] | null;
   metadata?: NotificationMetadataDTO | null;
+  expiresAt?: TransferDate | null;
 
   version: number;
   createdAt: TransferDate;
