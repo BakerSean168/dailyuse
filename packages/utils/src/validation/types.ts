@@ -27,6 +27,8 @@ export type ValidatorType =
   | 'range'
   | 'date'
   | 'dateRange'
+  | 'url'
+  | 'idCard'
   | 'custom'
   | 'async';
 
@@ -57,6 +59,18 @@ export interface ValidationResult {
   /** 校验规则名称 */
   rule?: string;
 }
+
+export type SyncValidationRuleExecutor = (
+  value: any,
+  formData: any,
+  field: string,
+) => ValidationResult | boolean | string;
+
+export type AsyncValidationRuleExecutor = (
+  value: any,
+  formData: any,
+  field: string,
+) => Promise<ValidationResult | boolean | string>;
 
 /**
  * 字段校验结果
@@ -110,6 +124,8 @@ export interface BaseRule {
   enabled?: boolean;
   /** 条件函数 - 返回false时跳过此规则 */
   condition?: (value: any, formData: any) => boolean;
+  /** 规则执行函数；内置规则也可以直接携带 validator */
+  validator?: SyncValidationRuleExecutor | AsyncValidationRuleExecutor;
 }
 
 /**
@@ -162,12 +178,20 @@ export interface RangeRule extends BaseRule {
 }
 
 /**
+ * 其他内置规则
+ */
+export interface BuiltinValidatorRule extends BaseRule {
+  type: 'email' | 'phone' | 'date' | 'url' | 'idCard';
+  validator: SyncValidationRuleExecutor;
+}
+
+/**
  * 自定义规则
  */
 export interface CustomRule extends BaseRule {
   type: 'custom';
   /** 校验函数 */
-  validator: (value: any, formData: any) => ValidationResult | boolean | string;
+  validator: SyncValidationRuleExecutor;
 }
 
 /**
@@ -176,7 +200,7 @@ export interface CustomRule extends BaseRule {
 export interface AsyncRule extends BaseRule {
   type: 'async';
   /** 异步校验函数 */
-  validator: (value: any, formData: any) => Promise<ValidationResult | boolean | string>;
+  validator: AsyncValidationRuleExecutor;
   /** 防抖延迟（毫秒） */
   debounce?: number;
   /** 取消前一个请求 */
@@ -192,6 +216,7 @@ export type ValidationRule =
   | PatternRule
   | NumberRule
   | RangeRule
+  | BuiltinValidatorRule
   | CustomRule
   | AsyncRule;
 

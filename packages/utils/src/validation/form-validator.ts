@@ -393,7 +393,7 @@ export class FormValidator implements IFormValidator {
     formData: any,
   ): Promise<ValidationResult> {
     if ('validator' in rule && typeof rule.validator === 'function') {
-      const result = await rule.validator(value, formData);
+      const result = await rule.validator(value, formData, fieldName);
 
       if (typeof result === 'boolean') {
         return {
@@ -458,7 +458,7 @@ export class FormValidator implements IFormValidator {
       }
     }
 
-    const result = await rule.validator(value, formData);
+    const result = await rule.validator(value, formData, fieldName);
 
     if (typeof result === 'boolean') {
       return {

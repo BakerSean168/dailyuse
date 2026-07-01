@@ -102,7 +102,7 @@ export class BuiltinValidators {
           rule: 'required',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -138,7 +138,7 @@ export class BuiltinValidators {
           rule: 'minLength',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -174,7 +174,7 @@ export class BuiltinValidators {
           rule: 'maxLength',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -210,7 +210,7 @@ export class BuiltinValidators {
           rule: 'pattern',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -245,7 +245,7 @@ export class BuiltinValidators {
           rule: 'email',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -279,7 +279,7 @@ export class BuiltinValidators {
           rule: 'phone',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -313,7 +313,7 @@ export class BuiltinValidators {
           rule: 'number',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -349,7 +349,7 @@ export class BuiltinValidators {
           rule: 'min',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -385,7 +385,7 @@ export class BuiltinValidators {
           rule: 'max',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -420,7 +420,7 @@ export class BuiltinValidators {
           rule: 'range',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -460,7 +460,7 @@ export class BuiltinValidators {
 
         return result;
       },
-    } as any;
+    };
   }
 
   /**
@@ -480,7 +480,7 @@ export class BuiltinValidators {
       debounce,
       message,
       validator,
-    } as any;
+    };
   }
 
   /**
@@ -513,7 +513,7 @@ export class BuiltinValidators {
           rule: 'date',
         };
       },
-    } as any;
+    };
   }
 
   /**
@@ -521,7 +521,7 @@ export class BuiltinValidators {
    */
   static url(message?: string): ValidationRule {
     return {
-      type: 'pattern',
+      type: 'url',
       message,
       validator: (value: any, formData: any, field: string): ValidationResult => {
         if (!value) {
@@ -554,7 +554,7 @@ export class BuiltinValidators {
           };
         }
       },
-    } as any;
+    };
   }
 
   /**
@@ -565,7 +565,7 @@ export class BuiltinValidators {
       /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
 
     return {
-      type: 'pattern',
+      type: 'idCard',
       message,
       validator: (value: any, formData: any, field: string): ValidationResult => {
         if (!value) {
@@ -589,6 +589,6 @@ export class BuiltinValidators {
           rule: 'idCard',
         };
       },
-    } as any;
+    };
   }
 }
