@@ -165,7 +165,7 @@ export const CreateTaskTemplateSchema = z.object({
   tags: z.array(z.string()).default([]).optional(),
   color: z.string().optional().nullable(),
   goalBinding: TaskGoalBindingSchema.optional().nullable(),
-});
+}).strict();
 
 export type CreateTaskTemplateReq = z.infer<typeof CreateTaskTemplateSchema>;
 
@@ -185,20 +185,13 @@ export const UpdateTaskTemplateSchema = z.object({
   timeConfig: TaskTimeConfigSchema.optional().nullable(),
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   reminderConfig: TaskReminderConfigSchema.optional().nullable(),
-  importance: z
-    .custom<ImportanceLevel>()
-    .openapi({
-      type: 'string',
-      enum: ['low', 'medium', 'high', 'critical'],
-      description: '重要程度',
-    })
-    .optional(),
+  importance: z.enum(ImportanceLevel).optional(),
   parentTaskId: brandedId<TaskTemplateId>().optional().nullable(),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),
   goalBinding: TaskGoalBindingSchema.optional().nullable(),
-});
+}).strict();
 
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;
 export type UpdateTaskTemplateRes = TaskTemplateClientDTO;

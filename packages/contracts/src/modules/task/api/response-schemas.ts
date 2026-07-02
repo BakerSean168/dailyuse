@@ -14,6 +14,10 @@ import {
   TaskTimeConfigSchema,
   RecurrenceConfigSchema,
 } from './task-template.dto';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { DependencyType } from '../value-objects/dependency-type';
+import { TaskInstanceStatus } from '../value-objects/task-instance-status';
+import { TaskTemplateStatus } from '../value-objects/task-template-status';
 
 // ============ TaskTemplate Response Schema ============
 
@@ -25,13 +29,13 @@ export const TaskTemplateResponseSchema = z.object({
   timeConfig: TaskTimeConfigSchema,
   recurrenceRule: RecurrenceConfigSchema.nullable(),
   reminderConfig: TaskReminderConfigSchema.nullable(),
-  importance: z.string(),
+  importance: z.enum(ImportanceLevel),
   priority: z.number().optional(),
   goalBinding: TaskGoalBindingSchema.nullable(),
   folderId: brandedId<TaskFolderId>().nullable(),
   tags: z.array(z.string()),
   color: z.string().nullable(),
-  status: z.string(),
+  status: z.enum(TaskTemplateStatus),
   lastGeneratedDate: z.number().nullable(),
   generateAheadDays: z.number().nullable(),
   version: z.number(),
@@ -65,7 +69,7 @@ export const TaskDependencyResponseSchema = z.object({
   id: brandedId<TaskDependencyId>(),
   predecessorTaskId: brandedId<TaskTemplateId>(),
   successorTaskId: brandedId<TaskTemplateId>(),
-  dependencyType: z.string(),
+  dependencyType: z.enum(DependencyType),
   lagDays: z.number().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
@@ -103,9 +107,9 @@ export const TaskInstanceResponseSchema = z.object({
   identityId: brandedId<IdentityId>(),
   instanceDate: z.number(),
   timeConfig: TaskTimeConfigSchema,
-  importance: z.string().optional(),
+  importance: z.enum(ImportanceLevel).optional(),
   priority: z.number().optional(),
-  status: z.string(),
+  status: z.enum(TaskInstanceStatus),
   actualStartTime: z.number().nullable(),
   actualEndTime: z.number().nullable(),
   comment: z.string().nullable(),
