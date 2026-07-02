@@ -8,6 +8,6 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.{test,spec}.{js,ts}'],
     exclude: ['node_modules', 'dist', '.git', '.cache'],
-    passWithNoTests: true,
+    passWithNoTests: false,
   },
 });
