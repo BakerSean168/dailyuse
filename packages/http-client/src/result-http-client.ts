@@ -26,10 +26,14 @@
 
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Result, ResultError } from '@dailyuse/contracts/result';
-import { ok, fail, ResultCode, fromHttpResponse } from '@dailyuse/contracts/result';
+import { ok, fail, fromHttpResponse } from '@dailyuse/contracts/result';
 import type { HttpResponse } from '@dailyuse/contracts/result';
 import type { AxiosHttpClientConfig, TokenProvider, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
+import {
+  classifyNetworkErrorMessage,
+  statusToResultError,
+} from './result-error';
 
 // ============================================================================
 // ResultHttpClient
@@ -337,9 +341,10 @@ export class ResultHttpClient {
       }
 
       // A2. 非标准格式 → 根据 HTTP 状态码构造
+      const resultError = statusToResultError(response.status, message);
       return fail<ResultError>({
-        code: this.statusToResultCode(response.status),
-        message: this.statusToMessage(response.status, message),
+        code: resultError.code,
+        message: resultError.message,
         cause: error,
       }) as Result<T>;
     }
@@ -362,73 +367,12 @@ export class ResultHttpClient {
     );
   }
 
-  /** HTTP 状态码 → ResultCode */
-  private statusToResultCode(status: number): string {
-    const map: Record<number, string> = {
-      400: ResultCode.BAD_REQUEST,
-      401: ResultCode.UNAUTHORIZED,
-      403: ResultCode.FORBIDDEN,
-      404: ResultCode.NOT_FOUND,
-      408: ResultCode.TIMEOUT,
-      409: ResultCode.CONFLICT,
-      422: ResultCode.VALIDATION_ERROR,
-      429: ResultCode.RATE_LIMITED,
-      500: ResultCode.INTERNAL_ERROR,
-      502: ResultCode.SERVICE_UNAVAILABLE,
-      503: ResultCode.SERVICE_UNAVAILABLE,
-      504: ResultCode.TIMEOUT,
-    };
-    return map[status] ?? ResultCode.UNKNOWN;
-  }
-
-  /** HTTP 状态码 → 用户友好消息 */
-  private statusToMessage(status: number, fallback?: string): string {
-    const messages: Record<number, string> = {
-      400: '请求参数错误',
-      401: '未授权，请登录',
-      403: '拒绝访问',
-      404: '资源不存在',
-      408: '请求超时',
-      409: '资源冲突',
-      422: '参数验证失败',
-      429: '请求过于频繁',
-      500: '服务器内部错误',
-      502: '网关错误',
-      503: '服务不可用',
-      504: '网关超时',
-    };
-    return messages[status] ?? fallback ?? `请求失败 (HTTP ${status})`;
-  }
-
   /** 创建网络异常的 Result.fail */
   private createNetworkFailure<T>(message: string, cause: unknown): Result<T> {
-    if (message?.includes('timeout')) {
-      return fail<ResultError>({
-        code: ResultCode.TIMEOUT,
-        message: '网络请求超时',
-        cause,
-      }) as Result<T>;
-    }
-
-    if (message?.includes('Network Error') || message?.includes('ERR_NETWORK')) {
-      return fail<ResultError>({
-        code: ResultCode.SERVICE_UNAVAILABLE,
-        message: '网络连接断开',
-        cause,
-      }) as Result<T>;
-    }
-
-    if (message?.includes('canceled') || message?.includes('aborted')) {
-      return fail<ResultError>({
-        code: ResultCode.UNKNOWN,
-        message: '请求已取消',
-        cause,
-      }) as Result<T>;
-    }
-
+    const resultError = classifyNetworkErrorMessage(message);
     return fail<ResultError>({
-      code: ResultCode.INTERNAL_ERROR,
-      message: '网络连接异常',
+      code: resultError.code,
+      message: resultError.message,
       cause,
     }) as Result<T>;
   }

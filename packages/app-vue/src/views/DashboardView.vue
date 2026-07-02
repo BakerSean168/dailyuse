@@ -8,6 +8,7 @@
 
 import { onMounted, onBeforeUnmount, computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useDashboard } from '../modules/dashboard/composables/useDashboard';
 import {
   Card,
@@ -56,6 +57,7 @@ use([
 ]);
 
 const router = useRouter();
+const { t } = useI18n();
 const {
   stats,
   activityTimeline,
@@ -197,7 +199,7 @@ onBeforeUnmount(() => {
 const statCards = computed(() => [
   {
     testId: 'dashboard-stat-card-active-tasks',
-    label: '进行中任务',
+    label: t('dashboard.stats.activeTasks'),
     value: stats.value.activeTasks,
     icon: ListTodo,
     color: 'text-info',
@@ -206,7 +208,7 @@ const statCards = computed(() => [
   },
   {
     testId: 'dashboard-stat-card-completed-today',
-    label: '今日完成',
+    label: t('dashboard.stats.completedToday'),
     value: stats.value.completedToday,
     icon: CheckCircle2,
     color: 'text-success',
@@ -215,7 +217,7 @@ const statCards = computed(() => [
   },
   {
     testId: 'dashboard-stat-card-active-goals',
-    label: '活跃目标',
+    label: t('dashboard.stats.activeGoals'),
     value: stats.value.activeGoals,
     icon: Target,
     color: 'text-primary',
@@ -224,7 +226,7 @@ const statCards = computed(() => [
   },
   {
     testId: 'dashboard-stat-card-upcoming-reminders',
-    label: '待处理提醒',
+    label: t('dashboard.stats.upcomingReminders'),
     value: stats.value.upcomingReminders,
     icon: Bell,
     color: 'text-warning',
@@ -233,7 +235,7 @@ const statCards = computed(() => [
   },
   {
     testId: 'dashboard-stat-card-unread-notifications',
-    label: '未读通知',
+    label: t('dashboard.stats.unreadNotifications'),
     value: stats.value.unreadNotifications,
     icon: Activity,
     color: 'text-destructive',
@@ -242,7 +244,7 @@ const statCards = computed(() => [
   },
   {
     testId: 'dashboard-stat-card-schedule-conflicts',
-    label: '日程冲突',
+    label: t('dashboard.stats.scheduleConflicts'),
     value: stats.value.scheduleConflicts,
     icon: AlertTriangle,
     color: 'text-warning',
@@ -288,7 +290,7 @@ const trendChartOption = computed(() => ({
   },
   series: [
     {
-      name: '已完成',
+      name: t('dashboard.chart.completed'),
       type: 'bar',
       data: trendDays.value.map((d) => d.tasksCompleted),
       itemStyle: { color: chartTheme.value.chartBar, borderRadius: [4, 4, 0, 0] },
@@ -302,7 +304,7 @@ const trendChartOption = computed(() => ({
       barMaxWidth: 24,
     },
     {
-      name: '新建',
+      name: t('dashboard.chart.created'),
       type: 'line',
       data: trendDays.value.map((d) => d.tasksCreated),
       smooth: true,
@@ -324,21 +326,25 @@ const trendChartOption = computed(() => ({
 }));
 
 // ── Quick actions ──
-const quickActions = [
-  { label: '新建任务', icon: Plus, route: '/tasks' },
-  { label: '查看日程', icon: Calendar, route: '/schedule' },
-  { label: '目标总览', icon: Target, route: '/goals' },
-  { label: '通知中心', icon: Bell, route: '/notifications' },
-];
+const quickActions = computed(() => [
+  { label: t('dashboard.quickActions.newTask'), icon: Plus, route: '/tasks' },
+  { label: t('dashboard.quickActions.viewSchedule'), icon: Calendar, route: '/schedule' },
+  { label: t('dashboard.quickActions.goalOverview'), icon: Target, route: '/goals' },
+  { label: t('dashboard.quickActions.notificationCenter'), icon: Bell, route: '/notifications' },
+]);
 
 // ── Helpers ──
 function formatTime(ts: number): string {
   const date = new Date(ts);
   const now = Date.now();
   const diff = now - ts;
-  if (diff < 60_000) return '刚刚';
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
+  if (diff < 60_000) return t('dashboard.time.justNow');
+  if (diff < 3_600_000) {
+    return t('dashboard.time.minutesAgo', { count: Math.floor(diff / 60_000) });
+  }
+  if (diff < 86_400_000) {
+    return t('dashboard.time.hoursAgo', { count: Math.floor(diff / 3_600_000) });
+  }
   return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
@@ -383,8 +389,10 @@ async function refreshDashboard() {
       class="flex items-center justify-between px-6 py-3 border-b border-border bg-background sticky top-0 z-10"
     >
       <div>
-        <h1 class="text-base font-semibold tracking-tight text-foreground">仪表盘</h1>
-        <p class="text-xs text-muted-foreground mt-0.5">全局概览与快速操作</p>
+        <h1 class="text-base font-semibold tracking-tight text-foreground">
+          {{ t('dashboard.title') }}
+        </h1>
+        <p class="text-xs text-muted-foreground mt-0.5">{{ t('dashboard.subtitle') }}</p>
       </div>
       <div class="flex items-center gap-2">
         <Button
@@ -395,7 +403,7 @@ async function refreshDashboard() {
           @click="refreshDashboard"
         >
           <RefreshCw class="w-4 h-4 mr-1" :class="{ 'animate-spin': isLoading }" />
-          刷新
+          {{ t('common.refresh') }}
         </Button>
       </div>
     </div>
@@ -452,7 +460,7 @@ async function refreshDashboard() {
             <CardHeader class="pb-2 px-4 pt-4">
               <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
                 <TrendingUp class="w-4 h-4 text-muted-foreground" />
-                任务趋势 (近 7 天)
+                {{ t('dashboard.chart.title') }}
               </CardTitle>
             </CardHeader>
             <CardContent class="px-4 pb-4">
@@ -475,7 +483,7 @@ async function refreshDashboard() {
             <CardHeader class="pb-2 px-4 pt-4">
               <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
                 <Activity class="w-4 h-4 text-muted-foreground" />
-                最近动态
+                {{ t('dashboard.activity.title') }}
               </CardTitle>
             </CardHeader>
             <CardContent class="px-4 pb-4">
@@ -525,10 +533,10 @@ async function refreshDashboard() {
             <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
               <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
                 <Target class="w-4 h-4 text-muted-foreground" />
-                目标进度
+                {{ t('dashboard.goalProgress.title') }}
               </CardTitle>
               <Button variant="ghost" size="sm" class="h-7 text-xs" @click="navigateTo('/goals')">
-                查看全部
+                {{ t('dashboard.viewAll') }}
                 <ArrowRight class="w-3 h-3 ml-1" />
               </Button>
             </CardHeader>
@@ -574,7 +582,9 @@ async function refreshDashboard() {
         <Card class="border-border/50">
           <CardContent class="px-4 py-3">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs text-muted-foreground mr-1">快速操作:</span>
+              <span class="text-xs text-muted-foreground mr-1">
+                {{ t('dashboard.quickActions.label') }}
+              </span>
               <Button
                 v-for="action in quickActions"
                 :key="action.label"

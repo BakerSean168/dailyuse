@@ -60,6 +60,20 @@ export { AxiosHttpClient, HttpClientError } from './axios-http-client';
 
 // ── Result HTTP Client（新代码推荐）──
 export { ResultHttpClient } from './result-http-client';
+export {
+  classifyNetworkErrorMessage,
+  getDefaultResultErrorMessage,
+  normalizeResultError,
+  resolveResultErrorCodeFallback,
+  statusToResultCode,
+  statusToResultError,
+  translateResultErrorMessage,
+} from './result-error';
+export type {
+  ResultErrorMessageKey,
+  ResultErrorTranslateFn,
+  TranslateResultErrorOptions,
+} from './result-error';
 
 // ── 便捷工厂函数 ──
 import type { AxiosHttpClientConfig } from './types';

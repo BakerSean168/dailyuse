@@ -17,6 +17,11 @@ import type { AxiosInstance, AxiosResponse, AxiosRequestConfig, InternalAxiosReq
 import type { HttpResponse } from '@dailyuse/contracts/result';
 import type { HttpClient, HttpRequestOptions, AxiosHttpClientConfig, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
+import {
+  classifyNetworkErrorMessage,
+  statusToResultCode,
+  statusToResultError,
+} from './result-error';
 
 // ============================================================================
 // HttpClientError
@@ -296,53 +301,17 @@ export class AxiosHttpClient implements HttpClient {
 
   /** 根据 HTTP 状态码获取默认错误消息 */
   private getDefaultErrorMessage(status: number): string {
-    const messages: Record<number, string> = {
-      400: '请求参数错误',
-      401: '未授权，请登录',
-      403: '拒绝访问',
-      404: '资源不存在',
-      408: '请求超时',
-      409: '资源冲突',
-      422: '参数验证失败',
-      429: '请求过于频繁',
-      500: '服务器内部错误',
-      502: '网关错误',
-      503: '服务不可用',
-      504: '网关超时',
-    };
-    return messages[status] ?? `请求失败 (HTTP ${status})`;
+    return statusToResultError(status, `请求失败 (HTTP ${status})`).message;
   }
 
   /** 根据 HTTP 状态码获取默认 ResultCode */
   private getDefaultErrorCode(status: number): string {
-    const codes: Record<number, string> = {
-      400: 'BAD_REQUEST',
-      401: 'UNAUTHORIZED',
-      403: 'FORBIDDEN',
-      404: 'NOT_FOUND',
-      408: 'TIMEOUT',
-      409: 'CONFLICT',
-      422: 'VALIDATION_ERROR',
-      429: 'RATE_LIMITED',
-      500: 'INTERNAL_ERROR',
-      502: 'SERVICE_UNAVAILABLE',
-      503: 'SERVICE_UNAVAILABLE',
-      504: 'TIMEOUT',
-    };
-    return codes[status] ?? 'UNKNOWN';
+    return statusToResultCode(status);
   }
 
   /** 创建网络异常错误 */
   private createNetworkError(message: string, cause: unknown): HttpClientError {
-    if (message?.includes('timeout')) {
-      return new HttpClientError('网络请求超时', 'TIMEOUT', 0, undefined, cause);
-    }
-    if (message?.includes('Network Error') || message?.includes('ERR_NETWORK')) {
-      return new HttpClientError('网络连接断开', 'SERVICE_UNAVAILABLE', 0, undefined, cause);
-    }
-    if (message?.includes('canceled') || message?.includes('aborted')) {
-      return new HttpClientError('请求已取消', 'UNKNOWN', 0, undefined, cause);
-    }
-    return new HttpClientError('网络连接异常', 'INTERNAL_ERROR', 0, undefined, cause);
+    const error = classifyNetworkErrorMessage(message);
+    return new HttpClientError(error.message, error.code, 0, undefined, cause);
   }
 }

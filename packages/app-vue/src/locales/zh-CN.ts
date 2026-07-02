@@ -57,11 +57,13 @@ export default {
     },
   },
   errors: {
+    BAD_REQUEST: '请求参数错误，请检查后重试',
     UNAUTHORIZED: '当前登录状态无效，请重新登录',
     FORBIDDEN: '你没有权限执行此操作',
     NOT_FOUND: '请求的内容不存在或已被移除',
     CONFLICT: '当前操作与现有数据冲突，请稍后再试',
     VALIDATION_ERROR: '提交信息不合法，请检查后重试',
+    RATE_LIMITED: '请求过于频繁，请稍后再试',
     SERVICE_UNAVAILABLE: '服务暂不可用，请稍后再试',
     INTERNAL_ERROR: '服务出现异常，请稍后再试',
     TIMEOUT: '请求超时，请稍后再试',
@@ -1028,7 +1030,10 @@ export default {
     errors: {
       USER_ALREADY_EXISTS: '该邮箱已被注册',
       AUTH_FAILED: '邮箱或密码错误',
+      BAD_REQUEST: '请求参数错误，请检查后重试',
       CONFLICT: '当前操作与现有数据冲突，请稍后再试',
+      FORBIDDEN: '当前账号无权执行此认证操作',
+      NOT_FOUND: '认证资源不存在，请稍后再试',
       OFFLINE: '当前网络不可用，请检查连接后重试',
       REMOTE_UNREACHABLE: '无法连接到认证服务，请确认服务已部署并可访问',
       CONFIG_ERROR: '桌面端未配置认证服务地址，请检查桌面运行时配置',
@@ -1038,8 +1043,10 @@ export default {
       REGISTER_ERROR: '注册失败，请稍后再试',
       UNAUTHORIZED: '邮箱或密码错误',
       VALIDATION_ERROR: '提交信息不合法，请检查后重试',
+      RATE_LIMITED: '尝试次数过多，请稍后再试',
       SERVICE_UNAVAILABLE: '认证服务暂不可用，请稍后再试',
       INTERNAL_ERROR: '认证服务异常，请稍后再试',
+      TIMEOUT: '认证请求超时，请稍后再试',
       UNKNOWN: '认证失败，请稍后再试',
     },
     smsCode: {
@@ -1150,8 +1157,42 @@ export default {
 
   // ── Dashboard module ────────────────────────────────────
   dashboard: {
+    title: '仪表盘',
+    subtitle: '全局概览与快速操作',
+    viewAll: '查看全部',
     error: {
       loadFailed: '加载仪表盘数据失败',
+    },
+    stats: {
+      activeTasks: '进行中任务',
+      completedToday: '今日完成',
+      activeGoals: '活跃目标',
+      upcomingReminders: '待处理提醒',
+      unreadNotifications: '未读通知',
+      scheduleConflicts: '日程冲突',
+    },
+    chart: {
+      title: '任务趋势 (近 7 天)',
+      completed: '已完成',
+      created: '新建',
+    },
+    activity: {
+      title: '最近动态',
+    },
+    goalProgress: {
+      title: '目标进度',
+    },
+    quickActions: {
+      label: '快速操作:',
+      newTask: '新建任务',
+      viewSchedule: '查看日程',
+      goalOverview: '目标总览',
+      notificationCenter: '通知中心',
+    },
+    time: {
+      justNow: '刚刚',
+      minutesAgo: '{count} 分钟前',
+      hoursAgo: '{count} 小时前',
     },
   },
 

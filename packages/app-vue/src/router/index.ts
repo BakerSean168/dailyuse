@@ -60,7 +60,7 @@ export function createAppRouter(options?: {
           path: 'dashboard',
           name: 'dashboard',
           component: () => import('../views/DashboardView.vue'),
-          meta: { title: '仪表盘' },
+          meta: { title: 'dashboard.title' },
         },
         // Module routes
         ...accountRoutes,

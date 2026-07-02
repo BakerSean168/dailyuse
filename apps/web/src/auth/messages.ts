@@ -3,6 +3,19 @@ export const zhCNAuthMessages = {
     loading: '加载中...',
     operationFailed: '操作失败',
   },
+  errors: {
+    BAD_REQUEST: '请求参数错误，请检查后重试',
+    UNAUTHORIZED: '当前登录状态无效，请重新登录',
+    FORBIDDEN: '你没有权限执行此操作',
+    NOT_FOUND: '请求的内容不存在或已被移除',
+    CONFLICT: '当前操作与现有数据冲突，请稍后再试',
+    VALIDATION_ERROR: '提交信息不合法，请检查后重试',
+    RATE_LIMITED: '请求过于频繁，请稍后再试',
+    SERVICE_UNAVAILABLE: '服务暂不可用，请稍后再试',
+    INTERNAL_ERROR: '服务出现异常，请稍后再试',
+    TIMEOUT: '请求超时，请稍后再试',
+    UNKNOWN: '操作失败，请稍后再试',
+  },
   auth: {
     page: {
       description: '登录你的账户以继续使用工作区',
@@ -46,11 +59,16 @@ export const zhCNAuthMessages = {
     },
     errors: {
       USER_ALREADY_EXISTS: '该邮箱已被注册',
+      BAD_REQUEST: '请求参数错误，请检查后重试',
       CONFLICT: '当前操作与现有数据冲突，请稍后再试',
+      FORBIDDEN: '当前账号无权执行此认证操作',
+      NOT_FOUND: '认证资源不存在，请稍后再试',
       UNAUTHORIZED: '邮箱或密码错误',
       VALIDATION_ERROR: '提交信息不合法，请检查后重试',
+      RATE_LIMITED: '尝试次数过多，请稍后再试',
       SERVICE_UNAVAILABLE: '认证服务暂不可用，请稍后再试',
       INTERNAL_ERROR: '认证服务异常，请稍后再试',
+      TIMEOUT: '认证请求超时，请稍后再试',
       UNKNOWN: '认证失败，请稍后再试',
     },
     toast: {
@@ -69,6 +87,19 @@ export const enUSAuthMessages = {
   common: {
     loading: 'Loading...',
     operationFailed: 'Operation failed',
+  },
+  errors: {
+    BAD_REQUEST: 'The request is invalid. Please review and try again.',
+    UNAUTHORIZED: 'Your session is no longer valid. Please sign in again.',
+    FORBIDDEN: 'You do not have permission to perform this action.',
+    NOT_FOUND: 'The requested item was not found or has been removed.',
+    CONFLICT: 'This request conflicts with existing data. Please try again.',
+    VALIDATION_ERROR: 'Some submitted data is invalid. Please review and try again.',
+    RATE_LIMITED: 'Too many requests. Please try again later.',
+    SERVICE_UNAVAILABLE: 'The service is temporarily unavailable. Please try again later.',
+    INTERNAL_ERROR: 'The service encountered an error. Please try again later.',
+    TIMEOUT: 'The request timed out. Please try again.',
+    UNKNOWN: 'The operation failed. Please try again.',
   },
   auth: {
     page: {
@@ -113,11 +144,16 @@ export const enUSAuthMessages = {
     },
     errors: {
       USER_ALREADY_EXISTS: 'An account with this email already exists',
+      BAD_REQUEST: 'The authentication request is invalid. Please review and try again.',
       CONFLICT: 'This request conflicts with existing data. Please try again.',
+      FORBIDDEN: 'This account cannot perform the requested authentication action.',
+      NOT_FOUND: 'The authentication resource was not found. Please try again later.',
       UNAUTHORIZED: 'Incorrect email or password',
       VALIDATION_ERROR: 'Some fields are invalid. Please review your input.',
+      RATE_LIMITED: 'Too many attempts. Please try again later.',
       SERVICE_UNAVAILABLE: 'Authentication is temporarily unavailable. Please try again later.',
       INTERNAL_ERROR: 'The authentication service encountered an error. Please try again later.',
+      TIMEOUT: 'The authentication request timed out. Please try again.',
       UNKNOWN: 'Authentication failed. Please try again.',
     },
     toast: {

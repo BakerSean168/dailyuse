@@ -5,51 +5,18 @@ import type {
   RegisterByEmailRes,
 } from '@dailyuse/contracts/authentication';
 import type { Result, ResultError, ResultMeta } from '@dailyuse/contracts/result';
+import { classifyNetworkErrorMessage, statusToResultError } from '@dailyuse/http-client';
 
 const AUTH_BASE_URL = '/api/v1/auth';
 
-function createFailure(code: string, message: string, cause?: unknown): Result<never> {
+function createFailure(error: ResultError, cause?: unknown): Result<never> {
   return {
     ok: false,
     error: {
-      code,
-      message,
+      ...error,
       ...(cause !== undefined ? { cause } : {}),
     },
   };
-}
-
-function statusToError(status: number, fallbackMessage?: string): ResultError {
-  switch (status) {
-    case 400:
-      return { code: 'BAD_REQUEST', message: fallbackMessage ?? '请求参数错误' };
-    case 401:
-      return { code: 'UNAUTHORIZED', message: fallbackMessage ?? '未授权，请登录' };
-    case 403:
-      return { code: 'FORBIDDEN', message: fallbackMessage ?? '拒绝访问' };
-    case 404:
-      return { code: 'NOT_FOUND', message: fallbackMessage ?? '资源不存在' };
-    case 408:
-      return { code: 'TIMEOUT', message: fallbackMessage ?? '请求超时' };
-    case 409:
-      return { code: 'CONFLICT', message: fallbackMessage ?? '资源冲突' };
-    case 422:
-      return { code: 'VALIDATION_ERROR', message: fallbackMessage ?? '参数验证失败' };
-    case 429:
-      return { code: 'RATE_LIMITED', message: fallbackMessage ?? '请求过于频繁' };
-    case 500:
-      return { code: 'INTERNAL_ERROR', message: fallbackMessage ?? '服务器内部错误' };
-    case 502:
-    case 503:
-      return { code: 'SERVICE_UNAVAILABLE', message: fallbackMessage ?? '服务不可用' };
-    case 504:
-      return { code: 'TIMEOUT', message: fallbackMessage ?? '网关超时' };
-    default:
-      return {
-        code: 'UNKNOWN',
-        message: fallbackMessage ?? `请求失败 (HTTP ${status})`,
-      };
-  }
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -93,7 +60,7 @@ async function postAuth<TReq, TRes>(path: string, payload: TReq): Promise<Result
 
       return {
         ok: false,
-        error: body.error ?? statusToError(response.status),
+        error: body.error ?? statusToResultError(response.status),
         ...(toResultMeta(body.meta) ? { meta: toResultMeta(body.meta) } : {}),
       };
     }
@@ -128,25 +95,22 @@ async function postAuth<TReq, TRes>(path: string, payload: TReq): Promise<Result
       if (typeof candidate.message === 'string') {
         return {
           ok: false,
-          error: statusToError(response.status, candidate.message),
+          error: statusToResultError(response.status, candidate.message),
         };
       }
     }
 
     return {
       ok: false,
-      error: statusToError(response.status),
+      error: statusToResultError(response.status),
     };
   } catch (errorLike) {
     if (errorLike instanceof Error && errorLike.name === 'AbortError') {
-      return createFailure('TIMEOUT', '请求已取消', errorLike);
+      return createFailure(classifyNetworkErrorMessage('aborted'), errorLike);
     }
 
-    if (errorLike instanceof Error && /timeout/i.test(errorLike.message)) {
-      return createFailure('TIMEOUT', '网络请求超时', errorLike);
-    }
-
-    return createFailure('SERVICE_UNAVAILABLE', '网络连接异常', errorLike);
+    const message = errorLike instanceof Error ? errorLike.message : undefined;
+    return createFailure(classifyNetworkErrorMessage(message), errorLike);
   }
 }
 

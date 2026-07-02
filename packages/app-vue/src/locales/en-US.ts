@@ -57,11 +57,13 @@ export default {
     },
   },
   errors: {
+    BAD_REQUEST: 'The request is invalid. Please review and try again.',
     UNAUTHORIZED: 'Your session is no longer valid. Please sign in again.',
     FORBIDDEN: 'You do not have permission to perform this action.',
     NOT_FOUND: 'The requested item was not found or has been removed.',
     CONFLICT: 'This request conflicts with existing data. Please try again.',
     VALIDATION_ERROR: 'Some submitted data is invalid. Please review and try again.',
+    RATE_LIMITED: 'Too many requests. Please try again later.',
     SERVICE_UNAVAILABLE: 'The service is temporarily unavailable. Please try again later.',
     INTERNAL_ERROR: 'The service encountered an error. Please try again later.',
     TIMEOUT: 'The request timed out. Please try again.',
@@ -1063,7 +1065,10 @@ export default {
     errors: {
       USER_ALREADY_EXISTS: 'An account with this email already exists',
       AUTH_FAILED: 'Incorrect email or password',
+      BAD_REQUEST: 'The authentication request is invalid. Please review and try again.',
       CONFLICT: 'This request conflicts with existing data. Please try again.',
+      FORBIDDEN: 'This account cannot perform the requested authentication action.',
+      NOT_FOUND: 'The authentication resource was not found. Please try again later.',
       OFFLINE: 'No network connection is available. Please try again after reconnecting.',
       REMOTE_UNREACHABLE:
         'The authentication service could not be reached. Please verify the deployed service is accessible.',
@@ -1075,8 +1080,10 @@ export default {
       REGISTER_ERROR: 'Registration failed. Please try again.',
       UNAUTHORIZED: 'Incorrect email or password',
       VALIDATION_ERROR: 'Some fields are invalid. Please review your input.',
+      RATE_LIMITED: 'Too many attempts. Please try again later.',
       SERVICE_UNAVAILABLE: 'Authentication is temporarily unavailable. Please try again later.',
       INTERNAL_ERROR: 'The authentication service encountered an error. Please try again later.',
+      TIMEOUT: 'The authentication request timed out. Please try again.',
       UNKNOWN: 'Authentication failed. Please try again.',
     },
     smsCode: {
@@ -1188,8 +1195,42 @@ export default {
 
   // ── Dashboard module ────────────────────────────────────
   dashboard: {
+    title: 'Dashboard',
+    subtitle: 'Global overview and quick actions',
+    viewAll: 'View All',
     error: {
       loadFailed: 'Failed to load dashboard data',
+    },
+    stats: {
+      activeTasks: 'Active Tasks',
+      completedToday: 'Completed Today',
+      activeGoals: 'Active Goals',
+      upcomingReminders: 'Pending Reminders',
+      unreadNotifications: 'Unread Notifications',
+      scheduleConflicts: 'Schedule Conflicts',
+    },
+    chart: {
+      title: 'Task Trend (Last 7 Days)',
+      completed: 'Completed',
+      created: 'Created',
+    },
+    activity: {
+      title: 'Recent Activity',
+    },
+    goalProgress: {
+      title: 'Goal Progress',
+    },
+    quickActions: {
+      label: 'Quick Actions:',
+      newTask: 'New Task',
+      viewSchedule: 'View Schedule',
+      goalOverview: 'Goal Overview',
+      notificationCenter: 'Notification Center',
+    },
+    time: {
+      justNow: 'Just now',
+      minutesAgo: '{count} minutes ago',
+      hoursAgo: '{count} hours ago',
     },
   },
 
