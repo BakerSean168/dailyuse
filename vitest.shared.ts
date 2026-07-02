@@ -352,7 +352,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     test: {
       globals: true,
       environment,
-      passWithNoTests: true,
+      passWithNoTests: false,
       include: testInclude ?? ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       exclude: [
         'node_modules',
@@ -425,6 +425,6 @@ export function createPackageVitestConfig(options: PackageVitestConfigOptions) {
 export default defineConfig({
   test: {
     globals: true,
-    passWithNoTests: true,
+    passWithNoTests: false,
   },
 });

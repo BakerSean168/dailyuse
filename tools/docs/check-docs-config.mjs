@@ -57,15 +57,19 @@ const TEXT_FILE_EXTENSIONS = new Set([
 ]);
 
 const SKIP_DIRS = new Set([
+  '.cache',
   '.pytest_cache',
+  '.pytest-temp',
   '.git',
   '.nx',
+  '__pycache__',
   'build',
   'coverage',
   'dist',
   'dist-electron',
   'dist-renderer',
   'node_modules',
+  'reports',
 ]);
 
 const errors = [];
@@ -353,7 +357,12 @@ async function expectDirectory(targetPath, message) {
 }
 
 async function* walk(currentPath) {
-  const entries = await readdir(currentPath, { withFileTypes: true });
+  let entries;
+  try {
+    entries = await readdir(currentPath, { withFileTypes: true });
+  } catch {
+    return;
+  }
 
   for (const entry of entries) {
     if (SKIP_DIRS.has(entry.name)) {

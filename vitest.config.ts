@@ -56,9 +56,10 @@ export default defineConfig({
       './apps/web/vitest.config.ts',
     ],
 
-    // Global test settings
+    // Global test settings.
+    // Projects with no tests must be explicit exceptions in governance tooling.
     globals: true,
-    passWithNoTests: true,
+    passWithNoTests: false,
 
     // Bail early in CI environments
     bail: process.env.CI ? 1 : 0,
