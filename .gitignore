@@ -144,7 +144,7 @@ __pycache__/
 .claude/settings.local.json
 
 # 测试报告
-reports/**/junit.xml
+**/reports/**/junit.xml
 reports/local-deploy-validation/
 homeprojectsdailyuse/
 test-results/
