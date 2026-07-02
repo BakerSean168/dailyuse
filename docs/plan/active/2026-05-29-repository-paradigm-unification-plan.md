@@ -7,10 +7,24 @@ tags:
   - lint
 description: 基于 2026-05-30 当前工作树状态的仓库范式统一执行审计与后续深化计划
 created: 2026-05-29T00:00:00
-updated: 2026-06-01T13:55:00+08:00
+updated: 2026-07-02T00:00:00+08:00
 ---
 
 # 2026-05-29 Repository Paradigm Unification Plan
+
+## 2026-07-02 plan review status
+
+本计划仍保留在 `docs/plan/active`，不归档。
+
+当前实现已经覆盖大部分原始目标：`package-internal-boundary-audit`、`package-export-audit`、`public-surface-audit` 均已通过；测试层不再全局关闭 Nx module boundary；生产代码中的 `as PrismaClient` seam 已清到测试文件；`passWithNoTests` 已通过治理脚本收紧。
+
+仍未达到本文“完整完成后归档”的条件：
+
+1. `target-baseline-audit` 当前仍报告 12 个 documented exemptions，尚未低于本文历史完成判定要求的 10 个以内。
+2. `eslint.config.ts` 仍对 `apps/web/src/mocks/handlers/**/*.spec.ts` 保留一处窄范围 `@nx/enforce-module-boundaries` 测试例外。
+3. `packages/ai/src/infrastructure-server/adapters/powersync/agent-checkpoint-powersync.adapter.ts` 仍是明确标注未实现的 PowerSync checkpoint adapter stub。
+
+因此本次审查判定为：**基本完成，但未完整完成**。后续应优先收敛 target baseline exemptions 与残留测试例外；PowerSync checkpoint stub 若被确认为非当前产品范围，应通过 ADR/计划更新明确降级为后续能力，而不是让 active plan 隐含承诺。
 
 ## 2026-06-01 继续往下收方案（第八轮，收尾而非重构）
 
