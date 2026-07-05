@@ -25,9 +25,7 @@ vi.mock('@dailyuse/goal/api', () => ({
 vi.mock('@dailyuse/task/api', () => ({
   createTaskPrismaModule: vi.fn(() => ({
     api: {
-      createTaskTemplate: {
-        execute: mocks.createTaskTemplate,
-      },
+      createTaskTemplate: mocks.createTaskTemplate,
     },
   })),
 }));

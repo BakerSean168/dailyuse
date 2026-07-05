@@ -27,6 +27,11 @@ import {
   createMockSessionRepository,
 } from '../../__fixtures__/auth-test-fixtures';
 
+const GUEST_IDENTITY_ID = 'IdentityId_11111111-1111-4111-8111-111111111111';
+const GUEST_SESSION_ID = 'AuthSessionId_11111111-1111-4111-8111-111111111111';
+const ONLINE_IDENTITY_ID = 'IdentityId_22222222-2222-4222-8222-222222222222';
+const ONLINE_SESSION_ID = 'AuthSessionId_22222222-2222-4222-8222-222222222222';
+
 /** Typed access to SessionManager private fields for test assertions. */
 interface SessionManagerPrivates {
   tokenManager: TokenManager;
@@ -49,8 +54,8 @@ describe('SessionManager', () => {
   });
 
   it('reuses the persisted guest identity on cold start when token cache is empty', async () => {
-    const guestId = 'IdentityId_guest-1';
-    const guestSession = { id: 'session-1', identityId: guestId };
+    const guestId = GUEST_IDENTITY_ID;
+    const guestSession = { id: GUEST_SESSION_ID, identityId: guestId };
     const sessionRepository = createMockSessionRepository({
       findByIdentityId: vi.fn().mockResolvedValue([guestSession]),
     });
@@ -66,7 +71,7 @@ describe('SessionManager', () => {
       accessTokenExpiresAt: Date.now() + 3600_000,
       refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
       identityId: guestId,
-      sessionId: 'session-1',
+      sessionId: GUEST_SESSION_ID,
     });
 
     privates(manager).tokenManager = {
@@ -115,8 +120,8 @@ describe('SessionManager', () => {
 
   it('restores a persisted online session without discarding non-guest tokens', async () => {
     const restoredSession = {
-      id: 'session-1',
-      identityId: 'user-1',
+      id: ONLINE_SESSION_ID,
+      identityId: ONLINE_IDENTITY_ID,
       isValid: vi.fn(() => true),
     };
     const sessionRepository = createMockSessionRepository({
@@ -133,13 +138,13 @@ describe('SessionManager', () => {
     privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens: vi.fn().mockResolvedValue({
-        accessToken: 'server-access-token',
-        refreshToken: 'server-refresh-token',
-        accessTokenExpiresAt: Date.now() + 3600_000,
-        refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
-        identityId: 'user-1',
-        sessionId: 'session-1',
-      }),
+      accessToken: 'server-access-token',
+      refreshToken: 'server-refresh-token',
+      accessTokenExpiresAt: Date.now() + 3600_000,
+      refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
+      identityId: ONLINE_IDENTITY_ID,
+      sessionId: ONLINE_SESSION_ID,
+    }),
       clearTokens,
       saveTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
@@ -148,14 +153,14 @@ describe('SessionManager', () => {
     const result = await manager.restoreSession();
 
     expect(result.ok).toBe(true);
-    expect(result.identityId).toBe('user-1');
-    expect(sessionRepository.findById).toHaveBeenCalledWith('session-1');
+    expect(result.identityId).toBe(ONLINE_IDENTITY_ID);
+    expect(sessionRepository.findById).toHaveBeenCalledWith(ONLINE_SESSION_ID);
     expect(clearTokens).not.toHaveBeenCalled();
     expect(privates(manager).currentSession).toBe(restoredSession);
   });
 
   it('reconstructs a guest session when the token is valid but the session row is missing', async () => {
-    const guestId = 'IdentityId_guest-1';
+    const guestId = GUEST_IDENTITY_ID;
     const sessionRepository = createMockSessionRepository();
     const manager = new SessionManager(
       sessionRepository as unknown as SessionManager['sessionRepository'],
@@ -168,13 +173,13 @@ describe('SessionManager', () => {
     privates(manager).tokenManager = {
       getCachedTokenData: vi.fn().mockReturnValue(null),
       loadTokens: vi.fn().mockResolvedValue({
-        accessToken: 'guest-local-token',
-        refreshToken: 'guest-local-token',
-        accessTokenExpiresAt: Date.now() + 3600_000,
-        refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
-        identityId: guestId,
-        sessionId: 'session-1',
-      }),
+      accessToken: 'guest-local-token',
+      refreshToken: 'guest-local-token',
+      accessTokenExpiresAt: Date.now() + 3600_000,
+      refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
+      identityId: guestId,
+      sessionId: GUEST_SESSION_ID,
+    }),
       clearTokens,
       saveTokens: vi.fn(),
       stopAutoRefresh: vi.fn(),
@@ -204,8 +209,8 @@ describe('SessionManager', () => {
       refreshToken: 'local-token',
       accessTokenExpiresAt: Date.now() - 1000,
       refreshTokenExpiresAt: Date.now() + 24 * 3600_000,
-      identityId: 'user-1',
-      sessionId: 'session-1',
+      identityId: ONLINE_IDENTITY_ID,
+      sessionId: ONLINE_SESSION_ID,
     });
 
     privates(manager).currentSession = {
@@ -257,8 +262,8 @@ describe('SessionManager', () => {
     } as unknown as TokenManager;
 
     await manager.activateOnlineSession({
-      identityId: 'user-1',
-      sessionId: 'session-1',
+      identityId: ONLINE_IDENTITY_ID,
+      sessionId: ONLINE_SESSION_ID,
       accessToken: 'server-access-token',
       refreshToken: 'server-refresh-token',
       expiresIn: 3600,
@@ -268,11 +273,11 @@ describe('SessionManager', () => {
       accessToken: 'server-access-token',
       refreshToken: 'server-refresh-token',
       accessTokenExpiresIn: 3600,
-      identityId: 'user-1',
-      sessionId: 'session-1',
+      identityId: ONLINE_IDENTITY_ID,
+      sessionId: ONLINE_SESSION_ID,
     });
     expect(sessionRepository.save).toHaveBeenCalledOnce();
     expect(startAutoRefresh).toHaveBeenCalledOnce();
-    expect(privates(manager).currentSession?.identityId).toBe('user-1');
+    expect(privates(manager).currentSession?.identityId).toBe(ONLINE_IDENTITY_ID);
   });
 });

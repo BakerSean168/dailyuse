@@ -28,6 +28,7 @@ export const domainResolveAtAlias = {
       'editor',
       'repository',
       'schedule',
+      'schedule-orchestration',
     ];
 
     let root: string | null = null;
@@ -205,6 +206,14 @@ export const domainResolveAliases = [
   {
     find: '@dailyuse/task',
     replacement: path.resolve(__dirname, './packages/task/src/index.ts'),
+  },
+  {
+    find: /^@dailyuse\/schedule-orchestration\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/schedule-orchestration/src/$1'),
+  },
+  {
+    find: '@dailyuse/schedule-orchestration',
+    replacement: path.resolve(__dirname, './packages/schedule-orchestration/src/index.ts'),
   },
   {
     find: /^@dailyuse\/authentication\/(.+)/,

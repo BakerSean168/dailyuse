@@ -3,12 +3,12 @@
  */
 
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
+import type { TaskEventMap } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 
-/** Loosely-typed event bus handle for sending task events without branded-type friction. */
-const taskEventBus = eventBus as unknown as { send(event: string, payload: unknown): void };
+const taskEvents = createTypedEventPublisher<Pick<TaskEventMap, 'task:instance-deleted'>>(eventBus);
 
 export class DeleteTaskInstanceUseCase {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
@@ -21,10 +21,10 @@ export class DeleteTaskInstanceUseCase {
     await this.instanceRepository.delete(id);
 
     if (instance) {
-      taskEventBus.send('task:instance-deleted', {
-        identityId: String(instance.identityId),
+      taskEvents.send('task:instance-deleted', {
+        identityId: instance.identityId,
         taskInstanceId: instance.id,
-        taskTemplateId: String(instance.templateId),
+        taskTemplateId: instance.templateId,
         deletedAt: Date.now(),
       });
     }

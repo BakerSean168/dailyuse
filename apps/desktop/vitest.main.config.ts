@@ -15,6 +15,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      {
+        find: /^electron$/,
+        replacement: resolve(__dirname, './test-support/electron.stub.ts'),
+      },
       ...createContractsAliasEntries(resolve(__dirname, '../..')),
       {
         find: '@dailyuse/domain-shared/shared',
@@ -52,7 +56,10 @@ export default defineConfig({
         find: '@dailyuse/account',
         replacement: resolve(__dirname, '../../packages/account/src/index.ts'),
       },
+      {
+        find: '@dailyuse/schedule-orchestration',
+        replacement: resolve(__dirname, '../../packages/schedule-orchestration/src/index.ts'),
+      },
     ],
   },
 });
-

@@ -1,0 +1,22 @@
+import type {
+  NotificationCategory,
+  NotificationChannelType,
+  NotificationType,
+  RelatedEntityType,
+} from '@dailyuse/contracts/notification';
+
+export interface ScheduleNotificationRequest {
+  readonly identityId: string;
+  readonly title: string;
+  readonly content: string;
+  readonly type: NotificationType;
+  readonly category: NotificationCategory;
+  readonly relatedEntityType?: RelatedEntityType;
+  readonly relatedEntityId?: string;
+  readonly channels?: readonly NotificationChannelType[];
+  readonly expiresAt?: number | null;
+}
+
+export interface ScheduleNotificationPort {
+  createNotification(request: ScheduleNotificationRequest): Promise<unknown>;
+}

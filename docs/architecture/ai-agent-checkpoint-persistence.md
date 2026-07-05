@@ -71,8 +71,8 @@ export interface IAgentCheckpointPort {
 
 ### Adapter 实现
 
-- **Prisma**: `AgentCheckpointPrismaAdapter` - 用于 API 服务端
-- **PowerSync**: `AgentCheckpointPowerSyncAdapter` - 用于 Desktop 客户端
+- **Prisma**: `AgentCheckpointPrismaAdapter` - 用于 API 服务端（当前唯一实现）
+- **PowerSync**: 当前不在支持面。Desktop 客户端通过 API HTTP 路由间接使用 Prisma adapter。若未来需要离线 checkpoint，再按需实现 PowerSync adapter。
 
 ### API Routes
 
@@ -263,7 +263,7 @@ describe('AgentCheckpointPrismaAdapter', () => {
 ## 后续工作
 
 1. ✅ 定义 `IAgentCheckpointPort` 和 schema
-2. ✅ 实现 Prisma / PowerSync adapter
+2. ✅ 实现 Prisma adapter（PowerSync adapter 已移除，当前不在支持面）
 3. ✅ 实现 Python `TSCheckpointClient` 和 `TSCheckpointAdapter`
 4. ✅ 创建 checkpoint factory
 5. ⏳ 更新 `app.py` 使用新 factory（保留兼容性）

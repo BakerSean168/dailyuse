@@ -214,15 +214,7 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {},
     },
-    {
-      // Web mock handler contract tests need to import from packages that are
-      // lazy-loaded in the app's DI configuration. These are contract verification
-      // tests, not production code, so the lazy-load boundary doesn't apply.
-      files: ['apps/web/src/mocks/handlers/**/*.spec.ts'],
-      rules: {
-        '@nx/enforce-module-boundaries': 'off',
-      },
-    },
+
     {
       files: [
         'packages/repository/src/application-server/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',

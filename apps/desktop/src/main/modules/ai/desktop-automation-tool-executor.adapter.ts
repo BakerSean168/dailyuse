@@ -235,7 +235,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
             throw new Error(`Missing task template draft for index ${action.index ?? -1}`);
           }
 
-          const result = await this.taskModule.api.createTaskTemplate.execute({
+          const result = await this.taskModule.api.createTaskTemplate({
             identityId: input.identityId as IdentityId,
             name: taskTemplate.name,
             description: taskTemplate.description ?? null,

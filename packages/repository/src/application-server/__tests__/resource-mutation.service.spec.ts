@@ -72,7 +72,7 @@ describe('ResourceMutationService', () => {
     const { service, resourceRepository, repository } = await createTestEnv();
     const receivedEvents: RepositoryResourceMutatedEvent[] = [];
     const handler = (event: RepositoryResourceMutatedEvent) => receivedEvents.push(event);
-    (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+    eventBus.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
 
     try {
       const result = await service.createResource({
@@ -87,7 +87,7 @@ describe('ResourceMutationService', () => {
       expect(receivedEvents).toHaveLength(1);
       expect(receivedEvents[0].mutation).toBe(RepositoryResourceMutationType.Created);
     } finally {
-      (eventBus as any).off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+      eventBus.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
     }
   });
 
@@ -187,7 +187,7 @@ describe('ResourceMutationService', () => {
     const { service, repository } = await createTestEnv();
     const receivedEvents: RepositoryResourceMutatedEvent[] = [];
     const handler = (event: RepositoryResourceMutatedEvent) => receivedEvents.push(event);
-    (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+    eventBus.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
 
     try {
       const created = await service.createResource({
@@ -207,7 +207,7 @@ describe('ResourceMutationService', () => {
         RepositoryResourceMutationType.ContentUpdated,
       ]);
     } finally {
-      (eventBus as any).off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+      eventBus.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
     }
   });
 
@@ -215,7 +215,7 @@ describe('ResourceMutationService', () => {
     const { service, repository } = await createTestEnv();
     const receivedEvents: RepositoryResourceMutatedEvent[] = [];
     const handler = (event: RepositoryResourceMutatedEvent) => receivedEvents.push(event);
-    (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+    eventBus.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
 
     try {
       const created = await service.createResource({
@@ -235,7 +235,7 @@ describe('ResourceMutationService', () => {
         RepositoryResourceMutationType.Moved,
       ]);
     } finally {
-      (eventBus as any).off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+      eventBus.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
     }
   });
 
@@ -243,7 +243,7 @@ describe('ResourceMutationService', () => {
     const { service, repository, tempDir } = await createTestEnv();
     const receivedEvents: RepositoryResourceMutatedEvent[] = [];
     const handler = (event: RepositoryResourceMutatedEvent) => receivedEvents.push(event);
-    (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+    eventBus.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
 
     try {
       const created = await service.createResource({
@@ -268,7 +268,7 @@ describe('ResourceMutationService', () => {
         fs.promises.stat(path.join(tempDir, String(repository.id), 'note.md')),
       ).rejects.toThrow();
     } finally {
-      (eventBus as any).off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+      eventBus.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
     }
   });
 

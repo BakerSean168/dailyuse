@@ -48,13 +48,13 @@ const DEFAULT_ALLOWED_SUBPATHS = [
 /** Per-package additions to the default whitelist */
 const PACKAGE_SPECIFIC_SUBPATHS = {
   governance: ['./contracts', './mocks'],
-  goal: ['./analytics', './events'],
-  task: ['./analytics', './testing', './schema'],
+  goal: ['./analytics', './events', './schedule-execution', './schedule-projection'],
+  task: ['./analytics', './testing', './schema', './schedule-execution', './schedule-projection'],
   ai: ['./ports', './schema'],
   repository: ['./schema'],
   authentication: ['./schema'],
-  notification: ['./commands', './schema'],
-  reminder: ['./schema'],
+  notification: ['./commands', './schema', './schedule-execution'],
+  reminder: ['./schema', './schedule-execution', './schedule-projection'],
   schedule: ['./schema'],
   setting: ['./schema'],
   contracts: [

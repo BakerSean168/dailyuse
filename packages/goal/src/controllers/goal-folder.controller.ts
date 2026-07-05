@@ -27,11 +27,11 @@ import type {
 // ============ Use Case Port ============
 
 export interface GoalFolderUseCases {
-  createGoalFolder: CreateGoalFolderUseCase;
-  getGoalFolder: GetGoalFolderUseCase;
-  listGoalFolders: ListGoalFoldersUseCase;
-  updateGoalFolder: UpdateGoalFolderUseCase;
-  deleteGoalFolder: DeleteGoalFolderUseCase;
+  createGoalFolder: CreateGoalFolderUseCase['execute'];
+  getGoalFolder: GetGoalFolderUseCase['execute'];
+  listGoalFolders: ListGoalFoldersUseCase['execute'];
+  updateGoalFolder: UpdateGoalFolderUseCase['execute'];
+  deleteGoalFolder: DeleteGoalFolderUseCase['execute'];
 }
 
 /**
@@ -53,7 +53,7 @@ export class GoalFolderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createGoalFolder.execute(
+    return this.useCases.createGoalFolder(
       cx.identityId as unknown as IdentityId,
       parsed.data,
     );
@@ -73,11 +73,11 @@ export class GoalFolderController {
       ...parsed.data,
       identityId: cx.identityId as unknown as IdentityId,
     };
-    return this.useCases.listGoalFolders.execute(query);
+    return this.useCases.listGoalFolders(query);
   }
 
   async get(id: string): Promise<Result<unknown>> {
-    return this.useCases.getGoalFolder.execute(id);
+    return this.useCases.getGoalFolder(id);
   }
 
   async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -89,10 +89,10 @@ export class GoalFolderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateGoalFolder.execute(id, cx.identityId, parsed.data);
+    return this.useCases.updateGoalFolder(id, cx.identityId, parsed.data);
   }
 
   async delete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.deleteGoalFolder.execute(id, cx.identityId);
+    return this.useCases.deleteGoalFolder(id, cx.identityId);
   }
 }

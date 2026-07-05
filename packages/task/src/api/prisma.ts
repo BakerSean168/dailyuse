@@ -8,6 +8,8 @@
 import type { PrismaClient } from '@dailyuse/database';
 import {
   createTaskModule,
+  createTaskScheduleExecutionSource,
+  createTaskScheduleProjectionSource,
   TaskTemplatePrismaRepository,
   TaskInstancePrismaRepository,
   TaskDependencyPrismaRepository,
@@ -15,6 +17,8 @@ import {
   type TaskModuleInstance,
   type TaskModuleRuntimeContribution,
 } from '../infrastructure-server';
+import type { TaskScheduleExecutionSource } from '../schedule-execution';
+import type { TaskScheduleProjectionSource } from '../schedule-projection';
 
 export interface CreateTaskPrismaModuleOptions {
   readonly runtimeContributions?:
@@ -49,4 +53,26 @@ export function createTaskPrismaRepositories(db: PrismaClient) {
     taskDependencyRepository: new TaskDependencyPrismaRepository(db),
     taskFolderRepository: new TaskFolderPrismaRepository(db),
   };
+}
+
+export function createTaskPrismaScheduleProjectionSource(
+  db: PrismaClient,
+): TaskScheduleProjectionSource {
+  const repositories = createTaskPrismaRepositories(db);
+
+  return createTaskScheduleProjectionSource({
+    taskTemplateRepository: repositories.taskTemplateRepository,
+    taskInstanceRepository: repositories.taskInstanceRepository,
+  });
+}
+
+export function createTaskPrismaScheduleExecutionSource(
+  db: PrismaClient,
+): TaskScheduleExecutionSource {
+  const repositories = createTaskPrismaRepositories(db);
+
+  return createTaskScheduleExecutionSource({
+    taskInstanceRepository: repositories.taskInstanceRepository,
+    taskTemplateRepository: repositories.taskTemplateRepository,
+  });
 }

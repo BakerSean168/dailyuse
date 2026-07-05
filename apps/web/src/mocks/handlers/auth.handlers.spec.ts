@@ -9,7 +9,6 @@ import {
   successResult,
 } from './_shared/contract-test-helpers';
 import { describe, expect, it } from 'vitest';
-import { AuthHttpAdapter } from '@dailyuse/authentication/infrastructure-client';
 import {
   AuthResponseSchema,
   ChangePasswordSchema,
@@ -38,6 +37,7 @@ describe('auth handlers contracts', () => {
   });
 
   it('uses the current auth adapter routes and request schemas', async () => {
+    const { AuthHttpAdapter } = await import('@dailyuse/authentication/infrastructure-client');
     const httpClient = createHttpClientSpy();
     const adapter = new AuthHttpAdapter(httpClient);
     const authResponse = createMockAuthResponse();

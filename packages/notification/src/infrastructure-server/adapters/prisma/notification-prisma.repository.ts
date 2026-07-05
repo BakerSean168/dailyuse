@@ -8,17 +8,15 @@
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { INotificationRepository } from '../../../domain-server';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
-import type {
-  NotificationCategory,
-  NotificationStatus,
-} from '@dailyuse/contracts/notification';
+import type { NotificationCategory, NotificationEventMap, NotificationStatus } from '@dailyuse/contracts/notification';
 import { Notification } from '../../../domain-server/aggregates/notification';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
 import {
   NotificationPrismaMapper,
   type PrismaNotificationWithRelations,
 } from './mappers/notification-prisma.mapper';
+
+const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 
 // ============================================================
 // Include presets
@@ -125,10 +123,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
       }
     });
 
-    for (const event of notification.pullDomainEvents()) {
-      const eventType = event.eventType as keyof AppEventRegistry;
-      eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
-    }
+    flushDomainEvents(notificationEventPublisher, notification);
   }
 
   async saveMany(notifications: Notification[]): Promise<void> {

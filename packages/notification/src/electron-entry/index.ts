@@ -17,7 +17,14 @@ import {
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
 import { fail } from '@dailyuse/contracts/result';
-import { createNotificationPowerSyncModule } from '../infrastructure-server/powersync';
+import { CreateNotificationUseCase } from '../commands';
+import type { ScheduleNotificationPort } from '../schedule-execution';
+import {
+  createNotificationPowerSyncModule,
+  PowerSyncNotificationPreferenceRepository,
+  PowerSyncNotificationRepository,
+  PowerSyncNotificationTemplateRepository,
+} from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils/logger';
 import { createNotificationTransportHandlers } from '../api/transport-handlers';
 import { createNotificationRuntimeContribution } from '../api/runtime';
@@ -57,6 +64,25 @@ export function getNotificationRepository(): INotificationRepository {
   }
 
   return activeNotificationModule.notificationRepository;
+}
+
+export function createNotificationPowerSyncScheduleNotificationPort(
+  db: IElectronModuleContext['db'],
+): ScheduleNotificationPort {
+  const createNotification = new CreateNotificationUseCase(
+    new PowerSyncNotificationRepository(db),
+    new PowerSyncNotificationTemplateRepository(db),
+    new PowerSyncNotificationPreferenceRepository(db),
+  );
+
+  return {
+    createNotification(request) {
+      return createNotification.execute({
+        ...request,
+        channels: request.channels ? Array.from(request.channels) : undefined,
+      });
+    },
+  };
 }
 
 export const NotificationElectronModule: IElectronModule = {

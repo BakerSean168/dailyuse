@@ -35,4 +35,21 @@ export {
   type GoalRuntimeContributionsInput,
 } from './goal.module';
 export { createGoalPrismaModule } from './prisma';
-export { createGoalPowerSyncModule } from './powersync';
+export {
+  createGoalPowerSyncModule,
+  createGoalPowerSyncScheduleExecutionSource,
+  createGoalPowerSyncScheduleProjectionSource,
+} from './powersync';
+export {
+  createGoalScheduleExecutionSource,
+  type CreateGoalScheduleExecutionSourceDeps,
+} from './schedule-execution-source';
+export {
+  createGoalScheduleProjectionEventHandlers,
+  createGoalScheduleProjectionSource,
+  type GoalScheduleProjectionEventMap,
+  type GoalScheduleProjectionHandlers,
+  type GoalScheduleProjectionPlan,
+  type GoalScheduleProjectionSelection,
+  type GoalScheduleProjectionSource,
+} from './schedule-projection-source';

@@ -1,18 +1,55 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - code-quality
   - consistency
   - architecture
   - testing
-description: 基于 2026-07-01 代码质量审查结果的校正后优化与治理执行方案
+description: 基于 2026-07-01 代码质量审查结果的校正后优化与治理执行方案（已归档；剩余优雅收口由后续 active plan 接续）
 created: 2026-07-01T00:00:00+08:00
-updated: 2026-07-01T00:00:00+08:00
+updated: 2026-07-04T19:20:00+08:00
 ---
 
 # 2026-07-01 Code Quality Consistency Remediation Plan
 
+## 2026-07-04 implementation review status
+
+本计划当前不能判定为“按原文完整完成”，但也不是“完全未实施”。
+
+更准确的真值是：**部分关键切片已经落地，剩余高价值残留已被拆入新的 active plan 继续处理，因此本文件应归档为历史执行背景，而不是继续作为活跃接力入口。**
+
+当前已确认落地的部分：
+
+1. `reminder` 已抽出 `createReminderUseCases()`，关键模板 CRUD 已改成 use-case delegation。
+2. `notification` facade 已不再直接执行 `db.execute()`；更新与偏好修改已经接到 use case。
+3. task contracts 已完成本计划要求的关键收紧：
+   - response schema 中关键 enum 改为 `z.enum()`
+   - create/update schema 已 `.strict()`
+   - `TaskType` 已补 `as const`
+   - 已补最小 contract tests
+4. 错误翻译链路已统一到 `@dailyuse/http-client`，`app-vue` 与 `apps/web` 仅保留 re-export。
+5. `scheduler-server` 已不再是 0 测试；`passWithNoTests` 也已由治理脚本收紧并白名单化。
+
+当前仍未按本文原始目标完整收口的部分：
+
+1. `reminder` 仍不是“薄 facade”终态：
+   - `ReminderApplicationPort` 里仍保留多处 `Record<string, unknown>`
+   - facade 内仍有不少 group/template orchestration 直接依赖 `ReminderDomainService`
+2. `notification` 虽已清掉 direct SQL seam，但 `deleteNotification`、`batchDelete`、`cleanupOldNotifications` 等行为仍有 facade 级 orchestration，没有完全下沉到 use case / repository seam
+3. API 数据库上下文没有按本文设想演进成多态 typed abstraction；仓库后来统一收到了共享 `PrismaClient` 契约
+4. `app-vue` 高业务价值 composable 覆盖没有按本文目标整体补齐，当前只有局部补测
+
+因此本文件的当前结论更新为：
+
+1. 它作为“问题分层与优先级判断”的价值仍然成立
+2. 它作为“当前 active 执行入口”的角色已经结束
+3. 其剩余未完成项已收敛为新的更窄主线：
+   - `reminder` facade 继续压薄
+   - `notification` 剩余 facade orchestration 继续下沉
+   - 全仓高价值 raw `eventBus.on/send` seam 继续 typed 化
+
+后续应以 `docs/plan/archive/2026-07-04-post-core-seam-elegant-refactor-plan.md` 为新的执行真值，而不是继续在本文件上滚动追加。
 ## 1. 背景
 
 `docs/audit/code-quality-consistency-audit.md` 已经给出一版覆盖全仓的自动化审查结果。该报告方向总体正确，尤其是对以下主题的判断具有较高价值：
@@ -524,3 +561,6 @@ updated: 2026-07-01T00:00:00+08:00
 5. `Phase 5`
 6. `Phase 6`
 7. `Phase 7`
+
+
+

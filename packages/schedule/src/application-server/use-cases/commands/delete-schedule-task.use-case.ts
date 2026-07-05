@@ -8,10 +8,15 @@
  * - 事务协调
  */
 
+import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain-server';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+
+const scheduleEvents = createTypedEventPublisher<Pick<ScheduleEventMap, 'schedule:task-deleted'>>(
+  eventBus,
+);
 
 /**
  * Delete Schedule Task Use Case
@@ -34,7 +39,7 @@ export class DeleteScheduleTaskUseCase {
 
     // 2. 执行删除（硬删除或软删除取决于业务需求）
     await this.scheduleTaskRepository.deleteById(id);
-    eventBus.send('schedule:task-deleted', { taskId: id });
+    scheduleEvents.send('schedule:task-deleted', { taskId: id });
 
     return ok(undefined);
   }

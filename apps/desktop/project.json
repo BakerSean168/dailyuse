@@ -66,10 +66,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build", "native-rebuild"],
       "options": {
-        "commands": [
-          "electron-builder --dir",
-          "node ./scripts/verify-packaged-runtime-deps.mjs"
-        ],
+        "commands": ["electron-builder --dir", "node ./scripts/verify-packaged-runtime-deps.mjs"],
         "cwd": "apps/desktop",
         "parallel": false
       }
@@ -121,21 +118,21 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config apps/desktop/vitest.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs run --config apps/desktop/vitest.config.ts"
       }
     },
     "test:watch": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --config apps/desktop/vitest.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs --config apps/desktop/vitest.config.ts"
       }
     },
     "test:ipc": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/apps/desktop-ipc"],
       "options": {
-        "command": "vitest run --config vitest.ipc.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.ipc.config.ts",
         "cwd": "apps/desktop"
       }
     },
@@ -151,7 +148,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/apps/desktop-main"],
       "options": {
-        "command": "vitest run --config vitest.main.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.main.config.ts",
         "cwd": "apps/desktop"
       }
     },

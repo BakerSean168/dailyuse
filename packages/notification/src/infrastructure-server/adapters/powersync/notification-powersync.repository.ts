@@ -1,16 +1,18 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
   NotificationCategory,
+  NotificationEventMap,
   NotificationServerDTO,
   NotificationStatus,
   NotificationType,
 } from '@dailyuse/contracts/notification';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { INotificationRepository } from '../../../domain-server/repositories/i-notification-repository';
 import { Notification } from '../../../domain-server/aggregates/notification';
 import { NotificationId, NotificationAction, NotificationMetadata } from '../../../domain-shared/value-objects';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+
+const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 
 interface NotificationRow {
   id: string;
@@ -198,10 +200,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
       );
     }
 
-    for (const event of notification.pullDomainEvents()) {
-      const eventType = event.eventType as keyof AppEventRegistry;
-      eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
-    }
+    flushDomainEvents(notificationEventPublisher, notification);
   }
 
   async saveMany(notifications: Notification[]): Promise<void> {

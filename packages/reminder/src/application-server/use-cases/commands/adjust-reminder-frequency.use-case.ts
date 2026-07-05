@@ -8,7 +8,14 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/i-reminder-template-repository';
 import type { ReminderEventMap } from '@dailyuse/contracts/reminder';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+
+const reminderAnalyticsEvents = createTypedEventPublisher<
+  Pick<
+    ReminderEventMap,
+    'reminder:frequency-adjusted' | 'reminder:frequency-adjustment-rejected'
+  >
+>(eventBus);
 
 /**
  * 调整结果
@@ -87,7 +94,7 @@ export class AdjustReminderFrequencyUseCase {
       identityId: request.identityId as ReminderEventMap['reminder:frequency-adjusted']['identityId'],
       adjustedAt: Date.now(),
     };
-    eventBus.send('reminder:frequency-adjusted', adjustedEvent);
+    reminderAnalyticsEvents.send('reminder:frequency-adjusted', adjustedEvent);
 
     return ok({
       templateId: request.templateId,
@@ -117,7 +124,7 @@ export class AdjustReminderFrequencyUseCase {
         identityId as ReminderEventMap['reminder:frequency-adjustment-rejected']['identityId'],
       rejectedAt: Date.now(),
     };
-    eventBus.send('reminder:frequency-adjustment-rejected', rejectedEvent);
+    reminderAnalyticsEvents.send('reminder:frequency-adjustment-rejected', rejectedEvent);
 
     return ok(undefined);
   }

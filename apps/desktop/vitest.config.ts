@@ -1,3 +1,4 @@
+import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vitest/config';
 import { createSharedConfig } from '../../vitest.shared';
 import {
@@ -88,6 +89,7 @@ const sharedConfig = createSharedConfig({
   // that behave more predictably under the Node test environment.
   environment: 'node',
   aliasEntries: [
+    { find: /^electron$/, replacement: './test-support/electron.stub.ts' },
     ...createAppVueSourceAliasEntries(__dirname + '/../..'),
     ...createWorkspaceSourceAliasEntries(__dirname + '/../..', desktopTestWorkspaceEntries),
   ],
@@ -96,6 +98,16 @@ const sharedConfig = createSharedConfig({
 export default defineConfig({
   ...sharedConfig,
   root: __dirname,
+  plugins: [
+    vue({
+      template: {
+        transformAssetUrls: {
+          base: null,
+          includeAbsolute: false,
+        },
+      },
+    }),
+  ],
   test: {
     ...(sharedConfig.test ?? {}),
     name: 'desktop',

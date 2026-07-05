@@ -11,12 +11,12 @@ import {
   InvalidTaskTemplateStateError,
   TaskTemplateArchivedError,
 } from '../value-objects/task-errors';
-import type { TaskTemplateState } from './task-template';
+import type { TaskTemplateProps } from './task-template.state';
 
 /** Mutable context for lifecycle operations. */
 export interface LifecycleContext {
   readonly id: import('../../domain-shared/value-objects/task-template-id').TaskTemplateId;
-  props: Omit<TaskTemplateState, 'id'>;
+  props: TaskTemplateProps;
   addHistory(action: string, changes?: unknown): void;
   publishDomainEvent<T>(eventName: string, payload: T): void;
   toServerDTO(): import('@dailyuse/contracts/task').TaskTemplateServerDTO;

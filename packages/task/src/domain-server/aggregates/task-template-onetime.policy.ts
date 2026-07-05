@@ -10,13 +10,13 @@ import { TaskType } from '../value-objects';
 import { DependencyStatus } from '../value-objects';
 import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import { calculateTaskPriority } from '../services/priority-calculator.service';
-import type { TaskTemplateState } from './task-template';
 import type { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
+import type { TaskTemplateProps } from './task-template.state';
 
 /** Context for OneTime operations. */
 export interface OneTimeOperationContext {
   readonly id: TaskTemplateId;
-  props: Omit<TaskTemplateState, 'id'>;
+  props: TaskTemplateProps;
   addHistory(action: string, changes?: unknown): void;
 }
 
@@ -33,7 +33,7 @@ function scoreToPriorityLevel(score: number): PriorityLevel {
 
 /** Gets the priority level and score. */
 export function getPriority(
-  props: Omit<TaskTemplateState, 'id'>,
+  props: TaskTemplateProps,
 ): { level: PriorityLevel; score: number } {
   if (props.taskType !== TaskType.OneTime) {
     return { level: PriorityLevel.Low as PriorityLevel, score: 0 };
@@ -71,7 +71,7 @@ export function removeSubtask(ctx: OneTimeOperationContext, subtaskId: string): 
 }
 
 /** Checks whether this template is a subtask. */
-export function isSubtask(props: Omit<TaskTemplateState, 'id'>): boolean {
+export function isSubtask(props: TaskTemplateProps): boolean {
   return props.parentTaskId !== null;
 }
 

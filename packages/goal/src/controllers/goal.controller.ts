@@ -72,35 +72,35 @@ import type {
 // ============ Use Case Port ============
 
 export interface GoalUseCases {
-  createGoal: CreateGoalUseCase;
-  getGoal: GetGoalUseCase;
-  listGoals: ListGoalsUseCase;
-  updateGoal: UpdateGoalUseCase;
-  deleteGoal: DeleteGoalUseCase;
-  archiveExpiredGoals: ArchiveExpiredGoalsUseCase;
-  archiveGoal: ArchiveGoalUseCase;
-  activateGoal: ActivateGoalUseCase;
-  completeGoal: CompleteGoalUseCase;
-  searchGoals: SearchGoalsUseCase;
-  addKeyResult: AddGoalKeyResultUseCase;
-  updateKeyResult: UpdateGoalKeyResultUseCase;
-  updateKeyResultProgress: UpdateGoalKeyResultProgressUseCase;
-  deleteKeyResult: DeleteGoalKeyResultUseCase;
-  addReview: AddGoalReviewUseCase;
-  listReviews: ListGoalReviewsUseCase;
-  updateReview: UpdateGoalReviewUseCase;
-  deleteReview: DeleteGoalReviewUseCase;
-  createRecord: CreateGoalRecordUseCase;
-  listRecords: ListGoalRecordsUseCase;
-  deleteRecord: DeleteGoalRecordUseCase;
-  activateFocusMode: ActivateFocusModeUseCase;
-  deactivateFocusMode: DeactivateFocusModeUseCase;
-  extendFocusMode: ExtendFocusModeUseCase;
-  getCurrentFocusMode: GetCurrentFocusModeUseCase;
-  getGoalAggregate: GetGoalAggregateUseCase;
-  getGoalProgressBreakdown: GetGoalProgressBreakdownUseCase;
-  cloneGoal: CloneGoalUseCase;
-  batchUpdateKeyResultWeights: BatchUpdateKeyResultWeightsUseCase;
+  createGoal: CreateGoalUseCase['execute'];
+  getGoal: GetGoalUseCase['execute'];
+  listGoals: ListGoalsUseCase['execute'];
+  updateGoal: UpdateGoalUseCase['execute'];
+  deleteGoal: DeleteGoalUseCase['execute'];
+  archiveExpiredGoals: ArchiveExpiredGoalsUseCase['execute'];
+  archiveGoal: ArchiveGoalUseCase['execute'];
+  activateGoal: ActivateGoalUseCase['execute'];
+  completeGoal: CompleteGoalUseCase['execute'];
+  searchGoals: SearchGoalsUseCase['execute'];
+  addKeyResult: AddGoalKeyResultUseCase['execute'];
+  updateKeyResult: UpdateGoalKeyResultUseCase['execute'];
+  updateKeyResultProgress: UpdateGoalKeyResultProgressUseCase['execute'];
+  deleteKeyResult: DeleteGoalKeyResultUseCase['execute'];
+  addReview: AddGoalReviewUseCase['execute'];
+  listReviews: ListGoalReviewsUseCase['execute'];
+  updateReview: UpdateGoalReviewUseCase['execute'];
+  deleteReview: DeleteGoalReviewUseCase['execute'];
+  createRecord: CreateGoalRecordUseCase['execute'];
+  listRecords: ListGoalRecordsUseCase['execute'];
+  deleteRecord: DeleteGoalRecordUseCase['execute'];
+  activateFocusMode: ActivateFocusModeUseCase['execute'];
+  deactivateFocusMode: DeactivateFocusModeUseCase['execute'];
+  extendFocusMode: ExtendFocusModeUseCase['execute'];
+  getCurrentFocusMode: GetCurrentFocusModeUseCase['execute'];
+  getGoalAggregate: GetGoalAggregateUseCase['execute'];
+  getGoalProgressBreakdown: GetGoalProgressBreakdownUseCase['execute'];
+  cloneGoal: CloneGoalUseCase['execute'];
+  batchUpdateKeyResultWeights: BatchUpdateKeyResultWeightsUseCase['execute'];
 }
 
 /**
@@ -129,7 +129,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createGoal.execute(parsed.data, cx);
+    return this.useCases.createGoal(parsed.data, cx);
   }
 
   async list(filters: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -146,7 +146,7 @@ export class GoalController {
       ...parsed.data,
       identityId: cx.identityId as IdentityId,
     };
-    return this.useCases.listGoals.execute(query);
+    return this.useCases.listGoals(query);
   }
 
   async search(query: string, cx: ExecutionContext, systemView?: string): Promise<Result<unknown>> {
@@ -156,11 +156,11 @@ export class GoalController {
         message: 'Search query (query) is required',
       });
     }
-    return this.useCases.searchGoals.execute(cx.identityId, query, systemView as GoalSystemView);
+    return this.useCases.searchGoals(cx.identityId, query, systemView as GoalSystemView);
   }
 
   async get(id: string, includeChildren = true): Promise<Result<unknown>> {
-    return this.useCases.getGoal.execute(id, includeChildren);
+    return this.useCases.getGoal(id, includeChildren);
   }
 
   async update(id: string, input: unknown): Promise<Result<unknown>> {
@@ -172,39 +172,39 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateGoal.execute(id, parsed.data);
+    return this.useCases.updateGoal(id, parsed.data);
   }
 
   async delete(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteGoal.execute(id);
+    return this.useCases.deleteGoal(id);
   }
 
   async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.archiveExpiredGoals.execute(cx.identityId);
+    return this.useCases.archiveExpiredGoals(cx.identityId);
   }
 
   // ==================== Goal Status Operations ====================
 
   async archive(id: string): Promise<Result<unknown>> {
-    return this.useCases.archiveGoal.execute(id);
+    return this.useCases.archiveGoal(id);
   }
 
   async activate(id: string): Promise<Result<unknown>> {
-    return this.useCases.activateGoal.execute(id);
+    return this.useCases.activateGoal(id);
   }
 
   async complete(id: string): Promise<Result<unknown>> {
-    const result = await this.useCases.completeGoal.execute(id);
+    const result = await this.useCases.completeGoal(id);
     if (!result.ok) return result;
     return ok(result.data.goal);
   }
 
   async getAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>> {
-    return this.useCases.getGoalAggregate.execute(goalId);
+    return this.useCases.getGoalAggregate(goalId);
   }
 
   async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
-    return this.useCases.getGoalProgressBreakdown.execute(goalId);
+    return this.useCases.getGoalProgressBreakdown(goalId);
   }
 
   async cloneGoal(goalId: string, params: unknown, cx: ExecutionContext): Promise<Result<GoalClientDTO>> {
@@ -217,20 +217,20 @@ export class GoalController {
       });
     }
 
-    return this.useCases.cloneGoal.execute(goalId, parsedParams.data, cx);
+    return this.useCases.cloneGoal(goalId, parsedParams.data, cx);
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
     updates: Array<{ keyResultId: string; weight: number }>,
   ): Promise<Result<unknown>> {
-    return this.useCases.batchUpdateKeyResultWeights.execute(goalId, updates);
+    return this.useCases.batchUpdateKeyResultWeights(goalId, updates);
   }
 
   // ==================== Key Results ====================
 
   async getKeyResults(goalId: string): Promise<Result<unknown>> {
-    const result = await this.useCases.getGoal.execute(goalId, true);
+    const result = await this.useCases.getGoal(goalId, true);
     if (!result.ok) return result;
     const goal = result.data as unknown as Record<string, unknown>;
     const keyResults = (goal.keyResults as unknown[]) ?? [];
@@ -252,7 +252,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.addKeyResult.execute(goalId, {
+    return this.useCases.addKeyResult(goalId, {
       title: parsed.data.title,
       valueType: parsed.data.valueType,
       aggregationMethod: parsed.data.calculationMethod,
@@ -273,7 +273,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateKeyResult.execute(goalId, krId, {
+    return this.useCases.updateKeyResult(goalId, krId, {
       title: parsed.data.title,
       description: parsed.data.description ?? undefined,
       weight: parsed.data.weight,
@@ -300,7 +300,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateKeyResultProgress.execute(
+    return this.useCases.updateKeyResultProgress(
       goalId,
       krId,
       parsed.data.newValue,
@@ -309,7 +309,7 @@ export class GoalController {
   }
 
   async deleteKeyResult(goalId: string, krId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteKeyResult.execute(goalId, krId);
+    return this.useCases.deleteKeyResult(goalId, krId);
   }
 
   // ==================== Reviews ====================
@@ -326,7 +326,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.addReview.execute(goalId, {
+    return this.useCases.addReview(goalId, {
       title: parsed.data.title,
       content: parsed.data.content,
       reviewType: parsed.data.reviewType,
@@ -340,7 +340,7 @@ export class GoalController {
   // ==================== Reviews - List / Update / Delete ====================
 
   async listReviews(goalId: string): Promise<Result<unknown>> {
-    return this.useCases.listReviews.execute(goalId);
+    return this.useCases.listReviews(goalId);
   }
 
   async updateReview(goalId: string, reviewId: string, input: unknown): Promise<Result<unknown>> {
@@ -352,7 +352,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateReview.execute(goalId, reviewId, {
+    return this.useCases.updateReview(goalId, reviewId, {
       title: parsed.data.title,
       content: parsed.data.content,
       rating: parsed.data.rating,
@@ -363,7 +363,7 @@ export class GoalController {
   }
 
   async deleteReview(goalId: string, reviewId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteReview.execute(goalId, reviewId);
+    return this.useCases.deleteReview(goalId, reviewId);
   }
 
   // ==================== Records ====================
@@ -385,7 +385,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createRecord.execute(
+    return this.useCases.createRecord(
       goalId,
       keyResultId,
       {
@@ -400,7 +400,7 @@ export class GoalController {
     goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<unknown>> {
-    return this.useCases.listRecords.execute({
+    return this.useCases.listRecords({
       goalId,
       limit: params?.limit,
       offset: params?.offset,
@@ -412,7 +412,7 @@ export class GoalController {
     keyResultId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<unknown>> {
-    return this.useCases.listRecords.execute({
+    return this.useCases.listRecords({
       goalId,
       keyResultId,
       limit: params?.limit,
@@ -421,7 +421,7 @@ export class GoalController {
   }
 
   async deleteRecord(recordId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteRecord.execute(recordId);
+    return this.useCases.deleteRecord(recordId);
   }
 
   // ==================== Focus Mode ====================
@@ -430,7 +430,7 @@ export class GoalController {
     this.logger.info('获取当前专注模式开始', {
       identityId: cx.identityId,
     });
-    return this.useCases.getCurrentFocusMode.execute(cx.identityId);
+    return this.useCases.getCurrentFocusMode(cx.identityId);
   }
 
   async activateFocusMode(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -455,14 +455,14 @@ export class GoalController {
       focusedGoalIds: parsed.data.focusedGoalIds,
       hiddenGoalsMode: parsed.data.hiddenGoalsMode,
     });
-    return this.useCases.activateFocusMode.execute(cx.identityId, parsed.data);
+    return this.useCases.activateFocusMode(cx.identityId, parsed.data);
   }
 
   async deactivateFocusMode(cx: ExecutionContext): Promise<Result<unknown>> {
     this.logger.info('停用专注模式开始', {
       identityId: cx.identityId,
     });
-    return this.useCases.deactivateFocusMode.execute(cx.identityId);
+    return this.useCases.deactivateFocusMode(cx.identityId);
   }
 
   async extendFocusMode(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -486,6 +486,6 @@ export class GoalController {
       identityId: cx.identityId,
       newEndTime: parsed.data.newEndTime,
     });
-    return this.useCases.extendFocusMode.execute(cx.identityId, parsed.data.newEndTime);
+    return this.useCases.extendFocusMode(cx.identityId, parsed.data.newEndTime);
   }
 }

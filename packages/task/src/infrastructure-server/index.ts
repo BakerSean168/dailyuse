@@ -41,4 +41,22 @@ export {
   type TaskModuleRuntimeContribution,
   type TaskModuleUseCases,
 } from './task.module';
-export { createTaskPowerSyncModule } from './powersync';
+export {
+  createTaskPowerSyncModule,
+  createTaskPowerSyncScheduleExecutionSource,
+  createTaskPowerSyncScheduleProjectionSource,
+} from './powersync';
+export {
+  createTaskScheduleExecutionSource,
+  type CreateTaskScheduleExecutionSourceDeps,
+} from './schedule-execution-source';
+export {
+  createTaskScheduleProjectionSource,
+  createTaskScheduleProjectionEventHandlers,
+  taskScheduleProjectionEventNames,
+  type TaskScheduleProjectionEventMap,
+  type TaskScheduleProjectionHandlers,
+  type TaskScheduleProjectionPlan,
+  type TaskScheduleProjectionSelection,
+  type TaskScheduleProjectionSource,
+} from './schedule-projection-source';

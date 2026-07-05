@@ -1,7 +1,6 @@
 {
   "name": "database",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "root": "packages/database",
   "sourceRoot": "packages/database/src",
   "projectType": "library",
   "tags": ["scope:shared", "type:infrastructure", "platform:server", "layer:infra"],
@@ -14,7 +13,11 @@
         "cwd": "packages/database",
         "command": "prisma generate --config ./prisma/prisma.config.ts && tsc --build && node ../../tools/build/copy-with-retry.mjs src/generated/prisma dist/generated/prisma"
       },
-      "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts", "{projectRoot}/src/**/*.ts"],
+      "inputs": [
+        "{projectRoot}/prisma/schema/**/*",
+        "{projectRoot}/prisma/prisma.config.ts",
+        "{projectRoot}/src/**/*.ts"
+      ],
       "cache": true
     },
     "compile": {
@@ -48,6 +51,24 @@
       "cache": true,
       "options": {
         "command": "tsc --noEmit -p tsconfig.json",
+        "cwd": "packages/database"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "cwd": "packages/database"
+      }
+    },
+    "test:watch": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node ../../node_modules/vitest/vitest.mjs --config vitest.config.ts",
         "cwd": "packages/database"
       }
     },

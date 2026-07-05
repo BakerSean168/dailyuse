@@ -1,4 +1,4 @@
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import { ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
@@ -28,6 +28,10 @@ type RemoveTaskEventName =
   | 'schedule:task-cancelled'
   | 'schedule:task-failed'
   | 'schedule:task-deleted';
+
+type ScheduleRuntimeEventMap = Pick<ScheduleEventMap, SyncTaskEventName | RemoveTaskEventName>;
+
+const scheduleRuntimeEvents = createTypedEventSubscriber<ScheduleRuntimeEventMap>(eventBus);
 
 export interface ScheduleRuntimeDependencies {
   readonly scheduleTaskRepository: IScheduleTaskRepository;
@@ -280,18 +284,18 @@ export function createScheduleRuntimeContribution(
         return;
       }
 
-      eventBus.on('schedule:task-created', syncTaskListeners['schedule:task-created']);
-      eventBus.on(
+      scheduleRuntimeEvents.on('schedule:task-created', syncTaskListeners['schedule:task-created']);
+      scheduleRuntimeEvents.on(
         'schedule:task-schedule-updated',
         syncTaskListeners['schedule:task-schedule-updated'],
       );
-      eventBus.on('schedule:task-resumed', syncTaskListeners['schedule:task-resumed']);
-      eventBus.on('schedule:task-executed', syncTaskListeners['schedule:task-executed']);
-      eventBus.on('schedule:task-paused', removeTaskListeners['schedule:task-paused']);
-      eventBus.on('schedule:task-completed', removeTaskListeners['schedule:task-completed']);
-      eventBus.on('schedule:task-cancelled', removeTaskListeners['schedule:task-cancelled']);
-      eventBus.on('schedule:task-failed', removeTaskListeners['schedule:task-failed']);
-      eventBus.on('schedule:task-deleted', removeTaskListeners['schedule:task-deleted']);
+      scheduleRuntimeEvents.on('schedule:task-resumed', syncTaskListeners['schedule:task-resumed']);
+      scheduleRuntimeEvents.on('schedule:task-executed', syncTaskListeners['schedule:task-executed']);
+      scheduleRuntimeEvents.on('schedule:task-paused', removeTaskListeners['schedule:task-paused']);
+      scheduleRuntimeEvents.on('schedule:task-completed', removeTaskListeners['schedule:task-completed']);
+      scheduleRuntimeEvents.on('schedule:task-cancelled', removeTaskListeners['schedule:task-cancelled']);
+      scheduleRuntimeEvents.on('schedule:task-failed', removeTaskListeners['schedule:task-failed']);
+      scheduleRuntimeEvents.on('schedule:task-deleted', removeTaskListeners['schedule:task-deleted']);
 
       void queue.start();
       started = true;
@@ -303,18 +307,18 @@ export function createScheduleRuntimeContribution(
         return;
       }
 
-      eventBus.off('schedule:task-created', syncTaskListeners['schedule:task-created']);
-      eventBus.off(
+      scheduleRuntimeEvents.off('schedule:task-created', syncTaskListeners['schedule:task-created']);
+      scheduleRuntimeEvents.off(
         'schedule:task-schedule-updated',
         syncTaskListeners['schedule:task-schedule-updated'],
       );
-      eventBus.off('schedule:task-resumed', syncTaskListeners['schedule:task-resumed']);
-      eventBus.off('schedule:task-executed', syncTaskListeners['schedule:task-executed']);
-      eventBus.off('schedule:task-paused', removeTaskListeners['schedule:task-paused']);
-      eventBus.off('schedule:task-completed', removeTaskListeners['schedule:task-completed']);
-      eventBus.off('schedule:task-cancelled', removeTaskListeners['schedule:task-cancelled']);
-      eventBus.off('schedule:task-failed', removeTaskListeners['schedule:task-failed']);
-      eventBus.off('schedule:task-deleted', removeTaskListeners['schedule:task-deleted']);
+      scheduleRuntimeEvents.off('schedule:task-resumed', syncTaskListeners['schedule:task-resumed']);
+      scheduleRuntimeEvents.off('schedule:task-executed', syncTaskListeners['schedule:task-executed']);
+      scheduleRuntimeEvents.off('schedule:task-paused', removeTaskListeners['schedule:task-paused']);
+      scheduleRuntimeEvents.off('schedule:task-completed', removeTaskListeners['schedule:task-completed']);
+      scheduleRuntimeEvents.off('schedule:task-cancelled', removeTaskListeners['schedule:task-cancelled']);
+      scheduleRuntimeEvents.off('schedule:task-failed', removeTaskListeners['schedule:task-failed']);
+      scheduleRuntimeEvents.off('schedule:task-deleted', removeTaskListeners['schedule:task-deleted']);
 
       queue.stop();
       started = false;

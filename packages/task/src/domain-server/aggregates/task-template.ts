@@ -12,8 +12,9 @@ import {
   RecurrenceEndConditionType,
   TaskGoalBindingTrigger,
 } from '@dailyuse/contracts/task';
-import { DependencyStatus, TaskType } from '../value-objects';
 import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
+import { DependencyStatus, TaskType } from '../value-objects';
+import { TaskInstanceStatus, TaskTimeType as TimeType } from '../../domain-shared/value-objects';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
@@ -31,8 +32,8 @@ import {
 } from '../value-objects';
 import { TaskTemplateHistory } from '../entities';
 import { TaskInstance } from './task-instance';
+import type { TaskTemplateProps, TaskTemplateState } from './task-template.state';
 import * as instanceGen from './instance-generation.policy';
-import * as dtoHelper from './task-template-dto';
 import * as goalPolicy from './task-template-goal.policy';
 import * as lifecyclePolicy from './task-template-lifecycle.policy';
 import * as oneTimePolicy from './task-template-onetime.policy';
@@ -42,55 +43,15 @@ import {
   InvalidDateRangeError,
 } from '../value-objects/task-errors';
 
-/**
- * Internal state interface - all fields are required
- */
-export interface TaskTemplateState {
-  id: TaskTemplateId;
-  identityId: IdentityId;
-  title: string;
-  description: string | null;
-  taskType: TaskType;
-  importance: ImportanceLevel;
-  tags: string[];
-  color: string | null;
-  status: TaskTemplateStatus;
-  folderId: TaskFolderId | null;
-  goalId: GoalId | null;
-  keyResultId: KeyResultId | null;
-  goalBinding: TaskGoalBinding | null;
-  checklist: ChecklistItemDefinition[];
-  parentTaskId: TaskTemplateId | null;
-  timeConfig: TaskTimeConfig | null;
-  recurrenceRule: RecurrenceRule | null;
-  reminderConfig: TaskReminderConfig | null;
-  lastGeneratedDate: Date | null;
-  generateAheadDays: number | null;
-  startDate: Date | null;
-  dueDate: Date | null;
-  completedAt: Date | null;
-  estimatedMinutes: number | null;
-  actualMinutes: number | null;
-  note: string | null;
-  dependencyStatus: DependencyStatus;
-  isBlocked: boolean;
-  blockingReason: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  version: number;
-}
-
 /** TaskTemplate aggregate root. */
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
-  private _props: Omit<TaskTemplateState, 'id'>;
-  private static readonly DAY_MS = 86400000;
+  private _props: TaskTemplateProps;
 
   // ===== Child entity collections =====
   private _history: TaskTemplateHistory[];
   private _instances: TaskInstance[];
 
-  // ===== Constructor (protected, use factory methods to create) =====
+  // ===== Constructor (use factory methods to create) =====
   protected constructor(state: TaskTemplateState) {
     super(state.id);
 
@@ -127,8 +88,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._instances = [];
   }
 
-  /** Internal factory — used by task-template-factory.ts to bypass protected constructor. */
-  static _create(state: TaskTemplateState): TaskTemplate {
+  private static instantiate(state: TaskTemplateState): TaskTemplate {
     return new TaskTemplate(state);
   }
 
@@ -145,6 +105,33 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     if (startDate.getTime() > dueDate.getTime()) {
       throw new InvalidDateRangeError(startDate.getTime(), dueDate.getTime());
     }
+  }
+
+  private static assertIdentityId(
+    identityId: IdentityId,
+    attemptedAction: string,
+  ): void {
+    if (identityId) {
+      return;
+    }
+
+    throw new InvalidTaskTemplateStateError('Identity ID is required', {
+      templateId: '',
+      currentStatus: 'N/A',
+      attemptedAction,
+    });
+  }
+
+  private static normalizeTitle(title: string, attemptedAction: string): string {
+    if (!title || title.trim().length === 0) {
+      throw new InvalidTaskTemplateStateError('Title is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction,
+      });
+    }
+
+    return title.trim();
   }
 
   // ===== Getters =====
@@ -292,7 +279,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   /** Internal props — used by extracted policy modules. */
-  get props(): Omit<TaskTemplateState, 'id'> {
+  get props(): TaskTemplateProps {
     return this._props;
   }
 
@@ -759,35 +746,314 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return [...this._instances];
   }
 
-  // ===== DTO Conversion (delegated to task-template-dto) =====
+  // ===== DTO Conversion =====
 
   public toServerDTO(includeChildren: boolean = false): TaskTemplateServerDTO {
-    return dtoHelper.toServerDTO(this, includeChildren);
+    return {
+      id: this.id,
+      identityId: this._props.identityId,
+      name: this._props.title,
+      description: this._props.description,
+      timeConfig: this._props.timeConfig?.toDTO() ?? null,
+      recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
+      reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
+      importance: this._props.importance,
+      priority: this._props.taskType === TaskType.OneTime ? this.getPriority().score : undefined,
+      goalBinding: this._props.goalBinding?.toDTO() ?? null,
+      checklist: this._props.checklist.map((item) => item.toDTO()),
+      folderId: this._props.folderId,
+      tags: [...this._props.tags],
+      color: this._props.color,
+      status: this._props.status,
+      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
+      generateAheadDays: this._props.generateAheadDays,
+      parentTaskId: this._props.parentTaskId,
+      dependencyStatus: this._props.dependencyStatus,
+      isBlocked: this._props.isBlocked,
+      blockingReason: this._props.blockingReason,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      version: this._props.version,
+      instances: includeChildren ? this._instances.map((instance) => instance.toServerDTO()) : undefined,
+    };
   }
 
   public toClientDTO(includeChildren: boolean = false): TaskTemplateClientDTO {
-    return dtoHelper.toClientDTO(this, includeChildren);
+    const completedCount = this._instances.filter(
+      (instance) => instance.status === TaskInstanceStatus.Completed,
+    ).length;
+    const pendingCount = this._instances.filter(
+      (instance) => instance.status === TaskInstanceStatus.Pending,
+    ).length;
+    const totalCount = this._instances.length;
+    const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    const priority = this._props.taskType === TaskType.OneTime ? this.getPriority() : undefined;
+
+    return {
+      id: this.id,
+      identityId: this._props.identityId,
+      name: this._props.title,
+      description: this._props.description,
+      timeConfig: this._props.timeConfig?.toDTO() ?? {
+        timeType: TimeType.AllDay,
+        startDate: null,
+        timePoint: null,
+        timeRange: null,
+      },
+      recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
+      reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
+      importance: this._props.importance,
+      priority: priority?.score,
+      goalBinding: this._props.goalBinding?.toDTO() ?? null,
+      folderId: this._props.folderId,
+      tags: [...this._props.tags],
+      color: this._props.color,
+      status: this._props.status,
+      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
+      generateAheadDays: this._props.generateAheadDays,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      version: this._props.version,
+      parentTaskId: this._props.parentTaskId,
+      startDate: this._props.startDate?.getTime() ?? null,
+      dueDate: this._props.dueDate?.getTime() ?? null,
+      completedAt: this._props.completedAt?.getTime() ?? null,
+      estimatedMinutes: this._props.estimatedMinutes,
+      actualMinutes: this._props.actualMinutes,
+      comment: this._props.note,
+      dependencyStatus: this._props.dependencyStatus,
+      isBlocked: this._props.isBlocked,
+      blockingReason: this._props.blockingReason,
+      history: includeChildren ? this._history.map((entry) => entry.toClientDTO()) : undefined,
+      instances: includeChildren ? this._instances.map((instance) => instance.toClientDTO()) : undefined,
+      instanceCount: totalCount,
+      completedInstanceCount: completedCount,
+      pendingInstanceCount: pendingCount,
+      completionRate,
+    };
   }
 
-  // ===== Factory Methods (delegated to task-template-factory) =====
+  // ===== Factory Methods =====
 
-  public static createOneTimeTask: typeof import('./task-template-factory').createOneTimeTask =
-    (...args) => factory.createOneTimeTask(...args);
+  public static createOneTimeTask(params: {
+    identityId: IdentityId;
+    title: string;
+    description?: string;
+    importance?: ImportanceLevel;
+    startDate?: Date;
+    dueDate?: Date;
+    estimatedMinutes?: number;
+    note?: string;
+    goalId?: GoalId;
+    keyResultId?: KeyResultId;
+    parentTaskId?: TaskTemplateId;
+    folderId?: TaskFolderId;
+    tags?: string[];
+    color?: string;
+  }): TaskTemplate {
+    TaskTemplate.assertIdentityId(params.identityId, 'createOneTimeTask');
+    const title = TaskTemplate.normalizeTitle(params.title, 'createOneTimeTask');
+    TaskTemplate.assertValidDateRange(params.startDate ?? null, params.dueDate ?? null);
 
-  public static createRecurringTask: typeof import('./task-template-factory').createRecurringTask =
-    (...args) => factory.createRecurringTask(...args);
+    const now = new Date();
+    const template = TaskTemplate.instantiate({
+      id: TaskTemplateId.generate(),
+      identityId: params.identityId,
+      title,
+      description: params.description ?? null,
+      taskType: TaskType.OneTime,
+      importance: params.importance ?? ImportanceLevel.Moderate,
+      tags: params.tags ?? [],
+      color: params.color ?? null,
+      status: TaskTemplateStatus.Active,
+      folderId: params.folderId ?? null,
+      goalId: params.goalId ?? null,
+      keyResultId: params.keyResultId ?? null,
+      goalBinding: null,
+      checklist: [],
+      parentTaskId: params.parentTaskId ?? null,
+      timeConfig: null,
+      recurrenceRule: null,
+      reminderConfig: null,
+      lastGeneratedDate: null,
+      generateAheadDays: null,
+      startDate: params.startDate ?? null,
+      dueDate: params.dueDate ?? null,
+      completedAt: null,
+      estimatedMinutes: params.estimatedMinutes ?? null,
+      actualMinutes: null,
+      note: params.note ?? null,
+      dependencyStatus: DependencyStatus.Waiting,
+      isBlocked: false,
+      blockingReason: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+    });
 
-  public static create: typeof import('./task-template-factory').createTaskTemplate =
-    (...args) => factory.createTaskTemplate(...args);
+    template.addHistory('created', { taskType: TaskType.OneTime });
+    return template;
+  }
+
+  public static createRecurringTask(params: {
+    identityId: IdentityId;
+    title: string;
+    description?: string;
+    timeConfig: TaskTimeConfig;
+    recurrenceRule: RecurrenceRule;
+    reminderConfig?: TaskReminderConfig;
+    importance?: ImportanceLevel;
+    folderId?: TaskFolderId;
+    tags?: string[];
+    color?: string;
+    generateAheadDays?: number;
+  }): TaskTemplate {
+    TaskTemplate.assertIdentityId(params.identityId, 'createRecurringTask');
+    const title = TaskTemplate.normalizeTitle(params.title, 'createRecurringTask');
+
+    const now = new Date();
+    const template = TaskTemplate.instantiate({
+      id: TaskTemplateId.generate(),
+      identityId: params.identityId,
+      title,
+      description: params.description ?? null,
+      taskType: TaskType.Recurring,
+      importance: params.importance ?? ImportanceLevel.Moderate,
+      tags: params.tags ?? [],
+      color: params.color ?? null,
+      status: TaskTemplateStatus.Active,
+      folderId: params.folderId ?? null,
+      goalId: null,
+      keyResultId: null,
+      goalBinding: null,
+      checklist: [],
+      parentTaskId: null,
+      timeConfig: params.timeConfig,
+      recurrenceRule: params.recurrenceRule,
+      reminderConfig: params.reminderConfig ?? null,
+      lastGeneratedDate: null,
+      generateAheadDays: params.generateAheadDays ?? 30,
+      startDate: null,
+      dueDate: null,
+      completedAt: null,
+      estimatedMinutes: null,
+      actualMinutes: null,
+      note: null,
+      dependencyStatus: DependencyStatus.None,
+      isBlocked: false,
+      blockingReason: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+    });
+
+    template.addHistory('created', { taskType: TaskType.Recurring });
+    return template;
+  }
+
+  public static create(params: {
+    identityId: IdentityId;
+    title: string;
+    description?: string;
+    taskType: TaskType;
+    timeConfig: TaskTimeConfig;
+    recurrenceRule?: RecurrenceRule;
+    reminderConfig?: TaskReminderConfig;
+    importance?: ImportanceLevel;
+    folderId?: TaskFolderId;
+    tags?: string[];
+    color?: string;
+    generateAheadDays?: number;
+    goalBinding?: {
+      goalId: string;
+      keyResultId: string;
+      goalRecordValue: number;
+      progressTrigger: TaskGoalBindingTriggerValue;
+    } | null;
+    parentTaskId?: TaskTemplateId;
+  }): TaskTemplate {
+    TaskTemplate.assertIdentityId(params.identityId, 'create');
+    const title = TaskTemplate.normalizeTitle(params.title, 'create');
+
+    if (!params.timeConfig) {
+      throw new InvalidTaskTemplateStateError('Time configuration is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'create',
+      });
+    }
+
+    if (params.taskType === TaskType.Recurring && !params.recurrenceRule) {
+      throw new InvalidTaskTemplateStateError('Recurrence rule is required for Recurring tasks', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'create',
+      });
+    }
+
+    const now = new Date();
+    const template = TaskTemplate.instantiate({
+      id: TaskTemplateId.generate(),
+      identityId: params.identityId,
+      title,
+      description: params.description ?? null,
+      taskType: params.taskType,
+      importance: params.importance ?? ImportanceLevel.Moderate,
+      tags: params.tags ?? [],
+      color: params.color ?? null,
+      status: TaskTemplateStatus.Active,
+      folderId: params.folderId ?? null,
+      goalId: (params.goalBinding?.goalId as GoalId | undefined) ?? null,
+      keyResultId: (params.goalBinding?.keyResultId as KeyResultId | undefined) ?? null,
+      goalBinding: params.goalBinding
+        ? TaskGoalBinding.fromDTO({
+            ...params.goalBinding,
+            goalId: params.goalBinding.goalId as GoalId,
+            keyResultId: params.goalBinding.keyResultId as KeyResultId,
+          })
+        : null,
+      checklist: [],
+      parentTaskId: params.parentTaskId ?? null,
+      timeConfig: params.timeConfig,
+      recurrenceRule: params.recurrenceRule ?? null,
+      reminderConfig: params.reminderConfig ?? null,
+      lastGeneratedDate: null,
+      generateAheadDays: params.generateAheadDays ?? 30,
+      startDate: null,
+      dueDate: null,
+      completedAt: null,
+      estimatedMinutes: null,
+      actualMinutes: null,
+      note: null,
+      dependencyStatus: DependencyStatus.None,
+      isBlocked: false,
+      blockingReason: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+    });
+
+    template.addHistory('created');
+    template.publishDomainEvent<TaskEventMap['task:created']>('task:created', {
+      identityId: params.identityId,
+      task: template.toServerDTO(),
+      templateId: template.id,
+      goalId: template.goalBinding?.goalId ?? null,
+    });
+
+    return template;
+  }
 
   public static load(state: TaskTemplateState): TaskTemplate {
-    return factory.loadTaskTemplate(state);
+    return TaskTemplate.instantiate(state);
   }
 
   static startOfLocalDay(value: number): number {
     return startOfDay(new Date(value)).getTime();
   }
 }
-
-// Lazy import to avoid circular dependency at module load time
-import * as factory from './task-template-factory';

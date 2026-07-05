@@ -12,21 +12,22 @@
  */
 
 import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventSubscriber } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
+import type { TaskEventMap } from '@dailyuse/contracts/task';
 import type { TaskModuleRuntimeContribution } from '../infrastructure-server/task.module';
 
 const logger = createLogger('TaskRuntime');
 
-/**
- * Loosely-typed event bus handle for registering task event handlers.
- * Task events live in AppEventRegistry but handler signatures are
- * wider than the strict generic constraint allows.
- */
-const taskEventBus = eventBus as unknown as {
-  on(event: string, handler: (event: unknown) => void): void;
-  off(event: string, handler: (event: unknown) => void): void;
-};
+type TaskRuntimeEventMap = Pick<
+  TaskEventMap,
+  | 'task:instance-generated'
+  | 'task:instance-completed'
+  | 'task:instance-skipped'
+  | 'task:instance-deleted'
+>;
+
+const taskEvents = createTypedEventSubscriber<TaskRuntimeEventMap>(eventBus);
 
 /**
  * Runtime contribution contract used by module transports.
@@ -34,32 +35,25 @@ const taskEventBus = eventBus as unknown as {
  */
 export type TaskRuntimeContribution = TaskModuleRuntimeContribution;
 
-// Task domain event handlers use a looser bus handle to avoid
-// generic-constraint friction with union handler signatures.
-const taskEventHandlers: Record<string, (event: IDomainEvent) => void> = {
+const taskEventHandlers = {
   'task:instance-generated': (event) => {
-    const payload = (event.payload ?? event) as Record<string, unknown>;
-    logger.info(`[Task] Instances generated for template: ${payload.templateId}`, {
-      templateId: payload.templateId,
-      instanceCount: payload.instanceCount,
-      strategy: payload.strategy,
+    logger.info(`[Task] Instances generated for template: ${event.templateId}`, {
+      templateId: event.templateId,
+      instanceCount: event.instanceCount,
+      strategy: event.strategy,
     });
   },
   'task:instance-completed': (event) => {
-    const payload = (event.payload ?? event) as Record<string, unknown>;
-    const instanceId = (payload?.instanceId ?? payload?.taskInstanceId) as string | undefined;
-    logger.info(`[Task] Instance completed: ${instanceId}`);
+    logger.info(`[Task] Instance completed: ${event.taskInstanceId}`);
   },
   'task:instance-skipped': (event) => {
-    const payload = (event.payload ?? event) as Record<string, unknown>;
-    const instanceId = (payload?.instanceId ?? payload?.taskInstanceId) as string | undefined;
-    logger.info(`[Task] Instance skipped: ${instanceId}`);
+    logger.info(`[Task] Instance skipped: ${event.taskInstanceId}`);
   },
   'task:instance-deleted': (event) => {
-    const payload = (event.payload ?? event) as Record<string, unknown>;
-    const instanceId = (payload?.instanceId ?? payload?.taskInstanceId) as string | undefined;
-    logger.info(`[Task] Instance deleted: ${instanceId}`);
+    logger.info(`[Task] Instance deleted: ${event.taskInstanceId}`);
   },
+} satisfies {
+  [K in keyof TaskRuntimeEventMap]: (event: TaskRuntimeEventMap[K]) => void;
 };
 
 /**
@@ -79,9 +73,10 @@ export function createTaskRuntimeContribution(): TaskRuntimeContribution {
         return;
       }
 
-      for (const [eventName, handler] of Object.entries(taskEventHandlers)) {
-        taskEventBus.on(eventName, handler as (event: unknown) => void);
-      }
+      taskEvents.on('task:instance-generated', taskEventHandlers['task:instance-generated']);
+      taskEvents.on('task:instance-completed', taskEventHandlers['task:instance-completed']);
+      taskEvents.on('task:instance-skipped', taskEventHandlers['task:instance-skipped']);
+      taskEvents.on('task:instance-deleted', taskEventHandlers['task:instance-deleted']);
 
       started = true;
       logger.info('[Task] Runtime contribution started');
@@ -92,9 +87,10 @@ export function createTaskRuntimeContribution(): TaskRuntimeContribution {
         return;
       }
 
-      for (const [eventName, handler] of Object.entries(taskEventHandlers)) {
-        taskEventBus.off(eventName, handler as (event: unknown) => void);
-      }
+      taskEvents.off('task:instance-generated', taskEventHandlers['task:instance-generated']);
+      taskEvents.off('task:instance-completed', taskEventHandlers['task:instance-completed']);
+      taskEvents.off('task:instance-skipped', taskEventHandlers['task:instance-skipped']);
+      taskEvents.off('task:instance-deleted', taskEventHandlers['task:instance-deleted']);
 
       started = false;
       logger.info('[Task] Runtime contribution stopped');

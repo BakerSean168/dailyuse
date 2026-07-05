@@ -665,7 +665,7 @@ describe('AI knowledge auto-index runtime', () => {
     aiModule.start();
 
     try {
-      (eventBus as any).send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+      eventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
         resourceId: 'resource-1',
@@ -686,6 +686,47 @@ describe('AI knowledge auto-index runtime', () => {
         );
         expect(knowledgeIndexRepository.upsert).toHaveBeenCalledTimes(1);
       });
+    } finally {
+      aiModule.dispose();
+    }
+  });
+
+  it('ignores deleted repository resource mutation events', async () => {
+    const sourcePort = new StubKnowledgeSourcePort();
+    const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
+    const ingestionPort = new StubKnowledgeIngestionPort();
+    const queryPort = new StubKnowledgeQueryPort();
+
+    const aiModule = createAIModuleForTests({
+      providerConfigRepository: createAIProviderConfigRepositoryStub({
+        findDefaultByIdentityId: async () =>
+          createAIProviderConfigServerDTO({
+            providerType: AIProviderType.OpenAICompatible,
+          }),
+      }),
+      knowledgeSourcePort: sourcePort,
+      knowledgeIndexRepository,
+      knowledgeIngestionPort: ingestionPort,
+      knowledgeQueryPort: queryPort,
+    });
+
+    aiModule.start();
+
+    try {
+      eventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+        identityId: 'identity-1',
+        repositoryId: 'repo-1',
+        resourceId: 'resource-1',
+        resourcePath: 'notes/python-ai.md',
+        mutation: RepositoryResourceMutationType.Deleted,
+        timestamp: Date.now(),
+      });
+
+      await Promise.resolve();
+
+      expect(sourcePort.getResourceById).not.toHaveBeenCalled();
+      expect(ingestionPort.indexResource).not.toHaveBeenCalled();
+      expect(knowledgeIndexRepository.upsert).not.toHaveBeenCalled();
     } finally {
       aiModule.dispose();
     }

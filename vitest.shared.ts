@@ -262,6 +262,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'reminder',
     'repository',
     'schedule',
+    'schedule-orchestration',
     'setting',
     'task',
   ] as const;

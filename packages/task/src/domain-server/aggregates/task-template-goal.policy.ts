@@ -18,11 +18,11 @@ import {
   InvalidGoalBindingError,
 } from '../value-objects/task-errors';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import type { TaskTemplateState } from './task-template';
+import type { TaskTemplateProps } from './task-template.state';
 
 /** Mutable context for goal operations. */
 export interface GoalOperationContext {
-  props: Omit<TaskTemplateState, 'id'>;
+  props: TaskTemplateProps;
   readonly id: string;
   addHistory(action: string, changes?: unknown): void;
 }
@@ -76,7 +76,7 @@ export function unbindFromGoal(ctx: GoalOperationContext): void {
 }
 
 /** Checks whether the template is linked to a goal. */
-export function isLinkedToGoal(props: Omit<TaskTemplateState, 'id'>): boolean {
+export function isLinkedToGoal(props: TaskTemplateProps): boolean {
   return props.goalId !== null || props.goalBinding !== null;
 }
 

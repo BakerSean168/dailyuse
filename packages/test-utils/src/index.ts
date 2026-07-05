@@ -47,6 +47,8 @@ export {
   numericTimestamps,
   titleFor,
   // Account
+  aUuid,
+  aPrefixedUuid,
   anIdentityId,
   TEST_IDENTITY_ID,
 } from './fixtures/index.js';

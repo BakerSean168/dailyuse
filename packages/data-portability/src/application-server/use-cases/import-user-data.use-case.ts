@@ -8,7 +8,7 @@
  */
 
 import { newId } from '@dailyuse/utils';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { DataPortabilityEventMap, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
 import type { ImportContext, RefMap } from '../portable-runtime';
@@ -25,6 +25,13 @@ import { importAI } from './importers/ai.importer';
 import { throwValidationError } from './importers/import-helpers';
 
 const logger = createLogger('ImportUserData');
+const dataPortabilityEvents = createTypedEventPublisher<
+  Pick<
+    DataPortabilityEventMap,
+    | typeof DataPortabilityEventTopics.IMPORT_DRY_RUN_VALIDATED
+    | typeof DataPortabilityEventTopics.IMPORTED
+  >
+>(eventBus);
 
 export class ImportUserDataUseCase {
   constructor(private readonly importStore: DataPortabilityImportStore) {}
@@ -68,7 +75,10 @@ export class ImportUserDataUseCase {
         skipped: {},
         warnings: ctx.warnings,
       };
-      eventBus.send(DataPortabilityEventTopics.IMPORT_DRY_RUN_VALIDATED, dryRunValidatedEvent);
+      dataPortabilityEvents.send(
+        DataPortabilityEventTopics.IMPORT_DRY_RUN_VALIDATED,
+        dryRunValidatedEvent,
+      );
       return { batchId, dryRun: true, created: {}, updatedSingletons: {}, skipped: {}, warnings: ctx.warnings };
     }
 
@@ -98,7 +108,7 @@ export class ImportUserDataUseCase {
       skipped: ctx.skipped,
       warnings: ctx.warnings,
     };
-    eventBus.send(DataPortabilityEventTopics.IMPORTED, importedEvent);
+    dataPortabilityEvents.send(DataPortabilityEventTopics.IMPORTED, importedEvent);
 
     return {
       batchId,

@@ -11,16 +11,29 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@dailyuse/utils/logger';
 import type { AuthenticationModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('AuthenticationRuntime');
 
-type AuthEventName = keyof AuthEventMap;
-type AuthEventHandler<K extends AuthEventName> = (payload: AuthEventMap[K]) => void;
+const authenticationEventNames = [
+  'auth:logged-in',
+  'auth:logged-out',
+  'auth:registered',
+  'auth:password-changed',
+  'auth:session-created',
+  'auth:session-revoked',
+] as const;
+
+type AuthenticationObservedEventName = (typeof authenticationEventNames)[number];
+type AuthenticationObservedEventMap = Pick<AuthEventMap, AuthenticationObservedEventName>;
+type AuthenticationObservedEventHandler<K extends AuthenticationObservedEventName> = (
+  payload: AuthenticationObservedEventMap[K],
+) => void;
+
+const authenticationEvents = createTypedEventSubscriber<AuthenticationObservedEventMap>(eventBus);
 
 /**
  * Runtime contribution contract used by module transports.
@@ -35,9 +48,9 @@ export type AuthenticationRuntimeContribution = AuthenticationModuleRuntimeContr
  * Note: Most event payloads are minimal — the aggregate ID is carried
  * by the event bus envelope, not the payload itself.
  */
-const authenticationEventHandlers: Partial<{
-  [K in AuthEventName]: AuthEventHandler<K>;
-}> = {
+const authenticationEventHandlers: {
+  [K in AuthenticationObservedEventName]: AuthenticationObservedEventHandler<K>;
+} = {
   'auth:logged-in': (payload) => {
     logger.info(`[Authentication] User logged in (method: ${payload.method})`);
   },
@@ -58,9 +71,21 @@ const authenticationEventHandlers: Partial<{
   },
 };
 
+function subscribeAuthenticationEvent<K extends AuthenticationObservedEventName>(eventName: K): void {
+  authenticationEvents.on(eventName, authenticationEventHandlers[eventName]);
+}
+
+function unsubscribeAuthenticationEvent<K extends AuthenticationObservedEventName>(
+  eventName: K,
+): void {
+  authenticationEvents.off(eventName, authenticationEventHandlers[eventName]);
+}
+
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
+ *
+ * @returns Instance-owned authentication runtime contribution.
  */
 export function createAuthenticationRuntimeContribution(): AuthenticationRuntimeContribution {
   let started = false;
@@ -71,11 +96,8 @@ export function createAuthenticationRuntimeContribution(): AuthenticationRuntime
         return;
       }
 
-      for (const [eventName, handler] of Object.entries(authenticationEventHandlers)) {
-        eventBus.on(
-          eventName as keyof AppEventRegistry,
-          handler as (event: AppEventRegistry[keyof AppEventRegistry]) => void,
-        );
+      for (const eventName of authenticationEventNames) {
+        subscribeAuthenticationEvent(eventName);
       }
 
       started = true;
@@ -87,11 +109,8 @@ export function createAuthenticationRuntimeContribution(): AuthenticationRuntime
         return;
       }
 
-      for (const [eventName, handler] of Object.entries(authenticationEventHandlers)) {
-        eventBus.off(
-          eventName as keyof AppEventRegistry,
-          handler as (event: AppEventRegistry[keyof AppEventRegistry]) => void,
-        );
+      for (const eventName of authenticationEventNames) {
+        unsubscribeAuthenticationEvent(eventName);
       }
 
       started = false;

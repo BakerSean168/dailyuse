@@ -3,6 +3,10 @@ import type { RememberedAccountsService, RememberedAccountRecord } from '../../i
 import { DesktopRememberedAccountService } from '../desktop-remembered-account-service';
 import { createMockLogger } from '../../__fixtures__/auth-test-fixtures';
 
+const PRIMARY_IDENTITY_ID = 'IdentityId_33333333-3333-4333-8333-333333333333';
+const SECONDARY_IDENTITY_ID = 'IdentityId_44444444-4444-4444-8444-444444444444';
+const MISSING_IDENTITY_ID = 'IdentityId_55555555-5555-4555-8555-555555555555';
+
 describe('DesktopRememberedAccountService', () => {
   let mockRememberedAccounts: RememberedAccountsService;
   let service: DesktopRememberedAccountService;
@@ -25,7 +29,7 @@ describe('DesktopRememberedAccountService', () => {
     it('returns accounts without exposing plaintext passwords', async () => {
       mockRememberedAccounts.list.mockResolvedValue([
         {
-          identityId: 'user-1',
+          identityId: PRIMARY_IDENTITY_ID,
           identifier: 'saved@example.com',
           nickname: 'saved',
           avatarUrl: null,
@@ -41,7 +45,7 @@ describe('DesktopRememberedAccountService', () => {
 
       expect(accounts).toEqual([
         expect.objectContaining({
-          identityId: 'user-1',
+          identityId: PRIMARY_IDENTITY_ID,
           identifier: 'saved@example.com',
           hasSavedPassword: true,
         }),
@@ -60,7 +64,7 @@ describe('DesktopRememberedAccountService', () => {
     it('marks hasSavedPassword as false when rememberPassword is off', async () => {
       mockRememberedAccounts.list.mockResolvedValue([
         {
-          identityId: 'user-1',
+          identityId: PRIMARY_IDENTITY_ID,
           identifier: 'user@example.com',
           nickname: null,
           avatarUrl: null,
@@ -80,7 +84,7 @@ describe('DesktopRememberedAccountService', () => {
 
   describe('removeRememberedAccount', () => {
     it('removes account by identityId', async () => {
-      const result = await service.removeRememberedAccount('user-1');
+      const result = await service.removeRememberedAccount(PRIMARY_IDENTITY_ID);
 
       expect(result.ok).toBe(true);
       expect(mockRememberedAccounts.remove).toHaveBeenCalledOnce();
@@ -89,7 +93,7 @@ describe('DesktopRememberedAccountService', () => {
     it('returns failure when removal throws', async () => {
       mockRememberedAccounts.remove.mockRejectedValue(new Error('not found'));
 
-      const result = await service.removeRememberedAccount('nonexistent');
+      const result = await service.removeRememberedAccount(MISSING_IDENTITY_ID);
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -101,20 +105,20 @@ describe('DesktopRememberedAccountService', () => {
   describe('findRememberedAccount', () => {
     it('finds account by identityId', async () => {
       mockRememberedAccounts.list.mockResolvedValue([
-        { identityId: 'user-1', identifier: 'a@b.com' },
-        { identityId: 'user-2', identifier: 'c@d.com' },
+        { identityId: PRIMARY_IDENTITY_ID, identifier: 'a@b.com' },
+        { identityId: SECONDARY_IDENTITY_ID, identifier: 'c@d.com' },
       ]);
 
-      const found = await service.findRememberedAccount('user-2');
+      const found = await service.findRememberedAccount(SECONDARY_IDENTITY_ID);
 
       expect(found).toBeDefined();
-      expect(found!.identityId).toBe('user-2');
+      expect(found!.identityId).toBe(SECONDARY_IDENTITY_ID);
     });
 
     it('returns null when not found', async () => {
       mockRememberedAccounts.list.mockResolvedValue([]);
 
-      const found = await service.findRememberedAccount('nonexistent');
+      const found = await service.findRememberedAccount(MISSING_IDENTITY_ID);
 
       expect(found).toBeNull();
     });
@@ -124,17 +128,17 @@ describe('DesktopRememberedAccountService', () => {
     it('delegates to remembered accounts service', () => {
       mockRememberedAccounts.decryptPassword.mockReturnValue('secret');
 
-      const result = service.decryptPassword({ identityId: 'user-1' } as unknown as RememberedAccountRecord);
+      const result = service.decryptPassword({ identityId: PRIMARY_IDENTITY_ID } as unknown as RememberedAccountRecord);
 
       expect(result).toBe('secret');
-      expect(mockRememberedAccounts.decryptPassword).toHaveBeenCalledWith({ identityId: 'user-1' });
+      expect(mockRememberedAccounts.decryptPassword).toHaveBeenCalledWith({ identityId: PRIMARY_IDENTITY_ID });
     });
   });
 
   describe('recordLogin', () => {
     it('records login with IdentityId wrapper', async () => {
       await service.recordLogin({
-        identityId: 'user-1',
+        identityId: PRIMARY_IDENTITY_ID,
         identifier: 'user@example.com',
         nickname: 'User',
         avatarUrl: null,
@@ -152,14 +156,14 @@ describe('DesktopRememberedAccountService', () => {
       );
       // Verify identityId was wrapped
       const call = mockRememberedAccounts.recordLogin.mock.calls[0][0];
-      expect(String(call.identityId)).toBe('user-1');
+      expect(String(call.identityId)).toBe(PRIMARY_IDENTITY_ID);
     });
   });
 
   describe('getAutoLoginAccount', () => {
     it('delegates to remembered accounts service', async () => {
       mockRememberedAccounts.getAutoLoginAccount.mockResolvedValue({
-        identityId: 'user-1',
+        identityId: PRIMARY_IDENTITY_ID,
         identifier: 'user@example.com',
         autoLogin: true,
       });

@@ -31,17 +31,21 @@ import type { SkipTaskInstanceUseCase } from '../application-server/use-cases/co
 import type { StartTaskInstanceUseCase } from '../application-server/use-cases/commands/start-task-instance.use-case';
 import type { CheckExpiredInstancesUseCase } from '../application-server/use-cases/commands/check-expired-instances.use-case';
 
+type TaskControllerFn<T extends (...args: any[]) => any> = (
+  ...args: Parameters<T>
+) => ReturnType<T>;
+
 export interface TaskInstanceUseCases {
-  getTaskInstance: GetTaskInstanceUseCase;
-  listByAccount: ListTaskInstancesByAccountUseCase;
-  listByTemplate: ListTaskInstancesByTemplateUseCase;
-  listByStatus: ListTaskInstancesByStatusUseCase;
-  getByDateRange: GetTaskInstancesByDateRangeUseCase;
-  complete: CompleteTaskInstanceUseCase;
-  skip: SkipTaskInstanceUseCase;
-  start: StartTaskInstanceUseCase;
-  deleteInstance: DeleteTaskInstanceUseCase;
-  checkExpired: CheckExpiredInstancesUseCase;
+  getTaskInstance: TaskControllerFn<GetTaskInstanceUseCase['execute']>;
+  listByAccount: TaskControllerFn<ListTaskInstancesByAccountUseCase['execute']>;
+  listByTemplate: TaskControllerFn<ListTaskInstancesByTemplateUseCase['execute']>;
+  listByStatus: TaskControllerFn<ListTaskInstancesByStatusUseCase['execute']>;
+  getByDateRange: TaskControllerFn<GetTaskInstancesByDateRangeUseCase['execute']>;
+  complete: TaskControllerFn<CompleteTaskInstanceUseCase['execute']>;
+  skip: TaskControllerFn<SkipTaskInstanceUseCase['execute']>;
+  start: TaskControllerFn<StartTaskInstanceUseCase['execute']>;
+  deleteInstance: TaskControllerFn<DeleteTaskInstanceUseCase['execute']>;
+  checkExpired: TaskControllerFn<CheckExpiredInstancesUseCase['execute']>;
 }
 
 /**
@@ -57,7 +61,7 @@ export class TaskInstanceController {
    * Get instance by ID
    */
   async getInstance(id: string): Promise<Result<TaskInstanceClientDTO | null>> {
-    return await this.useCases.getTaskInstance.execute(id);
+    return await this.useCases.getTaskInstance(id);
   }
 
   /**
@@ -71,11 +75,11 @@ export class TaskInstanceController {
     },
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     if (filters?.templateId) {
-      return await this.useCases.listByTemplate.execute(filters.templateId);
+      return await this.useCases.listByTemplate(filters.templateId);
     } else if (filters?.status) {
-      return await this.useCases.listByStatus.execute(identityId, filters.status);
+      return await this.useCases.listByStatus(identityId, filters.status);
     } else {
-      return await this.useCases.listByAccount.execute(identityId);
+      return await this.useCases.listByAccount(identityId);
     }
   }
 
@@ -86,7 +90,7 @@ export class TaskInstanceController {
     identityId: string,
     request: GetTaskInstancesByRangeReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    const result = await this.useCases.getByDateRange.execute(
+    const result = await this.useCases.getByDateRange(
       identityId,
       request.startDate,
       request.endDate,
@@ -112,7 +116,7 @@ export class TaskInstanceController {
       });
     }
 
-    const result = await this.useCases.complete.execute(id, parsed.data);
+    const result = await this.useCases.complete(id, parsed.data);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -133,7 +137,7 @@ export class TaskInstanceController {
       });
     }
 
-    const result = await this.useCases.skip.execute(id, parsed.data);
+    const result = await this.useCases.skip(id, parsed.data);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -145,21 +149,21 @@ export class TaskInstanceController {
    * Start instance
    */
   async startInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
-    return await this.useCases.start.execute(id);
+    return await this.useCases.start(id);
   }
 
   /**
    * Delete instance
    */
   async deleteInstance(id: string): Promise<Result<void>> {
-    return await this.useCases.deleteInstance.execute(id);
+    return await this.useCases.deleteInstance(id);
   }
 
   /**
    * Check and mark expired instances
    */
   async checkExpired(identityId: string): Promise<Result<CheckExpiredTaskInstancesRes>> {
-    const result = await this.useCases.checkExpired.execute(identityId);
+    const result = await this.useCases.checkExpired(identityId);
 
     if (!isOk(result)) {
       return result as Result<CheckExpiredTaskInstancesRes>;

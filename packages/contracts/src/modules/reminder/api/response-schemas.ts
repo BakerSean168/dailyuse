@@ -233,6 +233,8 @@ export const UpdateReminderPreferencesSchema = z.object({
   globalSmartFrequencyEnabled: z.boolean().optional(),
 });
 
+export type UpdateReminderPreferencesReq = z.infer<typeof UpdateReminderPreferencesSchema>;
+
 // ============ Response Operation Schemas ============
 
 export const ResponseRecordResultSchema = z.object({

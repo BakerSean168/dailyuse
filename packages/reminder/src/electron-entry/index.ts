@@ -16,18 +16,13 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import {
-  createReminderPowerSyncModule,
-  ReminderTemplatePowerSyncRepository,
-} from '../infrastructure-server/powersync';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
+import { createReminderPowerSyncModule } from '../infrastructure-server/powersync';
 import { ReminderController } from '../controllers/reminder.controller';
 import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../infrastructure-server';
 import type { IReminderTemplateRepository } from '../domain-server/repositories/i-reminder-template-repository';
-import { createReminderScheduleRuntimeContribution } from '../api/schedule-runtime';
 
 const logger = createLogger('ReminderElectron');
 
@@ -71,14 +66,7 @@ export const ReminderElectronModule: IElectronModule = {
   register(ctx: IElectronModuleContext): void {
     // 1. Composition Root — same factory as API, different adapters
     //    组合根 — 与 API 相同的工厂，不同的适配器
-    const reminderTemplateRepository = new ReminderTemplatePowerSyncRepository(ctx.db);
-    const reminderModule = createReminderPowerSyncModule(
-      ctx.db,
-      createReminderScheduleRuntimeContribution({
-        reminderTemplateRepository,
-        scheduleTaskRepository: new PowerSyncScheduleTaskRepository(ctx.db),
-      }),
-    );
+    const reminderModule = createReminderPowerSyncModule(ctx.db);
     activeReminderModule = reminderModule;
     reminderModule.start();
 
@@ -206,3 +194,8 @@ export const ReminderElectronModule: IElectronModule = {
     logger.info('Reminder module destroyed');
   },
 };
+
+export {
+  createReminderPowerSyncScheduleExecutionSource,
+  createReminderPowerSyncScheduleProjectionSource,
+} from '../infrastructure-server';

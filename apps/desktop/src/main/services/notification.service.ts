@@ -11,15 +11,23 @@
 import { Notification, nativeImage, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
-import type { NotificationDispatchDesktopEvent } from '@dailyuse/contracts/notification';
+import type {
+  NotificationDispatchDesktopEvent,
+  NotificationEventMap,
+} from '@dailyuse/contracts/notification';
+import type { SettingEventMap } from '@dailyuse/contracts/setting';
 import { CustomNotificationManager } from './custom-notification.manager';
 import type { WindowManager } from '../lifecycle/window-manager';
 import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
 import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
 
 const logger = createLogger('NotificationService');
+type NotificationServiceEventMap = Pick<NotificationEventMap, 'notification:dispatch_desktop'> &
+  Pick<SettingEventMap, 'setting:user-setting-patched' | 'setting:user-setting-reset'>;
+
+const notificationServiceEvents = createTypedEventSubscriber<NotificationServiceEventMap>(eventBus);
 
 /**
  * Configuration options for displaying a notification.
@@ -203,7 +211,9 @@ export class NotificationService {
    * Initializes internal event listeners for system events (reminders, schedules).
    */
   private initEventListeners(): void {
-    eventBus.on('notification:dispatch_desktop', (event: NotificationDispatchDesktopEvent) => {
+    notificationServiceEvents.on(
+      'notification:dispatch_desktop',
+      (event: NotificationDispatchDesktopEvent) => {
         logger.info('[Desktop][NotificationFlow] Received desktop dispatch event', {
           title: event.title,
           bodyLength: event.body?.length ?? 0,
@@ -226,38 +236,22 @@ export class NotificationService {
             notificationCategory: event.category,
           },
         });
-    });
-
-    // Listen for setting changes to dynamically update notification style preference
-    eventBus.on(
-      'setting:user-setting-patched',
-      (eventData: { category: string; changes: Record<string, unknown> }) => {
-        if (eventData.category === 'notification' && 'useCustomNotification' in eventData.changes) {
-          this.useCustomNotification = Boolean(eventData.changes.useCustomNotification);
-          console.log(
-            `[NotificationService] Updated useCustomNotification preference to: ${this.useCustomNotification}`,
-          );
-        }
       },
     );
 
-    // Also listen to full import/reset events where we might receive the full tree
-    eventBus.on('setting:setting-imported', (eventData) => {
-      const data = eventData as unknown as Record<string, unknown>;
-      const prefs = data.preferences as Record<string, Record<string, unknown>> | undefined;
-      if (prefs?.notification?.useCustomNotification !== undefined) {
-        this.useCustomNotification = Boolean(prefs.notification.useCustomNotification);
+    // Listen for setting changes to dynamically update notification style preference
+    notificationServiceEvents.on('setting:user-setting-patched', (eventData) => {
+      if (eventData.category === 'notification' && 'useCustomNotification' in eventData.changes) {
+        this.useCustomNotification = Boolean(eventData.changes.useCustomNotification);
+        console.log(
+          `[NotificationService] Updated useCustomNotification preference to: ${this.useCustomNotification}`,
+        );
       }
     });
 
-    // Also listen to successful login to fetch initial preferences
-    eventBus.on('auth:logged-in', (eventData) => {
-      const data = eventData as unknown as Record<string, unknown>;
-      const user = data.user as Record<string, Record<string, Record<string, unknown>>> | undefined;
-      if (user?.settings?.notification?.useCustomNotification !== undefined) {
-        this.useCustomNotification = Boolean(
-          user.settings.notification.useCustomNotification,
-        );
+    notificationServiceEvents.on('setting:user-setting-reset', (eventData) => {
+      if (!eventData.category || eventData.category === 'notification') {
+        this.useCustomNotification = true;
       }
     });
   }

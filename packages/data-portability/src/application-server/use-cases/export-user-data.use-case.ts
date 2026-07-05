@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from '@dailyuse/utils/logger';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 import type {
   DataPortabilityEventMap,
   UserDataExportEnvelopeV1,
@@ -30,6 +30,9 @@ import { projectNotificationPreference } from './projections/notification.projec
 import { projectSettings } from './projections/setting.projection';
 
 const logger = createLogger('ExportUserData');
+const dataPortabilityEvents = createTypedEventPublisher<
+  Pick<DataPortabilityEventMap, typeof DataPortabilityEventTopics.EXPORTED>
+>(eventBus);
 
 // ============ Use Case ============
 
@@ -249,7 +252,7 @@ export class ExportUserDataUseCase {
       entityCounts,
       warnings,
     };
-    eventBus.send(DataPortabilityEventTopics.EXPORTED, exportedEvent);
+    dataPortabilityEvents.send(DataPortabilityEventTopics.EXPORTED, exportedEvent);
 
     return {
       fileName,

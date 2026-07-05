@@ -37,11 +37,19 @@ interface CreateTsupConfigOptions {
   extraOptions?: Partial<Options>;
 }
 
+interface LocalOnlyDtsPathOptions {
+  baseUrl?: string;
+}
+
 export function createLocalOnlyDtsPaths(
   additionalPaths: Record<string, string[]> = {},
+  options: LocalOnlyDtsPathOptions = {},
 ): NonNullable<Options['dts']> {
+  const { baseUrl } = options;
+
   return {
     compilerOptions: {
+      ...(baseUrl ? { baseUrl } : {}),
       paths: {
         '@/*': ['./src/*'],
         ...additionalPaths,

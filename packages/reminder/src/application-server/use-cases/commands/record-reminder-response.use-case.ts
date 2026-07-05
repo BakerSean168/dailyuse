@@ -8,11 +8,14 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { IReminderResponseRepository } from '@/domain-server/repositories/i-reminder-response-repository';
 import type { ReminderEventMap, ReminderResponseAction } from '@dailyuse/contracts/reminder';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import { ReminderResponse } from '@/domain-server/entities/reminder-response';
 
 const logger = createLogger('RecordReminderResponseUseCase');
+const reminderAnalyticsEvents = createTypedEventPublisher<
+  Pick<ReminderEventMap, 'reminder:response-recorded'>
+>(eventBus);
 
 /**
  * 响应记录DTO
@@ -99,7 +102,7 @@ export class RecordReminderResponseUseCase {
       identityId: dto.identityId as ReminderEventMap['reminder:response-recorded']['identityId'],
       recordedAt: Date.now(),
     };
-    eventBus.send('reminder:response-recorded', recordedEvent);
+    reminderAnalyticsEvents.send('reminder:response-recorded', recordedEvent);
 
     return ok({
       id: savedRecord.id,

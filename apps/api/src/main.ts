@@ -24,15 +24,33 @@ import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
 import { AuthenticationApiModule } from '@dailyuse/authentication/api';
 import { EditorApiModule } from '@dailyuse/editor/api';
-import { GoalApiModule, createGoalPrismaRepositories } from '@dailyuse/goal/api';
-import { NotificationApiModule, createNotificationPrismaRepositories } from '@dailyuse/notification/api';
-import { CreateNotificationUseCase } from '@dailyuse/notification/commands';
-import { ReminderApiModule, createReminderPrismaRepositories } from '@dailyuse/reminder/api';
+import {
+  GoalApiModule,
+  createGoalPrismaScheduleExecutionSource,
+  createGoalPrismaScheduleProjectionSource,
+} from '@dailyuse/goal/api';
+import {
+  NotificationApiModule,
+  createNotificationPrismaScheduleNotificationPort,
+} from '@dailyuse/notification/api';
+import {
+  ReminderApiModule,
+  createReminderPrismaScheduleExecutionSource,
+  createReminderPrismaScheduleProjectionSource,
+} from '@dailyuse/reminder/api';
 import { RepositoryApiModule } from '@dailyuse/repository/api';
-import { createScheduleApiModule, createSharedSourceExecutor } from '@dailyuse/schedule/api';
+import {
+  createScheduleApiModule,
+  createScheduleTaskPrismaRepository,
+} from '@dailyuse/schedule/api';
+import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
 import { SettingApiModule, createSettingPrismaModule } from '@dailyuse/setting/api';
 import { DataPortabilityApiModule } from '@dailyuse/data-portability/api';
-import { TaskApiModule, createTaskPrismaRepositories } from '@dailyuse/task/api';
+import {
+  createTaskApiModule,
+  createTaskPrismaScheduleExecutionSource,
+  createTaskPrismaScheduleProjectionSource,
+} from '@dailyuse/task/api';
 import { createAIApiModule } from '@dailyuse/ai';
 import type { AIApiModuleContext } from '@dailyuse/ai/api';
 // 基础设施模块（直接在 API 内部定义）
@@ -104,22 +122,32 @@ async function bootstrap(): Promise<void> {
 
   // 2. 白名单注册 & 启动
   bootstrapper = new ApiBootstrapper(prisma);
-  const goalRepos = createGoalPrismaRepositories(prisma);
-  const taskRepos = createTaskPrismaRepositories(prisma);
-  const reminderRepos = createReminderPrismaRepositories(prisma);
-  const notificationRepos = createNotificationPrismaRepositories(prisma);
+  const scheduleTaskRepository = createScheduleTaskPrismaRepository(prisma);
+  const scheduleOrchestrationModule = createScheduleOrchestrationModule({
+    taskProjection: {
+      source: createTaskPrismaScheduleProjectionSource(prisma),
+      scheduleTaskRepository,
+    },
+    goalProjection: {
+      source: createGoalPrismaScheduleProjectionSource(prisma),
+      scheduleTaskRepository,
+    },
+    reminderProjection: {
+      source: createReminderPrismaScheduleProjectionSource(prisma),
+      scheduleTaskRepository,
+    },
+    execution: {
+      taskSource: createTaskPrismaScheduleExecutionSource(prisma),
+      goalSource: createGoalPrismaScheduleExecutionSource(prisma),
+      reminderSource: createReminderPrismaScheduleExecutionSource(prisma),
+      notificationPort: createNotificationPrismaScheduleNotificationPort(prisma),
+    },
+  });
+  const taskApiModule = createTaskApiModule({
+    runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+  });
   const scheduleApiModule = createScheduleApiModule({
-    sourceExecutor: createSharedSourceExecutor({
-      reminderRepository: reminderRepos.reminderTemplateRepository,
-      goalRepository: goalRepos.goalRepository,
-      taskInstanceRepository: taskRepos.taskInstanceRepository,
-      taskTemplateRepository: taskRepos.taskTemplateRepository,
-      createNotification: new CreateNotificationUseCase(
-        notificationRepos.notificationRepository,
-        notificationRepos.notificationTemplateRepository,
-        notificationRepos.notificationPreferenceRepository,
-      ),
-    }),
+    sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
   });
 
   const app = await bootstrapper
@@ -133,7 +161,7 @@ async function bootstrap(): Promise<void> {
     .register(RepositoryApiModule) // ✅ 仓库模块
     .register(scheduleApiModule) // ✅ 日程模块
     .register(SettingApiModule) // ✅ 设置模块
-    .register(TaskApiModule) // ✅ 任务模块
+    .register(taskApiModule) // ✅ 任务模块
     .register(AIApiModule) // ✅ AI 模块
     .register(GoalApiModule) // ✅ 目标模块
     .register(DataPortabilityApiModule) // ✅ 数据导入导出模块

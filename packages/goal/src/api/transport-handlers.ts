@@ -18,56 +18,41 @@ import type { GoalApplicationPort } from '../infrastructure-server';
  * Map GoalApplicationPort to GoalUseCases (controller port).
  * 将 GoalApplicationPort 映射为 GoalUseCases（控制器端口）。
  *
- * Controllers expect use-case objects with `.execute(...)` methods.
- * GoalApplicationPort exposes plain functions, so we wrap each into an
- * object with `execute` to satisfy the structural contract.
- * 控制器期望带有 `.execute(...)` 方法的用例对象。
- * GoalApplicationPort 暴露的是普通函数，因此我们将每个函数包装为
- * 带有 `execute` 的对象以满足结构约定。
+ * GoalApplicationPort already exposes plain functions, so this is a thin
+ * regrouping layer instead of a wrapper factory.
+ * GoalApplicationPort 已经暴露普通函数，因此这里是轻量分组，而不是包装层。
  */
 export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCases {
   return {
-    createGoal: { execute: api.createGoal } as GoalUseCases['createGoal'],
-    getGoal: { execute: api.getGoal } as GoalUseCases['getGoal'],
-    listGoals: { execute: api.listGoals } as GoalUseCases['listGoals'],
-    updateGoal: { execute: api.updateGoal } as GoalUseCases['updateGoal'],
-    deleteGoal: { execute: api.deleteGoal } as GoalUseCases['deleteGoal'],
-    archiveExpiredGoals: {
-      execute: api.archiveExpiredGoals,
-    } as GoalUseCases['archiveExpiredGoals'],
-    archiveGoal: { execute: api.archiveGoal } as GoalUseCases['archiveGoal'],
-    activateGoal: { execute: api.activateGoal } as GoalUseCases['activateGoal'],
-    completeGoal: { execute: api.completeGoal } as GoalUseCases['completeGoal'],
-    searchGoals: { execute: api.searchGoals } as GoalUseCases['searchGoals'],
-    addKeyResult: { execute: api.addKeyResult } as GoalUseCases['addKeyResult'],
-    updateKeyResult: { execute: api.updateKeyResult } as GoalUseCases['updateKeyResult'],
-    updateKeyResultProgress: {
-      execute: api.updateKeyResultProgress,
-    } as GoalUseCases['updateKeyResultProgress'],
-    deleteKeyResult: { execute: api.deleteKeyResult } as GoalUseCases['deleteKeyResult'],
-    addReview: { execute: api.addReview } as GoalUseCases['addReview'],
-    listReviews: { execute: api.listReviews } as GoalUseCases['listReviews'],
-    updateReview: { execute: api.updateReview } as GoalUseCases['updateReview'],
-    deleteReview: { execute: api.deleteReview } as GoalUseCases['deleteReview'],
-    createRecord: { execute: api.createRecord } as GoalUseCases['createRecord'],
-    listRecords: { execute: api.listRecords } as GoalUseCases['listRecords'],
-    deleteRecord: { execute: api.deleteRecord } as GoalUseCases['deleteRecord'],
-    getCurrentFocusMode: {
-      execute: api.getCurrentFocusMode,
-    } as GoalUseCases['getCurrentFocusMode'],
-    activateFocusMode: { execute: api.activateFocusMode } as GoalUseCases['activateFocusMode'],
-    deactivateFocusMode: {
-      execute: api.deactivateFocusMode,
-    } as GoalUseCases['deactivateFocusMode'],
-    extendFocusMode: { execute: api.extendFocusMode } as GoalUseCases['extendFocusMode'],
-    getGoalAggregate: { execute: api.getGoalAggregate } as GoalUseCases['getGoalAggregate'],
-    getGoalProgressBreakdown: {
-      execute: api.getGoalProgressBreakdown,
-    } as GoalUseCases['getGoalProgressBreakdown'],
-    cloneGoal: { execute: api.cloneGoal } as GoalUseCases['cloneGoal'],
-    batchUpdateKeyResultWeights: {
-      execute: api.batchUpdateKeyResultWeights,
-    } as GoalUseCases['batchUpdateKeyResultWeights'],
+    createGoal: api.createGoal,
+    getGoal: api.getGoal,
+    listGoals: api.listGoals,
+    updateGoal: api.updateGoal,
+    deleteGoal: api.deleteGoal,
+    archiveExpiredGoals: api.archiveExpiredGoals,
+    archiveGoal: api.archiveGoal,
+    activateGoal: api.activateGoal,
+    completeGoal: api.completeGoal,
+    searchGoals: api.searchGoals,
+    addKeyResult: api.addKeyResult,
+    updateKeyResult: api.updateKeyResult,
+    updateKeyResultProgress: api.updateKeyResultProgress,
+    deleteKeyResult: api.deleteKeyResult,
+    addReview: api.addReview,
+    listReviews: api.listReviews,
+    updateReview: api.updateReview,
+    deleteReview: api.deleteReview,
+    createRecord: api.createRecord,
+    listRecords: api.listRecords,
+    deleteRecord: api.deleteRecord,
+    getCurrentFocusMode: api.getCurrentFocusMode,
+    activateFocusMode: api.activateFocusMode,
+    deactivateFocusMode: api.deactivateFocusMode,
+    extendFocusMode: api.extendFocusMode,
+    getGoalAggregate: api.getGoalAggregate,
+    getGoalProgressBreakdown: api.getGoalProgressBreakdown,
+    cloneGoal: api.cloneGoal,
+    batchUpdateKeyResultWeights: api.batchUpdateKeyResultWeights,
   };
 }
 
@@ -77,10 +62,10 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
  */
 export function createGoalFolderTransportHandlers(api: GoalApplicationPort): GoalFolderUseCases {
   return {
-    createGoalFolder: { execute: api.createGoalFolder } as GoalFolderUseCases['createGoalFolder'],
-    getGoalFolder: { execute: api.getGoalFolder } as GoalFolderUseCases['getGoalFolder'],
-    listGoalFolders: { execute: api.listGoalFolders } as GoalFolderUseCases['listGoalFolders'],
-    updateGoalFolder: { execute: api.updateGoalFolder } as GoalFolderUseCases['updateGoalFolder'],
-    deleteGoalFolder: { execute: api.deleteGoalFolder } as GoalFolderUseCases['deleteGoalFolder'],
+    createGoalFolder: api.createGoalFolder,
+    getGoalFolder: api.getGoalFolder,
+    listGoalFolders: api.listGoalFolders,
+    updateGoalFolder: api.updateGoalFolder,
+    deleteGoalFolder: api.deleteGoalFolder,
   };
 }

@@ -3,9 +3,8 @@ import type {
   IScheduleTaskRepository,
 } from '../../../domain-server/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
-import { ScheduleTaskStatus, type SourceModule } from '@dailyuse/contracts/schedule';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
-import { eventBus } from '@dailyuse/utils/domain';
+import { ScheduleTaskStatus, type ScheduleEventMap, type SourceModule } from '@dailyuse/contracts/schedule';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import {
   PowerSyncScheduleTaskMapper,
@@ -21,6 +20,7 @@ type Queryable = {
 };
 
 const logger = createLogger('ScheduleTaskPowerSyncRepo');
+const scheduleEventPublisher = createTypedEventPublisher<ScheduleEventMap>(eventBus);
 
 export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository {
   constructor(private readonly db: Queryable) {}
@@ -205,11 +205,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     }
 
     if (pendingDomainEvents.length > 0) {
-      for (const event of task.pullDomainEvents()) {
-        const eventType = event.eventType as keyof AppEventRegistry;
-        eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
-      }
-
+      flushDomainEvents(scheduleEventPublisher, task);
       logger.info('[Schedule][Repo] Published domain events after PowerSync save', {
         taskId: String(task.id),
         publishedDomainEvents: pendingDomainEvents,

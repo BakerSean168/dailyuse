@@ -46,21 +46,25 @@ import type { UnbindTaskFromGoalUseCase } from '../application-server/use-cases/
 import type { ListTaskInstancesByTemplateUseCase } from '../application-server/use-cases/queries/list-task-instances-by-template.use-case';
 import type { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';
 
+type TaskControllerFn<T extends (...args: any[]) => any> = (
+  ...args: Parameters<T>
+) => ReturnType<T>;
+
 export interface TaskTemplateUseCases {
-  createTemplate: CreateTaskTemplateUseCase;
-  getTemplate: GetTaskTemplateUseCase;
-  listTemplates: ListTaskTemplatesUseCase;
-  getTaskGraph: GetTaskTemplateGraphUseCase;
-  updateTemplate: UpdateTaskTemplateUseCase;
-  deleteTemplate: DeleteTaskTemplateUseCase;
-  activateTemplate: ActivateTaskTemplateUseCase;
-  pauseTemplate: PauseTaskTemplateUseCase;
-  archiveTemplate: ArchiveTaskTemplateUseCase;
-  listByPriority: ListTaskTemplatesByPriorityUseCase;
-  generateInstances: GenerateTaskInstancesUseCase;
-  bindToGoal: BindTaskToGoalUseCase;
-  unbindFromGoal: UnbindTaskFromGoalUseCase;
-  listInstancesByTemplate: ListTaskInstancesByTemplateUseCase;
+  createTemplate: TaskControllerFn<CreateTaskTemplateUseCase['execute']>;
+  getTemplate: TaskControllerFn<GetTaskTemplateUseCase['execute']>;
+  listTemplates: TaskControllerFn<ListTaskTemplatesUseCase['execute']>;
+  getTaskGraph: TaskControllerFn<GetTaskTemplateGraphUseCase['execute']>;
+  updateTemplate: TaskControllerFn<UpdateTaskTemplateUseCase['execute']>;
+  deleteTemplate: TaskControllerFn<DeleteTaskTemplateUseCase['execute']>;
+  activateTemplate: TaskControllerFn<ActivateTaskTemplateUseCase['execute']>;
+  pauseTemplate: TaskControllerFn<PauseTaskTemplateUseCase['execute']>;
+  archiveTemplate: TaskControllerFn<ArchiveTaskTemplateUseCase['execute']>;
+  listByPriority: TaskControllerFn<ListTaskTemplatesByPriorityUseCase['execute']>;
+  generateInstances: TaskControllerFn<GenerateTaskInstancesUseCase['execute']>;
+  bindToGoal: TaskControllerFn<BindTaskToGoalUseCase['execute']>;
+  unbindFromGoal: TaskControllerFn<UnbindTaskFromGoalUseCase['execute']>;
+  listInstancesByTemplate: TaskControllerFn<ListTaskInstancesByTemplateUseCase['execute']>;
 }
 
 /**
@@ -116,7 +120,7 @@ export class TaskTemplateController {
       goalBinding: parsed.data.goalBinding,
     };
 
-    const result = await this.useCases.createTemplate.execute(createInput);
+    const result = await this.useCases.createTemplate(createInput);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO>;
@@ -132,7 +136,7 @@ export class TaskTemplateController {
     id: string,
     includeChildren = false,
   ): Promise<Result<TaskTemplateClientDTO | null>> {
-    const result = await this.useCases.getTemplate.execute(id, includeChildren);
+    const result = await this.useCases.getTemplate(id, includeChildren);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO | null>;
@@ -149,7 +153,7 @@ export class TaskTemplateController {
     filters: ListTaskTemplateFilters | undefined,
     ctx: Context,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
-    const result = await this.useCases.listTemplates.execute(this.toTemplateQuery(filters, ctx));
+    const result = await this.useCases.listTemplates(this.toTemplateQuery(filters, ctx));
 
     if (!isOk(result)) {
       return result as Result<{ templates: TaskTemplateClientDTO[]; total: number }>;
@@ -165,7 +169,7 @@ export class TaskTemplateController {
     filters: ListTaskTemplateFilters | undefined,
     ctx: Context,
   ): Promise<Result<QueryTaskTemplateGraphRes>> {
-    const result = await this.useCases.getTaskGraph.execute(this.toTemplateQuery(filters, ctx));
+    const result = await this.useCases.getTaskGraph(this.toTemplateQuery(filters, ctx));
 
     if (!isOk(result)) {
       return result as Result<QueryTaskTemplateGraphRes>;
@@ -187,7 +191,7 @@ export class TaskTemplateController {
       });
     }
 
-    return await this.useCases.updateTemplate.execute(id, {
+    return await this.useCases.updateTemplate(id, {
       name: parsed.data.name,
       description: parsed.data.description,
       timeConfig: parsed.data.timeConfig,
@@ -206,7 +210,7 @@ export class TaskTemplateController {
    * Delete template
    */
   async deleteTemplate(id: string): Promise<Result<void>> {
-    const result = await this.useCases.deleteTemplate.execute(id);
+    const result = await this.useCases.deleteTemplate(id);
     if (!isOk(result)) {
       return result as Result<void>;
     }
@@ -217,7 +221,7 @@ export class TaskTemplateController {
    * Activate template
    */
   async activateTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    const result = await this.useCases.activateTemplate.execute(id);
+    const result = await this.useCases.activateTemplate(id);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO>;
@@ -230,7 +234,7 @@ export class TaskTemplateController {
    * Pause template
    */
   async pauseTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    const result = await this.useCases.pauseTemplate.execute(id);
+    const result = await this.useCases.pauseTemplate(id);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO>;
@@ -243,7 +247,7 @@ export class TaskTemplateController {
    * Archive template
    */
   async archiveTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return await this.useCases.archiveTemplate.execute(id);
+    return await this.useCases.archiveTemplate(id);
   }
 
   /**
@@ -251,7 +255,7 @@ export class TaskTemplateController {
    * Identity is injected from Context, not from request payload
    */
   async listByPriority(ctx: Context, limit?: number): Promise<Result<TaskTemplateClientDTO[]>> {
-    return await this.useCases.listByPriority.execute(ctx.identityId, limit);
+    return await this.useCases.listByPriority(ctx.identityId, limit);
   }
 
   /**
@@ -267,7 +271,7 @@ export class TaskTemplateController {
       });
     }
 
-    return await this.useCases.generateInstances.execute(id, parsed.data);
+    return await this.useCases.generateInstances(id, parsed.data);
   }
 
   /**
@@ -277,7 +281,7 @@ export class TaskTemplateController {
     templateId: string,
     range?: TaskTemplateInstancesQuery,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    const result = await this.useCases.listInstancesByTemplate.execute(templateId);
+    const result = await this.useCases.listInstancesByTemplate(templateId);
 
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO[]>;
@@ -315,13 +319,13 @@ export class TaskTemplateController {
       });
     }
 
-    return await this.useCases.bindToGoal.execute(id, parsed.data);
+    return await this.useCases.bindToGoal(id, parsed.data);
   }
 
   /**
    * Unbind template from goal
    */
   async unbindFromGoal(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return await this.useCases.unbindFromGoal.execute(id);
+    return await this.useCases.unbindFromGoal(id);
   }
 }

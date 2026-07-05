@@ -1,11 +1,20 @@
 import { describe, it, expect } from 'vitest';
+import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { rawDataToGoalState } from './goal-state-mapper';
 
 describe('rawDataToGoalState', () => {
+  const GOAL_ID_1 = aPrefixedUuid('IGoalId', 'goal-state-goal-1');
+  const GOAL_ID_2 = aPrefixedUuid('IGoalId', 'goal-state-goal-2');
+  const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'goal-state-owner-1');
+  const FOLDER_ID_1 = aPrefixedUuid('IGoalFolderId', 'goal-state-folder-1');
+  const KEY_RESULT_ID_1 = aPrefixedUuid('IKeyResultId', 'goal-state-kr-1');
+  const REVIEW_ID_1 = aPrefixedUuid('IGoalReviewId', 'goal-state-review-1');
+  const SNAPSHOT_ID_1 = aPrefixedUuid('IKeyResultWeightSnapshotId', 'goal-state-snapshot-1');
+
   it('parses structured fields and maps nested entities', () => {
     const raw = {
-      id: 'goal-1',
-      identityId: 'identity-1',
+      id: GOAL_ID_1,
+      identityId: IDENTITY_ID_1,
       name: 'Goal',
       description: null,
       color: '#123456',
@@ -20,7 +29,7 @@ describe('rawDataToGoalState', () => {
       targetDate: new Date(2_000),
       completedAt: null,
       archivedAt: null,
-      folderId: 'folder-1',
+      folderId: FOLDER_ID_1,
       parentGoalId: null,
       sortOrder: 1,
       reminderConfig: {
@@ -29,8 +38,8 @@ describe('rawDataToGoalState', () => {
       },
       keyResults: [
         {
-          id: 'kr-1',
-          goalId: 'goal-1',
+          id: KEY_RESULT_ID_1,
+          goalId: GOAL_ID_1,
           title: 'KR',
           description: null,
           progress: {
@@ -51,8 +60,8 @@ describe('rawDataToGoalState', () => {
       ],
       goalReviews: [
         {
-          id: 'review-1',
-          goalId: 'goal-1',
+          id: REVIEW_ID_1,
+          goalId: GOAL_ID_1,
           type: 'Weekly',
           rating: 4,
           summary: 'ok',
@@ -69,17 +78,17 @@ describe('rawDataToGoalState', () => {
       ],
       weightSnapshots: [
         {
-          id: 'snapshot-1' as any,
-          goalId: 'goal-1' as any,
-          keyResultId: 'kr-1' as any,
-          identityId: 'identity-1' as any,
+          id: SNAPSHOT_ID_1 as any,
+          goalId: GOAL_ID_1 as any,
+          keyResultId: KEY_RESULT_ID_1 as any,
+          identityId: IDENTITY_ID_1 as any,
           oldWeight: 1,
           newWeight: 2,
           weightDelta: 1,
           snapshotTime: 1_111,
           trigger: 'Manual',
           reason: null,
-          operatorId: 'identity-1' as any,
+          operatorId: IDENTITY_ID_1 as any,
           createdAt: 1_112,
         },
       ],
@@ -101,13 +110,13 @@ describe('rawDataToGoalState', () => {
     expect(state.goalReviews).toHaveLength(1);
     expect(state.goalReviews[0].keyResultSnapshots).toHaveLength(0);
     expect(state.weightSnapshots).toHaveLength(1);
-    expect(state.weightSnapshots[0].toDTO().id).toBe('snapshot-1');
+    expect(state.weightSnapshots[0].toDTO().id).toBe(SNAPSHOT_ID_1);
   });
 
   it('handles null collections', () => {
     const raw = {
-      id: 'goal-2',
-      identityId: 'identity-1',
+      id: GOAL_ID_2,
+      identityId: IDENTITY_ID_1,
       name: 'Goal2',
       description: 'desc',
       color: '#abcdef',
@@ -123,7 +132,7 @@ describe('rawDataToGoalState', () => {
       completedAt: new Date(3_000),
       archivedAt: null,
       folderId: null,
-      parentGoalId: 'goal-1',
+      parentGoalId: GOAL_ID_1,
       sortOrder: 2,
       reminderConfig: {
         enabled: false,
@@ -144,7 +153,7 @@ describe('rawDataToGoalState', () => {
 
     expect(state.tags).toEqual(['x']);
     expect(state.folderId).toBeNull();
-    expect(state.parentGoalId).toBe('goal-1');
+    expect(state.parentGoalId).toBe(GOAL_ID_1);
     expect(state.keyResults).toEqual([]);
     expect(state.goalReviews).toEqual([]);
     expect(state.weightSnapshots).toEqual([]);

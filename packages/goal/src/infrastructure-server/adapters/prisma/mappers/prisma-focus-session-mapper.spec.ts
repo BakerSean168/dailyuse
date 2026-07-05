@@ -1,12 +1,17 @@
 import { describe, it, expect } from 'vitest';
+import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { PrismaFocusSessionMapper } from './prisma-focus-session-mapper';
 
 describe('PrismaFocusSessionMapper', () => {
+  const SESSION_ID_1 = aPrefixedUuid('IFocusSessionId', 'focus-session-1');
+  const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'focus-session-owner-1');
+  const GOAL_ID_1 = aPrefixedUuid('IGoalId', 'focus-session-goal-1');
+
   it('maps prisma row to domain focus session', () => {
     const row = {
-      id: 'session-1',
-      identityId: 'identity-1',
-      goalId: 'goal-1',
+      id: SESSION_ID_1,
+      identityId: IDENTITY_ID_1,
+      goalId: GOAL_ID_1,
       status: 'Active',
       durationMinutes: 30,
       actualDurationMinutes: 10,
@@ -27,8 +32,8 @@ describe('PrismaFocusSessionMapper', () => {
     const domain = PrismaFocusSessionMapper.toDomain(row);
     const dto = domain.toServerDTO();
 
-    expect(dto.id).toBe('session-1');
-    expect(dto.goalId).toBe('goal-1');
+    expect(dto.id).toBe(SESSION_ID_1);
+    expect(dto.goalId).toBe(GOAL_ID_1);
     expect(dto.status).toBe('Active');
     expect(dto.durationMinutes).toBe(30);
     expect(dto.pauseCount).toBe(1);
@@ -39,8 +44,8 @@ describe('PrismaFocusSessionMapper', () => {
   it('maps list and handles nullable goalId and deletedAt', () => {
     const rows = [
       {
-        id: 'session-1',
-        identityId: 'identity-1',
+        id: SESSION_ID_1,
+        identityId: IDENTITY_ID_1,
         goalId: null,
         status: 'Completed',
         durationMinutes: 25,

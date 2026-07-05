@@ -318,7 +318,7 @@ describe('Repository resource mutations', () => {
     const handler = (event: RepositoryResourceMutatedEvent) => {
       receivedEvents.push(event);
     };
-    (eventBus as any).on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+    eventBus.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
 
     try {
       const { storagePort: storage, repositoryRepository, folderRepository, module } =
@@ -371,7 +371,7 @@ describe('Repository resource mutations', () => {
       ]);
       expect(receivedEvents.every((event) => event.resourceId === resourceId)).toBe(true);
     } finally {
-      (eventBus as any).off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
+      eventBus.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handler);
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
   });

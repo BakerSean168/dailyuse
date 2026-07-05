@@ -14,7 +14,6 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { createGoalPowerSyncModule } from '../infrastructure-server/powersync';
-import { GoalPowerSyncRepository } from '../infrastructure-server';
 import { GoalController } from '../controllers/goal.controller';
 import { GoalFolderController } from '../controllers/goal-folder.controller';
 import {
@@ -22,13 +21,11 @@ import {
   createGoalFolderTransportHandlers,
 } from '../api/transport-handlers';
 import { createGoalRuntimeContribution } from '../api/runtime';
-import { createGoalScheduleRuntimeContribution } from '../api/schedule-runtime';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { IGoalRecordRepository, IGoalRepository } from '../domain-server';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { GoalModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
 
 const logger = createLogger('GoalElectron');
 
@@ -100,15 +97,8 @@ export const GoalElectronModule: IElectronModule = {
     const { db } = ctx;
 
     // 1. Composition Root — PowerSync 适配器 + 运行时贡献
-    const goalRepository = new GoalPowerSyncRepository(db);
     const goalModule = createGoalPowerSyncModule(db, {
-      runtimeContributions: [
-        createGoalRuntimeContribution(),
-        createGoalScheduleRuntimeContribution({
-          goalRepository,
-          scheduleTaskRepository: new PowerSyncScheduleTaskRepository(db),
-        }),
-      ],
+      runtimeContributions: [createGoalRuntimeContribution()],
     });
     activeGoalModule = goalModule;
     goalModule.start();
@@ -295,3 +285,8 @@ export const GoalElectronModule: IElectronModule = {
     logger.info('Goal module destroyed');
   },
 };
+
+export {
+  createGoalPowerSyncScheduleExecutionSource,
+  createGoalPowerSyncScheduleProjectionSource,
+} from '../infrastructure-server';

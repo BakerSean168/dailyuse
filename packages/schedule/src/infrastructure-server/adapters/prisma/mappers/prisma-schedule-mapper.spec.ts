@@ -11,18 +11,24 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { PrismaScheduleMapper } from './prisma-schedule-mapper';
 import type { Schedule as PrismaSchedule } from '@dailyuse/database';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
+
+const SCHEDULE_ID_1 = aPrefixedUuid('IScheduleId', 'schedule-1');
+const SCHEDULE_ID_2 = aPrefixedUuid('IScheduleId', 'schedule-2');
+const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'schedule-owner-1');
+const IDENTITY_ID_2 = aPrefixedUuid('IdentityId', 'schedule-owner-2');
 
 function createMinimalRow(): PrismaSchedule {
   const now = new Date();
   const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
   
   return {
-    id: 'schedule-1',
-    identityId: 'identity-1',
+    id: SCHEDULE_ID_1,
+    identityId: IDENTITY_ID_1,
     title: 'Team Meeting',
     description: null,
     startTime: now,
@@ -43,8 +49,8 @@ function createFullRow(): PrismaSchedule {
   const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
   
   return {
-    id: 'schedule-2',
-    identityId: 'identity-2',
+    id: SCHEDULE_ID_2,
+    identityId: IDENTITY_ID_2,
     title: 'Project Planning',
     description: 'Q2 roadmap planning session',
     startTime: now,
@@ -71,8 +77,8 @@ describe('PrismaScheduleMapper', () => {
       const row = createMinimalRow();
       const domain = PrismaScheduleMapper.toDomain(row);
 
-      expect(domain.id).toBe('schedule-1');
-      expect(domain.identityId).toBe('identity-1');
+      expect(domain.id).toBe(SCHEDULE_ID_1);
+      expect(domain.identityId).toBe(IDENTITY_ID_1);
       expect(domain.title).toBe('Team Meeting');
       expect(domain.description).toBeNull();
       expect(domain.duration).toBe(60);
@@ -87,8 +93,8 @@ describe('PrismaScheduleMapper', () => {
       const row = createFullRow();
       const domain = PrismaScheduleMapper.toDomain(row);
 
-      expect(domain.id).toBe('schedule-2');
-      expect(domain.identityId).toBe('identity-2');
+      expect(domain.id).toBe(SCHEDULE_ID_2);
+      expect(domain.identityId).toBe(IDENTITY_ID_2);
       expect(domain.title).toBe('Project Planning');
       expect(domain.description).toBe('Q2 roadmap planning session');
       expect(domain.duration).toBe(120);
@@ -159,7 +165,7 @@ describe('PrismaScheduleMapper', () => {
       const domain = PrismaScheduleMapper.toDomain(row);
       const persistence = PrismaScheduleMapper.toPersistence(domain);
 
-      expect(persistence.identityId).toBe('identity-2');
+      expect(persistence.identityId).toBe(IDENTITY_ID_2);
       expect(persistence.title).toBe('Project Planning');
       expect(persistence.description).toBe('Q2 roadmap planning session');
       expect(persistence.duration).toBe(120);
@@ -244,9 +250,9 @@ describe('PrismaScheduleMapper', () => {
       const domains = PrismaScheduleMapper.toDomainList(rows);
 
       expect(domains).toHaveLength(3);
-      expect(domains[0].id).toBe('schedule-1');
-      expect(domains[1].id).toBe('schedule-2');
-      expect(domains[2].id).toBe('schedule-1');
+      expect(domains[0].id).toBe(SCHEDULE_ID_1);
+      expect(domains[1].id).toBe(SCHEDULE_ID_2);
+      expect(domains[2].id).toBe(SCHEDULE_ID_1);
     });
 
     it('preserves all properties in batch conversion', () => {

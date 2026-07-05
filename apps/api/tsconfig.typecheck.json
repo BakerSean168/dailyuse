@@ -23,10 +23,29 @@
         "packages/dashboard/src/*/index.ts",
         "packages/dashboard/src/*.ts"
       ],
+      "@dailyuse/task": ["packages/task/dist/index.d.ts"],
+      "@dailyuse/task/schedule-execution": ["packages/task/dist/schedule-execution/index.d.ts"],
+      "@dailyuse/task/schedule-projection": ["packages/task/dist/schedule-projection/index.d.ts"],
+      "@dailyuse/task/*": [
+        "packages/task/dist/*/index.d.ts",
+        "packages/task/dist/*.d.ts"
+      ],
+      "@dailyuse/goal/schedule-execution": ["packages/goal/dist/schedule-execution/index.d.ts"],
+      "@dailyuse/goal/schedule-projection": ["packages/goal/dist/schedule-projection/index.d.ts"],
+      "@dailyuse/reminder/schedule-execution": [
+        "packages/reminder/dist/schedule-execution/index.d.ts"
+      ],
+      "@dailyuse/reminder/schedule-projection": [
+        "packages/reminder/dist/schedule-projection/index.d.ts"
+      ],
+      "@dailyuse/task/api": ["packages/task/dist/api/index.d.ts"],
       "@dailyuse/notification": ["packages/notification/dist/index.d.ts"],
       "@dailyuse/notification/*": [
         "packages/notification/dist/*/index.d.ts",
         "packages/notification/dist/*.d.ts"
+      ],
+      "@dailyuse/notification/schedule-execution": [
+        "packages/notification/dist/schedule-execution/index.d.ts"
       ],
       "@dailyuse/notification/commands": ["packages/notification/dist/commands/index.d.ts"],
       "@dailyuse/powersync-schema": ["packages/powersync-schema/src/index.ts"],
@@ -41,6 +60,11 @@
         "packages/schedule/dist/*.d.ts"
       ],
       "@dailyuse/schedule/api": ["packages/schedule/dist/api/index.d.ts"],
+      "@dailyuse/schedule-orchestration": ["packages/schedule-orchestration/src/index.ts"],
+      "@dailyuse/schedule-orchestration/*": [
+        "packages/schedule-orchestration/src/*/index.ts",
+        "packages/schedule-orchestration/src/*.ts"
+      ],
       "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
       "@dailyuse/ai": ["packages/ai/dist/index.d.ts"],
       "@dailyuse/ai/*": ["packages/ai/dist/*/index.d.ts", "packages/ai/dist/*.d.ts"],
