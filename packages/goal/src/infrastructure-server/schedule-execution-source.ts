@@ -4,7 +4,6 @@ import {
   NotificationType,
   RelatedEntityType,
 } from '@dailyuse/contracts/notification';
-import type { ScheduleTask } from '@dailyuse/schedule';
 import type { IGoalRepository } from '../domain-server';
 import type { GoalScheduleExecutionSource } from '../schedule-execution';
 

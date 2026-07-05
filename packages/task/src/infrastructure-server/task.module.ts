@@ -49,7 +49,7 @@ import { ListTaskDependenciesUseCase } from '../application-server/use-cases/que
 import { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
 import { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
 
-type TaskPortFn<T extends (...args: any[]) => any> = (
+type TaskPortFn<T extends (...args: unknown[]) => unknown> = (
   ...args: Parameters<T>
 ) => ReturnType<T>;
 import { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';

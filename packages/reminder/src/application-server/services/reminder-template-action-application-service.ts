@@ -2,7 +2,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type {
-  ReminderGroupClientDTO,
   ReminderHistoryClientDTO,
   ReminderTemplateClientDTO,
 } from '@dailyuse/contracts/reminder';

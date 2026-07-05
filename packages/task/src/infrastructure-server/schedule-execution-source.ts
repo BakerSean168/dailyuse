@@ -4,7 +4,6 @@ import {
   NotificationType,
   RelatedEntityType,
 } from '@dailyuse/contracts/notification';
-import type { ScheduleTask } from '@dailyuse/schedule';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../domain-server/repositories/i-task-template-repository';
 import type { TaskScheduleExecutionSource } from '../schedule-execution';
