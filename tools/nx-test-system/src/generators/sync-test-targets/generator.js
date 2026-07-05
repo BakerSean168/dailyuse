@@ -26,6 +26,22 @@ const boundaryRequiredTargets = new Map([
 
 const governedRequiredTargets = ["test", "test:watch", "test:coverage"];
 
+function createVitestCommand(cwd, args) {
+  const executable = cwd
+    ? `${relativeWorkspaceRoot(cwd)}/node_modules/vitest/vitest.mjs`
+    : './node_modules/vitest/vitest.mjs';
+
+  return `node ${executable} ${args}`;
+}
+
+function relativeWorkspaceRoot(projectRoot) {
+  return projectRoot
+    .split(/[\\/]/)
+    .filter(Boolean)
+    .map(() => '..')
+    .join('/') || '.';
+}
+
 function createBoundaryTargetTemplates(projectName) {
   const templates = {
     api: {
@@ -35,14 +51,14 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: true,
         options: {
-          command: "vitest run --config apps/api/vitest.config.ts",
+          command: createVitestCommand(null, "run --config apps/api/vitest.config.ts"),
         },
       },
       "test:watch": {
         executor: "nx:run-commands",
         cache: false,
         options: {
-          command: "vitest --config apps/api/vitest.config.ts",
+          command: createVitestCommand(null, "--config apps/api/vitest.config.ts"),
         },
       },
       "test:smoke": {
@@ -51,7 +67,7 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: true,
         options: {
-          command: "vitest run --config apps/api/vitest.smoke.config.ts",
+          command: createVitestCommand(null, "run --config apps/api/vitest.smoke.config.ts"),
         },
       },
     },
@@ -62,7 +78,7 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: true,
         options: {
-          command: "vitest run --config vitest.config.ts",
+          command: createVitestCommand("packages/task", "run --config vitest.config.ts"),
           cwd: "packages/task",
         },
       },
@@ -70,7 +86,7 @@ function createBoundaryTargetTemplates(projectName) {
         executor: "nx:run-commands",
         cache: false,
         options: {
-          command: "vitest --config vitest.config.ts",
+          command: createVitestCommand("packages/task", "--config vitest.config.ts"),
           cwd: "packages/task",
         },
       },
@@ -80,7 +96,7 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: false,
         options: {
-          command: "vitest run --config vitest.integration.config.ts",
+          command: createVitestCommand("packages/task", "run --config vitest.integration.config.ts"),
           cwd: "packages/task",
         },
       },
@@ -90,7 +106,7 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: false,
         options: {
-          command: "vitest run --config vitest.performance.config.ts -t \"acceptable time\"",
+          command: createVitestCommand("packages/task", "run --config vitest.performance.config.ts -t \"acceptable time\""),
           cwd: "packages/task",
         },
       },
@@ -102,21 +118,21 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: true,
         options: {
-          command: "vitest run --config apps/desktop/vitest.config.ts",
+          command: createVitestCommand(null, "run --config apps/desktop/vitest.config.ts"),
         },
       },
       "test:watch": {
         executor: "nx:run-commands",
         cache: false,
         options: {
-          command: "vitest --config apps/desktop/vitest.config.ts",
+          command: createVitestCommand(null, "--config apps/desktop/vitest.config.ts"),
         },
       },
       "test:ipc": {
         executor: "nx:run-commands",
         outputs: ["{workspaceRoot}/coverage/apps/desktop-ipc"],
         options: {
-          command: "vitest run --config vitest.ipc.config.ts",
+          command: createVitestCommand("apps/desktop", "run --config vitest.ipc.config.ts"),
           cwd: "apps/desktop",
         },
       },
@@ -124,7 +140,7 @@ function createBoundaryTargetTemplates(projectName) {
         executor: "nx:run-commands",
         outputs: ["{workspaceRoot}/coverage/apps/desktop-main"],
         options: {
-          command: "vitest run --config vitest.main.config.ts",
+          command: createVitestCommand("apps/desktop", "run --config vitest.main.config.ts"),
           cwd: "apps/desktop",
         },
       },
@@ -136,14 +152,14 @@ function createBoundaryTargetTemplates(projectName) {
         inputs: ["default", "^production"],
         cache: true,
         options: {
-          command: "vitest run --config apps/web/vitest.config.ts",
+          command: createVitestCommand(null, "run --config apps/web/vitest.config.ts"),
         },
       },
       "test:watch": {
         executor: "nx:run-commands",
         cache: false,
         options: {
-          command: "vitest --config apps/web/vitest.config.ts",
+          command: createVitestCommand(null, "--config apps/web/vitest.config.ts"),
         },
       },
       e2e: {
@@ -201,7 +217,7 @@ function createLocalVitestTargetTemplates(projectRoot, includeCoverage = false) 
       inputs: ["default", "^production"],
       cache: true,
       options: {
-        command: "vitest run --config vitest.config.ts",
+        command: createVitestCommand(projectRoot, "run --config vitest.config.ts"),
         cwd: projectRoot,
       },
     },
@@ -209,7 +225,7 @@ function createLocalVitestTargetTemplates(projectRoot, includeCoverage = false) 
       executor: "nx:run-commands",
       cache: false,
       options: {
-        command: "vitest --config vitest.config.ts",
+        command: createVitestCommand(projectRoot, "--config vitest.config.ts"),
         cwd: projectRoot,
       },
     },
@@ -222,7 +238,7 @@ function createLocalVitestTargetTemplates(projectRoot, includeCoverage = false) 
       inputs: ["default", "^production"],
       cache: true,
       options: {
-        command: "vitest run --config vitest.config.ts --coverage",
+        command: createVitestCommand(projectRoot, "run --config vitest.config.ts --coverage"),
         cwd: projectRoot,
       },
     };
@@ -364,7 +380,9 @@ function deriveWatchTarget(testTarget) {
     return null;
   }
 
-  const watchCommand = testCommand.replace(/\bvitest\s+run\b/, "vitest");
+  const watchCommand = testCommand
+    .replace(/\bvitest\s+run\b/, "vitest")
+    .replace(/vitest\.mjs\s+run\b/, "vitest.mjs");
   if (watchCommand === testCommand) {
     return null;
   }

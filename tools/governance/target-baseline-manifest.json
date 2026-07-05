@@ -59,6 +59,7 @@
     "notification": "runtime-lib",
     "reminder": "runtime-lib",
     "schedule": "runtime-lib",
+    "schedule-orchestration": "runtime-lib",
     "setting": "runtime-lib",
     "data-portability": "runtime-lib",
     "task": "runtime-lib",
@@ -95,12 +96,7 @@
       "type": "permanent",
       "reason": "React Native app in apps/: test infrastructure requires Expo test runner integration; not a standard package"
     },
-    {
-      "project": "database",
-      "target": "test",
-      "type": "permanent",
-      "reason": "Infrastructure plumbing: Prisma client singleton and env resolution; no testable business logic; validated through downstream consumers"
-    },
+
     {
       "project": "ui-vue-shadcn",
       "target": "test",
@@ -131,12 +127,7 @@
       "type": "permanent",
       "reason": "React Native lib: test infrastructure requires React Native Testing Library + Metro bundler mock setup; not a standard vitest setup"
     },
-    {
-      "project": "powersync-schema",
-      "target": "test",
-      "type": "permanent",
-      "reason": "Schema definition lib: declarative schema with no business logic to test"
-    },
+
     {
       "project": "assets",
       "target": "lint",

@@ -27,7 +27,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config vitest.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
         "cwd": "packages/governance"
       }
     },
@@ -50,7 +50,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --config vitest.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs --config vitest.config.ts",
         "cwd": "packages/governance"
       }
     },
@@ -60,7 +60,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config vitest.config.ts --coverage",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --coverage",
         "cwd": "packages/governance"
       }
     }

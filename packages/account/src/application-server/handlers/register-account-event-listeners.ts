@@ -6,13 +6,14 @@
 
 import type { IAccountRepository } from '../../domain-server';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import { IdentityCreatedHandler } from './identity-created.handler';
 
 const logger = createLogger('AccountEventListeners');
 
-const AUTH_IDENTITY_CREATED_EVENT = 'auth:identity-created';
+const authSubscriber = createTypedEventSubscriber<AuthEventMap>(eventBus);
+
 /**
  * Creates an idempotent runtime contribution for account event subscriptions.
  * 创建可幂等启停的 account 事件订阅 runtime。
@@ -40,8 +41,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
         return;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cross-module event subscription
-      (eventBus as any).on(AUTH_IDENTITY_CREATED_EVENT, onIdentityCreated);
+      authSubscriber.on('auth:identity-created', onIdentityCreated);
       started = true;
       logger.info('[AccountEventListeners] Account event listeners registered successfully');
     },
@@ -50,8 +50,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
         return;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- cross-module event subscription
-      (eventBus as any).off(AUTH_IDENTITY_CREATED_EVENT, onIdentityCreated);
+      authSubscriber.off('auth:identity-created', onIdentityCreated);
       started = false;
       logger.info('[AccountEventListeners] Account event listeners unregistered');
     },

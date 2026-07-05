@@ -1,10 +1,10 @@
-import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
 import {
   REPOSITORY_RESOURCE_MUTATED_EVENT,
+  type RepositoryEventMap,
   RepositoryResourceMutationType,
   type RepositoryResourceMutatedEvent,
 } from '@dailyuse/contracts/repository';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { IAIProviderConfigRepository } from '../../domain-server/repositories/i-ai-provider-config-repository';
 
@@ -16,10 +16,13 @@ import {
 } from '../../application-server/use-cases/commands/ai-provider-resolution';
 
 const logger = createLogger('AIKnowledgeAutoIndexRuntime');
-const runtimeEventBus = eventBus as unknown as {
-  on(eventType: string, handler: (payload: unknown) => void): void;
-  off(eventType: string, handler?: (payload: unknown) => void): void;
-};
+type RepositoryResourceMutationEvents = Pick<
+  RepositoryEventMap,
+  typeof REPOSITORY_RESOURCE_MUTATED_EVENT
+>;
+
+const runtimeEventSubscriber =
+  createTypedEventSubscriber<RepositoryResourceMutationEvents>(eventBus);
 
 export function createKnowledgeAutoIndexRuntimeContribution(
   knowledgeIndexServices: AIKnowledgeIndexServices,
@@ -27,12 +30,7 @@ export function createKnowledgeAutoIndexRuntimeContribution(
 ): AIModuleRuntimeContribution {
   let started = false;
 
-  const handleResourceMutation = (payload: unknown): void => {
-    const event = parseRepositoryResourceMutation(payload);
-    if (!event) {
-      return;
-    }
-
+  const handleResourceMutation = (event: RepositoryResourceMutatedEvent): void => {
     if (event.mutation === RepositoryResourceMutationType.Deleted) {
       return;
     }
@@ -71,7 +69,7 @@ export function createKnowledgeAutoIndexRuntimeContribution(
         return;
       }
 
-      runtimeEventBus.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handleResourceMutation);
+      runtimeEventSubscriber.on(REPOSITORY_RESOURCE_MUTATED_EVENT, handleResourceMutation);
       started = true;
     },
     stop(): void {
@@ -79,43 +77,8 @@ export function createKnowledgeAutoIndexRuntimeContribution(
         return;
       }
 
-      runtimeEventBus.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handleResourceMutation);
+      runtimeEventSubscriber.off(REPOSITORY_RESOURCE_MUTATED_EVENT, handleResourceMutation);
       started = false;
     },
-  };
-}
-
-function parseRepositoryResourceMutation(payload: unknown): RepositoryResourceMutatedEvent | null {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return null;
-  }
-
-  const event = payload as Record<string, unknown>;
-  if (
-    typeof event.identityId !== 'string' ||
-    typeof event.repositoryId !== 'string' ||
-    typeof event.resourceId !== 'string' ||
-    typeof event.resourcePath !== 'string' ||
-    typeof event.timestamp !== 'number'
-  ) {
-    return null;
-  }
-
-  if (
-    event.mutation !== RepositoryResourceMutationType.Created &&
-    event.mutation !== RepositoryResourceMutationType.ContentUpdated &&
-    event.mutation !== RepositoryResourceMutationType.Moved &&
-    event.mutation !== RepositoryResourceMutationType.Deleted
-  ) {
-    return null;
-  }
-
-  return {
-    identityId: event.identityId as IdentityId,
-    repositoryId: event.repositoryId as RepositoryId,
-    resourceId: event.resourceId as ResourceId,
-    resourcePath: event.resourcePath,
-    mutation: event.mutation,
-    timestamp: event.timestamp,
   };
 }

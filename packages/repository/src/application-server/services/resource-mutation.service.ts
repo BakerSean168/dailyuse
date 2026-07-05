@@ -12,6 +12,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import {
   REPOSITORY_RESOURCE_MUTATED_EVENT,
+  type RepositoryEventMap,
   RepositoryResourceMutationType,
   type RepositoryResourceMutatedEvent,
   type ResourceClientDTO,
@@ -21,14 +22,18 @@ import {
 } from '@dailyuse/contracts/repository';
 import type { IdentityId, RepositoryId, ResourceId, FolderId } from '@dailyuse/contracts/primitives';
 import { PathCalculator } from '../../domain-server/services/path-calculator';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 import type { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import type { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
 import type { UpdateResourceContentUseCase } from '../use-cases/commands/update-resource-content.use-case';
 
-const repositoryEventBus = eventBus as unknown as {
-  send(eventType: string, payload: unknown): void;
-};
+type RepositoryResourceMutationEvents = Pick<
+  RepositoryEventMap,
+  typeof REPOSITORY_RESOURCE_MUTATED_EVENT
+>;
+
+const repositoryEventPublisher =
+  createTypedEventPublisher<RepositoryResourceMutationEvents>(eventBus);
 
 export interface ResourceMutationServiceDependencies {
   resourceRepository: IResourceRepository;
@@ -258,7 +263,7 @@ export class ResourceMutationService {
   private emitMutationEvent(
     payload: Omit<RepositoryResourceMutatedEvent, 'timestamp'>,
   ): void {
-    repositoryEventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+    repositoryEventPublisher.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
       ...payload,
       timestamp: Date.now(),
     } satisfies RepositoryResourceMutatedEvent);

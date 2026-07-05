@@ -1,21 +1,19 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { ConversationStatus } from '@dailyuse/contracts/ai';
+import type { AIEventMap, ConversationStatus } from '@dailyuse/contracts/ai';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import { Message } from '../../../domain-server/entities/message';
 import type {
   AIConversationQueryOptions,
   IAIConversationRepository,
 } from '../../../domain-server/repositories/i-ai-conversation-repository';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
 import {
   PowerSyncAIConversationMapper,
   type PowerSyncAIConversationRow,
   type PowerSyncAIMessageRow,
 } from './mappers';
 
-const untypedEventBus = eventBus as unknown as {
-  send(eventType: string, payload: unknown): void;
-};
+const aiEventPublisher = createTypedEventPublisher<AIEventMap>(eventBus);
 
 export class PowerSyncAIConversationRepository implements IAIConversationRepository {
   constructor(private readonly db: IElectronDatabase) {}
@@ -94,9 +92,7 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
       }
     });
 
-    for (const event of conversation.pullDomainEvents()) {
-      untypedEventBus.send(event.eventType, event.payload);
-    }
+    flushDomainEvents(aiEventPublisher, conversation);
   }
 
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {

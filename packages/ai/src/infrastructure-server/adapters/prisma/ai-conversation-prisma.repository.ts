@@ -13,18 +13,18 @@ import type {
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import { Message } from '../../../domain-server/entities/message';
+import type { AIEventMap } from '@dailyuse/contracts/ai';
 import { ConversationStatus, MessageRole } from '@dailyuse/contracts/ai';
 import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
 import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
 
 type PrismaAiConversationWithMessages = PrismaAiConversation & {
   messages?: PrismaAiMessage[];
 };
-const untypedEventBus = eventBus as unknown as {
-  send(eventType: string, payload: unknown): void;
-};
+
+const aiEventPublisher = createTypedEventPublisher<AIEventMap>(eventBus);
 
 /**
  * AIConversation Prisma Repository
@@ -86,9 +86,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       }
     }
 
-    for (const event of conversation.pullDomainEvents()) {
-      untypedEventBus.send(event.eventType, event.payload);
-    }
+    flushDomainEvents(aiEventPublisher, conversation);
   }
 
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {

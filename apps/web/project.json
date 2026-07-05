@@ -53,14 +53,14 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config apps/web/vitest.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs run --config apps/web/vitest.config.ts"
       }
     },
     "test:watch": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --config apps/web/vitest.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs --config apps/web/vitest.config.ts"
       }
     },
     "lint": {

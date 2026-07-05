@@ -6,7 +6,6 @@ import {
   successResult,
 } from './_shared/contract-test-helpers';
 import { describe, expect, it } from 'vitest';
-import { GoalHttpAdapter } from '@dailyuse/goal/infrastructure-client';
 import {
   CloneGoalSchema,
   CreateGoalSchema,
@@ -30,6 +29,7 @@ describe('goal handlers contracts', () => {
   });
 
   it('uses name-based create, update, search, aggregate, and clone contracts', async () => {
+    const { GoalHttpAdapter } = await import('@dailyuse/goal/infrastructure-client');
     const httpClient = createHttpClientSpy();
     const adapter = new GoalHttpAdapter(httpClient);
     const aggregateResponse = createMockGoalAggregateResponse(createMockGoal().id);

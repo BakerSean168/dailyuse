@@ -6,11 +6,6 @@ import {
 } from './task.handlers';
 import { createHttpClientSpy } from './_shared/contract-test-helpers';
 import { describe, expect, it } from 'vitest';
-import {
-  TaskDependencyHttpAdapter,
-  TaskInstanceHttpAdapter,
-  TaskTemplateHttpAdapter,
-} from '@dailyuse/task/infrastructure-client';
 
 describe('task handlers contracts', () => {
   it('uses the current task adapter route prefixes', () => {
@@ -20,6 +15,7 @@ describe('task handlers contracts', () => {
   });
 
   it('uses the same task instance routes and query shape as the adapter', async () => {
+    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/infrastructure-client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
 
@@ -39,6 +35,7 @@ describe('task handlers contracts', () => {
   });
 
   it('uses the current task instance adapter routes and payload shapes', async () => {
+    const { TaskInstanceHttpAdapter } = await import('@dailyuse/task/infrastructure-client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskInstanceHttpAdapter(httpClient);
 
@@ -87,6 +84,7 @@ describe('task handlers contracts', () => {
   });
 
   it('uses the current task dependency adapter routes and payload shapes', async () => {
+    const { TaskDependencyHttpAdapter } = await import('@dailyuse/task/infrastructure-client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskDependencyHttpAdapter(httpClient);
     const createPayload = {
@@ -153,6 +151,7 @@ describe('task handlers contracts', () => {
   });
 
   it('uses the same template list route and query shape as the adapter', async () => {
+    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/infrastructure-client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
 

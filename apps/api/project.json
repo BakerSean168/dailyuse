@@ -35,14 +35,14 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config apps/api/vitest.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs run --config apps/api/vitest.config.ts"
       }
     },
     "test:watch": {
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --config apps/api/vitest.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs --config apps/api/vitest.config.ts"
       }
     },
     "test:smoke": {
@@ -51,7 +51,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config apps/api/vitest.smoke.config.ts"
+        "command": "node ./node_modules/vitest/vitest.mjs run --config apps/api/vitest.smoke.config.ts"
       }
     },
     "lint": {
