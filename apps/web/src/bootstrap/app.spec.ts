@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => {
     createNotificationStartupHook: vi.fn(() => notificationHook),
     createI18nPlugin: vi.fn(() => ({ name: 'i18n-plugin' })),
     loadLocaleMessages: vi.fn(async () => ({ hello: 'world' })),
+    translateMessageKey: vi.fn((key: string) => (key === 'dashboard.title' ? '仪表盘' : key)),
     progressStart: vi.fn(),
     progressDone: vi.fn(),
     requestIdleCallback: vi.fn((cb: IdleRequestCallback) => {
@@ -72,6 +73,7 @@ vi.mock('@dailyuse/app-vue', () => ({
 vi.mock('@dailyuse/app-vue/web-i18n', () => ({
   createI18nPlugin: mocks.createI18nPlugin,
   loadLocaleMessages: mocks.loadLocaleMessages,
+  translateMessageKey: mocks.translateMessageKey,
 }));
 
 vi.mock('@dailyuse/ui-vue-shadcn/composables/useProgressBar', () => ({
@@ -136,9 +138,14 @@ describe('bootstrapMainApp', () => {
 
     const afterEachHandler = mocks.router.afterEach.mock.calls[0]?.[0];
     expect(afterEachHandler).toBeTypeOf('function');
+    afterEachHandler({ meta: { title: 'dashboard.title' } });
+    expect(document.title).toBe('仪表盘 - Dailyuse');
+
     afterEachHandler({ meta: { title: 'Inbox' } });
 
-    expect(mocks.progressDone).toHaveBeenCalledTimes(1);
+    expect(mocks.progressDone).toHaveBeenCalledTimes(2);
     expect(document.title).toBe('Inbox - Dailyuse');
   });
 });
+
+

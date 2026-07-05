@@ -1,1 +1,2 @@
-export { createI18nPlugin, loadLocaleMessages, setI18nLocale } from './plugins/i18n';
+export { createI18nPlugin, getI18nGlobal, loadLocaleMessages, setI18nLocale, translateMessageKey } from './plugins/i18n';
+

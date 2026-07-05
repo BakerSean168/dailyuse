@@ -40,6 +40,7 @@ const mocks = vi.hoisted(() => {
     usePresentationPreferenceStore: vi.fn(() => ({ locale: 'en-US' })),
     createI18nPlugin: vi.fn(() => ({ name: 'desktop-i18n-plugin' })),
     loadLocaleMessages: vi.fn(async () => ({ hello: 'desktop' })),
+    translateMessageKey: vi.fn((key: string) => (key === 'dashboard.title' ? 'Dashboard' : key)),
     hydrateDesktopBootstrapAuthState: vi.fn(async () => true),
     createNotificationStartupHook: vi.fn(() => notificationHook),
     initElectronFeatures: vi.fn(),
@@ -83,6 +84,7 @@ vi.mock('@dailyuse/app-vue/modules/authentication', () => ({
 vi.mock('@dailyuse/app-vue/plugins/i18n', () => ({
   createI18nPlugin: mocks.createI18nPlugin,
   loadLocaleMessages: mocks.loadLocaleMessages,
+  translateMessageKey: mocks.translateMessageKey,
 }));
 
 vi.mock('@dailyuse/app-vue/desktop', () => ({
@@ -176,9 +178,12 @@ describe('desktop bootstrapMainApp', () => {
 
     const afterEachHandler = mocks.router.afterEach.mock.calls[0]?.[0];
     expect(afterEachHandler).toBeTypeOf('function');
+    afterEachHandler({ meta: { title: 'dashboard.title' } });
+    expect(document.title).toBe('Dashboard - Dailyuse');
+
     afterEachHandler({ meta: { title: 'Desktop Home' } });
 
-    expect(mocks.progressDone).toHaveBeenCalledTimes(1);
+    expect(mocks.progressDone).toHaveBeenCalledTimes(2);
     expect(document.title).toBe('Desktop Home - Dailyuse');
   });
 
@@ -195,3 +200,5 @@ describe('desktop bootstrapMainApp', () => {
     expect(mocks.router.replace).not.toHaveBeenCalled();
   });
 });
+
+

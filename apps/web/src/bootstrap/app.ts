@@ -10,7 +10,7 @@ import {
   usePresentationPreferenceStore,
 } from '@dailyuse/app-vue/web-bootstrap';
 import { createNotificationStartupHook } from '@dailyuse/app-vue';
-import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue/web-i18n';
+import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@dailyuse/app-vue/web-i18n';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
 
 import App from '../App.vue';
@@ -37,7 +37,8 @@ export async function bootstrapMainApp() {
   router.beforeEach(() => progressStart());
   router.afterEach((to) => {
     progressDone();
-    const title = to.meta.title as string | undefined;
+    const titleKey = to.meta.title as string | undefined;
+    const title = titleKey ? translateMessageKey(titleKey) : undefined;
     document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
   });
   app.use(router);
@@ -58,3 +59,4 @@ export async function bootstrapMainApp() {
     globalThis.setTimeout(runStartupPhase, 0);
   }
 }
+

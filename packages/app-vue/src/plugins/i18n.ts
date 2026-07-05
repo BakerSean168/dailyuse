@@ -65,6 +65,10 @@ export function getI18nGlobal() {
   return getI18n().global;
 }
 
+export function translateMessageKey(messageKey: string): string {
+  return String(getI18nGlobal().t(messageKey));
+}
+
 /**
  * Creates the Vue I18n plugin.
  *
@@ -111,3 +115,4 @@ export async function setI18nLocale(locale: AppLocale): Promise<void> {
   i18n.global.setLocaleMessage(locale, messages);
   i18n.global.locale.value = locale;
 }
+

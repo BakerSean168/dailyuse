@@ -5,7 +5,7 @@ import { createWebHashHistory } from 'vue-router';
 import { APP_TITLE_NAME } from '@dailyuse/assets';
 import { createAppRouter } from '@dailyuse/app-vue/router';
 import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
-import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue/plugins/i18n';
+import { createI18nPlugin, loadLocaleMessages, translateMessageKey } from '@dailyuse/app-vue/plugins/i18n';
 import { DesktopAuthView, hydrateDesktopBootstrapAuthState } from '@dailyuse/app-vue/desktop';
 import { createNotificationStartupHook } from '@dailyuse/app-vue/modules/notification';
 import { usePresentationPreferenceStore } from '@dailyuse/app-vue/modules/setting';
@@ -61,7 +61,8 @@ export async function bootstrapMainApp() {
 
   router.afterEach((to) => {
     progressDone();
-    const title = to.meta.title as string | undefined;
+    const titleKey = to.meta.title as string | undefined;
+    const title = titleKey ? translateMessageKey(titleKey) : undefined;
     document.title = title ? `${title} - ${APP_TITLE_NAME}` : APP_TITLE_NAME;
   });
 
@@ -97,3 +98,4 @@ export async function bootstrapMainApp() {
     void router.replace('/');
   });
 }
+
