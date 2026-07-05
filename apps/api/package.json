@@ -24,6 +24,7 @@
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/schedule": "workspace:*",
+    "@dailyuse/schedule-orchestration": "workspace:*",
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/task": "workspace:*",
     "@dailyuse/utils": "workspace:*",
@@ -64,3 +65,4 @@
     "uuid": "^13.0.0"
   }
 }
+

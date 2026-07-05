@@ -348,6 +348,9 @@ importers:
       '@dailyuse/schedule':
         specifier: workspace:*
         version: link:../../packages/schedule
+      '@dailyuse/schedule-orchestration':
+        specifier: workspace:*
+        version: link:../../packages/schedule-orchestration
       '@dailyuse/setting':
         specifier: workspace:*
         version: link:../../packages/setting
