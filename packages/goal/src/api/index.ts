@@ -26,10 +26,17 @@ export {
   createGoalFolderTransportHandlers,
 } from './transport-handlers';
 export { createGoalRuntimeContribution } from './runtime';
-export { createGoalScheduleRuntimeContribution } from './schedule-runtime';
-export { createGoalPrismaModule, createGoalPowerSyncModule } from '../infrastructure-server';
+export {
+  createGoalPrismaRepositories,
+  createGoalPrismaScheduleExecutionSource,
+  createGoalPrismaScheduleProjectionSource,
+} from './prisma';
+export {
+  createGoalPrismaModule,
+  createGoalPowerSyncModule,
+  createGoalPowerSyncScheduleExecutionSource,
+} from '../infrastructure-server';
 export { GoalPowerSyncRepository } from '../infrastructure-server';
-export { createGoalPrismaRepositories } from './prisma';
 export type {
   GoalModuleInstance,
   GoalModuleDependencies,

@@ -1,12 +1,21 @@
 import { describe, expect, it } from 'vitest';
+import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { PrismaTaskTemplateMapper } from './prisma-task-template-mapper';
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 
 describe('PrismaTaskTemplateMapper', () => {
+  const TEMPLATE_ID_1 = aPrefixedUuid('ITaskTemplateId', 'task-template-1');
+  const TEMPLATE_ID_2 = aPrefixedUuid('ITaskTemplateId', 'task-template-2');
+  const TEMPLATE_ID_3 = aPrefixedUuid('ITaskTemplateId', 'task-template-3');
+  const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'task-template-owner-1');
+  const IDENTITY_ID_2 = aPrefixedUuid('IdentityId', 'task-template-owner-2');
+  const IDENTITY_ID_3 = aPrefixedUuid('IdentityId', 'task-template-owner-3');
+  const FOLDER_ID_1 = aPrefixedUuid('ITaskFolderId', 'task-folder-1');
+
   const createMinimalRow = (): PrismaTaskTemplate => ({
-    id: 'template-1',
-    identityId: 'identity-1',
+    id: TEMPLATE_ID_1,
+    identityId: IDENTITY_ID_1,
     name: 'Simple Task',
     description: null,
     importance: 'Moderate',
@@ -51,15 +60,15 @@ describe('PrismaTaskTemplateMapper', () => {
   });
 
   const createFullRow = (): PrismaTaskTemplate => ({
-    id: 'template-2',
-    identityId: 'identity-2',
+    id: TEMPLATE_ID_2,
+    identityId: IDENTITY_ID_2,
     name: 'Complex Recurring Task',
     description: 'A task with full configuration',
     importance: 'Important',
     color: '#FF5733',
     tags: JSON.stringify(['urgent', 'work']),
-    folderId: 'folder-1',
-    parentTaskId: 'template-1',
+    folderId: FOLDER_ID_1,
+    parentTaskId: TEMPLATE_ID_1,
     status: 'Active',
     version: 2,
     createdAt: new Date('2024-02-01T10:30:45Z'),
@@ -110,7 +119,7 @@ describe('PrismaTaskTemplateMapper', () => {
       const row = createMinimalRow();
       const domain = PrismaTaskTemplateMapper.toDomain(row);
 
-      expect(domain.id).toBe('template-1');
+      expect(domain.id).toBe(TEMPLATE_ID_1);
       expect(domain.title).toBe('Simple Task');
       expect(domain.description).toBeNull();
       expect(domain.importance).toBe('Moderate');
@@ -132,14 +141,14 @@ describe('PrismaTaskTemplateMapper', () => {
       const row = createFullRow();
       const domain = PrismaTaskTemplateMapper.toDomain(row);
 
-      expect(domain.id).toBe('template-2');
+      expect(domain.id).toBe(TEMPLATE_ID_2);
       expect(domain.title).toBe('Complex Recurring Task');
       expect(domain.description).toBe('A task with full configuration');
       expect(domain.importance).toBe('Important');
       expect(domain.color).toBe('#FF5733');
       expect(domain.tags).toEqual(['urgent', 'work']);
-      expect(domain.folderId).toBe('folder-1');
-      expect(domain.parentTaskId).toBe('template-1');
+      expect(domain.folderId).toBe(FOLDER_ID_1);
+      expect(domain.parentTaskId).toBe(TEMPLATE_ID_1);
       expect(domain.status).toBe('Active');
       expect(domain.version).toBe(2);
     });
@@ -238,8 +247,8 @@ describe('PrismaTaskTemplateMapper', () => {
   describe('toPersistence', () => {
     it('converts minimal aggregate to persistence format', () => {
       const aggregate = createTestAggregate({
-        id: 'template-3',
-        identityId: 'identity-3',
+        id: TEMPLATE_ID_3,
+        identityId: IDENTITY_ID_3,
         name: 'New Task',
         importance: 'Minor',
       });
@@ -265,8 +274,8 @@ describe('PrismaTaskTemplateMapper', () => {
       expect(persistence.name).toBe('Complex Recurring Task');
       expect(persistence.importance).toBe('Important');
       expect(persistence.color).toBe('#FF5733');
-      expect(persistence.folderId).toBe('folder-1');
-      expect(persistence.parentTaskId).toBe('template-1');
+      expect(persistence.folderId).toBe(FOLDER_ID_1);
+      expect(persistence.parentTaskId).toBe(TEMPLATE_ID_1);
       expect(persistence.timeConfigType).toBe('FixedTime');
       expect(persistence.timeConfigTimePoint).toBe('09:00');
       expect(persistence.recurrenceRuleType).toBe('DAILY');
@@ -348,9 +357,9 @@ describe('PrismaTaskTemplateMapper', () => {
       const domains = PrismaTaskTemplateMapper.toDomainList(rows);
 
       expect(domains).toHaveLength(3);
-      expect(domains[0].id).toBe('template-1');
-      expect(domains[1].id).toBe('template-2');
-      expect(domains[2].id).toBe('template-1');
+      expect(domains[0].id).toBe(TEMPLATE_ID_1);
+      expect(domains[1].id).toBe(TEMPLATE_ID_2);
+      expect(domains[2].id).toBe(TEMPLATE_ID_1);
     });
   });
 });

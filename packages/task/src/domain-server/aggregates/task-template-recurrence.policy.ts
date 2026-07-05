@@ -10,13 +10,13 @@ import { RecurrenceEndConditionType } from '@dailyuse/contracts/task';
 import { TaskType } from '../value-objects';
 import { InvalidTaskTemplateStateError } from '../value-objects/task-errors';
 import type { RecurrenceRule } from '../value-objects';
-import type { TaskTemplateState } from './task-template';
 import type { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
+import type { TaskTemplateProps } from './task-template.state';
 
 /** Context for recurrence operations. */
 export interface RecurrenceContext {
   readonly id: TaskTemplateId;
-  props: Omit<TaskTemplateState, 'id'>;
+  props: TaskTemplateProps;
   addHistory(action: string, changes?: unknown): void;
   publishDomainEvent<T>(eventName: string, payload: T): void;
   toServerDTO(): import('@dailyuse/contracts/task').TaskTemplateServerDTO;

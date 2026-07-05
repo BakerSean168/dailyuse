@@ -11,6 +11,8 @@ export default defineConfig({
     'src/application-client/index.ts',
     'src/infrastructure-client/index.ts',
     'src/api/index.ts',
+    'src/schedule-execution/index.ts',
+    'src/schedule-projection/index.ts',
     'src/testing/index.ts',
     'src/electron-entry/index.ts',
     'src/schema.ts',

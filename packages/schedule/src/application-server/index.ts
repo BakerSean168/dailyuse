@@ -13,5 +13,5 @@ export * from './services';
 // ===== Scheduler (优先队列调度器) =====
 export * from './scheduler';
 
-// ===== Shared Source Executors =====
+// ===== Runtime Contracts =====
 export * from './source-executors';

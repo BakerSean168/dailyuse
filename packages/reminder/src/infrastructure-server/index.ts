@@ -43,3 +43,18 @@ export { UserReminderPreferencePowerSyncRepository } from './adapters/powersync/
 
 // ============ PowerSync Module Factory / PowerSync 模块工厂 ============
 export { createReminderPowerSyncModule } from './powersync';
+export { createReminderPowerSyncScheduleExecutionSource } from './powersync';
+export { createReminderPowerSyncScheduleProjectionSource } from './powersync';
+export {
+  createReminderScheduleExecutionSource,
+  type CreateReminderScheduleExecutionSourceDeps,
+} from './schedule-execution-source';
+export {
+  createReminderScheduleProjectionEventHandlers,
+  createReminderScheduleProjectionSource,
+  type ReminderScheduleProjectionEventMap,
+  type ReminderScheduleProjectionHandlers,
+  type ReminderScheduleProjectionPlan,
+  type ReminderScheduleProjectionSelection,
+  type ReminderScheduleProjectionSource,
+} from './schedule-projection-source';

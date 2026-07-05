@@ -16,12 +16,19 @@
  * - /tasks (primary 主路径)
  */
 
-export { TaskApiModule } from './module';
+export { TaskApiModule, createTaskApiModule } from './module';
 export type { TaskApiModuleContext, TaskApiModuleOptions } from './module';
-export { createTaskScheduleRuntimeContribution } from './schedule-runtime';
-export { createTaskPrismaModule, createTaskPrismaRepositories } from './prisma';
+export {
+  createTaskPrismaModule,
+  createTaskPrismaRepositories,
+  createTaskPrismaScheduleExecutionSource,
+  createTaskPrismaScheduleProjectionSource,
+} from './prisma';
 export type { CreateTaskPrismaModuleOptions } from './prisma';
-export { createTaskPowerSyncModule } from '../infrastructure-server';
+export {
+  createTaskPowerSyncModule,
+  createTaskPowerSyncScheduleExecutionSource,
+} from '../infrastructure-server';
 export {
   PowerSyncTaskTemplateRepository,
   PowerSyncTaskInstanceRepository,
@@ -30,5 +37,6 @@ export type {
   TaskModuleInstance,
   TaskModuleDependencies,
   TaskApplicationPort,
+  TaskModuleRuntimeContribution,
   TaskModuleUseCases,
 } from '../infrastructure-server';

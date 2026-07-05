@@ -22,13 +22,19 @@ import type { UpdateTaskDependencyUseCase } from '../application-server/use-case
 import type { ListTaskDependenciesUseCase } from '../application-server/use-cases/queries/list-task-dependencies.use-case';
 import type { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
 import type { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
+
+type TaskControllerFn<T extends (...args: any[]) => any> = (
+  ...args: Parameters<T>
+) => ReturnType<T>;
+
 export interface TaskDependencyUseCases {
-  createDependency: CreateTaskDependencyUseCase;
-  deleteDependency: DeleteTaskDependencyUseCase;
-  updateDependency: UpdateTaskDependencyUseCase;
-  listDependencies: ListTaskDependenciesUseCase;
-  getDependencyChain: GetDependencyChainUseCase;
-  validateDependency: ValidateTaskDependencyUseCase;
+  createDependency: TaskControllerFn<CreateTaskDependencyUseCase['execute']>;
+  deleteDependency: TaskControllerFn<DeleteTaskDependencyUseCase['execute']>;
+  updateDependency: TaskControllerFn<UpdateTaskDependencyUseCase['execute']>;
+  getDependencies: TaskControllerFn<ListTaskDependenciesUseCase['executeDependencies']>;
+  getDependents: TaskControllerFn<ListTaskDependenciesUseCase['executeDependents']>;
+  getDependencyChain: TaskControllerFn<GetDependencyChainUseCase['execute']>;
+  validateDependency: TaskControllerFn<ValidateTaskDependencyUseCase['execute']>;
 }
 
 export class TaskDependencyController {
@@ -51,7 +57,7 @@ export class TaskDependencyController {
       });
     }
 
-    return await this.useCases.createDependency.execute({
+    return await this.useCases.createDependency({
       predecessorTaskId: parsed.data.predecessorTaskId,
       successorTaskId: taskId,
       dependencyType: parsed.data.dependencyType as DependencyType | undefined,
@@ -64,21 +70,21 @@ export class TaskDependencyController {
    * Get dependencies for a task (predecessor tasks)
    */
   async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return await this.useCases.listDependencies.executeDependencies(taskId);
+    return await this.useCases.getDependencies(taskId);
   }
 
   /**
    * Get dependents for a task (successor tasks)
    */
   async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return await this.useCases.listDependencies.executeDependents(taskId);
+    return await this.useCases.getDependents(taskId);
   }
 
   /**
    * Get dependency chain for a task
    */
   async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
-    return await this.useCases.getDependencyChain.execute(taskId);
+    return await this.useCases.getDependencyChain(taskId);
   }
 
   /**
@@ -94,7 +100,7 @@ export class TaskDependencyController {
       });
     }
 
-    return await this.useCases.validateDependency.execute(
+    return await this.useCases.validateDependency(
       parsed.data.predecessorTaskId,
       parsed.data.successorTaskId,
     );
@@ -104,7 +110,7 @@ export class TaskDependencyController {
    * Delete a dependency
    */
   async deleteDependency(id: string): Promise<Result<void>> {
-    return await this.useCases.deleteDependency.execute(id);
+    return await this.useCases.deleteDependency(id);
   }
 
   /**
@@ -120,7 +126,7 @@ export class TaskDependencyController {
       });
     }
 
-    return await this.useCases.updateDependency.execute(id, {
+    return await this.useCases.updateDependency(id, {
       dependencyType: parsed.data.dependencyType as DependencyType | undefined,
       lagDays: parsed.data.lagDays,
     });

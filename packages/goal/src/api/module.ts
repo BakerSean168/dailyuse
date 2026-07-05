@@ -14,17 +14,14 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createGoalPrismaModule,
-  GoalPrismaRepository,
   type GoalModuleInstance,
 } from '../infrastructure-server';
-import { registerGoalRoutes, registerGoalFolderRoutes_ } from './routes/index';
+import { registerGoalRoutes, registerGoalFolderRoutes } from './routes/index';
 import {
   createGoalTransportHandlers,
   createGoalFolderTransportHandlers,
 } from './transport-handlers';
 import { createGoalRuntimeContribution } from './runtime';
-import { createGoalScheduleRuntimeContribution } from './schedule-runtime';
-import { createScheduleTaskPrismaRepository } from '@dailyuse/schedule/api';
 
 /**
  * Typed module context for goal registration.
@@ -47,15 +44,8 @@ export const GoalApiModule: GoalApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — 组装依赖
-    const goalRepository = new GoalPrismaRepository(db);
     const goalModule = createGoalPrismaModule(db, {
-      runtimeContributions: [
-        createGoalRuntimeContribution(),
-        createGoalScheduleRuntimeContribution({
-          goalRepository,
-          scheduleTaskRepository: createScheduleTaskPrismaRepository(db),
-        }),
-      ],
+      runtimeContributions: [createGoalRuntimeContribution()],
     });
     activeGoalModule = goalModule;
     goalModule.start();
@@ -69,7 +59,7 @@ export const GoalApiModule: GoalApiModuleDef = {
     const goalRoutes = registerGoalRoutes(goalHandlers, middleware, context.openApiRegistry);
     router.use('/goals', goalRoutes);
 
-    const folderRoutes = registerGoalFolderRoutes_(
+    const folderRoutes = registerGoalFolderRoutes(
       folderHandlers,
       middleware,
       context.openApiRegistry,

@@ -38,7 +38,7 @@ describe('Schedule command use-cases', () => {
   it('delete removes task and sends event', async () => {
     repository.findById.mockResolvedValue({ id: 'task-1' });
     repository.deleteById.mockResolvedValue(undefined);
-    const eventSpy = vi.spyOn(eventBus as any, 'send');
+    const eventSpy = vi.spyOn(eventBus, 'send');
     const useCase = new DeleteScheduleTaskUseCase(repository);
 
     const result = await useCase.execute('task-1');
@@ -227,7 +227,6 @@ describe('Schedule command use-cases', () => {
   it('update disables task when enabled flag is false', async () => {
     const task = {
       updateMetadata: vi.fn(),
-      updateDescription: vi.fn(),
       updateDescription: vi.fn(),
       enable: vi.fn(),
       disable: vi.fn(),

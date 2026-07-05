@@ -20,6 +20,12 @@ import {
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskFolderRepository,
 } from './adapters/powersync';
+import {
+  createTaskScheduleProjectionSource,
+} from './schedule-projection-source';
+import { createTaskScheduleExecutionSource } from './schedule-execution-source';
+import type { TaskScheduleExecutionSource } from '../schedule-execution';
+import type { TaskScheduleProjectionSource } from '../schedule-projection';
 
 /**
  * Minimal queryable interface compatible with PowerSync / IElectronDatabase.
@@ -50,6 +56,24 @@ export function createTaskPowerSyncModule(
     taskDependencyRepository: new PowerSyncTaskDependencyRepository(db),
     taskFolderRepository: new PowerSyncTaskFolderRepository(db),
     runtimeContributions,
+  });
+}
+
+export function createTaskPowerSyncScheduleProjectionSource(
+  db: Queryable,
+): TaskScheduleProjectionSource {
+  return createTaskScheduleProjectionSource({
+    taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
+    taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
+  });
+}
+
+export function createTaskPowerSyncScheduleExecutionSource(
+  db: Queryable,
+): TaskScheduleExecutionSource {
+  return createTaskScheduleExecutionSource({
+    taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
+    taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
   });
 }
 

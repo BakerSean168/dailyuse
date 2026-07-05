@@ -8,6 +8,8 @@
 import type { PrismaClient } from '@dailyuse/database';
 import {
   createReminderModule,
+  createReminderScheduleExecutionSource,
+  createReminderScheduleProjectionSource,
   ReminderTemplatePrismaRepository,
   ReminderGroupPrismaRepository,
   ReminderResponsePrismaRepository,
@@ -15,6 +17,8 @@ import {
   type ReminderModuleInstance,
   type ReminderModuleRuntimeContribution,
 } from '../infrastructure-server';
+import type { ReminderScheduleExecutionSource } from '../schedule-execution';
+import type { ReminderScheduleProjectionSource } from '../schedule-projection';
 
 export interface CreateReminderPrismaModuleOptions {
   readonly runtimeContributions?:
@@ -49,4 +53,24 @@ export function createReminderPrismaRepositories(db: PrismaClient) {
     reminderResponseRepository: new ReminderResponsePrismaRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePrismaRepository(db),
   };
+}
+
+export function createReminderPrismaScheduleProjectionSource(
+  db: PrismaClient,
+): ReminderScheduleProjectionSource {
+  const repositories = createReminderPrismaRepositories(db);
+
+  return createReminderScheduleProjectionSource({
+    reminderTemplateRepository: repositories.reminderTemplateRepository,
+  });
+}
+
+export function createReminderPrismaScheduleExecutionSource(
+  db: PrismaClient,
+): ReminderScheduleExecutionSource {
+  const repositories = createReminderPrismaRepositories(db);
+
+  return createReminderScheduleExecutionSource({
+    reminderTemplateRepository: repositories.reminderTemplateRepository,
+  });
 }

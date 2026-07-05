@@ -1,0 +1,33 @@
+{
+  "name": "@dailyuse/schedule-orchestration",
+  "version": "0.0.1",
+  "private": false,
+  "description": "System-level schedule orchestration module",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/goal": "workspace:*",
+    "@dailyuse/notification": "workspace:*",
+    "@dailyuse/reminder": "workspace:*",
+    "@dailyuse/schedule": "workspace:*",
+    "@dailyuse/task": "workspace:*",
+    "@dailyuse/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false
+}

@@ -30,18 +30,6 @@ export type { CreateSchedulePrismaModuleOptions } from './prisma';
 export { PowerSyncScheduleTaskRepository } from '../infrastructure-server';
 export { ScheduleTask } from '../domain-server';
 export type { IScheduleTaskRepository } from '../domain-server';
-export { createSharedSourceExecutor } from '../application-server/source-executors/shared-source-executor';
-export type {
-  SourceExecutorDependencies,
-  ReminderSourceRepository,
-  ReminderSourceTemplate,
-  GoalSourceRepository,
-  GoalSourceGoal,
-  TaskSourceInstanceRepository,
-  TaskSourceInstance,
-  TaskSourceTemplateRepository,
-  TaskSourceTemplate,
-  NotificationSourceCreator,
-} from '../application-server/source-executors/types';
+export type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor } from './runtime';
 export { ScheduleController, type ScheduleUseCases } from '../controllers';
 export { ScheduleEventController, type ScheduleEventUseCases } from '../controllers';

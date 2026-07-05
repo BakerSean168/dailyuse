@@ -17,6 +17,7 @@ import {
   UpdateReminderGroupSchema,
   SwitchGroupControlModeSchema,
   BatchGroupTemplatesSchema,
+  UpdateReminderPreferencesSchema,
 } from '@dailyuse/contracts/reminder';
 import type {
   CreateReminderTemplateReq,
@@ -31,6 +32,7 @@ import type {
   BatchGroupTemplatesReq,
   ReminderTemplateListRes,
   ReminderGroupListRes,
+  UpdateReminderPreferencesReq,
 } from '@dailyuse/contracts/reminder';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -96,7 +98,7 @@ export interface ReminderUseCases {
   toggleGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>>;
   // Preferences
   getPreferences(ctx: ExecutionContext): Promise<Result<unknown>>;
-  updatePreferences(data: Record<string, unknown>, ctx: ExecutionContext): Promise<Result<unknown>>;
+  updatePreferences(data: UpdateReminderPreferencesReq, ctx: ExecutionContext): Promise<Result<unknown>>;
 }
 
 export class ReminderController {
@@ -325,9 +327,14 @@ export class ReminderController {
   }
 
   async updatePreferences(input: unknown, ctx: ExecutionContext): Promise<Result<unknown>> {
-    if (!input || typeof input !== 'object') {
-      return fail({ code: 'VALIDATION_ERROR', message: 'request body is required' });
+    const parsed = UpdateReminderPreferencesSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
     }
-    return this.useCases.updatePreferences(input as Record<string, unknown>, ctx);
+    return this.useCases.updatePreferences(parsed.data, ctx);
   }
 }

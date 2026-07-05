@@ -1,8 +1,7 @@
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/i-reminder-template-repository';
-import type { ReminderStatus } from '@dailyuse/contracts/reminder';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
+import type { ReminderStatus, ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import {
   PowerSyncReminderTemplateMapper,
@@ -18,6 +17,7 @@ type Queryable = {
 };
 
 const logger = createLogger('ReminderTemplatePowerSyncRepo');
+const reminderEventPublisher = createTypedEventPublisher<ReminderEventMap>(eventBus);
 
 export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRepository {
   constructor(private readonly db: Queryable) {}
@@ -212,11 +212,7 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     }
 
     if (pendingDomainEvents.length > 0) {
-      for (const event of template.pullDomainEvents()) {
-        const eventType = event.eventType as keyof AppEventRegistry;
-        eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
-      }
-
+      flushDomainEvents(reminderEventPublisher, template);
       logger.info('[Reminder][Repo] Published domain events after PowerSync save', {
         templateId: String(template.id),
         publishedDomainEvents: pendingDomainEvents,

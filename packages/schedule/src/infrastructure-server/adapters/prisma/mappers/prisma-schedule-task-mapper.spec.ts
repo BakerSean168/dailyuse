@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { PrismaScheduleTaskMapper } from './prisma-schedule-task-mapper';
 import type { PrismaScheduleTaskWithExecutions } from './prisma-schedule-task-mapper';
 import type { ScheduleExecution as PrismaScheduleExecution } from '@dailyuse/database';
@@ -17,11 +18,19 @@ import type { SourceModule, ScheduleTaskStatus } from '@dailyuse/contracts/sched
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 
+const SCHEDULE_TASK_ID_1 = aPrefixedUuid('IScheduleTaskId', 'schedule-task-1');
+const SCHEDULE_TASK_ID_2 = aPrefixedUuid('IScheduleTaskId', 'schedule-task-2');
+const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'schedule-task-owner-1');
+const IDENTITY_ID_2 = aPrefixedUuid('IdentityId', 'schedule-task-owner-2');
+const EXECUTION_ID_1 = aPrefixedUuid('IScheduleExecutionId', 'schedule-execution-1');
+const EXECUTION_ID_2 = aPrefixedUuid('IScheduleExecutionId', 'schedule-execution-2');
+const EXECUTION_ID_3 = aPrefixedUuid('IScheduleExecutionId', 'schedule-execution-3');
+
 function createMinimalRow(): PrismaScheduleTaskWithExecutions {
   const now = new Date();
   return {
-    id: 'task-1',
-    identityId: 'identity-1',
+    id: SCHEDULE_TASK_ID_1,
+    identityId: IDENTITY_ID_1,
     name: 'Daily Data Sync',
     description: null,
     sourceModule: 'reminder' as SourceModule,
@@ -59,8 +68,8 @@ function createFullRow(): PrismaScheduleTaskWithExecutions {
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   
   return {
-    id: 'task-2',
-    identityId: 'identity-2',
+    id: SCHEDULE_TASK_ID_2,
+    identityId: IDENTITY_ID_2,
     name: 'Weekly Report Generation',
     description: 'Generate and email weekly reports',
     sourceModule: 'notification' as SourceModule,
@@ -99,9 +108,9 @@ function createExecutionRow(
 ): PrismaScheduleExecution {
   const now = new Date();
   return {
-    id: 'exec-1',
-    taskId: 'task-2',
-    identityId: 'identity-2',
+    id: EXECUTION_ID_1,
+    taskId: SCHEDULE_TASK_ID_2,
+    identityId: IDENTITY_ID_2,
     executionTime: now,
     status: ExecutionStatus.Success,
     duration: 1200,
@@ -121,8 +130,8 @@ describe('PrismaScheduleTaskMapper', () => {
       const row = createMinimalRow();
       const domain = PrismaScheduleTaskMapper.toDomain(row);
 
-      expect(domain.id).toBe('task-1');
-      expect(domain.identityId).toBe('identity-1');
+      expect(domain.id).toBe(SCHEDULE_TASK_ID_1);
+      expect(domain.identityId).toBe(IDENTITY_ID_1);
       expect(domain.name).toBe('Daily Data Sync');
       expect(domain.description).toBeNull();
       expect(domain.sourceModule).toBe('reminder');
@@ -135,8 +144,8 @@ describe('PrismaScheduleTaskMapper', () => {
       const row = createFullRow();
       const domain = PrismaScheduleTaskMapper.toDomain(row);
 
-      expect(domain.id).toBe('task-2');
-      expect(domain.identityId).toBe('identity-2');
+      expect(domain.id).toBe(SCHEDULE_TASK_ID_2);
+      expect(domain.identityId).toBe(IDENTITY_ID_2);
       expect(domain.name).toBe('Weekly Report Generation');
       expect(domain.description).toBe('Generate and email weekly reports');
       expect(domain.sourceModule).toBe('notification');
@@ -201,16 +210,16 @@ describe('PrismaScheduleTaskMapper', () => {
         ...createFullRow(),
         executions: [
           createExecutionRow({
-            id: 'exec-string',
+            id: EXECUTION_ID_1,
             result: JSON.stringify({ mode: 'string' }),
           }),
           createExecutionRow({
-            id: 'exec-object',
+            id: EXECUTION_ID_2,
             status: ExecutionStatus.Failed,
             result: { mode: 'object', retried: true },
           }),
           createExecutionRow({
-            id: 'exec-null',
+            id: EXECUTION_ID_3,
             status: ExecutionStatus.Timeout,
             result: null,
             error: 'timed out',
@@ -235,7 +244,7 @@ describe('PrismaScheduleTaskMapper', () => {
       const domain = PrismaScheduleTaskMapper.toDomain(row);
       const persistence = PrismaScheduleTaskMapper.toPersistence(domain);
 
-      expect(persistence.identityId).toBe('identity-2');
+      expect(persistence.identityId).toBe(IDENTITY_ID_2);
       expect(persistence.name).toBe('Weekly Report Generation');
       expect(persistence.description).toBe('Generate and email weekly reports');
       expect(persistence.sourceModule).toBe('notification');

@@ -23,10 +23,27 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@dailyuse/goal/electron-entry';
-import { TaskElectronModule } from '@dailyuse/task/electron-entry';
+import {
+  createTaskElectronModule,
+  createTaskPowerSyncScheduleExecutionSource,
+  createTaskPowerSyncScheduleProjectionSource,
+} from '@dailyuse/task/electron-entry';
 import { createScheduleElectronModule } from '@dailyuse/schedule/electron-entry';
+import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
+import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
+import {
+  createGoalPowerSyncScheduleExecutionSource,
+  createGoalPowerSyncScheduleProjectionSource,
+} from '@dailyuse/goal/electron-entry';
 import { ReminderElectronModule } from '@dailyuse/reminder/electron-entry';
-import { NotificationElectronModule } from '@dailyuse/notification/electron-entry';
+import {
+  createReminderPowerSyncScheduleExecutionSource,
+  createReminderPowerSyncScheduleProjectionSource,
+} from '@dailyuse/reminder/electron-entry';
+import {
+  NotificationElectronModule,
+  createNotificationPowerSyncScheduleNotificationPort,
+} from '@dailyuse/notification/electron-entry';
 import { SettingElectronModule } from '@dailyuse/setting/electron-entry';
 import { createAIElectronModule } from '@dailyuse/ai/electron-entry';
 import { createRepositoryElectronModule } from '@dailyuse/repository/electron-entry';
@@ -49,7 +66,6 @@ import type { ProfilePathResolver } from './paths';
 import { ProfileRegistry } from './profile/profile-registry';
 import { DesktopProfileRuntimeManager } from './profile/desktop-profile-runtime-manager';
 import type { PowerSyncDatabase } from '@powersync/node';
-import { createDesktopSourceExecutor } from './modules/schedule/source-executors';
 import { createDesktopRepositorySearchAdapter } from './modules/repository/desktop-repository-search.adapter';
 import { DesktopMainRuntime } from './desktop-main-runtime';
 
@@ -76,7 +92,30 @@ async function registerBusinessModules(
   });
 
   const searchAdapter = createDesktopRepositorySearchAdapter(db, repositoryStorageDir);
-  const sourceExecutor = createDesktopSourceExecutor(db);
+  const scheduleTaskRepository = new PowerSyncScheduleTaskRepository(db);
+  const scheduleOrchestrationModule = createScheduleOrchestrationModule({
+    taskProjection: {
+      source: createTaskPowerSyncScheduleProjectionSource(db),
+      scheduleTaskRepository,
+    },
+    goalProjection: {
+      source: createGoalPowerSyncScheduleProjectionSource(db),
+      scheduleTaskRepository,
+    },
+    reminderProjection: {
+      source: createReminderPowerSyncScheduleProjectionSource(db),
+      scheduleTaskRepository,
+    },
+    execution: {
+      taskSource: createTaskPowerSyncScheduleExecutionSource(db),
+      goalSource: createGoalPowerSyncScheduleExecutionSource(db),
+      reminderSource: createReminderPowerSyncScheduleExecutionSource(db),
+      notificationPort: createNotificationPowerSyncScheduleNotificationPort(db),
+    },
+  });
+  const taskElectronModule = createTaskElectronModule({
+    runtimeContributions: scheduleOrchestrationModule.projectionRuntime,
+  });
 
   const AIElectronModule = createAIElectronModule({
     createKnowledgeNotePersistence: (context: IElectronModuleContext) =>
@@ -98,7 +137,7 @@ async function registerBusinessModules(
       const identityId = authService?.getCurrentIdentityId() ?? null;
       return identityId !== null && String(task.identityId) === identityId;
     },
-    sourceExecutor,
+    sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
   });
 
   await bootstrapper
@@ -109,7 +148,7 @@ async function registerBusinessModules(
     .register(DataPortabilityElectronModule)
     // Feature modules
     .register(GoalElectronModule)
-    .register(TaskElectronModule)
+    .register(taskElectronModule)
     .register(scheduleElectronModule)
     .register(ReminderElectronModule)
     .register(AIElectronModule)

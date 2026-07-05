@@ -1,0 +1,19 @@
+/**
+ * @dailyuse/schedule-orchestration
+ *
+ * System-level orchestration for schedule projections and source execution.
+ * 负责把跨 feature 的 schedule owner 收回成一个更深的 Module。
+ */
+
+export { createScheduleOrchestrationModule } from './infrastructure-server';
+export type {
+  CreateScheduleOrchestrationModuleOptions,
+  ScheduleOrchestrationModule,
+  ScheduleOrchestrationProjectionDeps,
+} from './ports/projection';
+export type {
+  ScheduleNotificationPort,
+  ScheduleNotificationRequest,
+  ScheduleOrchestrationExecutionDeps,
+} from './ports/execution';
+export type { RuntimeContribution } from './ports/runtime-contribution';

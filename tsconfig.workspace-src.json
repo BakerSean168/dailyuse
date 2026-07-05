@@ -38,6 +38,11 @@
       "@dailyuse/notification/*": ["packages/notification/src/*/index.ts"],
       "@dailyuse/schedule": ["packages/schedule/src/index.ts"],
       "@dailyuse/schedule/*": ["packages/schedule/src/*/index.ts"],
+      "@dailyuse/schedule-orchestration": ["packages/schedule-orchestration/src/index.ts"],
+      "@dailyuse/schedule-orchestration/*": [
+        "packages/schedule-orchestration/src/*/index.ts",
+        "packages/schedule-orchestration/src/*.ts"
+      ],
       "@dailyuse/setting": ["packages/setting/src/index.ts"],
       "@dailyuse/setting/*": ["packages/setting/src/*/index.ts"],
       "@dailyuse/data-portability": ["packages/data-portability/src/index.ts"],

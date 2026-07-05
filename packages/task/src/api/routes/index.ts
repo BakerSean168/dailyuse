@@ -35,16 +35,17 @@ interface TaskControllers {
 export function registerTaskRoutes(
   controllers: TaskControllers,
   middleware: PlatformMiddleware,
-  rootRouter: Router,
   openApiRegistry?: OpenApiRegistryLike | null,
-): void {
+): Router {
+  const router = Router();
+
   // Task Templates: /api/task-templates
   const templateRouter = registerTaskTemplateRoutes(
     controllers.templateController,
     middleware,
     openApiRegistry,
   );
-  rootRouter.use('/task-templates', templateRouter);
+  router.use('/task-templates', templateRouter);
 
   // Task Instances: /api/task-instances
   const instanceRouter = registerTaskInstanceRoutes(
@@ -52,7 +53,7 @@ export function registerTaskRoutes(
     middleware,
     openApiRegistry,
   );
-  rootRouter.use('/task-instances', instanceRouter);
+  router.use('/task-instances', instanceRouter);
 
   // Task Dependencies: /api/tasks (sub-paths /:taskId/dependencies, /dependencies/:id)
   const dependencyRouter = registerTaskDependencyRoutes(
@@ -60,5 +61,7 @@ export function registerTaskRoutes(
     middleware,
     openApiRegistry,
   );
-  rootRouter.use('/tasks', dependencyRouter);
+  router.use('/tasks', dependencyRouter);
+
+  return router;
 }

@@ -34,7 +34,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config vitest.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
         "cwd": "packages/task"
       }
     },
@@ -42,7 +42,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "vitest --config vitest.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs --config vitest.config.ts",
         "cwd": "packages/task"
       }
     },
@@ -52,7 +52,7 @@
       "inputs": ["default", "^production"],
       "cache": false,
       "options": {
-        "command": "vitest run --config vitest.integration.config.ts",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.integration.config.ts",
         "cwd": "packages/task"
       }
     },
@@ -62,7 +62,7 @@
       "inputs": ["default", "^production"],
       "cache": false,
       "options": {
-        "command": "vitest run --config vitest.performance.config.ts -t \"acceptable time\"",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.performance.config.ts -t \"acceptable time\"",
         "cwd": "packages/task"
       }
     },
@@ -72,7 +72,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --config vitest.config.ts --coverage",
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --coverage",
         "cwd": "packages/task"
       }
     },
@@ -88,7 +88,9 @@
     },
     "test:coverage:prisma-mappers": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/infrastructure-server-adapters-prisma-mappers"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}/infrastructure-server-adapters-prisma-mappers"
+      ],
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {

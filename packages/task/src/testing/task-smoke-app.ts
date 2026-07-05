@@ -24,7 +24,7 @@ import type { ITaskInstanceRepository } from '../domain-server/repositories/i-ta
 import type { ITaskDependencyRepository } from '../domain-server/repositories/i-task-dependency-repository';
 
 export const JWT_SECRET = 'smoke-test-jwt-secret-key-at-least-32-chars';
-export const TEST_IDENTITY_ID = 'IdentityId_smoke-user-0001';
+export const TEST_IDENTITY_ID = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';
 
 export interface TaskSmokeApp {
   app: Express;
@@ -141,14 +141,14 @@ export function createTaskSmokeApp(): TaskSmokeApp {
   app.use(express.json());
 
   const rootRouter = Router();
-  registerTaskRoutes(
+  const taskRoutes = registerTaskRoutes(
     { templateController, instanceController, dependencyController },
     {
       auth: smokeAuthMiddleware,
       requireRole: (_roles: string[]) => smokeAuthMiddleware,
     },
-    rootRouter,
   );
+  rootRouter.use(taskRoutes);
 
   app.use('/api/v1', rootRouter);
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

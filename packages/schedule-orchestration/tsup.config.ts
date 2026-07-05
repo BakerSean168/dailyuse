@@ -1,0 +1,71 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { baseLibraryConfig, createLocalOnlyDtsPaths } from '../../tools/build/tsup.base.config.ts';
+
+const config = baseLibraryConfig('@dailyuse/schedule-orchestration');
+const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
+  ...config,
+  entry: ['src/index.ts'],
+  tsconfig: 'tsconfig.build.json',
+  dts: createLocalOnlyDtsPaths({
+    '@dailyuse/contracts': ['../../packages/contracts/src/index.ts'],
+    '@dailyuse/contracts/*': [
+      '../../packages/contracts/src/modules/*/index.ts',
+      '../../packages/contracts/src/*/index.ts',
+    ],
+    '@dailyuse/goal': ['../../packages/goal/dist/index.d.ts'],
+    '@dailyuse/goal/schedule-execution': [
+      '../../packages/goal/dist/schedule-execution/index.d.ts',
+    ],
+    '@dailyuse/goal/schedule-projection': [
+      '../../packages/goal/dist/schedule-projection/index.d.ts',
+    ],
+    '@dailyuse/goal/*': [
+      '../../packages/goal/dist/*/index.d.ts',
+      '../../packages/goal/dist/*.d.ts',
+    ],
+    '@dailyuse/reminder': ['../../packages/reminder/dist/index.d.ts'],
+    '@dailyuse/notification': ['../../packages/notification/dist/index.d.ts'],
+    '@dailyuse/notification/schedule-execution': [
+      '../../packages/notification/dist/schedule-execution/index.d.ts',
+    ],
+    '@dailyuse/notification/*': [
+      '../../packages/notification/dist/*/index.d.ts',
+      '../../packages/notification/dist/*.d.ts',
+    ],
+    '@dailyuse/reminder/schedule-execution': [
+      '../../packages/reminder/dist/schedule-execution/index.d.ts',
+    ],
+    '@dailyuse/reminder/schedule-projection': [
+      '../../packages/reminder/dist/schedule-projection/index.d.ts',
+    ],
+    '@dailyuse/reminder/*': [
+      '../../packages/reminder/dist/*/index.d.ts',
+      '../../packages/reminder/dist/*.d.ts',
+    ],
+    '@dailyuse/schedule': ['../../packages/schedule/dist/index.d.ts'],
+    '@dailyuse/schedule/*': [
+      '../../packages/schedule/dist/*/index.d.ts',
+      '../../packages/schedule/dist/*.d.ts',
+    ],
+    '@dailyuse/task': ['../../packages/task/dist/index.d.ts'],
+    '@dailyuse/task/schedule-execution': [
+      '../../packages/task/dist/schedule-execution/index.d.ts',
+    ],
+    '@dailyuse/task/schedule-projection': [
+      '../../packages/task/dist/schedule-projection/index.d.ts',
+    ],
+    '@dailyuse/task/*': [
+      '../../packages/task/dist/*/index.d.ts',
+      '../../packages/task/dist/*.d.ts',
+    ],
+    '@dailyuse/utils': ['../../packages/utils/dist/index.d.ts'],
+    '@dailyuse/utils/*': [
+      '../../packages/utils/dist/*/index.d.ts',
+      '../../packages/utils/dist/*.d.ts',
+    ],
+  }, { baseUrl: packageRoot }),
+};

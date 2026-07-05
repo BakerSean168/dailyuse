@@ -16,7 +16,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TaskTemplate } from '../task-template';
-import type { TaskTemplateState } from '../task-template';
+import type { TaskTemplateState } from '../task-template.state';
 import { TaskTemplateStatus } from '../../../domain-shared/value-objects/task-template-status';
 import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '../../../domain-shared/value-objects/task-folder-id';

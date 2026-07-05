@@ -22,9 +22,17 @@
 
 export { ReminderApiModule } from './module';
 export type { ReminderApiModuleContext, ReminderApiModuleDef } from './module';
-export { createReminderPrismaModule, createReminderPrismaRepositories } from './prisma';
+export {
+  createReminderPrismaModule,
+  createReminderPrismaRepositories,
+  createReminderPrismaScheduleExecutionSource,
+  createReminderPrismaScheduleProjectionSource,
+} from './prisma';
 export type { CreateReminderPrismaModuleOptions } from './prisma';
-export { createReminderPowerSyncModule } from '../infrastructure-server';
+export {
+  createReminderPowerSyncModule,
+  createReminderPowerSyncScheduleExecutionSource,
+} from '../infrastructure-server';
 export { ReminderTemplatePowerSyncRepository } from '../infrastructure-server';
 export type {
   ReminderModuleInstance,

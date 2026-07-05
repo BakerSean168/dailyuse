@@ -35,6 +35,14 @@
       "types": "./dist/api/index.d.ts",
       "import": "./dist/api/index.js"
     },
+    "./schedule-execution": {
+      "types": "./dist/schedule-execution/index.d.ts",
+      "import": "./dist/schedule-execution/index.js"
+    },
+    "./schedule-projection": {
+      "types": "./dist/schedule-projection/index.d.ts",
+      "import": "./dist/schedule-projection/index.js"
+    },
     "./electron-entry": {
       "types": "./dist/electron-entry/index.d.ts",
       "import": "./dist/electron-entry/index.js"

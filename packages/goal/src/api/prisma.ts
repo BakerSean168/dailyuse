@@ -7,10 +7,14 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import {
+  createGoalScheduleExecutionSource,
+  createGoalScheduleProjectionSource,
   GoalPrismaRepository,
   GoalFolderPrismaRepository,
   GoalRecordPrismaRepository,
 } from '../infrastructure-server';
+import type { GoalScheduleExecutionSource } from '../schedule-execution';
+import type { GoalScheduleProjectionSource } from '../schedule-projection';
 
 /**
  * Create standalone goal Prisma repositories.
@@ -22,4 +26,24 @@ export function createGoalPrismaRepositories(db: PrismaClient) {
     goalFolderRepository: new GoalFolderPrismaRepository(db),
     goalRecordRepository: new GoalRecordPrismaRepository(db),
   };
+}
+
+export function createGoalPrismaScheduleProjectionSource(
+  db: PrismaClient,
+): GoalScheduleProjectionSource {
+  const repositories = createGoalPrismaRepositories(db);
+
+  return createGoalScheduleProjectionSource({
+    goalRepository: repositories.goalRepository,
+  });
+}
+
+export function createGoalPrismaScheduleExecutionSource(
+  db: PrismaClient,
+): GoalScheduleExecutionSource {
+  const repositories = createGoalPrismaRepositories(db);
+
+  return createGoalScheduleExecutionSource({
+    goalRepository: repositories.goalRepository,
+  });
 }

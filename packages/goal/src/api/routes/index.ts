@@ -21,7 +21,7 @@ import { registerFocusModeRoutes } from './focus-mode.routes';
 import { registerKeyResultRoutes } from './key-result.routes';
 import { registerReviewRoutes } from './review.routes';
 import { registerRecordRoutes } from './goal-record.routes';
-import { registerGoalFolderRoutes } from './goal-folder.routes';
+import { registerGoalFolderRoutes as registerGoalFolderEntityRoutes } from './goal-folder.routes';
 
 // ============ Types ============
 
@@ -69,11 +69,11 @@ export function registerGoalRoutes(
  *
  * The caller mounts the returned Router on `/goal-folders`.
  */
-export function registerGoalFolderRoutes_(
+export function registerGoalFolderRoutes(
   handlers: GoalFolderUseCases,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const controller = new GoalFolderController(handlers);
-  return registerGoalFolderRoutes(controller, middleware, openApiRegistry);
+  return registerGoalFolderEntityRoutes(controller, middleware, openApiRegistry);
 }

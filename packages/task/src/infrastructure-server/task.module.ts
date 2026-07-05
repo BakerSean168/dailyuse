@@ -48,6 +48,10 @@ import { ListTaskTemplatesByPriorityUseCase } from '../application-server/use-ca
 import { ListTaskDependenciesUseCase } from '../application-server/use-cases/queries/list-task-dependencies.use-case';
 import { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
 import { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
+
+type TaskPortFn<T extends (...args: any[]) => any> = (
+  ...args: Parameters<T>
+) => ReturnType<T>;
 import { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';
 
 // ---------------------------------------------------------------------------
@@ -151,45 +155,46 @@ export interface TaskModuleUseCases {
 /** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
 export interface TaskApplicationPort {
   // Template commands
-  createTaskTemplate: CreateTaskTemplateUseCase;
-  updateTaskTemplate: UpdateTaskTemplateUseCase;
-  activateTaskTemplate: ActivateTaskTemplateUseCase;
-  pauseTaskTemplate: PauseTaskTemplateUseCase;
-  archiveTaskTemplate: ArchiveTaskTemplateUseCase;
-  deleteTaskTemplate: DeleteTaskTemplateUseCase;
-  generateTaskInstances: GenerateTaskInstancesUseCase;
-  bindTaskToGoal: BindTaskToGoalUseCase;
-  unbindTaskFromGoal: UnbindTaskFromGoalUseCase;
+  createTaskTemplate: TaskPortFn<CreateTaskTemplateUseCase['execute']>;
+  updateTaskTemplate: TaskPortFn<UpdateTaskTemplateUseCase['execute']>;
+  activateTaskTemplate: TaskPortFn<ActivateTaskTemplateUseCase['execute']>;
+  pauseTaskTemplate: TaskPortFn<PauseTaskTemplateUseCase['execute']>;
+  archiveTaskTemplate: TaskPortFn<ArchiveTaskTemplateUseCase['execute']>;
+  deleteTaskTemplate: TaskPortFn<DeleteTaskTemplateUseCase['execute']>;
+  generateTaskInstances: TaskPortFn<GenerateTaskInstancesUseCase['execute']>;
+  bindTaskToGoal: TaskPortFn<BindTaskToGoalUseCase['execute']>;
+  unbindTaskFromGoal: TaskPortFn<UnbindTaskFromGoalUseCase['execute']>;
 
   // Template queries
-  getTaskTemplate: GetTaskTemplateUseCase;
-  listTaskTemplates: ListTaskTemplatesUseCase;
-  getTaskTemplateGraph: GetTaskTemplateGraphUseCase;
-  listTaskTemplatesByPriority: ListTaskTemplatesByPriorityUseCase;
+  getTaskTemplate: TaskPortFn<GetTaskTemplateUseCase['execute']>;
+  listTaskTemplates: TaskPortFn<ListTaskTemplatesUseCase['execute']>;
+  getTaskTemplateGraph: TaskPortFn<GetTaskTemplateGraphUseCase['execute']>;
+  listTaskTemplatesByPriority: TaskPortFn<ListTaskTemplatesByPriorityUseCase['execute']>;
 
   // Instance commands
-  completeTaskInstance: CompleteTaskInstanceUseCase;
-  skipTaskInstance: SkipTaskInstanceUseCase;
-  startTaskInstance: StartTaskInstanceUseCase;
-  deleteTaskInstance: DeleteTaskInstanceUseCase;
-  checkExpiredInstances: CheckExpiredInstancesUseCase;
+  completeTaskInstance: TaskPortFn<CompleteTaskInstanceUseCase['execute']>;
+  skipTaskInstance: TaskPortFn<SkipTaskInstanceUseCase['execute']>;
+  startTaskInstance: TaskPortFn<StartTaskInstanceUseCase['execute']>;
+  deleteTaskInstance: TaskPortFn<DeleteTaskInstanceUseCase['execute']>;
+  checkExpiredInstances: TaskPortFn<CheckExpiredInstancesUseCase['execute']>;
 
   // Instance queries
-  getTaskInstance: GetTaskInstanceUseCase;
-  listTaskInstancesByAccount: ListTaskInstancesByAccountUseCase;
-  listTaskInstancesByTemplate: ListTaskInstancesByTemplateUseCase;
-  listTaskInstancesByStatus: ListTaskInstancesByStatusUseCase;
-  getTaskInstancesByDateRange: GetTaskInstancesByDateRangeUseCase;
+  getTaskInstance: TaskPortFn<GetTaskInstanceUseCase['execute']>;
+  listTaskInstancesByAccount: TaskPortFn<ListTaskInstancesByAccountUseCase['execute']>;
+  listTaskInstancesByTemplate: TaskPortFn<ListTaskInstancesByTemplateUseCase['execute']>;
+  listTaskInstancesByStatus: TaskPortFn<ListTaskInstancesByStatusUseCase['execute']>;
+  getTaskInstancesByDateRange: TaskPortFn<GetTaskInstancesByDateRangeUseCase['execute']>;
 
   // Dependency commands
-  createTaskDependency: CreateTaskDependencyUseCase;
-  deleteTaskDependency: DeleteTaskDependencyUseCase;
-  updateTaskDependency: UpdateTaskDependencyUseCase;
+  createTaskDependency: TaskPortFn<CreateTaskDependencyUseCase['execute']>;
+  deleteTaskDependency: TaskPortFn<DeleteTaskDependencyUseCase['execute']>;
+  updateTaskDependency: TaskPortFn<UpdateTaskDependencyUseCase['execute']>;
 
   // Dependency queries
-  listTaskDependencies: ListTaskDependenciesUseCase;
-  getDependencyChain: GetDependencyChainUseCase;
-  validateTaskDependency: ValidateTaskDependencyUseCase;
+  listTaskDependencies: TaskPortFn<ListTaskDependenciesUseCase['executeDependencies']>;
+  listTaskDependents: TaskPortFn<ListTaskDependenciesUseCase['executeDependents']>;
+  getDependencyChain: TaskPortFn<GetDependencyChainUseCase['execute']>;
+  validateTaskDependency: TaskPortFn<ValidateTaskDependencyUseCase['execute']>;
 }
 
 // ---------------------------------------------------------------------------
@@ -316,7 +321,44 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
 
   // The API facade simply exposes the assembled use cases.
   // API 门面只是直接暴露已组装好的 use case。
-  const api: TaskApplicationPort = { ...useCases };
+  const api: TaskApplicationPort = {
+    createTaskTemplate: (input) => useCases.createTaskTemplate.execute(input),
+    updateTaskTemplate: (id, input) => useCases.updateTaskTemplate.execute(id, input),
+    activateTaskTemplate: (id) => useCases.activateTaskTemplate.execute(id),
+    pauseTaskTemplate: (id) => useCases.pauseTaskTemplate.execute(id),
+    archiveTaskTemplate: (id) => useCases.archiveTaskTemplate.execute(id),
+    deleteTaskTemplate: (id) => useCases.deleteTaskTemplate.execute(id),
+    generateTaskInstances: (id, input) => useCases.generateTaskInstances.execute(id, input),
+    bindTaskToGoal: (id, input) => useCases.bindTaskToGoal.execute(id, input),
+    unbindTaskFromGoal: (id) => useCases.unbindTaskFromGoal.execute(id),
+    getTaskTemplate: (id, includeChildren) => useCases.getTaskTemplate.execute(id, includeChildren),
+    listTaskTemplates: (query) => useCases.listTaskTemplates.execute(query),
+    getTaskTemplateGraph: (query) => useCases.getTaskTemplateGraph.execute(query),
+    listTaskTemplatesByPriority: (identityId, limit) =>
+      useCases.listTaskTemplatesByPriority.execute(identityId, limit),
+    completeTaskInstance: (id, input) => useCases.completeTaskInstance.execute(id, input),
+    skipTaskInstance: (id, input) => useCases.skipTaskInstance.execute(id, input),
+    startTaskInstance: (id) => useCases.startTaskInstance.execute(id),
+    deleteTaskInstance: (id) => useCases.deleteTaskInstance.execute(id),
+    checkExpiredInstances: (identityId) => useCases.checkExpiredInstances.execute(identityId),
+    getTaskInstance: (id) => useCases.getTaskInstance.execute(id),
+    listTaskInstancesByAccount: (identityId) =>
+      useCases.listTaskInstancesByAccount.execute(identityId),
+    listTaskInstancesByTemplate: (templateId) =>
+      useCases.listTaskInstancesByTemplate.execute(templateId),
+    listTaskInstancesByStatus: (identityId, status) =>
+      useCases.listTaskInstancesByStatus.execute(identityId, status),
+    getTaskInstancesByDateRange: (identityId, startDate, endDate) =>
+      useCases.getTaskInstancesByDateRange.execute(identityId, startDate, endDate),
+    createTaskDependency: (input) => useCases.createTaskDependency.execute(input),
+    deleteTaskDependency: (id) => useCases.deleteTaskDependency.execute(id),
+    updateTaskDependency: (id, input) => useCases.updateTaskDependency.execute(id, input),
+    listTaskDependencies: (taskId) => useCases.listTaskDependencies.executeDependencies(taskId),
+    listTaskDependents: (taskId) => useCases.listTaskDependencies.executeDependents(taskId),
+    getDependencyChain: (taskId) => useCases.getDependencyChain.execute(taskId),
+    validateTaskDependency: (predecessorTaskId, successorTaskId) =>
+      useCases.validateTaskDependency.execute(predecessorTaskId, successorTaskId),
+  };
 
   return {
     taskTemplateRepository,

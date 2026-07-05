@@ -10,15 +10,15 @@ import { TaskTemplateController, type TaskTemplateUseCases } from '../task-templ
 
 function createMockUseCases(): TaskTemplateUseCases {
   return {
-    createTemplate: { execute: vi.fn() },
-    getTemplate: { execute: vi.fn() },
-    listTemplates: { execute: vi.fn() },
-    getTaskGraph: { execute: vi.fn() },
-    updateTemplate: { execute: vi.fn() },
-    deleteTemplate: { execute: vi.fn() },
-    activateTemplate: { execute: vi.fn() },
-    pauseTemplate: { execute: vi.fn() },
-    archiveTemplate: { execute: vi.fn() },
+    createTemplate: vi.fn(),
+    getTemplate: vi.fn(),
+    listTemplates: vi.fn(),
+    getTaskGraph: vi.fn(),
+    updateTemplate: vi.fn(),
+    deleteTemplate: vi.fn(),
+    activateTemplate: vi.fn(),
+    pauseTemplate: vi.fn(),
+    archiveTemplate: vi.fn(),
   } as unknown as TaskTemplateUseCases;
 }
 
@@ -75,18 +75,18 @@ describe('TaskTemplateController', () => {
         expect(result.error.details!.length).toBeGreaterThan(0);
       }
       // Use case should NOT have been called
-      expect(useCases.createTemplate.execute).not.toHaveBeenCalled();
+      expect(useCases.createTemplate).not.toHaveBeenCalled();
     });
 
     it('should call createTemplate use case with parsed data', async () => {
-      (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 0 }),
       );
 
       const result = await controller.createTemplate(VALID_CREATE_INPUT, ctx);
 
-      expect(useCases.createTemplate.execute).toHaveBeenCalledOnce();
-      const args = (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(useCases.createTemplate).toHaveBeenCalledOnce();
+      const args = (useCases.createTemplate as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.identityId).toBe(TEST_IDENTITY_ID);
       expect(args.name).toBe('My Task');
       expect(args.taskType).toBe(TaskType.OneTime);
@@ -94,7 +94,7 @@ describe('TaskTemplateController', () => {
     });
 
     it('should unwrap ok result to return template DTO', async () => {
-      (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 5 }),
       );
 
@@ -111,7 +111,7 @@ describe('TaskTemplateController', () => {
         code: 'VALIDATION_ERROR',
         message: 'Name too long',
       });
-      (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
+      (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
       const result = await controller.createTemplate(VALID_CREATE_INPUT, ctx);
 
@@ -169,28 +169,28 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('getTemplate', () => {
     it('should call getTemplate use case with id and default includeChildren=false', async () => {
-      (useCases.getTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(FAKE_TEMPLATE_DTO),
       );
 
       await controller.getTemplate('tmpl_abc123');
 
-      expect(useCases.getTemplate.execute).toHaveBeenCalledWith('tmpl_abc123', false);
+      expect(useCases.getTemplate).toHaveBeenCalledWith('tmpl_abc123', false);
     });
 
     it('should call getTemplate use case with includeChildren=true', async () => {
-      (useCases.getTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(FAKE_TEMPLATE_DTO),
       );
 
       await controller.getTemplate('tmpl_abc123', true);
 
-      expect(useCases.getTemplate.execute).toHaveBeenCalledWith('tmpl_abc123', true);
+      expect(useCases.getTemplate).toHaveBeenCalledWith('tmpl_abc123', true);
     });
 
     it('should pass through use case result data directly', async () => {
       // GetTaskTemplate use case returns ok(DTO | null) — NOT wrapped in { template: ... }
-      (useCases.getTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(FAKE_TEMPLATE_DTO),
       );
 
@@ -204,7 +204,7 @@ describe('TaskTemplateController', () => {
 
     it('should return null when template not found', async () => {
       // GetTaskTemplate use case returns ok(null) when not found
-      (useCases.getTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok(null));
+      (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(null));
 
       const result = await controller.getTemplate('tmpl_nonexistent');
 
@@ -220,30 +220,30 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('listTemplates', () => {
     it('should call listTemplates use case with identityId', async () => {
-      (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.listTemplates as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates: [], total: 0 }),
       );
 
       await controller.listTemplates(undefined, ctx);
 
-      expect(useCases.listTemplates.execute).toHaveBeenCalledOnce();
-      const args = (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(useCases.listTemplates).toHaveBeenCalledOnce();
+      const args = (useCases.listTemplates as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.identityId).toBe(TEST_IDENTITY_ID);
     });
 
     it('should wrap single status into array', async () => {
-      (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.listTemplates as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates: [], total: 0 }),
       );
 
       await controller.listTemplates({ status: ['Active'] }, ctx);
 
-      const args = (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const args = (useCases.listTemplates as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.status).toEqual(['Active']);
     });
 
     it('should pass through folderId, goalId, tags filters', async () => {
-      (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.listTemplates as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates: [], total: 0 }),
       );
 
@@ -256,7 +256,7 @@ describe('TaskTemplateController', () => {
         ctx,
       );
 
-      const args = (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const args = (useCases.listTemplates as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.folderId).toBe('TaskFolderId_550e8400-e29b-41d4-a716-446655440001');
       expect(args.goalId).toBe('GoalId_550e8400-e29b-41d4-a716-446655440002');
       expect(args.tags).toEqual(['tag1', 'tag2']);
@@ -264,7 +264,7 @@ describe('TaskTemplateController', () => {
 
     it('should return templates and total', async () => {
       const templates = [FAKE_TEMPLATE_DTO];
-      (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.listTemplates as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates, total: 1 }),
       );
 
@@ -279,14 +279,14 @@ describe('TaskTemplateController', () => {
 
   describe('getTaskGraph', () => {
     it('should call getTaskGraph use case with identityId and filters', async () => {
-      (useCases.getTaskGraph.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.getTaskGraph as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates: [], dependencies: [], total: 0 }),
       );
 
       await controller.getTaskGraph({ status: ['Active'], tags: ['focus'] }, ctx);
 
-      expect(useCases.getTaskGraph.execute).toHaveBeenCalledOnce();
-      const args = (useCases.getTaskGraph.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(useCases.getTaskGraph).toHaveBeenCalledOnce();
+      const args = (useCases.getTaskGraph as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.identityId).toBe(TEST_IDENTITY_ID);
       expect(args.status).toEqual(['Active']);
       expect(args.tags).toEqual(['focus']);
@@ -298,7 +298,7 @@ describe('TaskTemplateController', () => {
         dependencies: [],
         total: 1,
       };
-      (useCases.getTaskGraph.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok(payload));
+      (useCases.getTaskGraph as ReturnType<typeof vi.fn>).mockResolvedValue(ok(payload));
 
       const result = await controller.getTaskGraph(undefined, ctx);
 
@@ -321,17 +321,17 @@ describe('TaskTemplateController', () => {
       if (!isOk(result)) {
         expect(result.error.code).toBe('VALIDATION_ERROR');
       }
-      expect(useCases.updateTemplate.execute).not.toHaveBeenCalled();
+      expect(useCases.updateTemplate).not.toHaveBeenCalled();
     });
 
     it('should call updateTemplate use case with id and parsed data', async () => {
-      (useCases.updateTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.updateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(FAKE_TEMPLATE_DTO),
       );
 
       await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT);
 
-      expect(useCases.updateTemplate.execute).toHaveBeenCalledWith('tmpl_1', {
+      expect(useCases.updateTemplate).toHaveBeenCalledWith('tmpl_1', {
         name: 'Updated Name',
         description: undefined,
         recurrenceRule: undefined,
@@ -344,7 +344,7 @@ describe('TaskTemplateController', () => {
 
     it('should return use case result directly (no unwrap)', async () => {
       const expectedResult = ok(FAKE_TEMPLATE_DTO);
-      (useCases.updateTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.updateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         expectedResult,
       );
 
@@ -354,14 +354,14 @@ describe('TaskTemplateController', () => {
     });
 
     it('should accept empty object (all fields optional)', async () => {
-      (useCases.updateTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.updateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(FAKE_TEMPLATE_DTO),
       );
 
       const result = await controller.updateTemplate('tmpl_1', {});
 
       expect(isOk(result)).toBe(true);
-      expect(useCases.updateTemplate.execute).toHaveBeenCalledOnce();
+      expect(useCases.updateTemplate).toHaveBeenCalledOnce();
     });
   });
 
@@ -370,18 +370,18 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('deleteTemplate', () => {
     it('should call deleteTemplate use case with id', async () => {
-      (useCases.deleteTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(undefined),
       );
 
       await controller.deleteTemplate('tmpl_1');
 
-      expect(useCases.deleteTemplate.execute).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.deleteTemplate).toHaveBeenCalledWith('tmpl_1');
     });
 
     it('should pass through use case result', async () => {
       const expectedResult = ok(undefined);
-      (useCases.deleteTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         expectedResult,
       );
 
@@ -396,17 +396,17 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('activateTemplate', () => {
     it('should call activateTemplate use case with id', async () => {
-      (useCases.activateTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.activateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ template: FAKE_TEMPLATE_DTO, instancesGenerated: 10 }),
       );
 
       await controller.activateTemplate('tmpl_1');
 
-      expect(useCases.activateTemplate.execute).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.activateTemplate).toHaveBeenCalledWith('tmpl_1');
     });
 
     it('should unwrap result.data.template', async () => {
-      (useCases.activateTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.activateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ template: FAKE_TEMPLATE_DTO, instancesGenerated: 10 }),
       );
 
@@ -420,7 +420,7 @@ describe('TaskTemplateController', () => {
 
     it('should forward use case failure', async () => {
       const useCaseError = fail({ code: 'NOT_FOUND', message: 'Template not found' });
-      (useCases.activateTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.activateTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         useCaseError,
       );
 
@@ -438,17 +438,17 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('pauseTemplate', () => {
     it('should call pauseTemplate use case with id', async () => {
-      (useCases.pauseTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.pauseTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ template: FAKE_TEMPLATE_DTO, instancesDeleted: 3 }),
       );
 
       await controller.pauseTemplate('tmpl_1');
 
-      expect(useCases.pauseTemplate.execute).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.pauseTemplate).toHaveBeenCalledWith('tmpl_1');
     });
 
     it('should unwrap result.data.template', async () => {
-      (useCases.pauseTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.pauseTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ template: FAKE_TEMPLATE_DTO, instancesDeleted: 3 }),
       );
 
@@ -462,7 +462,7 @@ describe('TaskTemplateController', () => {
 
     it('should forward use case failure', async () => {
       const useCaseError = fail({ code: 'NOT_FOUND', message: 'Not found' });
-      (useCases.pauseTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
+      (useCases.pauseTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
       const result = await controller.pauseTemplate('tmpl_1');
 
@@ -475,18 +475,18 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('archiveTemplate', () => {
     it('should call archiveTemplate use case with id', async () => {
-      (useCases.archiveTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.archiveTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok(FAKE_TEMPLATE_DTO),
       );
 
       await controller.archiveTemplate('tmpl_1');
 
-      expect(useCases.archiveTemplate.execute).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.archiveTemplate).toHaveBeenCalledWith('tmpl_1');
     });
 
     it('should pass through use case result directly (no unwrap)', async () => {
       const expectedResult = ok(FAKE_TEMPLATE_DTO);
-      (useCases.archiveTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
+      (useCases.archiveTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
         expectedResult,
       );
 

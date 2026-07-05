@@ -1,5 +1,5 @@
 import { TaskTemplate } from '../../../../domain-server/aggregates/task-template';
-import type { TaskTemplateState } from '../../../../domain-server/aggregates/task-template';
+import type { TaskTemplateState } from '../../../../domain-server/aggregates/task-template.state';
 import { TaskFolderId } from '../../../../domain-shared/value-objects/task-folder-id';
 import { TaskTemplateId } from '../../../../domain-shared/value-objects/task-template-id';
 import { TaskTemplateStatus } from '../../../../domain-shared/value-objects/task-template-status';

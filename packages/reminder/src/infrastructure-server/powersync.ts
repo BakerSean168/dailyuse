@@ -13,12 +13,16 @@ import {
   type ReminderModuleInstance,
   type ReminderRuntimeContributionsInput,
 } from './reminder.module';
+import { createReminderScheduleExecutionSource } from './schedule-execution-source';
+import { createReminderScheduleProjectionSource } from './schedule-projection-source';
 import {
   ReminderTemplatePowerSyncRepository,
   ReminderGroupPowerSyncRepository,
   ReminderResponsePowerSyncRepository,
   UserReminderPreferencePowerSyncRepository,
 } from './adapters/powersync';
+import type { ReminderScheduleExecutionSource } from '../schedule-execution';
+import type { ReminderScheduleProjectionSource } from '../schedule-projection';
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -43,6 +47,22 @@ export function createReminderPowerSyncModule(
     reminderResponseRepository: new ReminderResponsePowerSyncRepository(db),
     userReminderPreferenceRepository: new UserReminderPreferencePowerSyncRepository(db),
     runtimeContributions,
+  });
+}
+
+export function createReminderPowerSyncScheduleProjectionSource(
+  db: Queryable,
+): ReminderScheduleProjectionSource {
+  return createReminderScheduleProjectionSource({
+    reminderTemplateRepository: new ReminderTemplatePowerSyncRepository(db),
+  });
+}
+
+export function createReminderPowerSyncScheduleExecutionSource(
+  db: Queryable,
+): ReminderScheduleExecutionSource {
+  return createReminderScheduleExecutionSource({
+    reminderTemplateRepository: new ReminderTemplatePowerSyncRepository(db),
   });
 }
 

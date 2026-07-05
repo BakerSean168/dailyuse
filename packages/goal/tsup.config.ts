@@ -8,6 +8,8 @@ export default defineConfig({
     'src/domain-client/index.ts',
     'src/analytics/index.ts',
     'src/events/index.ts',
+    'src/schedule-execution/index.ts',
+    'src/schedule-projection/index.ts',
     'src/infrastructure-server/index.ts',
     'src/application-client/index.ts',
     'src/infrastructure-client/index.ts',

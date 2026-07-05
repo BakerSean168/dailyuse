@@ -25,6 +25,13 @@ export { AggregateRoot } from './domain/aggregate-root';
 export { ValueObject } from './domain/value-object';
 export { eventBus } from './domain/global-event-bus';
 export { createIdType } from './domain/create-id-type';
+export { flushDomainEvents, publishDomainEvents } from './domain/flush-domain-events';
+export {
+  createTypedEventPort,
+  createTypedEventPublisher,
+  createTypedEventSubscriber,
+} from './domain/typed-event-port';
+export type { Publisher, Subscriber, TypedEventPort } from './domain/typed-event-port';
 
 // ── errors ──
 export { DomainError, BusinessRuleViolationError, NotFoundError, ValidationError, UnauthorizedError } from './errors/domain-error';

@@ -1,13 +1,24 @@
 import { describe, expect, it } from 'vitest';
+import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { PrismaTaskInstanceMapper } from './prisma-task-instance-mapper';
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
 import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 
 describe('PrismaTaskInstanceMapper', () => {
+  const INSTANCE_ID_1 = aPrefixedUuid('ITaskInstanceId', 'task-instance-1');
+  const INSTANCE_ID_2 = aPrefixedUuid('ITaskInstanceId', 'task-instance-2');
+  const INSTANCE_ID_3 = aPrefixedUuid('ITaskInstanceId', 'task-instance-3');
+  const TEMPLATE_ID_1 = aPrefixedUuid('ITaskTemplateId', 'task-template-1');
+  const TEMPLATE_ID_2 = aPrefixedUuid('ITaskTemplateId', 'task-template-2');
+  const TEMPLATE_ID_3 = aPrefixedUuid('ITaskTemplateId', 'task-template-3');
+  const IDENTITY_ID_1 = aPrefixedUuid('IdentityId', 'task-instance-owner-1');
+  const IDENTITY_ID_2 = aPrefixedUuid('IdentityId', 'task-instance-owner-2');
+  const IDENTITY_ID_3 = aPrefixedUuid('IdentityId', 'task-instance-owner-3');
+
   const createMinimalRow = (): PrismaTaskInstance => ({
-    id: 'instance-1',
-    templateId: 'template-1',
-    identityId: 'identity-1',
+    id: INSTANCE_ID_1,
+    templateId: TEMPLATE_ID_1,
+    identityId: IDENTITY_ID_1,
     instanceDate: new Date('2024-03-15T00:00:00Z'),
     timeConfig: JSON.stringify({ timeType: 'Flexible', startDate: null, timePoint: null, timeRange: null }),
     importance: 'Moderate',
@@ -23,9 +34,9 @@ describe('PrismaTaskInstanceMapper', () => {
   });
 
   const createFullRow = (): PrismaTaskInstance => ({
-    id: 'instance-2',
-    templateId: 'template-2',
-    identityId: 'identity-2',
+    id: INSTANCE_ID_2,
+    templateId: TEMPLATE_ID_2,
+    identityId: IDENTITY_ID_2,
     instanceDate: new Date('2024-04-10T08:30:00Z'),
     timeConfig: JSON.stringify({
       timeType: 'FixedTime',
@@ -55,9 +66,9 @@ describe('PrismaTaskInstanceMapper', () => {
       const row = createMinimalRow();
       const domain = PrismaTaskInstanceMapper.toDomain(row);
 
-      expect(domain.id).toBe('instance-1');
-      expect(domain.templateId).toBe('template-1');
-      expect(domain.identityId).toBe('identity-1');
+      expect(domain.id).toBe(INSTANCE_ID_1);
+      expect(domain.templateId).toBe(TEMPLATE_ID_1);
+      expect(domain.identityId).toBe(IDENTITY_ID_1);
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
       expect(domain.importance).toBe('Moderate');
       expect(domain.priority).toBeUndefined();
@@ -74,9 +85,9 @@ describe('PrismaTaskInstanceMapper', () => {
       const row = createFullRow();
       const domain = PrismaTaskInstanceMapper.toDomain(row);
 
-      expect(domain.id).toBe('instance-2');
-      expect(domain.templateId).toBe('template-2');
-      expect(domain.identityId).toBe('identity-2');
+      expect(domain.id).toBe(INSTANCE_ID_2);
+      expect(domain.templateId).toBe(TEMPLATE_ID_2);
+      expect(domain.identityId).toBe(IDENTITY_ID_2);
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
       expect(domain.importance).toBe('Important');
       expect(domain.priority).toBe(1);
@@ -146,9 +157,9 @@ describe('PrismaTaskInstanceMapper', () => {
   describe('toPersistence', () => {
     it('converts minimal aggregate to persistence format', () => {
       const aggregate = createTestAggregate({
-        id: 'instance-3',
-        templateId: 'template-3',
-        identityId: 'identity-3',
+        id: INSTANCE_ID_3,
+        templateId: TEMPLATE_ID_3,
+        identityId: IDENTITY_ID_3,
         instanceDate: new Date('2024-05-01T00:00:00Z'),
         importance: 'Minor',
         status: 'Pending',
@@ -157,8 +168,8 @@ describe('PrismaTaskInstanceMapper', () => {
 
       const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
-      expect(persistence.templateId).toBe('template-3');
-      expect(persistence.identityId).toBe('identity-3');
+      expect(persistence.templateId).toBe(TEMPLATE_ID_3);
+      expect(persistence.identityId).toBe(IDENTITY_ID_3);
       expect(persistence.importance).toBe('Minor');
       expect(persistence.status).toBe('Pending');
       expect(persistence.priority).toBeNull();
@@ -173,7 +184,7 @@ describe('PrismaTaskInstanceMapper', () => {
 
       const persistence = PrismaTaskInstanceMapper.toPersistence(aggregate);
 
-      expect(persistence.templateId).toBe('template-2');
+      expect(persistence.templateId).toBe(TEMPLATE_ID_2);
       expect(persistence.importance).toBe('Important');
       expect(persistence.priority).toBe(1);
       expect(persistence.status).toBe('Completed');
@@ -245,9 +256,9 @@ describe('PrismaTaskInstanceMapper', () => {
       const domains = PrismaTaskInstanceMapper.toDomainList(rows);
 
       expect(domains).toHaveLength(3);
-      expect(domains[0].id).toBe('instance-1');
-      expect(domains[1].id).toBe('instance-2');
-      expect(domains[2].id).toBe('instance-1');
+      expect(domains[0].id).toBe(INSTANCE_ID_1);
+      expect(domains[1].id).toBe(INSTANCE_ID_2);
+      expect(domains[2].id).toBe(INSTANCE_ID_1);
     });
   });
 });
