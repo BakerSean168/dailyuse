@@ -4,8 +4,8 @@ import { PowerSyncAppSchema } from './index';
 
 function getColumnType(tableName: keyof typeof PowerSyncAppSchema.props, columnName: string) {
   const table = PowerSyncAppSchema.props[tableName];
-  const column = table.options.columns.find((entry) => entry.options.name === columnName);
-  return column?.options.type;
+  const column = table.columns.find((entry) => entry.name === columnName);
+  return column?.type;
 }
 
 describe('PowerSyncAppSchema', () => {
