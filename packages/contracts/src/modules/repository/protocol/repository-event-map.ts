@@ -3,6 +3,7 @@ import type { RepositoryUpdatedEvent } from '../domain/events/repository-updated
 import type { RepositoryArchivedEvent } from '../domain/events/repository-archived.event';
 import type { RepositoryDeletedEvent } from '../domain/events/repository-deleted.event';
 import type { RepositoryStatisticsUpdatedEvent } from '../domain/events/repository-statistics-updated.event';
+import type { RepositoryResourceMutatedEvent } from '../domain/events';
 
 /**
  * Repository Module - Event Map
@@ -16,4 +17,5 @@ export type RepositoryEventMap = {
   'repository:archived': RepositoryArchivedEvent;
   'repository:deleted': RepositoryDeletedEvent;
   'repository:statistics-updated': RepositoryStatisticsUpdatedEvent;
+  'repository:resource:mutated': RepositoryResourceMutatedEvent;
 };

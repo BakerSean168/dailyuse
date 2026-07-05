@@ -6,6 +6,8 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
+import { CreateNotificationUseCase } from '../commands';
+import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
   createNotificationModule,
   NotificationPrismaRepository,
@@ -45,5 +47,25 @@ export function createNotificationPrismaRepositories(db: PrismaClient) {
     notificationRepository: new NotificationPrismaRepository(db),
     notificationPreferenceRepository: new NotificationPreferencePrismaRepository(db),
     notificationTemplateRepository: new NotificationTemplatePrismaRepository(db),
+  };
+}
+
+export function createNotificationPrismaScheduleNotificationPort(
+  db: PrismaClient,
+): ScheduleNotificationPort {
+  const repositories = createNotificationPrismaRepositories(db);
+  const createNotification = new CreateNotificationUseCase(
+    repositories.notificationRepository,
+    repositories.notificationTemplateRepository,
+    repositories.notificationPreferenceRepository,
+  );
+
+  return {
+    createNotification(request) {
+      return createNotification.execute({
+        ...request,
+        channels: request.channels ? Array.from(request.channels) : undefined,
+      });
+    },
   };
 }

@@ -27,6 +27,10 @@
       "types": "./dist/commands/index.d.ts",
       "import": "./dist/commands/index.js"
     },
+    "./schedule-execution": {
+      "types": "./dist/schedule-execution/index.d.ts",
+      "import": "./dist/schedule-execution/index.js"
+    },
     "./application-client": {
       "types": "./dist/application-client/index.d.ts",
       "import": "./dist/application-client/index.js"

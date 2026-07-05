@@ -23,7 +23,11 @@ export {
 } from './runtime';
 export { createNotificationTransportHandlers } from './transport-handlers';
 export { NotificationController, type NotificationUseCases } from '../controllers';
-export { createNotificationPrismaModule, createNotificationPrismaRepositories } from './prisma';
+export {
+  createNotificationPrismaModule,
+  createNotificationPrismaRepositories,
+  createNotificationPrismaScheduleNotificationPort,
+} from './prisma';
 export type { CreateNotificationPrismaModuleOptions } from './prisma';
 export { createNotificationPowerSyncModule } from '../infrastructure-server';
 export {

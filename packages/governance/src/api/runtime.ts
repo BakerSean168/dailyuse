@@ -11,12 +11,13 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { GovernanceEventMap } from '../contracts/protocol/governance-event-map';
 import type { GovernanceModuleRuntimeContribution } from '../infrastructure-server';
 
 const logger = createLogger('GovernanceRuntime');
+const governanceEvents = createTypedEventSubscriber<GovernanceEventMap>(eventBus);
 
 type GovernanceEventName = keyof GovernanceEventMap;
 type GovernanceEventHandler<K extends GovernanceEventName> = (
@@ -74,17 +75,18 @@ const governanceEventNames = [
 ] as const satisfies readonly GovernanceEventName[];
 
 function subscribeGovernanceEvent<K extends GovernanceEventName>(eventName: K): void {
-  eventBus.on(eventName, governanceEventHandlers[eventName]);
+  governanceEvents.on(eventName, governanceEventHandlers[eventName]);
 }
 
 function unsubscribeGovernanceEvent<K extends GovernanceEventName>(eventName: K): void {
-  eventBus.off(eventName, governanceEventHandlers[eventName]);
+  governanceEvents.off(eventName, governanceEventHandlers[eventName]);
 }
 
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
-  * @returns any - 
+ *
+ * @returns Instance-owned governance runtime contribution.
  */
 export function createGovernanceRuntimeContribution(): GovernanceRuntimeContribution {
   let started = false;

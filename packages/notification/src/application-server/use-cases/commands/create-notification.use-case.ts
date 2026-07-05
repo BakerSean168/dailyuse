@@ -5,7 +5,7 @@
  */
 
 import { NotificationPolicy } from '../../../domain-server/services/notification-policy';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 import { createLogger } from '@dailyuse/utils/logger';
 import type {
@@ -31,6 +31,9 @@ import { Notification } from '../../../domain-server/aggregates/notification';
 import { NotificationChannel } from '../../../domain-server/entities/notification-channel';
 
 const logger = createLogger('CreateNotificationUseCase');
+const notificationDispatchEvents = createTypedEventPublisher<
+  Pick<NotificationEventMap, 'notification:dispatch_in_app' | 'notification:dispatch_desktop'>
+>(eventBus);
 
 /**
  * Create Notification Use Case
@@ -136,7 +139,7 @@ export class CreateNotificationUseCase {
           importance: clientDTO.importance,
           data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
         };
-        eventBus.send('notification:dispatch_in_app', dispatchEvent);
+        notificationDispatchEvents.send('notification:dispatch_in_app', dispatchEvent);
       }
 
       if (resolvedChannels.includes(ChannelTypeEnum.Push)) {
@@ -151,7 +154,7 @@ export class CreateNotificationUseCase {
           data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
           sound: { enabled: true, name: null },
         };
-        eventBus.send('notification:dispatch_desktop', desktopEvent);
+        notificationDispatchEvents.send('notification:dispatch_desktop', desktopEvent);
       }
 
       logger.debug('📬 [应用服务] Notification dispatched via event bus', {

@@ -8,13 +8,18 @@
  * @module events/initialize-event-listeners
  */
 
-import { eventBus } from '@dailyuse/utils/domain';
+import type { TaskEventMap } from '@dailyuse/contracts/task';
+import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { CreateGoalRecordUseCase } from '@dailyuse/goal/events';
 import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
 import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
-import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 
 let isInitialized = false;
+
+type DesktopTaskEventMap = Pick<TaskEventMap, 'task:instance-completed'>;
+
+const desktopTaskEvents = createTypedEventSubscriber<DesktopTaskEventMap>(eventBus);
 
 /**
  * Initializes all desktop application event listeners.
@@ -42,97 +47,101 @@ export async function initializeEventListeners(): Promise<void> {
  * Automatically updates the associated Goal's Key Result progress when a task is finished.
  */
 function initializeTaskToGoalProgressListener(): void {
-  eventBus.on('task:instance-completed', async (event) => {
-    try {
-      const identityId = event.identityId;
-      if (!identityId) {
-        console.error(
-          '❌ [TaskToGoalProgress] Missing identityId in task:instance-completed event',
-        );
-        return;
-      }
-
-      const { taskInstanceId, taskTemplateId } = event;
-
-      const taskInstanceRepository = getTaskInstanceRepository();
-      const taskInstance = await taskInstanceRepository.findById(taskInstanceId);
-      if (!taskInstance) {
-        console.error(`❌ [TaskToGoalProgress] Task instance not found: ${taskInstanceId}`);
-        return;
-      }
-
-      const taskTemplateRepository = getTaskTemplateRepository();
-      const template = await taskTemplateRepository.findById(taskTemplateId);
-      if (!template) {
-        console.error(`❌ [TaskToGoalProgress] Task template not found: ${taskTemplateId}`);
-        return;
-      }
-
-      const title = template.title;
-      const goalBinding = template.goalBinding;
-
-      // If the task is not bound to a goal, ignore
-      if (!goalBinding) {
-        console.log(
-          `ℹ️ [TaskToGoalProgress] Task ${taskInstanceId} completed without goal binding`,
-        );
-        return;
-      }
-
-      const shouldCreateRecord =
-        goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
-          ? await shouldTriggerOnAllInstancesCompleted(taskTemplateId, taskInstance.instanceDate)
-          : true;
-
-      if (!shouldCreateRecord) {
-        console.log(
-          `ℹ️ [TaskToGoalProgress] Task ${taskInstanceId} completed, but template ${taskTemplateId} is not fully completed yet`,
-        );
-        return;
-      }
-
-      console.log(`🎯 [TaskToGoalProgress] Task "${title}" completed, updating goal progress`, {
-        goalId: goalBinding.goalId,
-        keyResultId: goalBinding.keyResultId,
-        incrementValue: goalBinding.goalRecordValue,
-        progressTrigger: goalBinding.progressTrigger,
-      });
-
-      const goalRepository = getGoalRepository();
-      const goalRecordRepository = getGoalRecordRepository();
-      const createGoalRecord = new CreateGoalRecordUseCase(
-        goalRepository,
-        goalRecordRepository,
-      );
-
-      const recordResult = await createGoalRecord.execute(
-        String(goalBinding.goalId),
-        String(goalBinding.keyResultId),
-        {
-          value: goalBinding.goalRecordValue,
-          note:
-            goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
-              ? `模板实例全部完成: ${title}`
-              : `任务实例完成: ${title}`,
-        },
-        identityId,
-      );
-
-      if (!recordResult.ok) {
-        console.error('❌ [TaskToGoalProgress] Failed to create goal record', recordResult.error);
-        return;
-      }
-
-      console.log(
-        `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultId} with value ${goalBinding.goalRecordValue}`,
-      );
-    } catch (error) {
-      console.error('❌ [TaskToGoalProgress] Error handling task:instance-completed:', error);
-    }
-  });
+  desktopTaskEvents.on('task:instance-completed', taskInstanceCompletedHandler);
 
   console.log('✅ [TaskToGoalProgress] Task completion → Goal progress listener registered');
 }
+
+const taskInstanceCompletedHandler = async (
+  event: DesktopTaskEventMap['task:instance-completed'],
+): Promise<void> => {
+  try {
+    const identityId = event.identityId;
+    if (!identityId) {
+      console.error(
+        '❌ [TaskToGoalProgress] Missing identityId in task:instance-completed event',
+      );
+      return;
+    }
+
+    const { taskInstanceId, taskTemplateId } = event;
+
+    const taskInstanceRepository = getTaskInstanceRepository();
+    const taskInstance = await taskInstanceRepository.findById(taskInstanceId);
+    if (!taskInstance) {
+      console.error(`❌ [TaskToGoalProgress] Task instance not found: ${taskInstanceId}`);
+      return;
+    }
+
+    const taskTemplateRepository = getTaskTemplateRepository();
+    const template = await taskTemplateRepository.findById(taskTemplateId);
+    if (!template) {
+      console.error(`❌ [TaskToGoalProgress] Task template not found: ${taskTemplateId}`);
+      return;
+    }
+
+    const title = template.title;
+    const goalBinding = template.goalBinding;
+
+    // If the task is not bound to a goal, ignore
+    if (!goalBinding) {
+      console.log(
+        `ℹ️ [TaskToGoalProgress] Task ${taskInstanceId} completed without goal binding`,
+      );
+      return;
+    }
+
+    const shouldCreateRecord =
+      goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
+        ? await shouldTriggerOnAllInstancesCompleted(taskTemplateId, taskInstance.instanceDate)
+        : true;
+
+    if (!shouldCreateRecord) {
+      console.log(
+        `ℹ️ [TaskToGoalProgress] Task ${taskInstanceId} completed, but template ${taskTemplateId} is not fully completed yet`,
+      );
+      return;
+    }
+
+    console.log(`🎯 [TaskToGoalProgress] Task "${title}" completed, updating goal progress`, {
+      goalId: goalBinding.goalId,
+      keyResultId: goalBinding.keyResultId,
+      incrementValue: goalBinding.goalRecordValue,
+      progressTrigger: goalBinding.progressTrigger,
+    });
+
+    const goalRepository = getGoalRepository();
+    const goalRecordRepository = getGoalRecordRepository();
+    const createGoalRecord = new CreateGoalRecordUseCase(
+      goalRepository,
+      goalRecordRepository,
+    );
+
+    const recordResult = await createGoalRecord.execute(
+      String(goalBinding.goalId),
+      String(goalBinding.keyResultId),
+      {
+        value: goalBinding.goalRecordValue,
+        note:
+          goalBinding.progressTrigger === TaskGoalBindingTrigger.AllInstancesCompleted
+            ? `模板实例全部完成: ${title}`
+            : `任务实例完成: ${title}`,
+      },
+      identityId,
+    );
+
+    if (!recordResult.ok) {
+      console.error('❌ [TaskToGoalProgress] Failed to create goal record', recordResult.error);
+      return;
+    }
+
+    console.log(
+      `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultId} with value ${goalBinding.goalRecordValue}`,
+    );
+  } catch (error) {
+    console.error('❌ [TaskToGoalProgress] Error handling task:instance-completed:', error);
+  }
+};
 
 async function shouldTriggerOnAllInstancesCompleted(
   templateId: string,
@@ -157,6 +166,6 @@ async function shouldTriggerOnAllInstancesCompleted(
  */
 export function resetEventListeners(): void {
   console.log('🔄 [EventListeners] Resetting event listeners...');
-  eventBus.off('task:instance-completed');
+  desktopTaskEvents.off('task:instance-completed', taskInstanceCompletedHandler);
   isInitialized = false;
 }

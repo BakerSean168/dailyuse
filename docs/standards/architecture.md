@@ -84,11 +84,12 @@ infrastructure -> domain (通过 port/adapter 接口)
 
 为保证架构规则的可验证性与可执行性，本仓库已将一部分关键规则迁移为机器可执行的治理脚本与 lint 规则，并继续收紧剩余豁口：
 
-- 运行 pnpm nx run daily-use:governance-check 可以执行完整治理审计链（JSDoc 审计、包内分层约束、根导出审计等）。
+- 运行 pnpm nx run daily-use:governance-check 可以执行完整治理审计链（JSDoc 审计、包内分层约束、根导出审计、raw event bus 回退审计等）。
 - 常用治理脚本位于 tools/governance：
   - governance-module-docs-audit.mjs — 检查 JSDoc / 注释质量（English-first、@param/@returns、@internal 等）。
   - package-internal-boundary-audit.mjs — 校验包内分层边界（禁止 domain-server 直接导入 infrastructure-server 等）。
   - package-export-audit.mjs — 检查根 barrel 是否泄露具体 infra 实现。
+  - raw-event-bus-audit.mjs — 禁止非 infra 生产代码直接回退到 `eventBus.on/off/send(...)`。
   - trim-root-exports.mjs — 自动化候选修复：移除根导出中的 infra re-export（会生成可审查的修改并提交小粒度 PR）。
   - fix-governance-jsdoc.mjs — best-effort JSDoc 补全脚本（需要人工复核）。
 

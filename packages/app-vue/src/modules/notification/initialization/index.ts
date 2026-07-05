@@ -5,12 +5,45 @@
  * Each runtime (web, desktop renderer) explicitly calls this during startup.
  */
 
-import { eventBus } from '@dailyuse/utils/domain';
+import type {
+  NotificationClientDTO,
+  NotificationDispatchInAppEvent,
+  NotificationEventMap,
+} from '@dailyuse/contracts/notification';
+import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
-import type { NotificationDispatchInAppEvent, NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { useNotificationStore } from '../stores/notification-store';
 
 const logger = createLogger('notification:init');
+const notificationEvents = createTypedEventSubscriber<
+  Pick<NotificationEventMap, 'notification:dispatch_in_app'>
+>(eventBus);
+
+const handleNotificationDispatch = (event: NotificationDispatchInAppEvent): void => {
+  const store = useNotificationStore();
+  if (store.notifications.some((notification) => notification.id === event.id)) {
+    return;
+  }
+
+  store.addNotification({
+    id: event.id,
+    identityId: event.identityId,
+    title: event.title,
+    content: event.body ?? '',
+    type: event.type,
+    category: event.category,
+    isRead: false,
+    status: 'Unread',
+    importance: event.importance ?? 'Moderate',
+    version: 1,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    readAt: null,
+    sentAt: null,
+    deletedAt: null,
+  } as unknown as NotificationClientDTO);
+  store.incrementUnread();
+};
 
 /**
  * Creates a startup hook that subscribes to in-app notification events.
@@ -24,30 +57,7 @@ export function createNotificationStartupHook(): { start(): void; stop(): void }
       if (started) return;
       started = true;
 
-      eventBus.on('notification:dispatch_in_app', (event: NotificationDispatchInAppEvent) => {
-          const store = useNotificationStore();
-          if (store.notifications.some((n) => n.id === event.id)) {
-            return;
-          }
-          store.addNotification({
-            id: event.id,
-            identityId: event.identityId,
-            title: event.title,
-            content: event.body ?? '',
-            type: event.type,
-            category: event.category,
-            isRead: false,
-            status: 'Unread',
-            importance: event.importance ?? 'Moderate',
-            version: 1,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            readAt: null,
-            sentAt: null,
-            deletedAt: null,
-          } as unknown as NotificationClientDTO);
-          store.incrementUnread();
-      });
+      notificationEvents.on('notification:dispatch_in_app', handleNotificationDispatch);
 
       logger.info('Notification event handlers initialized');
     },
@@ -55,7 +65,7 @@ export function createNotificationStartupHook(): { start(): void; stop(): void }
     stop() {
       if (!started) return;
       started = false;
-      // eventBus cleanup would go here if eventBus supported off()
+      notificationEvents.off('notification:dispatch_in_app', handleNotificationDispatch);
     },
   };
 }
