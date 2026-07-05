@@ -4,8 +4,10 @@ import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fail, ok } from '@dailyuse/contracts/result';
 import type {
+  CreateTaskTemplateReq,
   TaskGraphDependencyDTO,
   TaskTemplateClientDTO,
+  UpdateTaskTemplateReq,
 } from '@dailyuse/contracts/task';
 import { DependencyType } from '@dailyuse/contracts/task';
 import type { TaskDependencyId, TaskTemplateId } from '@dailyuse/contracts/primitives';
@@ -217,7 +219,7 @@ describe('useTaskTemplates', () => {
 
     const created = await composable.createTemplate({
       name: 'Draft',
-    } as Parameters<typeof service.createTemplate>[0]);
+    } as CreateTaskTemplateReq);
 
     expect(created).toEqual(existing);
     expect(useTaskStore().templates).toEqual([existing]);
@@ -225,7 +227,7 @@ describe('useTaskTemplates', () => {
 
     const result = await composable.updateTemplate(existing.id, {
       name: 'Published',
-    } as Parameters<typeof service.updateTemplate>[1]);
+    } as UpdateTaskTemplateReq);
 
     expect(result).toEqual(updated);
     expect(useTaskStore().templates).toEqual([updated]);
