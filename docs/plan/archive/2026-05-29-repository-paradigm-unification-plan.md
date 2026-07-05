@@ -1,30 +1,37 @@
 ---
 tags:
   - plan
-  - active
+  - archived
   - governance
   - architecture
   - lint
-description: 基于 2026-05-30 当前工作树状态的仓库范式统一执行审计与后续深化计划
+description: 基于 2026-05-30 当前工作树状态的仓库范式统一执行审计与后续深化计划（已归档）
 created: 2026-05-29T00:00:00
-updated: 2026-07-02T00:00:00+08:00
+updated: 2026-07-04T18:39:22+08:00
 ---
 
 # 2026-05-29 Repository Paradigm Unification Plan
 
-## 2026-07-02 plan review status
+## 2026-07-04 plan review status
 
-本计划仍保留在 `docs/plan/active`，不归档。
+本计划当前已经达到本文历史完成判定要求，并已于 2026-07-04 归档到 `docs/plan/archive`。
 
-当前实现已经覆盖大部分原始目标：`package-internal-boundary-audit`、`package-export-audit`、`public-surface-audit` 均已通过；测试层不再全局关闭 Nx module boundary；生产代码中的 `as PrismaClient` seam 已清到测试文件；`passWithNoTests` 已通过治理脚本收紧。
+当前真值：
 
-仍未达到本文“完整完成后归档”的条件：
+1. `package-internal-boundary-audit`、`package-export-audit`、`public-surface-audit` 均已通过。
+2. 测试层不再全局关闭 `@nx/enforce-module-boundaries` / `no-restricted-imports`；web mock handler contract specs 的 lazy-loaded adapter 依赖已改成动态导入，残余窄范围例外已删除。
+3. `as PrismaClient` seam 已收口到测试文件，生产代码不再作为当前治理阻塞项。
+4. `passWithNoTests` 已通过治理脚本收紧。
+5. `target-baseline-audit` 当前为 **10** 个 documented exemptions，已达到本文“10 个以内”的历史完成线。
+6. `@dailyuse/nx-test-system:sync-test-targets` 已统一生成可在当前 Windows 环境执行的 Vitest target 命令；`nx sync` 返回 up to date。
 
-1. `target-baseline-audit` 当前仍报告 12 个 documented exemptions，尚未低于本文历史完成判定要求的 10 个以内。
-2. `eslint.config.ts` 仍对 `apps/web/src/mocks/handlers/**/*.spec.ts` 保留一处窄范围 `@nx/enforce-module-boundaries` 测试例外。
-3. `packages/ai/src/infrastructure-server/adapters/powersync/agent-checkpoint-powersync.adapter.ts` 仍是明确标注未实现的 PowerSync checkpoint adapter stub。
+已关闭项：
 
-因此本次审查判定为：**基本完成，但未完整完成**。后续应优先收敛 target baseline exemptions 与残留测试例外；PowerSync checkpoint stub 若被确认为非当前产品范围，应通过 ADR/计划更新明确降级为后续能力，而不是让 active plan 隐含承诺。
+1. ~~`eslint.config.ts` 仍对 `apps/web/src/mocks/handlers/**/*.spec.ts` 保留一处窄范围 `@nx/enforce-module-boundaries` 测试例外。~~ → 已删除；`web:lint` 通过。
+2. ~~`packages/ai/src/infrastructure-server/adapters/powersync/agent-checkpoint-powersync.adapter.ts` 仍是明确标注未实现的 PowerSync checkpoint adapter stub。~~ → 已于 2026-07-04 删除（R03），PowerSync checkpoint 当前不在支持面，文档已更新。
+3. ~~`database:test` / `powersync-schema:test` 依赖 manifest permanent exemption。~~ → 已补真实 test target 与最小契约测试，`target-baseline-audit` documented exemptions 从 12 降到 10。
+
+因此本次审查判定更新为：**已完成，并已归档**。若后续再出现新的 umbrella-level work，应新建 active plan，并回链本归档文件。
 
 ## 2026-06-01 继续往下收方案（第八轮，收尾而非重构）
 
@@ -3359,12 +3366,13 @@ vitest 配置清理：
 
 ---
 
-## 与现有 active plan 的关系
+## 与后续治理计划的关系
 
-当前 `docs/plan/active/` 目录中只剩本文件作为架构治理主计划。
+本文件已完成当前阶段使命，并已移入 `docs/plan/archive`。
 
 这意味着：
 
-1. 本文件已经是当前 canonical active plan，不再与其他 active plan 并存竞争
-2. 后续若继续推进 repository paradigm unification，应直接在本文件上滚动维护执行审计与下一批切片
-3. 旧的同类治理计划若仍有参考价值，应保留在 archive 中作为历史背景，而不是重新回到 active 目录
+1. 本文件保留为 repository paradigm unification 的历史 umbrella plan 与执行证据
+2. 后续若继续推进同主题治理，应新建 `docs/plan/active` 计划，并明确回链本文件
+3. 新计划只承载新的 active work，不回滚本文件已确认的历史完成结论
+4. 更早的同类治理计划继续留在 archive，作为背景链路的一部分
