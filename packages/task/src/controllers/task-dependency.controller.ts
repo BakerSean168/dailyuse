@@ -23,7 +23,7 @@ import type { ListTaskDependenciesUseCase } from '../application-server/use-case
 import type { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
 import type { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
 
-type TaskControllerFn<T extends (...args: unknown[]) => unknown> = (
+type TaskControllerFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
 ) => ReturnType<T>;
 

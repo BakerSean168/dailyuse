@@ -46,7 +46,7 @@ import type { UnbindTaskFromGoalUseCase } from '../application-server/use-cases/
 import type { ListTaskInstancesByTemplateUseCase } from '../application-server/use-cases/queries/list-task-instances-by-template.use-case';
 import type { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';
 
-type TaskControllerFn<T extends (...args: unknown[]) => unknown> = (
+type TaskControllerFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
 ) => ReturnType<T>;
 

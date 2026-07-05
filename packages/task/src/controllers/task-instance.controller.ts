@@ -31,7 +31,7 @@ import type { SkipTaskInstanceUseCase } from '../application-server/use-cases/co
 import type { StartTaskInstanceUseCase } from '../application-server/use-cases/commands/start-task-instance.use-case';
 import type { CheckExpiredInstancesUseCase } from '../application-server/use-cases/commands/check-expired-instances.use-case';
 
-type TaskControllerFn<T extends (...args: unknown[]) => unknown> = (
+type TaskControllerFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
 ) => ReturnType<T>;
 
