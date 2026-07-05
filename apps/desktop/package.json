@@ -33,6 +33,7 @@
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/schedule": "workspace:*",
+    "@dailyuse/schedule-orchestration": "workspace:*",
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/task": "workspace:*",
     "@dailyuse/ui-vue-shadcn": "workspace:*",
