@@ -1,65 +1,75 @@
 /**
- * Pause Task Template Service
+ * Pause Task Template Use Case
  *
- * 鏆傚仠浠诲傚仠浠诲姟妯℃澘
- * 涓氬姟閫昏緫锛?
- * 1. 淇敼妯℃澘鐘舵€佷负 PAUSED
- * 2. 鍋滄鐢熸垚鏂扮殑浠诲姟瀹炰緥
- * 3. 澶勭悊宸插瓨鍦ㄧ殑鏈畬鎴愬疄渚嬶紙鏍囪涓?SKIPPED锛?
- * 4. 鍙戝竷鏆傚仠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽殏锟?
+ * Business flow:
+ * 1. Mark the template as paused.
+ * 2. Stop future instance generation from the pause timestamp forward.
+ * 3. Remove incomplete future instances that should no longer be executed.
  */
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { ok, error, fail } from '@dailyuse/contracts/result';
+import { createLogger } from '@dailyuse/utils/logger';
+import {
+  createInlineTaskWriteTransactionRunner,
+  mapTaskWriteErrorToResultError,
+  type TaskWriteTransactionRunner,
+} from './task-write-support';
 
 /**
- * Pause Task Template Service
+ * Pause Task Template Use Case
  */
 export class PauseTaskTemplateUseCase {
+  private readonly logger = createLogger('PauseTaskTemplateUseCase');
+  private readonly transactionRunner: TaskWriteTransactionRunner;
+
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
-  ) {}
+    transactionRunner?: TaskWriteTransactionRunner,
+  ) {
+    this.transactionRunner =
+      transactionRunner ??
+      createInlineTaskWriteTransactionRunner({
+        templateRepository,
+        instanceRepository,
+      });
+  }
 
   async execute(
     id: string,
     _reason?: string,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instancesDeleted: number }>> {
-    const template = await this.templateRepository.findById(id);
-    if (!template) {
-      return error('NOT_FOUND', `TaskTemplate ${id} not found`);
-    }
-
-    const effectiveFrom = Date.now();
-
-    // 1. 暂停模板
-    template.pause();
-    await this.templateRepository.save(template);
-
-    // 2. 删除生效时点之后未完成的实例
-    const instancesDeleted = await this.deleteIncompleteInstancesFrom(id, effectiveFrom);
-
-    return ok({
-      template: template.toClientDTO(),
-      instancesDeleted,
-    });
-  }
-
-  /**
-   * 删除暂停生效时点之后未完成的实例
-   */
-  private async deleteIncompleteInstancesFrom(
-    templateId: string,
-    effectiveFrom: number,
-  ): Promise<number> {
     try {
-      return await this.instanceRepository.deleteIncompleteInstancesFrom(templateId, effectiveFrom);
-    } catch (error) {
-      console.error('[PauseTaskTemplateUseCase] Failed to delete incomplete instances:', error);
-      return 0;
+      return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
+        const template = await templateRepository.findById(id);
+        if (!template) {
+          return error('NOT_FOUND', `TaskTemplate ${id} not found`);
+        }
+
+        const effectiveFrom = Date.now();
+
+        template.pause();
+        await templateRepository.save(template);
+
+        const instancesDeleted = await instanceRepository.deleteIncompleteInstancesFrom(
+          id,
+          effectiveFrom,
+        );
+
+        return ok({
+          template: template.toClientDTO(),
+          instancesDeleted,
+        });
+      });
+    } catch (caughtError) {
+      this.logger.error('Failed to pause task template', { error: caughtError });
+      return fail(
+        mapTaskWriteErrorToResultError(caughtError, 'Failed to pause task template'),
+      );
     }
   }
 }

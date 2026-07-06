@@ -38,8 +38,7 @@ const ALLOWLIST = new Set([
   'packages/app-vue/src/modules/notification/initialization/index.ts',
   'packages/app-vue/src/modules/goal/initialization/index.ts',
   'packages/goal/src/api/initialization.ts',
-  // Scheduler bootstrap
-  'packages/schedule/src/infrastructure-server/scheduler-bootstrap.ts',
+
 ]);
 
 const errors = [];

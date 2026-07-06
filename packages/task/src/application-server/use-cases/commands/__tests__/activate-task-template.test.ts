@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aLoadedTaskTemplate, aRecurringTask } from '../../../../testing';
+import { aLoadedTaskTemplate } from '../../../../testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { ActivateTaskTemplateUseCase } from '../activate-task-template.use-case';
 
-// Mock TaskInstanceGenerationService — provide a constructor mock
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
 vi.mock('@/domain-server/services/index', () => {
   return {
@@ -64,13 +63,22 @@ describe('ActivateTaskTemplateUseCase', () => {
     expect(templateRepo.save).toHaveBeenCalledWith(template);
   });
 
+  it('should return BAD_REQUEST when template cannot be activated from its current state', async () => {
+    const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id);
+
+    expect(result).toBeErrorWithCode('BAD_REQUEST');
+    expect(templateRepo.save).not.toHaveBeenCalled();
+  });
+
   it('should save template at least once after activating', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
 
     await useCase.execute(template.id);
 
-    // First save after activate(), possibly second save after instance generation
     expect(templateRepo.save).toHaveBeenCalled();
   });
 
@@ -87,8 +95,7 @@ describe('ActivateTaskTemplateUseCase', () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
 
-    // Return fake instances
-    const fakeInstances = [{}, {}, {}]; // stand-in objects
+    const fakeInstances = [{}, {}, {}];
     mockGenerateInstances.mockReturnValue(fakeInstances);
 
     const result = await useCase.execute(template.id);
@@ -141,5 +148,18 @@ describe('ActivateTaskTemplateUseCase', () => {
       expect(result.data.template).toBeDefined();
       expect(result.data.template.name).toBe('Reactivated Task');
     }
+  });
+
+  it('should return INTERNAL_ERROR when post-generation template persistence fails', async () => {
+    const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    mockGenerateInstances.mockReturnValue([{}, {}]);
+    vi.mocked(templateRepo.save)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('late save failed'));
+
+    const result = await useCase.execute(template.id);
+
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
   });
 });

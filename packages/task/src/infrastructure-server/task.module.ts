@@ -48,11 +48,12 @@ import { ListTaskTemplatesByPriorityUseCase } from '../application-server/use-ca
 import { ListTaskDependenciesUseCase } from '../application-server/use-cases/queries/list-task-dependencies.use-case';
 import { GetDependencyChainUseCase } from '../application-server/use-cases/queries/get-dependency-chain.use-case';
 import { ValidateTaskDependencyUseCase } from '../application-server/use-cases/queries/validate-task-dependency.use-case';
+import { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';
+import type { TaskWriteTransactionRunner } from '../application-server/use-cases/commands/task-write-support';
 
 type TaskPortFn<T extends (...args: never[]) => unknown> = (
   ...args: Parameters<T>
 ) => ReturnType<T>;
-import { GetTaskTemplateGraphUseCase } from '../application-server/use-cases/queries/get-task-template-graph.use-case';
 
 // ---------------------------------------------------------------------------
 // 1. Dependencies — everything the task server runtime needs from the outside.
@@ -89,6 +90,7 @@ export interface TaskModuleDependencies {
   readonly taskInstanceRepository: ITaskInstanceRepository;
   readonly taskDependencyRepository: ITaskDependencyRepository;
   readonly taskFolderRepository?: ITaskFolderRepository;
+  readonly taskWriteTransactionRunner?: TaskWriteTransactionRunner;
   readonly runtimeContributions?: TaskRuntimeContributionsInput;
 }
 
@@ -245,20 +247,42 @@ function normalizeRuntimeContributions(
  * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
  */
 export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskModuleUseCases {
-  const { taskTemplateRepository, taskInstanceRepository, taskDependencyRepository } = dependencies;
+  const {
+    taskTemplateRepository,
+    taskInstanceRepository,
+    taskDependencyRepository,
+    taskWriteTransactionRunner,
+  } = dependencies;
   const listTaskTemplates = new ListTaskTemplatesUseCase(taskTemplateRepository, taskInstanceRepository);
 
   return {
     // Template commands
-    createTaskTemplate: new CreateTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    createTaskTemplate: new CreateTaskTemplateUseCase(
+      taskTemplateRepository,
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
     updateTaskTemplate: new UpdateTaskTemplateUseCase(taskTemplateRepository),
-    activateTaskTemplate: new ActivateTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
-    pauseTaskTemplate: new PauseTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    activateTaskTemplate: new ActivateTaskTemplateUseCase(
+      taskTemplateRepository,
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
+    pauseTaskTemplate: new PauseTaskTemplateUseCase(
+      taskTemplateRepository,
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
     archiveTaskTemplate: new ArchiveTaskTemplateUseCase(taskTemplateRepository),
-    deleteTaskTemplate: new DeleteTaskTemplateUseCase(taskTemplateRepository, taskInstanceRepository),
+    deleteTaskTemplate: new DeleteTaskTemplateUseCase(
+      taskTemplateRepository,
+      taskInstanceRepository,
+      taskWriteTransactionRunner,
+    ),
     generateTaskInstances: new GenerateTaskInstancesUseCase(
       taskTemplateRepository,
       taskInstanceRepository,
+      taskWriteTransactionRunner,
     ),
     bindTaskToGoal: new BindTaskToGoalUseCase(taskTemplateRepository),
     unbindTaskFromGoal: new UnbindTaskFromGoalUseCase(taskTemplateRepository),
@@ -391,3 +415,10 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     },
   };
 }
+
+
+
+
+
+
+

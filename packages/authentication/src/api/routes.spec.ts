@@ -3,11 +3,13 @@ import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import { z } from 'zod';
 import {
-  RegisterByEmailSchema,
-  LoginByEmailSchema,
-  RefreshTokenSchema,
   AuthResponseSchema,
   CurrentUserResponseSchema,
+  ForgotPasswordSchema,
+  LoginByEmailSchema,
+  RefreshTokenSchema,
+  RegisterByEmailSchema,
+  ResetPasswordSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
 import { registerAuthenticationRoutes } from './routes';
@@ -35,7 +37,7 @@ function getRegisteredRoute(
   method: string,
   path: string,
 ): RegisteredRoute {
-  const route = registry.paths.find((c) => c.method === method && c.path === path);
+  const route = registry.paths.find((candidate) => candidate.method === method && candidate.path === path);
   expect(route).toBeDefined();
   return route!;
 }
@@ -46,12 +48,14 @@ function getJsonBodySchema(route: RegisteredRoute) {
 
 function getResponseSchema(route: RegisteredRoute, status: number) {
   const responses = route.responses as any;
-  const response = responses?.[String(status)];
+  const response = responses?.[String(status)] ?? responses?.[status];
   const wrapper = (response?.content as any)?.['application/json'] as any;
   const schema = wrapper?.schema ?? response;
-  // successResponse wraps in z.object({ ok, code, message, data, timestamp })
-  // Extract the inner 'data' field for success responses
   return schema?.shape?.data ?? schema;
+}
+
+function getResponseStatuses(route: RegisteredRoute): string[] {
+  return Object.keys(route.responses ?? {});
 }
 
 function createStubs(): AuthenticationUseCases {
@@ -124,5 +128,24 @@ describe('registerAuthenticationRoutes', () => {
     const responseSchema = getResponseSchema(route, 200);
 
     expect(responseSchema).toBe(SessionListResponseSchema);
+  });
+
+  it('POST /password/forgot — documents the implemented schema and no longer advertises 503', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/password/forgot');
+
+    expect(getJsonBodySchema(route)).toBe(ForgotPasswordSchema);
+    expect(getResponseSchema(route, 200)).toBeInstanceOf(z.ZodNull);
+    expect(getResponseStatuses(route)).toContain('422');
+    expect(getResponseStatuses(route)).not.toContain('503');
+  });
+
+  it('POST /password/reset — documents implemented reset semantics instead of 503', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/password/reset');
+
+    expect(getJsonBodySchema(route)).toBe(ResetPasswordSchema);
+    expect(getResponseSchema(route, 200)).toBeInstanceOf(z.ZodNull);
+    expect(getResponseStatuses(route)).toContain('404');
+    expect(getResponseStatuses(route)).toContain('422');
+    expect(getResponseStatuses(route)).not.toContain('503');
   });
 });

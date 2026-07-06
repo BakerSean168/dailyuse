@@ -18,8 +18,8 @@
  *                       Use cases (server), scheduler
  * application-client  → 客户端服务
  *                       Client services
- * infrastructure-server → Prisma/PowerSync 仓储实现、组合根、调度引导
- *                         Prisma/PowerSync repos, composition root, bootstrap
+ * infrastructure-server → Prisma/PowerSync 仓储实现、组合根、运行时装配
+ *                         Prisma/PowerSync repos, composition root, runtime assembly
  * infrastructure-client → HTTP/IPC 适配器
  *                         HTTP/IPC adapters
  *

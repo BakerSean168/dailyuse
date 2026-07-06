@@ -1,4 +1,5 @@
 import {
+  authHandlers,
   authMockRoutes,
   createMockCurrentUserResponse,
   createMockSessionListResponse,
@@ -22,6 +23,25 @@ import {
 } from '@dailyuse/contracts/authentication';
 import { createMockAuthResponse } from '@dailyuse/contracts/mocks';
 
+type MockHandler = {
+  info?: { path?: string; method?: string };
+  run(args: {
+    request: Request;
+    requestId: string;
+    resolutionContext?: { baseUrl?: string };
+  }): Promise<{ response: Response } | null>;
+};
+
+function getHandler(path: string, method: string): MockHandler {
+  const handler = authHandlers.find((candidate) => {
+    const info = candidate as MockHandler;
+    return info.info?.path === path && info.info?.method === method;
+  }) as MockHandler | undefined;
+
+  expect(handler).toBeDefined();
+  return handler!;
+}
+
 describe('auth handlers contracts', () => {
   it('uses the current auth adapter route prefixes', () => {
     expect(authMockRoutes.base).toMatch(/\/auth$/);
@@ -34,6 +54,48 @@ describe('auth handlers contracts', () => {
     expectSchemaSuccess(AuthResponseSchema, createMockAuthResponse());
     expectSchemaSuccess(CurrentUserResponseSchema, createMockCurrentUserResponse());
     expectSchemaSuccess(SessionListResponseSchema, createMockSessionListResponse());
+  });
+
+  it('aligns forgot/reset mock responses with the implemented server capabilities', async () => {
+    const forgotHandler = getHandler(authMockRoutes.forgotPassword, 'POST');
+    const resetHandler = getHandler(authMockRoutes.resetPassword, 'POST');
+
+    const forgotResult = await forgotHandler.run({
+      request: new Request(new URL(authMockRoutes.forgotPassword, 'http://localhost'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'user@example.com' }),
+      }),
+      requestId: 'forgot-password',
+      resolutionContext: { baseUrl: 'http://localhost' },
+    });
+    const resetResult = await resetHandler.run({
+      request: new Request(new URL(authMockRoutes.resetPassword, 'http://localhost'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          email: 'user@example.com',
+          code: '123456',
+          newPassword: 'new-password123',
+        }),
+      }),
+      requestId: 'reset-password',
+      resolutionContext: { baseUrl: 'http://localhost' },
+    });
+
+    expect(forgotResult?.response.status).toBe(200);
+    await expect(forgotResult?.response.json()).resolves.toMatchObject({
+      ok: true,
+      code: 200,
+      data: null,
+    });
+
+    expect(resetResult?.response.status).toBe(200);
+    await expect(resetResult?.response.json()).resolves.toMatchObject({
+      ok: true,
+      code: 200,
+      data: null,
+    });
   });
 
   it('uses the current auth adapter routes and request schemas', async () => {

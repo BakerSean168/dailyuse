@@ -2,9 +2,14 @@ import type {
   ITaskInstanceRepository,
   TaskTemplateInstanceStats,
 } from '../../../domain-server/repositories/i-task-instance-repository';
+import type { IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  type IEventBus,
+} from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils/domain';
 import {
   PowerSyncTaskInstanceMapper,
@@ -13,19 +18,15 @@ import {
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
-
 export class PowerSyncTaskInstanceRepository
   extends AggregateRepositoryBase<TaskInstance>
   implements ITaskInstanceRepository
 {
-  constructor(private readonly db: Queryable) {
-    super(eventBusAdapter);
+  constructor(
+    private readonly db: IElectronDatabaseTransaction,
+    eventBus: IEventBus = eventBusAdapter,
+  ) {
+    super(eventBus);
   }
 
   protected async persist(instance: TaskInstance): Promise<void> {
@@ -267,3 +268,5 @@ export class PowerSyncTaskInstanceRepository
     return rows.map((row) => PowerSyncTaskInstanceMapper.toDomain(row));
   }
 }
+
+

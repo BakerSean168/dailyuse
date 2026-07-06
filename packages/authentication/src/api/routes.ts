@@ -37,14 +37,10 @@ import {
 import { AuthenticationController } from '../controllers/auth.controller';
 import type { AuthenticationUseCases } from '../controllers/auth.controller';
 
-// ============ Types ============
-
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Route Registration ============
 
 export function registerAuthenticationRoutes(
   handlers: AuthenticationUseCases,
@@ -61,7 +57,6 @@ export function registerAuthenticationRoutes(
     defaultSecurity: [],
   });
 
-  // POST /register — 用户注册 (no auth required)
   r.route(
     {
       method: 'post',
@@ -96,7 +91,6 @@ export function registerAuthenticationRoutes(
     { requireAuth: false, successStatus: 201 },
   );
 
-  // POST /login — 用户登录 (no auth required)
   r.route(
     {
       method: 'post',
@@ -148,7 +142,6 @@ export function registerAuthenticationRoutes(
     { requireAuth: false },
   );
 
-  // POST /logout — 用户登出
   r.route(
     {
       method: 'post',
@@ -210,7 +203,6 @@ export function registerAuthenticationRoutes(
     (req, ctx) => controller.revokeSession(req.body, ctx),
   );
 
-  // POST /refresh — 刷新访问令牌
   r.route(
     {
       method: 'post',
@@ -251,7 +243,7 @@ export function registerAuthenticationRoutes(
       request: { body: { content: { 'application/json': { schema: ForgotPasswordSchema } } } },
       responses: {
         200: successResponse(z.null(), '请求已接收'),
-        503: errorResponse('服务暂不可用'),
+        422: errorResponse('参数验证失败'),
       },
     },
     [],
@@ -267,7 +259,8 @@ export function registerAuthenticationRoutes(
       request: { body: { content: { 'application/json': { schema: ResetPasswordSchema } } } },
       responses: {
         200: successResponse(z.null(), '密码重置成功'),
-        503: errorResponse('服务暂不可用'),
+        404: errorResponse('资源不存在'),
+        422: errorResponse('参数验证失败'),
       },
     },
     [],

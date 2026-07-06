@@ -1,5 +1,7 @@
 import { computed, ref } from 'vue';
 import type {
+  AICapabilities,
+  AIProviderConfigClientDTO,
   CreateAIProviderConfigReq,
   ExpandKnowledgeReq,
   TestAIProviderReq,
@@ -11,27 +13,21 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
 export function useAI() {
   const service = useStrictInject(AI_SERVICE_KEY, 'AIService');
-  const providers = ref<unknown[]>([]);
-  const capabilities = ref<unknown | null>(null);
+  const providers = ref<AIProviderConfigClientDTO[]>([]);
+  const capabilities = ref<AICapabilities | null>(null);
   const isLoadingProviders = ref(false);
   const isLoadingCapabilities = ref(false);
 
-  const hasProviders = computed(() => Array.isArray(providers.value) && providers.value.length > 0);
+  const hasProviders = computed(() => providers.value.length > 0);
 
   async function loadProviders() {
     isLoadingProviders.value = true;
     try {
       const nextProviders = await service.listProviders();
-      providers.value = Array.isArray(nextProviders) ? nextProviders : [];
+      providers.value = nextProviders;
       console.debug('[AI] providers loaded', {
         count: providers.value.length,
-        providerIds: providers.value
-          .map((provider) =>
-            typeof provider === 'object' && provider !== null && 'id' in provider
-              ? String((provider as { id: unknown }).id)
-              : 'unknown',
-          )
-          .slice(0, 10),
+        providerIds: providers.value.map((provider) => String(provider.id)).slice(0, 10),
       });
       return providers.value;
     } finally {
@@ -78,7 +74,7 @@ export function useAI() {
   }
 
   function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {
-    return service.testProvider(request) as Promise<TestAIProviderRes>;
+    return service.testProvider(request);
   }
 
   function expandKnowledge(request: ExpandKnowledgeReq) {

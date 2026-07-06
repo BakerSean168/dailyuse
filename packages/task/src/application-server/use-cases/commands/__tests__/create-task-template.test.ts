@@ -5,7 +5,7 @@ import { anIdentityId } from '../../../../testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import type { CreateTaskTemplateUseCaseReq } from '@dailyuse/contracts/task';
-import { TaskGoalBindingTrigger, TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
+import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { CreateTaskTemplateUseCase } from '../create-task-template.use-case';
 
@@ -25,7 +25,6 @@ vi.mock('@dailyuse/utils', async () => {
   };
 });
 
-// Mock TaskInstanceGenerationService — provide a constructor mock
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
 vi.mock('@/domain-server/services/index', () => {
   return {
@@ -36,6 +35,7 @@ vi.mock('@/domain-server/services/index', () => {
     },
   };
 });
+
 describe('CreateTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
@@ -198,8 +198,6 @@ describe('CreateTaskTemplateUseCase', () => {
       const result = await useCase.execute(request);
 
       expect(result).toBeOk();
-      // Template.create() creates with Active status by default
-      // So generateInstances should be called
       if (result.ok) {
         expect(result.data.instanceCount).toBe(3);
       }
@@ -246,7 +244,7 @@ describe('CreateTaskTemplateUseCase', () => {
       expect(instanceRepo.saveMany).not.toHaveBeenCalled();
     });
 
-    it('should handle instance generation error gracefully', async () => {
+    it('should return INTERNAL_ERROR when instance generation fails', async () => {
       mockGenerateInstances.mockImplementation(() => {
         throw new Error('Generation failed');
       });
@@ -254,11 +252,18 @@ describe('CreateTaskTemplateUseCase', () => {
 
       const result = await useCase.execute(request);
 
-      // Template creation should still succeed
-      expect(result).toBeOk();
-      if (result.ok) {
-        expect(result.data.instanceCount).toBe(0);
-      }
+      expect(result).toBeErrorWithCode('INTERNAL_ERROR');
+    });
+
+    it('should return INTERNAL_ERROR when persisting generated instances fails', async () => {
+      const fakeInstances = [{}, {}];
+      mockGenerateInstances.mockReturnValue(fakeInstances);
+      vi.mocked(instanceRepo.saveMany).mockRejectedValue(new Error('DB error'));
+      const request = aCreateRequest();
+
+      const result = await useCase.execute(request);
+
+      expect(result).toBeErrorWithCode('INTERNAL_ERROR');
     });
   });
 

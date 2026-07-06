@@ -15,7 +15,12 @@ import type { TaskTemplateClientDTO, CreateTaskTemplateInput } from '@dailyuse/c
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
-import { error, ok } from '@dailyuse/contracts/result';
+import { error, fail, ok } from '@dailyuse/contracts/result';
+import {
+  createInlineTaskWriteTransactionRunner,
+  mapTaskWriteErrorToResultError,
+  type TaskWriteTransactionRunner,
+} from './task-write-support';
 
 /**
  * Create Task Template Service
@@ -23,85 +28,102 @@ import { error, ok } from '@dailyuse/contracts/result';
 export class CreateTaskTemplateUseCase {
   private readonly generationService: TaskInstanceGenerationService;
   private readonly logger = createLogger('CreateTaskTemplateUseCase');
+  private readonly transactionRunner: TaskWriteTransactionRunner;
 
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
+    transactionRunner?: TaskWriteTransactionRunner,
   ) {
     this.generationService = new TaskInstanceGenerationService();
+    this.transactionRunner =
+      transactionRunner ??
+      createInlineTaskWriteTransactionRunner({
+        templateRepository,
+        instanceRepository,
+      });
   }
 
   async execute(
     request: CreateTaskTemplateInput,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
-    if (request.parentTaskId) {
-      const parentTemplate = await this.templateRepository.findById(request.parentTaskId);
-      if (!parentTemplate) {
-        return error('BAD_REQUEST', `Parent task template ${request.parentTaskId} not found`);
-      }
-    }
-
-    const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
-    const recurrenceRule = request.recurrenceRule
-      ? RecurrenceRule.fromDTO(request.recurrenceRule)
-      : undefined;
-    const reminderConfig = request.reminderConfig
-      ? TaskReminderConfig.fromDTO(request.reminderConfig)
-      : undefined;
-
-    const template = TaskTemplate.create({
-      identityId: request.identityId,
-      title: request.name,
-      description: request.description ?? undefined,
-      taskType: request.taskType,
-      timeConfig,
-      recurrenceRule,
-      reminderConfig,
-      importance: request.importance,
-      parentTaskId: request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : undefined,
-      folderId: request.folderId ?? undefined,
-      tags: request.tags,
-      color: request.color ?? undefined,
-      goalBinding: request.goalBinding
-        ? {
-            goalId: request.goalBinding.goalId,
-            keyResultId: request.goalBinding.keyResultId,
-            goalRecordValue: request.goalBinding.goalRecordValue,
-            progressTrigger: request.goalBinding.progressTrigger,
+    try {
+      return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
+        if (request.parentTaskId) {
+          const parentTemplate = await templateRepository.findById(request.parentTaskId);
+          if (!parentTemplate) {
+            return error('BAD_REQUEST', `Parent task template ${request.parentTaskId} not found`);
           }
-        : null,
-    });
+        }
 
-    // Save to repository
-    await this.templateRepository.save(template);
+        const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
+        const recurrenceRule = request.recurrenceRule
+          ? RecurrenceRule.fromDTO(request.recurrenceRule)
+          : undefined;
+        const reminderConfig = request.reminderConfig
+          ? TaskReminderConfig.fromDTO(request.reminderConfig)
+          : undefined;
 
-    let instanceCount = 0;
+        const template = TaskTemplate.create({
+          identityId: request.identityId,
+          title: request.name,
+          description: request.description ?? undefined,
+          taskType: request.taskType,
+          timeConfig,
+          recurrenceRule,
+          reminderConfig,
+          importance: request.importance,
+          parentTaskId: request.parentTaskId ? TaskTemplateId.of(request.parentTaskId) : undefined,
+          folderId: request.folderId ?? undefined,
+          tags: request.tags,
+          color: request.color ?? undefined,
+          goalBinding: request.goalBinding
+            ? {
+                goalId: request.goalBinding.goalId,
+                keyResultId: request.goalBinding.keyResultId,
+                goalRecordValue: request.goalBinding.goalRecordValue,
+                progressTrigger: request.goalBinding.progressTrigger,
+              }
+            : null,
+        });
 
-    // If status is ACTIVE, generate initial instances immediately
-    if (template.status === TaskTemplateStatus.Active) {
-      instanceCount = await this.generateInitialInstances(template);
+        await templateRepository.save(template);
+
+        let instanceCount = 0;
+
+        if (template.status === TaskTemplateStatus.Active) {
+          instanceCount = await this.generateInitialInstances(
+            template,
+            templateRepository,
+            instanceRepository,
+          );
+        }
+
+        return ok({
+          template: template.toClientDTO(),
+          instanceCount,
+        });
+      });
+    } catch (caughtError) {
+      this.logger.error('Failed to create task template', { error: caughtError });
+      return fail(
+        mapTaskWriteErrorToResultError(caughtError, 'Failed to create task template'),
+      );
     }
-
-    return ok({
-      template: template.toClientDTO(),
-      instanceCount,
-    });
   }
 
-  /** Generates initial task instances for the template. */
-  private async generateInitialInstances(template: TaskTemplate): Promise<number> {
-    try {
-      const instances = this.generationService.generateInstances(template);
+  private async generateInitialInstances(
+    template: TaskTemplate,
+    templateRepository: ITaskTemplateRepository,
+    instanceRepository: ITaskInstanceRepository,
+  ): Promise<number> {
+    const instances = this.generationService.generateInstances(template);
 
-      if (instances.length > 0) {
-        await this.instanceRepository.saveMany(instances);
-        await this.templateRepository.save(template);
-      }
-
-      return instances.length;
-    } catch (error) {
-      this.logger.error('Failed to generate initial instances', { error });
-      return 0;
+    if (instances.length > 0) {
+      await instanceRepository.saveMany(instances);
+      await templateRepository.save(template);
     }
+
+    return instances.length;
   }
 }

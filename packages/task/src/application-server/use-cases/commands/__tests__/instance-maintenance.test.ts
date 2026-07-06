@@ -3,6 +3,9 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
+import { aLoadedTaskTemplate } from '../../../../testing';
+import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { InvalidTaskTemplateStateError } from '@/domain-server/value-objects/task-errors';
 import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-case';
 import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';
 
@@ -122,6 +125,39 @@ describe('Instance maintenance use-cases', () => {
       expect(result).toBeOkWith([{ id: 'i-1' }, { id: 'i-2' }] as any);
       expect(instanceRepo.saveMany).toHaveBeenCalledWith(generated);
       expect(templateRepo.save).toHaveBeenCalledWith(template);
+    });
+
+    it('returns BAD_REQUEST when the template cannot generate instances in its current state', async () => {
+      const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
+      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      mockGenerateInstances.mockImplementation(() => {
+        throw new InvalidTaskTemplateStateError('Can only generate instances for active templates');
+      });
+      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+
+      const result = await useCase.execute(template.id, {
+        fromDate: 10,
+        toDate: 20,
+      });
+
+      expect(result).toBeErrorWithCode('BAD_REQUEST');
+      expect(instanceRepo.saveMany).not.toHaveBeenCalled();
+    });
+
+    it('returns INTERNAL_ERROR when template persistence fails after generating instances', async () => {
+      const template = aLoadedTaskTemplate();
+      const generated = [{ toClientDTO: vi.fn().mockReturnValue({ id: 'i-1' }) }];
+      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      mockGenerateInstances.mockReturnValue(generated as any);
+      vi.mocked(templateRepo.save).mockRejectedValue(new Error('save failed'));
+      const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
+
+      const result = await useCase.execute(template.id, {
+        fromDate: 10,
+        toDate: 20,
+      });
+
+      expect(result).toBeErrorWithCode('INTERNAL_ERROR');
     });
   });
 });

@@ -224,7 +224,7 @@ export class ScheduleExecution extends Entity<string> {
   }
 
   /**
-   * 转换为 DTO（内部使用，兼容旧代码）
+   * 转换为 Server DTO 别名。
    */
   public toDTO(): ScheduleExecutionServerDTO {
     return this.toServerDTO();
@@ -260,20 +260,4 @@ export class ScheduleExecution extends Entity<string> {
     return new ScheduleExecution(state);
   }
 
-  /**
-   * 从 DTO 创建实体 (兼容旧代码)
-   */
-  public static fromDTO(dto: Record<string, unknown>): ScheduleExecution {
-    return new ScheduleExecution({
-      id: (dto.id as string) ?? generateUUID(),
-      taskId: dto.taskId as string,
-      executionTime: dto.executionTime != null ? new Date(dto.executionTime as string | number) : new Date(0),
-      status: dto.status as ExecutionStatus,
-      duration: (dto.duration as number | null) ?? null,
-      result: (dto.result as Record<string, unknown> | null) ?? null,
-      error: (dto.error as string | null) ?? null,
-      retryCount: (dto.retryCount as number) ?? 0,
-      createdAt: new Date((dto.createdAt as string | number) ?? Date.now()),
-    });
-  }
 }

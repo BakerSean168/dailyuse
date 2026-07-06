@@ -8,12 +8,7 @@
 import { http, HttpResponse } from 'msw';
 import { createMockAuthResponse } from '@dailyuse/contracts/mocks';
 
-// 1. 读取环境变量中的基础路径 (与你的 http client 保持一致)
-// 如果获取不到，默认回退到 '/api/v1' 以防万一
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-
-// 2. 动态拼接当前模块的路径
-// 结果类似于: '/api/v1/account'
 const BASE = `${API_BASE}/auth`;
 
 export const authMockRoutes = {
@@ -47,7 +42,6 @@ export function createMockSessionListResponse() {
 }
 
 export const authHandlers = [
-  // POST /api/v1/auth/login — email/password login
   http.post(`${BASE}/login`, () => {
     return HttpResponse.json({
       ok: true,
@@ -58,7 +52,6 @@ export const authHandlers = [
     });
   }),
 
-  // POST /api/v1/auth/register — register new account
   http.post(`${BASE}/register`, () => {
     return HttpResponse.json(
       {
@@ -88,7 +81,6 @@ export const authHandlers = [
     );
   }),
 
-  // POST /api/v1/auth/refresh — refresh access token
   http.post(`${BASE}/refresh`, () => {
     const mockAuth = createMockAuthResponse();
     return HttpResponse.json({
@@ -132,7 +124,6 @@ export const authHandlers = [
     );
   }),
 
-  // GET /api/v1/auth/me — get current identity (used on app init)
   http.get(`${BASE}/me`, () => {
     return HttpResponse.json({
       ok: true,
@@ -174,38 +165,25 @@ export const authHandlers = [
   }),
 
   http.post(`${BASE}/password/forgot`, () => {
-    return HttpResponse.json(
-      {
-        ok: false,
-        code: 503,
-        message: 'Forgot password is not implemented on the server yet',
-        error: {
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Forgot password is not implemented on the server yet',
-        },
-        timestamp: Date.now(),
-      },
-      { status: 503 },
-    );
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Password reset request accepted',
+      data: null,
+      timestamp: Date.now(),
+    });
   }),
 
   http.post(`${BASE}/password/reset`, () => {
-    return HttpResponse.json(
-      {
-        ok: false,
-        code: 503,
-        message: 'Password reset is not implemented on the server yet',
-        error: {
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Password reset is not implemented on the server yet',
-        },
-        timestamp: Date.now(),
-      },
-      { status: 503 },
-    );
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Password reset successful',
+      data: null,
+      timestamp: Date.now(),
+    });
   }),
 
-  // POST /api/v1/auth/logout — logout
   http.post(`${BASE}/logout`, () => {
     return HttpResponse.json({
       ok: true,

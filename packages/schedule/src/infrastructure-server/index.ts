@@ -42,4 +42,4 @@ export {
 } from './schedule.module';
 export { createSchedulePowerSyncModule } from './powersync';
 
-export { SchedulerBootstrap } from './scheduler-bootstrap';
+

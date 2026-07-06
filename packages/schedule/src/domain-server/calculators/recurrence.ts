@@ -19,14 +19,13 @@ export interface CronRecurrenceRule {
   tz?: Timezone | undefined;
 }
 
-// For backward compatibility
-export type RecurrenceRule = CronRecurrenceRule;
+
 
 /**
  * 将 RecurrenceRule 转为简明中文描述
  * 示例: { hour: 9, minute: 0, dayOfWeek: [4] } => "每周四 09:00"
  */
-export function recurrenceRuleToText(rule: RecurrenceRule): string {
+export function recurrenceRuleToText(rule: CronRecurrenceRule): string {
   if (!rule) return '无';
 
   // 星期映射

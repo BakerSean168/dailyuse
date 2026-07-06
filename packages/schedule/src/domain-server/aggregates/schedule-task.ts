@@ -677,35 +677,4 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return new ScheduleTask(state);
   }
 
-  /** Creates from a DTO (legacy compatibility). */
-  public static fromDTO(dto: ScheduleTaskServerDTO & { executions?: unknown[] }): ScheduleTask {
-    const state: ScheduleTaskState = {
-      id: dto.id ? ScheduleTaskId.of(dto.id) : ScheduleTaskId.generate(),
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description ?? null,
-      sourceModule: dto.sourceModule,
-      sourceEntityId: dto.sourceEntityId,
-      status: dto.status,
-      enabled: dto.enabled,
-      schedule: ScheduleConfig.fromDTO(dto.schedule),
-      execution: ExecutionInfo.fromDTO(dto.execution),
-      retryPolicy: RetryPolicy.fromDTO(dto.retryPolicy),
-      metadata: ScheduleTaskMetadata.fromDTO(dto.metadata),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: dto.version ?? 1,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    };
-
-    const task = new ScheduleTask(state);
-
-    if (dto.executions) {
-      dto.executions.forEach((execDTO: unknown) => {
-        task.addExecution(ScheduleExecution.fromDTO(execDTO as Record<string, unknown>));
-      });
-    }
-
-    return task;
-  }
 }
