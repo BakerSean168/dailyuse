@@ -22,7 +22,7 @@ import type {
  * 提醒模块 - 事件映射
  *
  * 事件命名规范：reminder:{kebab-entity}-{kebab-action-past-tense}
- * 参见：packages/governance/src/contracts/protocol/governance-event-map.ts
+ * 参见：packages/contracts/src/modules/governance/protocol/governance-event-map.ts
  */
 
 export type ReminderEventMap = {
@@ -122,3 +122,4 @@ export type ReminderEventMap = {
    */
   'reminder:frequency-adjustment-rejected': ReminderFrequencyAdjustmentRejectedEvent;
 };
+

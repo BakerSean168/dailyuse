@@ -5,7 +5,7 @@ tags: [standard, infrastructure, repository]
 # 仓储层开发规范
 
 **版本**: 1.0
-**适用范围**: `packages/{domain}/src/infrastructure-server/adapters/`
+**适用范围**: `packages/{domain}/src/server/infrastructure/adapters/`（旧模块在收敛期间可能暂时保留 `src/infrastructure-server/`）
 **读者**: 开发人员, AI 助手
 
 ## 1. 核心职责
@@ -15,13 +15,13 @@ tags: [standard, infrastructure, repository]
 ## 2. 架构位置
 
 ```text
-application-server  →  domain-server (IRuleRepository 接口)
+server/application  →  server/domain (IRuleRepository 接口)
                            ↑
-infrastructure-server (RulePrismaRepository 实现)
+server/infrastructure (RulePrismaRepository 实现)
 ```
 
-- 接口定义在 `domain-server/repositories/`（领域层决定"需要什么"）
-- 实现在 `infrastructure-server/adapters/`（基础设施层决定"怎么实现"）
+- 接口定义在 `server/domain/repositories/`（领域层决定"需要什么"）
+- 实现在 `server/infrastructure/adapters/`（基础设施层决定"怎么实现"）
 
 ---
 
@@ -72,7 +72,7 @@ async execute(req: GetRuleReq): Promise<Result<GetRuleRes>> {
 }
 ```
 
-- 参考实现: [RulePrismaRepository](../../../packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts)
+- 参考实现: [RulePrismaRepository](../../../packages/governance/src/server/infrastructure/adapters/prisma/rule-prisma.repository.ts)
 - 参考实现: [createScheduleModule](../../../packages/schedule/src/infrastructure-server/schedule.module.ts)
 - 共享工具: [resultify](../../../packages/utils/src/result/resultify.ts)
 
@@ -90,14 +90,14 @@ export class RulePrismaMapper {
 }
 ```
 
-- 参考实现: [RulePrismaMapper](../../../packages/governance/src/infrastructure-server/adapters/prisma/mappers/rule-prisma.mapper.ts)
-- 参考实现: [PowerSyncRuleMapper](../../../packages/governance/src/infrastructure-server/adapters/powersync/mappers/powersync-rule.mapper.ts)
+- 参考实现: [RulePrismaMapper](../../../packages/governance/src/server/infrastructure/adapters/prisma/mappers/rule-prisma.mapper.ts)
+- 参考实现: [PowerSyncRuleMapper](../../../packages/governance/src/server/infrastructure/adapters/powersync/mappers/powersync-rule.mapper.ts)
 
 ### 3.4 Mapper 共享工具
 
 防御性解析（JSON、Date、SQL 转义）应集中在 `adapters/mapper-helpers.ts`，Prisma 和 PowerSync 的映射器复用同一套工具。
 
-- 参考实现: [mapper-helpers.ts](../../../packages/governance/src/infrastructure-server/adapters/mapper-helpers.ts)
+- 参考实现: [mapper-helpers.ts](../../../packages/governance/src/server/infrastructure/adapters/mapper-helpers.ts)
 
 ### 3.5 多表聚合同步（事务内 delete-removed + upsert）
 
@@ -125,7 +125,7 @@ protected async persist(goal: Goal): Promise<void> {
 
 当一个操作需要同时持久化多个实体时，提供 `saveWithXxx()` 方法，在单个 `$transaction` 中完成。
 
-- 参考实现: [RulePrismaRepository.saveWithRevision()](../../../packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts)
+- 参考实现: [RulePrismaRepository.saveWithRevision()](../../../packages/governance/src/server/infrastructure/adapters/prisma/rule-prisma.repository.ts)
 
 ### 3.7 事务控制封装（withTransaction）
 
@@ -135,7 +135,7 @@ protected async persist(goal: Goal): Promise<void> {
 
 ### 3.8 组合根（Composition Root）
 
-每个模块的 `infrastructure-server/` 提供 `create<Module>Module(dependencies)` 工厂函数作为组合根。依赖通过构造函数注入，不使用 Service Locator / DI 容器。
+每个模块的 `server/infrastructure/` 提供 `create<Module>Module(dependencies)` 工厂函数作为组合根。依赖通过构造函数注入，不使用 Service Locator / DI 容器。
 
 **规范结构**:
 
@@ -143,22 +143,22 @@ protected async persist(goal: Goal): Promise<void> {
 export interface GovernanceModuleDependencies {
   readonly ruleRepository: IRuleRepository;
   readonly revisionRepository: IRuleRevisionRepository;
+  readonly runtimeAdapters?: GovernanceRuntimeAdaptersInput;
 }
 
 export function createGovernanceModule(deps: GovernanceModuleDependencies): GovernanceModuleInstance {
-  const useCases = createGovernanceUseCases(deps);
   const api: GovernanceApplicationPort = { /* 委托给 useCases */ };
-  return { useCases, api, start(), dispose() };
+  return { api, start(), dispose() };
 }
 ```
 
-- 参考实现: [governance.module.ts](../../../packages/governance/src/infrastructure-server/governance.module.ts)
+- 参考实现: [governance.module.ts](../../../packages/governance/src/server/infrastructure/governance.module.ts)
 
 ### 3.9 PowerSync 适配器 — SQL 提取复用
 
 在 PowerSync 实现中，共享的 SQL 逻辑应提取为私有方法，避免 `save()` 和 `saveWithXxx()` 之间的重复。
 
-- 参考实现: [PowerSyncRuleRepository._upsertRule()](../../../packages/governance/src/infrastructure-server/adapters/powersync/rule-powersync.repository.ts)
+- 参考实现: [PowerSyncRuleRepository._upsertRule()](../../../packages/governance/src/server/infrastructure/adapters/powersync/rule-powersync.repository.ts)
 
 ---
 
@@ -181,8 +181,8 @@ export function createGovernanceModule(deps: GovernanceModuleDependencies): Gove
 
 ## 6. 文件夹结构
 
-```
-infrastructure-server/
+```text
+server/infrastructure/
   adapters/
     mapper-helpers.ts           ← 共享解析工具
     prisma/
@@ -197,7 +197,11 @@ infrastructure-server/
       mappers/
         index.ts
         <entity>-powersync.mapper.ts
-  <module>.module.ts            ← 组合根
-  powersync.ts                  ← PowerSync 组合根（可选）
+  runtime/
+    module-runtime.ts           ← runtime adapter seam
+    <module>-event-log.runtime.ts
+  <module>.module.ts            ← 规范化组合根
+  prisma.ts                     ← Prisma 便捷组合根（可选）
+  powersync.ts                  ← PowerSync 便捷组合根（可选）
   index.ts                      ← barrel export
 ```

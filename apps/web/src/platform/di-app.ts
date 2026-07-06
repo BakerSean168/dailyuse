@@ -1,8 +1,9 @@
 /**
- * Web Platform — full app DI container.
+ * Web Platform - full app DI container.
  *
- * All feature services are created via the shared `createXxxServiceFromHttpClient`
- * factory language exported by each package's application-client layer.
+ * Feature services are created via each package's public client seam.
+ * Most modules still expose `createXxxServiceFromHttpClient` from
+ * `application-client`; governance already uses the stricter `client` seam.
  * Heavy feature services are loaded on demand so the post-login app shell
  * does not pay for every module up front.
  */
@@ -49,10 +50,8 @@ const accountService = createLazyService(async () => {
 });
 
 const ruleService = createLazyService(async () => {
-  const { createGovernanceServiceFromHttpClient } = await import(
-    '@dailyuse/governance/application-client'
-  );
-  return createGovernanceServiceFromHttpClient(resultHttpClient);
+  const { createGovernanceHttpClient } = await import('@dailyuse/governance/client');
+  return createGovernanceHttpClient(resultHttpClient);
 });
 
 const goalService = createLazyService(async () => {

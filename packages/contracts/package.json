@@ -18,6 +18,10 @@
       "types": "./dist/modules/goal/index.d.ts",
       "import": "./dist/modules/goal/index.js"
     },
+    "./governance": {
+      "types": "./dist/modules/governance/index.d.ts",
+      "import": "./dist/modules/governance/index.js"
+    },
     "./reminder": {
       "types": "./dist/modules/reminder/index.d.ts",
       "import": "./dist/modules/reminder/index.js"
@@ -99,3 +103,4 @@
     "typescript": "^5.9.3"
   }
 }
+

@@ -1,28 +1,6 @@
 /**
  * Governance Rules Routes
  * 治理规则资源路由
- *
- * Resource-first HTTP routes for the `Rule` aggregate.
- * 面向资源的 `Rule` 聚合根 HTTP 路由。
- *
- * Why this split:
- * - Domain layer is organized by aggregate root / entity.
- * - Application layer is organized by commands / queries.
- * - Route layer is organized by external resources / features.
- * 采用该拆分的原因：
- * - 领域层按聚合根 / 实体组织。
- * - 应用层按 commands / queries 组织。
- * - 路由层按外部资源 / feature 组织。
- *
- * Routes:
- * - POST   /              - Create rule
- * - GET    /              - List rules
- * - GET    /search        - Search rules
- * - GET    /by-code/:code - Get rule by code
- * - GET    /:id           - Get rule by ID
- * - PUT    /:id           - Update rule
- * - PATCH  /:id           - Update rule alias
- * - DELETE /:id           - Delete rule
  */
 
 import { z } from 'zod';
@@ -30,16 +8,19 @@ import { Router } from 'express';
 import { RouteRegistrar, successResponse, errorResponse } from '@dailyuse/utils/result';
 import {
   CreateRuleSchema,
+  DeleteRuleResSchema,
   ListRulesQuerySchema,
   SearchRulesQuerySchema,
   UpdateRuleSchema,
-} from '../../contracts';
-import type { ListRulesQuery, SearchRulesQuery } from '../../contracts';
+} from '@dailyuse/contracts/governance';
+import type { ListRulesQueryInput, SearchRulesQueryInput } from '@dailyuse/contracts/governance';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RuleId } from '@dailyuse/contracts/primitives';
-import type { GovernanceController } from '../../controllers/governance.controller';
+import type { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
 import {
+  GovernanceListRulesResponseSchema,
+  GovernanceSearchRulesResponseSchema,
   RuleResponseSchema,
   parseNumber,
   parseString,
@@ -47,12 +28,12 @@ import {
 } from './governance-route-shared';
 
 /**
- * Registers resource-first routes for the Rule aggregate. 注册 Rule 聚合根的资源优先路由。
- *
- * @param controller - GovernanceController 实例
- * @param middleware - Platform middleware 集合
- * @param openApiRegistry - optional OpenAPI registry for route registration
- * @returns Router - express Router with resource routes
+ * Registers all HTTP routes for the governance Rule resource.
+ * 注册治理 Rule 资源的全部 HTTP 路由。
+ * @param controller - Governance controller orchestrating route handlers.
+ * @param middleware - Platform auth and role middleware bundle.
+ * @param openApiRegistry - Optional OpenAPI registry for route registration.
+ * @returns Express router containing all Rule resource routes.
  */
 export function registerGovernanceRulesRoutes(
   controller: GovernanceController,
@@ -92,16 +73,7 @@ export function registerGovernanceRulesRoutes(
       summary: '搜索规则',
       request: { query: SearchRulesQuerySchema },
       responses: {
-        200: successResponse(
-          z.object({
-            items: z.array(RuleResponseSchema),
-            total: z.number(),
-            page: z.number(),
-            pageSize: z.number(),
-            searchTime: z.number(),
-          }),
-          '搜索成功',
-        ),
+        200: successResponse(GovernanceSearchRulesResponseSchema, '搜索成功'),
       },
     },
     [auth],
@@ -109,11 +81,11 @@ export function registerGovernanceRulesRoutes(
       controller.searchRules(
         {
           query: parseString(req.query?.query) ?? parseString(req.query?.q) ?? '',
-          status: parseString(req.query?.status) as SearchRulesQuery['status'],
-          severity: parseString(req.query?.severity) as SearchRulesQuery['severity'],
+          status: parseString(req.query?.status) as SearchRulesQueryInput['status'],
+          severity: parseString(req.query?.severity) as SearchRulesQueryInput['severity'],
           tags: parseStringArray(req.query?.tags),
-          page: parseNumber(req.query?.page) ?? 1,
-          pageSize: parseNumber(req.query?.pageSize) ?? 20,
+          page: parseNumber(req.query?.page),
+          pageSize: parseNumber(req.query?.pageSize),
         },
         ctx,
       ),
@@ -141,25 +113,17 @@ export function registerGovernanceRulesRoutes(
       summary: '查询规则列表',
       request: { query: ListRulesQuerySchema },
       responses: {
-        200: successResponse(
-          z.object({
-            items: z.array(RuleResponseSchema),
-            total: z.number(),
-            page: z.number(),
-            pageSize: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(GovernanceListRulesResponseSchema, '获取成功'),
       },
     },
     [auth],
     (req) =>
       controller.listRules({
-        status: parseString(req.query?.status) as ListRulesQuery['status'],
-        severity: parseString(req.query?.severity) as ListRulesQuery['severity'],
+        status: parseString(req.query?.status) as ListRulesQueryInput['status'],
+        severity: parseString(req.query?.severity) as ListRulesQueryInput['severity'],
         tags: parseStringArray(req.query?.tags),
-        page: parseNumber(req.query?.page) ?? 1,
-        pageSize: parseNumber(req.query?.pageSize) ?? 20,
+        page: parseNumber(req.query?.page),
+        pageSize: parseNumber(req.query?.pageSize),
       }),
   );
 
@@ -194,7 +158,7 @@ export function registerGovernanceRulesRoutes(
       },
     },
     [auth, requireRole(['TechLead', 'Architect'])],
-    (req, ctx) => controller.updateRule(req.params!.id, req.body, ctx),
+    (req, ctx) => controller.updateRuleById(req.params!.id, req.body, ctx),
   );
 
   r.route(
@@ -204,7 +168,7 @@ export function registerGovernanceRulesRoutes(
       skipOpenApi: true,
     },
     [auth, requireRole(['TechLead', 'Architect'])],
-    (req, ctx) => controller.updateRule(req.params!.id, req.body, ctx),
+    (req, ctx) => controller.updateRuleById(req.params!.id, req.body, ctx),
   );
 
   r.route(
@@ -214,13 +178,13 @@ export function registerGovernanceRulesRoutes(
       summary: '删除规则',
       request: { params: z.object({ id: brandedId<RuleId>() }) },
       responses: {
-        200: successResponse(z.object({ success: z.boolean() }), '删除成功'),
+        200: successResponse(DeleteRuleResSchema, '删除成功'),
         404: errorResponse('规则不存在'),
         403: errorResponse('权限不足'),
       },
     },
     [auth, requireRole(['TechLead', 'Architect'])],
-    (req, ctx) => controller.deleteRule(req.params!.id, ctx),
+    (req, ctx) => controller.deleteRuleById(req.params!.id, ctx),
   );
 
   return router;

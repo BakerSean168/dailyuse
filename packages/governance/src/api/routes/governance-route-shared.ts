@@ -1,32 +1,36 @@
 /**
  * Shared route helpers for the governance HTTP seam.
  * 治理 HTTP seam 的共享路由辅助。
- *
- * Keeps query parsing and response schema registration local to the route layer
- * so individual Rule route modules stay thin and consistent.
- * 将查询解析与响应 schema 注册收敛在路由层本地，
- * 让各个 Rule 路由模块保持轻量且一致。
  */
-import { z } from 'zod';
+
 import type { RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { RuleId, RuleRevisionId } from '@dailyuse/contracts/primitives';
+import {
+  GetRuleRevisionsResSchema,
+  ListRulesResSchema,
+  RuleClientDTOSchema,
+  RuleRevisionClientDTOSchema,
+  SearchRulesResSchema,
+} from '@dailyuse/contracts/governance';
 
-/** Platform middleware contract for governance routes. 治理路由的平台中间件契约。 */
 export interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
 
-/** Shared OpenAPI registry type for governance routes. 治理路由共享的 OpenAPI 注册器类型。 */
 export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 
+export const RuleResponseSchema = RuleClientDTOSchema;
+export const RuleRevisionResponseSchema = RuleRevisionClientDTOSchema;
+export const GovernanceListRulesResponseSchema = ListRulesResSchema;
+export const GovernanceSearchRulesResponseSchema = SearchRulesResSchema;
+export const GovernanceRuleRevisionsResponseSchema = GetRuleRevisionsResSchema;
+
 /**
- * Parses query value as a string.
- * 将查询参数解析为字符串。
-  * @param value - 
-  * @returns any - 
+ * Parses an unknown query value into a single string.
+ * 将未知 query 值解析为单个字符串。
+ * @param value - Raw query value from the HTTP seam.
+ * @returns Normalized string value, or undefined when absent.
  */
 export function parseString(value: unknown): string | undefined {
   if (Array.isArray(value)) {
@@ -39,10 +43,10 @@ export function parseString(value: unknown): string | undefined {
 }
 
 /**
- * Parses query value as a finite number.
- * 将查询参数解析为有限数字。
-  * @param value - 
-  * @returns any - 
+ * Parses an unknown query value into a finite number.
+ * 将未知 query 值解析为有限数字。
+ * @param value - Raw query value from the HTTP seam.
+ * @returns Parsed finite number, or undefined when invalid.
  */
 export function parseNumber(value: unknown): number | undefined {
   const raw = parseString(value);
@@ -52,10 +56,10 @@ export function parseNumber(value: unknown): number | undefined {
 }
 
 /**
- * Parses query value as a comma-separated string array.
- * 将查询参数解析为逗号分隔的字符串数组。
-  * @param value - 
-  * @returns any - 
+ * Parses an unknown query value into a normalized string array.
+ * 将未知 query 值解析为规范化字符串数组。
+ * @param value - Raw query value from the HTTP seam.
+ * @returns Trimmed string array, or undefined when no values remain.
  */
 export function parseStringArray(value: unknown): string[] | undefined {
   if (Array.isArray(value)) {
@@ -71,54 +75,3 @@ export function parseStringArray(value: unknown): string[] | undefined {
   }
   return undefined;
 }
-
-/**
- * Shared rule response schema for route registration.
- * 路由注册共享的规则响应 Schema。
- */
-export const RuleResponseSchema = z.object({
-  id: brandedId<RuleId>(),
-  code: z.string(),
-  title: z.string(),
-  description: z.string(),
-  severity: z.string(),
-  status: z.string(),
-  deprecationReason: z.string().nullable().optional(),
-  replacementRuleId: brandedId<RuleId>().nullable().optional(),
-  liveReferenceLocation: z.string().nullable().optional(),
-  tags: z.array(z.string()),
-  goodExamples: z
-    .array(
-      z.object({
-        id: z.string(),
-        language: z.string(),
-        content: z.string(),
-        caption: z.string().optional(),
-      }),
-    )
-    .optional(),
-  badExamples: z
-    .array(
-      z.object({
-        id: z.string(),
-        language: z.string(),
-        content: z.string(),
-        caption: z.string().optional(),
-      }),
-    )
-    .optional(),
-  authorId: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-/**
- * Shared rule revision response schema for route registration.
- * 路由注册共享的规则修订响应 Schema。
- */
-export const RuleRevisionResponseSchema = z.object({
-  id: brandedId<RuleRevisionId>(),
-  ruleId: brandedId<RuleId>(),
-  version: z.number(),
-  createdAt: z.number(),
-});

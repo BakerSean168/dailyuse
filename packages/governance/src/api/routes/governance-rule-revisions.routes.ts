@@ -1,31 +1,25 @@
 /**
  * Governance Rule Revisions Routes
  * 治理规则修订资源路由
- *
- * Handles revision history endpoints for governance rules.
- * 处理治理规则的修订历史端点。
- *
- * Routes:
- * - GET /:id/revisions - Get rule revisions
  */
 
 import { z } from 'zod';
 import { Router } from 'express';
 import { RouteRegistrar, successResponse } from '@dailyuse/utils/result';
-import { GetRuleRevisionsQuerySchema } from '../../contracts';
+import { GetRuleRevisionsQuerySchema } from '@dailyuse/contracts/governance';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RuleId } from '@dailyuse/contracts/primitives';
-import type { GovernanceController } from '../../controllers/governance.controller';
+import type { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
-import { RuleRevisionResponseSchema, parseNumber } from './governance-route-shared';
+import { GovernanceRuleRevisionsResponseSchema, parseNumber } from './governance-route-shared';
 
 /**
- * Registers revision sub-resource routes for Rule. 注册 Rule 的修订子资源路由。
- *
- * @param controller - GovernanceController 实例
- * @param middleware - Platform middleware 集合
- * @param openApiRegistry - optional OpenAPI registry for route registration
- * @returns Router - express Router with the revision routes
+ * Registers HTTP routes for the governance RuleRevision child resource.
+ * 注册治理 RuleRevision 子资源的 HTTP 路由。
+ * @param controller - Governance controller orchestrating revision queries.
+ * @param middleware - Platform auth middleware bundle.
+ * @param openApiRegistry - Optional OpenAPI registry for route registration.
+ * @returns Express router containing all RuleRevision child routes.
  */
 export function registerGovernanceRuleRevisionsRoutes(
   controller: GovernanceController,
@@ -51,22 +45,14 @@ export function registerGovernanceRuleRevisionsRoutes(
         query: GetRuleRevisionsQuerySchema.omit({ ruleId: true }),
       },
       responses: {
-        200: successResponse(
-          z.object({
-            items: z.array(RuleRevisionResponseSchema),
-            total: z.number(),
-            page: z.number(),
-            pageSize: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(GovernanceRuleRevisionsResponseSchema, '获取成功'),
       },
     },
     [auth],
     (req) =>
-      controller.getRevisions(req.params!.id, {
-        page: parseNumber(req.query?.page) ?? 1,
-        pageSize: parseNumber(req.query?.pageSize) ?? 20,
+      controller.getRevisionsByRuleId(req.params!.id, {
+        page: parseNumber(req.query?.page),
+        pageSize: parseNumber(req.query?.pageSize),
       }),
   );
 

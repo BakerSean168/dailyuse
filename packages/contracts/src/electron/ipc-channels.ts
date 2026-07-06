@@ -283,15 +283,6 @@ export const EditorChannels = {
   SEARCH: 'editor:search-resources',
 } as const;
 
-export const GovernanceChannels = {
-  RULE_LIST: 'governance:rule:list',
-  RULE_GET: 'governance:rule:get',
-  RULE_SEARCH: 'governance:rule:search',
-  RULE_CREATE: 'governance:rule:create',
-  RULE_UPDATE: 'governance:rule:update',
-  RULE_DELETE: 'governance:rule:delete',
-  RULE_REVISIONS: 'governance:rule-revision:list',
-} as const;
 
 export const SystemChannels = {
   GET_APP_VERSION: 'system:getAppVersion',

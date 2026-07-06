@@ -58,13 +58,9 @@
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
-      "@dailyuse/governance/domain-client": [
-        "../../packages/governance/dist/domain-client/index.d.ts"
+      "@dailyuse/governance/client": [
+        "../../packages/governance/dist/client/index.d.ts"
       ],
-      "@dailyuse/governance/application-client": [
-        "../../packages/governance/dist/application-client/index.d.ts"
-      ],
-      "@dailyuse/governance/contracts": ["../../packages/governance/dist/contracts/index.d.ts"],
       "@dailyuse/schedule/domain-client": ["../../packages/schedule/src/domain-client/index.ts"],
       "@dailyuse/task/domain-client": ["../../packages/task/src/domain-client/index.ts"],
       "@dailyuse/repository/domain-client": ["../../packages/repository/src/domain-client/index.ts"],
@@ -78,3 +74,4 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
+
