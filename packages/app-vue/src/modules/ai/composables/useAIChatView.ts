@@ -92,9 +92,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
 
   // ─── Composables ───────────────────────────────────────────────────
 
-  const providerList = computed(() =>
-    Array.isArray(providers.value) ? (providers.value as ProviderListItem[]) : [],
-  );
+  const providerList = computed<ProviderListItem[]>(() => providers.value);
 
   const aiSettings = computed(() => getCategory('ai'));
   const knowledgeNoteSubpath = computed(() => aiSettings.value?.knowledgeNoteSubpath ?? '');
@@ -577,3 +575,4 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     },
   };
 }
+

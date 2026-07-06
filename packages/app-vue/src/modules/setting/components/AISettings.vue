@@ -488,9 +488,7 @@ onMounted(() => {
   void loadProviders();
 });
 
-const providerItems = computed(() =>
-  (Array.isArray(providers.value) ? providers.value : []) as ProviderListItem[],
-);
+const providerItems = computed<ProviderListItem[]>(() => providers.value);
 const editingProvider = computed(() =>
   editingProviderId.value
     ? providerItems.value.find((provider) => provider.id === editingProviderId.value) ?? null
@@ -607,8 +605,8 @@ function getPresetProvider(templateId: string): ProviderListItem | null {
   return presetProviderMap.value[templateId] ?? null;
 }
 
-function getAvailableModelCount(provider: unknown): number {
-  return ((provider as ProviderListItem).availableModels ?? []).length;
+function getAvailableModelCount(provider: ProviderListItem | null | undefined): number {
+  return provider?.availableModels?.length ?? 0;
 }
 
 function getPresetModelSummary(template: AIProviderTemplate): string {
@@ -670,44 +668,47 @@ function isQuickProviderSubmitting(templateId: string): boolean {
   return quickProviderSubmittingId.value === templateId;
 }
 
-function getProviderId(provider: unknown): string {
-  return String((provider as ProviderListItem).id);
+function getProviderId(provider: ProviderListItem | null | undefined): string {
+  return provider ? String(provider.id) : '';
 }
 
-function getProviderName(provider: unknown): string {
-  return (provider as ProviderListItem).name;
+function getProviderName(provider: ProviderListItem | null | undefined): string {
+  return provider?.name ?? '';
 }
 
-function getProviderBaseUrl(provider: unknown): string {
-  return (provider as ProviderListItem).baseUrl ?? '';
+function getProviderBaseUrl(provider: ProviderListItem | null | undefined): string {
+  return provider?.baseUrl ?? '';
 }
 
-function getProviderModel(provider: unknown): string {
-  return (provider as ProviderListItem).defaultModel ?? '';
+function getProviderModel(provider: ProviderListItem | null | undefined): string {
+  return provider?.defaultModel ?? '';
 }
 
-function getProviderApiKeyMasked(provider: unknown): string {
-  const masked = (provider as ProviderListItem).apiKeyMasked?.trim();
+function getProviderApiKeyMasked(provider: ProviderListItem | null | undefined): string {
+  const masked = provider?.apiKeyMasked?.trim();
   return masked ? `API Key: ${masked}` : '';
 }
 
-function isDefaultProvider(provider: unknown): boolean {
-  return Boolean((provider as ProviderListItem).isDefault);
+function isDefaultProvider(provider: ProviderListItem | null | undefined): boolean {
+  return Boolean(provider?.isDefault);
 }
 
-function isProviderActive(provider: unknown): boolean {
-  return (provider as ProviderListItem).isActive !== false;
+function isProviderActive(provider: ProviderListItem | null | undefined): boolean {
+  return provider?.isActive !== false;
 }
 
-function populateForm(provider: unknown) {
-  const item = provider as ProviderListItem;
-  editingProviderId.value = item.id;
+function populateForm(provider: ProviderListItem | null | undefined) {
+  if (!provider) {
+    return;
+  }
+
+  editingProviderId.value = provider.id;
   providerTestResult.value = null;
-  providerForm.name = item.name;
-  providerForm.baseUrl = item.baseUrl ?? '';
+  providerForm.name = provider.name;
+  providerForm.baseUrl = provider.baseUrl ?? '';
   providerForm.apiKey = '';
-  providerForm.model = item.defaultModel ?? '';
-  providerForm.isDefault = Boolean(item.isDefault);
+  providerForm.model = provider.defaultModel ?? '';
+  providerForm.isDefault = Boolean(provider.isDefault);
 }
 
 function isProviderRefreshing(providerId: string): boolean {
@@ -727,7 +728,7 @@ async function handleRefreshModels(providerId: string) {
   providerStatusMap[providerId] = null;
   console.debug('[AISettings] refreshProviderModels:start', { providerId });
   try {
-    const provider = (await refreshProviderModels(providerId)) as ProviderListItem;
+    const provider = await refreshProviderModels(providerId);
     providerStatusMap[providerId] = {
       tone: 'success',
       message: t('setting.ai.providerModelsRefreshed', {
@@ -766,24 +767,24 @@ async function submitQuickProvider(template: AIProviderTemplate) {
   try {
     let provider: AIProviderConfigClientDTO;
     if (existing) {
-      provider = (await updateProvider(existing.id, {
+      provider = await updateProvider(existing.id, {
         name: template.name,
         baseUrl: template.baseUrl,
         model: existing.defaultModel || template.defaultModel,
         apiKey,
-      })) as AIProviderConfigClientDTO;
+      });
       if (shouldUsePresetAsDefault(template.id) && !existing.isDefault) {
         await setDefaultProvider(existing.id);
       }
       toast.success(t('setting.ai.providerUpdated'));
     } else {
-      provider = (await createProvider({
+      provider = await createProvider({
         name: template.name,
         baseUrl: template.baseUrl,
         apiKey,
         model: template.defaultModel,
         isDefault: shouldUsePresetAsDefault(template.id),
-      })) as AIProviderConfigClientDTO;
+      });
       toast.success(t('setting.ai.providerCreated'));
     }
 
@@ -803,22 +804,22 @@ async function submitProvider() {
   try {
     let savedProvider: AIProviderConfigClientDTO;
     if (editingProviderId.value) {
-      savedProvider = (await updateProvider(editingProviderId.value, {
+      savedProvider = await updateProvider(editingProviderId.value, {
         name: providerForm.name.trim(),
         baseUrl: providerForm.baseUrl.trim(),
         model: providerForm.model.trim(),
         ...(providerForm.apiKey.trim() ? { apiKey: providerForm.apiKey.trim() } : {}),
         isDefault: providerForm.isDefault,
-      })) as AIProviderConfigClientDTO;
+      });
       toast.success(t('setting.ai.providerUpdated'));
     } else {
-      savedProvider = (await createProvider({
+      savedProvider = await createProvider({
         name: providerForm.name.trim(),
         baseUrl: providerForm.baseUrl.trim(),
         apiKey: providerForm.apiKey.trim(),
         model: providerForm.model.trim(),
         isDefault: providerForm.isDefault,
-      })) as AIProviderConfigClientDTO;
+      });
       toast.success(t('setting.ai.providerCreated'));
     }
 
@@ -831,7 +832,7 @@ async function submitProvider() {
 
     let hydratedProvider: ProviderListItem = savedProvider;
     try {
-      hydratedProvider = (await refreshProviderModels(String(savedProvider.id))) as ProviderListItem;
+      hydratedProvider = await refreshProviderModels(String(savedProvider.id));
     } catch (error) {
       console.debug('[AISettings] submitProvider:autoRefreshFailed', {
         providerId: savedProvider.id,
@@ -898,3 +899,4 @@ async function handleDeleteProvider(providerId: string) {
   }
 }
 </script>
+
