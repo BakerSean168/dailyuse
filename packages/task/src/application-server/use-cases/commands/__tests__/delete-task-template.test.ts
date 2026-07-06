@@ -75,4 +75,24 @@ describe('DeleteTaskTemplateUseCase', () => {
 
     expect(result).toBeOkWith({ success: true });
   });
+
+  it('should return INTERNAL_ERROR when deleting generated instances fails', async () => {
+    const template = aOneTimeTask();
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(instanceRepo.deleteByTemplateId).mockRejectedValue(new Error('delete instances failed'));
+
+    const result = await useCase.execute(template.id);
+
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
+  });
+
+  it('should return INTERNAL_ERROR when hard delete fails after soft-deleting the template', async () => {
+    const template = aOneTimeTask();
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.delete).mockRejectedValue(new Error('hard delete failed'));
+
+    const result = await useCase.execute(template.id);
+
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
+  });
 });

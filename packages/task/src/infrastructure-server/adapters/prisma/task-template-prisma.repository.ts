@@ -1,9 +1,9 @@
-﻿/**
+/**
  * TaskTemplatePrismaRepository - Prisma Implementation of ITaskTemplateRepository
  * 任务模板仓储 - Prisma 实现
  *
  * 聚合根：TaskTemplate
- * 
+ *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
@@ -12,29 +12,51 @@ import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { TaskFilters } from '@/domain-server/repositories/i-task-template-repository';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  type IEventBus,
+} from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils/domain';
 import { PrismaTaskTemplateMapper } from './mappers/prisma-task-template-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
+interface TaskTemplateDb {
+  taskTemplate: PrismaClient['taskTemplate'];
+}
+
+type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
+type TaskTemplateRootDb = TaskTemplateDb & PrismaTransactionRoot;
+
+function isTaskTemplateRootDb(db: TaskTemplateDb | TaskTemplateRootDb): db is TaskTemplateRootDb {
+  return '$transaction' in db;
+}
+
 export class TaskTemplatePrismaRepository
   extends AggregateRepositoryBase<TaskTemplate>
   implements ITaskTemplateRepository
 {
-  constructor(private prisma: PrismaClient) {
-    super(eventBusAdapter);
+  private readonly db: TaskTemplateDb;
+  private readonly rootClient: PrismaTransactionRoot | null;
+
+  constructor(prisma: PrismaClient, eventBus?: IEventBus);
+  constructor(prisma: TaskTemplateDb, eventBus?: IEventBus);
+  constructor(prisma: TaskTemplateDb | PrismaClient, eventBus: IEventBus = eventBusAdapter) {
+    super(eventBus);
+    this.db = prisma;
+    this.rootClient = isTaskTemplateRootDb(prisma) ? prisma : null;
   }
 
   /**
-   * Prisma record  TaskTemplate 聚合根
+   * Prisma record -> TaskTemplate 聚合根
    */
   private mapToEntity(data: PrismaTaskTemplate): TaskTemplate {
     return PrismaTaskTemplateMapper.toDomain(data);
   }
 
   /**
-   * TaskTemplate 聚合根 → Prisma write data
+   * TaskTemplate 聚合根 -> Prisma write data
    */
   private toWriteData(template: TaskTemplate) {
     return PrismaTaskTemplateMapper.toPersistence(template);
@@ -46,7 +68,7 @@ export class TaskTemplatePrismaRepository
   protected async persist(template: TaskTemplate): Promise<void> {
     const data = this.toWriteData(template);
 
-    await this.prisma.taskTemplate.upsert({
+    await this.db.taskTemplate.upsert({
       where: { id: template.id },
       create: {
         id: template.id,
@@ -58,14 +80,14 @@ export class TaskTemplatePrismaRepository
   }
 
   async findById(id: string): Promise<TaskTemplate | null> {
-    const data = await this.prisma.taskTemplate.findUnique({
+    const data = await this.db.taskTemplate.findUnique({
       where: { id },
     });
     return data ? this.mapToEntity(data) : null;
   }
 
   async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
-    const data = await this.prisma.taskTemplate.findUnique({
+    const data = await this.db.taskTemplate.findUnique({
       where: { id },
       include: { subtasks: true, instances: true },
     });
@@ -73,26 +95,26 @@ export class TaskTemplatePrismaRepository
   }
 
   async findByIdentityId(identityId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findByStatus(
     identityId: string,
     status: TaskTemplateStatus,
   ): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: { identityId, status, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         status: 'Active',
@@ -100,19 +122,19 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: {
         goalBinding: { not: null },
         deletedAt: null,
@@ -120,75 +142,66 @@ export class TaskTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
     return data
-      .filter((d: PrismaTaskTemplate) => {
+      .filter((record: PrismaTaskTemplate) => {
         try {
-          const binding = JSON.parse(d.goalBinding || '{}');
+          const binding = JSON.parse(record.goalBinding || '{}');
           return binding.goalId === goalId;
         } catch {
           return false;
         }
       })
-      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+      .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findByTags(
-    identityId: string,
-    tags: string[],
-  ): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+  async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
+    const data = await this.db.taskTemplate.findMany({
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return data
-      .filter((d: PrismaTaskTemplate) => {
+      .filter((record: PrismaTaskTemplate) => {
         try {
-          const rowTags = JSON.parse(d.tags || '[]');
-          return tags.some((t) => rowTags.includes(t));
+          const rowTags = JSON.parse(record.tags || '[]');
+          return tags.some((tag) => rowTags.includes(tag));
         } catch {
           return false;
         }
       })
-      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+      .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: {
         recurrenceRuleType: { not: null },
         status: 'Active',
         deletedAt: null,
-        OR: [
-          { lastGeneratedDate: null },
-          { lastGeneratedDate: { lt: new Date(toDate) } },
-        ],
+        OR: [{ lastGeneratedDate: null }, { lastGeneratedDate: { lt: new Date(toDate) } }],
       },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.taskTemplate.delete({ where: { id } });
+    await this.db.taskTemplate.delete({ where: { id } });
   }
 
   async softDelete(id: string): Promise<void> {
-    await this.prisma.taskTemplate.update({
+    await this.db.taskTemplate.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
   }
 
   async restore(id: string): Promise<void> {
-    await this.prisma.taskTemplate.update({
+    await this.db.taskTemplate.update({
       where: { id },
       data: { deletedAt: null },
     });
   }
 
-  async findOneTimeTasks(
-    identityId: string,
-    filters?: TaskFilters,
-  ): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+  async findOneTimeTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         recurrenceRuleType: null,
@@ -200,14 +213,11 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findRecurringTasks(
-    identityId: string,
-    filters?: TaskFilters,
-  ): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+  async findRecurringTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         recurrenceRuleType: { not: null },
@@ -219,11 +229,11 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findOverdueTasks(identityId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         status: 'Active',
@@ -231,53 +241,50 @@ export class TaskTemplatePrismaRepository
       },
     });
     return data
-      .map((d: PrismaTaskTemplate) => this.mapToEntity(d))
-      .filter((t) => t.isOverdue());
+      .map((record: PrismaTaskTemplate) => this.mapToEntity(record))
+      .filter((template) => template.isOverdue());
   }
 
   async findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: {
         goalBinding: { not: null },
         deletedAt: null,
       },
     });
     return data
-      .filter((d: PrismaTaskTemplate) => {
+      .filter((record: PrismaTaskTemplate) => {
         try {
-          const binding = JSON.parse(d.goalBinding || '{}');
+          const binding = JSON.parse(record.goalBinding || '{}');
           return binding.keyResultId === keyResultId;
         } catch {
           return false;
         }
       })
-      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+      .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: { parentTaskId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findBlockedTasks(identityId: string): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         isBlocked: true,
         deletedAt: null,
       },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findSortedByPriority(
-    identityId: string,
-    limit?: number,
-  ): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+  async findSortedByPriority(identityId: string, limit?: number): Promise<TaskTemplate[]> {
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         status: 'Active',
@@ -286,14 +293,11 @@ export class TaskTemplatePrismaRepository
       orderBy: { importance: 'asc' },
       take: limit,
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findUpcomingTasks(
-    identityId: string,
-    _daysAhead: number,
-  ): Promise<TaskTemplate[]> {
-    const data = await this.prisma.taskTemplate.findMany({
+  async findUpcomingTasks(identityId: string, _daysAhead: number): Promise<TaskTemplate[]> {
+    const data = await this.db.taskTemplate.findMany({
       where: {
         identityId,
         status: 'Active',
@@ -301,18 +305,15 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
+    return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
   async findTodayTasks(identityId: string): Promise<TaskTemplate[]> {
     return this.findUpcomingTasks(identityId, 1);
   }
 
-  async countTasks(
-    identityId: string,
-    filters?: TaskFilters,
-  ): Promise<number> {
-    return this.prisma.taskTemplate.count({
+  async countTasks(identityId: string, filters?: TaskFilters): Promise<number> {
+    return this.db.taskTemplate.count({
       where: {
         identityId,
         deletedAt: null,
@@ -323,9 +324,9 @@ export class TaskTemplatePrismaRepository
   }
 
   async saveBatch(templates: TaskTemplate[]): Promise<void> {
-    const operations = templates.map((template) => {
+    const persistTemplate = (template: TaskTemplate) => {
       const data = this.toWriteData(template);
-      return this.prisma.taskTemplate.upsert({
+      return this.db.taskTemplate.upsert({
         where: { id: template.id },
         create: {
           id: template.id,
@@ -334,12 +335,20 @@ export class TaskTemplatePrismaRepository
         },
         update: data,
       });
-    });
-    await this.prisma.$transaction(operations);
+    };
+
+    if (!this.rootClient) {
+      for (const template of templates) {
+        await persistTemplate(template);
+      }
+      return;
+    }
+
+    await this.rootClient.$transaction(templates.map((template) => persistTemplate(template)));
   }
 
   async deleteBatch(ids: string[]): Promise<void> {
-    await this.prisma.taskTemplate.deleteMany({
+    await this.db.taskTemplate.deleteMany({
       where: { id: { in: ids } },
     });
   }

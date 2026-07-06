@@ -10,6 +10,7 @@ import {
   createTaskModule,
   createTaskScheduleExecutionSource,
   createTaskScheduleProjectionSource,
+  PrismaTaskWriteTransactionRunner,
   TaskTemplatePrismaRepository,
   TaskInstancePrismaRepository,
   TaskDependencyPrismaRepository,
@@ -33,11 +34,15 @@ export function createTaskPrismaModule(
   db: PrismaClient,
   options: CreateTaskPrismaModuleOptions = {},
 ): TaskModuleInstance {
+  const taskTemplateRepository = new TaskTemplatePrismaRepository(db);
+  const taskInstanceRepository = new TaskInstancePrismaRepository(db);
+
   return createTaskModule({
-    taskTemplateRepository: new TaskTemplatePrismaRepository(db),
-    taskInstanceRepository: new TaskInstancePrismaRepository(db),
+    taskTemplateRepository,
+    taskInstanceRepository,
     taskDependencyRepository: new TaskDependencyPrismaRepository(db),
     taskFolderRepository: new TaskFolderPrismaRepository(db),
+    taskWriteTransactionRunner: new PrismaTaskWriteTransactionRunner(db),
     runtimeContributions: options.runtimeContributions,
   });
 }

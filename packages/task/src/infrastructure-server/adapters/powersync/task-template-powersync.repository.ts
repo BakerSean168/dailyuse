@@ -3,8 +3,13 @@ import type {
   TaskFilters,
 } from '../../../domain-server/repositories/i-task-template-repository';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
+import type { IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  type IEventBus,
+} from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils/domain';
 import {
   PowerSyncTaskTemplateMapper,
@@ -14,19 +19,15 @@ import { PowerSyncTaskInstanceMapper, type PowerSyncTaskInstanceRow } from './ma
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
-
 export class PowerSyncTaskTemplateRepository
   extends AggregateRepositoryBase<TaskTemplate>
   implements ITaskTemplateRepository
 {
-  constructor(private readonly db: Queryable) {
-    super(eventBusAdapter);
+  constructor(
+    private readonly db: IElectronDatabaseTransaction,
+    eventBus: IEventBus = eventBusAdapter,
+  ) {
+    super(eventBus);
   }
 
   protected async persist(template: TaskTemplate): Promise<void> {
@@ -400,3 +401,5 @@ export class PowerSyncTaskTemplateRepository
     return rows.map((row) => PowerSyncTaskTemplateMapper.toDomain(row));
   }
 }
+
+

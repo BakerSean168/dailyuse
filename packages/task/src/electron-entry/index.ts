@@ -12,7 +12,7 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import {
   createTaskPowerSyncModule,
@@ -31,17 +31,6 @@ import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('TaskElectron');
 
-/**
- * PowerSync database interface expected by repository constructors.
- * IElectronDatabase is structurally compatible but declared in a separate package,
- * so we bridge with a local structural type and a double-cast.
- */
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
 
 const Ch = {
   TEMPLATE_LIST: 'task:template:list',
@@ -147,8 +136,7 @@ export function createTaskElectronModule(
 
     register(ctx: IElectronModuleContext): void {
       const { db: electronDb } = ctx;
-      // IElectronDatabase is structurally compatible with Queryable; bridge the package boundary
-      const db = electronDb as unknown as Queryable;
+      const db: IElectronDatabase = electronDb;
 
       const taskModule = createTaskPowerSyncModule(db, [
         createTaskRuntimeContribution(),
@@ -376,3 +364,6 @@ export {
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,
 } from '../infrastructure-server';
+
+
+

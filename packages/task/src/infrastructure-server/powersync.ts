@@ -9,6 +9,7 @@
  * 仅在 Electron 主进程中使用。
  */
 
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import {
   createTaskModule,
   type TaskModuleInstance,
@@ -19,6 +20,7 @@ import {
   PowerSyncTaskInstanceRepository,
   PowerSyncTaskDependencyRepository,
   PowerSyncTaskFolderRepository,
+  PowerSyncTaskWriteTransactionRunner,
 } from './adapters/powersync';
 import {
   createTaskScheduleProjectionSource,
@@ -27,27 +29,18 @@ import { createTaskScheduleExecutionSource } from './schedule-execution-source';
 import type { TaskScheduleExecutionSource } from '../schedule-execution';
 import type { TaskScheduleProjectionSource } from '../schedule-projection';
 
-/**
- * Minimal queryable interface compatible with PowerSync / IElectronDatabase.
- * PowerSync / IElectronDatabase 兼容的最小查询接口。
- */
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
+type TaskPowerSyncQueryable = IElectronDatabaseTransaction;
 
 /**
  * Creates a task module instance with PowerSync adapters.
  * 使用 PowerSync 适配器创建任务模块实例。
  *
- * @param db - PowerSync queryable database connection. PowerSync 可查询数据库连接。
+ * @param db - PowerSync desktop database runtime. PowerSync 桌面数据库运行时。
  * @param runtimeContributions - Optional runtime side effects (e.g. domain event subscriptions).
  *                               可选的运行时副作用（如领域事件订阅）。
  */
 export function createTaskPowerSyncModule(
-  db: Queryable,
+  db: IElectronDatabase,
   runtimeContributions?: TaskRuntimeContributionsInput,
 ): TaskModuleInstance {
   return createTaskModule({
@@ -55,12 +48,13 @@ export function createTaskPowerSyncModule(
     taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),
     taskDependencyRepository: new PowerSyncTaskDependencyRepository(db),
     taskFolderRepository: new PowerSyncTaskFolderRepository(db),
+    taskWriteTransactionRunner: new PowerSyncTaskWriteTransactionRunner(db),
     runtimeContributions,
   });
 }
 
 export function createTaskPowerSyncScheduleProjectionSource(
-  db: Queryable,
+  db: TaskPowerSyncQueryable,
 ): TaskScheduleProjectionSource {
   return createTaskScheduleProjectionSource({
     taskTemplateRepository: new PowerSyncTaskTemplateRepository(db),
@@ -69,7 +63,7 @@ export function createTaskPowerSyncScheduleProjectionSource(
 }
 
 export function createTaskPowerSyncScheduleExecutionSource(
-  db: Queryable,
+  db: TaskPowerSyncQueryable,
 ): TaskScheduleExecutionSource {
   return createTaskScheduleExecutionSource({
     taskInstanceRepository: new PowerSyncTaskInstanceRepository(db),

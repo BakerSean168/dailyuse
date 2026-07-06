@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aLoadedTaskTemplate, aTaskInstance } from '../../../../testing';
+import { aLoadedTaskTemplate } from '../../../../testing';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/i-task-instance-repository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
@@ -47,6 +47,16 @@ describe('PauseTaskTemplateUseCase', () => {
     expect(result).toBeOk();
     expect(template.status).toBe(TaskTemplateStatus.Paused);
     expect(templateRepo.save).toHaveBeenCalledWith(template);
+  });
+
+  it('should return BAD_REQUEST when template is not active', async () => {
+    const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id);
+
+    expect(result).toBeErrorWithCode('BAD_REQUEST');
+    expect(templateRepo.save).not.toHaveBeenCalled();
   });
 
   it('should delete incomplete instances when pausing', async () => {
@@ -105,17 +115,13 @@ describe('PauseTaskTemplateUseCase', () => {
     }
   });
 
-  it('should handle instance processing errors gracefully', async () => {
+  it('should return INTERNAL_ERROR when deleting incomplete instances fails', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
     vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockRejectedValue(new Error('DB error'));
 
     const result = await useCase.execute(template.id);
 
-    // Pause itself should still succeed, delete errors are caught
-    expect(result).toBeOk();
-    if (result.ok) {
-      expect(result.data.instancesDeleted).toBe(0);
-    }
+    expect(result).toBeErrorWithCode('INTERNAL_ERROR');
   });
 });
