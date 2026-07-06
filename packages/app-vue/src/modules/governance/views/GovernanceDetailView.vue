@@ -252,7 +252,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
@@ -275,22 +275,13 @@ const props = defineProps<{
 
 const router = useRouter();
 const { t, locale } = useI18n();
-const {
-  currentRule,
-  currentRuleEntity,
-  revisions,
-  isLoading,
-  isSaving,
-  error,
-  fetchRule,
-  fetchRevisions,
-  deleteRule,
-} = useGovernance();
+const { currentRuleView, revisions, isLoading, isSaving, error, fetchRule, fetchRevisions, deleteRule } =
+  useGovernance();
 const { trackDetail } = usePerformanceMonitor();
 
 const showDeleteDialog = ref(false);
 const showRevisions = ref(false);
-const displayRule = computed(() => currentRuleEntity.value ?? currentRule.value);
+const displayRule = currentRuleView;
 
 async function loadRule(id: string) {
   await trackDetail(async () => {

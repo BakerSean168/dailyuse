@@ -312,17 +312,8 @@ const props = defineProps<{
 
 const router = useRouter();
 const { t } = useI18n();
-const {
-  currentRule,
-  currentRuleEntity,
-  isLoading,
-  isSaving,
-  error,
-  allTags,
-  fetchRule,
-  createRule,
-  updateRule,
-} = useGovernance();
+const { currentRuleView, isLoading, isSaving, error, allTags, fetchRule, createRule, updateRule } =
+  useGovernance();
 
 const isEdit = computed(() => !!props.id);
 
@@ -417,7 +408,7 @@ async function handleSubmit() {
 async function loadEditData() {
   if (props.id) {
     await fetchRule(props.id);
-    const displayRule = currentRuleEntity.value ?? currentRule.value;
+    const displayRule = currentRuleView.value;
     if (displayRule) {
       form.code = displayRule.code;
       form.title = displayRule.title;

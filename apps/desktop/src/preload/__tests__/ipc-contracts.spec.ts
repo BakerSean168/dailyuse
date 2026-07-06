@@ -29,7 +29,7 @@ import {
   AIGoalIpcAdapter,
   AIKnowledgeNoteIpcAdapter,
 } from '@dailyuse/ai/infrastructure-client';
-import { RuleIpcAdapter } from '@dailyuse/governance/infrastructure-client';
+import { createGovernanceIpcClient } from '@dailyuse/governance/client';
 import { NotificationIpcAdapter } from '@dailyuse/notification/infrastructure-client';
 import { TaskTemplateIpcAdapter } from '@dailyuse/task/infrastructure-client';
 import {
@@ -418,7 +418,7 @@ describe('desktop IPC contract alignment', () => {
 
   it('governance adapter only invokes registered desktop governance channels', async () => {
     const recorder = createIpcRecorder();
-    const adapter = new RuleIpcAdapter(recorder as never);
+    const adapter = createGovernanceIpcClient(recorder as never);
 
     await adapter.createRule({} as never);
     await adapter.getRule({} as never);

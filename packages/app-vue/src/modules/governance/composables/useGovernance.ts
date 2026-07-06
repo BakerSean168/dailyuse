@@ -3,16 +3,16 @@
  * useGovernance - 治理模块主 composable
  *
  * Responsibilities:
- * - Calls the injected GovernanceClientService
+ * - Calls the injected governance client seam
  * - Keeps Pinia as normalized POJO cache
- * - Hydrates domain-client Rule entities only when needed by the UI
+ * - Derives a lightweight UI display model locally
  * 职责：
- * - 调用注入的 GovernanceClientService
+ * - 调用注入的治理客户端 seam
  * - 让 Pinia 作为规范化 POJO 缓存
- * - 仅在 UI 需要 richer behavior 时水化 domain-client Rule 实体
+ * - 在 app 层本地派生轻量展示模型
  */
 
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGovernanceStore } from '../stores/governance-store';
 import { RULE_SERVICE_KEY } from '../../../di/keys';
@@ -25,25 +25,8 @@ import type {
   RuleStatus,
   UpdateRuleReq,
 } from '../types';
+import { toGovernanceDisplayRule } from '../display-rule';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
-
-type HydratedRule = RuleClientDTO & {
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-  hasTag(tag: string): boolean;
-};
-
-async function hydrateRule(dto: RuleClientDTO | null): Promise<HydratedRule | null> {
-  if (!dto) return null;
-
-  const { Rule } = await import('@dailyuse/governance/domain-client');
-  const result = Rule.fromClientDTO(dto);
-  if (!result.ok) {
-    console.error('[governance] failed to hydrate Rule entity', result.error);
-    return null;
-  }
-  return result.data as unknown as HydratedRule;
-}
 
 export function useGovernance() {
   const store = useGovernanceStore();
@@ -62,39 +45,11 @@ export function useGovernance() {
   const allTags = computed(() => store.allTags);
   const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
-  const ruleEntities = shallowRef<HydratedRule[]>([]);
-  const currentRuleEntity = shallowRef<HydratedRule | null>(null);
+  const currentRuleView = computed(() => toGovernanceDisplayRule(currentRule.value));
 
   function setGovernanceError(error: unknown, fallbackKey: string) {
     store.setError(translateResultError(error, t, { fallbackKey }));
   }
-
-  async function refreshHydratedRules(): Promise<void> {
-    const entities = await Promise.all(rules.value.map((rule) => hydrateRule(rule)));
-    ruleEntities.value = entities.filter(
-      (rule: HydratedRule | null): rule is HydratedRule => rule !== null,
-    );
-  }
-
-  async function refreshCurrentRuleEntity(): Promise<void> {
-    currentRuleEntity.value = await hydrateRule(currentRule.value);
-  }
-
-  watch(
-    rules,
-    () => {
-      void refreshHydratedRules();
-    },
-    { immediate: true },
-  );
-
-  watch(
-    currentRule,
-    () => {
-      void refreshCurrentRuleEntity();
-    },
-    { immediate: true },
-  );
 
   async function fetchRules(): Promise<void> {
     store.setLoading(true);
@@ -216,7 +171,7 @@ export function useGovernance() {
     store.setError(null);
     try {
       const result = await service.getRevisions({
-        ruleId: ruleId as unknown as Parameters<typeof service.getRevisions>[0]['ruleId'],
+        ruleId,
         page: 1,
         pageSize: 50,
       });
@@ -258,6 +213,7 @@ export function useGovernance() {
   return {
     rules,
     currentRule,
+    currentRuleView,
     revisions,
     isLoading,
     isSaving,
@@ -267,8 +223,6 @@ export function useGovernance() {
     pagination,
     allTags,
     hasActiveFilter,
-    ruleEntities,
-    currentRuleEntity,
     fetchRules,
     fetchRule,
     createRule,

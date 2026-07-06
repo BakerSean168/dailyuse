@@ -28,6 +28,19 @@ function expectChannelsInSource(source: string, channels: Record<string, string>
   }
 }
 
+function expectChannelRefsInSource(
+  source: string,
+  channelNamespace: string,
+  channels: Record<string, string>,
+) {
+  for (const channelName of Object.keys(channels)) {
+    expect(
+      source.includes(`${channelNamespace}.${channelName}`),
+      `missing channel reference ${channelNamespace}.${channelName}`,
+    ).toBe(true);
+  }
+}
+
 describe('desktop main handler contracts', () => {
   it('auth main module covers all shared auth channels', () => {
     const source = readWorkspaceFile(
@@ -46,9 +59,9 @@ describe('desktop main handler contracts', () => {
     expectChannelsInSource(source, AIChannels);
   });
 
-  it('governance electron entry covers all shared governance channels', () => {
-    const source = readWorkspaceFile('packages/governance/src/electron-entry/index.ts');
-    expectChannelsInSource(source, GovernanceChannels);
+  it('governance electron seam covers all shared governance channels', () => {
+    const source = readWorkspaceFile('packages/governance/src/electron/index.ts');
+    expectChannelRefsInSource(source, 'GovernanceChannels', GovernanceChannels);
   });
 
   it('goal electron entry covers all shared goal channels', () => {

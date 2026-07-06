@@ -26,15 +26,8 @@ const desktopTestWorkspaceEntries = [
   ['@dailyuse/goal/application-client', 'packages/goal/src/application-client/index.ts'],
   ['@dailyuse/goal/infrastructure-client', 'packages/goal/src/infrastructure-client/index.ts'],
   ['@dailyuse/goal/electron-entry', 'packages/goal/src/electron-entry/index.ts'],
-  [
-    '@dailyuse/governance/application-client',
-    'packages/governance/src/application-client/index.ts',
-  ],
-  [
-    '@dailyuse/governance/infrastructure-client',
-    'packages/governance/src/infrastructure-client/index.ts',
-  ],
-  ['@dailyuse/governance/electron-entry', 'packages/governance/src/electron-entry/index.ts'],
+  ['@dailyuse/governance/client', 'packages/governance/src/client/index.ts'],
+  ['@dailyuse/governance/electron', 'packages/governance/src/electron/index.ts'],
   ['@dailyuse/task/application-client', 'packages/task/src/application-client/index.ts'],
   ['@dailyuse/task/infrastructure-client', 'packages/task/src/infrastructure-client/index.ts'],
   ['@dailyuse/task/electron-entry', 'packages/task/src/electron-entry/index.ts'],

@@ -7,7 +7,7 @@ import { toast } from 'vue-sonner';
 import { AccountClientService } from '@dailyuse/account/application-client';
 import { AuthClientService } from '@dailyuse/authentication/application-client';
 import { GoalClientService } from '@dailyuse/goal/application-client';
-import { GovernanceClientService } from '@dailyuse/governance/application-client';
+import { createGovernanceIpcClient } from '@dailyuse/governance/client';
 import { TaskClientService } from '@dailyuse/task/application-client';
 import { ScheduleClientService } from '@dailyuse/schedule/application-client';
 import { ReminderClientService } from '@dailyuse/reminder/application-client';
@@ -54,7 +54,7 @@ import { createEditorIpcAdapters } from '@dailyuse/editor/infrastructure-client'
 import { createNotificationIpcAdapters } from '@dailyuse/notification/infrastructure-client';
 import { createSettingIpcAdapters } from '@dailyuse/setting/infrastructure-client';
 import { createAIIpcAdapters } from '@dailyuse/ai/infrastructure-client';
-import { createGovernanceIpcAdapters } from '@dailyuse/governance/infrastructure-client';
+
 import { DataPortabilityIpcAdapter } from '@dailyuse/data-portability/infrastructure-client';
 
 export function installDesktopAppServices(app: App): void {
@@ -126,8 +126,7 @@ export function installDesktopAppServices(app: App): void {
     ),
   );
 
-  const governanceAdapters = createGovernanceIpcAdapters(resultIpcClient);
-  app.provide(RULE_SERVICE_KEY, new GovernanceClientService(governanceAdapters.rule));
+  app.provide(RULE_SERVICE_KEY, createGovernanceIpcClient(resultIpcClient));
 
   const dataPortabilityAdapter = new DataPortabilityIpcAdapter(resultIpcClient);
   app.provide(DATA_PORTABILITY_SERVICE_KEY, new DataPortabilityClientService(dataPortabilityAdapter));

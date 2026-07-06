@@ -52,7 +52,7 @@ import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron-entry';
 import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
-import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
+import { GovernanceElectronModule } from '@dailyuse/governance/electron';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
