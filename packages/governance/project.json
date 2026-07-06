@@ -34,7 +34,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --noEmit -p tsconfig.json",
+        "command": "node ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
         "cwd": "packages/governance"
       }
     },
@@ -42,7 +42,7 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "tsx src/infrastructure-server/seed/seed-data.ts",
+        "command": "node ../../node_modules/tsx/dist/cli.mjs src/server/infrastructure/seed/seed-data.ts",
         "cwd": "packages/governance"
       }
     },

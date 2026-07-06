@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
+import type { GovernanceApplicationPort } from '../../server/application';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { GovernanceUseCases } from '../../controllers/governance.controller';
 import { registerGovernanceRoutes } from './index';
 
 type RegisteredRoute = {
@@ -22,7 +22,7 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
-function createUseCaseStub(): GovernanceUseCases {
+function createUseCaseStub(): GovernanceApplicationPort {
   return {
     createRule: vi.fn(),
     updateRule: vi.fn(),
@@ -31,7 +31,7 @@ function createUseCaseStub(): GovernanceUseCases {
     listRules: vi.fn(),
     searchRules: vi.fn(),
     getRevisions: vi.fn(),
-  } as GovernanceUseCases;
+  } as GovernanceApplicationPort;
 }
 
 function getRegisteredRoute(

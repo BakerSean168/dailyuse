@@ -11,19 +11,19 @@
  */
 
 import { Router } from 'express';
-import { GovernanceController } from '../../controllers/governance.controller';
-import type { GovernanceUseCases } from '../../controllers/governance.controller';
+import type { GovernanceApplicationPort } from '../../server/application';
+import { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
 import { registerGovernanceRulesRoutes } from './governance-rules.routes';
 import { registerGovernanceRuleRevisionsRoutes } from './governance-rule-revisions.routes';
 
 /** Registers all governance routes with resource-first ordering. 以资源优先顺序注册所有治理路由。 */
 export function registerGovernanceRoutes(
-  handlers: GovernanceUseCases,
+  api: GovernanceApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: GovernanceOpenApiRegistry,
 ): Router {
-  const controller = new GovernanceController(handlers);
+  const controller = new GovernanceController(api);
   const router = Router();
 
   router.use(registerGovernanceRulesRoutes(controller, middleware, openApiRegistry));

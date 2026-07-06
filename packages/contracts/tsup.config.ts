@@ -21,6 +21,7 @@ export default createTsupConfig({
     // 模块入口（完整模块导出）
     'src/modules/task/index.ts',
     'src/modules/goal/index.ts',
+    'src/modules/governance/index.ts',
     'src/modules/reminder/index.ts',
     'src/modules/editor/index.ts',
     'src/modules/repository/index.ts',
@@ -43,4 +44,7 @@ export default createTsupConfig({
     // Mock 数据生成器（仅用于开发/测试）
     'src/mocks/index.ts',
   ],
+  extraOptions: {
+    dts: false,
+  },
 });

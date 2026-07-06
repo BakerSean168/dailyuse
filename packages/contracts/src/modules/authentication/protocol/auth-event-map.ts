@@ -22,7 +22,7 @@ import type { SessionRevokedEvent } from '../domain/events/session-revoked.event
  * 认证模块 - 事件映射
  *
  * 事件命名规范：auth:{kebab-action-past-tense}
- * 参见：packages/governance/src/contracts/protocol/governance-event-map.ts
+ * 参见：packages/contracts/src/modules/governance/protocol/governance-event-map.ts
  */
 export type AuthEventMap = {
   /**
@@ -82,3 +82,4 @@ export type AuthEventMap = {
   'auth:session-created': SessionCreatedEvent;
   'auth:session-revoked': SessionRevokedEvent;
 };
+

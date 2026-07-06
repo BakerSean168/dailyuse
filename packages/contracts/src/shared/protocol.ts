@@ -10,6 +10,8 @@ import type { DataPortabilityEventMap } from '../modules/data-portability/protoc
 import type { DataPortabilityRpcMap } from '../modules/data-portability/protocol/data-portability-rpc-map';
 import type { GoalEventMap } from '../modules/goal/protocol/goal-event-map';
 import type { GoalRpcMap } from '../modules/goal/protocol/goal-rpc-map';
+import type { GovernanceEventMap } from '../modules/governance/protocol/governance-event-map';
+import type { GovernanceRpcMap } from '../modules/governance/protocol/governance-rpc-map';
 import type { NotificationEventMap } from '../modules/notification/protocol/notification-event-map';
 import type { NotificationRpcMap } from '../modules/notification/protocol/notification-rpc-map';
 import type { ReminderEventMap } from '../modules/reminder/protocol/reminder-event-map';
@@ -24,13 +26,11 @@ import type { TaskEventMap } from '../modules/task/protocol/task-event-map';
 import type { TaskRpcMap } from '../modules/task/protocol/task-rpc-map';
 
 /**
- * Feature-owned event registry extensions.
- * 功能模块自有的事件注册表扩展点。
+ * Event registry extension seam.
+ * 事件注册表扩展 seam。
  *
- * Feature packages that keep protocol files outside `@dailyuse/contracts`
- * can merge into this interface through module augmentation.
- * 协议仍保留在 feature 包内的模块，可以通过 module augmentation
- * 合并进这个接口。
+ * Reserved for future out-of-tree protocol extensions.
+ * 预留给未来工作区外或实验性协议扩展使用。
  */
 export interface AppEventRegistryExtensions extends Record<string, unknown> {}
 
@@ -47,6 +47,7 @@ type CoreAppEventRegistry = AccountEventMap &
   DataPortabilityEventMap &
   EditorEventMap &
   GoalEventMap &
+  GovernanceEventMap &
   NotificationEventMap &
   ReminderEventMap &
   RepositoryEventMap &
@@ -63,6 +64,7 @@ type CoreAppRpcRegistry = AccountRpcMap &
   DataPortabilityRpcMap &
   EditorRpcMap &
   GoalRpcMap &
+  GovernanceRpcMap &
   NotificationRpcMap &
   ReminderRpcMap &
   RepositoryRpcMap &
@@ -71,3 +73,7 @@ type CoreAppRpcRegistry = AccountRpcMap &
   TaskRpcMap;
 
 export type AppRpcRegistry = CoreAppRpcRegistry & AppRpcRegistryExtensions;
+
+
+
+

@@ -12,8 +12,7 @@
  * ```
  *
  * 路由前缀：
- * - /governance/rules  (推荐)
- * - /rules            (短路径兼容)
+ * - /governance/rules
  */
 
 export { GovernanceApiModule } from './module';

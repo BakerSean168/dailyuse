@@ -8,15 +8,14 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --build",
-        "cwd": "packages/contracts"
+        "command": "node ./node_modules/typescript/bin/tsc --build packages/contracts/tsconfig.json"
       }
     },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/contracts/dist"],
       "options": {
-        "command": "node ../../node_modules/tsup/dist/cli-default.js",
+        "command": "node ../../node_modules/tsup/dist/cli-default.js && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
         "cwd": "packages/contracts"
       },
       "cache": true
