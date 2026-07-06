@@ -40,6 +40,7 @@ const SKIP_DIRS = new Set([
   'tests',
   'e2e',
   'infrastructure-server',
+  'infrastructure',
   'infrastructure-client',
 ]);
 

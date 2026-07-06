@@ -2,19 +2,9 @@
 /**
  * Server Feature Shape Audit
  *
- * Checks that business feature packages follow the standard shape
- * defined in ADR-031 (docs/architecture/adr/ADR-031-server-feature-standard-shape.md).
- *
- * Standard shape:
- *   domain-server/, domain-client/, domain-shared/, application-server/,
- *   application-client/, controllers/, api/, infrastructure-server/, infrastructure-client/
- *
- * Exceptions:
- *   - powersync-schema: schema-only, not a full feature
- *   - dashboard: read-model, no write side
- *   - domain-shared: shared kernel, not a feature
- *   - contracts: protocol definitions, not a feature
- *   - patterns, utils, test-utils, assets: support packages
+ * Checks that business feature packages follow the expected shape.
+ * Governance is the reference module and uses `src/server/*` instead of the
+ * older `*-server` directory pattern.
  */
 
 import { readdirSync, existsSync } from 'node:fs';
@@ -22,7 +12,7 @@ import { join } from 'node:path';
 
 const PACKAGES_DIR = join(import.meta.dirname, '..', '..', 'packages');
 
-const REQUIRED_DIRS = [
+const DEFAULT_REQUIRED_DIRS = [
   'domain-server',
   'domain-client',
   'domain-shared',
@@ -32,34 +22,35 @@ const REQUIRED_DIRS = [
   'api',
 ];
 
+const GOVERNANCE_REQUIRED_DIRS = ['server', 'api', 'client', 'electron'];
+const GOVERNANCE_SERVER_REQUIRED_DIRS = ['domain', 'application', 'transport', 'infrastructure'];
+
 const EXCEPTIONS = new Set([
-  'powersync-schema',   // schema-only
-  'dashboard',          // read-model
-  'domain-shared',      // shared kernel
-  'contracts',          // protocol definitions
-  'patterns',           // support package
-  'utils',              // support package
-  'test-utils',         // support package
-  'assets',             // support package
-  'ui-vue-shadcn',      // UI library
-  'ui-react-native',    // UI library
-  'app-vue',            // app shell
-  'app-react',          // app shell
-  'database',           // database client
-  'ipc-client',         // transport
-  'http-client',        // transport
+  'powersync-schema',
+  'dashboard',
+  'domain-shared',
+  'contracts',
+  'patterns',
+  'utils',
+  'test-utils',
+  'assets',
+  'ui-vue-shadcn',
+  'ui-react-native',
+  'app-vue',
+  'app-react',
+  'database',
+  'ipc-client',
+  'http-client',
 ]);
 
-// Packages that are known to be missing required directories (pre-existing)
 const KNOWN_GAPS = {
-  authentication: ['domain-client'], // TODO: extract client-side domain types
+  authentication: ['domain-client'],
 };
 
 function main() {
   const packages = readdirSync(PACKAGES_DIR, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
-
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
   const violations = [];
 
   for (const pkg of packages) {
@@ -69,11 +60,31 @@ function main() {
     if (!existsSync(srcDir)) continue;
 
     const srcContents = readdirSync(srcDir);
-    const hasDomainServer = srcContents.some((d) => d.startsWith('domain'));
-    if (!hasDomainServer) continue; // Not a feature package
+
+    if (pkg === 'governance') {
+      const missingRootDirs = GOVERNANCE_REQUIRED_DIRS.filter((dir) => !srcContents.includes(dir));
+      if (missingRootDirs.length > 0) {
+        violations.push({ package: pkg, missing: missingRootDirs });
+        continue;
+      }
+
+      const serverDir = join(srcDir, 'server');
+      const serverContents = readdirSync(serverDir);
+      const missingServerDirs = GOVERNANCE_SERVER_REQUIRED_DIRS
+        .filter((dir) => !serverContents.includes(dir))
+        .map((dir) => `server/${dir}`);
+
+      if (missingServerDirs.length > 0) {
+        violations.push({ package: pkg, missing: missingServerDirs });
+      }
+      continue;
+    }
+
+    if (!srcContents.includes('domain-server')) continue;
 
     const knownGap = KNOWN_GAPS[pkg] ?? [];
-    const missing = REQUIRED_DIRS.filter((dir) => !srcContents.includes(dir) && !knownGap.includes(dir));
+    const missing = DEFAULT_REQUIRED_DIRS.filter((dir) => !srcContents.includes(dir) && !knownGap.includes(dir));
+
     if (missing.length > 0) {
       violations.push({ package: pkg, missing });
     }
@@ -81,11 +92,10 @@ function main() {
 
   if (violations.length > 0) {
     console.error('❌ Server Feature Shape Audit FAILED\n');
-    console.error('The following packages are missing required directories per ADR-031:\n');
-    for (const v of violations) {
-      console.error(`  ${v.package}: missing ${v.missing.join(', ')}`);
+    console.error('The following packages are missing required directories:\n');
+    for (const violation of violations) {
+      console.error(`  ${violation.package}: missing ${violation.missing.join(', ')}`);
     }
-    console.error('\nSee docs/architecture/adr/ADR-031-server-feature-standard-shape.md');
     process.exit(1);
   }
 

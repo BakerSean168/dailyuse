@@ -140,7 +140,7 @@ function countMeaningfulLines(jsdoc) {
  */
 function isInfrastructureAdapter(relativePath) {
   return (
-    relativePath.includes('/infrastructure-server/adapters/') &&
+    (relativePath.includes('/server/infrastructure/adapters/') || relativePath.includes('/infrastructure-server/adapters/')) &&
     !relativePath.includes('__tests__')
   );
 }

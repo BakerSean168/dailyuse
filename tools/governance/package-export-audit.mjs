@@ -3,26 +3,6 @@
  * Package Export Audit
  *
  * Ensures feature package public surfaces stay within documented whitelist.
- * Two layers of audit:
- *
- * 1. Root barrel (src/index.ts):
- *    - Forbids `export * from './application-server'`
- *    - Forbids `export * from './infrastructure-server'`
- *    - Forbids re-exporting concrete infra adapter classes (Prisma/PowerSync/Adapter/Repository)
- *
- * 2. Export map (package.json#exports):
- *    - Only allows subpaths in the per-package whitelist
- *    - Flags undeclared subpath exports that widen the public surface
- *
- * Allowed subpath whitelist strategy:
- *  - Default allowed: ., ./domain-shared, ./domain-server, ./domain-client,
- *    ./infrastructure-client, ./api, ./electron-entry
- *  - Package-specific additions (contracts, mocks, testing, schema, etc.)
- *  - ./application-server is NOT in the default whitelist — it has zero external
- *    consumers and should not be part of the stable public surface.
- *  - ./infrastructure-server is NOT in the default whitelist — concrete adapters
- *    should not be part of the stable public surface. Apps resolve via tsconfig
- *    path aliases for composition root wiring.
  */
 
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
@@ -30,10 +10,10 @@ import path from 'node:path';
 
 const ROOT = path.join(import.meta.dirname, '..', '..');
 const PACKAGES = path.join(ROOT, 'packages');
-
 const infraForbiddenNameRegex = /(Prisma|PowerSync|Adapter|Repository)$/;
+const APPLICATION_BARREL_SPECIFIERS = ['./application-server', './server/application'];
+const INFRA_BARREL_SPECIFIERS = ['./infrastructure-server', './server/infrastructure'];
 
-/** Default allowed subpaths for feature packages */
 const DEFAULT_ALLOWED_SUBPATHS = [
   '.',
   './domain-shared',
@@ -45,9 +25,11 @@ const DEFAULT_ALLOWED_SUBPATHS = [
   './electron-entry',
 ];
 
-/** Per-package additions to the default whitelist */
+const STRICT_ALLOWED_SUBPATHS = {
+  governance: ['.', './api', './client', './electron'],
+};
+
 const PACKAGE_SPECIFIC_SUBPATHS = {
-  governance: ['./contracts', './mocks'],
   goal: ['./analytics', './events', './schedule-execution', './schedule-projection'],
   task: ['./analytics', './testing', './schema', './schedule-execution', './schedule-projection'],
   ai: ['./ports', './schema'],
@@ -58,7 +40,7 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   schedule: ['./schema'],
   setting: ['./schema'],
   contracts: [
-    './task', './goal', './reminder', './editor', './repository',
+    './task', './goal', './governance', './reminder', './editor', './repository',
     './account', './authentication', './schedule', './setting',
     './notification', './ai', './dashboard', './response', './result',
     './data-portability', './shared', './primitives', './electron', './mocks',
@@ -91,9 +73,6 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   ],
 };
 
-/**
- * Check if a subpath matches a pattern (supports trailing /* glob).
- */
 function subpathMatches(subpath, pattern) {
   if (pattern.endsWith('/*')) {
     return subpath === pattern.slice(0, -2) || subpath.startsWith(pattern.slice(0, -1));
@@ -101,50 +80,59 @@ function subpathMatches(subpath, pattern) {
   return subpath === pattern;
 }
 
-/**
- * Check if a subpath is allowed for a given package.
- */
 function isSubpathAllowed(pkgName, subpath) {
-  const defaultOk = DEFAULT_ALLOWED_SUBPATHS.some((p) => subpathMatches(subpath, p));
+  const strict = STRICT_ALLOWED_SUBPATHS[pkgName];
+  if (strict) {
+    return strict.some((pattern) => subpathMatches(subpath, pattern));
+  }
+
+  const defaultOk = DEFAULT_ALLOWED_SUBPATHS.some((pattern) => subpathMatches(subpath, pattern));
   if (defaultOk) return true;
+
   const specific = PACKAGE_SPECIFIC_SUBPATHS[pkgName] || [];
-  return specific.some((p) => subpathMatches(subpath, p));
+  return specific.some((pattern) => subpathMatches(subpath, pattern));
 }
 
-/**
- * Audit src/index.ts root barrel.
- */
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function auditRootBarrel(pkg, violations) {
   const indexPath = path.join(PACKAGES, pkg, 'src', 'index.ts');
   if (!existsSync(indexPath)) return;
   const content = readFileSync(indexPath, 'utf8');
   const rel = path.relative(ROOT, indexPath).replaceAll('\\', '/');
 
-  // forbid root barrel leaks of server application/infrastructure surfaces
-  if (/export\s*\*\s*from\s+['"]\.\/application-server['"]/m.test(content)) {
-    violations.push(`${rel} root barrel must not use "export * from './application-server'"`);
+  for (const specifier of APPLICATION_BARREL_SPECIFIERS) {
+    const exportAll = new RegExp(`export\\s*\\*\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`, 'm');
+    if (exportAll.test(content)) {
+      violations.push(`${rel} root barrel must not use "export * from '${specifier}'"`);
+    }
   }
 
-  if (/export\s*\*\s*from\s+['"]\.\/infrastructure-server['"]/m.test(content)) {
-    violations.push(`${rel} root barrel must not use "export * from './infrastructure-server'"`);
-  }
+  for (const specifier of INFRA_BARREL_SPECIFIERS) {
+    const exportAll = new RegExp(`export\\s*\\*\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`, 'm');
+    if (exportAll.test(content)) {
+      violations.push(`${rel} root barrel must not use "export * from '${specifier}'"`);
+    }
 
-  // detect named exports that re-export infra concrete classes
-  const namedExportPattern = /export\s*\{([^}]+)\}\s*from\s+['"]\.\/infrastructure-server['"]/gm;
-  let m;
-  while ((m = namedExportPattern.exec(content)) !== null) {
-    const names = m[1].split(',').map((s) => s.trim());
-    for (const n of names) {
-      if (infraForbiddenNameRegex.test(n) && !/^create/i.test(n)) {
-        violations.push(`${rel} re-exports infra concrete '${n}' from infrastructure-server (forbidden)`);
+    const namedExportPattern = new RegExp(
+      `export\\s*\\{([^}]+)\\}\\s*from\\s+['\"]${escapeRegExp(specifier)}['\"]`,
+      'gm',
+    );
+
+    let match;
+    while ((match = namedExportPattern.exec(content)) !== null) {
+      const names = match[1].split(',').map((name) => name.trim());
+      for (const name of names) {
+        if (infraForbiddenNameRegex.test(name) && !/^create/i.test(name)) {
+          violations.push(`${rel} re-exports infra concrete '${name}' from ${specifier} (forbidden)`);
+        }
       }
     }
   }
 }
 
-/**
- * Audit package.json#exports against whitelist.
- */
 function auditExportMap(pkg, violations) {
   const pkgJsonPath = path.join(PACKAGES, pkg, 'package.json');
   if (!existsSync(pkgJsonPath)) return;
@@ -152,9 +140,7 @@ function auditExportMap(pkg, violations) {
   if (!pkgJson.exports) return;
 
   const rel = path.relative(ROOT, pkgJsonPath).replaceAll('\\', '/');
-  const exportedKeys = Object.keys(pkgJson.exports);
-
-  for (const key of exportedKeys) {
+  for (const key of Object.keys(pkgJson.exports)) {
     if (!isSubpathAllowed(pkg, key)) {
       violations.push(`${rel} exports "${key}" which is not in the allowed whitelist for this package`);
     }
@@ -163,8 +149,8 @@ function auditExportMap(pkg, violations) {
 
 function main() {
   const pkgs = readdirSync(PACKAGES, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
   const violations = [];
 
   for (const pkg of pkgs) {
@@ -174,8 +160,8 @@ function main() {
 
   if (violations.length > 0) {
     console.error('❌ Package Export Audit FAILED');
-    for (const v of violations) {
-      console.error(`  - ${v}`);
+    for (const violation of violations) {
+      console.error(`  - ${violation}`);
     }
     process.exit(1);
   }
