@@ -38,6 +38,15 @@ updated: 2026-05-19T00:00:00
 docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
 ```
 
+默认本地访问端口：
+
+- Web: `http://localhost:58080`
+- API: `http://localhost:53080`
+- AI: `http://localhost:58100`
+- PowerSync: `http://localhost:58081`
+- PostgreSQL: `127.0.0.1:55432`
+- Redis: `127.0.0.1:56379`
+
 仅重启已有容器：
 
 ```bash

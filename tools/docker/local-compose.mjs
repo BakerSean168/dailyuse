@@ -73,7 +73,7 @@ function createRuntimeEnv() {
   }
 
   const powerSyncFallbacks = {
-    POWERSYNC_URL: 'http://localhost:8081',
+    POWERSYNC_URL: 'http://localhost:58081',
     POWERSYNC_KEY_ID: developmentEnv.get('POWERSYNC_KEY_ID') ?? 'powersync-dev-d90f228f',
     POWERSYNC_PRIVATE_KEY: developmentEnv.get('POWERSYNC_PRIVATE_KEY') ?? '',
     POWERSYNC_PUBLIC_KEY_N: developmentEnv.get('POWERSYNC_PUBLIC_KEY_N') ?? '',
