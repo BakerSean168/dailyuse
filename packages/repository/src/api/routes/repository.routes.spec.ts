@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { RepositoryController } from '../../controllers/repository.controller';
+import type { RepositoryController } from '../../server/transport/repository.controller';
 import { registerRepositoryCrudRoutes } from './repository.routes';
 
 type RegisteredRoute = {

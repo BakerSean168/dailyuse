@@ -24,17 +24,17 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
-import { createRepositoryModule, type RepositoryModuleInstance } from '../infrastructure-server';
-import { ResourceBookmarkPrismaRepository } from '../infrastructure-server/adapters/prisma/resource-bookmark-prisma.repository';
-import { RepositoryRepositoryFactory } from '../infrastructure-server/di/repository-repository.factory';
-import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
+import {
+  createRepositoryPrismaModule,
+  resolveRepositoryStorageBaseDir,
+  type RepositoryModuleInstance,
+} from '../server/infrastructure';
+import { createRepositoryRuntimeContribution } from '../server/infrastructure/runtime';
 import {
   registerRepositoryRoutes,
   registerResourceRoutes,
   registerFolderRoutes,
 } from './routes/index';
-import { createRepositoryTransportHandlers } from './transport-handlers';
-import { createRepositoryRuntimeContribution } from './runtime';
 
 // ---------------------------------------------------------------------------
 // Module context — 模块注册上下文
@@ -52,6 +52,10 @@ export interface RepositoryApiModuleDef {
   destroy?(): Promise<void> | void;
 }
 
+export interface CreateRepositoryApiModuleOptions {
+  readonly storageBaseDir?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Module singleton — 模块单例
 // ---------------------------------------------------------------------------
@@ -62,50 +66,52 @@ let activeRepositoryModule: RepositoryModuleInstance | null = null;
 // API Module — API 模块
 // ---------------------------------------------------------------------------
 
-export const RepositoryApiModule: RepositoryApiModuleDef = {
-  name: 'Repository',
+export function createRepositoryApiModule(
+  options: CreateRepositoryApiModuleOptions = {},
+): RepositoryApiModuleDef {
+  return {
+    name: 'Repository',
 
-  register(context) {
-    const { router, middleware, db } = context;
+    register(context) {
+      const { router, middleware, db } = context;
 
-    // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const prismaClient = db;
-    const repositories = RepositoryRepositoryFactory.createPrismaRepositories(prismaClient);
-    const storageBaseDir =
-      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';
+      const prismaClient = db;
+      const storageBaseDir = resolveRepositoryStorageBaseDir({
+        storageBaseDir: options.storageBaseDir,
+      });
+      const repositoryModule = createRepositoryPrismaModule(prismaClient, {
+        storageBaseDir,
+        runtimeContributions: createRepositoryRuntimeContribution(),
+      });
+      activeRepositoryModule = repositoryModule;
+      repositoryModule.start();
 
-    const repositoryModule = createRepositoryModule({
-      // The application edge decides which adapter implementation to use.
-      // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
-      repositoryRepository: repositories.repositoryRepository,
-      resourceRepository: repositories.resourceRepository,
-      folderRepository: repositories.folderRepository,
-      resourceBookmarkRepository: new ResourceBookmarkPrismaRepository(prismaClient),
-      storagePort: new FsStorageAdapter(storageBaseDir),
-      runtimeContributions: createRepositoryRuntimeContribution(),
-    });
-    activeRepositoryModule = repositoryModule;
-    repositoryModule.start();
+      const repositoryRoutes = registerRepositoryRoutes(
+        repositoryModule.api,
+        middleware,
+        context.openApiRegistry,
+      );
+      const resourceRoutes = registerResourceRoutes(
+        repositoryModule.api,
+        middleware,
+        context.openApiRegistry,
+      );
+      const folderRoutes = registerFolderRoutes(
+        repositoryModule.api,
+        middleware,
+        context.openApiRegistry,
+      );
 
-    // 2. Transport handler wiring — 传输层处理器接线（thin mapping）
-    const handlers = createRepositoryTransportHandlers(repositoryModule.api);
+      router.use('/repositories', repositoryRoutes);
+      router.use('/resources', resourceRoutes);
+      router.use('/folders', folderRoutes);
+    },
 
-    // 3. Route mounting — 路由挂载
-    const repositoryRoutes = registerRepositoryRoutes(
-      handlers,
-      middleware,
-      context.openApiRegistry,
-    );
-    const resourceRoutes = registerResourceRoutes(handlers, middleware, context.openApiRegistry);
-    const folderRoutes = registerFolderRoutes(handlers, middleware, context.openApiRegistry);
+    destroy() {
+      activeRepositoryModule?.dispose();
+      activeRepositoryModule = null;
+    },
+  };
+}
 
-    router.use('/repositories', repositoryRoutes);
-    router.use('/resources', resourceRoutes);
-    router.use('/folders', folderRoutes);
-  },
-
-  destroy() {
-    activeRepositoryModule?.dispose();
-    activeRepositoryModule = null;
-  },
-};
+export const RepositoryApiModule: RepositoryApiModuleDef = createRepositoryApiModule();

@@ -34,7 +34,7 @@ import {
 } from '@dailyuse/contracts/repository';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RepositoryId, FolderId, BookmarkId } from '@dailyuse/contracts/primitives';
-import type { RepositoryController } from '../../controllers/repository.controller';
+import type { RepositoryController } from '../../server/transport/repository.controller';
 import type { UploadResourcesRequestDTO, UploadResourcesResponseDTO } from '@dailyuse/contracts/repository';
 import type { Context } from '@dailyuse/contracts/shared';
 
