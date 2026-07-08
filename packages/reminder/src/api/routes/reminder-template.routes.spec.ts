@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { ReminderController } from '../../controllers/reminder.controller';
+import type { ReminderController } from '../../server/transport/reminder.controller';
 import { registerReminderTemplateRoutes } from './reminder-template.routes';
 
 type RegisteredRoute = {

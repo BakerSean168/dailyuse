@@ -13,15 +13,11 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
-  createNotificationModule,
-  NotificationPrismaRepository,
-  NotificationPreferencePrismaRepository,
-  NotificationTemplatePrismaRepository,
+  createNotificationPrismaModule,
+  createNotificationRuntimeContribution,
   type NotificationModuleInstance,
-} from '../infrastructure-server';
+} from '../server/infrastructure';
 import { registerNotificationRoutes } from './routes';
-import { createNotificationTransportHandlers } from './transport-handlers';
-import { createNotificationRuntimeContribution } from './runtime';
 
 /**
  * Typed module context for notification registration.
@@ -43,26 +39,14 @@ export const NotificationApiModule: NotificationApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    // The application edge decides which adapter implementation to use.
-    // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
-    const prismaClient = db;
-    const notificationModule = createNotificationModule({
-      notificationRepository: new NotificationPrismaRepository(prismaClient),
-      preferenceRepository: new NotificationPreferencePrismaRepository(prismaClient),
-      templateRepository: new NotificationTemplatePrismaRepository(prismaClient),
+    const notificationModule = createNotificationPrismaModule(db, {
       runtimeContributions: createNotificationRuntimeContribution(),
     });
     activeNotificationModule = notificationModule;
     notificationModule.start();
 
-    // 2. Transport handlers — convert module facade to controller signatures.
-    // 传输处理器 — 将模块门面转换为控制器签名。
-    const handlers = createNotificationTransportHandlers(notificationModule.api);
-
-    // 3. 创建路由（注入平台中间件）
     const notificationRoutes = registerNotificationRoutes(
-      handlers,
+      notificationModule.api,
       middleware,
       context.openApiRegistry,
     );

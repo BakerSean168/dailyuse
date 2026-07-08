@@ -5,7 +5,7 @@ import { createSharedConfig, createSliceCoverage } from '../../vitest.shared';
 const baseConfig = createSharedConfig({
   projectRoot: __dirname,
   environment: 'node',
-  testInclude: ['src/application-server/use-cases/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+  testInclude: ['src/server/application/use-cases/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
 });
 
 export default mergeConfig(
@@ -16,8 +16,8 @@ export default mergeConfig(
       root: __dirname,
       coverage: createSliceCoverage({
         projectRoot: __dirname,
-        roots: ['src/application-server/use-cases'],
-        reportsDirectory: 'coverage/packages/reminder/application-server-use-cases',
+        roots: ['src/server/application/use-cases'],
+        reportsDirectory: 'coverage/packages/reminder/server-application-use-cases',
         thresholds: {
           statements: 70,
           lines: 70,

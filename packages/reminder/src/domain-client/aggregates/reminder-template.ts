@@ -24,8 +24,8 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
-import { ReminderGroupId } from '../../domain-shared/value-objects/reminder-group-id';
+import { ReminderTemplateId } from '../../server/domain/value-objects/reminder-template-id';
+import { ReminderGroupId } from '../../server/domain/value-objects/reminder-group-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderHistory } from '../entities/reminder-history.js';
 

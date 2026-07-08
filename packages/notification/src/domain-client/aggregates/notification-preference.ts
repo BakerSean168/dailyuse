@@ -14,7 +14,7 @@ import type {
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { NotificationPreferenceId } from '../../domain-shared/value-objects/notification-preference-id';
+import { NotificationPreferenceId } from '../../server/domain/value-objects/notification-preference-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { NotificationPreferenceId as NotificationPreferenceIdBranded, IdentityId as IdentityIdBranded } from '@dailyuse/contracts/primitives';
 

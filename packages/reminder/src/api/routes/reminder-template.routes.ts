@@ -37,7 +37,7 @@ import {
 } from '@dailyuse/contracts/reminder';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
-import type { ReminderController } from '../../controllers/reminder.controller';
+import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Helpers ============
 
