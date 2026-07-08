@@ -9,7 +9,7 @@ import {
   createRepositoryPowerSyncModule,
   createFsStorageAdapter,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository/api';
+} from '@dailyuse/repository/electron';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 /**

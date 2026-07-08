@@ -9,7 +9,7 @@ import type {
 import {
   createRepositoryPrismaModule,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository/api';
+} from '@dailyuse/repository';
 
 /**
  * Adapter that persists AI knowledge notes via the repository module's

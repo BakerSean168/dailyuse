@@ -90,13 +90,7 @@
 
         <!-- DAG 图表 -->
         <div v-else ref="containerRef" class="dag-container" :class="{ compact: compact }">
-          <VChartComponent
-            ref="chartRef"
-            class="chart"
-            :option="dagOption"
-            autoresize
-            @click="handleNodeClick"
-          />
+          <div ref="chartRef" class="chart" />
         </div>
 
         <!-- 图例说明 -->
@@ -132,16 +126,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import type { DefineComponent } from 'vue';
+import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { use } from 'echarts/core';
+import { use, init, type ECharts, type EChartsCoreOption, type ECElementEvent } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import type { ECElementEvent, DefaultLabelFormatterCallbackParams } from 'echarts';
-import type { ECharts } from 'echarts/core';
-import VChart from 'vue-echarts';
+import type { DefaultLabelFormatterCallbackParams } from 'echarts';
 import {
   Card,
   CardHeader,
@@ -191,6 +182,11 @@ interface DAGNodeData {
   fixed?: boolean;
 }
 
+interface ExportDialogHandle {
+  open(): void;
+  close(): void;
+}
+
 const props = defineProps<{
   goalId: string;
   syncViewport?: boolean; // 是否启用视口同步
@@ -204,13 +200,12 @@ const emit = defineEmits<{
 
 const { getGoalAggregateView } = useGoal();
 const { t } = useI18n();
-const VChartComponent = VChart as unknown as DefineComponent<Record<string, unknown>>;
-const chartRef = ref<InstanceType<typeof VChart> | null>(null);
-const exportDialog = ref<InstanceType<typeof ExportDialog> | null>(null);
-const containerRef = ref<HTMLElement>();
+const chartRef = ref<HTMLElement | null>(null);
+const chartInstance = shallowRef<ECharts | null>(null);
+const exportDialog = ref<ExportDialogHandle | null>(null);
+const containerRef = ref<HTMLElement | null>(null);
 const layoutType = ref<'force' | 'hierarchical'>('force');
 const hasCustomLayout = ref(false);
-const containerSize = ref({ width: 800, height: 600 });
 
 const aggregateView = ref<GetGoalAggregateRes | null>(null);
 const isLoading = ref(false);
@@ -223,6 +218,77 @@ const isRetrying = ref(false);
 const currentZoom = ref(1);
 const currentCenter = ref<[number, number]>([0, 0]);
 const isUpdatingViewport = ref(false); // 防止循环更新
+
+function rerenderChart() {
+  chartInstance.value?.setOption(dagOption.value, true);
+}
+
+function getChartInstance(): ECharts | null {
+  return chartInstance.value;
+}
+
+function syncLayoutAndViewport(instance: ECharts) {
+  const option = instance.getOption();
+  const series = Array.isArray(option.series) ? option.series[0] : option.series;
+  const nodeData = series?.data as DAGNodeData[] | undefined;
+
+  if (nodeData) {
+    const positions: LayoutPosition[] = nodeData.map((node) => ({
+      id: node.id,
+      x: node.x ?? 0,
+      y: node.y ?? 0,
+    }));
+    saveLayout(props.goalId, positions);
+  }
+
+  if (props.syncViewport && !isUpdatingViewport.value && series) {
+    const seriesData = series as Record<string, unknown>;
+    const zoom = (seriesData.zoom as number) || 1;
+    const center = (seriesData.center as [number, number]) || ([0, 0] as [number, number]);
+
+    currentZoom.value = zoom;
+    currentCenter.value = center;
+
+    emit('viewport-change', {
+      zoom,
+      center,
+    });
+  }
+}
+
+function handleGraphRoam(...args: unknown[]) {
+  const event = args[0] as { type?: string } | undefined;
+  if (event?.type !== 'graphRoam') return;
+
+  const instance = getChartInstance();
+  if (!instance) return;
+
+  // 延迟保存以避免频繁写入
+  setTimeout(() => {
+    syncLayoutAndViewport(instance);
+  }, 500);
+}
+
+async function ensureChartInitialized() {
+  await nextTick();
+
+  if (!chartRef.value || chartInstance.value) return;
+
+  const instance = init(chartRef.value);
+  chartInstance.value = instance;
+  instance.on('click', handleNodeClick);
+  instance.on('graphRoam', handleGraphRoam);
+  rerenderChart();
+}
+
+function disposeChart() {
+  const instance = chartInstance.value;
+  if (!instance) return;
+  instance.off('click', handleNodeClick);
+  instance.off('graphRoam', handleGraphRoam);
+  instance.dispose();
+  chartInstance.value = null;
+}
 
 function getGoalDagErrorMessage(error: unknown, fallbackKey: string) {
   return translateResultError(error, t, { fallbackKey });
@@ -335,7 +401,7 @@ const calculateForceLayout = () => {
 };
 
 // DAG 图表配置
-const dagOption = computed(() => {
+const dagOption = computed<EChartsCoreOption>(() => {
   if (!aggregateGoal.value || !hasKeyResults.value) return {};
 
   // 从 localStorage 加载保存的布局
@@ -479,9 +545,7 @@ const resetLayout = () => {
     hasCustomLayout.value = false;
     // 强制重新渲染图表
     nextTick(() => {
-      if (chartRef.value) {
-        chartRef.value.setOption(dagOption.value as Parameters<typeof chartRef.value.setOption>[0], true);
-      }
+      rerenderChart();
     });
   } catch (error) {
     console.error('Failed to reset layout:', error);
@@ -499,52 +563,6 @@ const handleNodeClick = (params: ECElementEvent) => {
   }
 };
 
-// 监听拖拽事件保存坐标
-watch(chartRef, (chart) => {
-  if (chart && layoutType.value === 'force') {
-    const instance = chart.chart as unknown as ECharts | undefined;
-    if (!instance) return;
-    instance.on('graphRoam', (...args: unknown[]) => {
-      const params = args[0] as { type?: string } | undefined;
-      if (params?.type === 'graphRoam') {
-        // 延迟保存以避免频繁写入
-        setTimeout(() => {
-          const option = instance.getOption();
-          const series = Array.isArray(option.series) ? option.series[0] : option.series;
-          const nodeData = series?.data as DAGNodeData[] | undefined;
-          if (nodeData) {
-            const positions: LayoutPosition[] = nodeData.map((node) => ({
-              id: node.id,
-              x: node.x ?? 0,
-              y: node.y ?? 0,
-            }));
-            saveLayout(props.goalId, positions);
-          }
-        }, 500);
-
-        // 视口同步：发送缩放和平移事件
-        if (props.syncViewport && !isUpdatingViewport.value) {
-          const option = instance.getOption();
-          const series = Array.isArray(option.series) ? option.series[0] : option.series;
-          if (series) {
-            const seriesData = series as Record<string, unknown>;
-            const zoom = (seriesData.zoom as number) || 1;
-            const center = (seriesData.center as [number, number]) || ([0, 0] as [number, number]);
-
-            currentZoom.value = zoom;
-            currentCenter.value = center;
-
-            emit('viewport-change', {
-              zoom,
-              center,
-            });
-          }
-        }
-      }
-    });
-  }
-});
-
 // 监听布局类型变化，保存到 localStorage
 watch(layoutType, (newType) => {
   try {
@@ -560,14 +578,12 @@ useResizeObserver(containerRef, (entries) => {
   const { width, height } = entry.contentRect;
 
   if (width > 0 && height > 0) {
-    containerSize.value = { width, height };
+    chartInstance.value?.resize();
 
     // 如果是分层布局，重新计算节点位置
     if (layoutType.value === 'hierarchical') {
       nextTick(() => {
-        if (chartRef.value) {
-          chartRef.value.setOption(dagOption.value as Parameters<typeof chartRef.value.setOption>[0], true);
-        }
+        rerenderChart();
       });
     }
   }
@@ -576,8 +592,8 @@ useResizeObserver(containerRef, (entries) => {
 // 导出处理
 const handleExport = async (options: ExportOptions) => {
   try {
-    const chartInstance = chartRef.value?.chart as unknown as ECharts | undefined;
-    if (!chartInstance) {
+    const instance = getChartInstance();
+    if (!instance) {
       console.error('Chart instance not found');
       return;
     }
@@ -587,13 +603,13 @@ const handleExport = async (options: ExportOptions) => {
     // 根据格式选择导出方法
     switch (options.format) {
       case 'png':
-        blob = await dagExportService.exportPNG(chartInstance, options);
+        blob = await dagExportService.exportPNG(instance, options);
         break;
       case 'svg':
-        blob = await dagExportService.exportSVG(chartInstance, options);
+        blob = await dagExportService.exportSVG(instance, options);
         break;
       case 'pdf':
-        blob = await dagExportService.exportPDF(chartInstance, {
+        blob = await dagExportService.exportPDF(instance, {
           ...options,
           scale: options.resolution ?? options.scale,
         });
@@ -615,30 +631,21 @@ const handleExport = async (options: ExportOptions) => {
   }
 };
 
-// 键盘快捷键
-onMounted(() => {
-  const handleKeydown = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-      e.preventDefault();
-      exportDialog.value?.open();
-    }
-  };
-
-  window.addEventListener('keydown', handleKeydown);
-
-  return () => {
-    window.removeEventListener('keydown', handleKeydown);
-  };
-});
+const handleKeydown = (e: KeyboardEvent) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+    e.preventDefault();
+    exportDialog.value?.open();
+  }
+};
 
 // 视口同步方法：从外部更新视口
 const updateViewport = (viewport: { zoom: number; center: [number, number] }) => {
-  if (!chartRef.value || !props.syncViewport) return;
+  if (!props.syncViewport) return;
 
   isUpdatingViewport.value = true;
 
   try {
-    const instance = chartRef.value?.chart as unknown as ECharts | undefined;
+    const instance = getChartInstance();
     if (!instance) return;
     const currentOption = instance.getOption();
     const currentSeries = Array.isArray(currentOption.series)
@@ -707,13 +714,30 @@ const retryLoad = async () => {
 // 暴露方法给父组件
 defineExpose({
   updateViewport,
-  chartRef,
-  exportDialog,
   retryLoad,
+});
+
+watch(
+  () => (!isLoading.value && !loadError.value && !!aggregateGoal.value && hasKeyResults.value),
+  async (isReady) => {
+    if (!isReady) {
+      disposeChart();
+      return;
+    }
+
+    await ensureChartInitialized();
+  },
+  { immediate: true },
+);
+
+watch(dagOption, () => {
+  rerenderChart();
 });
 
 // 初始化
 onMounted(async () => {
+  window.addEventListener('keydown', handleKeydown);
+
   // 加载布局类型偏好
   try {
     const savedType = localStorage.getItem('dag-layout-type');
@@ -728,6 +752,11 @@ onMounted(async () => {
   if (props.goalId) {
     await loadGoalData();
   }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+  disposeChart();
 });
 </script>
 

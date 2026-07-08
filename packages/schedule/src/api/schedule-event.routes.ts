@@ -31,7 +31,8 @@ import {
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ScheduleId } from '@dailyuse/contracts/primitives';
-import type { ScheduleEventController } from '../controllers/schedule-event.controller';
+import type { ScheduleEventApplicationPort } from '../server/application';
+import { ScheduleEventController } from '../server/transport/schedule-event.controller';
 
 // ============ Types ============
 
@@ -43,12 +44,13 @@ interface PlatformMiddleware {
 // ============ Route Registration ============
 
 export function registerScheduleEventRoutes(
-  controller: ScheduleEventController,
+  api: ScheduleEventApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
+  const controller = new ScheduleEventController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/schedules/events',

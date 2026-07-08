@@ -11,14 +11,10 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
-  PrismaAccountRepository,
-  createAccountModule,
+  createAccountPrismaModule,
   type AccountModuleInstance,
-} from '../infrastructure-server';
+} from '../server/infrastructure';
 import { registerAccountRoutes } from './routes';
-import { createAccountTransportHandlers } from './transport-handlers';
-import { createAccountRuntimeContribution } from './runtime';
-import { createAccountEventListenerRuntime } from '../application-server/handlers/register-account-event-listeners';
 
 /**
  * Typed module context for account registration.
@@ -40,24 +36,16 @@ export const AccountApiModule: AccountApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root — 使用共享数据库单例
-    const accountRepository = new PrismaAccountRepository(db);
-    const accountModule = createAccountModule({
-      accountRepository,
-      runtimeContributions: createAccountRuntimeContribution(
-        createAccountEventListenerRuntime(accountRepository),
-      ),
-    });
+    const accountModule = createAccountPrismaModule(db);
     activeAccountModule = accountModule;
     accountModule.start();
 
-    // 2. 创建路由处理器
-    const handlers = createAccountTransportHandlers(accountModule.api);
+    const accountRoutes = registerAccountRoutes(
+      accountModule.api,
+      middleware,
+      context.openApiRegistry,
+    );
 
-    // 3. 注册路由
-    const accountRoutes = registerAccountRoutes(handlers, middleware, context.openApiRegistry);
-
-    // 4. 挂载 API 路由
     router.use('/accounts', accountRoutes);
   },
 

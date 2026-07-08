@@ -21,7 +21,7 @@ import {
 import { UpdateResourceSchema, ResourceResponseSchema } from '@dailyuse/contracts/repository';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ResourceId } from '@dailyuse/contracts/primitives';
-import type { RepositoryController } from '../../controllers/repository.controller';
+import type { RepositoryController } from '../../server/transport/repository.controller';
 
 // ============ Types ============
 

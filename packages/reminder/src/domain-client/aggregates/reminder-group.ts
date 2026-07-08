@@ -16,7 +16,7 @@ import type {
   ReminderStatus,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { ReminderGroupId } from '../../domain-shared/value-objects/reminder-group-id';
+import { ReminderGroupId } from '../../server/domain/value-objects/reminder-group-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export interface ReminderGroupState {

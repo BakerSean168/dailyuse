@@ -21,7 +21,7 @@ import {
   NotificationId,
   ChannelError,
   ChannelResponse,
-} from '../../domain-shared/value-objects';
+} from '../../server/domain/value-objects';
 import type { NotificationChannelId as NotificationChannelIdBranded, NotificationId as NotificationIdBranded } from '@dailyuse/contracts/primitives';
 
 export interface NotificationChannelState {

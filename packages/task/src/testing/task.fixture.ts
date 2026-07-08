@@ -18,9 +18,9 @@ import {
   CompletionRecord,
   ChecklistItemDefinition,
   TaskTemplateStatus,
-} from '../domain-shared';
-import { TaskInstance, TaskTemplate } from '../domain-server';
-import type { TaskTemplateState } from '../domain-server';
+} from '../server/domain';
+import { TaskInstance, TaskTemplate } from '../server/domain';
+import type { TaskTemplateState } from '../server/domain';
 
 function titleFor(prefix: string): string {
   return `${prefix} ${Math.random().toString(36).slice(2, 8)}`;

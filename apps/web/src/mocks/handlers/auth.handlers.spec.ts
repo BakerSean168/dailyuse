@@ -99,7 +99,7 @@ describe('auth handlers contracts', () => {
   });
 
   it('uses the current auth adapter routes and request schemas', async () => {
-    const { AuthHttpAdapter } = await import('@dailyuse/authentication/infrastructure-client');
+    const { AuthHttpAdapter } = await import('@dailyuse/authentication/client');
     const httpClient = createHttpClientSpy();
     const adapter = new AuthHttpAdapter(httpClient);
     const authResponse = createMockAuthResponse();

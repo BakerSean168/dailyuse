@@ -5,4 +5,4 @@
  * without depending on the full server application layer.
  */
 
-export { SearchGoalsUseCase } from '../application-server/use-cases/queries/search-goals.use-case';
+export { SearchGoalsUseCase } from '../server/application/use-cases/queries/search-goals.use-case';

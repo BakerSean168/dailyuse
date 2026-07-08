@@ -15,7 +15,7 @@ import {
 import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema, DeleteSuccessResSchema } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, GoalReviewId } from '@dailyuse/contracts/primitives';
-import type { GoalController } from '../../controllers/goal.controller';
+import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============
 

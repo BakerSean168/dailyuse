@@ -2,7 +2,7 @@ import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/api';
+} from '@dailyuse/authentication/electron';
 import {
   type IpcResult,
   toIpcResult,

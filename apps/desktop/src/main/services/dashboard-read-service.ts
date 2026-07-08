@@ -4,14 +4,14 @@ import {
   type DashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
 import { createLogger } from '@dailyuse/utils/logger';
-import { getGoalRepository } from '@dailyuse/goal/electron-entry';
+import { getGoalRepository } from '@dailyuse/goal/electron';
 import {
   getTaskInstanceRepository,
   getTaskTemplateRepository,
-} from '@dailyuse/task/electron-entry';
-import { getScheduleRepository } from '@dailyuse/schedule/electron-entry';
-import { getReminderTemplateRepository } from '@dailyuse/reminder/electron-entry';
-import { getNotificationRepository } from '@dailyuse/notification/electron-entry';
+} from '@dailyuse/task/electron';
+import { getScheduleRepository } from '@dailyuse/schedule/electron';
+import { getReminderTemplateRepository } from '@dailyuse/reminder/electron';
+import { getNotificationRepository } from '@dailyuse/notification/electron';
 
 const logger = createLogger('DashboardReadService');
 

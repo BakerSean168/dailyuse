@@ -11,8 +11,8 @@
 import type { TaskEventMap } from '@dailyuse/contracts/task';
 import { TaskGoalBindingTrigger, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { CreateGoalRecordUseCase } from '@dailyuse/goal/events';
-import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
-import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
+import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron';
+import { getTaskInstanceRepository, getTaskTemplateRepository } from '@dailyuse/task/electron';
 import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 
 let isInitialized = false;

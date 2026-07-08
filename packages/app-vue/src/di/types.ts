@@ -7,23 +7,23 @@
  *
  * 1. Goal / Task / AI 使用各模块显式导出的 `*ClientPort` public interface，
  *    避免引用具体 service class 触发 private nominal typing。
- * 2. application-client / client 的类型解析走依赖包 `dist/*.d.ts`，避免 app-vue 的 d.ts 生成
+ * 2. client seam 的类型解析走依赖包 `dist/*.d.ts`，避免 app-vue 的 d.ts 生成
  *    追踪到外部源码目录并触发 `rootDir: "./src"` 违规。
  */
 
-import type { AccountClientPort } from '@dailyuse/account/application-client';
-import type { AIClientPort } from '@dailyuse/ai/application-client';
-import type { AuthenticationClientPort } from '@dailyuse/authentication/application-client';
+import type { AccountClientPort } from '@dailyuse/account/client';
+import type { AIClientPort } from '@dailyuse/ai/client';
+import type { AuthenticationClientPort } from '@dailyuse/authentication/client';
 import type { GovernanceClientPort } from '@dailyuse/governance/client';
-import type { EditorClientPort } from '@dailyuse/editor/application-client';
-import type { GoalClientPort } from '@dailyuse/goal/application-client';
-import type { NotificationClientPort } from '@dailyuse/notification/application-client';
-import type { ReminderClientPort } from '@dailyuse/reminder/application-client';
-import type { RepositoryClientPort } from '@dailyuse/repository/application-client';
-import type { ScheduleClientPort } from '@dailyuse/schedule/application-client';
-import type { SettingClientPort } from '@dailyuse/setting/application-client';
-import type { TaskClientPort } from '@dailyuse/task/application-client';
-import type { DataPortabilityClientPort } from '@dailyuse/data-portability/application-client';
+import type { EditorClientPort } from '@dailyuse/editor/client';
+import type { GoalClientPort } from '@dailyuse/goal/client';
+import type { NotificationClientPort } from '@dailyuse/notification/client';
+import type { ReminderClientPort } from '@dailyuse/reminder/client';
+import type { RepositoryClientPort } from '@dailyuse/repository/client';
+import type { ScheduleClientPort } from '@dailyuse/schedule/client';
+import type { SettingClientPort } from '@dailyuse/setting/client';
+import type { TaskClientPort } from '@dailyuse/task/client';
+import type { DataPortabilityClientPort } from '@dailyuse/data-portability/client';
 import type { Component } from 'vue';
 
 // ── Service Interfaces (structural, no private members) ──

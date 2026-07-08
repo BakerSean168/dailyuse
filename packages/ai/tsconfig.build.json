@@ -10,8 +10,6 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.build.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"],
-      "@/domain-server/*": ["./src/domain-server/*"],
-      "@/domain-shared/*": ["./src/domain-shared/*"],
       "@dailyuse/database": ["../database/dist/index.d.ts"],
       "@dailyuse/database/prisma": ["../database/dist/generated/prisma/client.d.ts"],
       "@dailyuse/http-client": ["../http-client/dist/index.d.ts"],

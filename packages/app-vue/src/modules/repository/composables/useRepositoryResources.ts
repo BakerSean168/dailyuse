@@ -7,7 +7,7 @@
 import { ref } from 'vue';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
-import type { Repository } from '@dailyuse/repository/domain-client';
+import type { Repository } from '@dailyuse/repository/client';
 import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editor-issue-debug';
 import {
   buildUntitledNoteName,

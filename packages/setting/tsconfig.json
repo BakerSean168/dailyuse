@@ -6,9 +6,6 @@
     "types": ["node", "vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
-      "@/domain-server/*": ["./src/domain-server/*"],
-      "@/domain-client/*": ["./src/domain-client/*"],
-      "@/domain-shared/*": ["./src/domain-shared/*"],
       "@dailyuse/database": ["../database/src/index.ts"],
       "@dailyuse/http-client": ["../http-client/src/index.ts"],
       "@dailyuse/contracts": ["../contracts/src/index.ts"],

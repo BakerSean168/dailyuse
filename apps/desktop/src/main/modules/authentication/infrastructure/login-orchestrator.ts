@@ -7,11 +7,11 @@
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { generateUUID } from '@dailyuse/utils/shared';
-import { AuthSession } from '@dailyuse/authentication/api';
-import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/api';
+import { AuthSession } from '@dailyuse/authentication/electron';
+import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/electron';
 import type { AuthSessionId } from '@dailyuse/contracts/authentication';
-import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
-import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
+import type { IPasswordHasher } from '@dailyuse/authentication/electron';
+import { DeviceInfo } from '@dailyuse/authentication/electron';
 import {
   AuthMode,
   type LoginRequest,

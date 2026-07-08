@@ -5,7 +5,7 @@ import {
   successResponse,
 } from '@dailyuse/utils/result';
 import { AIEvaluationOverviewSchema } from '@dailyuse/contracts/ai';
-import type { AIEvaluationReportController } from '../../controllers/ai-evaluation-report.controller';
+import type { AIEvaluationReportController } from '../../server/transport/ai-evaluation-report.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

@@ -13,7 +13,7 @@ import {
   ContactEmail,
   AccountStatus,
   ContactPhone,
-} from '../../domain-shared';
+} from '../../server/domain/value-objects';
 
 export interface AccountState {
   id: IdentityId;

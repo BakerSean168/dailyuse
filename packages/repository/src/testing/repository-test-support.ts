@@ -1,9 +1,9 @@
-import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { FolderMemoryRepository } from '../infrastructure-server/adapters/memory/folder-memory.repository';
-import { RepositoryMemoryRepository } from '../infrastructure-server/adapters/memory/repository-memory.repository';
-import { ResourceBookmarkMemoryRepository } from '../infrastructure-server/adapters/memory/resource-bookmark-memory.repository';
-import { ResourceMemoryRepository } from '../infrastructure-server/adapters/memory/resource-memory.repository';
-import { createRepositoryModule } from '../infrastructure-server/repository.module';
+import { FsStorageAdapter } from '../server/infrastructure/adapters/fs/fs-storage.adapter';
+import { FolderMemoryRepository } from '../server/infrastructure/adapters/memory/folder-memory.repository';
+import { RepositoryMemoryRepository } from '../server/infrastructure/adapters/memory/repository-memory.repository';
+import { ResourceBookmarkMemoryRepository } from '../server/infrastructure/adapters/memory/resource-bookmark-memory.repository';
+import { ResourceMemoryRepository } from '../server/infrastructure/adapters/memory/resource-memory.repository';
+import { createRepositoryModule } from '../server/infrastructure/repository.module';
 
 export interface RepositoryMemoryTestRepositories {
   readonly resourceRepository: ResourceMemoryRepository;

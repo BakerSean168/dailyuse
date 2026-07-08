@@ -28,8 +28,8 @@ import {
   AccountResponseSchema,
   AvailabilityResponseSchema,
 } from '@dailyuse/contracts/account';
-import { AccountController } from '../controllers/account.controller';
-import type { AccountUseCases } from '../controllers/account.controller';
+import { AccountController } from '../server/transport';
+import type { AccountApplicationPort } from '../server/application';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -39,13 +39,13 @@ interface PlatformMiddleware {
 // ============ Route Registration ============
 
 export function registerAccountRoutes(
-  handlers: AccountUseCases,
+  api: AccountApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
-  const controller = new AccountController(handlers);
+  const controller = new AccountController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/accounts',

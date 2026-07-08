@@ -28,7 +28,7 @@ import {
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
-import type { TaskTemplateController } from '../../controllers/task-template.controller';
+import type { TaskTemplateController } from '../../server/transport/task-template.controller';
 
 // ============ Types ============
 
@@ -178,7 +178,6 @@ export function registerTaskTemplateRoutes(
     },
     [auth],
     (req) => controller.getTemplate(req.params!.id, req.query?.includeChildren === 'true'),
-    { requireAuth: false },
   );
 
   // PUT /:id — Update template (backwards compatibility)
@@ -323,7 +322,6 @@ export function registerTaskTemplateRoutes(
         req.params!.id,
         parseTemplateInstancesRange(req.query as Record<string, unknown>),
       ),
-    { requireAuth: false },
   );
 
   // POST /:id/bind-goal — Bind template to goal

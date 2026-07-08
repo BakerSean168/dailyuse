@@ -8,13 +8,13 @@
  * 【包含内容】
  * - 聚合根（Aggregates）：ReminderTemplate, ReminderGroup
  * - 实体（Entities）：ReminderHistory
- * - 值对象（Value Objects）：从 domain-shared 导入
+ * - 值对象（Value Objects）：从 server/domain 导入
  *
  * 【依赖规则】
  * ✅ 允许依赖：
  * - @dailyuse/utils（基类：AggregateRoot, Entity）
  * - @dailyuse/contracts（DTO 接口、Client 接口）
- * - @dailyuse/domain-shared（值对象、枚举）
+ * - @dailyuse/contracts（值对象 DTO、枚举）
  */
 
 // ===== Aggregates =====
@@ -23,5 +23,5 @@ export * from './aggregates';
 // ===== Entities =====
 export * from './entities';
 
-// ===== Value Objects (re-export from domain-shared) =====
-export * from '../domain-shared/value-objects';
+// ===== Value Objects (re-export from server/domain) =====
+export * from '../server/domain/value-objects';

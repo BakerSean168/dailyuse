@@ -20,3 +20,5 @@ export interface ScheduleNotificationRequest {
 export interface ScheduleNotificationPort {
   createNotification(request: ScheduleNotificationRequest): Promise<unknown>;
 }
+
+export { createNotificationPrismaScheduleNotificationPort } from '../server/infrastructure';

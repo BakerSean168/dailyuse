@@ -11,7 +11,7 @@
 
 import type { KeyResultClientDTO, KeyResultProgress } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils/domain';
-import { KeyResultId } from '../../domain-shared';
+import { KeyResultId } from '../../server/domain';
 
 export interface KeyResultState {
   id: KeyResultId;

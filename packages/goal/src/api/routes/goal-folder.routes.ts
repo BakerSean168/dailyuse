@@ -20,7 +20,7 @@ import {
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderId } from '@dailyuse/contracts/primitives';
-import type { GoalFolderController } from '../../controllers/goal-folder.controller';
+import type { GoalFolderController } from '../../server/transport/goal-folder.controller';
 
 // ============ Helpers ============
 

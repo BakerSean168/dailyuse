@@ -7,9 +7,7 @@
  *
  * 1. Composition Root (create concrete repos → create module → start)
  *    组合根（创建具体仓储 → 创建模块 → 启动）
- * 2. Transport handler creation via createAuthenticationTransportHandlers
- *    通过 createAuthenticationTransportHandlers 创建传输层处理器
- * 3. Route definition and mounting
+ * 2. Route definition and mounting
  *    路由定义与挂载
  *
  * Middleware comes from context.middleware, no dependency on apps/api internals.
@@ -18,19 +16,13 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
-import { eventBus } from '@dailyuse/utils/domain';
-import { createEventBusAdapter } from '@dailyuse/patterns';
 import {
-  createAuthenticationModule,
-  PrismaAuthIdentityRepository,
-  PrismaAuthSessionRepository,
-  Argon2Hasher,
+  createAuthenticationPrismaModule,
   JwtTokenProvider,
   type AuthenticationModuleInstance,
-} from '../infrastructure-server';
+} from '../server/infrastructure';
 import { registerAuthenticationRoutes } from './routes';
-import { createAuthenticationTransportHandlers } from './transport-handlers';
-import { createAuthenticationRuntimeContribution } from './runtime';
+import { createAuthenticationRuntimeContribution } from '../server/infrastructure/runtime';
 
 /**
  * Typed module context for authentication registration.
@@ -52,10 +44,6 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // ── 1. Composition Root — 组装依赖（使用共享数据库单例）──
-    const prismaClient = db;
-    const eventBusAdapter = createEventBusAdapter(eventBus);
-
     // Initialize token provider with configuration
     // 使用环境变量初始化令牌提供者
     const jwtSecret = process.env.JWT_SECRET;
@@ -70,25 +58,21 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
       7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
     );
 
-    const authenticationModule = createAuthenticationModule({
-      // The application edge decides which adapter implementation to use.
-      // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
-      identityRepository: new PrismaAuthIdentityRepository(prismaClient, eventBusAdapter),
-      sessionRepository: new PrismaAuthSessionRepository(prismaClient, eventBusAdapter),
-      passwordHasher: new Argon2Hasher(),
+    const authenticationModule = createAuthenticationPrismaModule(db, {
       tokenProvider,
       runtimeContributions: createAuthenticationRuntimeContribution(),
     });
     activeAuthenticationModule = authenticationModule;
     authenticationModule.start();
 
-    // ── 2. Create transport handlers — 创建传输层处理器 ──
-    const handlers = createAuthenticationTransportHandlers(authenticationModule.api);
+    // ── 2. Register routes — 注册路由（注入平台中间件）──
+    const authRoutes = registerAuthenticationRoutes(
+      authenticationModule.api,
+      middleware,
+      context.openApiRegistry,
+    );
 
-    // ── 3. Register routes — 注册路由（注入平台中间件）──
-    const authRoutes = registerAuthenticationRoutes(handlers, middleware, context.openApiRegistry);
-
-    // ── 4. Mount onto API router — 挂载到主路由（模块自决前缀）──
+    // ── 3. Mount onto API router — 挂载到主路由（模块自决前缀）──
     router.use('/auth', authRoutes);
   },
 

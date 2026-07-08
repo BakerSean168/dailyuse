@@ -2,12 +2,19 @@
 import { defineConfig, mergeConfig, type UserConfig } from 'vitest/config';
 import { createSharedConfig } from '../../vitest.shared';
 
+const benchmarkIncludes = [
+  'src/server/application/__tests__/benchmarks/sort-algorithm.bench.ts',
+  'src/server/application/__tests__/benchmarks/service-sorting.bench.ts',
+  'src/server/application/__tests__/benchmarks/stability.bench.ts',
+  'src/server/application/__tests__/benchmarks/http-endpoint.bench.ts',
+];
+
 const sharedConfig = createSharedConfig({
   projectRoot: __dirname,
   environment: 'node',
+  testInclude: benchmarkIncludes,
   aliases: {
-    '@/domain-server': './src/domain-server/index.ts',
-    '@/domain-shared': './src/domain-shared/index.ts',
+    '@/server/domain': './src/server/domain/index.ts',
     '@dailyuse/contracts/task': '../contracts/src/modules/task/index.ts',
     '@dailyuse/contracts/result': '../contracts/src/result/index.ts',
     '@dailyuse/contracts/shared': '../contracts/src/shared/index.ts',
@@ -17,8 +24,6 @@ const sharedConfig = createSharedConfig({
     '@dailyuse/test-utils/helpers/result-matchers': '../test-utils/src/helpers/result-matchers.ts',
     '@dailyuse/task/testing': './src/testing/index.ts',
     '@dailyuse/task': './src/index.ts',
-    '@dailyuse/task/domain-shared': './src/domain-shared/index.ts',
-    '@dailyuse/task/domain-server': './src/domain-server/index.ts',
     '@dailyuse/domain-shared': '../../packages/domain-shared/src',
     '@dailyuse/database': '../../packages/database/src',
   },
@@ -28,20 +33,14 @@ const projectConfig = defineConfig({
   root: __dirname,
   resolve: {
     alias: [
-      { find: '@/domain-server/', replacement: `${__dirname}/src/domain-server/` },
-      { find: '@/domain-shared/', replacement: `${__dirname}/src/domain-shared/` },
+      { find: '@/server/', replacement: `${__dirname}/src/server/` },
     ],
   },
   test: {
     name: 'task-performance',
     // Keep the performance suite opt-in and deterministic. Bench files are
     // intentionally allowlisted here so normal `task:test` runs stay fast.
-    include: [
-      'src/application-server/__tests__/benchmarks/sort-algorithm.bench.ts',
-      'src/application-server/__tests__/benchmarks/service-sorting.bench.ts',
-      'src/application-server/__tests__/benchmarks/stability.bench.ts',
-      'src/application-server/__tests__/benchmarks/http-endpoint.bench.ts',
-    ],
+    include: benchmarkIncludes,
     exclude: ['node_modules', 'dist', '.git', '.cache'],
     testTimeout: 30000,
     // Use a forked Node runtime to reduce interference from the current CLI process.

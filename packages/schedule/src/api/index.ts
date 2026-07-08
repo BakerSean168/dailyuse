@@ -22,14 +22,3 @@ export type {
   ScheduleApiModuleDef,
   CreateScheduleApiModuleOptions,
 } from './module';
-export {
-  createSchedulePrismaModule,
-  createScheduleTaskPrismaRepository,
-} from './prisma';
-export type { CreateSchedulePrismaModuleOptions } from './prisma';
-export { PowerSyncScheduleTaskRepository } from '../infrastructure-server';
-export { ScheduleTask } from '../domain-server';
-export type { IScheduleTaskRepository } from '../domain-server';
-export type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor } from './runtime';
-export { ScheduleController, type ScheduleUseCases } from '../controllers';
-export { ScheduleEventController, type ScheduleEventUseCases } from '../controllers';

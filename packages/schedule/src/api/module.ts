@@ -15,21 +15,14 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
-  createScheduleModule,
-  SchedulePrismaRepository,
-  ScheduleTaskPrismaRepository,
-  ScheduleExecutionPrismaRepository,
+  createSchedulePrismaModule,
+  createScheduleTaskPrismaRepository,
+  createScheduleRuntimeContribution,
   type ScheduleModuleInstance,
-} from '../infrastructure-server';
-import { ScheduleEventController } from '../controllers/schedule-event.controller';
+} from '../server/infrastructure';
 import { registerScheduleRoutes } from './routes';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
-import {
-  createScheduleEventTransportHandlers,
-  createScheduleTransportHandlers,
-} from './transport-handlers';
-import type { ScheduleTaskSourceExecutor } from '../application-server/source-executors/runtime-contract';
-import { createScheduleRuntimeContribution } from './runtime';
+import type { ScheduleTaskSourceExecutor } from '../server/application';
 
 /**
  * Typed module context for schedule registration.
@@ -39,7 +32,7 @@ export type ScheduleApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface ScheduleApiModuleDef {
   readonly name: string;
-  register(context: ScheduleApiModuleContext): void;
+  register(context: ScheduleApiModuleContext): Promise<void> | void;
   destroy?(): void;
 }
 
@@ -55,21 +48,11 @@ export function createScheduleApiModule(
   return {
     name: 'Schedule',
 
-    register(context) {
+    async register(context) {
       const { router, middleware, db } = context;
 
-      // 1. Composition Root — assemble dependencies (use shared database singleton)
-      // 1. 组合根 —— 组装依赖（使用共享数据库单例）
-      const prismaClient = db;
-
-      const repos = {
-        scheduleRepository: new SchedulePrismaRepository(prismaClient),
-        scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(prismaClient),
-        scheduleTaskRepository: new ScheduleTaskPrismaRepository(prismaClient),
-      };
-
       const runtimeContribution = createScheduleRuntimeContribution({
-        scheduleTaskRepository: repos.scheduleTaskRepository,
+        scheduleTaskRepository: createScheduleTaskPrismaRepository(db),
         sourceExecutor:
           options.sourceExecutor ??
           {
@@ -79,27 +62,23 @@ export function createScheduleApiModule(
           },
       });
 
-      const scheduleModule = createScheduleModule({
-        ...repos,
+      const scheduleModule = createSchedulePrismaModule(db, {
         runtimeContributions: runtimeContribution,
       });
       activeScheduleModule = scheduleModule;
-      scheduleModule.start();
-
-      // 2. Transport handlers (thin boring mapping)
-      // 2. 传输层处理器（简单透传映射）
-      const handlers = createScheduleTransportHandlers(scheduleModule.api);
+      await scheduleModule.start();
 
       // 3. Register task routes / 注册任务路由
-      const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
+      const scheduleRoutes = registerScheduleRoutes(
+        scheduleModule.api,
+        middleware,
+        context.openApiRegistry,
+      );
 
       // 3b. Register schedule event routes (calendar entries)
       // 3b. 注册日程事件路由（日历条目）
-      const eventController = new ScheduleEventController({
-        ...createScheduleEventTransportHandlers(scheduleModule.eventApi),
-      });
       const eventRoutes = registerScheduleEventRoutes(
-        eventController,
+        scheduleModule.eventApi,
         middleware,
         context.openApiRegistry,
       );

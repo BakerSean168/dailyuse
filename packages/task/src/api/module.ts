@@ -17,14 +17,17 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
-import { createTaskPrismaModule } from './prisma';
-import { TaskTemplateController } from '../controllers/task-template.controller';
-import { TaskInstanceController } from '../controllers/task-instance.controller';
-import { TaskDependencyController } from '../controllers/task-dependency.controller';
+import {
+  createTaskPrismaModule,
+  createTaskRuntimeContribution,
+  type TaskModuleInstance,
+  type TaskModuleRuntimeContribution,
+} from '../server/infrastructure';
+import { TaskTemplateController } from '../server/transport/task-template.controller';
+import { TaskInstanceController } from '../server/transport/task-instance.controller';
+import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import { registerTaskRoutes } from './routes';
-import { createTaskTransportHandlers } from './transport-handlers';
-import { createTaskRuntimeContribution } from './runtime';
-import type { TaskModuleInstance, TaskModuleRuntimeContribution } from '../infrastructure-server';
+import { createTaskTransportHandlers } from '../server/transport';
 
 /**
  * Typed module context for task registration.

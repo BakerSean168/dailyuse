@@ -3,7 +3,7 @@ import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
   AuthSession,
-} from '@dailyuse/authentication/api';
+} from '@dailyuse/authentication/electron';
 import {
   type IpcResult,
   toIpcResult,

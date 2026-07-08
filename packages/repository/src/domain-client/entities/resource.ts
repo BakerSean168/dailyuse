@@ -17,11 +17,11 @@ import type {
   FolderId as IFolderId,
 } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils/domain';
-import { ResourceId } from '../../domain-shared/value-objects/resource-id';
-import { ResourceMetadata } from '../../domain-shared/value-objects/resource-metadata';
-import { ResourceStats } from '../../domain-shared/value-objects/resource-stats';
-import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
-import { FolderId } from '../../domain-shared/value-objects/folder-id';
+import { ResourceId } from '../../server/domain/value-objects/resource-id';
+import { ResourceMetadata } from '../../server/domain/value-objects/resource-metadata';
+import { ResourceStats } from '../../server/domain/value-objects/resource-stats';
+import { RepositoryId } from '../../server/domain/value-objects/repository-id';
+import { FolderId } from '../../server/domain/value-objects/folder-id';
 
 export interface ResourceState {
   id: ResourceId;

@@ -7,16 +7,16 @@
  * Contents:
  * - Aggregates: AIConversation
  * - Entities: Message
- * - Value Objects: imported from domain-shared
+ * - Value Objects: imported from server/domain
  *
  * Dependency rules:
  * Allowed:
  * - @dailyuse/utils (base classes: AggregateRoot, Entity)
  * - @dailyuse/contracts (DTO interfaces, Client interfaces)
- * - @dailyuse/domain-shared (value objects, enums)
+ * - server/domain (value objects, enums)
  *
  * Forbidden:
- * - @dailyuse/domain-server (server-side domain models)
+ * - server/domain aggregates and repositories
  * - @dailyuse/infrastructure-* (infrastructure layer)
  * - @dailyuse/application-* (application layer)
  */
@@ -27,5 +27,5 @@ export * from './aggregates';
 // ===== Entities =====
 export * from './entities';
 
-// ===== Value Objects (re-export from domain-shared) =====
-export * from '../domain-shared/value-objects';
+// ===== Value Objects (re-export from server domain) =====
+export * from '../server/domain/value-objects';

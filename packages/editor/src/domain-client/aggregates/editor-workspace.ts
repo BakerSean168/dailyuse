@@ -16,8 +16,8 @@ import type {
   ProjectType,
 } from '@dailyuse/contracts/editor';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
-import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
+import { EditorWorkspaceId } from '../../server/domain/value-objects/editor-workspace-id';
+import { EditorSessionId } from '../../server/domain/value-objects/editor-session-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorSession } from '../entities/editor-session';
 

@@ -6,7 +6,7 @@
 import { Router, type RequestHandler } from 'express';
 import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@dailyuse/utils/result';
 import { ActivateFocusModeSchema, ExtendFocusModeSchema, FocusModeClientDTOSchema } from '@dailyuse/contracts/goal';
-import type { GoalController } from '../../controllers/goal.controller';
+import type { GoalController } from '../../server/transport/goal.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

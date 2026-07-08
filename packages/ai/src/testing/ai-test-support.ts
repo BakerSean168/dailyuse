@@ -2,8 +2,8 @@ import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 import type { IdentityId } from '@dailyuse/contracts';
 import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
 
-import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain-server';
-import { createAIModule, type AIModuleDependencies, type AIModuleInstance } from '../infrastructure-server';
+import type { IAIConversationRepository, IAIProviderConfigRepository } from '../server/domain';
+import { createAIModule, type AIModuleDependencies, type AIModuleInstance } from '../server/infrastructure';
 
 export function createAIConversationRepositoryStub(
   overrides: Partial<IAIConversationRepository> = {},

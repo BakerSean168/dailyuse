@@ -9,9 +9,9 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
-import { createGoalPowerSyncModule } from '@dailyuse/goal/api';
-import { createReminderPowerSyncModule } from '@dailyuse/reminder/api';
-import { createTaskPowerSyncModule } from '@dailyuse/task/api';
+import { createGoalPowerSyncModule } from '@dailyuse/goal';
+import { createReminderPowerSyncModule } from '@dailyuse/reminder';
+import { createTaskPowerSyncModule } from '@dailyuse/task';
 import {
   NotificationChannel,
   ReminderType,

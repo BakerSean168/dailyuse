@@ -1,74 +1,28 @@
 /**
  * @dailyuse/goal
  *
- * 目标模块 - OKR 目标与关键结果管理
+ * Goal module runtime root.
  *
- * 【分层架构】
- *
- * contracts           → 类型定义、DTO、事件、API Schema（@dailyuse/contracts/goal）
- * domain-shared       → 值对象（前后端共享）
- * domain-server       → 聚合根、仓储接口、领域服务
- * domain-client       → 客户端领域模型
- * application-server  → 用例服务（服务端）
- * application-client  → 客户端服务
- * infrastructure-server → Prisma/PowerSync 仓储实现、组合根
- * infrastructure-client → HTTP/IPC 适配器
- *
- * 【使用示例】
- *
- * ```typescript
- * // 1. 导入契约
- * import type { GoalServerDTO } from '@dailyuse/contracts/goal';
- *
- * // 2. 导入公共聚合根和组合根
- * import { Goal, GoalFolder, createGoalModule } from '@dailyuse/goal';
- *
- * // 3. 使用组合根
- * const module = createGoalModule({ goalRepository, goalFolderRepository, goalRecordRepository });
- * const result = await module.useCases.createGoal.execute(req, cx);
- * ```
+ * Public goal contracts are centralized in
+ * `@dailyuse/contracts/goal`.
+ * Root exports are limited to the canonical server composition root.
+ * Client / API / Electron seams use dedicated subpaths.
+ * Goal-specific analytics, events, and schedule orchestration seams
+ * remain on their dedicated subpaths.
  */
 
-// ================= Contracts Layer =================
-export * from '@dailyuse/contracts/goal';
-
-// ================= Domain Layer =================
-// Aggregates
-export { Goal, GoalFolder, FocusSession, GoalRecord } from './domain-server';
-export type { GoalState, GoalFolderState, GoalRecordState } from './domain-server';
-// Entities
-export { GoalReview, KeyResult } from './domain-server';
-export type { GoalReviewState, KeyResultState } from './domain-server';
-// Repositories (type-only exports - no conflict with contracts)
-export type {
-  IGoalRepository,
-  IGoalFolderRepository,
-  IGoalRecordRepository,
-  IFocusModeRepository,
-  IFocusSessionRepository,
-  IWeightSnapshotRepository,
-  GoalRecordQueryOptions,
-  SnapshotQueryResult,
-} from './domain-server';
-// Domain Services
-export { FocusSessionPolicy, GoalPolicy, GoalProgressCalculator } from './domain-server';
-
-export * from './application-client';
-
-// ================= Infrastructure Layer =================
-// Composition root + types — stable public helpers live on the package root.
 export {
-  // Composition root (externally consumed by apps/api, apps/desktop)
   createGoalModule,
   createGoalPrismaModule,
+  createGoalPrismaRepositories,
   createGoalPowerSyncModule,
+  createGoalRuntimeContribution,
+  createGoalUseCases,
+  type GoalApplicationPort,
   type GoalModuleDependencies,
   type GoalModuleInstance,
   type GoalModuleRuntimeContribution,
   type GoalModuleUseCases,
-} from './infrastructure-server';
-export * from './infrastructure-client';
-
-// 注意：electron-entry 不在主入口导出
-// 需要 Electron 支持的消费者应显式导入：@dailyuse/goal/electron-entry
-// 这样可以避免服务端代码（如 api）被迫加载 Electron 依赖
+  type GoalRuntimeContributionsInput,
+  type GoalRuntimeContribution,
+} from './server';

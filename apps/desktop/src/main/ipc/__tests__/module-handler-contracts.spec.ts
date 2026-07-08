@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, extname, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   AIChannels,
@@ -18,89 +18,111 @@ import {
 
 const workspaceRoot = resolve(__dirname, '../../../../../..');
 
-function readWorkspaceFile(relativePath: string) {
-  return readFileSync(resolve(workspaceRoot, relativePath), 'utf8');
-}
+function resolveSourceImport(baseFilePath: string, specifier: string) {
+  const resolvedPath = resolve(dirname(baseFilePath), specifier);
 
-function expectChannelsInSource(source: string, channels: Record<string, string>) {
-  for (const channel of Object.values(channels)) {
-    expect(source.includes(channel), `missing channel ${channel}`).toBe(true);
+  if (extname(resolvedPath) === '.ts') {
+    return resolvedPath;
   }
+
+  if (existsSync(`${resolvedPath}.ts`)) {
+    return `${resolvedPath}.ts`;
+  }
+
+  return resolve(resolvedPath, 'index.ts');
 }
 
-function expectChannelRefsInSource(
+function readWorkspaceModuleSource(relativePath: string) {
+  const absolutePath = resolve(workspaceRoot, relativePath);
+  const source = readFileSync(absolutePath, 'utf8');
+  const reExportMatch = source.match(/from ['"](\.\.\/electron-entry(?:\/index)?(?:\.ts)?)['"]/);
+
+  if (!reExportMatch) {
+    return source;
+  }
+
+  return `${source}\n${readFileSync(resolveSourceImport(absolutePath, reExportMatch[1]), 'utf8')}`;
+}
+
+function expectChannelCoverageInSource(
   source: string,
   channelNamespace: string,
   channels: Record<string, string>,
 ) {
-  for (const channelName of Object.keys(channels)) {
+  for (const [channelName, channel] of Object.entries(channels)) {
+    const hasLiteral = source.includes(channel);
+    const hasRef = source.includes(`${channelNamespace}.${channelName}`);
     expect(
-      source.includes(`${channelNamespace}.${channelName}`),
-      `missing channel reference ${channelNamespace}.${channelName}`,
+      hasLiteral || hasRef,
+      `missing channel ${channel} or channel reference ${channelNamespace}.${channelName}`,
     ).toBe(true);
   }
 }
 
 describe('desktop main handler contracts', () => {
   it('auth main module covers all shared auth channels', () => {
-    const source = readWorkspaceFile(
+    const source = readWorkspaceModuleSource(
       'apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts',
     );
-    expectChannelsInSource(source, AuthChannels);
+    expectChannelCoverageInSource(source, 'AuthChannels', AuthChannels);
   });
 
-  it('account electron entry covers all shared account channels', () => {
-    const source = readWorkspaceFile('packages/account/src/electron-entry/index.ts');
-    expectChannelsInSource(source, AccountChannels);
+  it('account electron seam covers all shared account channels', () => {
+    const source = readWorkspaceModuleSource('packages/account/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'AccountChannels', AccountChannels);
   });
 
   it('ai electron entry covers all shared ai channels', () => {
-    const source = readWorkspaceFile('packages/ai/src/electron-entry/index.ts');
-    expectChannelsInSource(source, AIChannels);
+    const source = readWorkspaceModuleSource('packages/ai/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'AIChannels', AIChannels);
   });
 
   it('governance electron seam covers all shared governance channels', () => {
-    const source = readWorkspaceFile('packages/governance/src/electron/index.ts');
-    expectChannelRefsInSource(source, 'GovernanceChannels', GovernanceChannels);
+    const source = readWorkspaceModuleSource('packages/governance/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'GovernanceChannels', GovernanceChannels);
   });
 
   it('goal electron entry covers all shared goal channels', () => {
-    const source = readWorkspaceFile('packages/goal/src/electron-entry/index.ts');
-    expectChannelsInSource(source, GoalChannels);
+    const source = readWorkspaceModuleSource('packages/goal/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'GoalChannels', GoalChannels);
   });
 
   it('task electron entry covers all shared task channels', () => {
-    const source = readWorkspaceFile('packages/task/src/electron-entry/index.ts');
-    expectChannelsInSource(source, TaskChannels);
+    const source = readWorkspaceModuleSource('packages/task/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'TaskChannels', TaskChannels);
   });
 
   it('schedule electron entry covers all shared schedule channels', () => {
-    const source = readWorkspaceFile('packages/schedule/src/electron-entry/index.ts');
-    expectChannelsInSource(source, ScheduleChannels);
+    const source = readWorkspaceModuleSource('packages/schedule/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'ScheduleChannels', ScheduleChannels);
   });
 
   it('reminder electron entry covers all shared reminder channels', () => {
-    const source = readWorkspaceFile('packages/reminder/src/electron-entry/index.ts');
-    expectChannelsInSource(source, ReminderChannels);
+    const source = readWorkspaceModuleSource('packages/reminder/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'ReminderChannels', ReminderChannels);
   });
 
-  it('repository electron entry covers all shared repository channels', () => {
-    const source = readWorkspaceFile('packages/repository/src/electron-entry/index.ts');
-    expectChannelsInSource(source, RepositoryChannels);
+  it('repository electron seam covers all shared repository channels', () => {
+    const source = readWorkspaceModuleSource('packages/repository/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'RepositoryChannels', RepositoryChannels);
   });
 
   it('notification electron entry covers all shared notification channels', () => {
-    const source = readWorkspaceFile('packages/notification/src/electron-entry/index.ts');
-    expectChannelsInSource(source, NotificationChannels);
+    const source = readWorkspaceModuleSource('packages/notification/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'NotificationChannels', NotificationChannels);
   });
 
-  it('setting electron entry covers all shared setting channels', () => {
-    const source = readWorkspaceFile('packages/setting/src/electron-entry/index.ts');
-    expectChannelsInSource(source, SettingChannels);
+  it('setting electron seam covers all shared setting channels', () => {
+    const source = readWorkspaceModuleSource('packages/setting/src/electron/index.ts');
+    expectChannelCoverageInSource(source, 'SettingChannels', SettingChannels);
   });
 
   it('data-portability electron entry covers all shared data-portability channels', () => {
-    const source = readWorkspaceFile('packages/data-portability/src/electron-entry/index.ts');
-    expectChannelsInSource(source, DataPortabilityChannels);
+    const source = readWorkspaceModuleSource('packages/data-portability/src/electron/index.ts');
+    expectChannelCoverageInSource(
+      source,
+      'DataPortabilityChannels',
+      DataPortabilityChannels,
+    );
   });
 });

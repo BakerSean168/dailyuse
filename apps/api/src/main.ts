@@ -23,36 +23,30 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
 import { AuthenticationApiModule } from '@dailyuse/authentication/api';
-import { EditorApiModule } from '@dailyuse/editor/api';
-import {
-  GoalApiModule,
-  createGoalPrismaScheduleExecutionSource,
-  createGoalPrismaScheduleProjectionSource,
-} from '@dailyuse/goal/api';
-import {
-  NotificationApiModule,
-  createNotificationPrismaScheduleNotificationPort,
-} from '@dailyuse/notification/api';
-import {
-  ReminderApiModule,
-  createReminderPrismaScheduleExecutionSource,
-  createReminderPrismaScheduleProjectionSource,
-} from '@dailyuse/reminder/api';
-import { RepositoryApiModule } from '@dailyuse/repository/api';
-import {
-  createScheduleApiModule,
-  createScheduleTaskPrismaRepository,
-} from '@dailyuse/schedule/api';
+import { createEditorApiModule } from '@dailyuse/editor/api';
+import { GoalApiModule } from '@dailyuse/goal/api';
+import { createGoalPrismaScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
+import { createGoalPrismaScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
+import { NotificationApiModule } from '@dailyuse/notification/api';
+import { createNotificationPrismaScheduleNotificationPort } from '@dailyuse/notification/schedule-execution';
+import { ReminderApiModule } from '@dailyuse/reminder/api';
+import { createReminderPrismaScheduleExecutionSource } from '@dailyuse/reminder/schedule-execution';
+import { createReminderPrismaScheduleProjectionSource } from '@dailyuse/reminder/schedule-projection';
+import { createRepositoryApiModule } from '@dailyuse/repository/api';
+import { resolveRepositoryStorageBaseDir } from '@dailyuse/repository';
+import { createScheduleTaskPrismaRepository } from '@dailyuse/schedule';
+import { createScheduleApiModule } from '@dailyuse/schedule/api';
 import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
-import { SettingApiModule, createSettingPrismaModule } from '@dailyuse/setting/api';
+import { createSettingPrismaModule } from '@dailyuse/setting';
+import { SettingApiModule } from '@dailyuse/setting/api';
 import { DataPortabilityApiModule } from '@dailyuse/data-portability/api';
+import { createTaskPrismaScheduleExecutionSource } from '@dailyuse/task/schedule-execution';
+import { createTaskPrismaScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
 import {
-  createTaskApiModule,
-  createTaskPrismaScheduleExecutionSource,
-  createTaskPrismaScheduleProjectionSource,
-} from '@dailyuse/task/api';
-import { createAIApiModule } from '@dailyuse/ai';
-import type { AIApiModuleContext } from '@dailyuse/ai/api';
+  createAIApiModule,
+  type AIApiModuleContext,
+} from '@dailyuse/ai/api';
+import { createTaskApiModule } from '@dailyuse/task/api';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
@@ -71,24 +65,25 @@ const logger = createLogger('API');
 
 let bootstrapper: ApiBootstrapper | null = null;
 let scheduler: CronSchedulerManager | null = null;
+const repositoryStorageBaseDir = resolveRepositoryStorageBaseDir();
 
 const AIApiModule = createAIApiModule({
   createKnowledgeNotePersistence: (context: AIApiModuleContext) =>
     new RepositoryKnowledgeNotePersistenceAdapter(
       context.db,
-      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
+      repositoryStorageBaseDir,
     ),
   createKnowledgeSourcePort: (context: AIApiModuleContext) =>
     new RepositoryKnowledgeSourceAdapter(
       context.db,
-      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
+      repositoryStorageBaseDir,
     ),
   createAnalyticsReadPort: (context: AIApiModuleContext) =>
     new ControlledAnalyticsReadAdapter(context.db),
   createAutomationToolExecutor: (context: AIApiModuleContext) =>
     new BackendAutomationToolExecutorAdapter(
       context.db,
-      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
+      repositoryStorageBaseDir,
     ),
   getKnowledgeNoteSubpath: async (identityId: string, context: AIApiModuleContext) => {
     const settingModule = createSettingPrismaModule(context.db);
@@ -149,16 +144,22 @@ async function bootstrap(): Promise<void> {
   const scheduleApiModule = createScheduleApiModule({
     sourceExecutor: scheduleOrchestrationModule.sourceExecutor,
   });
+  const repositoryApiModule = createRepositoryApiModule({
+    storageBaseDir: repositoryStorageBaseDir,
+  });
+  const editorApiModule = createEditorApiModule({
+    repositoryStorageBaseDir,
+  });
 
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(GovernanceApiModule) // ✅ 治理模块
     .register(AccountApiModule) // ✅ 账户模块
     .register(AuthenticationApiModule) // ✅ 认证模块
-    .register(EditorApiModule) // ✅ 编辑器模块
+    .register(editorApiModule) // ✅ 编辑器模块
     .register(NotificationApiModule) // ✅ 通知模块
     .register(ReminderApiModule) // ✅ 提醒模块
-    .register(RepositoryApiModule) // ✅ 仓库模块
+    .register(repositoryApiModule) // ✅ 仓库模块
     .register(scheduleApiModule) // ✅ 日程模块
     .register(SettingApiModule) // ✅ 设置模块
     .register(taskApiModule) // ✅ 任务模块

@@ -4,11 +4,11 @@ import {
   type DashboardData,
   type DashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
-import { createGoalPrismaRepositories } from '@dailyuse/goal/api';
-import { createTaskPrismaRepositories } from '@dailyuse/task/api';
-import { createSchedulePrismaModule } from '@dailyuse/schedule/api';
-import { createReminderPrismaRepositories } from '@dailyuse/reminder/api';
-import { createNotificationPrismaRepositories } from '@dailyuse/notification/api';
+import { createGoalPrismaRepositories } from '@dailyuse/goal';
+import { createTaskPrismaRepositories } from '@dailyuse/task';
+import { createSchedulePrismaModule } from '@dailyuse/schedule';
+import { createReminderPrismaRepositories } from '@dailyuse/reminder';
+import { createNotificationPrismaRepositories } from '@dailyuse/notification';
 
 interface TaskInstanceSnapshot {
   id: string | number;

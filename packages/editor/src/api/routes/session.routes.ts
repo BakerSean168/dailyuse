@@ -12,7 +12,7 @@ import {
   SessionResponseSchema,
   ActivateEditorSessionParamsSchema,
 } from '@dailyuse/contracts/editor';
-import type { EditorController } from '../../controllers/editor.controller';
+import type { EditorController } from '../../server/transport/editor.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

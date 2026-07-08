@@ -25,7 +25,7 @@ import type { ControlMode } from '@dailyuse/contracts/reminder';
  * IPC channel definitions for Reminder operations.
  *
  * Channels listed here MUST have a matching `ipcMain.handle()` in
- * `electron-entry/index.ts` AND an entry in the preload ALLOWED_CHANNELS.
+ * `electron/index.ts` AND an entry in the preload ALLOWED_CHANNELS.
  */
 const REMINDER_CHANNELS = {
   // Template CRUD

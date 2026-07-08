@@ -7,7 +7,7 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import { CreateKnowledgeNoteSchema, CreateKnowledgeNoteResSchema } from '@dailyuse/contracts/ai';
-import type { AIKnowledgeNoteController } from '../../controllers/ai-knowledge-note.controller';
+import type { AIKnowledgeNoteController } from '../../server/transport/ai-knowledge-note.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

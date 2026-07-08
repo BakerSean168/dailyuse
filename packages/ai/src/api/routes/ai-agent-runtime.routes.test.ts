@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AgentRunResultSchema, type AgentEvent } from '@dailyuse/contracts/ai';
 import { ok } from '@dailyuse/contracts/result';
-import type { AIAgentRuntimeController } from '../../controllers/ai-agent-runtime.controller';
+import type { AIAgentRuntimeController } from '../../server/transport/ai-agent-runtime.controller';
 import { registerAIAgentRuntimeRoutes } from './ai-agent-runtime.routes';
 
 type RouteHandler = (

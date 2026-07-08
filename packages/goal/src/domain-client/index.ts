@@ -23,5 +23,6 @@ export * from './aggregates';
 // ===== Entities =====
 export * from './entities';
 
-// ===== Value Objects (re-export from domain-shared) =====
-export * from '../domain-shared';
+// ===== Value Objects (re-export from server domain shared surface) =====
+export * from '../server/domain/value-objects';
+export * from '../server/domain/priority';

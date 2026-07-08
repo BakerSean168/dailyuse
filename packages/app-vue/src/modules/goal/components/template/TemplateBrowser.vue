@@ -278,9 +278,9 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Component } from 'vue';
+import type { GoalTemplate } from '@dailyuse/goal/client';
 
 const { t } = useI18n();
-import type { GoalTemplate } from '@dailyuse/goal/application-client';
 import templateRecommendationService from '../../utils/template-recommendation';
 import type { RecommendationFilters } from '../../utils/template-recommendation';
 

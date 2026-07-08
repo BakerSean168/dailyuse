@@ -1,4 +1,8 @@
 export {
+  aOneTimeTask,
+  aTaskInstance,
+  aTaskTemplateId,
+  anIdentityId,
   createSmokeApp,
   createMockTemplateRepo,
   createMockInstanceRepo,

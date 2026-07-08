@@ -37,4 +37,4 @@ export type {
   KnowledgeQueryCitation,
   KnowledgeQueryInput,
   KnowledgeQueryResult,
-} from '../application-server/ports';
+} from '../server/application/ports';

@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { TaskInstanceController } from '../../controllers/task-instance.controller';
+import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
 import { registerTaskInstanceRoutes } from './task-instance.routes';
 
 type RegisteredRoute = {

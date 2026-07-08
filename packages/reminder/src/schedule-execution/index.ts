@@ -4,7 +4,10 @@ import type {
   NotificationType,
   RelatedEntityType,
 } from '@dailyuse/contracts/notification';
-import type { ScheduleTask } from '@dailyuse/schedule';
+
+export interface ReminderScheduleExecutionTask {
+  readonly sourceEntityId: string;
+}
 
 export interface ReminderScheduleExecutionNotification {
   readonly identityId: string;
@@ -25,5 +28,12 @@ export interface ReminderScheduleExecutionOutcome {
 }
 
 export interface ReminderScheduleExecutionSource {
-  executeReminder(task: ScheduleTask): Promise<ReminderScheduleExecutionOutcome>;
+  executeReminder(task: ReminderScheduleExecutionTask): Promise<ReminderScheduleExecutionOutcome>;
 }
+
+export {
+  createReminderPrismaScheduleExecutionSource,
+  createReminderPowerSyncScheduleExecutionSource,
+  createReminderScheduleExecutionSource,
+  type CreateReminderScheduleExecutionSourceDeps,
+} from '../server/infrastructure';

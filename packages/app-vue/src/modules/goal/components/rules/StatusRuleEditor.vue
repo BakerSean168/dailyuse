@@ -311,7 +311,7 @@ import { useAutoStatusRules } from '../../composables/useAutoStatusRules';
 const { t } = useI18n();
 import type { StatusRule, RuleCondition } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import { sortRulesByPriority } from '@dailyuse/goal/application-client';
+import { sortRulesByPriority } from '@dailyuse/goal/client';
 import {
   Card,
   CardHeader,

@@ -1,8 +1,8 @@
 /**
  * useUserSetting - 设置模块主 composable
  *
- * 通过 inject 获取 SettingClientService。
- * SettingClientService 返回 Result<T>，在这里统一解包为 DTO，
+ * 通过 inject 获取 setting client seam。
+ * Setting client 返回 Result<T>，在这里统一解包为 DTO，
  * 失败时抛出结构化异常后由 try/catch 处理。
  */
 

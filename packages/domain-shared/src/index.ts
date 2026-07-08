@@ -4,8 +4,8 @@
  * This package contains truly shared domain primitives and utilities
  * that are used across multiple domain modules.
  * 
- * Each domain module (account, goal, task, etc.) should export their own
- * domain-shared code directly from their package (e.g., @dailyuse/account/domain-shared).
+ * Feature-specific shared domain code should stay inside the owning module or
+ * its centralized contracts package, instead of being re-exported here.
  * 
  * This package should NOT re-export domain-shared from other modules to avoid
  * circular dependencies.

@@ -3,8 +3,8 @@
  * Server Feature Shape Audit
  *
  * Checks that business feature packages follow the expected shape.
- * Governance is the reference module and uses `src/server/*` instead of the
- * older `*-server` directory pattern.
+ * The canonical shape is now `src/server/*`.
+ * Legacy server roots are forbidden for audited packages.
  */
 
 import { readdirSync, existsSync } from 'node:fs';
@@ -12,18 +12,18 @@ import { join } from 'node:path';
 
 const PACKAGES_DIR = join(import.meta.dirname, '..', '..', 'packages');
 
-const DEFAULT_REQUIRED_DIRS = [
+const FORBIDDEN_LEGACY_ROOT_DIRS = [
   'domain-server',
-  'domain-client',
   'domain-shared',
   'application-server',
-  'application-client',
+  'infrastructure-server',
   'controllers',
-  'api',
+  'electron-entry',
 ];
 
-const GOVERNANCE_REQUIRED_DIRS = ['server', 'api', 'client', 'electron'];
-const GOVERNANCE_SERVER_REQUIRED_DIRS = ['domain', 'application', 'transport', 'infrastructure'];
+const SERVER_FIRST_REQUIRED_DIRS = ['server', 'api', 'client', 'electron'];
+const SERVER_SUBDIRS = ['domain', 'application', 'transport', 'infrastructure'];
+const SERVER_REQUIRED_FILES = ['server/index.ts'];
 
 const EXCEPTIONS = new Set([
   'powersync-schema',
@@ -41,11 +41,25 @@ const EXCEPTIONS = new Set([
   'database',
   'ipc-client',
   'http-client',
+  // Cross-feature orchestration package; see ADR-031 orchestration-package exception.
+  'schedule-orchestration',
 ]);
 
-const KNOWN_GAPS = {
-  authentication: ['domain-client'],
-};
+const AUDITED_PACKAGES = new Set([
+  'account',
+  'ai',
+  'authentication',
+  'data-portability',
+  'editor',
+  'goal',
+  'governance',
+  'notification',
+  'reminder',
+  'repository',
+  'schedule',
+  'setting',
+  'task',
+]);
 
 function main() {
   const packages = readdirSync(PACKAGES_DIR, { withFileTypes: true })
@@ -55,46 +69,48 @@ function main() {
 
   for (const pkg of packages) {
     if (EXCEPTIONS.has(pkg)) continue;
+    if (!AUDITED_PACKAGES.has(pkg)) continue;
 
     const srcDir = join(PACKAGES_DIR, pkg, 'src');
     if (!existsSync(srcDir)) continue;
 
     const srcContents = readdirSync(srcDir);
 
-    if (pkg === 'governance') {
-      const missingRootDirs = GOVERNANCE_REQUIRED_DIRS.filter((dir) => !srcContents.includes(dir));
-      if (missingRootDirs.length > 0) {
-        violations.push({ package: pkg, missing: missingRootDirs });
-        continue;
-      }
-
-      const serverDir = join(srcDir, 'server');
-      const serverContents = readdirSync(serverDir);
-      const missingServerDirs = GOVERNANCE_SERVER_REQUIRED_DIRS
-        .filter((dir) => !serverContents.includes(dir))
-        .map((dir) => `server/${dir}`);
-
-      if (missingServerDirs.length > 0) {
-        violations.push({ package: pkg, missing: missingServerDirs });
-      }
+    const missingRootDirs = SERVER_FIRST_REQUIRED_DIRS.filter((dir) => !srcContents.includes(dir));
+    if (missingRootDirs.length > 0) {
+      violations.push({ package: pkg, missing: missingRootDirs });
       continue;
     }
 
-    if (!srcContents.includes('domain-server')) continue;
+    const forbiddenRootDirs = FORBIDDEN_LEGACY_ROOT_DIRS.filter((dir) => srcContents.includes(dir));
+    if (forbiddenRootDirs.length > 0) {
+      violations.push({ package: pkg, forbidden: forbiddenRootDirs });
+      continue;
+    }
 
-    const knownGap = KNOWN_GAPS[pkg] ?? [];
-    const missing = DEFAULT_REQUIRED_DIRS.filter((dir) => !srcContents.includes(dir) && !knownGap.includes(dir));
+    const serverDir = join(srcDir, 'server');
+    const serverContents = readdirSync(serverDir);
+    const missingServerDirs = SERVER_SUBDIRS
+      .filter((dir) => !serverContents.includes(dir))
+      .map((dir) => `server/${dir}`);
+    const missingServerFiles = SERVER_REQUIRED_FILES.filter((file) => !existsSync(join(srcDir, file)));
 
-    if (missing.length > 0) {
-      violations.push({ package: pkg, missing });
+    const missingServerEntries = [...missingServerDirs, ...missingServerFiles];
+    if (missingServerEntries.length > 0) {
+      violations.push({ package: pkg, missing: missingServerEntries });
     }
   }
 
   if (violations.length > 0) {
     console.error('❌ Server Feature Shape Audit FAILED\n');
-    console.error('The following packages are missing required directories:\n');
+    console.error('The following packages violate the required server-first shape:\n');
     for (const violation of violations) {
-      console.error(`  ${violation.package}: missing ${violation.missing.join(', ')}`);
+      if (violation.missing?.length > 0) {
+        console.error(`  ${violation.package}: missing ${violation.missing.join(', ')}`);
+      }
+      if (violation.forbidden?.length > 0) {
+        console.error(`  ${violation.package}: forbidden legacy root ${violation.forbidden.join(', ')}`);
+      }
     }
     process.exit(1);
   }

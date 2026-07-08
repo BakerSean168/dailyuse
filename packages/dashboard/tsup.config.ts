@@ -5,5 +5,6 @@ const config = baseLibraryConfig('@dailyuse/dashboard');
 export default {
   ...config,
   entry: ['src/index.ts'],
+  tsconfig: 'tsconfig.build.json',
   dts: createLocalOnlyDtsPaths(),
 };

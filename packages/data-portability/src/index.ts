@@ -1,8 +1,18 @@
 /**
- * @dailyuse/data-portability — 用户数据导入导出模块
+ * @dailyuse/data-portability
  *
- * Root barrel only re-exports client-safe types and adapters.
- * Server application-layer code is NOT exposed here — use the ./api entry for server composition root.
+ * Data portability module runtime root.
+ *
+ * Public contracts are centralized in `@dailyuse/contracts/data-portability`.
+ * Root exports are limited to the canonical server composition root.
+ * Client / API / Electron seams use dedicated subpaths.
  */
 
-export * from './infrastructure-client';
+export {
+  createDataPortabilityModule,
+  createDataPortabilityPrismaModule,
+  createPowerSyncDataPortabilityModule,
+  type DataPortabilityModuleDependencies,
+  type DataPortabilityModuleInstance,
+} from './server';
+export type { DataPortabilityApplicationPort } from './server';

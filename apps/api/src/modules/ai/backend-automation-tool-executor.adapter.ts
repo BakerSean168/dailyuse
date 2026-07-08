@@ -9,9 +9,9 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import type { PrismaClient } from '@dailyuse/database';
-import { createGoalPrismaModule } from '@dailyuse/goal/api';
-import { createReminderPrismaModule } from '@dailyuse/reminder/api';
-import { createTaskPrismaModule } from '@dailyuse/task/api';
+import { createGoalPrismaModule } from '@dailyuse/goal';
+import { createReminderPrismaModule } from '@dailyuse/reminder';
+import { createTaskPrismaModule } from '@dailyuse/task';
 import {
   NotificationChannel,
   ReminderType,

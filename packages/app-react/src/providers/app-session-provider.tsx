@@ -1,7 +1,9 @@
 import { createContext, startTransition, type PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 
-import { AuthClientService } from '@dailyuse/authentication/application-client';
-import { createAuthHttpAdapter } from '@dailyuse/authentication/infrastructure-client';
+import {
+  createAuthenticationHttpClient,
+  type AuthenticationClientPort,
+} from '@dailyuse/authentication/client';
 import type {
   AuthIdentityClientDTO,
   AuthResponseDTO,
@@ -97,7 +99,7 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
     refreshToken: null,
   });
 
-  const authServiceRef = useRef<AuthClientService | null>(null);
+  const authServiceRef = useRef<AuthenticationClientPort | null>(null);
 
   function resetRemoteState() {
     tokenRef.current = { accessToken: null, refreshToken: null };
@@ -201,7 +203,7 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
   }
 
   if (!authServiceRef.current) {
-    authServiceRef.current = new AuthClientService(createAuthHttpAdapter(createAuthorizedHttpClient()));
+    authServiceRef.current = createAuthenticationHttpClient(createAuthorizedHttpClient());
   }
 
   useEffect(() => {

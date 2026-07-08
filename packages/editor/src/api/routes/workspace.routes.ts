@@ -26,7 +26,7 @@ import {
 } from '@dailyuse/contracts/editor';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { EditorWorkspaceId } from '@dailyuse/contracts/primitives';
-import type { EditorController } from '../../controllers/editor.controller';
+import type { EditorController } from '../../server/transport/editor.controller';
 
 // ============ Types ============
 

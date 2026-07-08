@@ -7,9 +7,9 @@
 
 import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { TaskTemplateController } from '../../controllers/task-template.controller';
-import type { TaskInstanceController } from '../../controllers/task-instance.controller';
-import type { TaskDependencyController } from '../../controllers/task-dependency.controller';
+import type { TaskTemplateController } from '../../server/transport/task-template.controller';
+import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
+import type { TaskDependencyController } from '../../server/transport/task-dependency.controller';
 import { registerTaskTemplateRoutes } from './task-template.routes';
 import { registerTaskInstanceRoutes } from './task-instance.routes';
 import { registerTaskDependencyRoutes } from './task-dependency.routes';

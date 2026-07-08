@@ -7,10 +7,10 @@
  * @module authentication/infrastructure/offline-auth-helper
  */
 
-import { AuthIdentity } from '@dailyuse/authentication/api';
+import { AuthIdentity } from '@dailyuse/authentication/electron';
 import type { IdentityId } from '@dailyuse/contracts/authentication';
-import type { IAuthIdentityRepository } from '@dailyuse/authentication/api';
-import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
+import type { IAuthIdentityRepository } from '@dailyuse/authentication/electron';
+import type { IPasswordHasher } from '@dailyuse/authentication/electron';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 

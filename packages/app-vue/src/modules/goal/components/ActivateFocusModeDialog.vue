@@ -89,8 +89,12 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
-import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
-import { GoalId, HiddenGoalsMode } from '@dailyuse/goal/domain-shared';
+import {
+  HiddenGoalsMode,
+  type ActivateFocusModeRequest,
+  type FocusModeDTO,
+} from '@dailyuse/contracts/goal';
+import type { GoalId } from '@dailyuse/contracts/primitives';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
   Dialog,

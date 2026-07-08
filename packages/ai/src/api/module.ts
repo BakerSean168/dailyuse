@@ -34,9 +34,9 @@ import {
   AIServiceKnowledgeIngestionAdapter,
   AIServiceKnowledgeQueryAdapter,
   AIServiceKnowledgeNoteGenerationAdapter,
-} from '../infrastructure-server';
-import { AgentCheckpointPrismaAdapter } from '../infrastructure-server/adapters/prisma/agent-checkpoint-prisma.adapter';
-import { LangGraphCheckpointPrismaAdapter } from '../infrastructure-server/adapters/prisma/langgraph-checkpoint-prisma.adapter';
+} from '../server/infrastructure';
+import { AgentCheckpointPrismaAdapter } from '../server/infrastructure/adapters/prisma/agent-checkpoint-prisma.adapter';
+import { LangGraphCheckpointPrismaAdapter } from '../server/infrastructure/adapters/prisma/langgraph-checkpoint-prisma.adapter';
 import {
   registerAIAgentCheckpointRoutes,
   registerAILangGraphCheckpointRoutes,
@@ -50,24 +50,24 @@ import {
   registerAIKnowledgeQueryRoutes,
   registerAIKnowledgeNoteRoutes,
 } from './routes';
-import { AICapabilitiesController } from '../controllers/ai-capabilities.controller';
-import { AIAgentCheckpointController } from '../controllers/ai-agent-checkpoint.controller';
-import { AILangGraphCheckpointController } from '../controllers/ai-langgraph-checkpoint.controller';
-import { AIAgentRuntimeController } from '../controllers/ai-agent-runtime.controller';
-import { AIAnalyticsQueryController } from '../controllers/ai-analytics-query.controller';
-import { AIEvaluationReportController } from '../controllers/ai-evaluation-report.controller';
-import { AIGoalGenerationController } from '../controllers/ai-goal-generation.controller';
-import { AIProviderConfigController } from '../controllers/ai-provider-config.controller';
-import { AIChatController } from '../controllers/ai-chat.controller';
-import { AIKnowledgeQueryController } from '../controllers/ai-knowledge-query.controller';
-import { AIKnowledgeNoteController } from '../controllers/ai-knowledge-note.controller';
+import { AICapabilitiesController } from '../server/transport/ai-capabilities.controller';
+import { AIAgentCheckpointController } from '../server/transport/ai-agent-checkpoint.controller';
+import { AILangGraphCheckpointController } from '../server/transport/ai-langgraph-checkpoint.controller';
+import { AIAgentRuntimeController } from '../server/transport/ai-agent-runtime.controller';
+import { AIAnalyticsQueryController } from '../server/transport/ai-analytics-query.controller';
+import { AIEvaluationReportController } from '../server/transport/ai-evaluation-report.controller';
+import { AIGoalGenerationController } from '../server/transport/ai-goal-generation.controller';
+import { AIProviderConfigController } from '../server/transport/ai-provider-config.controller';
+import { AIChatController } from '../server/transport/ai-chat.controller';
+import { AIKnowledgeQueryController } from '../server/transport/ai-knowledge-query.controller';
+import { AIKnowledgeNoteController } from '../server/transport/ai-knowledge-note.controller';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,
   IKnowledgeNotePersistencePort,
   IKnowledgeSourcePort,
 } from '../ports';
-import { createAITransportHandlers } from './transport-handlers';
+import { createAITransportHandlers } from '../server/transport';
 import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 /**

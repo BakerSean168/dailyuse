@@ -30,7 +30,7 @@ import {
   RenameFolderSchema,
   MoveFolderSchema,
 } from '@dailyuse/contracts/repository';
-import type { RepositoryController } from '../../controllers/repository.controller';
+import type { RepositoryController } from '../../server/transport/repository.controller';
 
 // ============ Types ============
 

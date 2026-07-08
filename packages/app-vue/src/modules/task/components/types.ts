@@ -1,5 +1,5 @@
 import type { TaskGoalBindingTriggerValue } from '@dailyuse/contracts/task';
-import type { TaskForDAG, TaskGraphData, TaskGraphEdge } from '@dailyuse/task/application-client';
+import type { TaskForDAG, TaskGraphData, TaskGraphEdge } from '@dailyuse/task/client';
 
 export type UIPriority = 'high' | 'normal' | 'low' | 'urgent';
 

@@ -11,4 +11,4 @@
 
 export * from './aggregates/index.js';
 export * from './entities/index.js';
-export * from '../domain-shared/value-objects';
+export * from '../server/domain/value-objects';

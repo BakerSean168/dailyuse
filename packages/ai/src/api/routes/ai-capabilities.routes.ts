@@ -5,7 +5,7 @@ import {
   successResponse,
 } from '@dailyuse/utils/result';
 import { AICapabilitiesSchema } from '@dailyuse/contracts/ai';
-import type { AICapabilitiesController } from '../../controllers/ai-capabilities.controller';
+import type { AICapabilitiesController } from '../../server/transport/ai-capabilities.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

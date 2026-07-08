@@ -15,13 +15,13 @@ import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
   createGoalPrismaModule,
   type GoalModuleInstance,
-} from '../infrastructure-server';
+} from '../server/infrastructure';
 import { registerGoalRoutes, registerGoalFolderRoutes } from './routes/index';
 import {
   createGoalTransportHandlers,
   createGoalFolderTransportHandlers,
-} from './transport-handlers';
-import { createGoalRuntimeContribution } from './runtime';
+} from '../server/transport';
+import { createGoalRuntimeContribution } from '../server/infrastructure/runtime';
 
 /**
  * Typed module context for goal registration.

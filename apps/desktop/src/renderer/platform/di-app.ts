@@ -4,19 +4,19 @@
 import type { App } from 'vue';
 import { createResultIpcClient } from '@dailyuse/ipc-client';
 import { toast } from 'vue-sonner';
-import { AccountClientService } from '@dailyuse/account/application-client';
-import { AuthClientService } from '@dailyuse/authentication/application-client';
-import { GoalClientService } from '@dailyuse/goal/application-client';
+import { createAccountIpcClient } from '@dailyuse/account/client';
+import { createAuthenticationIpcClient } from '@dailyuse/authentication/client';
+import { createGoalIpcClient } from '@dailyuse/goal/client';
 import { createGovernanceIpcClient } from '@dailyuse/governance/client';
-import { TaskClientService } from '@dailyuse/task/application-client';
-import { ScheduleClientService } from '@dailyuse/schedule/application-client';
-import { ReminderClientService } from '@dailyuse/reminder/application-client';
-import { RepositoryClientService } from '@dailyuse/repository/application-client';
-import { EditorClientService } from '@dailyuse/editor/application-client';
-import { NotificationClientService } from '@dailyuse/notification/application-client';
-import { SettingClientService } from '@dailyuse/setting/application-client';
-import { AIClientService } from '@dailyuse/ai/application-client';
-import { DataPortabilityClientService } from '@dailyuse/data-portability/application-client';
+import { createTaskIpcClient } from '@dailyuse/task/client';
+import { createScheduleIpcClient } from '@dailyuse/schedule/client';
+import { createReminderIpcClient } from '@dailyuse/reminder/client';
+import { createRepositoryIpcClient } from '@dailyuse/repository/client';
+import { createEditorIpcClient } from '@dailyuse/editor/client';
+import { createNotificationIpcClient } from '@dailyuse/notification/client';
+import { createSettingIpcClient } from '@dailyuse/setting/client';
+import { createAIIpcClient } from '@dailyuse/ai/client';
+import { createDataPortabilityIpcClient } from '@dailyuse/data-portability/client';
 import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
@@ -43,19 +43,6 @@ import {
 import { createDashboardIpcAdapter } from '@dailyuse/app-vue/modules/dashboard/adapters';
 import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
 import { setEditorRuntimeService } from '@dailyuse/app-vue/modules/editor';
-import { createAccountIpcAdapters } from '@dailyuse/account/infrastructure-client';
-import { createAuthIpcAdapters } from '@dailyuse/authentication/infrastructure-client';
-import { createGoalIpcAdapters } from '@dailyuse/goal/infrastructure-client';
-import { createTaskIpcAdapters } from '@dailyuse/task/infrastructure-client';
-import { createScheduleIpcAdapters } from '@dailyuse/schedule/infrastructure-client';
-import { createReminderIpcAdapters } from '@dailyuse/reminder/infrastructure-client';
-import { createRepositoryIpcAdapters } from '@dailyuse/repository/infrastructure-client';
-import { createEditorIpcAdapters } from '@dailyuse/editor/infrastructure-client';
-import { createNotificationIpcAdapters } from '@dailyuse/notification/infrastructure-client';
-import { createSettingIpcAdapters } from '@dailyuse/setting/infrastructure-client';
-import { createAIIpcAdapters } from '@dailyuse/ai/infrastructure-client';
-
-import { DataPortabilityIpcAdapter } from '@dailyuse/data-portability/infrastructure-client';
 
 export function installDesktopAppServices(app: App): void {
   const bridge = window.electronAPI;
@@ -65,71 +52,33 @@ export function installDesktopAppServices(app: App): void {
 
   const resultIpcClient = createResultIpcClient({ bridge });
 
-  const accountAdapters = createAccountIpcAdapters(resultIpcClient);
-  app.provide(ACCOUNT_SERVICE_KEY, new AccountClientService(accountAdapters.account));
+  app.provide(ACCOUNT_SERVICE_KEY, createAccountIpcClient(resultIpcClient));
 
-  const authAdapters = createAuthIpcAdapters(resultIpcClient);
-  app.provide(AUTH_SERVICE_KEY, new AuthClientService(authAdapters.auth));
+  app.provide(AUTH_SERVICE_KEY, createAuthenticationIpcClient(resultIpcClient));
 
-  const goalAdapters = createGoalIpcAdapters(resultIpcClient);
-  app.provide(
-    GOAL_SERVICE_KEY,
-    new GoalClientService(goalAdapters.goal, goalAdapters.folder, goalAdapters.focus),
-  );
+  app.provide(GOAL_SERVICE_KEY, createGoalIpcClient(resultIpcClient));
 
-  const taskAdapters = createTaskIpcAdapters(resultIpcClient);
-  app.provide(
-    TASK_SERVICE_KEY,
-    new TaskClientService(taskAdapters.template, taskAdapters.instance, taskAdapters.dependency),
-  );
+  app.provide(TASK_SERVICE_KEY, createTaskIpcClient(resultIpcClient));
 
-  const scheduleAdapters = createScheduleIpcAdapters(resultIpcClient);
-  app.provide(
-    SCHEDULE_SERVICE_KEY,
-    new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task),
-  );
+  app.provide(SCHEDULE_SERVICE_KEY, createScheduleIpcClient(resultIpcClient));
 
-  const reminderAdapters = createReminderIpcAdapters(resultIpcClient);
-  app.provide(REMINDER_SERVICE_KEY, new ReminderClientService(reminderAdapters.reminder));
+  app.provide(REMINDER_SERVICE_KEY, createReminderIpcClient(resultIpcClient));
 
-  const repositoryAdapters = createRepositoryIpcAdapters(resultIpcClient);
-  app.provide(REPOSITORY_SERVICE_KEY, new RepositoryClientService(repositoryAdapters.repository));
+  app.provide(REPOSITORY_SERVICE_KEY, createRepositoryIpcClient(resultIpcClient));
 
-  const editorAdapters = createEditorIpcAdapters(resultIpcClient);
-  const editorService = new EditorClientService(editorAdapters.editor);
+  const editorService = createEditorIpcClient(resultIpcClient);
   app.provide(EDITOR_SERVICE_KEY, editorService);
   setEditorRuntimeService(editorService);
 
-  const notificationAdapters = createNotificationIpcAdapters(resultIpcClient);
-  app.provide(
-    NOTIFICATION_SERVICE_KEY,
-    new NotificationClientService(notificationAdapters.notification),
-  );
+  app.provide(NOTIFICATION_SERVICE_KEY, createNotificationIpcClient(resultIpcClient));
 
-  const settingAdapters = createSettingIpcAdapters(resultIpcClient);
-  app.provide(SETTING_SERVICE_KEY, new SettingClientService(settingAdapters.setting));
+  app.provide(SETTING_SERVICE_KEY, createSettingIpcClient(resultIpcClient));
 
-  const aiAdapters = createAIIpcAdapters(resultIpcClient);
-  app.provide(
-    AI_SERVICE_KEY,
-    new AIClientService(
-      aiAdapters.capabilities,
-      aiAdapters.evaluationReport,
-      aiAdapters.providerConfig,
-      aiAdapters.conversation,
-      aiAdapters.message,
-      aiAdapters.goal,
-      aiAdapters.knowledge,
-      aiAdapters.knowledgeNote,
-      aiAdapters.analytics,
-      aiAdapters.agentRuntime,
-    ),
-  );
+  app.provide(AI_SERVICE_KEY, createAIIpcClient(resultIpcClient));
 
   app.provide(RULE_SERVICE_KEY, createGovernanceIpcClient(resultIpcClient));
 
-  const dataPortabilityAdapter = new DataPortabilityIpcAdapter(resultIpcClient);
-  app.provide(DATA_PORTABILITY_SERVICE_KEY, new DataPortabilityClientService(dataPortabilityAdapter));
+  app.provide(DATA_PORTABILITY_SERVICE_KEY, createDataPortabilityIpcClient(resultIpcClient));
 
   app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);

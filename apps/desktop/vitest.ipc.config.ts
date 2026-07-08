@@ -38,20 +38,16 @@ export default defineConfig({
         replacement: resolve(__dirname, '../../packages/utils/src'),
       },
       {
-        find: '@dailyuse/authentication/api',
-        replacement: resolve(__dirname, '../../packages/authentication/src/api/index.ts'),
-      },
-      {
-        find: '@dailyuse/authentication/domain-shared',
-        replacement: resolve(__dirname, '../../packages/authentication/src/domain-shared/index.ts'),
+        find: '@dailyuse/authentication/electron',
+        replacement: resolve(__dirname, '../../packages/authentication/src/electron/index.ts'),
       },
       {
         find: '@dailyuse/authentication',
         replacement: resolve(__dirname, '../../packages/authentication/src/index.ts'),
       },
       {
-        find: '@dailyuse/account/api',
-        replacement: resolve(__dirname, '../../packages/account/src/api/index.ts'),
+        find: '@dailyuse/account/electron',
+        replacement: resolve(__dirname, '../../packages/account/src/electron/index.ts'),
       },
       {
         find: '@dailyuse/account',

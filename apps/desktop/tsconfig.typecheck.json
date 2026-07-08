@@ -14,22 +14,21 @@
       "@dailyuse/ui-vue-shadcn/composables/*": [
         "packages/ui-vue-shadcn/src/composables/*"
       ],
-      "@dailyuse/ai/application-client": [
-        "packages/ai/dist/application-client/index.d.ts"
-      ],
-      "@dailyuse/ai/infrastructure-client": [
-        "packages/ai/dist/infrastructure-client/index.d.ts"
-      ],
+      "@dailyuse/ai/client": ["packages/ai/dist/client/index.d.ts"],
+      "@dailyuse/ai/electron": ["packages/ai/dist/electron/index.d.ts"],
       "@dailyuse/ai/ports": ["packages/ai/dist/ports/index.d.ts"],
-      "@dailyuse/editor/application-client": [
-        "packages/editor/dist/application-client/index.d.ts"
-      ],
-      "@dailyuse/editor/infrastructure-client": [
-        "packages/editor/dist/infrastructure-client/index.d.ts"
-      ],
-      "@dailyuse/editor/electron-entry": [
-        "packages/editor/dist/electron-entry/index.d.ts"
-      ],
+      "@dailyuse/goal/client": ["packages/goal/dist/client/index.d.ts"],
+      "@dailyuse/goal/electron": ["packages/goal/dist/electron/index.d.ts"],
+      "@dailyuse/editor/client": ["packages/editor/dist/client/index.d.ts"],
+      "@dailyuse/editor/electron": ["packages/editor/dist/electron/index.d.ts"],
+      "@dailyuse/task/client": ["packages/task/dist/client/index.d.ts"],
+      "@dailyuse/task/electron": ["packages/task/dist/electron/index.d.ts"],
+      "@dailyuse/schedule/client": ["packages/schedule/dist/client/index.d.ts"],
+      "@dailyuse/schedule/electron": ["packages/schedule/dist/electron/index.d.ts"],
+      "@dailyuse/reminder/client": ["packages/reminder/dist/client/index.d.ts"],
+      "@dailyuse/reminder/electron": ["packages/reminder/dist/electron/index.d.ts"],
+      "@dailyuse/notification/client": ["packages/notification/dist/client/index.d.ts"],
+      "@dailyuse/notification/electron": ["packages/notification/dist/electron/index.d.ts"],
       "@dailyuse/ipc-client": ["packages/ipc-client/dist/index.d.ts"],
       "@dailyuse/http-client": ["packages/http-client/dist/index.d.ts"],
       "@dailyuse/dashboard": ["packages/dashboard/dist/index.d.ts"],
@@ -64,9 +63,7 @@
         "packages/task/dist/*/index.d.ts",
         "packages/task/dist/*.d.ts"
       ],
-      "@dailyuse/task/api": ["packages/task/dist/api/index.d.ts"],
       "@dailyuse/task/analytics": ["packages/task/dist/analytics/index.d.ts"],
-      "@dailyuse/schedule/api": ["packages/schedule/dist/api/index.d.ts"],
       "@dailyuse/schedule-orchestration": ["packages/schedule-orchestration/src/index.ts"],
       "@dailyuse/schedule-orchestration/*": [
         "packages/schedule-orchestration/src/*/index.ts",

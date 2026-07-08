@@ -1,4 +1,4 @@
-import { BUILT_IN_TEMPLATES, type GoalTemplate } from '@dailyuse/goal/application-client';
+import { BUILT_IN_TEMPLATES, type GoalTemplate } from '@dailyuse/goal/client';
 
 export type RecommendationFilters = {
   searchQuery?: string;

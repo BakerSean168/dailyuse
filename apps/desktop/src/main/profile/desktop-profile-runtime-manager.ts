@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import type { PowerSyncDatabase } from '@powersync/node';
 import { createLogger } from '@dailyuse/utils/logger';
-import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
+import { stopScheduleRuntime } from '@dailyuse/schedule/electron';
 import {
   type SharedPathResolver,
   type ProfilePathResolver,

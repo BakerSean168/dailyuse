@@ -12,7 +12,7 @@
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
-import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
+import { AiConversationId } from '../../server/domain/value-objects/ai-conversation-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/message';
 

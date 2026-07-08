@@ -15,4 +15,4 @@ export {
   createGovernanceModule,
   type GovernanceModuleDependencies,
   type GovernanceModuleInstance,
-} from './server/infrastructure';
+} from './server';

@@ -27,3 +27,10 @@ export interface TaskScheduleExecutionOutcome {
 export interface TaskScheduleExecutionSource {
   executeTask(task: ScheduleTask): Promise<TaskScheduleExecutionOutcome>;
 }
+
+export {
+  createTaskPrismaScheduleExecutionSource,
+  createTaskPowerSyncScheduleExecutionSource,
+  createTaskScheduleExecutionSource,
+  type CreateTaskScheduleExecutionSourceDeps,
+} from '../server/infrastructure';

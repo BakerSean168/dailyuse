@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { ScheduleUseCases } from '../controllers/schedule.controller';
+import type { ScheduleApplicationPort } from '@/server/application';
 import { registerScheduleRoutes } from './routes';
 
 type RegisteredRoute = {
@@ -23,7 +23,7 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
-function createHandlersStub(): ScheduleUseCases {
+function createHandlersStub(): ScheduleApplicationPort {
   return {
     createTask: vi.fn(),
     listTasks: vi.fn(),
@@ -39,7 +39,7 @@ function createHandlersStub(): ScheduleUseCases {
     batchOperateTasks: vi.fn(),
     batchDeleteTasks: vi.fn(),
     updateTaskMetadata: vi.fn(),
-  } as unknown as ScheduleUseCases;
+  } as unknown as ScheduleApplicationPort;
 }
 
 function getRegisteredRoute(

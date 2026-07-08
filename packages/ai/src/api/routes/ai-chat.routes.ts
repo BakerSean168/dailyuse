@@ -21,7 +21,7 @@ import {
 } from '@dailyuse/contracts/ai';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { AiConversationId } from '@dailyuse/contracts/primitives';
-import type { AIChatController } from '../../controllers/ai-chat.controller';
+import type { AIChatController } from '../../server/transport/ai-chat.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

@@ -33,6 +33,8 @@ export function useGovernance() {
   const savingId = ref<string | null>(null);
   const service = useStrictInject(RULE_SERVICE_KEY, 'RuleService');
   const { t } = useI18n();
+  type RuleId = RuleClientDTO['id'];
+  type RevisionRuleId = RuleRevisionClientDTO['ruleId'];
 
   const rules = computed(() => store.rules);
   const currentRule = computed(() => store.currentRule);
@@ -76,7 +78,7 @@ export function useGovernance() {
         return cached;
       }
 
-      const result = await service.getRule({ id });
+      const result = await service.getRule({ id: id as RuleId });
       if (result.ok) {
         store.setCurrentRule(result.data);
         return result.data;
@@ -126,7 +128,7 @@ export function useGovernance() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.deleteRule({ id });
+      const result = await service.deleteRule({ id: id as RuleId });
       if (result.ok) {
         store.removeRule(id);
         return true;
@@ -171,7 +173,7 @@ export function useGovernance() {
     store.setError(null);
     try {
       const result = await service.getRevisions({
-        ruleId,
+        ruleId: ruleId as RevisionRuleId,
         page: 1,
         pageSize: 50,
       });

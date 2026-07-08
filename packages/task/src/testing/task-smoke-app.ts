@@ -8,20 +8,20 @@
 import express, { Router, type Express, type NextFunction, type Request, type RequestHandler, type Response } from 'express';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { vi } from 'vitest';
-import { TaskTemplateController } from '../controllers/task-template.controller';
-import { TaskInstanceController } from '../controllers/task-instance.controller';
-import { TaskDependencyController } from '../controllers/task-dependency.controller';
+import { TaskTemplateController } from '../server/transport/task-template.controller';
+import { TaskInstanceController } from '../server/transport/task-instance.controller';
+import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import {
   createTaskModule,
   type TaskModuleDependencies,
-} from '../infrastructure-server/task.module';
-import { createTaskTransportHandlers } from '../api/transport-handlers';
+} from '../server/infrastructure/task.module';
+import { createTaskTransportHandlers } from '../server/transport';
 import { registerTaskRoutes } from '../api/routes';
 import type {
   ITaskTemplateRepository,
-} from '../domain-server/repositories/i-task-template-repository';
-import type { ITaskInstanceRepository } from '../domain-server/repositories/i-task-instance-repository';
-import type { ITaskDependencyRepository } from '../domain-server/repositories/i-task-dependency-repository';
+} from '../server/domain/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
+import type { ITaskDependencyRepository } from '../server/domain/repositories/i-task-dependency-repository';
 
 export const JWT_SECRET = 'smoke-test-jwt-secret-key-at-least-32-chars';
 export const TEST_IDENTITY_ID = 'IdentityId_550e8400-e29b-41d4-a716-446655440001';

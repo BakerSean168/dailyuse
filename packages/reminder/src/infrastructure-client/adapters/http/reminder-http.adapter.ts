@@ -57,7 +57,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     id: string,
     request: UpdateReminderTemplateReq,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.httpClient.patch(`${this.templatesUrl}/${id}`, request);
+    return this.httpClient.put(`${this.templatesUrl}/${id}`, request);
   }
 
   async deleteReminderTemplate(id: string): Promise<Result<void>> {

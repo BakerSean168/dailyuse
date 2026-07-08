@@ -11,8 +11,8 @@
 
 import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import { ReminderController } from '../../controllers/reminder.controller';
-import type { ReminderUseCases } from '../../controllers/reminder.controller';
+import type { ReminderApplicationPort } from '../../server/application';
+import { ReminderController } from '../../server/transport/reminder.controller';
 import { registerReminderTemplateRoutes } from './reminder-template.routes';
 import { registerReminderGroupRoutes } from './reminder-group.routes';
 import { registerReminderPreferencesRoutes } from './reminder-preferences.routes';
@@ -33,11 +33,11 @@ interface PlatformMiddleware {
  * original monolithic `registerReminderRoutes` in routes.ts.
  */
 export function registerReminderRoutes(
-  handlers: ReminderUseCases,
+  api: ReminderApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
-  const controller = new ReminderController(handlers);
+  const controller = new ReminderController(api);
 
   // Each sub-route file returns its own Router
   const templateRouter = registerReminderTemplateRoutes(controller, middleware, openApiRegistry);

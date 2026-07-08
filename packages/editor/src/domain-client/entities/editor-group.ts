@@ -13,9 +13,9 @@ import type {
   EditorGroupClientDTO,
 } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils/domain';
-import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
-import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
-import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
+import { EditorGroupId } from '../../server/domain/value-objects/editor-group-id';
+import { EditorSessionId } from '../../server/domain/value-objects/editor-session-id';
+import { EditorWorkspaceId } from '../../server/domain/value-objects/editor-workspace-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorTab } from './editor-tab';
 

@@ -36,8 +36,8 @@ import {
   NotificationBatchResultSchema,
   UnreadCountResponseSchema,
 } from '@dailyuse/contracts/notification';
-import { NotificationController } from '../controllers/notification.controller';
-import type { NotificationUseCases } from '../controllers/notification.controller';
+import type { NotificationApplicationPort } from '../server/application';
+import { NotificationController } from '../server/transport/notification.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -74,13 +74,13 @@ function parseBoolean(value: unknown): boolean | undefined {
 // ============ Route Registration ============
 
 export function registerNotificationRoutes(
-  handlers: NotificationUseCases,
+  api: NotificationApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
-  const controller = new NotificationController(handlers);
+  const controller = new NotificationController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/notifications',

@@ -19,7 +19,7 @@ import {
   UserReminderPreferencesResponseSchema,
   UpdateReminderPreferencesSchema,
 } from '@dailyuse/contracts/reminder';
-import type { ReminderController } from '../../controllers/reminder.controller';
+import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Types ============
 

@@ -5,4 +5,4 @@
  * notifications without depending on the full server application layer.
  */
 
-export { CreateNotificationUseCase } from '../application-server/use-cases/commands/create-notification.use-case';
+export { CreateNotificationUseCase } from '../server/application/use-cases/commands/create-notification.use-case';

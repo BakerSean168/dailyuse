@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateStatus, TaskTimeConfigDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplate } from '@dailyuse/task/domain-client';
+import type { TaskTemplate } from '@dailyuse/task/client';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';

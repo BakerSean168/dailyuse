@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { EditorController } from '../../controllers/editor.controller';
+import type { EditorController } from '../../server/transport/editor.controller';
 import { registerEditorRoutes } from './index';
 
 type RegisteredRoute = {

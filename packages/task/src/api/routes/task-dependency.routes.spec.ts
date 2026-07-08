@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { TaskDependencyController } from '../../controllers/task-dependency.controller';
+import type { TaskDependencyController } from '../../server/transport/task-dependency.controller';
 import { registerTaskDependencyRoutes } from './task-dependency.routes';
 
 type RegisteredRoute = {

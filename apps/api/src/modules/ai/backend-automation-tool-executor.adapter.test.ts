@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   buildContext: vi.fn(),
 }));
 
-vi.mock('@dailyuse/goal/api', () => ({
+vi.mock('@dailyuse/goal', () => ({
   createGoalPrismaModule: vi.fn(() => ({
     api: {
       createGoal: mocks.createGoal,
@@ -22,7 +22,7 @@ vi.mock('@dailyuse/goal/api', () => ({
   })),
 }));
 
-vi.mock('@dailyuse/task/api', () => ({
+vi.mock('@dailyuse/task', () => ({
   createTaskPrismaModule: vi.fn(() => ({
     api: {
       createTaskTemplate: mocks.createTaskTemplate,
@@ -30,7 +30,7 @@ vi.mock('@dailyuse/task/api', () => ({
   })),
 }));
 
-vi.mock('@dailyuse/reminder/api', () => ({
+vi.mock('@dailyuse/reminder', () => ({
   createReminderPrismaModule: vi.fn(() => ({
     api: {
       createTemplate: mocks.createReminderTemplate,

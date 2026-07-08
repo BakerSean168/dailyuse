@@ -24,7 +24,7 @@ import type {
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskFolderId, GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
+import { TaskTemplateId } from '../../server/domain/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export interface TaskTemplateState {

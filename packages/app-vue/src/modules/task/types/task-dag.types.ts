@@ -3,11 +3,11 @@ export type {
   TaskForWidget,
   TaskGraphData,
   TaskGraphEdge,
-} from '@dailyuse/task/application-client';
+} from '@dailyuse/task/client';
 export {
   TaskGraphEdgeKind,
   buildTaskGraphData,
   taskTemplateToDAG,
   taskInstanceToDAG,
   taskInstanceToWidget,
-} from '@dailyuse/task/application-client';
+} from '@dailyuse/task/client';

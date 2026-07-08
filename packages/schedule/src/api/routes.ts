@@ -36,8 +36,8 @@ import {
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ScheduleTaskId } from '@dailyuse/contracts/primitives';
-import { ScheduleController } from '../controllers/schedule.controller';
-import type { ScheduleUseCases } from '../controllers/schedule.controller';
+import type { ScheduleApplicationPort } from '../server/application';
+import { ScheduleController } from '../server/transport/schedule.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -67,13 +67,13 @@ function parseBoolean(value: unknown): boolean | undefined {
 // ============ Route Registration ============
 
 export function registerScheduleRoutes(
-  handlers: ScheduleUseCases,
+  api: ScheduleApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
-  const controller = new ScheduleController(handlers);
+  const controller = new ScheduleController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/schedules',

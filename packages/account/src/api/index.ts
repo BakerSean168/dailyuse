@@ -5,15 +5,4 @@
  */
 
 export { AccountApiModule } from './module';
-export { createAccountPrismaModule } from './prisma';
-export type { CreateAccountPrismaModuleOptions } from './prisma';
-export { PowerSyncAccountRepository } from '../infrastructure-server';
-export type {
-  AccountModuleInstance,
-  AccountModuleDependencies,
-  AccountApplicationPort,
-} from '../infrastructure-server';
-
-// Domain types for desktop authentication cluster
-export { Account } from '../domain-server';
-export type { IAccountRepository } from '../domain-server';
+export type { AccountApiModuleContext, AccountApiModuleDef } from './module';

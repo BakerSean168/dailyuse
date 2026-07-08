@@ -27,3 +27,10 @@ export interface GoalScheduleExecutionOutcome {
 export interface GoalScheduleExecutionSource {
   executeGoal(task: ScheduleTask): Promise<GoalScheduleExecutionOutcome>;
 }
+
+export {
+  createGoalPrismaScheduleExecutionSource,
+  createGoalPowerSyncScheduleExecutionSource,
+  createGoalScheduleExecutionSource,
+  type CreateGoalScheduleExecutionSourceDeps,
+} from '../server/infrastructure';

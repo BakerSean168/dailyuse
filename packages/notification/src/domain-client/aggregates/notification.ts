@@ -22,7 +22,7 @@ import {
   NotificationId,
   NotificationAction,
   NotificationMetadata,
-} from '../../domain-shared/value-objects';
+} from '../../server/domain/value-objects';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { NotificationChannel } from '../entities/notification-channel.js';
 import type { NotificationId as NotificationIdBranded, IdentityId as IdentityIdBranded } from '@dailyuse/contracts/primitives';

@@ -18,7 +18,7 @@ import {
 } from '@dailyuse/contracts/ai';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
-import type { AIProviderConfigController } from '../../controllers/ai-provider-config.controller';
+import type { AIProviderConfigController } from '../../server/transport/ai-provider-config.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

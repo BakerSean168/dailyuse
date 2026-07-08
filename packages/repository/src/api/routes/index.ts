@@ -11,8 +11,8 @@
 
 import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import { RepositoryController } from '../../controllers/repository.controller';
-import type { RepositoryUseCases } from '../../controllers/repository.controller';
+import { RepositoryController } from '../../server/transport/repository.controller';
+import type { RepositoryApplicationPort } from '../../server/application';
 import { registerRepositoryCrudRoutes } from './repository.routes';
 import { registerStandaloneResourceRoutes } from './resource.routes';
 import { registerNestedFolderRoutes, registerStandaloneFolderRoutes } from './folder.routes';
@@ -30,11 +30,11 @@ interface PlatformMiddleware {
  * Register repository routes (mounted at /repositories).
  */
 export function registerRepositoryRoutes(
-  handlers: RepositoryUseCases,
+  api: RepositoryApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
-  const controller = new RepositoryController(handlers);
+  const controller = new RepositoryController(api);
   const crudRouter = registerRepositoryCrudRoutes(controller, middleware, openApiRegistry);
   const nestedFolderRouter = registerNestedFolderRoutes(controller, middleware, openApiRegistry);
 
@@ -49,11 +49,11 @@ export function registerRepositoryRoutes(
  * Register standalone resource routes (mounted at /resources).
  */
 export function registerResourceRoutes(
-  handlers: RepositoryUseCases,
+  api: RepositoryApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
-  const controller = new RepositoryController(handlers);
+  const controller = new RepositoryController(api);
   return registerStandaloneResourceRoutes(controller, middleware, openApiRegistry);
 }
 
@@ -61,10 +61,10 @@ export function registerResourceRoutes(
  * Register standalone folder routes (mounted at /folders).
  */
 export function registerFolderRoutes(
-  handlers: RepositoryUseCases,
+  api: RepositoryApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
-  const controller = new RepositoryController(handlers);
+  const controller = new RepositoryController(api);
   return registerStandaloneFolderRoutes(controller, middleware, openApiRegistry);
 }

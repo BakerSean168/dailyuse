@@ -208,7 +208,7 @@ import {
   BellDot,
   HelpCircle,
 } from 'lucide-vue-next';
-import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { SourceModule } from '@dailyuse/contracts/schedule';
 
 interface ScheduleStatisticsData {
   totalTasks: number;

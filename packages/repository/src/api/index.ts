@@ -11,14 +11,9 @@
  * - /folders       (standalone folder routes)
  */
 
-export { RepositoryApiModule } from './module';
-export type { RepositoryApiModuleContext, RepositoryApiModuleDef } from './module';
-export { RepositoryController, type RepositoryUseCases } from '../controllers';
-export { createRepositoryPrismaModule, createFsStorageAdapter } from './prisma';
-export type { CreateRepositoryPrismaModuleOptions } from './prisma';
-export { createRepositoryPowerSyncModule } from '../infrastructure-server';
+export { RepositoryApiModule, createRepositoryApiModule } from './module';
 export type {
-  RepositoryModuleInstance,
-  RepositoryModuleDependencies,
-  RepositoryApplicationPort,
-} from '../infrastructure-server';
+  CreateRepositoryApiModuleOptions,
+  RepositoryApiModuleContext,
+  RepositoryApiModuleDef,
+} from './module';

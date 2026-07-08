@@ -5,4 +5,4 @@
  * records without depending on the full server application layer.
  */
 
-export { CreateGoalRecordUseCase } from '../application-server/use-cases/commands/create-goal-record.use-case';
+export { CreateGoalRecordUseCase } from '../server/application/use-cases/commands/create-goal-record.use-case';

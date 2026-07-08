@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { NotificationUseCases } from '../controllers/notification.controller';
+import type { NotificationUseCases } from '../server/transport/notification.controller';
 import { registerNotificationRoutes } from './routes';
 
 type RegisteredRoute = {

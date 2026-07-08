@@ -14,6 +14,9 @@ import { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
 export { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 export { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
 export { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
+export { createTaskTemplateHttpAdapter } from './task-template-http.adapter';
+export { createTaskInstanceHttpAdapter } from './task-instance-http.adapter';
+export { createTaskDependencyHttpAdapter } from './task-dependency-http.adapter';
 
 /**
  * All HTTP adapters for the Task module

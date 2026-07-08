@@ -5,39 +5,39 @@ import {
   useRef,
 } from 'react';
 
-import type { AccountClientService } from '@dailyuse/account/application-client';
-import { createAccountServiceFromHttpClient } from '@dailyuse/account/application-client';
-import type { AIClientService } from '@dailyuse/ai/application-client';
-import { createAIServiceFromHttpClient } from '@dailyuse/ai/application-client';
-import type { GoalClientService } from '@dailyuse/goal/application-client';
-import { createGoalServiceFromHttpClient } from '@dailyuse/goal/application-client';
-import type { NotificationClientService } from '@dailyuse/notification/application-client';
-import { createNotificationServiceFromHttpClient } from '@dailyuse/notification/application-client';
-import type { ReminderClientService } from '@dailyuse/reminder/application-client';
-import { createReminderServiceFromHttpClient } from '@dailyuse/reminder/application-client';
-import type { RepositoryClientService } from '@dailyuse/repository/application-client';
-import { createRepositoryServiceFromHttpClient } from '@dailyuse/repository/application-client';
-import type { ScheduleClientService } from '@dailyuse/schedule/application-client';
-import { createScheduleServiceFromHttpClient } from '@dailyuse/schedule/application-client';
-import type { SettingClientService } from '@dailyuse/setting/application-client';
-import { createSettingServiceFromHttpClient } from '@dailyuse/setting/application-client';
-import type { TaskClientService } from '@dailyuse/task/application-client';
-import { createTaskServiceFromHttpClient } from '@dailyuse/task/application-client';
+import type { AccountClientPort } from '@dailyuse/account/client';
+import { createAccountHttpClient } from '@dailyuse/account/client';
+import type { AIClientPort } from '@dailyuse/ai/client';
+import { createAIHttpClient } from '@dailyuse/ai/client';
+import type { GoalClientPort } from '@dailyuse/goal/client';
+import { createGoalHttpClient } from '@dailyuse/goal/client';
+import type { NotificationClientPort } from '@dailyuse/notification/client';
+import { createNotificationHttpClient } from '@dailyuse/notification/client';
+import type { ReminderClientPort } from '@dailyuse/reminder/client';
+import { createReminderHttpClient } from '@dailyuse/reminder/client';
+import type { RepositoryClientPort } from '@dailyuse/repository/client';
+import { createRepositoryHttpClient } from '@dailyuse/repository/client';
+import type { ScheduleClientPort } from '@dailyuse/schedule/client';
+import { createScheduleHttpClient } from '@dailyuse/schedule/client';
+import type { SettingClientPort } from '@dailyuse/setting/client';
+import { createSettingHttpClient } from '@dailyuse/setting/client';
+import type { TaskClientPort } from '@dailyuse/task/client';
+import { createTaskHttpClient } from '@dailyuse/task/client';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 
 import { useAppSession } from './app-session-provider';
 
 export type AppClientRegistry = {
   httpClient: IResultHttpClient;
-  accountService: AccountClientService;
-  aiService: AIClientService;
-  goalService: GoalClientService;
-  notificationService: NotificationClientService;
-  reminderService: ReminderClientService;
-  repositoryService: RepositoryClientService;
-  scheduleService: ScheduleClientService;
-  settingService: SettingClientService;
-  taskService: TaskClientService;
+  accountService: AccountClientPort;
+  aiService: AIClientPort;
+  goalService: GoalClientPort;
+  notificationService: NotificationClientPort;
+  reminderService: ReminderClientPort;
+  repositoryService: RepositoryClientPort;
+  scheduleService: ScheduleClientPort;
+  settingService: SettingClientPort;
+  taskService: TaskClientPort;
 };
 
 const AppClientRegistryContext = createContext<AppClientRegistry | null>(null);
@@ -45,15 +45,15 @@ const AppClientRegistryContext = createContext<AppClientRegistry | null>(null);
 export function createAppClientRegistry(httpClient: IResultHttpClient): AppClientRegistry {
   return {
     httpClient,
-    accountService: createAccountServiceFromHttpClient(httpClient),
-    aiService: createAIServiceFromHttpClient(httpClient),
-    goalService: createGoalServiceFromHttpClient(httpClient),
-    notificationService: createNotificationServiceFromHttpClient(httpClient),
-    reminderService: createReminderServiceFromHttpClient(httpClient),
-    repositoryService: createRepositoryServiceFromHttpClient(httpClient),
-    scheduleService: createScheduleServiceFromHttpClient(httpClient),
-    settingService: createSettingServiceFromHttpClient(httpClient),
-    taskService: createTaskServiceFromHttpClient(httpClient),
+    accountService: createAccountHttpClient(httpClient),
+    aiService: createAIHttpClient(httpClient),
+    goalService: createGoalHttpClient(httpClient),
+    notificationService: createNotificationHttpClient(httpClient),
+    reminderService: createReminderHttpClient(httpClient),
+    repositoryService: createRepositoryHttpClient(httpClient),
+    scheduleService: createScheduleHttpClient(httpClient),
+    settingService: createSettingHttpClient(httpClient),
+    taskService: createTaskHttpClient(httpClient),
   };
 }
 
