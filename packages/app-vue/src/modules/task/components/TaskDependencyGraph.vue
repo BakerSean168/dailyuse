@@ -138,7 +138,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
-import { TaskGraphEdgeKind } from '@dailyuse/task/application-client';
+import { TaskGraphEdgeKind } from '@dailyuse/task/client';
 import type { TaskForDAGViewModel, TaskGraphDataViewModel } from './types';
 import {
   Card,

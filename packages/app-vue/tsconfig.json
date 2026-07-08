@@ -48,22 +48,22 @@
       ],
       "@dailyuse/ui-vue-shadcn/*": ["../../packages/ui-vue-shadcn/dist/*"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
-      "@dailyuse/ai/application-client": ["../../packages/ai/dist/application-client/index.d.ts"],
-      "@dailyuse/goal/application-client": [
-        "../../packages/goal/dist/application-client/index.d.ts"
+      "@dailyuse/ai/client": ["../../packages/ai/dist/client/index.d.ts"],
+      "@dailyuse/goal/client": ["../../packages/goal/dist/client/index.d.ts"],
+      "@dailyuse/reminder/client": [
+        "../../packages/reminder/dist/client/index.d.ts"
       ],
-      "@dailyuse/task/application-client": [
-        "../../packages/task/dist/application-client/index.d.ts"
+      "@dailyuse/schedule/client": [
+        "../../packages/schedule/dist/client/index.d.ts"
       ],
-      "@dailyuse/ai/infrastructure-client": [
-        "../../packages/ai/src/infrastructure-client/index.ts"
+      "@dailyuse/notification/client": [
+        "../../packages/notification/dist/client/index.d.ts"
       ],
+      "@dailyuse/task/client": ["../../packages/task/dist/client/index.d.ts"],
       "@dailyuse/governance/client": [
         "../../packages/governance/dist/client/index.d.ts"
       ],
-      "@dailyuse/schedule/domain-client": ["../../packages/schedule/src/domain-client/index.ts"],
-      "@dailyuse/task/domain-client": ["../../packages/task/src/domain-client/index.ts"],
-      "@dailyuse/repository/domain-client": ["../../packages/repository/src/domain-client/index.ts"],
+      "@dailyuse/repository/client": ["../../packages/repository/dist/client/index.d.ts"],
       "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"],
       "@dailyuse/test-utils/*": [
         "../../packages/test-utils/src/*",
@@ -74,4 +74,3 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
-

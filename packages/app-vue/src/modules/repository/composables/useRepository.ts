@@ -16,7 +16,7 @@ import type {
   ResourceClientDTO,
   SearchRequest,
 } from '@dailyuse/contracts/repository';
-import type { Repository } from '@dailyuse/repository/domain-client';
+import type { Repository } from '@dailyuse/repository/client';
 import type { Result } from '@dailyuse/contracts/result';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';

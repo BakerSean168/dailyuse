@@ -109,6 +109,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft } from 'lucide-vue-next';
+import { ReviewType } from '@dailyuse/contracts/goal';
+import type { GoalId } from '@dailyuse/contracts/primitives';
 import {
   Button,
   Input,
@@ -122,13 +124,12 @@ import {
   SelectContent,
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
-import { GoalId, ReviewType } from '@dailyuse/goal/domain-shared';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const goalId = GoalId.of((route.params.goalId as string) || (route.params.id as string));
+const goalId = ((route.params.goalId as string) || (route.params.id as string)) as GoalId;
 
 const { createReview, isSaving } = useGoal();
 

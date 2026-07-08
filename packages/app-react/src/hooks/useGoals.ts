@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { GoalStatus, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { Goal } from '@dailyuse/goal/domain-client';
+import type { Goal } from '@dailyuse/goal/client';
 
 import { useAppSession } from './useAppSession';
 import { useGoalService } from './useGoalService';

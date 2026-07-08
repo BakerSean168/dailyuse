@@ -66,7 +66,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { ECElementEvent, GraphSeriesOption } from 'echarts';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@dailyuse/ui-vue-shadcn';
 import { Network, AlertTriangle, Download } from 'lucide-vue-next';
-import { TaskGraphEdgeKind } from '@dailyuse/task/application-client';
+import { TaskGraphEdgeKind } from '@dailyuse/task/client';
 import type { TaskForDAGViewModel, TaskGraphDataViewModel, TaskGraphEdgeViewModel } from '../types';
 
 use([GraphChart, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);

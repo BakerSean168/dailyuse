@@ -14,10 +14,10 @@ export default mergeConfig(
     aliasEntries: createUiVueSourceAliasEntries(workspaceRoot),
     aliases: {
       '@dailyuse/http-client': '../../packages/http-client/src/index.ts',
-      '@dailyuse/ai/application-client': '../../packages/ai/src/application-client/index.ts',
-      '@dailyuse/ai/infrastructure-client': '../../packages/ai/src/infrastructure-client/index.ts',
-      '@dailyuse/task/domain-client': '../../packages/task/src/domain-client/index.ts',
-      '@dailyuse/repository/domain-client': '../../packages/repository/src/domain-client/index.ts',
+      '@dailyuse/ai/client': '../../packages/ai/src/client/index.ts',
+      '@dailyuse/goal/client': '../../packages/goal/src/client/index.ts',
+      '@dailyuse/task/client': '../../packages/task/src/client/index.ts',
+      '@dailyuse/repository/client': '../../packages/repository/src/client/index.ts',
     },
   }),
   defineConfig({
