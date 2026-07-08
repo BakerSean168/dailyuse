@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { SettingUseCases } from '../controllers/setting.controller';
+import type { SettingApplicationPort } from '../server/application';
 import { registerSettingRoutes } from './routes';
 
 type RegisteredRoute = {
@@ -23,7 +23,7 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
-function createSettingUseCasesStub(): SettingUseCases {
+function createSettingApiStub(): SettingApplicationPort {
   return {
     getUserSetting: vi.fn(),
     patchUserSetting: vi.fn(),
@@ -77,7 +77,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -90,7 +90,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -105,7 +105,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -118,7 +118,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -134,7 +134,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -147,7 +147,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -161,7 +161,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -174,7 +174,7 @@ describe('setting route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerSettingRoutes(
-      createSettingUseCasesStub(),
+      createSettingApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );

@@ -27,8 +27,8 @@ import {
   ExportSettingsResponseSchema,
   ImportSettingsResponseSchema,
 } from '@dailyuse/contracts/setting';
-import { SettingController } from '../controllers/setting.controller';
-import type { SettingUseCases } from '../controllers/setting.controller';
+import { SettingController } from '../server/transport';
+import type { SettingApplicationPort } from '../server/application';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -38,13 +38,13 @@ interface PlatformMiddleware {
 // ============ Route Registration ============
 
 export function registerSettingRoutes(
-  handlers: SettingUseCases,
+  api: SettingApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
-  const controller = new SettingController(handlers);
+  const controller = new SettingController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/settings',
@@ -149,7 +149,6 @@ export function registerSettingRoutes(
     },
     [auth],
     async () => controller.getDefaultSettings(),
-    { requireAuth: false },
   );
 
   return router;

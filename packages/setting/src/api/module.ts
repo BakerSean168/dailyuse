@@ -12,13 +12,11 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { ServerModuleContext } from '@dailyuse/contracts/shared';
 import {
-  createSettingModule,
-  UserSettingPrismaRepository,
+  createSettingPrismaModule,
   type SettingModuleInstance,
-} from '../infrastructure-server';
+} from '../server/infrastructure';
 import { registerSettingRoutes } from './routes';
-import { createSettingTransportHandlers } from './transport-handlers';
-import { createSettingRuntimeContribution } from './runtime';
+import { createSettingRuntimeContribution } from '../server/infrastructure/runtime';
 
 /**
  * Typed module context for setting registration.
@@ -40,21 +38,18 @@ export const SettingApiModule: SettingApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const settingModule = createSettingModule({
-      userSettingRepository: new UserSettingPrismaRepository(db),
+    const settingModule = createSettingPrismaModule(db, {
       runtimeContributions: createSettingRuntimeContribution(),
     });
     activeSettingModule = settingModule;
     settingModule.start();
 
-    // 2. 创建路由处理器
-    const handlers = createSettingTransportHandlers(settingModule.api);
+    const settingRoutes = registerSettingRoutes(
+      settingModule.api,
+      middleware,
+      context.openApiRegistry,
+    );
 
-    // 3. 注册路由
-    const settingRoutes = registerSettingRoutes(handlers, middleware, context.openApiRegistry);
-
-    // 4. 挂载到 API 路由
     router.use('/settings', settingRoutes);
   },
 
