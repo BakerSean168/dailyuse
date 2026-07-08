@@ -16,10 +16,10 @@ import type {
 } from '@dailyuse/contracts/editor';
 import type { ResourceId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils/domain';
-import { EditorTabId } from '../../domain-shared/value-objects/editor-tab-id';
-import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
-import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
-import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
+import { EditorTabId } from '../../server/domain/value-objects/editor-tab-id';
+import { EditorGroupId } from '../../server/domain/value-objects/editor-group-id';
+import { EditorSessionId } from '../../server/domain/value-objects/editor-session-id';
+import { EditorWorkspaceId } from '../../server/domain/value-objects/editor-workspace-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export interface EditorTabState {

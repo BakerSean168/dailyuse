@@ -19,8 +19,8 @@ import type {
 } from '@dailyuse/contracts/editor';
 import type { EditorSessionId as IEditorSessionId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils/domain';
-import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
-import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
+import { EditorWorkspaceId } from '../../server/domain/value-objects/editor-workspace-id';
+import { EditorSessionId } from '../../server/domain/value-objects/editor-session-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorGroup } from './editor-group';
 

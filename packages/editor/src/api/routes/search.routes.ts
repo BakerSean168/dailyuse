@@ -5,7 +5,7 @@
 import { Router, type RequestHandler } from 'express';
 import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@dailyuse/utils/result';
 import { SearchEditorResourcesSchema, SearchResponseSchema } from '@dailyuse/contracts/editor';
-import type { EditorController } from '../../controllers/editor.controller';
+import type { EditorController } from '../../server/transport/editor.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

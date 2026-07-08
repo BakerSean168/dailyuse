@@ -15,8 +15,8 @@
 
 import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import { EditorController } from '../../controllers/editor.controller';
-import type { EditorUseCases } from '../../controllers/editor.controller';
+import type { EditorApplicationPort } from '../../server/application';
+import { EditorController } from '../../server/transport/editor.controller';
 import { registerWorkspaceRoutes } from './workspace.routes';
 import { registerSessionRoutes } from './session.routes';
 import { registerGroupRoutes } from './group.routes';
@@ -40,11 +40,11 @@ interface PlatformMiddleware {
  * original monolithic `registerEditorRoutes` in routes.ts.
  */
 export function registerEditorRoutes(
-  handlers: EditorUseCases,
+  api: EditorApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
-  const controller = new EditorController(handlers);
+  const controller = new EditorController(api);
 
   // Each sub-route file returns its own Router
   const workspaceRouter = registerWorkspaceRoutes(controller, middleware, openApiRegistry);

@@ -19,6 +19,9 @@
  * Route prefix: /editor
  */
 
-export { EditorApiModule } from './module';
-export type { EditorApiModuleContext, EditorApiModuleDef } from './module';
-export { EditorController, type EditorUseCases } from '../controllers';
+export { EditorApiModule, createEditorApiModule } from './module';
+export type {
+  CreateEditorApiModuleOptions,
+  EditorApiModuleContext,
+  EditorApiModuleDef,
+} from './module';

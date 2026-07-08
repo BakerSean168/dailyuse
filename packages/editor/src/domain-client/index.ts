@@ -9,4 +9,4 @@
 
 export * from './aggregates';
 export * from './entities';
-export * from '../domain-shared/value-objects';
+export * from '../server/domain/value-objects';
