@@ -34,8 +34,8 @@ import {
   CurrentUserResponseSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
-import { AuthenticationController } from '../controllers/auth.controller';
-import type { AuthenticationUseCases } from '../controllers/auth.controller';
+import { AuthenticationController } from '../server/transport';
+import type { AuthenticationApplicationPort } from '../server/application';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -43,13 +43,13 @@ interface PlatformMiddleware {
 }
 
 export function registerAuthenticationRoutes(
-  handlers: AuthenticationUseCases,
+  api: AuthenticationApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
-  const controller = new AuthenticationController(handlers);
+  const controller = new AuthenticationController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/auth',

@@ -13,7 +13,7 @@ import {
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
 import { registerAuthenticationRoutes } from './routes';
-import type { AuthenticationUseCases } from '../controllers/auth.controller';
+import type { AuthenticationApplicationPort } from '../server/application';
 
 type RegisteredRoute = {
   method: string;
@@ -58,7 +58,7 @@ function getResponseStatuses(route: RegisteredRoute): string[] {
   return Object.keys(route.responses ?? {});
 }
 
-function createStubs(): AuthenticationUseCases {
+function createStubs(): AuthenticationApplicationPort {
   return {
     register: vi.fn(),
     registerByPhone: vi.fn(),
