@@ -2,6 +2,7 @@
  * Data Portability Application Server Layer
  */
 
+export type { DataPortabilityApplicationPort } from './data-portability.application.port';
 export * from './portable-runtime';
 export * from './sanitize';
 export * from './use-cases/export-user-data.use-case';

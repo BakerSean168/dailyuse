@@ -39,7 +39,7 @@ import type {
   CreateEditorTabInput,
   CreateAIConversationInput,
   CreateAIMessageInput,
-} from '../../application-server/import-store/data-portability-import-store';
+} from '../../application/import-store/data-portability-import-store';
 
 // ============ Helpers ============
 

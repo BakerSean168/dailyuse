@@ -7,8 +7,8 @@ import { DataPortabilityEventTopics } from '@dailyuse/contracts/data-portability
 import { eventBus } from '@dailyuse/utils/domain';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ExportUserDataUseCase } from '../../../application-server/use-cases/export-user-data.use-case';
-import { ImportUserDataUseCase } from '../../../application-server/use-cases/import-user-data.use-case';
+import { ExportUserDataUseCase } from '../../../application/use-cases/export-user-data.use-case';
+import { ImportUserDataUseCase } from '../../../application/use-cases/import-user-data.use-case';
 import { createPowerSyncDataPortabilityDependencies } from '../powersync-export-dependencies';
 import { PowerSyncDataPortabilityImportStore } from '../powersync-import-store';
 

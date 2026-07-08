@@ -1,9 +1,8 @@
 /**
- * Data Portability — Electron Entry Point
+ * Data portability module Electron seam.
  *
- * Registers IPC handlers for data export/import via PowerSync.
+ * Owns desktop-main registration for the data portability runtime.
  */
-
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { DataPortabilityChannels } from '@dailyuse/contracts/electron';
@@ -16,16 +15,17 @@ import {
   type ExportUserDataReq,
   type ImportUserDataReq,
 } from '@dailyuse/contracts/data-portability';
-import { ExportUserDataUseCase } from '../application-server/use-cases/export-user-data.use-case';
-import { ImportUserDataUseCase } from '../application-server/use-cases/import-user-data.use-case';
-import { createPowerSyncDataPortabilityDependencies } from '../infrastructure-server/powersync/powersync-export-dependencies';
-import { PowerSyncDataPortabilityImportStore } from '../infrastructure-server/powersync/powersync-import-store';
+import {
+  createPowerSyncDataPortabilityModule,
+  type DataPortabilityModuleInstance,
+} from '../server/infrastructure/data-portability.module';
+import { createDataPortabilityRuntimeContribution } from '../server/infrastructure/runtime';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 const logger = createLogger('DataPortabilityElectron');
 
-// Channel strings: 'data-portability:export', 'data-portability:import'
 const channels = Object.values(DataPortabilityChannels);
+let activeDataPortabilityModule: DataPortabilityModuleInstance | null = null;
 
 function parseExportPayload(dto: unknown): ExportUserDataReq {
   const parsed = ExportUserDataReqSchema.safeParse(dto ?? {});
@@ -55,22 +55,23 @@ export const DataPortabilityElectronModule: IElectronModule = {
   name: 'DataPortability',
 
   register(ctx: IElectronModuleContext): void {
-    const deps = createPowerSyncDataPortabilityDependencies(ctx.db);
-    const importStore = new PowerSyncDataPortabilityImportStore(ctx.db);
-    const exportUseCase = new ExportUserDataUseCase(deps);
-    const importUseCase = new ImportUserDataUseCase(importStore);
+    const dataPortabilityModule = createPowerSyncDataPortabilityModule(ctx.db, {
+      runtimeContributions: createDataPortabilityRuntimeContribution(),
+    });
+    activeDataPortabilityModule = dataPortabilityModule;
+    dataPortabilityModule.start();
 
     ipcMain.handle(DataPortabilityChannels.EXPORT, (_, dto) => {
       return withAuthenticatedIdentity(ctx, (identityId) => {
         const payload = parseExportPayload(dto);
-        return exportUseCase.execute(identityId, payload.include);
+        return dataPortabilityModule.api.exportUserData(identityId, payload);
       });
     });
 
     ipcMain.handle(DataPortabilityChannels.IMPORT, (_, dto) => {
       return withAuthenticatedIdentity(ctx, (identityId) => {
         const payload = parseImportPayload(dto);
-        return importUseCase.execute(identityId, payload.content, payload.dryRun ?? false);
+        return dataPortabilityModule.api.importUserData(identityId, payload);
       });
     });
 
@@ -81,6 +82,8 @@ export const DataPortabilityElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    activeDataPortabilityModule?.dispose();
+    activeDataPortabilityModule = null;
     logger.info('DataPortability module destroyed');
   },
 };

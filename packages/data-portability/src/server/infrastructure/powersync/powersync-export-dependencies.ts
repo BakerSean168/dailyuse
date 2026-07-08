@@ -34,7 +34,7 @@ import type {
   AIConversationRepoPort,
   NotificationPreferenceRepoPort,
   SettingRepoPort,
-} from '../../application-server/data-portability.dependencies';
+} from '../../application/data-portability.dependencies';
 
 // ============ Helpers ============
 

@@ -15,8 +15,8 @@ import {
   ExportUserDataResSchema,
   ImportUserDataResSchema,
 } from '@dailyuse/contracts/data-portability';
-import { DataPortabilityController } from './controller';
-import type { DataPortabilityUseCases } from './controller';
+import { DataPortabilityController } from '../server/transport';
+import type { DataPortabilityApplicationPort } from '../server/application';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -24,13 +24,13 @@ interface PlatformMiddleware {
 }
 
 export function registerDataPortabilityRoutes(
-  handlers: DataPortabilityUseCases,
+  api: DataPortabilityApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
-  const controller = new DataPortabilityController(handlers);
+  const controller = new DataPortabilityController(api);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/data-portability',
