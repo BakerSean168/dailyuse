@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { AccountUseCases } from '../controllers/account.controller';
+import type { AccountApplicationPort } from '../server/application';
 import { registerAccountRoutes } from './routes';
 
 type RegisteredRoute = {
@@ -23,14 +23,15 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
-function createAccountUseCasesStub(): AccountUseCases {
+function createAccountApiStub(): AccountApplicationPort {
   return {
+    listAccounts: vi.fn(),
     getProfile: vi.fn(),
     updateProfile: vi.fn(),
     updateSettings: vi.fn(),
     checkAvailability: vi.fn(),
     closeAccount: vi.fn(),
-  };
+  } as unknown as AccountApplicationPort;
 }
 
 function getRegisteredRoute(
@@ -76,7 +77,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -89,7 +90,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -104,7 +105,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -117,7 +118,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -131,7 +132,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -144,7 +145,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );
@@ -158,7 +159,7 @@ describe('account route contracts', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAccountRoutes(
-      createAccountUseCasesStub(),
+      createAccountApiStub(),
       { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
       registry,
     );

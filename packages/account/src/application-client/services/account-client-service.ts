@@ -25,7 +25,7 @@ import {
   ContactEmail,
   AccountStatus,
   ContactPhone,
-} from '../../domain-shared';
+} from '../../server/domain/value-objects';
 
 function accountFromDTO(dto: AccountClientDTO): Account {
   return Account.load({
