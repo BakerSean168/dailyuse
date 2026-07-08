@@ -68,7 +68,7 @@
     },
     "test:coverage:use-cases": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/application-server-use-cases"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}/server-application-use-cases"],
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
@@ -79,7 +79,7 @@
     "test:coverage:prisma-mappers": {
       "executor": "nx:run-commands",
       "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}/infrastructure-server-adapters-prisma-mappers"
+        "{workspaceRoot}/coverage/{projectRoot}/server-infrastructure-adapters-prisma-mappers"
       ],
       "inputs": ["default", "^production"],
       "cache": true,

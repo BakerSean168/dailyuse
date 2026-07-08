@@ -28,7 +28,7 @@ import {
 import type { CloneGoalReq, ListGoalFilters } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
-import type { GoalController } from '../../controllers/goal.controller';
+import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Helpers ============
 
@@ -182,7 +182,6 @@ export function registerGoalCrudRoutes(
     },
     [auth],
     (req) => controller.get(req.params!.id, parseBoolean(req.query?.includeChildren) ?? true),
-    { requireAuth: false },
   );
 
   // PUT /:id — 更新目标

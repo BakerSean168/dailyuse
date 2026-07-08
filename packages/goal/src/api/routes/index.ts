@@ -12,10 +12,10 @@
 
 import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import { GoalController } from '../../controllers/goal.controller';
-import type { GoalUseCases } from '../../controllers/goal.controller';
-import { GoalFolderController } from '../../controllers/goal-folder.controller';
-import type { GoalFolderUseCases } from '../../controllers/goal-folder.controller';
+import { GoalController } from '../../server/transport/goal.controller';
+import type { GoalUseCases } from '../../server/transport/goal.controller';
+import { GoalFolderController } from '../../server/transport/goal-folder.controller';
+import type { GoalFolderUseCases } from '../../server/transport/goal-folder.controller';
 import { registerGoalCrudRoutes } from './goal.routes';
 import { registerFocusModeRoutes } from './focus-mode.routes';
 import { registerKeyResultRoutes } from './key-result.routes';

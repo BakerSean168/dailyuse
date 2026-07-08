@@ -11,7 +11,7 @@
 
 import type { GoalFolderClientDTO, FolderType } from '@dailyuse/contracts/goal';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { GoalFolderId } from '../../domain-shared';
+import { GoalFolderId } from '../../server/domain';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 export interface GoalFolderState {

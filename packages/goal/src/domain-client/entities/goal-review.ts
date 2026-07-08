@@ -11,7 +11,7 @@
 
 import type { GoalReviewClientDTO, KeyResultSnapshot, ReviewType } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils/domain';
-import { GoalReviewId, GoalId } from '../../domain-shared';
+import { GoalReviewId, GoalId } from '../../server/domain';
 
 export interface GoalReviewState {
   id: GoalReviewId;

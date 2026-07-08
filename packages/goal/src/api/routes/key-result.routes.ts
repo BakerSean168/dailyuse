@@ -21,7 +21,7 @@ import {
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import type { GoalController } from '../../controllers/goal.controller';
+import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============
 

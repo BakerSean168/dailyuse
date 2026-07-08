@@ -11,7 +11,7 @@
 
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils/domain';
-import { GoalRecordId, KeyResultId, GoalId } from '../../domain-shared';
+import { GoalRecordId, KeyResultId, GoalId } from '../../server/domain';
 
 export interface GoalRecordState {
   id: GoalRecordId;

@@ -18,28 +18,4 @@
  */
 
 export { GoalApiModule } from './module';
-export type { GoalApiModuleDef } from './module';
-export { GoalController, type GoalUseCases } from '../controllers';
-export { GoalFolderController, type GoalFolderUseCases } from '../controllers';
-export {
-  createGoalTransportHandlers,
-  createGoalFolderTransportHandlers,
-} from './transport-handlers';
-export { createGoalRuntimeContribution } from './runtime';
-export {
-  createGoalPrismaRepositories,
-  createGoalPrismaScheduleExecutionSource,
-  createGoalPrismaScheduleProjectionSource,
-} from './prisma';
-export {
-  createGoalPrismaModule,
-  createGoalPowerSyncModule,
-  createGoalPowerSyncScheduleExecutionSource,
-} from '../infrastructure-server';
-export { GoalPowerSyncRepository } from '../infrastructure-server';
-export type {
-  GoalModuleInstance,
-  GoalModuleDependencies,
-  GoalApplicationPort,
-  GoalModuleUseCases,
-} from '../infrastructure-server';
+export type { GoalApiModuleContext, GoalApiModuleDef } from './module';
