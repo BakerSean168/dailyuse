@@ -5,4 +5,4 @@
  * without depending on the full server application layer.
  */
 
-export { GetTaskDashboardUseCase } from '../application-server/use-cases/queries/get-task-dashboard.use-case';
+export { GetTaskDashboardUseCase } from '../server/application/use-cases/queries/get-task-dashboard.use-case';

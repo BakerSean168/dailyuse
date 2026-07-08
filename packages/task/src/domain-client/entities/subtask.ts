@@ -14,7 +14,7 @@ import type {
 } from '@dailyuse/contracts/task';
 import type { SubtaskId as ISubtaskId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils/domain';
-import { SubtaskId } from '../../domain-shared/value-objects/subtask-id';
+import { SubtaskId } from '../../server/domain/value-objects/subtask-id';
 
 export interface SubtaskState {
   id: SubtaskId;

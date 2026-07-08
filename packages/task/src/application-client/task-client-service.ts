@@ -40,8 +40,8 @@ import type { ITaskInstanceApiClient } from './ports/task-instance-api-client.po
 import type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
 import { TaskTemplate } from '../domain-client/aggregates/task-template';
 import { TaskInstance } from '../domain-client/aggregates/task-instance';
-import { TaskTemplateId } from '../domain-shared/value-objects/task-template-id';
-import { TaskInstanceId } from '../domain-shared/value-objects/task-instance-id';
+import { TaskTemplateId } from '../server/domain/value-objects/task-template-id';
+import { TaskInstanceId } from '../server/domain/value-objects/task-instance-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // ===== DTO-to-State Mappers =====

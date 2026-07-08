@@ -14,6 +14,9 @@ import { TaskDependencyIpcAdapter } from './task-dependency-ipc.adapter';
 export { TaskTemplateIpcAdapter } from './task-template-ipc.adapter';
 export { TaskInstanceIpcAdapter } from './task-instance-ipc.adapter';
 export { TaskDependencyIpcAdapter } from './task-dependency-ipc.adapter';
+export { createTaskTemplateIpcAdapter } from './task-template-ipc.adapter';
+export { createTaskInstanceIpcAdapter } from './task-instance-ipc.adapter';
+export { createTaskDependencyIpcAdapter } from './task-dependency-ipc.adapter';
 
 /**
  * All IPC adapters for the Task module

@@ -18,25 +18,4 @@
 
 export { TaskApiModule, createTaskApiModule } from './module';
 export type { TaskApiModuleContext, TaskApiModuleOptions } from './module';
-export {
-  createTaskPrismaModule,
-  createTaskPrismaRepositories,
-  createTaskPrismaScheduleExecutionSource,
-  createTaskPrismaScheduleProjectionSource,
-} from './prisma';
-export type { CreateTaskPrismaModuleOptions } from './prisma';
-export {
-  createTaskPowerSyncModule,
-  createTaskPowerSyncScheduleExecutionSource,
-} from '../infrastructure-server';
-export {
-  PowerSyncTaskTemplateRepository,
-  PowerSyncTaskInstanceRepository,
-} from '../infrastructure-server';
-export type {
-  TaskModuleInstance,
-  TaskModuleDependencies,
-  TaskApplicationPort,
-  TaskModuleRuntimeContribution,
-  TaskModuleUseCases,
-} from '../infrastructure-server';
+export type { TaskApiModuleDef } from './module';

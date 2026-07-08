@@ -25,7 +25,7 @@ import {
   UpdateDependencyBodySchema,
   ValidateDependencyBodySchema,
 } from '@dailyuse/contracts/task';
-import type { TaskDependencyController } from '../../controllers/task-dependency.controller';
+import type { TaskDependencyController } from '../../server/transport/task-dependency.controller';
 
 // ============ Types ============
 
@@ -85,7 +85,6 @@ export function registerTaskDependencyRoutes(
     },
     [auth],
     (req) => controller.getDependencies(req.params!.taskId),
-    { requireAuth: false },
   );
 
   // GET /:taskId/dependents — Get task dependents (successor tasks)
@@ -103,7 +102,6 @@ export function registerTaskDependencyRoutes(
     },
     [auth],
     (req) => controller.getDependents(req.params!.taskId),
-    { requireAuth: false },
   );
 
   // GET /:taskId/dependency-chain — Get full dependency chain
@@ -121,7 +119,6 @@ export function registerTaskDependencyRoutes(
     },
     [auth],
     (req) => controller.getDependencyChain(req.params!.taskId),
-    { requireAuth: false },
   );
 
   // POST /dependencies/validate — Validate a potential dependency
@@ -139,7 +136,6 @@ export function registerTaskDependencyRoutes(
     },
     [auth],
     (req) => controller.validateDependency(req.body),
-    { requireAuth: false },
   );
 
   // DELETE /dependencies/:id — Delete dependency

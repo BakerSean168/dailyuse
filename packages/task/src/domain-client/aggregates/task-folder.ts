@@ -13,7 +13,7 @@ import type {
   TaskFolderClientDTO,
 } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
+import { TaskFolderId } from '../../server/domain/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export interface TaskFolderState {

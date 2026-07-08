@@ -23,7 +23,7 @@ import {
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskInstanceController } from '../../controllers/task-instance.controller';
+import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
 
 // ============ Types ============
 
@@ -142,7 +142,6 @@ export function registerTaskInstanceRoutes(
     },
     [auth],
     (req) => controller.getInstance(req.params!.id),
-    { requireAuth: false },
   );
 
   // POST /:id/complete — Complete instance

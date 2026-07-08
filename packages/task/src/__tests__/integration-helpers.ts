@@ -12,7 +12,7 @@
 import type { PrismaClient } from '@dailyuse/database';
 import { cleanAllTables } from '@dailyuse/test-utils/setup/database';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskFolderId, TaskInstanceId, TaskTemplateId } from '../domain-shared/value-objects';
+import { TaskFolderId, TaskInstanceId, TaskTemplateId } from '../server/domain/value-objects';
 
 // ─── Shared PrismaClient ────────────────────────────────────────────
 
