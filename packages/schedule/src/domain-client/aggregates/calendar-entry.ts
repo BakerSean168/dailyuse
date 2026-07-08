@@ -1,6 +1,6 @@
 import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { AggregateRoot } from '@dailyuse/utils/domain';
-import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
+import { ScheduleId } from '../../server/domain/value-objects/schedule-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export interface CalendarEntryState {

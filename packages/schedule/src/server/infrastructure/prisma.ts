@@ -1,0 +1,36 @@
+import type { PrismaClient } from '@dailyuse/database';
+import { createScheduleModule, type ScheduleModuleInstance } from './schedule.module';
+import {
+  ScheduleExecutionPrismaRepository,
+  SchedulePrismaRepository,
+  ScheduleTaskPrismaRepository,
+} from './adapters/prisma';
+import type { ScheduleRuntimeContributionsInput } from './schedule.module';
+
+export interface CreateSchedulePrismaModuleOptions {
+  readonly runtimeContributions?: ScheduleRuntimeContributionsInput;
+}
+
+export function createSchedulePrismaRepository(db: PrismaClient) {
+  return new SchedulePrismaRepository(db);
+}
+
+export function createScheduleTaskPrismaRepository(db: PrismaClient) {
+  return new ScheduleTaskPrismaRepository(db);
+}
+
+export function createScheduleExecutionPrismaRepository(db: PrismaClient) {
+  return new ScheduleExecutionPrismaRepository(db);
+}
+
+export function createSchedulePrismaModule(
+  db: PrismaClient,
+  options: CreateSchedulePrismaModuleOptions = {},
+): ScheduleModuleInstance {
+  return createScheduleModule({
+    scheduleRepository: createSchedulePrismaRepository(db),
+    scheduleTaskRepository: createScheduleTaskPrismaRepository(db),
+    scheduleExecutionRepository: createScheduleExecutionPrismaRepository(db),
+    runtimeContributions: options.runtimeContributions,
+  });
+}

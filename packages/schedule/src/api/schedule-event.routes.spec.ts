@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { ScheduleEventController } from '../controllers/schedule-event.controller';
+import type { ScheduleEventApplicationPort } from '@/server/application';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
 
 type RegisteredRoute = {
@@ -23,7 +23,7 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
-function createScheduleControllerStub(): ScheduleEventController {
+function createScheduleControllerStub(): ScheduleEventApplicationPort {
   return {
     create: vi.fn(),
     get: vi.fn(),
@@ -34,7 +34,7 @@ function createScheduleControllerStub(): ScheduleEventController {
     detectConflicts: vi.fn(),
     createWithConflictDetection: vi.fn(),
     resolveConflict: vi.fn(),
-  } as unknown as ScheduleEventController;
+  } as unknown as ScheduleEventApplicationPort;
 }
 
 function getRegisteredRoute(

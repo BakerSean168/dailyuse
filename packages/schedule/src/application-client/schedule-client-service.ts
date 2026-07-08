@@ -33,8 +33,8 @@ import {
   TaskMetadataVO,
 } from '../domain-client/aggregates/schedule-task';
 import { ScheduleExecution } from '../domain-client/entities/schedule-execution';
-import { ScheduleTaskId } from '../domain-shared/value-objects/schedule-task-id';
-import { ScheduleExecutionId } from '../domain-shared/value-objects/schedule-execution-id';
+import { ScheduleTaskId } from '../server/domain/value-objects/schedule-task-id';
+import { ScheduleExecutionId } from '../server/domain/value-objects/schedule-execution-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // ===== DTO-to-State Mappers =====

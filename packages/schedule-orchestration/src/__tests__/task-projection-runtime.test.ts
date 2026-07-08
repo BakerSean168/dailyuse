@@ -3,7 +3,6 @@ import { SourceModule } from '@dailyuse/contracts/schedule';
 import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
 import type { IScheduleTaskRepository } from '@dailyuse/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
-import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type {
   TaskScheduleProjectionEventMap,
   TaskScheduleProjectionSource,
@@ -17,19 +16,19 @@ function createScheduleTask(templateId: string, sourceEntityId: string, name: st
     name,
     sourceModule: SourceModule.Task,
     sourceEntityId,
-    schedule: ScheduleConfig.fromDTO({
+    schedule: {
       cronExpression: null,
       timezone: 'Asia/Shanghai',
       startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
       endDate: null,
       maxExecutions: 1,
-    }),
-    metadata: ScheduleTaskMetadata.create({
+    },
+    metadata: {
       payload: { templateId },
       tags: ['task'],
       priority: 'Normal',
       timeout: null,
-    }),
+    },
   });
 }
 

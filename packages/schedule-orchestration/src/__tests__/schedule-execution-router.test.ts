@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { SourceModule, type SourceModule as SourceModuleValue } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
-import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import { createScheduleExecutionRouter } from '../execution/router';
 
 function createScheduleTask(sourceModule: SourceModuleValue) {
@@ -11,19 +10,19 @@ function createScheduleTask(sourceModule: SourceModuleValue) {
     name: 'Execution Router Test',
     sourceModule,
     sourceEntityId: 'entity-1',
-    schedule: ScheduleConfig.fromDTO({
+    schedule: {
       cronExpression: null,
       timezone: 'Asia/Shanghai',
       startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
       endDate: null,
       maxExecutions: 1,
-    }),
-    metadata: ScheduleTaskMetadata.create({
+    },
+    metadata: {
       payload: {},
       tags: ['test'],
       priority: 'Normal',
       timeout: null,
-    }),
+    },
   });
 }
 

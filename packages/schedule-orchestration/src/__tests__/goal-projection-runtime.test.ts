@@ -4,7 +4,6 @@ import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
 import type { GoalScheduleProjectionEventMap, GoalScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
 import type { IScheduleTaskRepository } from '@dailyuse/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
-import { ScheduleConfig, ScheduleTaskMetadata } from '@dailyuse/schedule/domain-shared';
 import type { Publisher, Subscriber } from '@dailyuse/utils/domain';
 import { createGoalProjectionRuntime } from '../runtime/goal-projection-runtime';
 
@@ -14,19 +13,19 @@ function createScheduleTask(goalId: string, name: string) {
     name,
     sourceModule: SourceModule.Goal,
     sourceEntityId: goalId,
-    schedule: ScheduleConfig.fromDTO({
+    schedule: {
       cronExpression: null,
       timezone: 'Asia/Shanghai',
       startDate: new Date('2030-01-10T08:45:00.000Z').toISOString(),
       endDate: null,
       maxExecutions: 1,
-    }),
-    metadata: ScheduleTaskMetadata.create({
+    },
+    metadata: {
       payload: { goalId },
       tags: ['goal'],
       priority: 'Normal',
       timeout: null,
-    }),
+    },
   });
 }
 
