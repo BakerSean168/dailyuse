@@ -21,7 +21,7 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { initNotificationService } from '../services';
 import type { DesktopMainRuntime } from '../desktop-main-runtime';
 import type { WindowManager } from './window-manager';
-import { stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
+import { stopScheduleRuntime } from '@dailyuse/schedule/electron';
 import { createLogger } from '@dailyuse/utils/logger';
 const logger = createLogger('AppLifecycle');
 

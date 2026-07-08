@@ -2,8 +2,7 @@
  * Web Platform - full app DI container.
  *
  * Feature services are created via each package's public client seam.
- * Most modules still expose `createXxxServiceFromHttpClient` from
- * `application-client`; governance already uses the stricter `client` seam.
+ * Feature services are created via each package's public `client` seam.
  * Heavy feature services are loaded on demand so the post-login app shell
  * does not pay for every module up front.
  */
@@ -36,17 +35,13 @@ import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
 
 const authService = createLazyService(async () => {
-  const { createAuthenticationServiceFromHttpClient } = await import(
-    '@dailyuse/authentication/application-client'
-  );
-  return createAuthenticationServiceFromHttpClient(resultHttpClient);
+  const { createAuthenticationHttpClient } = await import('@dailyuse/authentication/client');
+  return createAuthenticationHttpClient(resultHttpClient);
 });
 
 const accountService = createLazyService(async () => {
-  const { createAccountServiceFromHttpClient } = await import(
-    '@dailyuse/account/application-client'
-  );
-  return createAccountServiceFromHttpClient(resultHttpClient);
+  const { createAccountHttpClient } = await import('@dailyuse/account/client');
+  return createAccountHttpClient(resultHttpClient);
 });
 
 const ruleService = createLazyService(async () => {
@@ -55,73 +50,55 @@ const ruleService = createLazyService(async () => {
 });
 
 const goalService = createLazyService(async () => {
-  const { createGoalServiceFromHttpClient } = await import(
-    '@dailyuse/goal/application-client'
-  );
-  return createGoalServiceFromHttpClient(resultHttpClient);
+  const { createGoalHttpClient } = await import('@dailyuse/goal/client');
+  return createGoalHttpClient(resultHttpClient);
 });
 
 const notificationService = createLazyService(async () => {
-  const { createNotificationServiceFromHttpClient } = await import(
-    '@dailyuse/notification/application-client'
-  );
-  return createNotificationServiceFromHttpClient(resultHttpClient);
+  const { createNotificationHttpClient } = await import('@dailyuse/notification/client');
+  return createNotificationHttpClient(resultHttpClient);
 });
 
 const reminderService = createLazyService(async () => {
-  const { createReminderServiceFromHttpClient } = await import(
-    '@dailyuse/reminder/application-client'
-  );
-  return createReminderServiceFromHttpClient(resultHttpClient);
+  const { createReminderHttpClient } = await import('@dailyuse/reminder/client');
+  return createReminderHttpClient(resultHttpClient);
 });
 
 const repositoryService = createLazyService(async () => {
-  const { createRepositoryServiceFromHttpClient } = await import(
-    '@dailyuse/repository/application-client'
-  );
-  return createRepositoryServiceFromHttpClient(resultHttpClient);
+  const { createRepositoryHttpClient } = await import('@dailyuse/repository/client');
+  return createRepositoryHttpClient(resultHttpClient);
 });
 
 const editorService = createLazyService(async () => {
-  const { createEditorServiceFromHttpClient } = await import(
-    '@dailyuse/editor/application-client'
-  );
-  return createEditorServiceFromHttpClient(resultHttpClient);
+  const { createEditorHttpClient } = await import('@dailyuse/editor/client');
+  return createEditorHttpClient(resultHttpClient);
 });
 
 const scheduleService = createLazyService(async () => {
-  const { createScheduleServiceFromHttpClient } = await import(
-    '@dailyuse/schedule/application-client'
-  );
-  return createScheduleServiceFromHttpClient(resultHttpClient);
+  const { createScheduleHttpClient } = await import('@dailyuse/schedule/client');
+  return createScheduleHttpClient(resultHttpClient);
 });
 
 const settingService = createLazyService(async () => {
-  const { createSettingServiceFromHttpClient } = await import(
-    '@dailyuse/setting/application-client'
-  );
-  return createSettingServiceFromHttpClient(resultHttpClient);
+  const { createSettingHttpClient } = await import('@dailyuse/setting/client');
+  return createSettingHttpClient(resultHttpClient);
 });
 
 const dataPortabilityService = createLazyService(async () => {
-  const { createDataPortabilityServiceFromHttpClient } = await import(
-    '@dailyuse/data-portability/application-client'
+  const { createDataPortabilityHttpClient } = await import(
+    '@dailyuse/data-portability/client'
   );
-  return createDataPortabilityServiceFromHttpClient(resultHttpClient);
+  return createDataPortabilityHttpClient(resultHttpClient);
 });
 
 const aiService = createLazyService(async () => {
-  const { createAIServiceFromHttpClient } = await import(
-    '@dailyuse/ai/application-client'
-  );
-  return createAIServiceFromHttpClient(resultHttpClient);
+  const { createAIHttpClient } = await import('@dailyuse/ai/client');
+  return createAIHttpClient(resultHttpClient);
 });
 
 const taskService = createLazyService(async () => {
-  const { createTaskServiceFromHttpClient } = await import(
-    '@dailyuse/task/application-client'
-  );
-  return createTaskServiceFromHttpClient(resultHttpClient);
+  const { createTaskHttpClient } = await import('@dailyuse/task/client');
+  return createTaskHttpClient(resultHttpClient);
 });
 
 const dashboardService = createLazyService(async () => {

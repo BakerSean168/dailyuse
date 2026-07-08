@@ -1,7 +1,7 @@
 import type { ILogger } from '@dailyuse/utils/logger';
-import type { IAccountRepository } from '@dailyuse/account/api';
-import { Account } from '@dailyuse/account/api';
-import type { IAuthIdentityRepository as IAuthCredentialRepository } from '@dailyuse/authentication/api';
+import type { IAccountRepository } from '@dailyuse/account/electron';
+import { Account } from '@dailyuse/account/electron';
+import type { IAuthIdentityRepository as IAuthCredentialRepository } from '@dailyuse/authentication/electron';
 import type {
   AuthIdentityClientDTO,
   TokenStorageData,

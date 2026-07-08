@@ -16,16 +16,33 @@
       "@common/*": ["./common/*"],
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
       "@dailyuse/ui-vue-shadcn/composables/*": ["../../packages/ui-vue-shadcn/src/composables/*"],
-      "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
-      "@dailyuse/ai/infrastructure-client": [
-        "../../packages/ai/src/infrastructure-client/index.ts"
-      ],
+      "@dailyuse/ai/client": ["../../packages/ai/src/client/index.ts"],
+      "@dailyuse/ai/electron": ["../../packages/ai/src/electron/index.ts"],
       "@dailyuse/ai/ports": ["../../packages/ai/src/ports/index.ts"],
-      "@dailyuse/editor/application-client": ["../../packages/editor/src/application-client/index.ts"],
-      "@dailyuse/editor/infrastructure-client": [
-        "../../packages/editor/src/infrastructure-client/index.ts"
+      "@dailyuse/goal/client": ["../../packages/goal/src/client/index.ts"],
+      "@dailyuse/goal/electron": ["../../packages/goal/src/electron/index.ts"],
+      "@dailyuse/goal/schedule-execution": [
+        "../../packages/goal/src/schedule-execution/index.ts"
       ],
-      "@dailyuse/editor/electron-entry": ["../../packages/editor/src/electron-entry/index.ts"],
+      "@dailyuse/goal/schedule-projection": [
+        "../../packages/goal/src/schedule-projection/index.ts"
+      ],
+      "@dailyuse/editor/client": ["../../packages/editor/src/client/index.ts"],
+      "@dailyuse/editor/electron": ["../../packages/editor/src/electron/index.ts"],
+      "@dailyuse/task/client": ["../../packages/task/src/client/index.ts"],
+      "@dailyuse/task/electron": ["../../packages/task/src/electron/index.ts"],
+      "@dailyuse/task/schedule-execution": [
+        "../../packages/task/src/schedule-execution/index.ts"
+      ],
+      "@dailyuse/task/schedule-projection": [
+        "../../packages/task/src/schedule-projection/index.ts"
+      ],
+      "@dailyuse/schedule/client": ["../../packages/schedule/src/client/index.ts"],
+      "@dailyuse/schedule/electron": ["../../packages/schedule/src/electron/index.ts"],
+      "@dailyuse/reminder/client": ["../../packages/reminder/src/client/index.ts"],
+      "@dailyuse/reminder/electron": ["../../packages/reminder/src/electron/index.ts"],
+      "@dailyuse/notification/client": ["../../packages/notification/src/client/index.ts"],
+      "@dailyuse/notification/electron": ["../../packages/notification/src/electron/index.ts"],
       "@dailyuse/ipc-client": ["../../packages/ipc-client/src/index.ts"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/dashboard": ["../../packages/dashboard/src/index.ts"],
@@ -43,7 +60,6 @@
       "@dailyuse/goal/analytics": ["../../packages/goal/src/analytics/index.ts"],
       "@dailyuse/notification/commands": ["../../packages/notification/src/commands/index.ts"],
       "@dailyuse/task/analytics": ["../../packages/task/src/analytics/index.ts"],
-      "@dailyuse/schedule/api": ["../../packages/schedule/src/api/index.ts"],
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/*": [
         "../../packages/assets/src/*/index.ts",

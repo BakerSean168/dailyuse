@@ -17,21 +17,15 @@ const sharedConfig = createSharedConfig({
     '@dailyuse/app-vue/web-overlays': '../../packages/app-vue/src/web-overlays.ts',
     '@dailyuse/app-vue/web-bootstrap': '../../packages/app-vue/src/web-bootstrap.ts',
     '@dailyuse/app-vue/web-i18n': '../../packages/app-vue/src/web-i18n.ts',
-    '@dailyuse/authentication/application-client':
-      '../../packages/authentication/src/application-client/index.ts',
-    '@dailyuse/authentication/infrastructure-client':
-      '../../packages/authentication/src/infrastructure-client/index.ts',
-    '@dailyuse/editor/application-client': '../../packages/editor/src/application-client/index.ts',
-    '@dailyuse/editor/infrastructure-client':
-      '../../packages/editor/src/infrastructure-client/index.ts',
-    '@dailyuse/ai/application-client': '../../packages/ai/src/application-client/index.ts',
-    '@dailyuse/ai/infrastructure-client': '../../packages/ai/src/infrastructure-client/index.ts',
-    '@dailyuse/goal/infrastructure-client':
-      '../../packages/goal/src/infrastructure-client/index.ts',
-    '@dailyuse/repository/infrastructure-client':
-      '../../packages/repository/src/infrastructure-client/index.ts',
-    '@dailyuse/task/infrastructure-client':
-      '../../packages/task/src/infrastructure-client/index.ts',
+    '@dailyuse/authentication/client': '../../packages/authentication/src/client/index.ts',
+    '@dailyuse/reminder/client': '../../packages/reminder/src/client/index.ts',
+    '@dailyuse/schedule/client': '../../packages/schedule/src/client/index.ts',
+    '@dailyuse/notification/client': '../../packages/notification/src/client/index.ts',
+    '@dailyuse/editor/client': '../../packages/editor/src/client/index.ts',
+    '@dailyuse/ai/client': '../../packages/ai/src/client/index.ts',
+    '@dailyuse/goal/client': '../../packages/goal/src/client/index.ts',
+    '@dailyuse/repository/client': '../../packages/repository/src/client/index.ts',
+    '@dailyuse/task/client': '../../packages/task/src/client/index.ts',
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }) as any;

@@ -22,35 +22,44 @@ import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
-import { GoalElectronModule } from '@dailyuse/goal/electron-entry';
+import { GoalElectronModule } from '@dailyuse/goal/electron';
 import {
   createTaskElectronModule,
+} from '@dailyuse/task/electron';
+import {
   createTaskPowerSyncScheduleExecutionSource,
+} from '@dailyuse/task/schedule-execution';
+import {
   createTaskPowerSyncScheduleProjectionSource,
-} from '@dailyuse/task/electron-entry';
-import { createScheduleElectronModule } from '@dailyuse/schedule/electron-entry';
-import { PowerSyncScheduleTaskRepository } from '@dailyuse/schedule/api';
+} from '@dailyuse/task/schedule-projection';
+import {
+  createScheduleElectronModule,
+  PowerSyncScheduleTaskRepository,
+} from '@dailyuse/schedule/electron';
 import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
 import {
   createGoalPowerSyncScheduleExecutionSource,
-  createGoalPowerSyncScheduleProjectionSource,
-} from '@dailyuse/goal/electron-entry';
-import { ReminderElectronModule } from '@dailyuse/reminder/electron-entry';
+} from '@dailyuse/goal/schedule-execution';
 import {
-  createReminderPowerSyncScheduleExecutionSource,
-  createReminderPowerSyncScheduleProjectionSource,
-} from '@dailyuse/reminder/electron-entry';
+  createGoalPowerSyncScheduleProjectionSource,
+} from '@dailyuse/goal/schedule-projection';
+import { ReminderElectronModule } from '@dailyuse/reminder/electron';
+import { createReminderPowerSyncScheduleExecutionSource } from '@dailyuse/reminder/schedule-execution';
+import { createReminderPowerSyncScheduleProjectionSource } from '@dailyuse/reminder/schedule-projection';
 import {
   NotificationElectronModule,
   createNotificationPowerSyncScheduleNotificationPort,
-} from '@dailyuse/notification/electron-entry';
-import { SettingElectronModule } from '@dailyuse/setting/electron-entry';
-import { createAIElectronModule } from '@dailyuse/ai/electron-entry';
-import { createRepositoryElectronModule } from '@dailyuse/repository/electron-entry';
-import { createRepositoryPowerSyncModule, createFsStorageAdapter } from '@dailyuse/repository/api';
-import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
-import { AccountElectronModule } from '@dailyuse/account/electron-entry';
-import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron-entry';
+} from '@dailyuse/notification/electron';
+import { SettingElectronModule } from '@dailyuse/setting/electron';
+import { createAIElectronModule } from '@dailyuse/ai/electron';
+import {
+  createFsStorageAdapter,
+  createRepositoryElectronModule,
+  createRepositoryPowerSyncModule,
+} from '@dailyuse/repository/electron';
+import { createEditorElectronModule } from '@dailyuse/editor/electron';
+import { AccountElectronModule } from '@dailyuse/account/electron';
+import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron';
 import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';

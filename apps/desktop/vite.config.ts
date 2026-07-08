@@ -18,17 +18,20 @@ import {
 } from '../../vite.workspace-aliases';
 
 const desktopRendererDevWorkspaceEntries = [
-  ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
-  ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
+  ['@dailyuse/ai/client', 'packages/ai/src/client/index.ts'],
+  ['@dailyuse/ai/electron', 'packages/ai/src/electron/index.ts'],
+  ['@dailyuse/goal/client', 'packages/goal/src/client/index.ts'],
+  ['@dailyuse/goal/electron', 'packages/goal/src/electron/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
-  ['@dailyuse/reminder/application-client', 'packages/reminder/src/application-client/index.ts'],
-  [
-    '@dailyuse/reminder/infrastructure-client',
-    'packages/reminder/src/infrastructure-client/index.ts',
-  ],
-  ['@dailyuse/editor/application-client', 'packages/editor/src/application-client/index.ts'],
-  ['@dailyuse/editor/infrastructure-client', 'packages/editor/src/infrastructure-client/index.ts'],
-  ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
+  ['@dailyuse/task/client', 'packages/task/src/client/index.ts'],
+  ['@dailyuse/schedule/client', 'packages/schedule/src/client/index.ts'],
+  ['@dailyuse/schedule/electron', 'packages/schedule/src/electron/index.ts'],
+  ['@dailyuse/reminder/client', 'packages/reminder/src/client/index.ts'],
+  ['@dailyuse/reminder/electron', 'packages/reminder/src/electron/index.ts'],
+  ['@dailyuse/notification/client', 'packages/notification/src/client/index.ts'],
+  ['@dailyuse/notification/electron', 'packages/notification/src/electron/index.ts'],
+  ['@dailyuse/editor/client', 'packages/editor/src/client/index.ts'],
+  ['@dailyuse/editor/electron', 'packages/editor/src/electron/index.ts'],
 ] as const;
 
 const nativeModules = electronNativeModules;

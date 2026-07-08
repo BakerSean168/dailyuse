@@ -16,7 +16,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils/logger';
-import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron-entry';
+import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron';
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktop-chrome';
 import type { DesktopChromeTheme } from './desktop-chrome';
 import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
@@ -371,7 +371,7 @@ export class WindowManager {
       // 3. 显示主窗口
       mainWin.show();
       this.desktopFeaturesRuntime?.bindWindow(mainWin);
-      startScheduleRuntime();
+      await startScheduleRuntime();
 
       // 4. 关闭登录窗口（稍微延迟，让过渡更平滑）
       setTimeout(() => {

@@ -1,9 +1,9 @@
 import type { IAnalyticsReadPort } from '@dailyuse/ai/ports';
 import type { PrismaClient } from '@dailyuse/database';
 import { SearchGoalsUseCase } from '@dailyuse/goal/analytics';
-import { createGoalPrismaModule } from '@dailyuse/goal/api';
+import { createGoalPrismaModule } from '@dailyuse/goal';
 import { GetTaskDashboardUseCase } from '@dailyuse/task/analytics';
-import { createTaskPrismaRepositories } from '@dailyuse/task/api';
+import { createTaskPrismaRepositories } from '@dailyuse/task';
 
 import { getApiDashboardData } from '../dashboard/dashboard-read-service';
 

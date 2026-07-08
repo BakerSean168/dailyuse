@@ -9,7 +9,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IElectronDatabase, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { DataPortabilityChannels } from '@dailyuse/contracts/electron';
-import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron-entry';
+import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron';
 
 const electronMock = vi.hoisted(() => ({
   handle: vi.fn(),

@@ -6,7 +6,7 @@ import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import {
   createRepositoryPrismaModule,
   type RepositoryModuleInstance,
-} from '@dailyuse/repository/api';
+} from '@dailyuse/repository';
 
 function tokenize(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);

@@ -19,26 +19,26 @@ import {
   WindowChannels,
 } from '../../shared/types/ipc-channels';
 import { ALLOWED_CHANNELS } from '../allowed-channels';
-import { AccountIpcAdapter } from '@dailyuse/account/infrastructure-client';
-import { AuthIpcAdapter } from '@dailyuse/authentication/infrastructure-client';
-import { DataPortabilityIpcAdapter } from '@dailyuse/data-portability/infrastructure-client';
+import { createAccountIpcClient } from '@dailyuse/account/client';
+import { AuthIpcAdapter } from '@dailyuse/authentication/client';
+import { createDataPortabilityIpcClient } from '@dailyuse/data-portability/client';
 import {
   AIConversationIpcAdapter,
-  AIMessageIpcAdapter,
-  AIProviderConfigIpcAdapter,
   AIGoalIpcAdapter,
   AIKnowledgeNoteIpcAdapter,
-} from '@dailyuse/ai/infrastructure-client';
+  AIMessageIpcAdapter,
+  AIProviderConfigIpcAdapter,
+} from '@dailyuse/ai/client';
 import { createGovernanceIpcClient } from '@dailyuse/governance/client';
-import { NotificationIpcAdapter } from '@dailyuse/notification/infrastructure-client';
-import { TaskTemplateIpcAdapter } from '@dailyuse/task/infrastructure-client';
+import { NotificationIpcAdapter } from '@dailyuse/notification/client';
+import { TaskTemplateIpcAdapter } from '@dailyuse/task/client';
 import {
   ScheduleEventIpcAdapter,
   ScheduleTaskIpcAdapter,
-} from '@dailyuse/schedule/infrastructure-client';
-import { ReminderIpcAdapter } from '@dailyuse/reminder/infrastructure-client';
-import { RepositoryIpcAdapter } from '@dailyuse/repository/infrastructure-client';
-import { SettingIpcAdapter } from '@dailyuse/setting/infrastructure-client';
+} from '@dailyuse/schedule/client';
+import { ReminderIpcAdapter } from '@dailyuse/reminder/client';
+import { RepositoryIpcAdapter } from '@dailyuse/repository/client';
+import { createSettingIpcClient } from '@dailyuse/setting/client';
 
 function channelSet(values: Record<string, string>) {
   return new Set<string>(Object.values(values) as string[]);
@@ -215,8 +215,49 @@ describe('desktop IPC contract alignment', () => {
   });
 
   it('account adapter only invokes registered desktop account channels', async () => {
-    const recorder = createIpcRecorder();
-    const adapter = new AccountIpcAdapter(recorder as never);
+    const recorder = createIpcRecorder((channel) => {
+      if (channel === AccountChannels.GET_ME || channel === AccountChannels.UPDATE_PROFILE) {
+        return {
+          ok: true,
+          data: {
+            id: 'IdentityId_550e8400-e29b-41d4-a716-446655440001',
+            status: 'Active',
+            profile: {
+              nickname: 'tester',
+              realName: 'Test User',
+              avatarUrl: null,
+              bio: null,
+              gender: 'PreferNotToSay',
+              birthday: null,
+            },
+            settings: {
+              theme: 'Light',
+              language: 'zh-CN',
+              timezone: 'Asia/Shanghai',
+              notificationEnabled: true,
+            },
+            email: {
+              address: 'test@example.com',
+              isVerified: true,
+              verifiedAt: new Date().toISOString(),
+              isPrimary: true,
+            },
+            phone: null,
+            version: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            deletedAt: null,
+          },
+        };
+      }
+
+      if (channel === AccountChannels.CHECK_AVAILABILITY) {
+        return { ok: true, data: { available: true } };
+      }
+
+      return { ok: true, data: null };
+    });
+    const adapter = createAccountIpcClient(recorder as never);
 
     await adapter.getMyProfile();
     await adapter.updateMyProfile({} as never);
@@ -368,7 +409,7 @@ describe('desktop IPC contract alignment', () => {
 
   it('setting adapter only invokes registered desktop setting channels', async () => {
     const recorder = createIpcRecorder();
-    const adapter = new SettingIpcAdapter(recorder as never);
+    const adapter = createSettingIpcClient(recorder as never);
 
     await adapter.getUserSettings();
     await adapter.patchCategory('appearance' as never, {});
@@ -433,7 +474,7 @@ describe('desktop IPC contract alignment', () => {
 
   it('data-portability adapter only invokes registered desktop data-portability channels', async () => {
     const recorder = createIpcRecorder();
-    const adapter = new DataPortabilityIpcAdapter(recorder as never);
+    const adapter = createDataPortabilityIpcClient(recorder as never);
 
     await adapter.exportUserData({} as never);
     await adapter.importUserData({} as never);

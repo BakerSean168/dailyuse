@@ -33,24 +33,40 @@ export default defineConfig({
         replacement: resolve(__dirname, '../../packages/utils/src'),
       },
       {
-        find: '@dailyuse/authentication/api',
-        replacement: resolve(__dirname, '../../packages/authentication/src/api/index.ts'),
-      },
-      {
-        find: '@dailyuse/authentication/domain-shared',
-        replacement: resolve(__dirname, '../../packages/authentication/src/domain-shared/index.ts'),
+        find: '@dailyuse/authentication/electron',
+        replacement: resolve(__dirname, '../../packages/authentication/src/electron/index.ts'),
       },
       {
         find: '@dailyuse/authentication',
         replacement: resolve(__dirname, '../../packages/authentication/src/index.ts'),
       },
       {
-        find: '@dailyuse/goal',
-        replacement: resolve(__dirname, '../../packages/goal/src/index.ts'),
+        find: '@dailyuse/goal/client',
+        replacement: resolve(__dirname, '../../packages/goal/src/client/index.ts'),
       },
       {
-        find: '@dailyuse/account/api',
-        replacement: resolve(__dirname, '../../packages/account/src/api/index.ts'),
+        find: '@dailyuse/goal/electron',
+        replacement: resolve(__dirname, '../../packages/goal/src/electron/index.ts'),
+      },
+      {
+        find: '@dailyuse/goal/schedule-execution',
+        replacement: resolve(__dirname, '../../packages/goal/src/schedule-execution/index.ts'),
+      },
+      {
+        find: '@dailyuse/goal/schedule-projection',
+        replacement: resolve(__dirname, '../../packages/goal/src/schedule-projection/index.ts'),
+      },
+      {
+        find: '@dailyuse/goal/events',
+        replacement: resolve(__dirname, '../../packages/goal/src/events/index.ts'),
+      },
+      {
+        find: '@dailyuse/goal/analytics',
+        replacement: resolve(__dirname, '../../packages/goal/src/analytics/index.ts'),
+      },
+      {
+        find: '@dailyuse/account/electron',
+        replacement: resolve(__dirname, '../../packages/account/src/electron/index.ts'),
       },
       {
         find: '@dailyuse/account',

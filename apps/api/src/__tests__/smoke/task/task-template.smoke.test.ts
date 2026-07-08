@@ -15,13 +15,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TaskType } from '@dailyuse/contracts/task';
 import request from 'supertest';
 import {
+  aOneTimeTask,
+  anIdentityId,
   createSmokeApp,
   JWT_SECRET,
   TEST_IDENTITY_ID,
   type SmokeTestApp,
 } from '../helpers/create-smoke-app';
-import { TaskTemplate } from '@dailyuse/task';
-import { TaskTimeConfig } from '@dailyuse/task/domain-shared';
 import jwt from 'jsonwebtoken';
 
 // Mock eventBus to prevent console noise and import side-effects from fire-and-forget events
@@ -41,18 +41,10 @@ vi.mock('@dailyuse/utils', async (importOriginal) => {
  * Create a real TaskTemplate aggregate via the domain factory method.
  * Uses proper value object classes so toClientDTO() works correctly.
  */
-function makeFakeTemplate(overrides: Record<string, unknown> = {}): TaskTemplate {
-  return TaskTemplate.create({
-    identityId: TEST_IDENTITY_ID,
+function makeFakeTemplate(overrides: Record<string, unknown> = {}) {
+  return aOneTimeTask({
+    identityId: anIdentityId(TEST_IDENTITY_ID),
     title: 'Smoke Test Task',
-    taskType: TaskType.OneTime,
-    timeConfig: TaskTimeConfig.create({
-      timeType: 'AllDay',
-      startDate: null,
-      timePoint: null,
-      timeRange: null,
-    }),
-    importance: 'Moderate',
     ...overrides,
   });
 }
@@ -200,8 +192,6 @@ describe('Task Template API Smoke Tests', () => {
   // GET /api/v1/task-templates/:id -- Get template by ID
   // =========================================================================
   describe('GET /api/v1/task-templates/:id', () => {
-    // Note: Route has requireAuth: false in expressAdapter options, but [auth]
-    // middleware is still applied, so token IS required in practice.
     it('should return 401 without auth token', async () => {
       const res = await request(ctx.app).get('/api/v1/task-templates/some-uuid');
 

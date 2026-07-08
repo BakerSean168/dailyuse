@@ -24,7 +24,7 @@ describe('repository handlers contracts', () => {
   });
 
   it('uses the explicit current repository route and response shape as the adapter', async () => {
-    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/infrastructure-client');
+    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
     const httpClient = createHttpClientSpy();
     const adapter = new RepositoryHttpAdapter(httpClient);
     const repository = createMockRepository();
@@ -75,7 +75,7 @@ describe('repository handlers contracts', () => {
   });
 
   it('uses the same nested resource list route and array response shape as the adapter', async () => {
-    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/infrastructure-client');
+    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
     const httpClient = createHttpClientSpy();
     const adapter = new RepositoryHttpAdapter(httpClient);
     const mockResources = [{ id: 'resource-1', name: 'Inbox.md' }];
@@ -93,7 +93,7 @@ describe('repository handlers contracts', () => {
   });
 
   it('uses the current bookmark routes and payload shapes as the adapter', async () => {
-    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/infrastructure-client');
+    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
     const httpClient = createHttpClientSpy();
     const adapter = new RepositoryHttpAdapter(httpClient);
     const mockBookmarks = [
@@ -155,7 +155,7 @@ describe('repository handlers contracts', () => {
   });
 
   it('uses the current upload route and multipart shape as the adapter', async () => {
-    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/infrastructure-client');
+    const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
     const httpClient = createHttpClientSpy();
     const adapter = new RepositoryHttpAdapter(httpClient);
     const uploadResponse = createMockUploadResourcesResponse('repo-1', ['Inbox.md']);

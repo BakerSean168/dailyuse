@@ -119,6 +119,10 @@ export const envSchema = z.object({
     .default(10485760) // 10MB
     .describe('最大上传文件大小 (字节)'),
 
+  REPOSITORY_STORAGE_PATH: z
+    .preprocess(emptyStringToUndefined, z.string().optional())
+    .describe('Repository/editor/AI knowledge file storage root directory'),
+
   // ========== 监控配置 ==========
   SENTRY_DSN: z.preprocess(emptyStringToUndefined, z.string().url().optional()),
 

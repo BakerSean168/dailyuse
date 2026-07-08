@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import { Goal } from '@dailyuse/goal';
+import { Goal } from '@dailyuse/goal/client';
 import { GoalStatus, type GoalServerDTO, type GoalId } from '@dailyuse/contracts/goal';
 import type { IdentityId } from '@dailyuse/contracts/authentication';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -203,8 +203,7 @@ export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
     sortOrder: dto.sortOrder,
     reminderConfig: null,
     keyResults: [],
-    goalReviews: [],
-    weightSnapshots: [],
+    reviews: [],
     version: dto.version,
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
