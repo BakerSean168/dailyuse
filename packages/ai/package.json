@@ -11,41 +11,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./domain-shared": {
-      "types": "./dist/domain-shared/index.d.ts",
-      "import": "./dist/domain-shared/index.js"
-    },
-    "./domain-server": {
-      "types": "./dist/domain-server/index.d.ts",
-      "import": "./dist/domain-server/index.js"
-    },
-    "./domain-client": {
-      "types": "./dist/domain-client/index.d.ts",
-      "import": "./dist/domain-client/index.js"
-    },
     "./ports": {
       "types": "./dist/ports/index.d.ts",
       "import": "./dist/ports/index.js"
-    },
-    "./application-client": {
-      "types": "./dist/application-client/index.d.ts",
-      "import": "./dist/application-client/index.js"
-    },
-    "./infrastructure-client": {
-      "types": "./dist/infrastructure-client/index.d.ts",
-      "import": "./dist/infrastructure-client/index.js"
     },
     "./api": {
       "types": "./dist/api/index.d.ts",
       "import": "./dist/api/index.js"
     },
-    "./electron-entry": {
-      "types": "./dist/electron-entry/index.d.ts",
-      "import": "./dist/electron-entry/index.js"
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
     },
-    "./schema": {
-      "types": "./dist/schema.d.ts",
-      "import": "./dist/schema.js"
+    "./electron": {
+      "types": "./dist/electron/index.d.ts",
+      "import": "./dist/electron/index.js"
     }
   },
   "scripts": {},

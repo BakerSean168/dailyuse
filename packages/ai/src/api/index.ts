@@ -22,4 +22,3 @@
 
 export { createAIApiModule } from './module';
 export type { AIApiModuleContext, AIApiModuleDef } from './module';
-export { createAITransportHandlers, type AITransportHandlers } from './transport-handlers';

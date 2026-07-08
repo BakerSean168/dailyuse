@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { AIGoalGenerationController } from '../../controllers/ai-goal-generation.controller';
+import type { AIGoalGenerationController } from '../../server/transport/ai-goal-generation.controller';
 import { registerAIGoalGenerationRoutes } from './ai-goal-generation.routes';
 
 type LayerWithRoute = {

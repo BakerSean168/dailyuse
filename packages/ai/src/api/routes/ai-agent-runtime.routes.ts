@@ -15,7 +15,7 @@ import {
   AgentRunResultSchema,
   AgentStartRunClientRequestSchema,
 } from '@dailyuse/contracts/ai';
-import type { AIAgentRuntimeController } from '../../controllers/ai-agent-runtime.controller';
+import type { AIAgentRuntimeController } from '../../server/transport/ai-agent-runtime.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

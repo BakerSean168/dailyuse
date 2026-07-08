@@ -7,7 +7,7 @@ import {
   successResponse,
 } from '@dailyuse/utils/result';
 import { QueryAnalyticsSchema, QueryAnalyticsResSchema } from '@dailyuse/contracts/ai';
-import type { AIAnalyticsQueryController } from '../../controllers/ai-analytics-query.controller';
+import type { AIAnalyticsQueryController } from '../../server/transport/ai-analytics-query.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

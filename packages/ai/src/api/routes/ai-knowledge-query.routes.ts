@@ -15,7 +15,7 @@ import {
   QueryKnowledgeResSchema,
   ExpandKnowledgeResSchema,
 } from '@dailyuse/contracts/ai';
-import type { AIKnowledgeQueryController } from '../../controllers/ai-knowledge-query.controller';
+import type { AIKnowledgeQueryController } from '../../server/transport/ai-knowledge-query.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

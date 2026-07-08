@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { AILangGraphCheckpointController } from '../../controllers/ai-langgraph-checkpoint.controller';
+import type { AILangGraphCheckpointController } from '../../server/transport/ai-langgraph-checkpoint.controller';
 import { registerAILangGraphCheckpointRoutes } from './ai-langgraph-checkpoint.routes';
 
 type RouteHandler = (

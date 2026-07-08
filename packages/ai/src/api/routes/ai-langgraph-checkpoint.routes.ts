@@ -8,7 +8,7 @@ import {
   ok,
   fail,
 } from '@dailyuse/utils/result';
-import type { AILangGraphCheckpointController } from '../../controllers/ai-langgraph-checkpoint.controller';
+import type { AILangGraphCheckpointController } from '../../server/transport/ai-langgraph-checkpoint.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;

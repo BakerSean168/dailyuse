@@ -9,7 +9,7 @@ import {
   fail,
 } from '@dailyuse/utils/result';
 import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@dailyuse/contracts/ai';
-import type { AIAgentCheckpointController } from '../../controllers/ai-agent-checkpoint.controller';
+import type { AIAgentCheckpointController } from '../../server/transport/ai-agent-checkpoint.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
