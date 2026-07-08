@@ -16,7 +16,7 @@ pnpm nx run desktop:test
 pnpm nx run desktop:test:watch
 ```
 
-适合在改动单个模块或单个应用后快速回归。`test` / `test:watch` 是默认 TDD 入口，不应依赖真实数据库、浏览器或跨进程环境。`test:coverage` 只在需要确认领域包质量门禁时补跑，不作为默认循环命令；coverage 作用域默认只检查 `src/domain-server/aggregates/**`、`src/domain-server/services/**`、`src/domain-server/value-objects/**`、`src/domain-shared/value-objects/**`，`packages/domain-shared` 额外检查 `src/shared/**`。
+适合在改动单个模块或单个应用后快速回归。`test` / `test:watch` 是默认 TDD 入口，不应依赖真实数据库、浏览器或跨进程环境。`test:coverage` 只在需要确认领域包质量门禁时补跑，不作为默认循环命令；coverage 作用域默认只检查 `src/server/domain/aggregates/**`、`src/server/domain/entities/**`、`src/server/domain/services/**`、`src/server/domain/value-objects/**`，`packages/domain-shared` 额外检查 `src/shared/**`。
 
 ## 专项测试入口
 

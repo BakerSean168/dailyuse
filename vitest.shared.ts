@@ -31,7 +31,7 @@ import { createContractsAliasEntries } from './vite.workspace-aliases';
  */
 
 interface SharedConfigOptions {
-  /** Project root directory (e.g., './packages/domain-server') */
+  /** Project root directory (e.g., './packages/task') */
   projectRoot: string;
   /** Test environment: 'node' | 'happy-dom' | 'jsdom' */
   environment?: 'node' | 'happy-dom' | 'jsdom';
@@ -72,11 +72,10 @@ export const GOVERNED_DOMAIN_COVERAGE_THRESHOLDS = {
 } as const;
 
 const DEFAULT_GOVERNED_COVERAGE_ROOTS = [
-  'src/domain-server/aggregates',
-  'src/domain-server/entities',
-  'src/domain-server/services',
-  'src/domain-server/value-objects',
-  'src/domain-shared/value-objects',
+  'src/server/domain/aggregates',
+  'src/server/domain/entities',
+  'src/server/domain/services',
+  'src/server/domain/value-objects',
 ] as const;
 
 const SOURCE_FILE_PATTERN = /\.[cm]?[jt]sx?$/;
@@ -188,7 +187,7 @@ export function createGovernedCoverage(
  * ```ts
  * createSliceCoverage({
  *   projectRoot: __dirname,
- *   roots: ['src/application-server/use-cases'],
+ *   roots: ['src/server/application/use-cases'],
  *   thresholds: { statements: 70, lines: 70, functions: 70, branches: 60 },
  *   reportsDirectory: 'coverage/use-cases',
  * })

@@ -13,21 +13,17 @@ const PACKAGES = path.join(ROOT, 'packages');
 const infraForbiddenNameRegex = /(Prisma|PowerSync|Adapter|Repository)$/;
 const APPLICATION_BARREL_SPECIFIERS = ['./application-server', './server/application'];
 const INFRA_BARREL_SPECIFIERS = ['./infrastructure-server', './server/infrastructure'];
+const API_BARREL_FORBIDDEN_SERVER_SPECIFIER_REGEX =
+  /export\s+(?:type\s+)?(?:\{[^}]*\}|\*)\s+from\s+['"]\.\.\/server\/(?:domain|application|transport|infrastructure)(?:\/[^'"]*)?['"]/gm;
 
 const DEFAULT_ALLOWED_SUBPATHS = [
   '.',
-  './domain-shared',
-  './domain-server',
-  './domain-client',
-  './application-client',
-  './infrastructure-client',
   './api',
-  './electron-entry',
+  './client',
+  './electron',
 ];
 
-const STRICT_ALLOWED_SUBPATHS = {
-  governance: ['.', './api', './client', './electron'],
-};
+const STRICT_ALLOWED_SUBPATHS = {};
 
 const PACKAGE_SPECIFIC_SUBPATHS = {
   goal: ['./analytics', './events', './schedule-execution', './schedule-projection'],
@@ -35,10 +31,8 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   ai: ['./ports', './schema'],
   repository: ['./schema'],
   authentication: ['./schema'],
-  notification: ['./commands', './schema', './schedule-execution'],
+  notification: ['./commands', './schedule-execution'],
   reminder: ['./schema', './schedule-execution', './schedule-projection'],
-  schedule: ['./schema'],
-  setting: ['./schema'],
   contracts: [
     './task', './goal', './governance', './reminder', './editor', './repository',
     './account', './authentication', './schedule', './setting',
@@ -133,6 +127,19 @@ function auditRootBarrel(pkg, violations) {
   }
 }
 
+function auditApiBarrel(pkg, violations) {
+  const indexPath = path.join(PACKAGES, pkg, 'src', 'api', 'index.ts');
+  if (!existsSync(indexPath)) return;
+  const content = readFileSync(indexPath, 'utf8');
+  const rel = path.relative(ROOT, indexPath).replaceAll('\\', '/');
+
+  let match;
+  API_BARREL_FORBIDDEN_SERVER_SPECIFIER_REGEX.lastIndex = 0;
+  while ((match = API_BARREL_FORBIDDEN_SERVER_SPECIFIER_REGEX.exec(content)) !== null) {
+    violations.push(`${rel} api barrel must not re-export server internals (${match[0].trim()})`);
+  }
+}
+
 function auditExportMap(pkg, violations) {
   const pkgJsonPath = path.join(PACKAGES, pkg, 'package.json');
   if (!existsSync(pkgJsonPath)) return;
@@ -155,6 +162,7 @@ function main() {
 
   for (const pkg of pkgs) {
     auditRootBarrel(pkg, violations);
+    auditApiBarrel(pkg, violations);
     auditExportMap(pkg, violations);
   }
 

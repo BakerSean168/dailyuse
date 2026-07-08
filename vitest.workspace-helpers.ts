@@ -2,6 +2,7 @@ import path from 'node:path';
 
 export const domainResolveAtAlias = {
   name: 'domain-resolve-at-alias',
+  enforce: 'pre' as const,
   async resolveId(
     this: {
       resolve: (id: string, importer: string, opts: Record<string, unknown>) => Promise<unknown>;

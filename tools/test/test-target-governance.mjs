@@ -459,23 +459,23 @@ function matchesProjectFilter(projectFile, projectName, filter) {
 async function checkDomainStructure(projectName, projectDir, errors) {
   const structuralRules = [
     {
-      implementationDirectories: ['src/domain-server/aggregates'],
-      testDirectories: ['src/domain-server/aggregates'],
+      implementationDirectories: ['src/server/domain/aggregates'],
+      testDirectories: ['src/server/domain/aggregates'],
       label: 'aggregate',
     },
     {
-      implementationDirectories: ['src/domain-server/entities'],
-      testDirectories: ['src/domain-server/entities', 'src/domain-server/aggregates'],
+      implementationDirectories: ['src/server/domain/entities'],
+      testDirectories: ['src/server/domain/entities', 'src/server/domain/aggregates'],
       label: 'entity',
     },
     {
-      implementationDirectories: ['src/domain-server/services'],
-      testDirectories: ['src/domain-server/services'],
+      implementationDirectories: ['src/server/domain/services'],
+      testDirectories: ['src/server/domain/services'],
       label: 'domain service',
     },
     {
-      implementationDirectories: ['src/domain-server/value-objects', 'src/domain-shared/value-objects'],
-      testDirectories: ['src/domain-server/value-objects', 'src/domain-shared/value-objects'],
+      implementationDirectories: ['src/server/domain/value-objects'],
+      testDirectories: ['src/server/domain/value-objects'],
       label: 'value object',
     },
   ];

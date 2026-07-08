@@ -7,79 +7,84 @@ Accepted
 2026-05-25
 
 ## Context
-The monorepo has 12 business feature packages (account, ai, authentication, editor, goal, governance, notification, reminder, repository, schedule, setting, task) that share a common internal structure. However, there is no formal documentation of this shape, leading to inconsistent new modules and confusion about where code belongs.
+The monorepo has 13 business feature packages (account, ai, authentication, data-portability, editor, goal, governance, notification, reminder, repository, schedule, setting, task) that share a common internal structure. However, there is no formal documentation of this shape, leading to inconsistent new modules and confusion about where code belongs.
 
 Additionally, `dashboard` is a read-model module that intentionally does NOT follow the full server feature shape — it has no write side, no controllers, no infrastructure-server.
+
+`schedule-orchestration` is also not one of the 13 business feature packages.
+It is a cross-feature orchestration package that owns schedule projection and
+source-execution wiring between feature modules. Its current `ports/`,
+`projectors/`, `runtime/`, `execution/`, and `infrastructure-server/` shape is
+an explicit orchestration-package exception, not a template for new feature
+packages. If it later grows API/client/electron seams, it should get its own ADR
+or be migrated into the standard feature shape.
 
 ## Decision
 
 ### Standard Server Feature Shape
 
-Every business feature package follows this internal structure:
+The canonical internal structure for business feature packages is:
 
 ```
 packages/<feature>/
 ├── src/
-│   ├── domain-server/          # Pure business logic
-│   │   ├── aggregates/         # Aggregate roots
-│   │   ├── entities/           # Entities
-│   │   ├── value-objects/      # Value objects
-│   │   ├── services/           # Domain services
-│   │   ├── repositories/       # Repository interfaces
-│   │   └── index.ts
-│   ├── domain-client/          # Client-side domain (DTOs, view models)
-│   │   ├── aggregates/
-│   │   ├── entities/
-│   │   └── index.ts
-│   ├── domain-shared/          # Shared between server and client
-│   │   ├── value-objects/
-│   │   └── index.ts
-│   ├── application-server/     # Server-side use cases
-│   │   ├── use-cases/
-│   │   │   ├── commands/       # Write operations
-│   │   │   └── queries/        # Read operations
-│   │   └── index.ts
-│   ├── application-client/     # Client-side service interface + factory
-│   │   └── index.ts            # exports createXxxServiceFromHttpClient()
-│   ├── infrastructure-server/  # Server-side implementations
-│   │   ├── adapters/
-│   │   │   ├── prisma/         # Prisma repository implementations
-│   │   │   └── powersync/      # PowerSync repository implementations
-│   │   ├── <feature>.module.ts # Composition root
-│   │   └── index.ts
-│   ├── infrastructure-client/  # Client-side transport adapters
-│   │   ├── adapters/
-│   │   │   ├── http/           # HTTP adapter
-│   │   │   └── ipc/            # Electron IPC adapter
-│   │   └── index.ts
 │   ├── api/                    # Express route definitions
 │   │   ├── routes/
 │   │   ├── module.ts           # API module registration
 │   │   └── index.ts
-│   ├── controllers/            # Request handlers
+│   ├── client/                 # Stable renderer client seam
+│   │   └── index.ts
+│   ├── electron/               # Stable desktop main seam
+│   │   └── index.ts
+│   ├── server/
+│   │   ├── domain/             # Pure business logic
+│   │   │   ├── aggregates/     # Aggregate roots
+│   │   │   ├── entities/       # Entities
+│   │   │   ├── value-objects/  # Value objects
+│   │   │   ├── services/       # Domain services
+│   │   │   ├── repositories/   # Repository interfaces
+│   │   │   └── index.ts
+│   │   ├── application/        # Server-side use cases / application port
+│   │   │   ├── use-cases/
+│   │   │   │   ├── commands/
+│   │   │   │   └── queries/
+│   │   │   └── index.ts
+│   │   ├── transport/          # Controllers and transport translation
+│   │   │   └── index.ts
+│   │   ├── infrastructure/     # Adapters and composition root
+│   │   │   ├── adapters/
+│   │   │   ├── runtime/
+│   │   │   ├── <feature>.module.ts
+│   │   │   └── index.ts
 │   │   └── index.ts
 │   └── index.ts                # Root barrel
 ├── project.json                # Nx config (tagged layer:domain)
 └── package.json
 ```
 
+The older `domain-server` / `domain-client` / `domain-shared` /
+`application-server` / `application-client` / `infrastructure-server` /
+`infrastructure-client` / `controllers` layout is a legacy transition shape.
+It may exist temporarily behind an explicit migration baseline, but it is no
+longer the architectural standard for new work.
+
 ### Layer Responsibilities
 
 | Layer | Contains | Depends On |
 |-------|----------|------------|
-| `domain-server` | Entities, VOs, domain services, repo interfaces | `contracts`, `domain-shared` |
-| `domain-client` | Client-side DTOs, view models | `contracts`, `domain-shared` |
-| `domain-shared` | Shared VOs, enums, primitives | `contracts` |
-| `application-server` | Use cases, command/query handlers | `domain-server` |
-| `application-client` | Client service interface, factory functions | `domain-client`, `contracts` |
-| `infrastructure-server` | Prisma repos, PowerSync repos, external adapters | `domain-server`, `application-server` |
-| `infrastructure-client` | HTTP adapters, IPC adapters | `application-client` |
-| `api` | Express routes, module registration | `infrastructure-server`, `application-server` |
-| `controllers` | Request/response handling | `application-server` |
+| `server/domain` | Entities, VOs, domain services, repo interfaces | `contracts` |
+| `server/application` | Use cases, command/query handlers, app port | `server/domain` |
+| `server/transport` | Request/response handling, transport translation | `server/application` |
+| `server/infrastructure` | Prisma repos, PowerSync repos, runtime adapters, composition root | `server/domain`, `server/application` |
+| `api` | Express routes, module registration | `server/infrastructure`, `server/application` |
+| `client` | Client service interface, factory functions | `contracts` |
+| `electron` | Desktop main seam | `client`, `contracts` |
 
 ### Composition Root Pattern
 
-The `infrastructure-server/<feature>.module.ts` is the composition root. It wires concrete repository implementations to domain interfaces. This is allowed within a `layer:domain` tagged package because:
+The `server/infrastructure/<feature>.module.ts` composition root wires concrete
+repository implementations to domain interfaces. This is allowed within a
+`layer:domain` tagged package because:
 - The composition root is infrastructure assembly code, not domain logic
 - The ESLint `layer:domain -> layer:infra` rule exists specifically for this pattern
 - Package-internal boundary enforcement is now implemented as a repo-level governance audit
@@ -96,7 +101,9 @@ All client-side services expose a unified factory function:
 export function createXxxServiceFromHttpClient(httpClient: IResultHttpClient): XxxClientService
 ```
 
-This pattern is used by all 12 feature packages (account, ai, authentication, editor, goal, governance, notification, reminder, repository, schedule, setting, task). The factory internally composes the HTTP adapter and client service, hiding the two-step wiring from consumers.
+This pattern remains the target for business feature packages. During the
+rollout period, governance scripts maintain an explicit legacy baseline for
+packages not yet migrated to the canonical `server/*` layout.
 
 ### Read-Model Exception
 

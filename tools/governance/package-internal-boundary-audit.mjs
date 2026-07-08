@@ -3,8 +3,8 @@
  * Package-Internal Boundary Audit
  *
  * Checks that feature packages obey in-package layering constraints.
- * Governance uses the stricter `src/server/*` reference layout; older packages
- * still using `*-server` directories are audited with the legacy rules.
+ * The canonical layout is `src/server/*`.
+ * Legacy server roots are forbidden by `server-feature-shape-audit.mjs`.
  */
 
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
@@ -13,57 +13,54 @@ import { join, relative, extname } from 'node:path';
 const ROOT = join(import.meta.dirname, '..', '..');
 const PACKAGES_DIR = join(ROOT, 'packages');
 
-const LEGACY_LAYER_RULES = [
-  {
-    layer: 'domain-server',
-    forbidden: [
-      'infrastructure-server',
-      'infrastructure-client',
-      'application-client',
-      'client',
-      'electron',
-      'api',
-      'controllers',
-    ],
-  },
-  {
-    layer: 'application-server',
-    forbidden: [
-      'infrastructure-server',
-      'infrastructure-client',
-      'application-client',
-      'client',
-      'electron',
-      'api',
-      'controllers',
-    ],
-  },
-  {
-    layer: 'controllers',
-    forbidden: ['infrastructure-server', 'infrastructure-client', 'client', 'electron', 'api'],
-  },
-  {
-    layer: 'client',
-    forbidden: ['domain-server', 'application-server', 'infrastructure-server', 'controllers', 'api', 'electron'],
-  },
+const FORBIDDEN_LEGACY_LAYERS = [
+  'domain-server',
+  'domain-shared',
+  'application-server',
+  'infrastructure-server',
+  'controllers',
+  'electron-entry',
 ];
 
 const GOVERNANCE_LAYER_RULES = [
   {
     layer: 'server/domain',
-    forbidden: ['server/application', 'server/transport', 'server/infrastructure', 'client', 'electron', 'api'],
+    forbidden: [
+      'server/application',
+      'server/transport',
+      'server/infrastructure',
+      'client',
+      'electron',
+      'api',
+      ...FORBIDDEN_LEGACY_LAYERS,
+    ],
   },
   {
     layer: 'server/application',
-    forbidden: ['server/transport', 'server/infrastructure', 'client', 'electron', 'api'],
+    forbidden: [
+      'server/transport',
+      'server/infrastructure',
+      'client',
+      'electron',
+      'api',
+      ...FORBIDDEN_LEGACY_LAYERS,
+    ],
   },
   {
     layer: 'server/transport',
-    forbidden: ['server/infrastructure', 'client', 'electron', 'api'],
+    forbidden: ['server/infrastructure', 'client', 'electron', 'api', ...FORBIDDEN_LEGACY_LAYERS],
   },
   {
     layer: 'client',
-    forbidden: ['server/domain', 'server/application', 'server/transport', 'server/infrastructure', 'api', 'electron'],
+    forbidden: [
+      'server/domain',
+      'server/application',
+      'server/transport',
+      'server/infrastructure',
+      'api',
+      'electron',
+      ...FORBIDDEN_LEGACY_LAYERS,
+    ],
   },
 ];
 
@@ -119,22 +116,12 @@ function main() {
     const srcDir = join(PACKAGES_DIR, pkg, 'src');
     if (!existsSync(srcDir)) continue;
 
-    if (pkg === 'governance' && existsSync(join(srcDir, 'server'))) {
+    if (existsSync(join(srcDir, 'server'))) {
       for (const rule of GOVERNANCE_LAYER_RULES) {
         const layerDir = join(srcDir, ...rule.layer.split('/'));
         if (!existsSync(layerDir)) continue;
         walkLayer(layerDir, rule, violations, () => auditedFiles += 1);
       }
-      continue;
-    }
-
-    const srcContents = readdirSync(srcDir);
-    if (!srcContents.includes('domain-server')) continue;
-
-    for (const rule of LEGACY_LAYER_RULES) {
-      const layerDir = join(srcDir, rule.layer);
-      if (!existsSync(layerDir)) continue;
-      walkLayer(layerDir, rule, violations, () => auditedFiles += 1);
     }
   }
 
@@ -162,7 +149,9 @@ function main() {
   }
 
   const knownCount = seen.size - uniqueViolations.length;
-  console.log(`✅ Package-Internal Boundary Audit passed (${auditedFiles} files audited, ${knownCount} known violation(s) tracked)`);
+  console.log(
+    `✅ Package-Internal Boundary Audit passed (${auditedFiles} files audited, ${knownCount} known violation(s) tracked)`,
+  );
 }
 
 function walkLayer(dir, rule, violations, countFile) {
