@@ -341,6 +341,34 @@ describe('createScheduleRuntimeContribution', () => {
     );
   });
 
+  it('logs sync handler failures instead of leaking an unhandled rejection', async () => {
+    const repository = createRepositoryMock();
+    repository.findById.mockRejectedValue(new Error('db unavailable'));
+
+    const runtime = createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor: { execute: vi.fn(async () => undefined) },
+    });
+
+    await runtime.start();
+
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      mocked.emit('schedule:task-created', { taskId: 'task-error' });
+      await flushAsyncWork();
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+
+    expect(unhandled).toHaveLength(0);
+    expect(mocked.loggerError).toHaveBeenCalledWith(
+      '[Schedule] Task sync event handler failed',
+      expect.objectContaining({ event: 'schedule:task-created', taskId: 'task-error', error: 'db unavailable' }),
+    );
+  });
+
   it('removes tasks from the queue when sync finds a task outside the runtime scope', async () => {
     const task = createLoadedTask({ id: 'task-blocked' });
     const repository = createRepositoryMock();

@@ -11,7 +11,7 @@
  */
 
 // 环境配置必须最先加载（包含 dotenv 加载逻辑）
-import { env } from './shared/infrastructure/config/env.js';
+import { env, getJwtConfig } from './shared/infrastructure/config/env.js';
 import { prisma, connectDatabase, disconnectDatabase } from '@dailyuse/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -22,7 +22,7 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 // 新模块（来自独立包，完全自治）
 import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
-import { AuthenticationApiModule } from '@dailyuse/authentication/api';
+import { createAuthenticationApiModule } from '@dailyuse/authentication/api';
 import { createEditorApiModule } from '@dailyuse/editor/api';
 import { GoalApiModule } from '@dailyuse/goal/api';
 import { createGoalPrismaScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
@@ -151,11 +151,20 @@ async function bootstrap(): Promise<void> {
     repositoryStorageBaseDir,
   });
 
+  // Authentication secrets come from the validated env schema (JWT_SECRET min 32
+  // chars, REFRESH_TOKEN_SECRET defaults to JWT_SECRET), injected here so the
+  // module never reads process.env directly or bypasses schema validation.
+  const jwtConfig = getJwtConfig();
+  const authenticationApiModule = createAuthenticationApiModule({
+    jwtSecret: jwtConfig.secret,
+    refreshSecret: jwtConfig.refreshSecret,
+  });
+
   const app = await bootstrapper
     // === 核心：白名单注册 ===
     .register(GovernanceApiModule) // ✅ 治理模块
     .register(AccountApiModule) // ✅ 账户模块
-    .register(AuthenticationApiModule) // ✅ 认证模块
+    .register(authenticationApiModule) // ✅ 认证模块
     .register(editorApiModule) // ✅ 编辑器模块
     .register(NotificationApiModule) // ✅ 通知模块
     .register(ReminderApiModule) // ✅ 提醒模块
@@ -186,7 +195,7 @@ bootstrap().catch((err) => {
 });
 
 // === 优雅关闭 ===
-async function gracefulShutdown(signal: string): Promise<void> {
+async function gracefulShutdown(signal: string, exitCode = 0): Promise<void> {
   logger.info(`Received ${signal}, shutting down gracefully...`);
 
   scheduler?.stop();
@@ -198,8 +207,23 @@ async function gracefulShutdown(signal: string): Promise<void> {
   await disconnectDatabase();
   logger.info('Database disconnected');
 
-  process.exit(0);
+  process.exit(exitCode);
 }
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+// === 进程级异常兜底 ===
+// 防止未处理的 Promise 拒绝直接终止 API 进程（Node 22 默认行为），
+// 与 Electron main 的 runtime-init 保持一致的可观测性。
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled rejection in API process', reason);
+});
+
+// 未捕获异常后进程状态不可信（资源泄漏、全局状态半更新、不变量被破坏），
+// 记录后走优雅关闭并以非零码退出，交由 supervisor / 编排层重启，
+// 而不是带着损坏状态继续服务请求。
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception in API process, shutting down', error);
+  void gracefulShutdown('uncaughtException', 1).catch(() => process.exit(1));
+});
