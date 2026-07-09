@@ -15,7 +15,7 @@
  * - 缓存服务：清除规则缓存
  */
 import type { RuleId } from '../../primitives/ids';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export interface RuleUpdatedEvent {
   /** Rule ID. 规则 ID。 */

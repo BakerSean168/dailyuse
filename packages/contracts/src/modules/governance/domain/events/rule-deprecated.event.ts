@@ -12,7 +12,7 @@
  * - 审计日志：记录规则废弃历史
  */
 import type { RuleId } from '../../primitives/ids';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export interface RuleDeprecatedEvent {
   /** Rule ID. 规则 ID。 */

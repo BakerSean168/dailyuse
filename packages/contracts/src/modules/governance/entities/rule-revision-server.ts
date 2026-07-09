@@ -8,7 +8,7 @@
  * - 内部实现细节
  */
 
-import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, IdentityId } from '../../../primitives';
 import type { RuleRevisionId, RuleId } from '../primitives/ids';
 import type { ChangeType } from '../value-objects/change-type';
 

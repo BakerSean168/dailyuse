@@ -25,7 +25,7 @@
  * - 审计日志：记录规则创建历史
  */
 import type { RuleSeverity } from '../../value-objects/rule-severity';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export interface RuleCreatedEvent {
   /** Rule code (e.g. DDD-001). 规则编码（例如：DDD-001）。 */
