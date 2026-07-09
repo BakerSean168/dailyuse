@@ -5,4 +5,3 @@
 
 export { ScheduleTask, ScheduleConfigVO, ExecutionInfoVO, RetryPolicyVO, TaskMetadataVO, type ScheduleTaskState } from './schedule-task.js';
 export { CalendarEntry, type CalendarEntryState } from './calendar-entry.js';
-export { ScheduleJob } from './schedule-job.js'; // deprecated alias

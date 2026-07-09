@@ -1,18 +1,18 @@
 import type {
+  CalendarEntryClientDTO,
   ConflictDetectionResult,
-  ScheduleJobClientDTO,
   ScheduleTaskClientDTO,
 } from '@dailyuse/contracts/schedule';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
-const asScheduleId = (value: string) => value as ScheduleJobClientDTO['id'];
-const asIdentityId = (value: string) => value as ScheduleJobClientDTO['identityId'];
+const asScheduleId = (value: string) => value as CalendarEntryClientDTO['id'];
+const asIdentityId = (value: string) => value as CalendarEntryClientDTO['identityId'];
 const asScheduleTaskId = (value: string) => value as ScheduleTaskClientDTO['id'];
 const asTaskIdentityId = (value: string) => value as ScheduleTaskClientDTO['identityId'];
 const toIso = (value: number | null) => (value == null ? null : new Date(value).toISOString());
 
 type ScheduleEventStoryOverrides = Omit<
-  Partial<ScheduleJobClientDTO>,
+  Partial<CalendarEntryClientDTO>,
   'id' | 'identityId'
 > & {
   id?: string;
@@ -34,7 +34,7 @@ type ScheduleTaskStoryOverrides = Omit<
 
 export function createScheduleStoryEvent(
   overrides: ScheduleEventStoryOverrides = {},
-): ScheduleJobClientDTO {
+): CalendarEntryClientDTO {
   const now = Date.now();
   const { id, identityId, ...restOverrides } = overrides;
 

@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ScheduleEventList from './ScheduleEventList.vue';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { createScheduleStoryEvent } from './story-fixtures';
 
 const now = Date.now();
 const toTimestamp = (offset: number) => now + offset;
 
-const mockSchedules: ScheduleJobClientDTO[] = [
+const mockSchedules: CalendarEntryClientDTO[] = [
   createScheduleStoryEvent({
     title: 'Team Standup',
     description: 'Daily sync with the team',
