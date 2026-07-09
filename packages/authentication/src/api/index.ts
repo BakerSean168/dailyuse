@@ -5,5 +5,9 @@
  * Self-contained API module entry point, exposed to ApiBootstrapper via register().
  */
 
-export { AuthenticationApiModule } from './module';
-export type { AuthenticationApiModuleContext, AuthenticationApiModuleDef } from './module';
+export { createAuthenticationApiModule } from './module';
+export type {
+  AuthenticationApiModuleContext,
+  AuthenticationApiModuleDef,
+  CreateAuthenticationApiModuleOptions,
+} from './module';
