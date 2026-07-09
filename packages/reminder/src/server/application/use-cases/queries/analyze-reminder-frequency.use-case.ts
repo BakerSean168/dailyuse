@@ -12,17 +12,19 @@ import type { ReminderTemplate } from '../../../domain/aggregates/reminder-templ
 import { ResponseMetrics } from '../../../domain/value-objects';
 
 /**
- * 响应行为类型
+ * 响应聚合统计
+ *
+ * 与 {@link IReminderResponseRepository.getResponseStats} 返回结构一致，
+ * 由基础设施层按 lookbackDays 过滤并归类动作后给出。
  */
-type ResponseAction = 'clicked' | 'ignored' | 'snoozed' | 'dismissed' | 'completed';
-
-/**
- * 响应记录接口
- */
-interface ReminderResponseRecord {
-  action: ResponseAction;
-  responseTime: number | null;
-  timestamp: bigint;
+interface ResponseStats {
+  total: number;
+  clicked: number;
+  ignored: number;
+  snoozed: number;
+  dismissed: number;
+  completed: number;
+  avgResponseTime: number;
 }
 
 /**
@@ -88,26 +90,17 @@ export class AnalyzeReminderFrequencyUseCase {
 
   /**
    * 分析单个提醒模板的效果 (内部实现)
+   *
+   * 通过注入的响应仓储做聚合统计（`getResponseStats` 已在基础设施层按
+   * `lookbackDays` 过滤并归类动作），再折算成 {@link ResponseMetrics}。
+   * 样本量为 0 时返回 null，表示数据不足。
    */
   private async analyzeTemplate(
     template: ReminderTemplate,
     lookbackDays: number,
   ): Promise<ResponseMetrics | null> {
-    // 2. 查询响应记录
-    const _lookbackMs = lookbackDays * 24 * 60 * 60 * 1000;
-    // const cutoffTime = BigInt(Date.now() - lookbackMs);
-
-    // TODO: 需要运行 Prisma migration 后才能使用 reminderResponse
-    // const records = await this.prisma.reminderResponse.findMany({
-    //   where: {
-    //     templateId: template.id,
-    //     timestamp: { gte: cutoffTime },
-    //   },
-    // });
-
-    // 3. 计算指标
-    const metrics = this.calculateMetrics([], template);
-    return metrics;
+    const stats = await this.responseRepository.getResponseStats(template.id, lookbackDays);
+    return this.calculateMetrics(stats, template);
   }
 
   /**
@@ -161,39 +154,30 @@ export class AnalyzeReminderFrequencyUseCase {
 
   /**
    * 计算响应指标
+   *
+   * 输入为响应仓储的聚合统计，样本量为 0 时返回 null（数据不足）。
    */
   private calculateMetrics(
-    records: ReminderResponseRecord[],
+    stats: ResponseStats,
     _template: unknown,
   ): ResponseMetrics | null {
-    if (records.length === 0) {
+    const totalResponses = stats.total;
+    if (totalResponses === 0) {
       return null;
     }
 
-    const clicked = records.filter((r) => r.action === 'clicked').length;
-    const ignored = records.filter((r) => r.action === 'ignored').length;
-    const snoozed = records.filter((r) => r.action === 'snoozed').length;
-    const _dismissed = records.filter((r) => r.action === 'dismissed').length;
-    const completed = records.filter((r) => r.action === 'completed').length;
+    const clickRate = stats.clicked / totalResponses;
+    const ignoreRate = stats.ignored / totalResponses;
+    const completedRate = stats.completed / totalResponses;
 
-    const totalResponses = records.length;
-    const clickRate = clicked / totalResponses;
-    const ignoreRate = ignored / totalResponses;
-    const avgResponseTime =
-      records
-        .filter((r) => r.responseTime !== null)
-        .reduce((sum, r) => sum + (r.responseTime || 0), 0) /
-      records.filter((r) => r.responseTime !== null).length || 0;
-
-    // 计算效果评分 (0-100)
-    const effectivenessScore =
-      (clickRate * 0.6 + (100 - ignoreRate) * 0.2 + (completed / totalResponses) * 0.2);
+    // 计算效果评分 (0-1)：点击率主导，低忽略率与完成率为辅
+    const effectivenessScore = clickRate * 0.6 + (1 - ignoreRate) * 0.2 + completedRate * 0.2;
 
     return ResponseMetrics.create({
       clickRate,
       ignoreRate,
-      avgResponseTime,
-      snoozeCount: snoozed,
+      avgResponseTime: stats.avgResponseTime,
+      snoozeCount: stats.snoozed,
       effectivenessScore,
       sampleSize: totalResponses,
       lastAnalysisTime: Date.now(),

@@ -1,13 +1,38 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalyzeReminderFrequencyUseCase } from './analyze-reminder-frequency.use-case';
 
+type Stats = {
+  total: number;
+  clicked: number;
+  ignored: number;
+  snoozed: number;
+  dismissed: number;
+  completed: number;
+  avgResponseTime: number;
+};
+
+function stats(overrides: Partial<Stats> = {}): Stats {
+  return {
+    total: 0,
+    clicked: 0,
+    ignored: 0,
+    snoozed: 0,
+    dismissed: 0,
+    completed: 0,
+    avgResponseTime: 0,
+    ...overrides,
+  };
+}
+
 describe('AnalyzeReminderFrequencyUseCase', () => {
   const templateRepository = {
     findById: vi.fn(),
     findByIdentityId: vi.fn(),
   } as any;
 
-  const responseRepository = {} as any;
+  const responseRepository = {
+    getResponseStats: vi.fn(),
+  } as any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -25,8 +50,19 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
     }
   });
 
-  it('returns null for single-template analysis when there are no records', async () => {
+  it('queries the response repository with the requested lookback window', async () => {
     templateRepository.findById.mockResolvedValue({ id: 'tpl-1' });
+    responseRepository.getResponseStats.mockResolvedValue(stats());
+    const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
+
+    await useCase.execute('tpl-1', 7);
+
+    expect(responseRepository.getResponseStats).toHaveBeenCalledWith('tpl-1', 7);
+  });
+
+  it('returns null when the template has no recorded responses', async () => {
+    templateRepository.findById.mockResolvedValue({ id: 'tpl-1' });
+    responseRepository.getResponseStats.mockResolvedValue(stats());
     const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
 
     const result = await useCase.execute('tpl-1', 7);
@@ -37,54 +73,60 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
     }
   });
 
-  it('builds global report using per-template analysis results', async () => {
+  it('computes metrics from the aggregated response stats', async () => {
+    templateRepository.findById.mockResolvedValue({ id: 'tpl-1' });
+    responseRepository.getResponseStats.mockResolvedValue(
+      stats({
+        total: 10,
+        clicked: 5,
+        ignored: 2,
+        snoozed: 1,
+        dismissed: 0,
+        completed: 2,
+        avgResponseTime: 1200,
+      }),
+    );
+    const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
+
+    const result = await useCase.execute('tpl-1', 30);
+
+    expect(result.ok).toBe(true);
+    if (result.ok && result.data) {
+      expect(result.data.sampleSize).toBe(10);
+      expect(result.data.clickRate).toBeCloseTo(0.5);
+      expect(result.data.ignoreRate).toBeCloseTo(0.2);
+      expect(result.data.snoozeCount).toBe(1);
+      expect(result.data.avgResponseTime).toBe(1200);
+      // effectivenessScore = 0.5*0.6 + (1-0.2)*0.2 + 0.2*0.2 = 0.3 + 0.16 + 0.04 = 0.5
+      expect(result.data.effectivenessScore).toBeCloseTo(0.5);
+    }
+  });
+
+  it('builds a global report by analyzing every template of an identity', async () => {
     const templates = [{ id: 't1' }, { id: 't2' }, { id: 't3' }];
     templateRepository.findByIdentityId.mockResolvedValue(templates);
-    const useCase = new AnalyzeReminderFrequencyUseCase(
-      templateRepository,
-      responseRepository,
-    ) as any;
+    responseRepository.getResponseStats
+      // t1: highly effective
+      .mockResolvedValueOnce(stats({ total: 10, clicked: 9, completed: 8, avgResponseTime: 500 }))
+      // t2: ineffective
+      .mockResolvedValueOnce(stats({ total: 10, ignored: 10 }))
+      // t3: no data → null, excluded from the report
+      .mockResolvedValueOnce(stats());
 
-    useCase.analyzeTemplate = vi
-      .fn()
-      .mockResolvedValueOnce(
-        useCase.calculateMetrics(
-          [
-            { action: 'clicked', responseTime: 10, timestamp: BigInt(1) },
-            { action: 'clicked', responseTime: 20, timestamp: BigInt(2) },
-            { action: 'completed', responseTime: 30, timestamp: BigInt(3) },
-          ],
-          templates[0],
-        ),
-      )
-      .mockResolvedValueOnce(
-        useCase.calculateMetrics(
-          [
-            { action: 'ignored', responseTime: null, timestamp: BigInt(4) },
-            { action: 'dismissed', responseTime: 20, timestamp: BigInt(5) },
-            { action: 'ignored', responseTime: null, timestamp: BigInt(6) },
-          ],
-          templates[1],
-        ),
-      )
-      .mockResolvedValueOnce(null);
+    const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
 
-    const result = await (useCase as AnalyzeReminderFrequencyUseCase).executeGlobal(
-      'identity-1',
-      30,
-    );
+    const result = await useCase.executeGlobal('identity-1', 30);
 
     expect(templateRepository.findByIdentityId).toHaveBeenCalledWith('identity-1');
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.identityId).toBe('identity-1');
       expect(result.data.totalTemplates).toBe(3);
-      expect(result.data.avgClickRate).toBeGreaterThanOrEqual(0);
-      expect(result.data.avgEffectivenessScore).toBeGreaterThanOrEqual(0);
+      expect(result.data.highEffective).toHaveLength(1);
+      expect(result.data.highEffective[0].templateId).toBe('t1');
+      expect(result.data.lowEffective).toHaveLength(1);
+      expect(result.data.lowEffective[0].templateId).toBe('t2');
       expect(result.data.analyzedAt).toBeTypeOf('number');
-      expect(
-        result.data.highEffective.length + result.data.lowEffective.length,
-      ).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -102,90 +144,5 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
       expect(result.data.highEffective).toEqual([]);
       expect(result.data.lowEffective).toEqual([]);
     }
-  });
-
-  it('calculateMetrics returns null for empty records', () => {
-    const useCase = new AnalyzeReminderFrequencyUseCase(
-      templateRepository,
-      responseRepository,
-    ) as any;
-    expect(useCase.calculateMetrics([], {})).toBeNull();
-  });
-
-  it('calculateMetrics computes expected values for mixed responses', () => {
-    const useCase = new AnalyzeReminderFrequencyUseCase(
-      templateRepository,
-      responseRepository,
-    ) as any;
-
-    const metrics = useCase.calculateMetrics(
-      [
-        { action: 'clicked', responseTime: 10, timestamp: BigInt(1) },
-        { action: 'ignored', responseTime: null, timestamp: BigInt(2) },
-        { action: 'snoozed', responseTime: 20, timestamp: BigInt(3) },
-        { action: 'dismissed', responseTime: 15, timestamp: BigInt(4) },
-        { action: 'completed', responseTime: 30, timestamp: BigInt(5) },
-      ],
-      {},
-    );
-
-    expect(metrics).not.toBeNull();
-    expect(metrics.sampleSize).toBe(5);
-    expect(metrics.clickRate).toBeCloseTo(0.2);
-    expect(metrics.ignoreRate).toBeCloseTo(0.2);
-    expect(metrics.snoozeCount).toBe(1);
-    expect(metrics.avgResponseTime).toBeGreaterThan(0);
-  });
-
-  it('generateEffectivenessReport recommends decrease for high effectiveness', () => {
-    const useCase = new AnalyzeReminderFrequencyUseCase(
-      templateRepository,
-      responseRepository,
-    ) as any;
-    const metrics = useCase.calculateMetrics(
-      [
-        { action: 'clicked', responseTime: 10, timestamp: BigInt(1) },
-        { action: 'clicked', responseTime: 8, timestamp: BigInt(2) },
-        { action: 'completed', responseTime: 9, timestamp: BigInt(3) },
-      ],
-      {},
-    );
-
-    const report = useCase.generateEffectivenessReport('tpl-1', metrics);
-    expect(report.recommendation).toBe('decrease');
-  });
-
-  it('generateEffectivenessReport recommends increase for low effectiveness', () => {
-    const useCase = new AnalyzeReminderFrequencyUseCase(
-      templateRepository,
-      responseRepository,
-    ) as any;
-    const metrics = {
-      clickRate: 0,
-      ignoreRate: 1,
-      avgResponseTime: 0,
-      effectivenessScore: 0.1,
-      sampleSize: 3,
-    };
-
-    const report = useCase.generateEffectivenessReport('tpl-2', metrics);
-    expect(report.recommendation).toBe('increase');
-  });
-
-  it('generateEffectivenessReport recommends no_change for middle effectiveness', () => {
-    const useCase = new AnalyzeReminderFrequencyUseCase(
-      templateRepository,
-      responseRepository,
-    ) as any;
-    const metrics = {
-      clickRate: 0.4,
-      ignoreRate: 0.3,
-      avgResponseTime: 12,
-      effectivenessScore: 0.5,
-      sampleSize: 20,
-    };
-
-    const report = useCase.generateEffectivenessReport('tpl-3', metrics);
-    expect(report.recommendation).toBe('no_change');
   });
 });
