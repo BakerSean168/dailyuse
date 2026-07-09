@@ -7,7 +7,7 @@ import { PowerSyncAIProviderConfigMapper, type PowerSyncAIProviderConfigRow } fr
 export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRepository {
   constructor(
     private readonly db: IElectronDatabase,
-    private readonly secretCipher = new AISecretCipher(),
+    private readonly secretCipher = AISecretCipher.fromEnv(),
   ) {}
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {

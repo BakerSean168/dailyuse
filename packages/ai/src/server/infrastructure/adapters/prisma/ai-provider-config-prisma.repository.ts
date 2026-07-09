@@ -19,7 +19,7 @@ import { AISecretCipher } from '../../security/ai-secret-cipher';
 export class AIProviderConfigPrismaRepository implements IAIProviderConfigRepository {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly secretCipher = new AISecretCipher(),
+    private readonly secretCipher = AISecretCipher.fromEnv(),
   ) {}
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {

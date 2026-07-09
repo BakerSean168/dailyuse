@@ -102,9 +102,14 @@ export const envSchema = z.object({
   QI_NIU_YUN_MODEL_ID: z.string().optional(),
 
   // AI Provider 加密密钥
+  // 必填：AI 模块启动时 AISecretCipher.fromEnv() 会 fail-fast，缺失即无法启动，
+  // 因此这里不再标记 optional，与运行时契约保持一致（对齐 JWT_SECRET 的必填约定）。
+  // 密钥经 SHA-256 派生为 32 字节密钥，任意长度都可用；这里只设最小长度下限，
+  // 以便接受常见的 `openssl rand -hex 32`（64 字符）格式。
   AI_PROVIDER_ENCRYPTION_KEY: z
-    .preprocess(emptyStringToUndefined, z.string().length(32).optional())
-    .describe('AI Provider 配置加密密钥 (32字节)'),
+    .string()
+    .min(32, 'AI_PROVIDER_ENCRYPTION_KEY 至少需要 32 个字符')
+    .describe('AI Provider 配置加密密钥（至少 32 字符，必填）'),
 
   // ========== 邮件服务配置 ==========
   SMTP_HOST: z.string().optional(),

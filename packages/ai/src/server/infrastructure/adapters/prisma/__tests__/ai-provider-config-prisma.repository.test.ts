@@ -59,10 +59,10 @@ describe('AIProviderConfigPrismaRepository', () => {
     expect(prisma.aiProviderConfig.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
-          apiKeyEncrypted: expect.stringMatching(/^enc_v1:/),
+          apiKeyEncrypted: expect.stringMatching(/^enc_v2:/),
         }),
         update: expect.objectContaining({
-          apiKeyEncrypted: expect.stringMatching(/^enc_v1:/),
+          apiKeyEncrypted: expect.stringMatching(/^enc_v2:/),
         }),
       }),
     );
