@@ -1,8 +1,10 @@
-import type { HiddenGoalsMode as IHiddenGoalsMode } from '@dailyuse/contracts/goal';
+import { HiddenGoalsMode as HiddenGoalsModeContract, type HiddenGoalsMode as IHiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 export type HiddenGoalsMode = IHiddenGoalsMode & { readonly __brand: unique symbol };
 
-const VALUES: IHiddenGoalsMode[] = ['Hide', 'Dim', 'Collapse'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IHiddenGoalsMode[] = Object.values(HiddenGoalsModeContract);
 
 export const HiddenGoalsMode = {
   Hide: 'Hide' as HiddenGoalsMode,

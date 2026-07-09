@@ -1,4 +1,4 @@
-import type { ExecutionStatus as IExecutionStatus } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus as ExecutionStatusContract, type ExecutionStatus as IExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * 📝 执行状态 - 调度任务执行的状态
@@ -12,7 +12,9 @@ export type ExecutionStatus = IExecutionStatus & { readonly __brand: unique symb
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IExecutionStatus[] = ['Success', 'Failed', 'Skipped', 'Timeout', 'Retrying'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IExecutionStatus[] = Object.values(ExecutionStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

@@ -1,4 +1,4 @@
-import type { TimeFormat as ITimeFormat } from '@dailyuse/contracts/setting';
+import { TimeFormat as TimeFormatContract, type TimeFormat as ITimeFormat } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 时间格式 - 时间显示格式
@@ -12,7 +12,9 @@ export type TimeFormat = ITimeFormat & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITimeFormat[] = ['H12', 'H24'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITimeFormat[] = Object.values(TimeFormatContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

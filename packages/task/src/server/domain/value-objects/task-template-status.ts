@@ -1,4 +1,4 @@
-import type { TaskTemplateStatus as ITaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus as TaskTemplateStatusContract, type TaskTemplateStatus as ITaskTemplateStatus } from '@dailyuse/contracts/task';
 
 /**
  * 📝 任务模板状态 - 任务模板的生命周期状态
@@ -12,7 +12,9 @@ export type TaskTemplateStatus = ITaskTemplateStatus & { readonly __brand: uniqu
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITaskTemplateStatus[] = ['Active', 'Paused', 'Archived', 'Deleted'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITaskTemplateStatus[] = Object.values(TaskTemplateStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

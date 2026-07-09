@@ -1,4 +1,4 @@
-import type { MessageRole as IMessageRole } from '@dailyuse/contracts/ai';
+import { MessageRole as MessageRoleContract, type MessageRole as IMessageRole } from '@dailyuse/contracts/ai';
 
 /**
  * MessageRole 枚举类型
@@ -9,7 +9,9 @@ import type { MessageRole as IMessageRole } from '@dailyuse/contracts/ai';
 
 export type MessageRole = IMessageRole & { readonly __brand: unique symbol };
 
-const VALUES: IMessageRole[] = ['User', 'Assistant', 'System'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IMessageRole[] = Object.values(MessageRoleContract);
 
 export const MessageRole = {
   User: 'User' as MessageRole,

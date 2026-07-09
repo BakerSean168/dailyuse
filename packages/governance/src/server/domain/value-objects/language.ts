@@ -17,7 +17,7 @@
  * @see {@link CodeSnippet} 使用 Language 标注代码片段的语言
  */
 
-import type { Language as ILanguage } from '@dailyuse/contracts/governance';
+import { Language as LanguageContract, type Language as ILanguage } from '@dailyuse/contracts/governance';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -25,7 +25,9 @@ import { ok, error } from '@dailyuse/contracts/result';
 export type Language = ILanguage & { readonly __brand: unique symbol };
 
 /** 全部支持的语言 */
-const VALUES: ILanguage[] = ['TypeScript', 'JSON', 'YAML', 'Prisma'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ILanguage[] = Object.values(LanguageContract);
 
 /**
  * Language 逻辑对象

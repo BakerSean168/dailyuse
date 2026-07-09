@@ -13,7 +13,7 @@
  * 使用品牌类型防止与原始字符串意外混用。
  */
 
-import type { ChangeType as IChangeType } from '@dailyuse/contracts/governance';
+import { ChangeType as ChangeTypeContract, type ChangeType as IChangeType } from '@dailyuse/contracts/governance';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -21,7 +21,9 @@ import { ok, error } from '@dailyuse/contracts/result';
 export type ChangeType = IChangeType & { readonly __brand: unique symbol };
 
 /** All valid change-type values. 全部合法变更类型值。 */
-const VALUES: IChangeType[] = ['Created', 'Updated', 'Deprecated', 'Reactivated'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IChangeType[] = Object.values(ChangeTypeContract);
 
 /**
  * ChangeType logic object.

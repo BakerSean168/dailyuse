@@ -1,4 +1,4 @@
-import type { NotificationAction as INotificationAction } from '@dailyuse/contracts/reminder';
+import { NotificationAction as NotificationActionContract, type NotificationAction as INotificationAction } from '@dailyuse/contracts/reminder';
 
 /**
  * 📝 通知操作 - 用户对提醒通知可以执行的操作
@@ -12,7 +12,9 @@ export type NotificationAction = INotificationAction & { readonly __brand: uniqu
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: INotificationAction[] = ['Dismiss', 'Snooze', 'Complete', 'Custom'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: INotificationAction[] = Object.values(NotificationActionContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

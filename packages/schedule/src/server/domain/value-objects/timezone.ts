@@ -1,4 +1,4 @@
-import type { Timezone as ITimezone } from '@dailyuse/contracts/schedule';
+import { Timezone as TimezoneContract, type Timezone as ITimezone } from '@dailyuse/contracts/schedule';
 
 /**
  * 📝 时区 - 常用的时区列表
@@ -12,7 +12,9 @@ export type Timezone = ITimezone & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITimezone[] = ['UTC', 'Asia/Shanghai', 'Asia/Tokyo', 'America/New_York', 'Europe/London'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITimezone[] = Object.values(TimezoneContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

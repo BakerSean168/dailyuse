@@ -1,4 +1,4 @@
-import type { RepositoryStatus as IRepositoryStatus } from '@dailyuse/contracts/repository';
+import { RepositoryStatus as RepositoryStatusContract, type RepositoryStatus as IRepositoryStatus } from '@dailyuse/contracts/repository';
 
 /**
  * 📝 仓储状态 - 仓储的生命周期状态
@@ -12,7 +12,9 @@ export type RepositoryStatus = IRepositoryStatus & { readonly __brand: unique sy
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IRepositoryStatus[] = ['Active', 'Archived', 'Deleted'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IRepositoryStatus[] = Object.values(RepositoryStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

@@ -1,4 +1,4 @@
-import type { GoalViewType as IGoalViewType } from '@dailyuse/contracts/setting';
+import { GoalViewType as GoalViewTypeContract, type GoalViewType as IGoalViewType } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 目标视图类型 - 目标的显示视图类型
@@ -12,7 +12,9 @@ export type GoalViewType = IGoalViewType & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IGoalViewType[] = ['List', 'Tree', 'Timeline'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IGoalViewType[] = Object.values(GoalViewTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

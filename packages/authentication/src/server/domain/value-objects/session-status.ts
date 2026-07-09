@@ -1,4 +1,4 @@
-import type { SessionStatus as ISessionStatus } from '@dailyuse/contracts/authentication';
+import { SessionStatus as SessionStatusContract, type SessionStatus as ISessionStatus } from '@dailyuse/contracts/authentication';
 
 /**
  * Session status - lifecycle state of a user login session.
@@ -10,7 +10,9 @@ export type SessionStatus = ISessionStatus & { readonly __brand: unique symbol }
 /**
  * Valid values set - Single Source of Truth.
  */
-const VALUES: ISessionStatus[] = ['Active', 'Expired', 'Revoked'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISessionStatus[] = Object.values(SessionStatusContract);
 
 /**
  * Companion object providing static methods and behavior logic.

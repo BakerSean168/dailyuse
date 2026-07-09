@@ -1,4 +1,4 @@
-import type { ControlMode as IControlMode } from '@dailyuse/contracts/reminder';
+import { ControlMode as ControlModeContract, type ControlMode as IControlMode } from '@dailyuse/contracts/reminder';
 
 /**
  * 📝 控制模式 - 提醒的控制方式
@@ -12,7 +12,9 @@ export type ControlMode = IControlMode & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IControlMode[] = ['Group', 'Individual'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IControlMode[] = Object.values(ControlModeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

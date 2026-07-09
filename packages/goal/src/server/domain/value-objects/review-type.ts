@@ -1,8 +1,10 @@
-import type { ReviewType as IReviewType } from '@dailyuse/contracts/goal';
+import { ReviewType as ReviewTypeContract, type ReviewType as IReviewType } from '@dailyuse/contracts/goal';
 
 export type ReviewType = IReviewType & { readonly __brand: unique symbol };
 
-const VALUES: IReviewType[] = ['Weekly', 'Monthly', 'Quarterly', 'Annual', 'Adhoc', 'Final'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IReviewType[] = Object.values(ReviewTypeContract);
 
 export const ReviewType = {
   Weekly: 'Weekly' as ReviewType,

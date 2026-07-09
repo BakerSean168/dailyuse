@@ -1,4 +1,4 @@
-import type { LinkedSourceType as ILinkedSourceType } from '@dailyuse/contracts/editor';
+import { LinkedSourceType as LinkedSourceTypeContract, type LinkedSourceType as ILinkedSourceType } from '@dailyuse/contracts/editor';
 
 /**
  * LinkedSourceType 枚举类型
@@ -6,14 +6,9 @@ import type { LinkedSourceType as ILinkedSourceType } from '@dailyuse/contracts/
 
 export type LinkedSourceType = ILinkedSourceType & { readonly __brand: unique symbol };
 
-const VALUES: ILinkedSourceType[] = [
-  'MarkdownLink',
-  'MarkdownImage',
-  'HtmlAnchor',
-  'HtmlImage',
-  'WikiLink',
-  'Reference',
-];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ILinkedSourceType[] = Object.values(LinkedSourceTypeContract);
 
 export const LinkedSourceType = {
   MarkdownLink: 'MarkdownLink' as LinkedSourceType,

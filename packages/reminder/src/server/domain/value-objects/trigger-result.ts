@@ -1,4 +1,4 @@
-import type { TriggerResult as ITriggerResult } from '@dailyuse/contracts/reminder';
+import { TriggerResult as TriggerResultContract, type TriggerResult as ITriggerResult } from '@dailyuse/contracts/reminder';
 
 /**
  * 📝 触发结果 - 提醒触发的结果状态
@@ -12,7 +12,9 @@ export type TriggerResult = ITriggerResult & { readonly __brand: unique symbol }
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITriggerResult[] = ['Success', 'Failed', 'Skipped'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITriggerResult[] = Object.values(TriggerResultContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

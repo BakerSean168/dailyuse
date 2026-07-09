@@ -1,4 +1,4 @@
-import type { ContentType as IContentType } from '@dailyuse/contracts/notification';
+import { ContentType as ContentTypeContract, type ContentType as IContentType } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 内容类型 - 通知内容的类型
@@ -12,7 +12,9 @@ export type ContentType = IContentType & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IContentType[] = ['Article', 'Video', 'Image', 'Resource', 'Other'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IContentType[] = Object.values(ContentTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

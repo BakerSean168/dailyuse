@@ -1,4 +1,4 @@
-import type { SettingCategory as ISettingCategory } from '@dailyuse/contracts/setting';
+import { SettingCategory as SettingCategoryContract, type SettingCategory as ISettingCategory } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 设置分类 - 设置的功能分类
@@ -12,7 +12,9 @@ export type SettingCategory = ISettingCategory & { readonly __brand: unique symb
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ISettingCategory[] = ['Appearance', 'Editor', 'Task', 'Goal', 'Repository', 'Notification', 'System', 'Privacy'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISettingCategory[] = Object.values(SettingCategoryContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

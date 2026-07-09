@@ -1,4 +1,4 @@
-import type { NotificationStatus as INotificationStatus } from '@dailyuse/contracts/notification';
+import { NotificationStatus as NotificationStatusContract, type NotificationStatus as INotificationStatus } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 通知状态 - 通知的生命周期状态
@@ -12,7 +12,9 @@ export type NotificationStatus = INotificationStatus & { readonly __brand: uniqu
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: INotificationStatus[] = ['Pending', 'Sent', 'Delivered', 'Read', 'Failed', 'Cancelled'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: INotificationStatus[] = Object.values(NotificationStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

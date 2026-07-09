@@ -1,4 +1,4 @@
-import type { SidebarActiveTab as ISidebarActiveTab } from '@dailyuse/contracts/editor';
+import { SidebarActiveTab as SidebarActiveTabContract, type SidebarActiveTab as ISidebarActiveTab } from '@dailyuse/contracts/editor';
 
 /**
  * SidebarActiveTab 枚举类型
@@ -6,7 +6,9 @@ import type { SidebarActiveTab as ISidebarActiveTab } from '@dailyuse/contracts/
 
 export type SidebarActiveTab = ISidebarActiveTab & { readonly __brand: unique symbol };
 
-const VALUES: ISidebarActiveTab[] = ['Files', 'Tags', 'Search', 'Outline', 'Resources'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISidebarActiveTab[] = Object.values(SidebarActiveTabContract);
 
 export const SidebarActiveTab = {
   Files: 'Files' as SidebarActiveTab,

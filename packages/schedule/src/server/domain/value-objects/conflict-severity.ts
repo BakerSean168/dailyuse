@@ -1,4 +1,4 @@
-import type { ConflictSeverity as IConflictSeverity } from '@dailyuse/contracts/schedule';
+import { ConflictSeverity as ConflictSeverityContract, type ConflictSeverity as IConflictSeverity } from '@dailyuse/contracts/schedule';
 
 /**
  * 📝 冲突严重程度 - 日程冲突的严重程度分类
@@ -12,7 +12,9 @@ export type ConflictSeverity = IConflictSeverity & { readonly __brand: unique sy
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IConflictSeverity[] = ['Minor', 'Moderate', 'Severe'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IConflictSeverity[] = Object.values(ConflictSeverityContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

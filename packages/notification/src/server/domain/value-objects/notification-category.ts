@@ -1,4 +1,4 @@
-import type { NotificationCategory as INotificationCategory } from '@dailyuse/contracts/notification';
+import { NotificationCategory as NotificationCategoryContract, type NotificationCategory as INotificationCategory } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 通知分类 - 通知所属的业务分类
@@ -12,7 +12,9 @@ export type NotificationCategory = INotificationCategory & { readonly __brand: u
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: INotificationCategory[] = ['Task', 'Goal', 'Schedule', 'Reminder', 'Account', 'System', 'Other'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: INotificationCategory[] = Object.values(NotificationCategoryContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

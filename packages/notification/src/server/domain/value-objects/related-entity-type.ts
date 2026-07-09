@@ -1,4 +1,4 @@
-import type { RelatedEntityType as IRelatedEntityType } from '@dailyuse/contracts/notification';
+import { RelatedEntityType as RelatedEntityTypeContract, type RelatedEntityType as IRelatedEntityType } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 关联实体类型 - 通知关联的业务实体类型
@@ -12,7 +12,9 @@ export type RelatedEntityType = IRelatedEntityType & { readonly __brand: unique 
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IRelatedEntityType[] = ['Task', 'Goal', 'Schedule', 'Reminder'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IRelatedEntityType[] = Object.values(RelatedEntityTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

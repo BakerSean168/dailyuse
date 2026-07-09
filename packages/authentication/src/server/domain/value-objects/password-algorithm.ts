@@ -1,4 +1,4 @@
-import type { PasswordAlgorithm as IPasswordAlgorithm } from '@dailyuse/contracts/authentication';
+import { PasswordAlgorithm as PasswordAlgorithmContract, type PasswordAlgorithm as IPasswordAlgorithm } from '@dailyuse/contracts/authentication';
 
 /**
  * Password algorithm - identifier for password hashing and verification algorithms.
@@ -11,7 +11,9 @@ export type PasswordAlgorithm = IPasswordAlgorithm & { readonly __brand: unique 
  * Valid values set - Single Source of Truth.
  * Note: Bcrypt and Argon2 are industry-recommended modern password hashing algorithms.
  */
-const VALUES: IPasswordAlgorithm[] = ['Bcrypt', 'Argon2', 'Scrypt'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IPasswordAlgorithm[] = Object.values(PasswordAlgorithmContract);
 
 /**
  * Companion object providing static methods and behavior logic.

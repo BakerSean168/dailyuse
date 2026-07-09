@@ -1,4 +1,4 @@
-import type { ViewMode as IViewMode } from '@dailyuse/contracts/editor';
+import { ViewMode as ViewModeContract, type ViewMode as IViewMode } from '@dailyuse/contracts/editor';
 
 /**
  * ViewMode 枚举类型
@@ -6,7 +6,9 @@ import type { ViewMode as IViewMode } from '@dailyuse/contracts/editor';
 
 export type ViewMode = IViewMode & { readonly __brand: unique symbol };
 
-const VALUES: IViewMode[] = ['Editor', 'Preview', 'SplitH', 'SplitV'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IViewMode[] = Object.values(ViewModeContract);
 
 export const ViewMode = {
   Editor: 'Editor' as ViewMode,

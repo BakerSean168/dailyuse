@@ -1,4 +1,4 @@
-import type { NotificationChannel as INotificationChannel } from '@dailyuse/contracts/reminder';
+import { NotificationChannel as NotificationChannelContract, type NotificationChannel as INotificationChannel } from '@dailyuse/contracts/reminder';
 
 /**
  * 📝 通知渠道 - 提醒的通知投递渠道
@@ -12,7 +12,9 @@ export type NotificationChannel = INotificationChannel & { readonly __brand: uni
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: INotificationChannel[] = ['InApp', 'Push', 'Email', 'Sms'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: INotificationChannel[] = Object.values(NotificationChannelContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

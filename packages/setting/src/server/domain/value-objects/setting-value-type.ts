@@ -1,4 +1,4 @@
-import type { SettingValueType as ISettingValueType } from '@dailyuse/contracts/setting';
+import { SettingValueType as SettingValueTypeContract, type SettingValueType as ISettingValueType } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 设置值类型 - 设置值的数据类型
@@ -12,7 +12,9 @@ export type SettingValueType = ISettingValueType & { readonly __brand: unique sy
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ISettingValueType[] = ['String', 'Number', 'Boolean', 'Password', 'Json', 'Array', 'Object'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISettingValueType[] = Object.values(SettingValueTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

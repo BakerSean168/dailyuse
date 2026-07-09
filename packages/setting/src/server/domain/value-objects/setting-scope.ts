@@ -1,4 +1,4 @@
-import type { SettingScope as ISettingScope } from '@dailyuse/contracts/setting';
+import { SettingScope as SettingScopeContract, type SettingScope as ISettingScope } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 设置作用域 - 设置的应用范围
@@ -12,7 +12,9 @@ export type SettingScope = ISettingScope & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ISettingScope[] = ['System', 'User', 'Device'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISettingScope[] = Object.values(SettingScopeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

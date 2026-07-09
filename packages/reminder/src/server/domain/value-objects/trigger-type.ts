@@ -1,4 +1,4 @@
-import type { TriggerType as ITriggerType } from '@dailyuse/contracts/reminder';
+import { TriggerType as TriggerTypeContract, type TriggerType as ITriggerType } from '@dailyuse/contracts/reminder';
 
 /**
  * 📝 触发器类型 - 提醒触发的方式
@@ -12,7 +12,9 @@ export type TriggerType = ITriggerType & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITriggerType[] = ['FixedTime', 'Interval'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITriggerType[] = Object.values(TriggerTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

@@ -1,4 +1,4 @@
-import type { LinkedTargetType as ILinkedTargetType } from '@dailyuse/contracts/editor';
+import { LinkedTargetType as LinkedTargetTypeContract, type LinkedTargetType as ILinkedTargetType } from '@dailyuse/contracts/editor';
 
 /**
  * LinkedTargetType 枚举类型
@@ -6,15 +6,9 @@ import type { LinkedTargetType as ILinkedTargetType } from '@dailyuse/contracts/
 
 export type LinkedTargetType = ILinkedTargetType & { readonly __brand: unique symbol };
 
-const VALUES: ILinkedTargetType[] = [
-  'Resource',
-  'Image',
-  'Video',
-  'Audio',
-  'Archive',
-  'ExternalUrl',
-  'Anchor',
-];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ILinkedTargetType[] = Object.values(LinkedTargetTypeContract);
 
 export const LinkedTargetType = {
   Resource: 'Resource' as LinkedTargetType,

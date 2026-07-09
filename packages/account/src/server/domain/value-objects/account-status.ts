@@ -1,8 +1,10 @@
-import type { AccountStatus as IAccountStatus } from '@dailyuse/contracts/account';
+import { AccountStatus as AccountStatusContract, type AccountStatus as IAccountStatus } from '@dailyuse/contracts/account';
 
 export type AccountStatus = IAccountStatus & { readonly __brand: unique symbol };
 
-const VALUES: IAccountStatus[] = ['Active', 'Suspended', 'Deactivated'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IAccountStatus[] = Object.values(AccountStatusContract);
 
 export const AccountStatus = {
   Active: 'Active' as AccountStatus,

@@ -1,8 +1,10 @@
-import type { FolderType as IFolderType } from '@dailyuse/contracts/goal';
+import { FolderType as FolderTypeContract, type FolderType as IFolderType } from '@dailyuse/contracts/goal';
 
 export type FolderType = IFolderType & { readonly __brand: unique symbol };
 
-const VALUES: IFolderType[] = ['System', 'User'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IFolderType[] = Object.values(FolderTypeContract);
 
 export const FolderType = {
   System: 'System' as FolderType,

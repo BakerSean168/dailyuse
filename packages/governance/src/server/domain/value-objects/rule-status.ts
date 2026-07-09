@@ -24,7 +24,7 @@
  * @see {@link RuleSeverity} 严重级别对废弃操作的约束
  */
 
-import type { RuleStatus as IRuleStatus } from '@dailyuse/contracts/governance';
+import { RuleStatus as RuleStatusContract, type RuleStatus as IRuleStatus } from '@dailyuse/contracts/governance';
 import { RuleSeverity } from './rule-severity';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -33,7 +33,9 @@ import { ok, error } from '@dailyuse/contracts/result';
 export type RuleStatus = IRuleStatus & { readonly __brand: unique symbol };
 
 /** 全部合法状态值 */
-const VALUES: IRuleStatus[] = ['Draft', 'Active', 'Deprecated'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IRuleStatus[] = Object.values(RuleStatusContract);
 
 /**
  * RuleStatus 逻辑对象

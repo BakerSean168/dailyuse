@@ -1,8 +1,10 @@
-import type { LanguageCode as ILanguageCode } from '@dailyuse/contracts/account';
+import { LanguageCode as LanguageCodeContract, type LanguageCode as ILanguageCode } from '@dailyuse/contracts/account';
 
 export type LanguageCode = ILanguageCode & { readonly __brand: unique symbol };
 
-const VALUES: ILanguageCode[] = ['en-US', 'zh-CN', 'ja-JP'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ILanguageCode[] = Object.values(LanguageCodeContract);
 
 export const LanguageCode = {
   EN_US: 'en-US' as LanguageCode,

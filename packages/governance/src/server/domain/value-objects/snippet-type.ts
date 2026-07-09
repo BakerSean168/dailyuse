@@ -20,7 +20,7 @@
  * @see {@link Rule} 聚合根中对 GoodExample / BadExample 数量的约束
  */
 
-import type { SnippetType as ISnippetType } from '@dailyuse/contracts/governance';
+import { SnippetType as SnippetTypeContract, type SnippetType as ISnippetType } from '@dailyuse/contracts/governance';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -28,7 +28,9 @@ import { ok, error } from '@dailyuse/contracts/result';
 export type SnippetType = ISnippetType & { readonly __brand: unique symbol };
 
 /** 全部合法片段类型 */
-const VALUES: ISnippetType[] = ['GoodExample', 'BadExample'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISnippetType[] = Object.values(SnippetTypeContract);
 
 /**
  * SnippetType 逻辑对象

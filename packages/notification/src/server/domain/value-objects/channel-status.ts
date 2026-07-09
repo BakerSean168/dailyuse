@@ -1,4 +1,4 @@
-import type { ChannelStatus as IChannelStatus } from '@dailyuse/contracts/notification';
+import { ChannelStatus as ChannelStatusContract, type ChannelStatus as IChannelStatus } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 渠道状态 - 通知在具体投递渠道中的状态
@@ -12,7 +12,9 @@ export type ChannelStatus = IChannelStatus & { readonly __brand: unique symbol }
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IChannelStatus[] = ['Pending', 'Sent', 'Delivered', 'Failed', 'Cancelled'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IChannelStatus[] = Object.values(ChannelStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

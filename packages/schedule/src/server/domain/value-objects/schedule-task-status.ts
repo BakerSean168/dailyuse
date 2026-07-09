@@ -1,4 +1,4 @@
-import type { ScheduleTaskStatus as IScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus as ScheduleTaskStatusContract, type ScheduleTaskStatus as IScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * 📝 调度任务状态 - 调度任务的生命周期状态
@@ -12,7 +12,9 @@ export type ScheduleTaskStatus = IScheduleTaskStatus & { readonly __brand: uniqu
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IScheduleTaskStatus[] = ['Active', 'Paused', 'Completed', 'Cancelled', 'Failed'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IScheduleTaskStatus[] = Object.values(ScheduleTaskStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
