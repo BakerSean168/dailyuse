@@ -32,6 +32,6 @@ export class GetFolderUseCase {
 
   async execute(input: GetFolderInput): Promise<Result<GetFolderOutput>> {
     const folder = await this.folderRepository.findById(input.id);
-    return ok({ folder: folder ? folder.toClientDTO() as unknown as FolderClientDTO : null });
+    return ok({ folder: folder ? folder.toClientDTO() : null });
   }
 }

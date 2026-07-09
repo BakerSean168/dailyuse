@@ -5,25 +5,10 @@
 
 import { Entity } from '@dailyuse/utils/domain';
 import { generateUUID } from '@dailyuse/utils/shared';
-
-/**
- * Local DTO interfaces for TaskTemplateHistory
- */
-export interface TaskTemplateHistoryServerDTO {
-  id: string;
-  templateId: string;
-  action: string;
-  changes: unknown;
-  createdAt: number;
-}
-
-export interface TaskTemplateHistoryClientDTO {
-  id: string;
-  templateId: string;
-  action: string;
-  changes: unknown;
-  createdAt: number;
-}
+import type {
+  TaskTemplateHistoryServerDTO,
+  TaskTemplateHistoryClientDTO,
+} from '@dailyuse/contracts/task';
 
 /**
  * Internal state interface for TaskTemplateHistory

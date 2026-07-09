@@ -13,7 +13,6 @@
  */
 
 import {
-  NotificationChannel,
   ReminderType,
   ReminderStatus,
   TriggerType,
@@ -23,9 +22,11 @@ import type {
   IntervalTrigger,
   ReminderTemplateServerDTO,
   TriggerConfigDTO,
+  UpcomingReminderDTO,
 } from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { ReminderTemplateId, ReminderGroupId } from '@dailyuse/contracts/primitives';
+
+// Re-export for existing consumers (DTO now lives in @dailyuse/contracts/reminder)
+export type { UpcomingReminderDTO };
 
 const REMINDER_CALCULATION_DEBUG =
   typeof process !== 'undefined' && process.env.DEBUG_REMINDER_CALCULATION === 'true';
@@ -41,34 +42,6 @@ function debugUpcomingReminderCalculation(message: string, payload?: unknown): v
   }
 
   console.log(message, payload);
-}
-
-/**
- * 即将到来的提醒 DTO（前端友好）
- */
-export interface UpcomingReminderDTO {
-  // 提醒信息
-  templateId: ReminderTemplateId;
-  title: string;
-  description?: string;
-  type: ReminderType;
-  triggerType: TriggerType;
-  importanceLevel: ImportanceLevel;
-
-  // 触发时间
-  nextTriggerAt: number; // epoch ms
-  nextTriggerDisplay: string; // 人类可读的格式 "2025-11-18 16:30"
-  daysUntilTrigger: number; // 距离现在的天数
-
-  // 显示属性
-  icon: string;
-  color: string;
-
-  // 通知配置
-  notificationChannels: NotificationChannel[];
-
-  // 分组信息
-  groupId?: ReminderGroupId | null;
 }
 
 /**

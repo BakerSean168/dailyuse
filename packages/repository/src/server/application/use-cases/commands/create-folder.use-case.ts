@@ -79,6 +79,6 @@ export class CreateFolderUseCase {
     repository.recordFolderAdded();
     await this.repositoryRepository.save(repository);
 
-    return ok({ folder: folder.toClientDTO() as unknown as FolderClientDTO });
+    return ok({ folder: folder.toClientDTO() });
   }
 }

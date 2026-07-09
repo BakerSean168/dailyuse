@@ -89,6 +89,6 @@ export class RenameFolderUseCase {
 
     await this.updateResourcesRecursively(String(folder.id), folder.path);
 
-    return ok({ folder: folder.toClientDTO() as unknown as FolderClientDTO });
+    return ok({ folder: folder.toClientDTO() });
   }
 }
