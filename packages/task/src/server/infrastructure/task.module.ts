@@ -241,7 +241,10 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     listTaskTemplatesByPriority: new ListTaskTemplatesByPriorityUseCase(taskTemplateRepository),
 
     // Instance commands
-    completeTaskInstance: new CompleteTaskInstanceUseCase(taskInstanceRepository),
+    completeTaskInstance: new CompleteTaskInstanceUseCase(
+      taskInstanceRepository,
+      taskTemplateRepository,
+    ),
     skipTaskInstance: new SkipTaskInstanceUseCase(taskInstanceRepository),
     startTaskInstance: new StartTaskInstanceUseCase(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstanceUseCase(taskInstanceRepository),

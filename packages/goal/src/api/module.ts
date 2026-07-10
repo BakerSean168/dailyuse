@@ -22,6 +22,7 @@ import {
   createGoalFolderTransportHandlers,
 } from '../server/transport';
 import { createGoalRuntimeContribution } from '../server/infrastructure/runtime';
+import { registerGoalEventListeners } from '../server/application/event-handlers';
 
 /**
  * Typed module context for goal registration.
@@ -36,6 +37,7 @@ export interface GoalApiModuleDef {
 }
 
 let activeGoalModule: GoalModuleInstance | null = null;
+let goalEventListeners: { start(): void; stop(): void } | null = null;
 
 export const GoalApiModule: GoalApiModuleDef = {
   name: 'Goal',
@@ -49,6 +51,14 @@ export const GoalApiModule: GoalApiModuleDef = {
     });
     activeGoalModule = goalModule;
     goalModule.start();
+
+    // Cross-module reaction: task 完成 → 更新关联 KR 进度（ADR-033 范式 A）。
+    // 与 apps/desktop 挂载同一份 registerGoalEventListeners，web 端由此获得同款能力。
+    goalEventListeners = registerGoalEventListeners(
+      goalModule.goalRepository,
+      goalModule.goalRecordRepository,
+    );
+    goalEventListeners.start();
 
     // 2. Transport handlers (thin mapping from api port to controller ports)
     // 传输层处理器（从 api 端口到控制器端口的薄映射）
@@ -68,6 +78,8 @@ export const GoalApiModule: GoalApiModuleDef = {
   },
 
   destroy() {
+    goalEventListeners?.stop();
+    goalEventListeners = null;
     activeGoalModule?.dispose();
     activeGoalModule = null;
   },

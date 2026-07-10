@@ -6,3 +6,4 @@
  */
 
 export { CreateGoalRecordUseCase } from '../server/application/use-cases/commands/create-goal-record.use-case';
+export { registerGoalEventListeners } from '../server/application/event-handlers';
