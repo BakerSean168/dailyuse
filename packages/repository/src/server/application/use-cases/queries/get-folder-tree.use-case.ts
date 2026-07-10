@@ -7,7 +7,7 @@
 import type { IFolderRepository } from '../../../domain/repositories/i-folder-repository';
 import { FolderHierarchyService } from '../../../domain/services/folder-hierarchy-service';
 import type { FolderTreeNode } from '../../../domain/services/folder-hierarchy-service';
-import type { FolderClientDTO } from '../../../domain/entities/folder';
+import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 

@@ -1,8 +1,10 @@
-import type { KeyResultCalculationMethod as IKeyResultCalculationMethod } from '@dailyuse/contracts/goal';
+import { KeyResultCalculationMethod as KeyResultCalculationMethodContract, type KeyResultCalculationMethod as IKeyResultCalculationMethod } from '@dailyuse/contracts/goal';
 
 export type KeyResultCalculationMethod = IKeyResultCalculationMethod & { readonly __brand: unique symbol };
 
-const VALUES: IKeyResultCalculationMethod[] = ['Sum', 'Average', 'Max', 'Min', 'Last'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IKeyResultCalculationMethod[] = Object.values(KeyResultCalculationMethodContract);
 
 export const KeyResultCalculationMethod = {
   Sum: 'Sum' as KeyResultCalculationMethod,

@@ -1,4 +1,4 @@
-import type { CredentialStatus as ICredentialStatus } from '@dailyuse/contracts/authentication';
+import { CredentialStatus as CredentialStatusContract, type CredentialStatus as ICredentialStatus } from '@dailyuse/contracts/authentication';
 
 /**
  * Credential Status - lifecycle state for authentication credentials.
@@ -10,7 +10,9 @@ export type CredentialStatus = ICredentialStatus & { readonly __brand: unique sy
 /**
  * Valid value set - Single Source of Truth
  */
-const VALUES: ICredentialStatus[] = ['Active', 'Suspended', 'Expired', 'Revoked'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ICredentialStatus[] = Object.values(CredentialStatusContract);
 
 /**
  * Companion object - provides static methods and behavior logic.

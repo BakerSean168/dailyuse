@@ -15,7 +15,7 @@
  */
 import type { RuleId } from '../../primitives/ids';
 import type { RuleStatus } from '../../value-objects/rule-status';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export interface RuleStatusChangedEvent {
   /** Rule ID. 规则 ID。 */

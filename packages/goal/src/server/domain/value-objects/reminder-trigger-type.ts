@@ -1,8 +1,10 @@
-import type { ReminderTriggerType as IReminderTriggerType } from '@dailyuse/contracts/goal';
+import { ReminderTriggerType as ReminderTriggerTypeContract, type ReminderTriggerType as IReminderTriggerType } from '@dailyuse/contracts/goal';
 
 export type ReminderTriggerType = IReminderTriggerType & { readonly __brand: unique symbol };
 
-const VALUES: IReminderTriggerType[] = ['TimeProgressPercentage', 'RemainingDays'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IReminderTriggerType[] = Object.values(ReminderTriggerTypeContract);
 
 export const ReminderTriggerType = {
   TimeProgressPercentage: 'TimeProgressPercentage' as ReminderTriggerType,

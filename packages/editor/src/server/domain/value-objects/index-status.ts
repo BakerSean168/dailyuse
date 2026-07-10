@@ -1,4 +1,4 @@
-import type { IndexStatus as IIndexStatus } from '@dailyuse/contracts/editor';
+import { IndexStatus as IndexStatusContract, type IndexStatus as IIndexStatus } from '@dailyuse/contracts/editor';
 
 /**
  * IndexStatus 枚举类型
@@ -6,7 +6,9 @@ import type { IndexStatus as IIndexStatus } from '@dailyuse/contracts/editor';
 
 export type IndexStatus = IIndexStatus & { readonly __brand: unique symbol };
 
-const VALUES: IIndexStatus[] = ['NotIndexed', 'Indexing', 'Indexed', 'Failed', 'Outdated'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IIndexStatus[] = Object.values(IndexStatusContract);
 
 export const IndexStatus = {
   NotIndexed: 'NotIndexed' as IndexStatus,

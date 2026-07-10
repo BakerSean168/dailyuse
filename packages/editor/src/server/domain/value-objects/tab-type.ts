@@ -1,4 +1,4 @@
-import type { TabType as ITabType } from '@dailyuse/contracts/editor';
+import { TabType as TabTypeContract, type TabType as ITabType } from '@dailyuse/contracts/editor';
 
 /**
  * TabType 枚举类型
@@ -8,7 +8,9 @@ import type { TabType as ITabType } from '@dailyuse/contracts/editor';
 
 export type TabType = ITabType & { readonly __brand: unique symbol };
 
-const VALUES: ITabType[] = ['Resource', 'Preview', 'Diff', 'Settings', 'Search', 'Welcome'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITabType[] = Object.values(TabTypeContract);
 
 export const TabType = {
   Resource: 'Resource' as TabType,

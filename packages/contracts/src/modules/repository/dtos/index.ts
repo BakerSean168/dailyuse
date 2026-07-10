@@ -10,7 +10,7 @@ export type {
   UploadResourceFailureDTO,
   UploadResourcesResponseDTO,
 } from './upload-resource.api-dto';
-export type { FolderClientDTO } from './folder';
+export type { FolderServerDTO, FolderClientDTO } from './folder';
 export type { TreeNode, TreeNodeType, FileTreeResponse } from './tree-node';
 export type {
   SearchMode,

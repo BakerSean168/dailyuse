@@ -1,4 +1,4 @@
-import type { CredentialType as ICredentialType } from '@dailyuse/contracts/authentication';
+import { CredentialType as CredentialTypeContract, type CredentialType as ICredentialType } from '@dailyuse/contracts/authentication';
 
 /**
  * 🔑 凭证类型 - 认证方式标识
@@ -18,7 +18,9 @@ export type CredentialType = ICredentialType & { readonly __brand: unique symbol
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ICredentialType[] = ['Password', 'MagicLink'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ICredentialType[] = Object.values(CredentialTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

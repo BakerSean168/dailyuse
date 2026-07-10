@@ -1,4 +1,4 @@
-import type { VersionChangeType as IVersionChangeType } from '@dailyuse/contracts/editor';
+import { VersionChangeType as VersionChangeTypeContract, type VersionChangeType as IVersionChangeType } from '@dailyuse/contracts/editor';
 
 /**
  * VersionChangeType 枚举类型
@@ -8,15 +8,9 @@ import type { VersionChangeType as IVersionChangeType } from '@dailyuse/contract
 
 export type VersionChangeType = IVersionChangeType & { readonly __brand: unique symbol };
 
-const VALUES: IVersionChangeType[] = [
-  'Create',
-  'Edit',
-  'Delete',
-  'Rename',
-  'Move',
-  'Merge',
-  'Restore',
-];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IVersionChangeType[] = Object.values(VersionChangeTypeContract);
 
 export const VersionChangeType = {
   Create: 'Create' as VersionChangeType,

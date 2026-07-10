@@ -9,13 +9,13 @@ import type {
   IdentityId,
   RuleId,
   RuleRevisionId,
-} from '@dailyuse/contracts/primitives';
+} from '../primitives';
 import type {
   CodeSnippetDTO,
   RuleClientDTO,
   RuleRevisionClientDTO,
   RuleTagDTO,
-} from '@dailyuse/contracts/governance';
+} from '../modules/governance';
 
 function createMockRuleTag(value?: string): RuleTagDTO {
   return {

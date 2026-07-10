@@ -1,4 +1,4 @@
-import type { UIInputType as IUIInputType } from '@dailyuse/contracts/setting';
+import { UIInputType as UIInputTypeContract, type UIInputType as IUIInputType } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 UI 输入类型 - 用于设置值输入的 UI 组件类型
@@ -12,7 +12,9 @@ export type UIInputType = IUIInputType & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IUIInputType[] = ['Text', 'Number', 'Switch', 'Select', 'Radio', 'Checkbox', 'Slider', 'Color', 'File'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IUIInputType[] = Object.values(UIInputTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

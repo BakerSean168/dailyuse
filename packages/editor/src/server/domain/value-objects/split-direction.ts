@@ -1,4 +1,4 @@
-import type { SplitDirection as ISplitDirection } from '@dailyuse/contracts/editor';
+import { SplitDirection as SplitDirectionContract, type SplitDirection as ISplitDirection } from '@dailyuse/contracts/editor';
 
 /**
  * SplitDirection 枚举类型
@@ -6,7 +6,9 @@ import type { SplitDirection as ISplitDirection } from '@dailyuse/contracts/edit
 
 export type SplitDirection = ISplitDirection & { readonly __brand: unique symbol };
 
-const VALUES: ISplitDirection[] = ['Horizontal', 'Vertical'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISplitDirection[] = Object.values(SplitDirectionContract);
 
 export const SplitDirection = {
   Horizontal: 'Horizontal' as SplitDirection,

@@ -1,4 +1,9 @@
 import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
+import type { ReminderType } from '../value-objects/reminder-type';
+import type { TriggerType } from '../value-objects/trigger-type';
+import type { NotificationChannel } from '../value-objects/notification-channel';
+import type { ImportanceLevel } from '../../../shared/value-objects/importance';
+import type { ReminderTemplateId, ReminderGroupId } from '../../../primitives';
 
 export interface ReminderTemplateSummaryDTO {
   id: string;
@@ -9,4 +14,32 @@ export interface ReminderTemplateSummaryDTO {
 export interface ReminderDashboardDTO {
   templates: ReminderTemplateClientDTO[];
   totalTemplates: number;
+}
+
+/**
+ * 即将到来的提醒 DTO（前端友好）
+ */
+export interface UpcomingReminderDTO {
+  // 提醒信息
+  templateId: ReminderTemplateId;
+  title: string;
+  description?: string;
+  type: ReminderType;
+  triggerType: TriggerType;
+  importanceLevel: ImportanceLevel;
+
+  // 触发时间
+  nextTriggerAt: number; // epoch ms
+  nextTriggerDisplay: string; // 人类可读的格式 "2025-11-18 16:30"
+  daysUntilTrigger: number; // 距离现在的天数
+
+  // 显示属性
+  icon: string;
+  color: string;
+
+  // 通知配置
+  notificationChannels: NotificationChannel[];
+
+  // 分组信息
+  groupId?: ReminderGroupId | null;
 }

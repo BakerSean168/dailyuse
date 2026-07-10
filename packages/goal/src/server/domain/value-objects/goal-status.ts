@@ -1,8 +1,10 @@
-import type { GoalStatus as IGoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus as GoalStatusContract, type GoalStatus as IGoalStatus } from '@dailyuse/contracts/goal';
 
 export type GoalStatus = IGoalStatus & { readonly __brand: unique symbol };
 
-const VALUES: IGoalStatus[] = ['Active', 'Completed', 'Archived'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IGoalStatus[] = Object.values(GoalStatusContract);
 
 export const GoalStatus = {
   Active: 'Active' as GoalStatus,

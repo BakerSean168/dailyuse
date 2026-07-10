@@ -1,4 +1,4 @@
-import type { TaskInstanceStatus as ITaskInstanceStatus } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus as TaskInstanceStatusContract, type TaskInstanceStatus as ITaskInstanceStatus } from '@dailyuse/contracts/task';
 
 /**
  * 📝 任务实例状态 - 循环任务实例的生命周期状态
@@ -12,7 +12,9 @@ export type TaskInstanceStatus = ITaskInstanceStatus & { readonly __brand: uniqu
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITaskInstanceStatus[] = ['Pending', 'InProgress', 'Completed', 'Skipped', 'Expired'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITaskInstanceStatus[] = Object.values(TaskInstanceStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

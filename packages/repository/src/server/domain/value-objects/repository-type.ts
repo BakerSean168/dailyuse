@@ -1,4 +1,4 @@
-import type { RepositoryType as IRepositoryType } from '@dailyuse/contracts/repository';
+import { RepositoryType as RepositoryTypeContract, type RepositoryType as IRepositoryType } from '@dailyuse/contracts/repository';
 
 /**
  * 📝 仓储类型 - 仓储的类型分类
@@ -12,7 +12,9 @@ export type RepositoryType = IRepositoryType & { readonly __brand: unique symbol
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IRepositoryType[] = ['Markdown', 'Code', 'Mixed'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IRepositoryType[] = Object.values(RepositoryTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

@@ -1,31 +1,20 @@
 /**
  * Folder 实体实现 (Server)
  */
-import type { FolderMetadataDTO } from '@dailyuse/contracts/repository';
+import type {
+  FolderMetadataDTO,
+  FolderServerDTO,
+  FolderClientDTO,
+} from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils/domain';
 import { FolderMetadata, ResourceId } from '../value-objects';
 import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
 
-// ============ 本地类型定义 ============
-// TODO: 这些类型应该移到 @dailyuse/contracts/repository
+// FolderServerDTO / FolderClientDTO 的权威定义在 @dailyuse/contracts/repository。
+// 这里只保留 FolderStorageShape：它是持久化中间形状（metadata 为 JSON string、
+// 时间为 Date），不跨端传输，因此不属于 contracts 职责。
 
-/**
- * Folder Server DTO
- */
-export interface FolderServerDTO {
-  id: string;
-  repositoryId: string;
-  identityId: string;
-  parentId: string | null;
-  name: string;
-  path: string;
-  order: number;
-  isExpanded: boolean;
-  metadata: FolderMetadataDTO;
-  createdAt: number;
-  updatedAt: number;
-  children?: FolderServerDTO[] | null;
-}
+// ============ 本地类型定义 ============
 
 /**
  * Folder storage shape
@@ -42,33 +31,6 @@ export interface FolderStorageShape {
   metadata: string; // JSON string
   createdAt: Date;
   updatedAt: Date;
-}
-
-/**
- * Folder Client DTO
- */
-export interface FolderClientDTO {
-  id: string;
-  repositoryId: string;
-  identityId: string;
-  parentId: string | null;
-  name: string;
-  path: string;
-  order: number;
-  isExpanded: boolean;
-  metadata: FolderMetadataDTO;
-  createdAt: number;
-  updatedAt: number;
-  children?: FolderClientDTO[] | null;
-
-  // UI 计算字段
-  depth: number;
-  isRoot: boolean;
-  hasChildren: boolean;
-  pathParts: string[];
-  displayName: string;
-  createdAtText: string;
-  updatedAtText: string;
 }
 
 /**
@@ -227,10 +189,10 @@ export class Folder extends Entity<ResourceId> {
   // ===== DTO 转换方法 =====
   toServerDTO(includeChildren = false): FolderServerDTO {
     return {
-      id: String(this.id),
-      repositoryId: this._props.repositoryId,
-      identityId: this._props.identityId,
-      parentId: this._props.parentId,
+      id: String(this.id) as FolderServerDTO['id'],
+      repositoryId: this._props.repositoryId as FolderServerDTO['repositoryId'],
+      identityId: this._props.identityId as FolderServerDTO['identityId'],
+      parentId: this._props.parentId as FolderServerDTO['parentId'],
       name: this._props.name,
       path: this._props.path,
       order: this._props.order,
@@ -264,10 +226,9 @@ export class Folder extends Entity<ResourceId> {
       : this._props.updatedAt.toLocaleString();
 
     return {
-      id: String(this.id),
-      repositoryId: this._props.repositoryId,
-      identityId: this._props.identityId,
-      parentId: this._props.parentId,
+      id: String(this.id) as FolderClientDTO['id'],
+      repositoryId: this._props.repositoryId as FolderClientDTO['repositoryId'],
+      parentId: this._props.parentId as FolderClientDTO['parentId'],
       name: this._props.name,
       path: this._props.path,
       order: this._props.order,

@@ -13,7 +13,7 @@
  */
 import type { RuleId } from '../../primitives/ids';
 import type { RuleSeverity } from '../../value-objects/rule-severity';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export interface RuleSeverityChangedEvent {
   /** Rule ID. 规则 ID。 */

@@ -102,9 +102,14 @@ export const envSchema = z.object({
   QI_NIU_YUN_MODEL_ID: z.string().optional(),
 
   // AI Provider 加密密钥
+  // schema 层保持 optional：env 单例在任意 import（含不启用 AI 的测试）时即校验，
+  // 若强制必填会让这些场景无法加载 env。真正的“必填”语义由运行时承担 ——
+  // 启用 AI 模块时 AISecretCipher.fromEnv() 会 fail-fast。
+  // 密钥经 SHA-256 派生为 32 字节，任意长度都可用；这里只在“已提供”时校验最小长度，
+  // 以便接受常见的 `openssl rand -hex 32`（64 字符）格式。
   AI_PROVIDER_ENCRYPTION_KEY: z
-    .preprocess(emptyStringToUndefined, z.string().length(32).optional())
-    .describe('AI Provider 配置加密密钥 (32字节)'),
+    .preprocess(emptyStringToUndefined, z.string().min(32).optional())
+    .describe('AI Provider 配置加密密钥（至少 32 字符；启用 AI 模块时必填）'),
 
   // ========== 邮件服务配置 ==========
   SMTP_HOST: z.string().optional(),

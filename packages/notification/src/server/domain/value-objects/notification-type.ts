@@ -1,4 +1,4 @@
-import type { NotificationType as INotificationType } from '@dailyuse/contracts/notification';
+import { NotificationType as NotificationTypeContract, type NotificationType as INotificationType } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 通知类型 - 通知的分类类型
@@ -12,7 +12,9 @@ export type NotificationType = INotificationType & { readonly __brand: unique sy
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: INotificationType[] = ['Info', 'Success', 'Warning', 'Error', 'Reminder', 'System', 'Social'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: INotificationType[] = Object.values(NotificationTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

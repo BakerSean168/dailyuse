@@ -1,4 +1,4 @@
-import type { AIProvider as IAIProvider } from '@dailyuse/contracts/ai';
+import { AIProvider as AIProviderContract, type AIProvider as IAIProvider } from '@dailyuse/contracts/ai';
 
 /**
  * AIProvider 枚举类型
@@ -8,7 +8,9 @@ import type { AIProvider as IAIProvider } from '@dailyuse/contracts/ai';
 
 export type AIProvider = IAIProvider & { readonly __brand: unique symbol };
 
-const VALUES: IAIProvider[] = ['OpenAI', 'Anthropic', 'Custom'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IAIProvider[] = Object.values(AIProviderContract);
 
 export const AIProvider = {
   OpenAI: 'OpenAI' as AIProvider,

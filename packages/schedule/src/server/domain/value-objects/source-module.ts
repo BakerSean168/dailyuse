@@ -1,4 +1,4 @@
-import type { SourceModule as ISourceModule } from '@dailyuse/contracts/schedule';
+import { SourceModule as SourceModuleContract, type SourceModule as ISourceModule } from '@dailyuse/contracts/schedule';
 
 /**
  * 📝 来源模块 - 调度任务的源模块
@@ -12,7 +12,9 @@ export type SourceModule = ISourceModule & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ISourceModule[] = ['Reminder', 'Task', 'Goal', 'Notification', 'System', 'Custom'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ISourceModule[] = Object.values(SourceModuleContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

@@ -9,20 +9,12 @@ import type {
   NotificationId,
   NotificationHistoryId as INotificationHistoryId,
 } from '@dailyuse/contracts/primitives';
+import type { NotificationHistoryServerDTO } from '@dailyuse/contracts/notification';
+
+export type { NotificationHistoryServerDTO };
 
 // ============ 本地类型定义 ============
 // Kept local for now because these history DTOs are not yet shared across transports.
-
-/**
- * NotificationHistory Server DTO
- */
-export interface NotificationHistoryServerDTO {
-  id: INotificationHistoryId;
-  notificationId: NotificationId;
-  action: string;
-  details: unknown | null;
-  createdAt: number; // TransferDate
-}
 
 /**
  * NotificationHistory Server Interface

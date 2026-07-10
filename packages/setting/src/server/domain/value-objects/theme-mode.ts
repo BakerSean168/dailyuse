@@ -1,4 +1,4 @@
-import type { ThemeMode as IThemeMode } from '@dailyuse/contracts/setting';
+import { ThemeMode as ThemeModeContract, type ThemeMode as IThemeMode } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 主题模式 - 应用的主题模式
@@ -12,7 +12,9 @@ export type ThemeMode = IThemeMode & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IThemeMode[] = ['Light', 'Dark', 'Auto'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IThemeMode[] = Object.values(ThemeModeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

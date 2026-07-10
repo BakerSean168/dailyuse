@@ -1,4 +1,4 @@
-import type { TaskPriority as ITaskPriority } from '@dailyuse/contracts/schedule';
+import { TaskPriority as TaskPriorityContract, type TaskPriority as ITaskPriority } from '@dailyuse/contracts/schedule';
 
 /**
  * 📝 任务优先级 - 调度任务的优先级
@@ -12,7 +12,9 @@ export type TaskPriority = ITaskPriority & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ITaskPriority[] = ['Low', 'Normal', 'High', 'Urgent'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: ITaskPriority[] = Object.values(TaskPriorityContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

@@ -1,4 +1,4 @@
-import type { ConversationStatus as IConversationStatus } from '@dailyuse/contracts/ai';
+import { ConversationStatus as ConversationStatusContract, type ConversationStatus as IConversationStatus } from '@dailyuse/contracts/ai';
 
 /**
  * ConversationStatus 枚举类型
@@ -24,7 +24,9 @@ export type ConversationStatus = IConversationStatus & { readonly __brand: uniqu
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IConversationStatus[] = ['Active', 'Closed', 'Archived'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IConversationStatus[] = Object.values(ConversationStatusContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

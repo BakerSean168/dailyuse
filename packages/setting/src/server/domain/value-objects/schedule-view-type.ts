@@ -1,4 +1,4 @@
-import type { ScheduleViewType as IScheduleViewType } from '@dailyuse/contracts/setting';
+import { ScheduleViewType as ScheduleViewTypeContract, type ScheduleViewType as IScheduleViewType } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 日程视图类型 - 日程的显示视图类型
@@ -12,7 +12,9 @@ export type ScheduleViewType = IScheduleViewType & { readonly __brand: unique sy
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IScheduleViewType[] = ['Day', 'Week', 'Month'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IScheduleViewType[] = Object.values(ScheduleViewTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

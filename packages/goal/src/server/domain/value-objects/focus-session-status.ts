@@ -1,8 +1,10 @@
-import type { FocusSessionStatus as IFocusSessionStatus } from '@dailyuse/contracts/goal';
+import { FocusSessionStatus as FocusSessionStatusContract, type FocusSessionStatus as IFocusSessionStatus } from '@dailyuse/contracts/goal';
 
 export type FocusSessionStatus = IFocusSessionStatus & { readonly __brand: unique symbol };
 
-const VALUES: IFocusSessionStatus[] = ['Active', 'Completed', 'Cancelled'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IFocusSessionStatus[] = Object.values(FocusSessionStatusContract);
 
 export const FocusSessionStatus = {
   Active: 'Active' as FocusSessionStatus,

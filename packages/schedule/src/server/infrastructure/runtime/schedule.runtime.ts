@@ -252,9 +252,15 @@ export function createScheduleRuntimeContribution(
     queue.removeTask(taskId);
   };
 
-  const createSyncTaskListener = <K extends SyncTaskEventName>(_eventName: K) => {
+  const createSyncTaskListener = <K extends SyncTaskEventName>(eventName: K) => {
     return (event: ScheduleEventMap[K]) => {
-      void syncTaskHandler(event);
+      void syncTaskHandler(event).catch((error) => {
+        logger.error('[Schedule] Task sync event handler failed', {
+          event: eventName,
+          taskId: event.taskId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
     };
   };
 

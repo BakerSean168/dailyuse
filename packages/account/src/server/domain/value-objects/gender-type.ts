@@ -1,8 +1,10 @@
-import type { GenderType as IGenderType } from '@dailyuse/contracts/account';
+import { GenderType as GenderTypeContract, type GenderType as IGenderType } from '@dailyuse/contracts/account';
 
 export type GenderType = IGenderType & { readonly __brand: unique symbol };
 
-const VALUES: IGenderType[] = ['Male', 'Female', 'Other', 'PreferNotToSay'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IGenderType[] = Object.values(GenderTypeContract);
 
 export const GenderType = {
   Male: 'Male' as GenderType,

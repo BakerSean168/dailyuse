@@ -28,7 +28,7 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@dailyuse/contracts/primitives';
+import { brandedId } from '../../../primitives';
 import type { RuleId } from '../primitives/ids';
 import type { RuleClientDTO } from '../aggregates/rule-client';
 import { RuleStatus } from '../value-objects/rule-status';

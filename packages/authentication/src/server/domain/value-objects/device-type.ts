@@ -1,4 +1,4 @@
-import type { DeviceType as IDeviceType } from '@dailyuse/contracts/authentication';
+import { DeviceType as DeviceTypeContract, type DeviceType as IDeviceType } from '@dailyuse/contracts/authentication';
 
 /**
  * Device Type - classification of login devices.
@@ -10,7 +10,9 @@ export type DeviceType = IDeviceType & { readonly __brand: unique symbol };
 /**
  * Valid value set - Single Source of Truth
  */
-const VALUES: IDeviceType[] = ['Desktop', 'Mobile', 'Tablet', 'Browser', 'Api', 'Unknown'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IDeviceType[] = Object.values(DeviceTypeContract);
 
 /**
  * Companion object - provides static methods and behavior logic.

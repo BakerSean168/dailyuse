@@ -1,4 +1,4 @@
-import type { ProfileVisibility as IProfileVisibility } from '@dailyuse/contracts/setting';
+import { ProfileVisibility as ProfileVisibilityContract, type ProfileVisibility as IProfileVisibility } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 隐私可见性 - 个人资料的可见性
@@ -12,7 +12,9 @@ export type ProfileVisibility = IProfileVisibility & { readonly __brand: unique 
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IProfileVisibility[] = ['Public', 'Private', 'FriendsOnly'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IProfileVisibility[] = Object.values(ProfileVisibilityContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

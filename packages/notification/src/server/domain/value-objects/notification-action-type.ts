@@ -1,4 +1,4 @@
-import type { NotificationActionType as INotificationActionType } from '@dailyuse/contracts/notification';
+import { NotificationActionType as NotificationActionTypeContract, type NotificationActionType as INotificationActionType } from '@dailyuse/contracts/notification';
 
 /**
  * 📝 通知操作类型 - 用户可以对通知执行的操作类型
@@ -12,7 +12,9 @@ export type NotificationActionType = INotificationActionType & { readonly __bran
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: INotificationActionType[] = ['Navigate', 'ApiCall', 'Dismiss', 'Custom'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: INotificationActionType[] = Object.values(NotificationActionTypeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑

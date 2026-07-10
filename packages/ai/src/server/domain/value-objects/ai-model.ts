@@ -1,4 +1,4 @@
-import type { AIModel as IAIModel } from '@dailyuse/contracts/ai';
+import { AIModel as AIModelContract, type AIModel as IAIModel } from '@dailyuse/contracts/ai';
 
 /**
  * AIModel 枚举类型
@@ -8,14 +8,9 @@ import type { AIModel as IAIModel } from '@dailyuse/contracts/ai';
 
 export type AIModel = IAIModel & { readonly __brand: unique symbol };
 
-const VALUES: IAIModel[] = [
-  'gpt-4',
-  'gpt-4-turbo-preview',
-  'gpt-3.5-turbo',
-  'claude-3-opus-20240229',
-  'claude-3-sonnet-20240229',
-  'claude-3-haiku-20240307',
-];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IAIModel[] = Object.values(AIModelContract);
 
 export const AIModel = {
   Gpt4: 'gpt-4' as AIModel,

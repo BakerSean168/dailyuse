@@ -1,4 +1,4 @@
-import type { ResourceLanguage as IResourceLanguage } from '@dailyuse/contracts/editor';
+import { ResourceLanguage as ResourceLanguageContract, type ResourceLanguage as IResourceLanguage } from '@dailyuse/contracts/editor';
 
 /**
  * ResourceLanguage 枚举类型
@@ -8,19 +8,9 @@ import type { ResourceLanguage as IResourceLanguage } from '@dailyuse/contracts/
 
 export type ResourceLanguage = IResourceLanguage & { readonly __brand: unique symbol };
 
-const VALUES: IResourceLanguage[] = [
-  'Markdown',
-  'Plaintext',
-  'Html',
-  'Json',
-  'Typescript',
-  'Javascript',
-  'Python',
-  'Java',
-  'Go',
-  'Rust',
-  'Other',
-];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IResourceLanguage[] = Object.values(ResourceLanguageContract);
 
 export const ResourceLanguage = {
   Markdown: 'Markdown' as ResourceLanguage,

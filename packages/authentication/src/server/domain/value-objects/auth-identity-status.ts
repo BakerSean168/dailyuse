@@ -1,4 +1,4 @@
-import type { AuthIdentityStatus as IAuthIdentityStatus } from '@dailyuse/contracts/authentication';
+import { AuthIdentityStatus as AuthIdentityStatusContract, type AuthIdentityStatus as IAuthIdentityStatus } from '@dailyuse/contracts/authentication';
 
 /**
  * Identity Status - lifecycle state for user authentication identity.
@@ -10,7 +10,9 @@ export type AuthIdentityStatus = IAuthIdentityStatus & { readonly __brand: uniqu
 /**
  * Valid value set - Single Source of Truth
  */
-const VALUES: IAuthIdentityStatus[] = ['Active', 'Locked', 'Disabled', 'Unverified'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IAuthIdentityStatus[] = Object.values(AuthIdentityStatusContract);
 
 /**
  * Companion object - provides static methods and behavior logic.

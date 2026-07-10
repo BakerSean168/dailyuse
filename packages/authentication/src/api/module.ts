@@ -12,6 +12,13 @@
  *
  * Middleware comes from context.middleware, no dependency on apps/api internals.
  * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
+ *
+ * JWT secrets are injected through options by the application edge (apps/api),
+ * which resolves them from the validated env schema. The module never reads
+ * `process.env` directly, so it cannot bypass the schema's length/validation
+ * rules or create a second source of truth for auth secrets.
+ * JWT 密钥由应用边缘（apps/api）通过 options 注入，来源是已校验的 env schema；
+ * 模块本身不直读 process.env，避免绕过校验或产生第二个真值源。
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -36,48 +43,71 @@ export interface AuthenticationApiModuleDef {
   destroy?(): void;
 }
 
+/**
+ * Options for {@link createAuthenticationApiModule}.
+ *
+ * `jwtSecret` is required. `refreshSecret` falls back to `jwtSecret` when omitted,
+ * matching the env schema semantics (`REFRESH_TOKEN_SECRET` defaults to `JWT_SECRET`).
+ */
+export interface CreateAuthenticationApiModuleOptions {
+  readonly jwtSecret: string;
+  readonly refreshSecret?: string;
+  readonly accessTokenTtlMs?: number;
+  readonly refreshTokenTtlMs?: number;
+}
+
+const DEFAULT_ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const DEFAULT_REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 let activeAuthenticationModule: AuthenticationModuleInstance | null = null;
 
-export const AuthenticationApiModule: AuthenticationApiModuleDef = {
-  name: 'Authentication',
+export function createAuthenticationApiModule(
+  options: CreateAuthenticationApiModuleOptions,
+): AuthenticationApiModuleDef {
+  const jwtSecret = options.jwtSecret;
+  if (!jwtSecret) {
+    throw new Error('createAuthenticationApiModule requires a non-empty jwtSecret');
+  }
+  const refreshSecret = options.refreshSecret || jwtSecret;
+  const accessTokenTtlMs = options.accessTokenTtlMs ?? DEFAULT_ACCESS_TOKEN_TTL_MS;
+  const refreshTokenTtlMs = options.refreshTokenTtlMs ?? DEFAULT_REFRESH_TOKEN_TTL_MS;
 
-  register(context) {
-    const { router, middleware, db } = context;
+  return {
+    name: 'Authentication',
 
-    // Initialize token provider with configuration
-    // 使用环境变量初始化令牌提供者
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET environment variable is required');
-    }
-    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || jwtSecret;
-    const tokenProvider = new JwtTokenProvider(
-      jwtSecret,
-      refreshSecret,
-      15 * 60 * 1000, // 15 minutes for access token
-      7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
-    );
+    register(context) {
+      const { router, middleware, db } = context;
 
-    const authenticationModule = createAuthenticationPrismaModule(db, {
-      tokenProvider,
-      runtimeContributions: createAuthenticationRuntimeContribution(),
-    });
-    activeAuthenticationModule = authenticationModule;
-    authenticationModule.start();
+      // Initialize token provider with injected, pre-validated secrets.
+      // 使用注入的、已校验的密钥初始化令牌提供者。
+      const tokenProvider = new JwtTokenProvider(
+        jwtSecret,
+        refreshSecret,
+        accessTokenTtlMs,
+        refreshTokenTtlMs,
+      );
 
-    // ── 2. Register routes — 注册路由（注入平台中间件）──
-    const authRoutes = registerAuthenticationRoutes(
-      authenticationModule.api,
-      middleware,
-      context.openApiRegistry,
-    );
+      const authenticationModule = createAuthenticationPrismaModule(db, {
+        tokenProvider,
+        runtimeContributions: createAuthenticationRuntimeContribution(),
+      });
+      activeAuthenticationModule = authenticationModule;
+      authenticationModule.start();
 
-    // ── 3. Mount onto API router — 挂载到主路由（模块自决前缀）──
-    router.use('/auth', authRoutes);
-  },
+      // ── 2. Register routes — 注册路由（注入平台中间件）──
+      const authRoutes = registerAuthenticationRoutes(
+        authenticationModule.api,
+        middleware,
+        context.openApiRegistry,
+      );
 
-  destroy() {
-    activeAuthenticationModule?.dispose();
-    activeAuthenticationModule = null;
-  },
-};
+      // ── 3. Mount onto API router — 挂载到主路由（模块自决前缀）──
+      router.use('/auth', authRoutes);
+    },
+
+    destroy() {
+      activeAuthenticationModule?.dispose();
+      activeAuthenticationModule = null;
+    },
+  };
+}

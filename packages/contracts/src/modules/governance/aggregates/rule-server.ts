@@ -31,7 +31,7 @@
  * 参见：docs/standards/值对象里的时间使用number时间戳-毫秒.md
  */
 
-import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, IdentityId } from '../../../primitives';
 import type { RuleId } from '../primitives/ids';
 import type { RuleTagDTO } from '../value-objects/rule-tag';
 import type { RuleStatus } from '../value-objects/rule-status';

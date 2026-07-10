@@ -12,3 +12,8 @@ export type {
 export type {
   NotificationChannelClientDTO,
 } from './notification-channel-client';
+
+// ===== NotificationHistory Server =====
+export type {
+  NotificationHistoryServerDTO,
+} from './notification-history-server';

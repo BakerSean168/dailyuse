@@ -12,15 +12,6 @@ export type {
   CalendarEntryClientDTO,
 } from './calendar-entry-client';
 
-// ============ Backward Compatibility (Deprecated) ============
-export type {
-  ScheduleJobServerDTO,
-} from './schedule-job-server';
-
-export type {
-  ScheduleJobClientDTO,
-} from './schedule-job-client';
-
 // ============ ScheduleTask Aggregate ============
 export type {
   ScheduleTaskServerDTO,

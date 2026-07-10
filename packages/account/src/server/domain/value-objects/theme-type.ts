@@ -1,8 +1,10 @@
-import type { ThemeType as IThemeType } from '@dailyuse/contracts/account';
+import { ThemeType as ThemeTypeContract, type ThemeType as IThemeType } from '@dailyuse/contracts/account';
 
 export type ThemeType = IThemeType & { readonly __brand: unique symbol };
 
-const VALUES: IThemeType[] = ['Light', 'Dark', 'System'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IThemeType[] = Object.values(ThemeTypeContract);
 
 export const ThemeType = {
   Light: 'Light' as ThemeType,

@@ -1,4 +1,4 @@
-import type { FontSize as IFontSize } from '@dailyuse/contracts/setting';
+import { FontSize as FontSizeContract, type FontSize as IFontSize } from '@dailyuse/contracts/setting';
 
 /**
  * 📝 字体大小 - 应用的字体大小选项
@@ -12,7 +12,9 @@ export type FontSize = IFontSize & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IFontSize[] = ['Small', 'Medium', 'Large'];
+// Derive the valid-value set from the contracts source of truth so a new status
+// only ever has to be added in one place (@dailyuse/contracts).
+const VALUES: IFontSize[] = Object.values(FontSizeContract);
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
