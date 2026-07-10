@@ -7,6 +7,7 @@
 
 import type {
   PrismaClient,
+  Prisma,
   AiConversation as PrismaAiConversation,
   AiMessage as PrismaAiMessage,
 } from '@dailyuse/database';
@@ -37,55 +38,59 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
   async save(conversation: AIConversation): Promise<void> {
     const dto = conversation.toServerDTO(true);
 
-    await this.prisma.aiConversation.upsert({
-      where: { id: String(dto.id) },
-      create: {
-        id: String(dto.id),
-        identityId: String(dto.identityId),
-        name: dto.name,
-        status: dto.status,
-        messageCount: dto.messageCount,
-        lastMessageAt: dto.lastMessageAt != null ? new Date(dto.lastMessageAt) : null,
-        version: dto.version,
-        createdAt: new Date(dto.createdAt),
-        updatedAt: new Date(dto.updatedAt),
-        deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
-      },
-      update: {
-        name: dto.name,
-        status: dto.status,
-        messageCount: dto.messageCount,
-        lastMessageAt: dto.lastMessageAt != null ? new Date(dto.lastMessageAt) : null,
-        version: dto.version,
-        updatedAt: new Date(dto.updatedAt),
-        deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
-      },
-    });
-
-    if (dto.messages) {
-      await this.prisma.aiMessage.deleteMany({
-        where: { conversationId: String(dto.id) },
+    // 多条写入放进单事务，避免 upsert 成功而 message 同步失败导致的半持久化。
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.aiConversation.upsert({
+        where: { id: String(dto.id) },
+        create: {
+          id: String(dto.id),
+          identityId: String(dto.identityId),
+          name: dto.name,
+          status: dto.status,
+          messageCount: dto.messageCount,
+          lastMessageAt: dto.lastMessageAt != null ? new Date(dto.lastMessageAt) : null,
+          version: dto.version,
+          createdAt: new Date(dto.createdAt),
+          updatedAt: new Date(dto.updatedAt),
+          deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
+        },
+        update: {
+          name: dto.name,
+          status: dto.status,
+          messageCount: dto.messageCount,
+          lastMessageAt: dto.lastMessageAt != null ? new Date(dto.lastMessageAt) : null,
+          version: dto.version,
+          updatedAt: new Date(dto.updatedAt),
+          deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
+        },
       });
 
-      if (dto.messages.length > 0) {
-        await this.prisma.aiMessage.createMany({
-          data: dto.messages.map((message) => ({
-            id: String(message.id),
-            conversationId: String(message.conversationId),
-            identityId: String(dto.identityId),
-            role: message.role,
-            content: message.content,
-            tokenUsage:
-              message.tokenCount != null
-                ? JSON.stringify({ totalTokens: message.tokenCount })
-                : null,
-            createdAt: new Date(message.createdAt),
-          })),
-          skipDuplicates: true,
+      if (dto.messages) {
+        await tx.aiMessage.deleteMany({
+          where: { conversationId: String(dto.id) },
         });
-      }
-    }
 
+        if (dto.messages.length > 0) {
+          await tx.aiMessage.createMany({
+            data: dto.messages.map((message) => ({
+              id: String(message.id),
+              conversationId: String(message.conversationId),
+              identityId: String(dto.identityId),
+              role: message.role,
+              content: message.content,
+              tokenUsage:
+                message.tokenCount != null
+                  ? JSON.stringify({ totalTokens: message.tokenCount })
+                  : null,
+              createdAt: new Date(message.createdAt),
+            })),
+            skipDuplicates: true,
+          });
+        }
+      }
+    });
+
+    // 事件在事务成功提交后派发；send 已具备 per-handler 错误隔离，派发失败不回滚业务。
     flushDomainEvents(aiEventPublisher, conversation);
   }
 

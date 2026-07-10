@@ -11,19 +11,13 @@ import {
   type PowerSyncScheduleTaskRow,
 } from './mappers/powersync-schedule-task.mapper';
 import type { PowerSyncScheduleExecutionRow } from './mappers/powersync-schedule-execution.mapper';
-
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 
 const logger = createLogger('ScheduleTaskPowerSyncRepo');
 const scheduleEventPublisher = createTypedEventPublisher<ScheduleEventMap>(eventBus);
 
 export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository {
-  constructor(private readonly db: Queryable) {}
+  constructor(private readonly db: IElectronDatabase) {}
 
   async save(task: ScheduleTask): Promise<void> {
     const data = PowerSyncScheduleTaskMapper.toPersistence(task);
@@ -41,13 +35,37 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
       pendingDomainEvents,
     });
 
-    const existingTask = await this.db.getOptional<{ id: string }>(
+    // 任务与其执行记录多条写入放进单事务，避免半持久化。
+    await this.db.writeTransaction(async (tx: IElectronDatabaseTransaction) => {
+      await this.saveWithin(tx, task, data);
+    });
+
+    if (pendingDomainEvents.length > 0) {
+      // 事件在事务成功提交后派发；send 已具备 per-handler 错误隔离，派发失败不回滚业务。
+      flushDomainEvents(scheduleEventPublisher, task);
+      logger.info('[Schedule][Repo] Published domain events after PowerSync save', {
+        taskId: String(task.id),
+        publishedDomainEvents: pendingDomainEvents,
+      });
+    } else {
+      logger.warn('[Schedule][Repo] PowerSync save completed without domain events to publish', {
+        taskId: String(task.id),
+      });
+    }
+  }
+
+  private async saveWithin(
+    tx: IElectronDatabaseTransaction,
+    task: ScheduleTask,
+    data: ReturnType<typeof PowerSyncScheduleTaskMapper.toPersistence>,
+  ): Promise<void> {
+    const existingTask = await tx.getOptional<{ id: string }>(
       'SELECT id FROM schedule_tasks WHERE id = ? LIMIT 1',
       [data.id],
     );
 
     if (existingTask) {
-      await this.db.execute(
+      await tx.execute(
         `UPDATE schedule_tasks
          SET name = ?,
              description = ?,
@@ -113,7 +131,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
         ],
       );
     } else {
-      await this.db.execute(
+      await tx.execute(
         `INSERT INTO schedule_tasks (
           id, identity_id, name, description, source_module, source_entity_id, status, enabled,
           cron_expression, timezone, start_date, end_date, max_executions, next_run_at, last_run_at,
@@ -160,13 +178,13 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
 
     const executions = task.executions ?? [];
     for (const execution of executions) {
-      const existingExecution = await this.db.getOptional<{ id: string }>(
+      const existingExecution = await tx.getOptional<{ id: string }>(
         'SELECT id FROM schedule_executions WHERE id = ? LIMIT 1',
         [execution.id],
       );
 
       if (existingExecution) {
-        await this.db.execute(
+        await tx.execute(
           `UPDATE schedule_executions
            SET status = ?,
                duration = ?,
@@ -184,7 +202,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           ],
         );
       } else {
-        await this.db.execute(
+        await tx.execute(
           `INSERT INTO schedule_executions (
             id, task_id, identity_id, execution_time, status, duration, result, error, retry_count, created_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -202,21 +220,6 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
           ],
         );
       }
-    }
-
-    if (pendingDomainEvents.length > 0) {
-      flushDomainEvents(scheduleEventPublisher, task);
-      logger.info('[Schedule][Repo] Published domain events after PowerSync save', {
-        taskId: String(task.id),
-        publishedDomainEvents: pendingDomainEvents,
-      });
-    } else {
-      logger.warn(
-        '[Schedule][Repo] PowerSync save completed without domain events to publish',
-        {
-          taskId: String(task.id),
-        },
-      );
     }
   }
 

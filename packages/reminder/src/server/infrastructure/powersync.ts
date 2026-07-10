@@ -23,13 +23,9 @@ import {
 } from './adapters/powersync';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
+type Queryable = IElectronDatabase;
 
 /**
  * Creates a ReminderModuleInstance backed by PowerSync repositories.

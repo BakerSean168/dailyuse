@@ -61,7 +61,7 @@ function captureConversationEventTypes(): {
 }
 
 function createPrismaClientMock(): PrismaClient {
-  return {
+  const client = {
     aiConversation: {
       upsert: vi.fn(async () => undefined),
     },
@@ -69,7 +69,9 @@ function createPrismaClientMock(): PrismaClient {
       deleteMany: vi.fn(async () => undefined),
       createMany: vi.fn(async () => ({ count: 1 })),
     },
-  } as unknown as PrismaClient;
+    $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) => callback(client)),
+  };
+  return client as unknown as PrismaClient;
 }
 
 function createElectronDatabaseMock(): IElectronDatabase {
