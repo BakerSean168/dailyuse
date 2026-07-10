@@ -8,7 +8,7 @@
  * - 提供用户友好的变更摘要
  */
 
-import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, IdentityId } from '../../../primitives';
 import type { RuleRevisionId, RuleId } from '../primitives/ids';
 import type { ChangeType } from '../value-objects/change-type';
 

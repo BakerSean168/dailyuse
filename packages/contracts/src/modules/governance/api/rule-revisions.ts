@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@dailyuse/contracts/primitives';
+import { brandedId } from '../../../primitives';
 import type { RuleId, RuleRevisionId } from '../primitives/ids';
 import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
 import { PaginationSchema } from './rules';

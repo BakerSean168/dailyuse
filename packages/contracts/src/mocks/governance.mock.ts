@@ -4,18 +4,10 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type {
-  CodeSnippetId,
-  IdentityId,
-  RuleId,
-  RuleRevisionId,
-} from '@dailyuse/contracts/primitives';
-import type {
-  CodeSnippetDTO,
-  RuleClientDTO,
-  RuleRevisionClientDTO,
-  RuleTagDTO,
-} from '@dailyuse/contracts/governance';
+import type { CodeSnippetId, IdentityId, RuleId, RuleRevisionId } from '../primitives';
+import type { CodeSnippetDTO, RuleTagDTO } from '../modules/governance/value-objects';
+import type { RuleClientDTO } from '../modules/governance/aggregates';
+import type { RuleRevisionClientDTO } from '../modules/governance/entities';
 
 function createMockRuleTag(value?: string): RuleTagDTO {
   return {

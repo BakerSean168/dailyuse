@@ -18,7 +18,7 @@
  *   缓存失效：清除缓存的规则数据。
  */
 import type { RuleId } from '../../primitives/ids';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export interface RuleDeletedEvent {
   /** Rule ID of the deleted rule. 被删除规则的 ID。 */

@@ -3,7 +3,7 @@
  * 规则聚合根 - 客户端契约
  */
 
-import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, IdentityId } from '../../../primitives';
 import type { RuleId } from '../primitives/ids';
 import type { RuleTagDTO } from '../value-objects/rule-tag';
 import type { RuleStatus } from '../value-objects/rule-status';
