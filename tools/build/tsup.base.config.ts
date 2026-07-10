@@ -49,6 +49,11 @@ export function createLocalOnlyDtsPaths(
 
   return {
     compilerOptions: {
+      // 固定 DTS 编译的项目根为 ./src。缺省时，若某个包再导出的 workspace 依赖
+      // 在其构建产物中含跨子路径的相对 import（如 contracts 内 dashboard → goal），
+      // rollup-plugin-dts 追进去后无法定位 package.json export map 的根，报
+      // TS2209「project root is ambiguous」。显式给出 rootDir 即可消歧。
+      rootDir: './src',
       ...(baseUrl ? { baseUrl } : {}),
       paths: {
         '@/*': ['./src/*'],

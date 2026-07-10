@@ -20,6 +20,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
   CreateRuleReq,
   RuleClientDTO,
+  RuleId,
   RuleRevisionClientDTO,
   RuleSeverity,
   RuleStatus,
@@ -76,7 +77,7 @@ export function useGovernance() {
         return cached;
       }
 
-      const result = await service.getRule({ id });
+      const result = await service.getRule({ id: id as RuleId });
       if (result.ok) {
         store.setCurrentRule(result.data);
         return result.data;
@@ -126,7 +127,7 @@ export function useGovernance() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.deleteRule({ id });
+      const result = await service.deleteRule({ id: id as RuleId });
       if (result.ok) {
         store.removeRule(id);
         return true;

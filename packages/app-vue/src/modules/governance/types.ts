@@ -9,6 +9,8 @@ export type { RuleClientDTO, RuleRevisionClientDTO } from '@dailyuse/contracts/g
 
 export type { RuleStatus, RuleSeverity } from '@dailyuse/contracts/governance';
 
+export type { RuleId } from '@dailyuse/contracts/governance';
+
 export type {
   CreateRuleReq,
   UpdateRuleReq,
