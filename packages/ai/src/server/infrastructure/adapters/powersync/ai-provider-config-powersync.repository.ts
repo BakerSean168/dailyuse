@@ -5,10 +5,23 @@ import { AISecretCipher } from '../../security/ai-secret-cipher';
 import { PowerSyncAIProviderConfigMapper, type PowerSyncAIProviderConfigRow } from './mappers';
 
 export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRepository {
+  private cipher: AISecretCipher | null;
+
   constructor(
     private readonly db: IElectronDatabase,
-    private readonly secretCipher = AISecretCipher.fromEnv(),
-  ) {}
+    secretCipher?: AISecretCipher,
+  ) {
+    this.cipher = secretCipher ?? null;
+  }
+
+  /**
+   * 惰性解析加密器：只有真正加解密 provider 密钥时才读取 env 并 fail-fast，
+   * 而不是在模块注册/构造时。未使用 AI provider 加密的启动路径无需配置
+   * AI_PROVIDER_ENCRYPTION_KEY，同时保证真正落库/读取密钥时缺 key 决不静默降级。
+   */
+  private get secretCipher(): AISecretCipher {
+    return (this.cipher ??= AISecretCipher.fromEnv());
+  }
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     const d = PowerSyncAIProviderConfigMapper.toPersistence(config, this.secretCipher);

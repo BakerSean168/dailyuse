@@ -67,4 +67,48 @@ describe('AIProviderConfigPrismaRepository', () => {
       }),
     );
   });
+
+  it('constructs without a cipher/key and only fails fast when a secret is actually encrypted', async () => {
+    const originalKey = process.env.AI_PROVIDER_ENCRYPTION_KEY;
+    delete process.env.AI_PROVIDER_ENCRYPTION_KEY;
+    try {
+      const prisma = {
+        aiProviderConfig: {
+          count: vi.fn(async () => 0),
+          upsert: vi.fn(async () => undefined),
+        },
+      };
+      // No cipher injected and no env key: construction must NOT throw (lazy),
+      // and operations that never touch encrypted fields must work.
+      const repository = new AIProviderConfigPrismaRepository(prisma as unknown as PrismaClient);
+      await expect(repository.exists('provider-1')).resolves.toBe(false);
+
+      // Only when we actually persist a secret does the missing key fail fast.
+      await expect(
+        repository.save({
+          id: 'provider-1' as AIProviderConfigServerDTO['id'],
+          identityId: 'identity-1' as AIProviderConfigServerDTO['identityId'],
+          name: 'Main provider',
+          providerType: AIProviderType.OpenAICompatible,
+          baseUrl: 'https://api.openai.com/v1',
+          apiKey: 'plain-secret',
+          defaultModel: 'gpt-4o-mini',
+          availableModels: [],
+          isActive: true,
+          isDefault: true,
+          priority: 100,
+          version: 1,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          deletedAt: null,
+        }),
+      ).rejects.toThrow(/AI_PROVIDER_ENCRYPTION_KEY/);
+    } finally {
+      if (originalKey === undefined) {
+        delete process.env.AI_PROVIDER_ENCRYPTION_KEY;
+      } else {
+        process.env.AI_PROVIDER_ENCRYPTION_KEY = originalKey;
+      }
+    }
+  });
 });

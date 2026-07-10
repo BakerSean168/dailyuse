@@ -17,10 +17,24 @@ import { AISecretCipher } from '../../security/ai-secret-cipher';
  * Prisma implementation of IAIProviderConfigRepository.
  */
 export class AIProviderConfigPrismaRepository implements IAIProviderConfigRepository {
+  private cipher: AISecretCipher | null;
+
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly secretCipher = AISecretCipher.fromEnv(),
-  ) {}
+    secretCipher?: AISecretCipher,
+  ) {
+    this.cipher = secretCipher ?? null;
+  }
+
+  /**
+   * 惰性解析加密器：只有真正加解密 provider 密钥时才读取 env 并 fail-fast，
+   * 而不是在模块注册/构造时。这样未使用 AI provider 加密的路径（e2e 起服务、
+   * 本地 dev、CI）无需配置 AI_PROVIDER_ENCRYPTION_KEY 即可启动，
+   * 同时保证真正落库/读取密钥时缺 key 决不静默降级。
+   */
+  private get secretCipher(): AISecretCipher {
+    return (this.cipher ??= AISecretCipher.fromEnv());
+  }
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     await this.prisma.aiProviderConfig.upsert({
