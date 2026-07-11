@@ -12,6 +12,7 @@ import type {
   TaskInstanceClientDTO,
   TaskInstanceServerDTO,
   TaskEventMap,
+  TaskGoalBindingDTO,
 } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '@dailyuse/contracts/task';
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
@@ -147,8 +148,23 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.updatedAt = new Date();
   }
 
-  /** Completes the task. */
-  public complete(actualDuration?: number, note?: string, rating?: number): void {
+  /**
+   * Completes the task.
+   *
+   * `goalContext` 由 Task 应用层在调用前算好（模板绑定、是否全部实例完成、标题），
+   * 用于把 task:instance-completed 事件的 payload 填成自包含（ADR-033 范式 A）。
+   * 跨聚合的判定属应用层职责，聚合只负责把结果嵌进自己的领域事件。
+   */
+  public complete(
+    actualDuration?: number,
+    note?: string,
+    rating?: number,
+    goalContext?: {
+      taskTitle: string;
+      goalBinding: TaskGoalBindingDTO | null;
+      allInstancesCompleted: boolean;
+    },
+  ): void {
     if (!this.canComplete()) {
       throw new Error('Cannot complete task in current state');
     }
@@ -172,12 +188,15 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
     this._props.updatedAt = new Date(now);
 
-    // Trigger domain event
+    // Trigger domain event（payload 自包含，供 Goal 等跨模块订阅方直接消费）
     this.addDomainEvent<TaskEventMap['task:instance-completed']>('task:instance-completed', {
       identityId: this._props.identityId,
       taskInstanceId: this.id,
       taskTemplateId: this._props.templateId,
       completedAt: now,
+      taskTitle: goalContext?.taskTitle ?? '',
+      goalBinding: goalContext?.goalBinding ?? null,
+      allInstancesCompleted: goalContext?.allInstancesCompleted ?? false,
     });
   }
 

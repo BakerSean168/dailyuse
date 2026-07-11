@@ -1,12 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aTaskInstance } from '@/testing';
+import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
+import { aLoadedTaskTemplate, aTaskInstance } from '@/testing';
 import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
+import type { ITaskTemplateRepository } from '@/server/domain/repositories/i-task-template-repository';
 import { CompleteTaskInstanceUseCase } from '../complete-task-instance.use-case';
 
 describe('CompleteTaskInstanceUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
+  let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let useCase: CompleteTaskInstanceUseCase;
 
   beforeEach(() => {
@@ -15,9 +18,13 @@ describe('CompleteTaskInstanceUseCase', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findById: vi.fn(),
+      findByTemplateId: vi.fn().mockResolvedValue([]),
       save: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new CompleteTaskInstanceUseCase(instanceRepo);
+    templateRepo = createMockRepo<ITaskTemplateRepository>({
+      findById: vi.fn().mockResolvedValue(null),
+    });
+    useCase = new CompleteTaskInstanceUseCase(instanceRepo, templateRepo);
   });
 
   afterEach(() => {
@@ -79,7 +86,48 @@ describe('CompleteTaskInstanceUseCase', () => {
       rating: 5,
     });
 
-    expect(completeSpy).toHaveBeenCalledWith(45, 'Great work', 5);
+    expect(completeSpy).toHaveBeenCalledWith(45, 'Great work', 5, {
+      taskTitle: '',
+      goalBinding: null,
+      allInstancesCompleted: false,
+    });
+  });
+
+  it('includes the task goal binding in the completion event context', async () => {
+    const template = aLoadedTaskTemplate({ title: 'Ship linked task' });
+    template.bindToGoal('goal-1', 'kr-1', 2, TaskGoalBindingTrigger.PerInstance);
+    const instance = await aTaskInstance({ templateId: template.id });
+    const completeSpy = vi.spyOn(instance, 'complete');
+    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+
+    await useCase.execute(instance.id);
+
+    expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
+      taskTitle: 'Ship linked task',
+      goalBinding: template.goalBinding?.toDTO(),
+      allInstancesCompleted: false,
+    });
+  });
+
+  it('marks AllInstancesCompleted when all relevant sibling instances are completed', async () => {
+    const template = aLoadedTaskTemplate({ title: 'Finish recurring work' });
+    template.bindToGoal('goal-1', 'kr-1', 3, TaskGoalBindingTrigger.AllInstancesCompleted);
+    const instance = await aTaskInstance({ templateId: template.id, instanceDate: 200 });
+    const completedSibling = await aTaskInstance({ templateId: template.id, instanceDate: 100 });
+    completedSibling.complete();
+    const completeSpy = vi.spyOn(instance, 'complete');
+    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([completedSibling, instance]);
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+
+    await useCase.execute(instance.id);
+
+    expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
+      taskTitle: 'Finish recurring work',
+      goalBinding: template.goalBinding?.toDTO(),
+      allInstancesCompleted: true,
+    });
   });
 
   it('should return the instance client DTO in the response', async () => {

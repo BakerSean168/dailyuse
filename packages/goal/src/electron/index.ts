@@ -21,6 +21,7 @@ import {
   createGoalFolderTransportHandlers,
 } from '../server/transport';
 import { createGoalRuntimeContribution } from '../server/infrastructure/runtime';
+import { registerGoalEventListeners } from '../server/application/event-handlers';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { IGoalRecordRepository, IGoalRepository } from '../server/domain';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
@@ -89,6 +90,7 @@ const Ch = {
 
 const channels = Object.values(Ch);
 let activeGoalModule: GoalModuleInstance | null = null;
+let goalEventListeners: { start(): void; stop(): void } | null = null;
 
 export const GoalElectronModule: IElectronModule = {
   name: 'Goal',
@@ -107,6 +109,14 @@ export const GoalElectronModule: IElectronModule = {
     // 暴露仓储供跨模块使用
     _goalRepository = goalModule.goalRepository;
     _goalRecordRepository = goalModule.goalRecordRepository;
+
+    // Cross-module reaction: task 完成 → 更新关联 KR 进度（ADR-033 范式 A）。
+    // 与 apps/api 挂载同一份 registerGoalEventListeners，随模块生命周期启停。
+    goalEventListeners = registerGoalEventListeners(
+      goalModule.goalRepository,
+      goalModule.goalRecordRepository,
+    );
+    goalEventListeners.start();
 
     // 2. Controllers (Zod validation + use case orchestration)
     // 控制器（Zod 校验 + 用例编排）
@@ -278,6 +288,8 @@ export const GoalElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    goalEventListeners?.stop();
+    goalEventListeners = null;
     activeGoalModule?.dispose();
     activeGoalModule = null;
     _goalRepository = null;

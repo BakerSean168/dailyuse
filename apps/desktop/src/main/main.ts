@@ -17,7 +17,6 @@ import './runtime-init';
 import type { IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
-import { initializeEventListeners } from './events/initialize-event-listeners';
 import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
@@ -279,9 +278,9 @@ async function initializeShellRuntime(): Promise<void> {
   // (DesktopProfileRuntimeManager.prepareProfile + activatePreparedProfile), not during shell init,
   // because SessionManager is created fresh per profile.
 
-  // Cross-module event listeners
-  await initializeEventListeners();
-  console.log('[Shell] Event listeners initialized');
+  // Cross-module event listeners (task→goal 联动) 现由各模块 electron-entry 在
+  // profile 激活时自行挂载（见 GoalElectronModule.register → registerGoalEventListeners），
+  // 不再由 shell 层集中初始化。
 
   // Ancillary
   initMemoryMonitorForDev();
