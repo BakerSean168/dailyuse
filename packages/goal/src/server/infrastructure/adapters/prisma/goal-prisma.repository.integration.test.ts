@@ -9,7 +9,7 @@ import {
   disconnectPrisma,
   getPrisma,
   seedAccount,
-} from '../../../__tests__/integration-helpers';
+} from '../../../../__tests__/integration-helpers';
 
 function createIntegrationGoal(identityId: string) {
   const goal = Goal.create({
