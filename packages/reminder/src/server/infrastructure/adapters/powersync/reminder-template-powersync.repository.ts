@@ -1,5 +1,6 @@
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
 import type { ReminderStatus, ReminderEventMap } from '@dailyuse/contracts/reminder';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -9,18 +10,11 @@ import {
   type PowerSyncReminderHistoryRow,
 } from './mappers/powersync-reminder-template.mapper';
 
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
-
 const logger = createLogger('ReminderTemplatePowerSyncRepo');
 const reminderEventPublisher = createTypedEventPublisher<ReminderEventMap>(eventBus);
 
 export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRepository {
-  constructor(private readonly db: Queryable) {}
+  constructor(private readonly db: IElectronDatabase) {}
 
   async save(template: ReminderTemplate): Promise<void> {
     const data = PowerSyncReminderTemplateMapper.toPersistence(template);
@@ -38,13 +32,37 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
       pendingDomainEvents,
     });
 
-    const existingTemplate = await this.db.getOptional<{ id: string }>(
+    // 模板与其历史记录多条写入放进单事务，避免半持久化。
+    await this.db.writeTransaction(async (tx: IElectronDatabaseTransaction) => {
+      await this.saveWithin(tx, template, data);
+    });
+
+    if (pendingDomainEvents.length > 0) {
+      // 事件在事务成功提交后派发；send 已具备 per-handler 错误隔离，派发失败不回滚业务。
+      flushDomainEvents(reminderEventPublisher, template);
+      logger.info('[Reminder][Repo] Published domain events after PowerSync save', {
+        templateId: String(template.id),
+        publishedDomainEvents: pendingDomainEvents,
+      });
+    } else {
+      logger.warn('[Reminder][Repo] PowerSync save completed without domain events to publish', {
+        templateId: String(template.id),
+      });
+    }
+  }
+
+  private async saveWithin(
+    tx: IElectronDatabaseTransaction,
+    template: ReminderTemplate,
+    data: ReturnType<typeof PowerSyncReminderTemplateMapper.toPersistence>,
+  ): Promise<void> {
+    const existingTemplate = await tx.getOptional<{ id: string }>(
       'SELECT id FROM reminder_templates WHERE id = ? LIMIT 1',
       [data.id],
     );
 
     if (existingTemplate) {
-      await this.db.execute(
+      await tx.execute(
         `UPDATE reminder_templates
          SET name = ?,
              description = ?,
@@ -118,7 +136,7 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
         ],
       );
     } else {
-      await this.db.execute(
+      await tx.execute(
         `INSERT INTO reminder_templates (
           id, identity_id, name, description, type, self_enabled, status, reminder_group_id,
           importance_level, tags, color, icon, next_trigger_at, version, created_at, updated_at,
@@ -170,13 +188,13 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
 
     for (const history of template.getAllHistory()) {
       const dto = history.toServerDTO();
-      const existingHistory = await this.db.getOptional<{ id: string }>(
+      const existingHistory = await tx.getOptional<{ id: string }>(
         'SELECT id FROM reminder_history WHERE id = ? LIMIT 1',
         [dto.id],
       );
 
       if (existingHistory) {
-        await this.db.execute(
+        await tx.execute(
           `UPDATE reminder_history
            SET result = ?,
                error = ?,
@@ -192,7 +210,7 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           ],
         );
       } else {
-        await this.db.execute(
+        await tx.execute(
           `INSERT INTO reminder_history (
             id, identity_id, template_id, triggered_at, result, error, notification_sent, notification_channel, created_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -209,21 +227,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           ],
         );
       }
-    }
-
-    if (pendingDomainEvents.length > 0) {
-      flushDomainEvents(reminderEventPublisher, template);
-      logger.info('[Reminder][Repo] Published domain events after PowerSync save', {
-        templateId: String(template.id),
-        publishedDomainEvents: pendingDomainEvents,
-      });
-    } else {
-      logger.warn(
-        '[Reminder][Repo] PowerSync save completed without domain events to publish',
-        {
-          templateId: String(template.id),
-        },
-      );
     }
   }
 

@@ -14,13 +14,9 @@ import {
 import { PowerSyncScheduleRepository } from './adapters/powersync/schedule-powersync.repository';
 import { PowerSyncScheduleExecutionRepository } from './adapters/powersync/schedule-execution-powersync.repository';
 import { PowerSyncScheduleTaskRepository } from './adapters/powersync/schedule-task-powersync.repository';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
-type Queryable = {
-  getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
-  getOptional<T>(sql: string, parameters?: unknown[]): Promise<T | null>;
-  get<T>(sql: string, parameters?: unknown[]): Promise<T>;
-  execute(sql: string, parameters?: unknown[]): Promise<unknown>;
-};
+type Queryable = IElectronDatabase;
 
 export interface SchedulePowerSyncRepositories {
   readonly scheduleRepository: PowerSyncScheduleRepository;
