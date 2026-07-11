@@ -3,6 +3,11 @@
 ## Status
 Accepted
 
+> **关联 ADR-031（互补，非取代）**：本 ADR 定义分层原则与依赖方向（domain ← application ← infrastructure ← ui）。
+> 服务端 feature 包这些层的**具体目录形态**（`domain-server/` `application-server/` `infrastructure-server/` …）
+> 由 [ADR-031: Server Feature Standard Shape](./ADR-031-server-feature-standard-shape.md) 定义。
+> 组合根允许 `domain`→`infra` 的例外见 [ADR-023](./ADR-023-server-side-clean-architecture-refactor.md) 与 `eslint.config.ts` 的 `layer:domain` 约束。
+
 ## Date
 2026-01-15
 
@@ -32,12 +37,16 @@ We enforce a strict **Clean Architecture** with a unidirectional dependency flow
 *   **Contains:** Vue/React Components, Controllers, IPC Handlers.
 *   **Dependencies:** Application, Domain.
 
-### 2. Package Responsibilities
-*   `contracts`: Shared types (No deps).
+### 2. Layer Responsibilities
+
+这些是**分层职责**，在每个 feature 包内以同名目录承载（`packages/<feature>/src/<layer>/`，
+目录形态见 ADR-031），不是独立的顶层包：
+
+*   `contracts`: Shared types (No deps) —— 这是独立包。
 *   `domain-server`/`domain-client`: Pure business logic.
 *   `application-server`/`application-client`: Use cases.
-*   `infrastructure-*`: Technical implementations.
-*   `ui-*`: Visuals.
+*   `infrastructure-server`/`infrastructure-client`: Technical implementations.
+*   `ui-*`: Visuals —— 独立包。
 
 ### 3. Code Example
 ```typescript
