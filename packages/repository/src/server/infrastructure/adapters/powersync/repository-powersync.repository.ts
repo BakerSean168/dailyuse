@@ -6,11 +6,20 @@ import {
   PowerSyncRepositoryMapper,
   type PowerSyncRepositoryRow,
 } from './mappers/powersync-repository.mapper';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
 
-export class PowerSyncRepositoryRepository implements IRepositoryRepository {
-  constructor(private readonly db: IElectronDatabase) {}
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
-  async save(repository: Repository): Promise<void> {
+export class PowerSyncRepositoryRepository
+  extends AggregateRepositoryBase<Repository>
+  implements IRepositoryRepository
+{
+  constructor(private readonly db: IElectronDatabase) {
+    super(eventBusAdapter);
+  }
+
+  protected async persist(repository: Repository): Promise<void> {
     const d = PowerSyncRepositoryMapper.toPersistence(repository);
     const existing = await this.db.getOptional<{ id: string }>(
       `SELECT id FROM repositories WHERE id = ? LIMIT 1`,

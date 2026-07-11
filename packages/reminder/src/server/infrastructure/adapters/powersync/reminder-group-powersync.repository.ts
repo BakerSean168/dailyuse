@@ -5,6 +5,10 @@ import {
   PowerSyncReminderGroupMapper,
   type PowerSyncReminderGroupRow,
 } from './mappers/powersync-reminder-group.mapper';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -13,10 +17,15 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-export class ReminderGroupPowerSyncRepository implements IReminderGroupRepository {
-  constructor(private readonly db: Queryable) {}
+export class ReminderGroupPowerSyncRepository
+  extends AggregateRepositoryBase<ReminderGroup>
+  implements IReminderGroupRepository
+{
+  constructor(private readonly db: Queryable) {
+    super(eventBusAdapter);
+  }
 
-  async save(group: ReminderGroup): Promise<void> {
+  protected async persist(group: ReminderGroup): Promise<void> {
     const data = PowerSyncReminderGroupMapper.toPersistence(group);
     const existing = await this.db.getOptional<{ id: string }>(
       'SELECT id FROM reminder_groups WHERE id = ? LIMIT 1',

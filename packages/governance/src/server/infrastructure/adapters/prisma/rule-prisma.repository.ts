@@ -32,6 +32,10 @@ import { toResultErrorException } from '@dailyuse/contracts/result';
 import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * Prisma Rule Repository
@@ -72,6 +76,8 @@ export class RulePrismaRepository implements IRuleRepository {
           updatedAt: rule.updatedAt,
         },
       });
+
+      await publishAggregateEvents(rule, eventBusAdapter);
     } catch (err) {
       throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save rule'));
     }
@@ -110,6 +116,8 @@ export class RulePrismaRepository implements IRuleRepository {
 
         await tx.ruleRevision.create({ data: revisionData });
       });
+
+      await publishAggregateEvents(rule, eventBusAdapter);
     } catch (err) {
       throw toResultErrorException(
         mapInfraErrorToResultError(err, 'Failed to save rule with revision'),

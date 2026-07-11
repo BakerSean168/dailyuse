@@ -18,7 +18,8 @@
       "@dailyuse/contracts/reminder": ["../contracts/src/modules/reminder/index.ts"],
       "@dailyuse/contracts/schedule": ["../contracts/src/modules/schedule/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
-      "@dailyuse/utils/result": ["../utils/src/result/index.ts"]
+      "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
+      "@dailyuse/patterns": ["../patterns/src/index.ts"]
     }
   },
   "include": ["src"],

@@ -40,7 +40,8 @@
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@dailyuse/patterns": "workspace:*"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

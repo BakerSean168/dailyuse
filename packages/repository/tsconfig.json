@@ -17,7 +17,8 @@
       "@dailyuse/contracts/primitives": ["../contracts/src/primitives/index.ts"],
       "@dailyuse/contracts/electron": ["../contracts/src/electron/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
-      "@dailyuse/utils/result": ["../utils/src/result/index.ts"]
+      "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
+      "@dailyuse/patterns": ["../patterns/src/index.ts"]
     }
   },
   "include": ["src"],
