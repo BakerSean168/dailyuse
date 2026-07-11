@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - governance
   - event-bus
 description: server-first 目录下 unflushed-events 扫描盲区与统一 flush seam 收敛记录
@@ -10,6 +10,9 @@ updated: 2026-07-11T15:40:00+08:00
 ---
 
 # Unflushed Domain Events Triage
+
+> 已完成：PR #170 落地扫描修正和 9 个 seam 候选收敛；PR #165、#166 随后完成
+> 事件总线加固与 Goal↔Task 标杆联动。
 
 ## 背景
 
@@ -67,4 +70,4 @@ PR #167 引入 `unflushed-events-audit` 时，仓库仍使用 `domain-server` / 
 - 相关包 lint、typecheck、test、build 全绿。
 - `daily-use:governance-check` 全绿。
 
-以上标准已在 PR #170 分支本地验证，待 PR 合并后归档本计划。
+以上标准已在 PR #170 分支及合并后的 `main` 验证通过。
