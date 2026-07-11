@@ -48,6 +48,14 @@ const moduleBoundaryDepConstraints = [
     sourceTag: 'layer:testing',
     onlyDependOnLibsWithTags: ['layer:shared', 'layer:testing'],
   },
+  {
+    // service: standalone deployable services (e.g. ai-service Python backend).
+    // Isolated leaves in the TS graph — may only consume shared contracts, never
+    // reach into infra/domain/ui/app. Without this entry @nx/enforce-module-boundaries
+    // leaves layer:service source tags unconstrained (default allow-all).
+    sourceTag: 'layer:service',
+    onlyDependOnLibsWithTags: ['layer:shared'],
+  },
 ] as const;
 
 const moduleBoundaryOptions = {
