@@ -26,9 +26,15 @@ const files = collectSourceFiles(PACKAGES, ROOT).filter(({ relPath }) => {
   // In-memory repositories are unit-test doubles; they intentionally do not
   // publish domain events and are out of scope.
   if (relPath.includes('/adapters/memory/')) return false;
-  const isServerAggregate = relPath.includes('/domain-server/') && relPath.includes('/aggregates/');
+  // Match both the legacy layout (domain-server / infrastructure-server) and the
+  // server-feature-shape layout introduced by the client/electron/server refactor
+  // (server/domain / server/infrastructure).
+  const isServerAggregate =
+    (relPath.includes('/domain-server/') || relPath.includes('/server/domain/')) &&
+    relPath.includes('/aggregates/');
   const isServerRepo =
-    relPath.includes('/infrastructure-server/') && /repository\.[tj]s$/i.test(relPath);
+    (relPath.includes('/infrastructure-server/') || relPath.includes('/server/infrastructure/')) &&
+    /repository\.[tj]s$/i.test(relPath);
   return isServerAggregate || isServerRepo;
 });
 
@@ -40,21 +46,13 @@ for (const { absPath } of files) {
 /**
  * Baseline of pre-existing suspected misses (repo-root-relative).
  *
- * These production repositories persist an event-emitting aggregate without a
- * flush in-file. They are SURFACED, not blessed: this audit is introduced with
- * the current tree frozen as a baseline so it fails on any NEW miss. Triaging
- * whether each of these is a genuine event-loss bug or an intentionally
- * unpublished aggregate is tracked as follow-up, out of this PR's scope.
+ * Previously this froze 7 legacy-layout repositories. Scanning the server-first
+ * layout surfaced 2 additional Rule repositories, for 9 repositories in total.
+ * They now use the unified event publishing seam (工程 C), so the baseline is
+ * EMPTY: every event-emitting aggregate repository in the tree flushes its
+ * events on save. The audit fails on any new miss.
  */
-const BASELINE_ALLOWLIST = new Set([
-  'packages/account/src/infrastructure-server/adapters/powersync/account-powersync.repository.ts',
-  'packages/authentication/src/infrastructure-server/adapters/powersync/auth-session-powersync.repository.ts',
-  'packages/notification/src/infrastructure-server/adapters/powersync/notification-template-powersync.repository.ts',
-  'packages/notification/src/infrastructure-server/adapters/prisma/notification-template-prisma.repository.ts',
-  'packages/reminder/src/infrastructure-server/adapters/powersync/reminder-group-powersync.repository.ts',
-  'packages/repository/src/infrastructure-server/adapters/powersync/repository-powersync.repository.ts',
-  'packages/repository/src/infrastructure-server/adapters/prisma/repository-prisma.repository.ts',
-]);
+const BASELINE_ALLOWLIST = new Set([]);
 
 const toRel = (absPath) => path.relative(ROOT, absPath).split(path.sep).join('/');
 

@@ -3,6 +3,10 @@ import type { INotificationTemplateRepository } from '../../../domain/repositori
 import { NotificationTemplate } from '../../../domain/aggregates/notification-template';
 import { NotificationTemplateConfig } from '../../../domain/value-objects/notification-template-config';
 import type { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 interface NotificationTemplateRow {
   id: string;
@@ -50,10 +54,15 @@ function hydrateTemplate(row: NotificationTemplateRow): NotificationTemplate {
   });
 }
 
-export class PowerSyncNotificationTemplateRepository implements INotificationTemplateRepository {
-  constructor(private readonly db: IElectronDatabase) {}
+export class PowerSyncNotificationTemplateRepository
+  extends AggregateRepositoryBase<NotificationTemplate>
+  implements INotificationTemplateRepository
+{
+  constructor(private readonly db: IElectronDatabase) {
+    super(eventBusAdapter);
+  }
 
-  async save(template: NotificationTemplate): Promise<void> {
+  protected async persist(template: NotificationTemplate): Promise<void> {
     const dto = template.toServerDTO();
     await this.db.execute(
       `INSERT OR REPLACE INTO notification_templates (

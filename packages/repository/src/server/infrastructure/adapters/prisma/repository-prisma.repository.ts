@@ -10,16 +10,25 @@ import type { IRepositoryRepository } from '../../../domain/repositories/i-repos
 import { Repository } from '../../../domain/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 import { RepositoryPrismaMapper } from './mappers/repository-prisma.mapper';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * Repository Prisma Repository
  *
  * Skeleton implementation - to be completed when extracting from apps/api.
  */
-export class RepositoryPrismaRepository implements IRepositoryRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+export class RepositoryPrismaRepository
+  extends AggregateRepositoryBase<Repository>
+  implements IRepositoryRepository
+{
+  constructor(private readonly prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
-  async save(repository: Repository): Promise<void> {
+  protected async persist(repository: Repository): Promise<void> {
     const dto = repository.toServerDTO();
     await this.prisma.repository.upsert({
       where: { id: dto.id },

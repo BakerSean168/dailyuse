@@ -1,11 +1,17 @@
 import type { IAccountRepository } from '../../../domain';
 import { Account } from '../../../domain';
-import type { AppEventRegistry } from '@dailyuse/contracts/shared';
+import {
+  AggregateRepositoryBase,
+  createEventBusAdapter,
+  publishAggregateEvents,
+} from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils/domain';
 import {
   AccountPowerSyncMapper,
   type PowerSyncAccountRow,
 } from './mappers/account-powersync.mapper';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -18,10 +24,15 @@ export type Transactional = Queryable & {
   writeTransaction<T>(callback: (tx: Queryable) => Promise<T>): Promise<T>;
 };
 
-export class PowerSyncAccountRepository implements IAccountRepository {
-  constructor(private readonly db: Transactional) {}
+export class PowerSyncAccountRepository
+  extends AggregateRepositoryBase<Account>
+  implements IAccountRepository
+{
+  constructor(private readonly db: Transactional) {
+    super(eventBusAdapter);
+  }
 
-  async save(account: Account, tx?: unknown): Promise<void> {
+  protected async persist(account: Account, tx?: unknown): Promise<void> {
     const executor = this.asQueryable(tx) ?? this.db;
     const row = AccountPowerSyncMapper.toRow(account);
 
@@ -110,12 +121,11 @@ export class PowerSyncAccountRepository implements IAccountRepository {
         ],
       );
     }
+  }
 
-    const domainEvents = account.pullDomainEvents();
-    for (const evt of domainEvents) {
-      const eventType = evt.eventType as keyof AppEventRegistry;
-      eventBus.send(eventType, evt.payload as AppEventRegistry[typeof eventType]);
-    }
+  override async save(account: Account, tx?: unknown): Promise<void> {
+    await this.persist(account, tx);
+    await publishAggregateEvents(account, this.eventBus);
   }
 
   async findById(id: string, tx?: unknown): Promise<Account | null> {

@@ -1,16 +1,25 @@
 import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IAuthSessionRepository } from '../../../domain';
 import { AuthSession } from '../../../domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
 import {
   PowerSyncAuthSessionMapper,
   type PowerSyncAuthSessionRow,
   type PowerSyncAuthSessionWriteData,
 } from './mappers/powersync-auth-session.mapper';
 
-export class PowerSyncAuthSessionRepository implements IAuthSessionRepository {
-  constructor(private readonly db: IElectronDatabase) {}
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
-  async save(session: AuthSession): Promise<void> {
+export class PowerSyncAuthSessionRepository
+  extends AggregateRepositoryBase<AuthSession>
+  implements IAuthSessionRepository
+{
+  constructor(private readonly db: IElectronDatabase) {
+    super(eventBusAdapter);
+  }
+
+  protected async persist(session: AuthSession): Promise<void> {
     const d = PowerSyncAuthSessionMapper.toPersistence(session);
 
     await this.db.writeTransaction(async (tx) => {

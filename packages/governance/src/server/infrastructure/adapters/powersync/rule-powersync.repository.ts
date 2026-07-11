@@ -35,6 +35,10 @@ import {
 } from './mappers/powersync-rule.mapper';
 import { PowerSyncRuleRevisionMapper } from './mappers/powersync-rule-revision.mapper';
 import { escapeSqlLike } from '../mapper-helpers';
+import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils/domain';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * PowerSync-backed Rule repository for offline-capable desktop.
@@ -141,6 +145,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
     try {
       const row = PowerSyncRuleMapper.toPersistence(rule);
       await this._upsertRule(this.db, row);
+      await publishAggregateEvents(rule, eventBusAdapter);
     } catch (err) {
       throw toResultErrorException(mapInfraErrorToResultError(err, 'Failed to save rule'));
     }
@@ -186,6 +191,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         );
       });
 
+      await publishAggregateEvents(rule, eventBusAdapter);
     } catch (err) {
       throw toResultErrorException(
         mapInfraErrorToResultError(err, 'Failed to save rule with revision'),
