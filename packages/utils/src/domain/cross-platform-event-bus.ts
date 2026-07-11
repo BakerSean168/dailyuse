@@ -43,11 +43,20 @@ export class CrossPlatformEventBus<TEvents extends EventMap = EventMap> {
     if (!handlers || handlers.length === 0) return;
 
     for (const handler of [...handlers]) {
-      try {
-        handler(payload);
-      } catch (error) {
-        logger.error(`❌ Event handler failed: ${type}`, error);
+      this.invokeHandler(type, handler, payload);
+    }
+  }
+
+  private invokeHandler(type: string, handler: Handler<any>, payload: unknown): void {
+    try {
+      const result = (handler as (event: unknown) => unknown)(payload);
+      if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
+        void Promise.resolve(result).catch((error) => {
+          logger.error(`❌ Async event handler failed: ${type}`, error);
+        });
       }
+    } catch (error) {
+      logger.error(`❌ Event handler failed: ${type}`, error);
     }
   }
 
