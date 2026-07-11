@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - event-bus
   - governance
 description: 工程 C 在 server-first 目录重构后的重放、扩展与治理收尾计划
@@ -10,6 +10,9 @@ updated: 2026-07-11T00:00:00+00:00
 ---
 
 # Unified Event Flush Seam V2
+
+> 已完成：PR #170 合并到 `main`，9 个仓储收敛到统一发布 seam，baseline 清零，
+> 完整 governance-check 恢复通过。
 
 ## 背景
 
