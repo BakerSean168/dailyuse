@@ -19,14 +19,16 @@
       {{ t('common.loading') }}
     </div>
 
-    <div
-      v-else-if="linearScene.status.loadError"
-      class="flex-1 flex items-center justify-center p-6"
-    >
-      <Alert variant="destructive" class="max-w-lg">
-        <AlertCircle class="h-4 w-4" />
-        <AlertDescription>{{ linearScene.status.loadError }}</AlertDescription>
-      </Alert>
+    <div v-else-if="linearScene.status.loadError" class="flex-1 overflow-auto">
+      <!-- AI 深链可能指向已删资源：给出明确出口（§10-7） -->
+      <AppEmptyState
+        :icon="FileX"
+        :title="t('editor.linear.noteUnavailable')"
+        :description="linearScene.status.loadError"
+        :action-label="t('editor.linear.backToNotes')"
+        testid="note-not-found"
+        @action="linearScene.header.actions.openWorkspace"
+      />
     </div>
 
     <div
@@ -77,21 +79,15 @@
       </div>
 
       <aside
-        class="w-full lg:w-[360px] xl:w-[400px] border-t lg:border-t-0 bg-muted/10 flex flex-col"
+        class="flex w-full flex-col border-t bg-muted/10 max-lg:max-h-[320px] lg:w-[360px] lg:border-t-0 xl:w-[400px]"
       >
-        <div class="flex-1 min-h-[280px] border-b">
-          <BacklinkPanel
-            :note-id="linearScene.sidecar.noteId"
-            @navigate="linearScene.sidecar.actions.navigate"
-          />
-        </div>
-        <div class="h-[360px] border-t">
-          <LinkGraphView
-            :note-id="linearScene.sidecar.noteId"
-            @node-click="linearScene.sidecar.actions.navigate"
-            @close="linearScene.sidecar.actions.close"
-          />
-        </div>
+        <!-- 反链/图谱 Tabs：图谱点击才渲染；<lg 图谱不渲染（§10-5/§10-8） -->
+        <NoteContextPanel
+          :note-id="linearScene.sidecar.noteId"
+          :show-graph="isLgUp"
+          @navigate="linearScene.sidecar.actions.navigate"
+          @close="linearScene.sidecar.actions.close"
+        />
       </aside>
     </div>
 
@@ -127,18 +123,20 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { AlertCircle } from 'lucide-vue-next';
-import { Alert, AlertDescription, Button } from '@dailyuse/ui-vue-shadcn';
+import { FileX } from 'lucide-vue-next';
+import { Button } from '@dailyuse/ui-vue-shadcn';
 import ActiveDocumentPane from '../components/ActiveDocumentPane.vue';
 import ImageResourcePickerDialog from '../components/ImageResourcePickerDialog.vue';
 import ReferenceRepairDialog from '../components/ReferenceRepairDialog.vue';
 import LinkSuggestion from '../components/LinkSuggestion.vue';
-import BacklinkPanel from '../components/BacklinkPanel.vue';
-import LinkGraphView from '../components/LinkGraphView.vue';
+import NoteContextPanel from '../components/NoteContextPanel.vue';
 import ResourcePickerDialog from '../components/ResourcePickerDialog.vue';
 import SelfContainedExportDialog from '../components/SelfContainedExportDialog.vue';
+import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
+import { useViewportBreakpoint } from '../../../shared/composables/useViewportBreakpoint';
 import { useEditorLinearScene } from '../composables/useEditorLinearScene';
 
 const { t } = useI18n();
+const { isLgUp } = useViewportBreakpoint();
 const linearScene = useEditorLinearScene();
 </script>

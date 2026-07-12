@@ -84,3 +84,8 @@ updated: 2026-07-12T00:00:00
   - e2e 契约保留：`settings-tab-appearance/notifications`（分组导航按钮沿用 testid 规则）、`account-center-view` + `account-logout-button` 随组件迁入设置页。
   - 数据组 = UserFilesSettings + SettingAdvancedActions（导入导出/备份本就是该组件主体）；高级组 = 快捷键（只读现状）+ 实验性。
   - i18n：`setting.groups.*` zh/en 补齐。验证：web vue-tsc + 179 tests 全绿。
+- 2026-07-12：P3 笔记收缩第一轮（分支 `refactor/ui-redesign-p3-notes-reduction`，基于 P2 分支）：
+  - §10 `/note/:id`：**预览优先**（`useEditorScenePane` 增 `initialViewMode` 选项，linear scene 传 `'preview'`，工作区默认 `'live'` 不变）；右栏改 `NoteContextPanel`（反链/图谱 Tabs，图谱点击才挂载——link-index 全量遍历延迟；<lg 图谱不渲染）；加载失败改 `AppEmptyState`「笔记不存在」+「回到笔记库」（AI 深链死端出口）；未保存守卫/LinkSuggestion 原样。
+  - §9 部分：`EditorSplitView` 退役（实为 25 行编辑/预览 v-if 容器，内联进 `ActiveDocumentPane`）；旧文件树/仓库列表组件集群删除 ×16（`FileTree/FileTreeItem/FileTreeNode/FileTreePanel/FilesPanel/FileExplorer/TreeNodeItem/RepoCard/RepoHeader/RepoInfoCard/ResourceCard/ResourceList/ResourcesPanel/TagsPanel/ObsidianEditor/ResourceEditor` + stories——互引闭包，仅 barrel 引用）；repository components barrel 重建（TypedFileTree 为唯一树实现）。
+  - 验证：web vue-tsc + desktop tsc + 179 tests + lint 0 error 全绿。
+  - **P3 剩余（下一切片，需专注处理）**：TabManager 多标签退役（牵动 `useEditorWorkspaceTabs` + `useEditorWorkspaceBootstrap` + `editor-workspace-store` 的 activeTabId/hydration 与未保存守卫耦合，单文档化需专门回归）；`BatchImportDialog`/`SelfContainedExportDialog` 退役（牵动 `useRepositoryResourceCommands` 上传链路与 EditorToolbar 导出按钮）；侧栏三模式图标条 → 搜索内联树顶 + 书签并入树折叠分区（重塑 workspace scene sidebar 契约）；`ReferenceRepairDialog` 入口降级 ⋯。

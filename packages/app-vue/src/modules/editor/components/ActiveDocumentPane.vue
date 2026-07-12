@@ -12,32 +12,31 @@
       @save="emit('save')"
     />
 
-    <EditorSplitView :view-mode="viewMode" class="flex-1">
-      <template #editor>
-        <div class="relative h-full">
-          <MarkdownEditor
-            ref="markdownEditorRef"
-            :model-value="content"
-            :view-mode="viewMode === 'preview' ? 'live' : viewMode"
-            :placeholder="placeholder"
-            @update:model-value="emit('update:content', $event)"
-            @change="emit('change', $event)"
-            @link-click="emit('link-click', $event)"
-            @paste-files="handlePasteFiles"
-            @trigger-suggestion="emit('trigger-suggestion', $event)"
-            @close-suggestion="emit('close-suggestion')"
-          />
-          <slot name="editor-overlay" />
-        </div>
-      </template>
-      <template #preview>
+    <!-- 编辑/预览切换（EditorSplitView 已退役内联，Plan §9-10 阶段 0） -->
+    <div class="flex-1 overflow-hidden bg-background">
+      <div v-if="viewMode !== 'preview'" class="relative h-full overflow-auto">
+        <MarkdownEditor
+          ref="markdownEditorRef"
+          :model-value="content"
+          :view-mode="viewMode"
+          :placeholder="placeholder"
+          @update:model-value="emit('update:content', $event)"
+          @change="emit('change', $event)"
+          @link-click="emit('link-click', $event)"
+          @paste-files="handlePasteFiles"
+          @trigger-suggestion="emit('trigger-suggestion', $event)"
+          @close-suggestion="emit('close-suggestion')"
+        />
+        <slot name="editor-overlay" />
+      </div>
+      <div v-else class="h-full overflow-auto">
         <EditorPreview
           :content="content"
           :broken-resource-references="brokenResourceReferences"
           @link-click="emit('link-click', $event)"
         />
-      </template>
-    </EditorSplitView>
+      </div>
+    </div>
 
     <div class="border-t p-4">
       <BrokenResourceDiagnostics :diagnostics="diagnostics" @repair="emit('repair', $event)" />
@@ -63,7 +62,6 @@ import { Loader2 } from 'lucide-vue-next';
 import MarkdownEditor from './MarkdownEditor.vue';
 import BrokenResourceDiagnostics from './BrokenResourceDiagnostics.vue';
 import EditorToolbar from './EditorToolbar.vue';
-import EditorSplitView from './EditorSplitView.vue';
 import EditorPreview from './EditorPreview.vue';
 import type { ResourceReferenceUsage } from '../utils/resource-reference-index';
 import type { ResolvedMarkdownResourceReference } from '../utils/markdown-resource-references';

@@ -13,6 +13,8 @@ interface UseEditorSceneOptions {
   onOpenLinkedResource?: (resourceId: string) => void | Promise<void>;
   saveSuccessMessage?: string;
   saveFailureMessage?: string;
+  /** 初始视图模式；/note/:id 着陆页预览优先（Plan §10-4） */
+  initialViewMode?: 'source' | 'live' | 'preview';
 }
 
 export function useEditorScene(
@@ -21,7 +23,7 @@ export function useEditorScene(
 ) {
   const { t } = useI18n();
   const documentState = useActiveEditorDocument(resourceId);
-  const pane = useEditorScenePane(documentState);
+  const pane = useEditorScenePane(documentState, { initialViewMode: options.initialViewMode });
   const {
     resolveNote,
     createMarkdownNote,
