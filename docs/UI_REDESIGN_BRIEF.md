@@ -1,5 +1,7 @@
 # UI 重构前业务与界面分析（UI Redesign Brief）
 
+> **📌 更新（2026-07-12）**：重构方向已改为 ChatGPT 桌面式壳（AI 优先三态布局），见 `docs/UI_REDESIGN_V2_PLAN.md`。本文 §9（新信息架构）与 §10（新页面布局）的建议**已被 V2 取代**；§1–§8（现状/用户/页面分析/操作路径/问题清单）、§11（保留资产）、§12（风险）、§13（Obsidian vault 专项）继续有效。
+>
 > 状态：分析文档（不含实施）。所有结论均基于当前代码，引用路径以 `packages/`、`apps/` 为根。
 > 生成日期：2026-07-11。分析范围：`packages/app-vue`（Web 与 Desktop 共用的前端应用层）。
 > 移动端（`apps/mobile`，React Native）有独立 UI，本文仅在风险章节涉及。
