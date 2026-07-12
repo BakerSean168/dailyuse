@@ -62,4 +62,10 @@ updated: 2026-07-12T00:00:00
 ## 进度日志
 
 - 2026-07-12：读方案 + Brief + 代码基线，确认现状（`MainLayout` 纯文字 12 入口、5 shared 组件待建、孤儿视图存在）。开工 P0。
-- 2026-07-12：P0 完成（分支 `refactor/ui-redesign-p0-foundation`）：共享壳 ×5、导航分组/图标/铃铛、`/ai/chat` redirect、孤儿视图删除、i18n 补齐、rules-demo DEV 守卫。app-vue tsc + web vue-tsc + desktop tsc + 182 unit tests + lint 全绿。开工 P1。
+- 2026-07-12：P0 完成（分支 `refactor/ui-redesign-p0-foundation`，PR #172）：共享壳 ×5、导航分组/图标/铃铛、`/ai/chat` redirect、孤儿视图删除、i18n 补齐、rules-demo DEV 守卫。app-vue tsc + web vue-tsc + desktop tsc + 182 unit tests + lint 全绿。开工 P1。
+- 2026-07-12：P1 完成（分支 `refactor/ui-redesign-p1-signature-paths`，基于 P0 分支）：
+  - §2 仪表盘：`DashboardView` 605→99 行；`DashboardStatsStrip`（6 卡压一行，testid 保留）+ `DashboardTrendPanel`（Collapsible 收起 + 延迟 ECharts init）+ `DashboardActivityTimeline`（Collapsible 收起）+ `GoalProgressWidget`（落 goal/components/widgets，纯 props）；快捷操作条删除（含 i18n key 清理）；错误改 inline Alert + 重试。
+  - §6 任务库：`ListPageShell` + `TaskFilterBar`（状态 Tabs 含「全部」+ 关系过滤下拉 + 搜索 + 卡片/图谱切换）+ `TaskTemplateGrid`；依赖图从 1400px Dialog 升为图谱视图模式（<md 显示占位）；「全部删除」降级 ⋯ 危险区（输入 DELETE 强确认保留，去掉双重确认）；<lg 禁拖拽建依赖（`useViewportBreakpoint` 新建，§0.4 统一入口）；空态 `AppEmptyState` + AI 次链接；`TaskTemplateManagement` / `TaskInstanceManagement`（无引用）删除；文案「任务模板管理」→「任务库」；修复 `task.management.deleteTemplate` 缺 key 隐患。契约保留：`#task-template-management`、`create-task-template-button`、`create-first-task-template-button`、`view-dependency-graph-button`、`delete-all-templates-button`、`data-task-id`。
+  - §1 AI 工作台：工作流生命周期按钮组整体迁 `AIWorkflowActionBar`（右栏顶部，状态机分支与 `goal-agent-*` testid 原样）；`AIContextPanel` 三态容器（空闲=今日概览三 widget ≥xl 常驻 / 工作流=操作条+产物 / QA=同+未接地原因提示）；composer 回归纯对话；legacy workflow 调试分支删除（含 3 个对应测试）；侧栏重构（会话置顶、AgentRun/最近目标/最近笔记折叠段默认收起、刷新/设置收 ⋯ 菜单、w-72→w-64）；chat 空态加三工作流入口卡。
+  - 验证：web vue-tsc + desktop tsc + app-vue 179 tests（51 文件）+ lint 0 error 全绿。AIChatView.spec 补 DASHBOARD_SERVICE provide、AIContextPanel/AIWorkflowActionBar 真实渲染。
+  - 遗留（后续切片）：`AIGoalWorkflowPanel` 1280 行内部拆分（§1-10，对外接口不变，纯内部整理）。

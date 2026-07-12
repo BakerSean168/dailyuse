@@ -1,45 +1,88 @@
 <template>
-  <div class="flex h-full flex-col overflow-hidden bg-background">
-    <!-- Header -->
-    <header
-      class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
-    >
-      <div class="flex items-center gap-4">
-        <h1 class="text-lg font-medium text-foreground">{{ t('task.management.title') }}</h1>
-      </div>
+  <div class="h-full" data-testid="task-management-view">
+    <ListPageShell :title="t('task.management.title')" :description="countLabel">
+      <template #actions>
+        <Button data-testid="create-task-template-button" size="sm" @click="handleCreate">
+          <Plus class="mr-1.5 h-4 w-4" />
+          {{ t('task.templateMgmt.createNew') }}
+        </Button>
 
-      <div class="flex items-center gap-2">
-        <div class="relative hidden w-64 lg:block">
-          <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            v-model="searchQuery"
-            :placeholder="t('task.management.searchPlaceholder')"
-            class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
-          />
-        </div>
-      </div>
-    </header>
+        <!-- ⋯ 次操作菜单：破坏性操作收进危险区（§0.1） -->
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="task-more-actions">
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-44">
+            <DropdownMenuItem
+              data-testid="delete-all-templates-button"
+              class="text-destructive focus:text-destructive"
+              :disabled="templates.length === 0"
+              @click="showDeleteAllDialog = true"
+            >
+              <Trash2 class="mr-2 h-4 w-4" />
+              {{ t('task.templateMgmt.deleteAll') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </template>
 
-    <!-- Content -->
-    <div class="flex-1 overflow-auto">
-      <div v-if="isLoading" class="flex h-[50vh] items-center justify-center text-muted-foreground">
-        {{ t('task.management.loading') }}
-      </div>
+      <template #filter>
+        <TaskFilterBar
+          v-model:status="currentStatus"
+          v-model:relation="currentRelation"
+          v-model:search="searchQuery"
+          v-model:view-mode="viewMode"
+          :status-options="statusOptions"
+          :relation-options="relationOptions"
+        />
+      </template>
 
-      <TaskTemplateManagement
-        v-else
-        :templates="filteredViewModels"
-        :graph-data="graphData"
-        :on-create-dependency="handleCreateDependency"
-        @create-template="handleCreate"
-        @click-template="handleClickTemplate"
-        @edit-template="handleEdit"
-        @delete-template="handleDelete"
-        @pause-template="handlePause"
-        @resume-template="handleResume"
-        @delete-all-templates="handleDeleteAll"
-      />
-    </div>
+      <div id="task-template-management">
+        <!-- 卡片视图 -->
+        <TaskTemplateGrid
+          v-if="viewMode === 'card'"
+          :templates="filteredViewModels"
+          :total-count="viewModels.length"
+          :loading="isLoading"
+          :has-active-filters="hasActiveFilters"
+          :status-empty-text="statusEmptyText"
+          :highlighted-template-id="highlightedTemplateId"
+          :enable-drag="isLgUp"
+          :on-create-dependency="handleCardCreateDependency"
+          @create-template="handleCreate"
+          @ai-generate="router.push('/')"
+          @clear-filters="clearFilters"
+          @click-template="handleClickTemplate"
+          @edit-template="handleEdit"
+          @delete-template="handleDelete"
+          @pause-template="handlePause"
+          @resume-template="handleResume"
+          @relation-filter-click="(filter) => (currentRelation = filter)"
+          @locate-graph="handleLocateGraph"
+        />
+
+        <!-- 图谱视图：从 1400px Dialog 升级为与卡片平级的视图模式（§6） -->
+        <template v-else>
+          <div
+            v-if="isMdUp"
+            class="h-[600px] rounded-lg border border-border/50"
+            data-testid="task-graph-view"
+          >
+            <TaskDAGVisualization
+              :graph-data="graphData"
+              :active-node-id="graphFocusTaskId"
+              :compact="false"
+              @node-click="handleGraphNodeClick"
+            />
+          </div>
+          <p v-else class="py-16 text-center text-sm text-muted-foreground">
+            {{ t('task.templateMgmt.graphNarrowViewport') }}
+          </p>
+        </template>
+      </div>
+    </ListPageShell>
 
     <!-- 创建模板对话框 -->
     <TaskTemplateDialog
@@ -67,20 +110,92 @@
       @save="handleSaveEdit"
       @cancel="showEditDialog = false"
     />
+
+    <!-- 全部删除：输入 DELETE 的强确认（危险区动作，§0.1） -->
+    <Dialog
+      :open="showDeleteAllDialog"
+      @update:open="
+        (val: boolean) => {
+          if (!val) cancelDeleteAll();
+        }
+      "
+    >
+      <DialogContent class="max-w-[500px]">
+        <DialogHeader class="bg-destructive -m-6 mb-0 p-4 rounded-t-lg">
+          <DialogTitle class="flex items-center text-white">
+            <AlertCircle class="h-5 w-5 mr-2 text-white" />
+            {{ t('task.templateMgmt.confirmDeleteAll') }}
+          </DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 pt-4">
+          <Alert class="border-warning/40 bg-warning/10">
+            <AlertDescription>
+              <strong>{{ t('task.templateMgmt.cannotUndo') }}</strong>
+            </AlertDescription>
+          </Alert>
+          <p class="text-base">
+            {{ t('task.templateMgmt.confirmText', { count: templates.length }) }}
+          </p>
+          <div class="space-y-2">
+            <Label for="delete-confirm">{{ t('task.templateMgmt.inputDeletePlaceholder') }}</Label>
+            <Input id="delete-confirm" v-model="deleteConfirmText" placeholder="DELETE" />
+          </div>
+        </div>
+        <DialogFooter class="pt-4">
+          <Button variant="ghost" @click="cancelDeleteAll">
+            {{ t('task.templateMgmt.cancel') }}
+          </Button>
+          <Button
+            variant="destructive"
+            :disabled="deleteConfirmText !== 'DELETE'"
+            @click="confirmDeleteAll"
+          >
+            <Trash2 class="mr-1 h-4 w-4" />
+            {{ t('task.templateMgmt.confirmDeleteAllBtn') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { Search } from 'lucide-vue-next';
-import { Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
-import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
+import { AlertCircle, MoreHorizontal, Plus, Trash2 } from 'lucide-vue-next';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+  Label,
+  useConfirm,
+} from '@dailyuse/ui-vue-shadcn';
+import ListPageShell from '../../../components/shared/ListPageShell.vue';
+import TaskFilterBar from '../components/TaskFilterBar.vue';
+import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
+import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
-import type { TaskTemplateViewModel } from '../components/types';
+import { useViewportBreakpoint } from '../../../shared/composables/useViewportBreakpoint';
+import type {
+  TaskForDAGViewModel,
+  TaskRelationFilter,
+  TaskStatusFilter,
+  TaskTemplateViewModel,
+  TaskViewMode,
+} from '../components/types';
 import { DependencyType, TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import type { DependencyType as DependencyTypeValue } from '@dailyuse/contracts/task';
 import {
@@ -94,6 +209,7 @@ import { buildTaskGraphData } from '../types/task-dag.types';
 
 const router = useRouter();
 const { t } = useI18n();
+const { isMdUp, isLgUp } = useViewportBreakpoint();
 const {
   templates,
   dependencies,
@@ -109,10 +225,19 @@ const {
   deleteDependency,
 } = useTask();
 
+// ── 过滤 / 视图状态（从 TaskTemplateManagement 上移） ──
+const currentStatus = ref<TaskStatusFilter>('ACTIVE');
+const currentRelation = ref<TaskRelationFilter>('all');
 const searchQuery = ref('');
+const viewMode = ref<TaskViewMode>('card');
+const highlightedTemplateId = ref<string | null>(null);
+const graphFocusTaskId = ref<string | null>(null);
+
 const showCreateDialog = ref(false);
 const showEditDialog = ref(false);
 const editViewModel = ref<TaskTemplateViewModel | null>(null);
+const showDeleteAllDialog = ref(false);
+const deleteConfirmText = ref('');
 
 const viewModels = computed(() => {
   const baseViewModels = templates.value.map((dto) => mapTaskTemplateDtoToViewModel(dto, t));
@@ -156,18 +281,99 @@ const viewModels = computed(() => {
     childCount: childCounts.get(template.id) ?? 0,
   }));
 });
+
 const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
+const countLabel = computed(() => t('task.templateMgmt.countLabel', { count: viewModels.value.length }));
+
+// ── 过滤链：状态 → 关系 → 搜索 ──
+const statusTemplates = computed(() =>
+  [...viewModels.value]
+    .filter(
+      (template) => currentStatus.value === 'ALL' || template.status === currentStatus.value,
+    )
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0)),
+);
+
+function matchesRelationFilter(
+  template: TaskTemplateViewModel,
+  filter: TaskRelationFilter,
+): boolean {
+  if (filter === 'blocked') return !!template.isBlocked;
+  if (filter === 'parented') return !!template.parentTaskId;
+  if (filter === 'dependencies') {
+    return (template.predecessorCount ?? 0) > 0 || (template.successorCount ?? 0) > 0;
+  }
+  if (filter === 'children') return (template.childCount ?? 0) > 0;
+  return true;
+}
+
+const relationTemplates = computed(() =>
+  statusTemplates.value.filter((template) =>
+    matchesRelationFilter(template, currentRelation.value),
+  ),
+);
+
 const filteredViewModels = computed(() => {
-  if (!searchQuery.value.trim()) return viewModels.value;
+  if (!searchQuery.value.trim()) return relationTemplates.value;
   const q = searchQuery.value.toLowerCase();
-  return viewModels.value.filter(
-    (t) =>
-      t.title.toLowerCase().includes(q) ||
-      t.description?.toLowerCase().includes(q) ||
-      t.tags?.some((tag) => tag.toLowerCase().includes(q)),
+  return relationTemplates.value.filter(
+    (template) =>
+      template.title.toLowerCase().includes(q) ||
+      template.description?.toLowerCase().includes(q) ||
+      template.tags?.some((tag) => tag.toLowerCase().includes(q)),
   );
 });
+
+const statusOptions = computed(() => {
+  const countByStatus = (status: TaskStatusFilter) =>
+    status === 'ALL'
+      ? viewModels.value.length
+      : viewModels.value.filter((template) => template.status === status).length;
+
+  return (
+    [
+      { value: 'ALL', label: t('common.all') },
+      { value: 'ACTIVE', label: t('task.templateMgmt.statusActive') },
+      { value: 'PAUSED', label: t('task.templateMgmt.statusPaused') },
+      { value: 'ARCHIVED', label: t('task.templateMgmt.statusArchived') },
+    ] as const
+  ).map((option) => ({ ...option, count: countByStatus(option.value) }));
+});
+
+const relationOptions = computed(() =>
+  (
+    [
+      { value: 'all', label: t('task.templateMgmt.relationAll') },
+      { value: 'blocked', label: t('task.templateMgmt.relationBlocked') },
+      { value: 'parented', label: t('task.templateMgmt.relationParented') },
+      { value: 'dependencies', label: t('task.templateMgmt.relationDependencies') },
+      { value: 'children', label: t('task.templateMgmt.relationChildren') },
+    ] as const
+  ).map((option) => ({
+    ...option,
+    count: statusTemplates.value.filter((template) =>
+      matchesRelationFilter(template, option.value),
+    ).length,
+  })),
+);
+
+const hasActiveFilters = computed(
+  () => currentRelation.value !== 'all' || searchQuery.value.trim().length > 0,
+);
+
+const statusEmptyText = computed(() => {
+  if (hasActiveFilters.value) return t('task.templateMgmt.noMatch');
+  if (currentStatus.value === 'ACTIVE') return t('task.templateMgmt.noActive');
+  if (currentStatus.value === 'PAUSED') return t('task.templateMgmt.noPaused');
+  if (currentStatus.value === 'ARCHIVED') return t('task.templateMgmt.noArchived');
+  return t('task.templateMgmt.noTemplates');
+});
+
+function clearFilters() {
+  currentRelation.value = 'all';
+  searchQuery.value = '';
+}
 
 async function refreshTaskManagement() {
   await fetchTaskGraph({ page: 1, limit: 1000 });
@@ -242,13 +448,14 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
   }
 }
 
-async function handleCreateDependency(
-  predecessorTaskId: string,
-  successorTaskId: string,
+/** 卡片拖拽建依赖（DraggableTaskCard 契约：入参为两个 VM） */
+async function handleCardCreateDependency(
+  source: TaskTemplateViewModel,
+  target: TaskTemplateViewModel,
 ): Promise<boolean> {
   const result = await createDependency({
-    predecessorTaskId,
-    successorTaskId,
+    predecessorTaskId: source.id,
+    successorTaskId: target.id,
     dependencyType: DependencyType.FinishToStart,
   });
 
@@ -324,22 +531,40 @@ async function handlePause(template: TaskTemplateViewModel) {
   }
 }
 
-async function handleDeleteAll() {
-  const confirmed = await useConfirm({
-    title: t('task.templateMgmt.confirmDeleteAll'),
-    description: t('task.management.confirmDeleteAll'),
-    confirmText: t('common.confirm'),
-    cancelText: t('common.cancel'),
-    variant: 'destructive',
-  });
+// ── 全部删除（输入 DELETE 强确认；批量化属后端专项，本轮只降级入口） ──
+function cancelDeleteAll() {
+  showDeleteAllDialog.value = false;
+  deleteConfirmText.value = '';
+}
 
-  if (!confirmed) return;
+async function confirmDeleteAll() {
+  if (deleteConfirmText.value !== 'DELETE') return;
+  cancelDeleteAll();
 
-  for (const t_ of templates.value) {
-    await deleteTemplate(t_.id);
+  for (const template of templates.value) {
+    await deleteTemplate(template.id);
   }
   await refreshTaskManagement();
   toast.success(t('task.management.allDeleted'));
+}
+
+// ── 图谱视图联动 ──
+function handleLocateGraph(templateId: string) {
+  highlightedTemplateId.value = templateId;
+  graphFocusTaskId.value = templateId;
+  viewMode.value = 'graph';
+}
+
+async function handleGraphNodeClick(task: TaskForDAGViewModel) {
+  currentStatus.value = (task.status as TaskStatusFilter) || 'ACTIVE';
+  currentRelation.value = 'all';
+  highlightedTemplateId.value = task.id;
+  graphFocusTaskId.value = task.id;
+  viewMode.value = 'card';
+
+  await nextTick();
+  const target = document.querySelector(`[data-task-id="${task.id}"]`) as HTMLElement | null;
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 onMounted(async () => {

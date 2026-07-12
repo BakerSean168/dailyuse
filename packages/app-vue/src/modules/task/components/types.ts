@@ -143,3 +143,11 @@ export interface TaskInstanceViewModel {
   timeConfig: TaskTimeConfigViewModel;
   goalBinding?: TaskGoalBindingViewModel | null;
 }
+
+// ── 任务库列表过滤 / 视图模式（UI_PAGE_REDESIGN_PLAN §6）──
+
+export type TaskStatusFilter = 'ALL' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED';
+
+export type TaskRelationFilter = 'all' | 'blocked' | 'parented' | 'dependencies' | 'children';
+
+export type TaskViewMode = 'card' | 'graph';

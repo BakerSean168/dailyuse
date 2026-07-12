@@ -162,6 +162,7 @@ export default {
         title: 'Context',
         show: 'Show context',
         hide: 'Hide context',
+        todayOverview: 'Today',
       },
       sidebar: {
         open: 'Open sidebar',
@@ -214,6 +215,8 @@ export default {
         openCreatedNote: 'Open Note',
         startAnotherNote: 'New Note Chat',
         exitTool: 'Exit Intent',
+        ungroundedHint:
+          'The answer is not sufficiently grounded in your note evidence, so note creation is disabled. Add sources or rephrase the question.',
         goalClarificationTitle: 'Goal Clarification',
         goalClarificationAnswerPlaceholder: 'Add the missing detail here...',
         goalDraftTitle: 'Goal Draft',
@@ -1204,7 +1207,7 @@ export default {
   // ── Dashboard module ────────────────────────────────────
   dashboard: {
     title: 'Dashboard',
-    subtitle: 'Global overview and quick actions',
+    subtitle: 'Full statistics and review',
     viewAll: 'View All',
     error: {
       loadFailed: 'Failed to load dashboard data',
@@ -1224,16 +1227,11 @@ export default {
     },
     activity: {
       title: 'Recent Activity',
+      empty: 'No recent activity',
     },
     goalProgress: {
       title: 'Goal Progress',
-    },
-    quickActions: {
-      label: 'Quick Actions:',
-      newTask: 'New Task',
-      viewSchedule: 'View Schedule',
-      goalOverview: 'Goal Overview',
-      notificationCenter: 'Notification Center',
+      empty: 'No active goals yet',
     },
     time: {
       justNow: 'Just now',
@@ -3202,12 +3200,13 @@ export default {
     },
 
     management: {
-      title: 'Task Management',
-      searchPlaceholder: 'Search task templates...',
+      title: 'Task Library',
+      searchPlaceholder: 'Search tasks...',
       loading: 'Loading...',
-      createSuccess: 'Template created successfully',
-      editSuccess: 'Template updated successfully',
-      confirmDelete: 'Confirm delete template "{name}"?',
+      createSuccess: 'Task created successfully',
+      editSuccess: 'Task updated successfully',
+      deleteTemplate: 'Delete Task',
+      confirmDelete: 'Confirm delete task "{name}"?',
       confirmDeleteAll: 'Confirm delete all templates? This cannot be undone!',
       pauseTitle: 'Pause this template?',
       pauseDescription:
@@ -3610,17 +3609,28 @@ export default {
 
     templateMgmt: {
       viewDependencyGraph: 'View Dependency Graph',
-      deleteAll: 'Delete All Templates',
-      createNew: 'Create New Template',
-      createFirst: 'Create First Template',
-      noActive: 'No active templates',
-      noPaused: 'No paused templates',
-      noArchived: 'No archived templates',
-      noTemplates: 'No templates',
+      deleteAll: 'Delete All Tasks',
+      createNew: 'New Task',
+      createFirst: 'Create First Task',
+      countLabel: '{count} tasks',
+      viewCard: 'Cards',
+      viewGraph: 'Graph',
+      relationFilterLabel: 'Relations',
+      emptyTitle: 'No task definitions yet',
+      emptyDescription:
+        'The task library holds repeatable task definitions: recurrence rules, dependencies, and goal bindings.',
+      emptyAiLink: 'Let AI generate them →',
+      noMatch: 'No matching tasks',
+      clearFilter: 'Clear Filters',
+      graphNarrowViewport: 'Open a wider window to view the dependency graph',
+      noActive: 'No active tasks',
+      noPaused: 'No paused tasks',
+      noArchived: 'No archived tasks',
+      noTemplates: 'No tasks',
       dependencyGraphTitle: 'Task Dependency Graph',
-      confirmDeleteAll: 'Confirm Delete All Templates',
+      confirmDeleteAll: 'Confirm Delete All Tasks',
       cannotUndo: 'This cannot be undone!',
-      confirmText: 'This will delete all {count} task templates and their instance data.',
+      confirmText: 'This will delete all {count} task definitions and their instance data.',
       inputDeletePlaceholder: "Type 'DELETE' to confirm",
       cancel: 'Cancel',
       confirmDeleteAllBtn: 'Confirm Delete All',
