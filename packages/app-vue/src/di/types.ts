@@ -48,6 +48,19 @@ export type { IDashboardApiClient as IDashboardService } from '../modules/dashbo
 // ── Navigation ──
 export interface NavigationItem {
   path: string;
+  /** i18n key for the item label (e.g. 'nav.home'). */
   title: string;
+  /**
+   * i18n key of the navigation group this item belongs to
+   * (e.g. 'nav.group.workbench'). Items sharing the same group render
+   * under one group label, in array order. Ungrouped items render first.
+   */
+  group?: string;
+  /** Icon component (lucide-vue-next), rendered before the label. */
   icon?: Component;
+  /**
+   * Semantic badge token resolved by the layout (reserved; e.g. an
+   * unread-count source). Currently unused by the default layout.
+   */
+  badge?: string;
 }

@@ -40,6 +40,8 @@ export default {
     operationFailed: 'Operation failed',
     saving: 'Saving...',
     refresh: 'Refresh',
+    collapse: 'Collapse',
+    expand: 'Expand',
     colors: {
       red: 'Red',
       orange: 'Orange',
@@ -119,11 +121,17 @@ export default {
     schedule: 'Schedule',
     reminders: 'Reminders',
     notifications: 'Notifications',
-    repositories: 'Repository',
-    governance: 'Governance',
+    repositories: 'Notes',
+    governance: 'Standards',
     settings: 'Settings',
     accountCenter: 'Account',
     logout: 'Log Out',
+    group: {
+      workbench: 'Workbench',
+      plan: 'Plan',
+      execute: 'Execute',
+      knowledge: 'Knowledge',
+    },
   },
 
   aiAssistant: {
@@ -3775,7 +3783,11 @@ export default {
 
   // ── Repository module ───────────────────────────────────
   repository: {
-    title: 'Repository',
+    title: 'Notes',
+    route: {
+      workspace: 'Notes',
+      noteEdit: 'Edit Note',
+    },
     sidebar: {
       files: 'Files',
       search: 'Search',

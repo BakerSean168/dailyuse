@@ -40,6 +40,8 @@ export default {
     operationFailed: '操作失败',
     saving: '保存中...',
     refresh: '刷新',
+    collapse: '收起',
+    expand: '展开',
     colors: {
       red: '红色',
       orange: '橙色',
@@ -119,11 +121,17 @@ export default {
     schedule: '日程',
     reminders: '提醒',
     notifications: '通知',
-    repositories: '仓库',
-    governance: '治理',
+    repositories: '笔记',
+    governance: '规范',
     settings: '设置',
     accountCenter: '个人中心',
     logout: '退出登录',
+    group: {
+      workbench: '工作台',
+      plan: '计划',
+      execute: '执行',
+      knowledge: '知识',
+    },
   },
 
   aiAssistant: {
@@ -3717,7 +3725,11 @@ export default {
 
   // ── Repository module ───────────────────────────────────
   repository: {
-    title: '仓库',
+    title: '笔记',
+    route: {
+      workspace: '笔记',
+      noteEdit: '编辑笔记',
+    },
     sidebar: {
       files: '文件',
       search: '搜索',
