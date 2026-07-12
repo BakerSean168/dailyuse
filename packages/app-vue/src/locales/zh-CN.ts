@@ -562,6 +562,16 @@ export default {
     title: '应用设置',
     userSettings: '用户设置',
 
+    // 分组导航（10 Tab → 6 组，Plan §13）
+    groups: {
+      appearance: '外观与语言',
+      ai: 'AI',
+      notifications: '通知与提醒',
+      account: '账户与隐私',
+      data: '数据',
+      advanced: '高级',
+    },
+
     // Tab labels
     tabs: {
       appearance: '外观',

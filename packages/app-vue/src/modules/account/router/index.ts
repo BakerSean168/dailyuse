@@ -23,13 +23,11 @@ export const accountRoutes: RouteRecordRaw[] = [
         redirect: '/account/center',
       },
       {
+        // 账户中心已并入设置「账户与隐私」分组（Plan §13）。
+        // `?tab=` 查询参数是设置页的分组深链契约。
         path: 'center',
         name: 'account-center',
-        component: () => import('../views/AccountCenterView.vue'),
-        meta: {
-          title: 'account.center',
-          requiresAuth: true,
-        },
+        redirect: { path: '/settings', query: { tab: 'account' } },
       },
     ],
   },

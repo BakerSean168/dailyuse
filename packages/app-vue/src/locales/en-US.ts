@@ -587,6 +587,16 @@ export default {
     title: 'App Settings',
     userSettings: 'User Settings',
 
+    // Group navigation (10 tabs -> 6 groups, Plan §13)
+    groups: {
+      appearance: 'Appearance & Language',
+      ai: 'AI',
+      notifications: 'Notifications & Reminders',
+      account: 'Account & Privacy',
+      data: 'Data',
+      advanced: 'Advanced',
+    },
+
     // Tab labels
     tabs: {
       appearance: 'Appearance',

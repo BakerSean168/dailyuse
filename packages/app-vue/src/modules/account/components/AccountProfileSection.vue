@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * AccountProfileSection — 账户资料 + 登出（UI_PAGE_REDESIGN_PLAN §13）
+ *
+ * 从 AccountCenterView 原样迁入（表单/登出确认逻辑不变），
+ * 作为设置页「账户与隐私」分组的一节。`account-center-view` /
+ * `account-logout-button` testid 随组件迁移（auth e2e 契约）。
+ */
 import { computed, inject, onMounted, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
@@ -59,7 +66,6 @@ async function handleSave() {
 }
 
 async function handleLogout() {
-  console.info('[AccountCenter] Logout button clicked');
   const confirmed = await useConfirm({
     title: t('account.logoutConfirm.title'),
     description: t('account.logoutConfirm.description'),
@@ -69,14 +75,10 @@ async function handleLogout() {
   });
 
   if (!confirmed) {
-    console.info('[AccountCenter] Logout cancelled by user');
     return;
   }
 
-  console.info('[AccountCenter] Logout confirmed by user');
-
   if (!logout) {
-    console.error('[AccountCenter] Logout handler is not provided');
     toast.error(t('auth.toast.operationFailed'), {
       description: t('account.logoutHandlerUnavailable'),
     });
@@ -84,9 +86,7 @@ async function handleLogout() {
   }
 
   try {
-    console.info('[AccountCenter] Calling injected logout handler');
     await logout();
-    console.info('[AccountCenter] Logout handler resolved successfully');
     toast.success(t('auth.toast.loggedOut'));
   } catch (error) {
     toast.error(t('auth.toast.operationFailed'), {
@@ -103,10 +103,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div data-testid="account-center-view" class="mx-auto max-w-4xl px-4 py-10">
-    <Card
-      class="border-border/70 bg-card/95 text-card-foreground shadow-xl shadow-foreground/5 backdrop-blur-sm"
-    >
+  <div data-testid="account-center-view" class="space-y-6">
+    <Card class="border-border/70">
       <CardHeader>
         <CardTitle>{{ t('account.center') }}</CardTitle>
         <CardDescription>{{ t('account.description') }}</CardDescription>
@@ -114,13 +112,13 @@ onMounted(() => {
 
       <CardContent v-if="hasAccount" class="space-y-8">
         <div class="flex flex-col gap-5 md:flex-row md:items-center">
-          <Avatar class="h-24 w-24 border border-border bg-muted/60">
+          <Avatar class="h-20 w-20 border border-border bg-muted/60">
             <AvatarImage :src="form.avatar" :alt="form.nickname" />
             <AvatarFallback class="text-xl font-semibold">{{ initials }}</AvatarFallback>
           </Avatar>
 
           <div class="space-y-1">
-            <div class="text-2xl font-semibold">{{ form.nickname }}</div>
+            <div class="text-xl font-semibold">{{ form.nickname }}</div>
             <div class="text-sm text-muted-foreground">
               {{ currentAccount?.email?.address || t('account.guestLabel') }}
             </div>
@@ -162,9 +160,9 @@ onMounted(() => {
         </div>
       </CardContent>
 
-      <CardContent v-else class="text-sm text-muted-foreground">{{
-        t('account.status.loading')
-      }}</CardContent>
+      <CardContent v-else class="text-sm text-muted-foreground">
+        {{ t('account.status.loading') }}
+      </CardContent>
 
       <CardFooter class="justify-end border-t border-border/60 bg-muted/40 px-6 py-4">
         <Button :disabled="isLoading || !hasAccount || isGuest" @click="handleSave">
@@ -173,9 +171,8 @@ onMounted(() => {
       </CardFooter>
     </Card>
 
-    <Card
-      class="mt-6 border-destructive/30 bg-destructive/8 text-card-foreground shadow-lg shadow-destructive/10"
-    >
+    <!-- 登出：破坏性动作分区（§0.1 危险区约定） -->
+    <Card class="border-destructive/30 bg-destructive/8">
       <CardHeader>
         <CardTitle class="flex items-center gap-2 text-destructive">
           <LogOut class="h-4 w-4" />

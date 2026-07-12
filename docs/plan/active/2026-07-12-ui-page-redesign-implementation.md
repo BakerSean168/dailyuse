@@ -78,3 +78,9 @@ updated: 2026-07-12T00:00:00
   - §4 目标详情：DetailPageShell（back+badges+meta 单行元数据）；四宫格压缩；进度环缩小与 KR 完成数并排概览行；主操作「记录进度」= KR 下拉 → `GoalRecordDialog`（此前该对话框无任何入口的缺口修复；无 KR 时禁用+tooltip 原因）；「创建复盘」移入复盘 Tab 首位；⋯ 菜单=编辑+危险区删除；KR 空态升级主引导；目标不存在=整页空态；`goal-detail`/`goal-detail-title` testid 保留（DetailPageShell 增加 `titleTestid` prop）。
   - 验证：web vue-tsc + app-vue 179 tests + lint 0 error 全绿。
   - 遗留（后续切片）：§13 设置分组重构 + 账户合并；§5 子页面（focus/compare/review/KR 详情）壳对齐；治理详情/编辑/历史三子页 DetailPageShell 套壳；§8 视图三拆分（ReminderGroupSidebar/TemplateList/GlobalBanner）；`NotificationPermissionWarning` 挂载（现无权限管理 plumbing，属新功能不在本轮）。
+- 2026-07-12：P2 第二轮（同分支）：§13 设置完成：
+  - 10 平铺 Tab → 6 组（外观与语言 / AI / 通知与提醒 / 账户与隐私 / 数据 / 高级），左侧垂直分组导航 w-48 + 内容 max-w-3xl；<md 导航转顶部横向滚动条。
+  - `AccountProfileSection` 从 `AccountCenterView` 原样抽出（表单 + 登出确认逻辑不动）并入「账户与隐私」；`AccountCenterView` 删除；`/account/center` → `redirect: /settings?tab=account`（`?tab=` 为新增分组深链契约，双向同步 route query）。
+  - e2e 契约保留：`settings-tab-appearance/notifications`（分组导航按钮沿用 testid 规则）、`account-center-view` + `account-logout-button` 随组件迁入设置页。
+  - 数据组 = UserFilesSettings + SettingAdvancedActions（导入导出/备份本就是该组件主体）；高级组 = 快捷键（只读现状）+ 实验性。
+  - i18n：`setting.groups.*` zh/en 补齐。验证：web vue-tsc + 179 tests 全绿。
