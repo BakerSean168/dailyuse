@@ -1697,10 +1697,11 @@ export default {
 
   // ── Notification module ─────────────────────────────────
   notification: {
-    title: 'Notification Center',
+    title: 'Notifications',
     loading: 'Loading...',
     empty: 'No notifications',
     emptyDescription: 'All notifications will appear here',
+    allCaughtUp: 'All caught up ✓',
 
     item: {
       priorityVital: 'Urgent',
@@ -1774,6 +1775,27 @@ export default {
       day: 'Day',
       week: 'Week',
       month: 'Month',
+    },
+
+    source: {
+      schedule: 'Schedule',
+      task: 'Task',
+      goal: 'Goal',
+    },
+
+    dayDetail: {
+      subtitle: '{count} items',
+      noEvents: 'Nothing scheduled',
+      viewInDayView: 'View in Day View',
+    },
+
+    eventDetail: {
+      subtitle: 'Schedule details',
+      time: 'Time',
+      allDay: 'All day',
+      source: 'Source',
+      conflictHint: 'This time slot has a schedule conflict',
+      readOnlyHint: 'Editing schedule events will arrive in a later release.',
     },
 
     dashboard: {
@@ -2050,8 +2072,8 @@ export default {
     },
 
     list: {
-      title: 'Governance Rules',
-      subtitle: 'Browse and manage team coding standards and best practices',
+      title: 'Coding Standards',
+      subtitle: 'Personal coding standards and best practices',
       newRule: 'New Rule',
       statusAll: 'All',
       statusActive: 'Active',
@@ -2060,13 +2082,15 @@ export default {
       severityAll: 'All',
       severityMandatory: 'Mandatory',
       severityRecommended: 'Recommended',
-      filterApplied: 'Filters applied · {total} results',
+      tagFilterLabel: 'Tags',
+      totalCount: '{total} rules',
+      filteredCount: '{total} rules · filtered',
       clearFilter: 'Clear',
-      emptyTitle: 'No rules',
+      emptyTitle: 'No standards yet',
       emptyFilterHint: 'No rules match the current filters',
-      emptyHint: 'No governance rules have been created yet',
+      emptyHint: 'Capture your personal coding standards and best practices',
       clearFilters: 'Clear Filters',
-      createFirst: 'Create First Rule',
+      createFirst: 'New Rule',
       prevPage: 'Previous',
       nextPage: 'Next',
     },
@@ -2343,9 +2367,11 @@ export default {
       searchGoals: 'Search goals...',
       compare: 'Compare',
       newGoal: 'New Goal',
-      noGoalsFound: 'No goals found',
+      noGoalsFound: 'No active goals yet',
       createToStart: 'Create a new goal to get started with tracking.',
       createGoal: 'Create Goal',
+      askAi: 'Let AI plan it with me →',
+      viewEmpty: 'No goals in this view',
     },
     systemFolders: {
       active: 'All Goals',
@@ -2363,6 +2389,8 @@ export default {
     detail: {
       back: 'Back',
       title: 'Goal Detail',
+      notFound: 'Goal not found',
+      backToList: 'Back to Goals',
       noDescription: 'No description',
       startDate: 'Start Date',
       targetDate: 'Target Date',
@@ -2372,6 +2400,12 @@ export default {
       keyResults: 'Key Results',
       addKR: 'Add KR',
       noKR: 'No key results',
+      noKrTitle: 'Add your first key result',
+      noKrDescription:
+        'Key results quantify the goal — progress can only be recorded once one exists.',
+      recordProgress: 'Record Progress',
+      recordNeedsKr: 'Add a key result first to record progress',
+      krCompleted: 'KRs {done}/{total} done',
       progressRecords: 'Progress Records',
       review: 'Review',
       recordValue: 'Record value:',

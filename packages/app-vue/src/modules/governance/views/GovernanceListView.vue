@@ -1,153 +1,185 @@
 <template>
-  <div class="max-w-[960px] mx-auto p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('governance.list.title') }}</h1>
-        <p class="text-sm text-muted-foreground mt-1">{{ t('governance.list.subtitle') }}</p>
-      </div>
+  <div class="h-full" data-testid="governance-list-view">
+    <ListPageShell :title="t('governance.list.title')" :description="countLabel">
+      <template #actions>
+        <Button size="sm" data-testid="governance-new-rule" @click="goToEditor">
+          <Plus class="mr-1.5 h-4 w-4" />
+          {{ t('governance.list.newRule') }}
+        </Button>
+      </template>
 
-      <router-link
-        :to="{ name: 'governance-editor' }"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-      >
-        <Plus :size="16" />
-        {{ t('governance.list.newRule') }}
-      </router-link>
-    </div>
+      <!-- FilterBar：搜索优先 + 状态/严重度/标签下拉（§12-5 双排按钮组收敛为下拉） -->
+      <template #filter>
+        <FilterBar>
+          <template #tabs>
+            <div class="w-64">
+              <GovernanceSearchBar v-model="searchQuery" @search="onSearch" />
+            </div>
+          </template>
 
-    <!-- Search & Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-      <SearchBar v-model="searchQuery" @search="onSearch" />
+          <template #filters>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
+                  {{ activeStatusLabel }}
+                  <ChevronDown class="h-3 w-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" class="w-40">
+                <DropdownMenuItem
+                  v-for="opt in statusOptions"
+                  :key="opt.value"
+                  class="text-xs"
+                  @click="selectStatus(opt.value)"
+                >
+                  <Check
+                    class="mr-2 h-3.5 w-3.5"
+                    :class="selectedStatus === opt.value ? 'opacity-100' : 'opacity-0'"
+                  />
+                  {{ opt.label }}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-      <div class="flex items-center gap-2 flex-wrap">
-        <!-- Status filter -->
-        <div class="flex rounded-md border overflow-hidden">
-          <button
-            v-for="opt in statusOptions"
-            :key="opt.value"
-            class="px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="[
-              selectedStatus === opt.value
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-background text-muted-foreground hover:bg-muted',
-            ]"
-            @click="
-              selectedStatus = opt.value;
-              onStatusFilter(opt.value);
-            "
-          >
-            {{ opt.label }}
-          </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
+                  {{ activeSeverityLabel }}
+                  <ChevronDown class="h-3 w-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" class="w-40">
+                <DropdownMenuItem
+                  v-for="opt in severityOptions"
+                  :key="opt.value"
+                  class="text-xs"
+                  @click="selectSeverity(opt.value)"
+                >
+                  <Check
+                    class="mr-2 h-3.5 w-3.5"
+                    :class="selectedSeverity === opt.value ? 'opacity-100' : 'opacity-0'"
+                  />
+                  {{ opt.label }}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu v-if="allTags.length > 0">
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" size="sm" class="h-8 gap-1.5 text-xs">
+                  {{ t('governance.list.tagFilterLabel') }}
+                  <Badge v-if="filter.tags.length" variant="secondary" class="px-1.5 text-[10px]">
+                    {{ filter.tags.length }}
+                  </Badge>
+                  <ChevronDown class="h-3 w-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" class="max-h-72 w-48 overflow-y-auto">
+                <DropdownMenuCheckboxItem
+                  v-for="tag in allTags"
+                  :key="tag"
+                  class="text-xs"
+                  :model-value="filter.tags.includes(tag)"
+                  @update:model-value="() => toggleFilterTag(tag)"
+                  @select.prevent
+                >
+                  {{ tag }}
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              v-if="hasActiveFilter"
+              variant="ghost"
+              size="sm"
+              class="h-8 text-xs text-muted-foreground"
+              @click="clearAllFilters"
+            >
+              {{ t('governance.list.clearFilter') }}
+            </Button>
+          </template>
+        </FilterBar>
+      </template>
+
+      <div class="mx-auto max-w-4xl space-y-4">
+        <!-- 错误：inline Alert + 重试 -->
+        <Alert v-if="error" variant="destructive">
+          <AlertTriangle class="h-4 w-4" />
+          <AlertDescription class="flex items-center justify-between gap-4">
+            <span>{{ error }}</span>
+            <Button variant="outline" size="sm" class="h-7 shrink-0" @click="fetchRules()">
+              {{ t('common.retry') }}
+            </Button>
+          </AlertDescription>
+        </Alert>
+
+        <!-- 加载 = 卡片骨架 -->
+        <div v-if="isLoading" class="space-y-2" data-testid="governance-list-skeleton">
+          <div v-for="i in 5" :key="i" class="space-y-2 rounded-lg border border-border/50 p-4">
+            <div class="flex items-center gap-2">
+              <Skeleton class="h-4 w-20" />
+              <Skeleton class="h-4 w-48" />
+            </div>
+            <Skeleton class="h-3 w-2/3" />
+          </div>
         </div>
 
-        <!-- Severity filter -->
-        <div class="flex rounded-md border overflow-hidden">
-          <button
-            v-for="opt in severityOptions"
-            :key="opt.value"
-            class="px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="[
-              selectedSeverity === opt.value
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-background text-muted-foreground hover:bg-muted',
-            ]"
+        <!-- 规则列表 -->
+        <div v-else-if="rules.length > 0" class="flex flex-col gap-2">
+          <RuleCard v-for="rule in rules" :key="rule.id" :rule="rule" @click="goToDetail" />
+        </div>
+
+        <!-- 空态 -->
+        <template v-else>
+          <div
+            v-if="hasActiveFilter"
+            class="flex flex-col items-center gap-3 py-16 text-center"
+            data-testid="governance-filtered-empty"
+          >
+            <p class="text-sm text-muted-foreground">{{ t('governance.list.emptyFilterHint') }}</p>
+            <Button variant="outline" size="sm" @click="clearAllFilters">
+              {{ t('governance.list.clearFilters') }}
+            </Button>
+          </div>
+          <AppEmptyState
+            v-else
+            :icon="Shield"
+            :title="t('governance.list.emptyTitle')"
+            :description="t('governance.list.emptyHint')"
+            :action-label="t('governance.list.createFirst')"
+            testid="governance-empty-state"
+            @action="goToEditor"
+          />
+        </template>
+
+        <!-- 分页 -->
+        <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="currentPage <= 1"
             @click="
-              selectedSeverity = opt.value;
-              onSeverityFilter(opt.value);
+              currentPage--;
+              setPage(currentPage);
             "
           >
-            {{ opt.label }}
-          </button>
+            {{ t('governance.list.prevPage') }}
+          </Button>
+          <span class="text-sm text-muted-foreground"> {{ currentPage }} / {{ totalPages }} </span>
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="currentPage >= totalPages"
+            @click="
+              currentPage++;
+              setPage(currentPage);
+            "
+          >
+            {{ t('governance.list.nextPage') }}
+          </Button>
         </div>
       </div>
-    </div>
-
-    <!-- Tag filter chips -->
-    <TagFilterChips
-      v-if="allTags.length > 0"
-      :tags="allTags"
-      :selected-tags="filter.tags"
-      class="mb-4"
-      @toggle="toggleFilterTag"
-      @clear="clearFilters"
-    />
-
-    <!-- Active filter indicator -->
-    <div
-      v-if="hasActiveFilter"
-      class="flex items-center justify-between p-3 rounded-md bg-info/10 dark:bg-info/20 text-sm text-info dark:text-info mb-4"
-    >
-      <span>{{ t('governance.list.filterApplied', { total: pagination.total }) }}</span>
-      <button class="text-xs hover:underline" @click="clearFilters">
-        {{ t('governance.list.clearFilter') }}
-      </button>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
-
-    <!-- Error -->
-    <div v-if="error" class="p-4 rounded-md bg-destructive/10 text-destructive text-sm mb-4">
-      {{ error }}
-    </div>
-
-    <!-- Rules list -->
-    <div v-if="rules.length > 0" class="flex flex-col gap-2">
-      <RuleCard v-for="rule in rules" :key="rule.id" :rule="rule" @click="goToDetail" />
-    </div>
-
-    <!-- Empty state -->
-    <div v-else-if="!isLoading" class="flex flex-col items-center justify-center py-16 text-center">
-      <Shield :size="48" class="text-muted-foreground/50 mb-4" />
-      <h3 class="text-lg font-medium mb-1">{{ t('governance.list.emptyTitle') }}</h3>
-      <p class="text-sm text-muted-foreground mb-4">
-        {{
-          hasActiveFilter ? t('governance.list.emptyFilterHint') : t('governance.list.emptyHint')
-        }}
-      </p>
-      <button
-        v-if="hasActiveFilter"
-        class="px-4 py-2 border rounded-md text-sm hover:bg-muted transition-colors"
-        @click="clearFilters"
-      >
-        {{ t('governance.list.clearFilters') }}
-      </button>
-      <router-link
-        v-else
-        :to="{ name: 'governance-editor' }"
-        class="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
-      >
-        {{ t('governance.list.createFirst') }}
-      </router-link>
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-6">
-      <button
-        :disabled="currentPage <= 1"
-        class="px-3 py-1.5 rounded-md border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
-        @click="
-          currentPage--;
-          setPage(currentPage);
-        "
-      >
-        {{ t('governance.list.prevPage') }}
-      </button>
-      <span class="text-sm text-muted-foreground"> {{ currentPage }} / {{ totalPages }} </span>
-      <button
-        :disabled="currentPage >= totalPages"
-        class="px-3 py-1.5 rounded-md border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
-        @click="
-          currentPage++;
-          setPage(currentPage);
-        "
-      >
-        {{ t('governance.list.nextPage') }}
-      </button>
-    </div>
+    </ListPageShell>
   </div>
 </template>
 
@@ -155,11 +187,26 @@
 import { ref, computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Plus, Shield } from 'lucide-vue-next';
+import { AlertTriangle, Check, ChevronDown, Plus, Shield } from 'lucide-vue-next';
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Skeleton,
+} from '@dailyuse/ui-vue-shadcn';
+import ListPageShell from '../../../components/shared/ListPageShell.vue';
+import FilterBar from '../../../components/shared/FilterBar.vue';
+import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
 import type { RuleClientDTO, RuleStatus, RuleSeverity } from '../types';
-import { RuleCard, SearchBar, TagFilterChips } from '../components';
+import { RuleCard, GovernanceSearchBar } from '../components';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -200,18 +247,45 @@ const severityOptions = computed(() => [
   { label: t('governance.list.severityRecommended'), value: 'Recommended' },
 ]);
 
+const activeStatusLabel = computed(
+  () => statusOptions.value.find((o) => o.value === selectedStatus.value)?.label ?? '',
+);
+const activeSeverityLabel = computed(
+  () => severityOptions.value.find((o) => o.value === selectedSeverity.value)?.label ?? '',
+);
+
 const totalPages = computed(() => Math.ceil(pagination.value.total / pagination.value.pageSize));
+
+// 过滤命中横幅已删除（§12-5）：计数并入页头描述文本
+const countLabel = computed(() =>
+  hasActiveFilter.value
+    ? t('governance.list.filteredCount', { total: pagination.value.total })
+    : t('governance.list.totalCount', { total: pagination.value.total }),
+);
 
 function onSearch(query: string) {
   void trackSearch(() => searchRules(query));
 }
 
-function onStatusFilter(value: string) {
+function selectStatus(value: string) {
+  selectedStatus.value = value;
   setFilterStatus((value || null) as RuleStatus | null);
 }
 
-function onSeverityFilter(value: string) {
+function selectSeverity(value: string) {
+  selectedSeverity.value = value;
   setFilterSeverity((value || null) as RuleSeverity | null);
+}
+
+function clearAllFilters() {
+  selectedStatus.value = '';
+  selectedSeverity.value = '';
+  searchQuery.value = '';
+  clearFilters();
+}
+
+function goToEditor() {
+  router.push({ name: 'governance-editor' });
 }
 
 function goToDetail(rule: RuleClientDTO) {

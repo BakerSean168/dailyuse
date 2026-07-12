@@ -3,12 +3,14 @@
     <header
       class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
     >
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <h1 class="text-lg font-medium text-foreground">{{ activeViewLabel }}</h1>
+        <span class="text-xs text-muted-foreground">{{ filteredGoals.length }}</span>
       </div>
 
       <div class="flex items-center gap-2">
-        <div class="relative mr-2 hidden w-64 lg:block">
+        <!-- 搜索：目标数为 0 时隐藏（§3-5 空集合搜索无意义） -->
+        <div v-if="goals.length > 0" class="relative mr-2 hidden w-64 lg:block">
           <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             v-model="searchQuery"
@@ -18,25 +20,47 @@
           />
         </div>
 
+        <!-- 主操作：新建目标（?dialog=goal URL 契约保留，§3-2） -->
         <Button
-          variant="outline"
           size="sm"
-          class="h-8 gap-2"
-          @click="router.push({ name: 'goal-comparison' })"
+          class="h-8"
+          data-testid="goal-list-create-button"
+          @click="$router.push({ name: 'goal-list', query: { dialog: 'goal' } })"
         >
-          <LayoutGrid class="h-4 w-4" />
-          <span>{{ t('goal.list.compare') }}</span>
+          <Plus class="mr-1.5 h-4 w-4" />
+          {{ t('goal.list.createGoal') }}
         </Button>
+
+        <!-- 次操作：对比收进 ⋯ 菜单（§3-5 低频） -->
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="goal-list-more">
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-44">
+            <DropdownMenuItem @click="router.push({ name: 'goal-comparison' })">
+              <LayoutGrid class="mr-2 h-4 w-4" />
+              {{ t('goal.list.compare') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
 
     <ScrollArea class="min-h-0 flex-1 p-6">
       <div class="mx-auto max-w-7xl">
+        <!-- 加载 = 卡片骨架 ×6（§0.3） -->
         <div
           v-if="isLoading"
-          class="flex h-[50vh] items-center justify-center text-muted-foreground"
+          class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+          data-testid="goal-list-skeleton"
         >
-          {{ t('goal.list.loading') }}
+          <div v-for="i in 6" :key="i" class="space-y-3 rounded-lg border border-border/50 p-4">
+            <Skeleton class="h-5 w-2/3" />
+            <Skeleton class="h-2 w-full" />
+            <Skeleton class="h-3 w-1/3" />
+          </div>
         </div>
 
         <div
@@ -54,25 +78,36 @@
           />
         </div>
 
-        <div
-          v-else
-          class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
-        >
-          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-            <Target class="h-6 w-6 opacity-50" />
-          </div>
-          <h3 class="mb-1 text-lg font-medium text-foreground">
-            {{ t('goal.list.noGoalsFound') }}
-          </h3>
-          <p class="mb-6 text-sm">{{ t('goal.list.createToStart') }}</p>
-          <Button
-            data-testid="create-goal-button"
-            @click="$router.push({ name: 'goal-list', query: { dialog: 'goal' } })"
+        <!-- 分视图空态（§3-7）：进行中 = 行动引导；其余视图空是正常态，纯说明 -->
+        <template v-else>
+          <AppEmptyState
+            v-if="systemView === 'active'"
+            :icon="Target"
+            :title="t('goal.list.noGoalsFound')"
+            :description="t('goal.list.createToStart')"
+            :secondary-label="t('goal.list.askAi')"
+            testid="goals-empty-state"
+            @secondary="router.push('/')"
           >
-            <Plus class="mr-2 h-4 w-4" />
-            {{ t('goal.list.createGoal') }}
-          </Button>
-        </div>
+            <template #action>
+              <Button
+                data-testid="create-goal-button"
+                size="sm"
+                @click="$router.push({ name: 'goal-list', query: { dialog: 'goal' } })"
+              >
+                <Plus class="mr-1.5 h-4 w-4" />
+                {{ t('goal.list.createGoal') }}
+              </Button>
+            </template>
+          </AppEmptyState>
+          <p
+            v-else
+            class="py-16 text-center text-sm text-muted-foreground"
+            data-testid="goals-view-empty"
+          >
+            {{ t('goal.list.viewEmpty') }}
+          </p>
+        </template>
       </div>
     </ScrollArea>
   </div>
@@ -82,46 +117,46 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Target, Plus, LayoutGrid, Search } from 'lucide-vue-next';
-import { Button, ScrollArea, Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
+import { LayoutGrid, MoreHorizontal, Plus, Search, Target } from 'lucide-vue-next';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+  ScrollArea,
+  Skeleton,
+  useConfirm,
+} from '@dailyuse/ui-vue-shadcn';
 import { GoalCard } from '../components';
+import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGoal } from '../composables/useGoal';
 import type { GoalClientDTO, GoalSystemView } from '@dailyuse/contracts/goal';
 
 const { t } = useI18n();
 const router = useRouter();
 
-const {
-  goals,
-  isLoading,
-  fetchGoals,
-  search,
-  selectedFolderId,
-  systemView,
-  deleteGoal,
-} = useGoal();
+const { goals, isLoading, fetchGoals, search, selectedFolderId, systemView, deleteGoal } =
+  useGoal();
 const searchQuery = ref('');
 
 const systemViews = computed(() => [
   {
     id: 'active' as GoalSystemView,
     label: t('goal.systemFolders.active'),
-    count: goals.value.length,
   },
   {
     id: 'completed' as GoalSystemView,
     label: t('goal.systemFolders.completed'),
-    count: goals.value.filter((g) => !!g.archivedAt && !!g.completedAt && !g.deletedAt).length,
   },
   {
     id: 'expired' as GoalSystemView,
     label: t('goal.systemFolders.expired'),
-    count: goals.value.filter((g) => !!g.archivedAt && !g.completedAt && !g.deletedAt).length,
   },
   {
     id: 'deleted' as GoalSystemView,
     label: t('goal.systemFolders.deleted'),
-    count: goals.value.filter((g) => !!g.deletedAt).length,
   },
 ]);
 

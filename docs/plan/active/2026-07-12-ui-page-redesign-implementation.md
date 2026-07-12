@@ -69,3 +69,12 @@ updated: 2026-07-12T00:00:00
   - §1 AI 工作台：工作流生命周期按钮组整体迁 `AIWorkflowActionBar`（右栏顶部，状态机分支与 `goal-agent-*` testid 原样）；`AIContextPanel` 三态容器（空闲=今日概览三 widget ≥xl 常驻 / 工作流=操作条+产物 / QA=同+未接地原因提示）；composer 回归纯对话；legacy workflow 调试分支删除（含 3 个对应测试）；侧栏重构（会话置顶、AgentRun/最近目标/最近笔记折叠段默认收起、刷新/设置收 ⋯ 菜单、w-72→w-64）；chat 空态加三工作流入口卡。
   - 验证：web vue-tsc + desktop tsc + app-vue 179 tests（51 文件）+ lint 0 error 全绿。AIChatView.spec 补 DASHBOARD_SERVICE provide、AIContextPanel/AIWorkflowActionBar 真实渲染。
   - 遗留（后续切片）：`AIGoalWorkflowPanel` 1280 行内部拆分（§1-10，对外接口不变，纯内部整理）。
+- 2026-07-12：P2 对齐批第一轮（分支 `refactor/ui-redesign-p2-alignment`，基于 P1 分支）：
+  - §11 通知：`NotificationListPage` → ListPageShell + FilterBar 两态 Tab（全部/未读；「已读」Tab 删除，无 e2e 依赖）+ `max-w-4xl` 信箱宽度 + 行骨架 + `AppEmptyState`（空信箱无按钮）/未读空「已全部处理 ✓」；重复实现 `NotificationPage.vue`（仅 stories 引用）删除；`notification.title`「通知中心」→「通知」。契约保留：`notification-center`、`notification-filter-all/unread`、`notifications-list`、`mark-all-read-button`。
+  - §12 治理：列表套 ListPageShell + FilterBar（状态/严重度双排按钮组 → 下拉；标签 chips → 多选下拉；过滤命中横幅删除 → 页头计数文本）；加载改卡片骨架、错误改 Alert+重试、空态 `AppEmptyState`；`SearchBar` → `GovernanceSearchBar`（防抖 + `/` 快捷键保留）；`TagFilterChips` 删除（并入下拉）；文案「治理规则」→「编码规范」。j/k 键盘导航保留。
+  - §7 日程：`ScheduleDashboardView` → `ScheduleCalendarView`（路由 path 不变）；新增 `EventDetailSheet`（非任务事件只读详情，替代 toast 断层——全文唯一加法）；补齐缺失的 `schedule.source.*`/`schedule.dayDetail.*` i18n key（DayDetailSheet 此前渲染裸 key 的隐患修复）。
+  - §8 提醒：头部「当前分组」徽章条删除（与正文分组卡重复）；分组卡 2×N 统计方块压一行内联数字；分组策略文案收进控制模式徽章 tooltip；`TemplateDesktopCard`→`ReminderTemplateCard`（含 spec/stories）；孤儿组件删除（`GroupDesktopCard`/`ReminderInstanceSidebar`/`ScheduleStatusCard`/`GridBlankItem`，仅 barrel 引用）；全局开关/黄色横幅/组接管禁用态原样保留。
+  - §3 目标列表：`GoalSidebar` 从 `GoalModuleLayout` 抽出（系统视图计数常显 + `LinearSidebarItem` + 文件夹 + 专注入口）；专注模式未激活缩为一行虚线按钮、激活才展开卡片；列表页头主操作「新建目标」（`?dialog=goal` 契约保留）+「对比」收 ⋯ 菜单；搜索空集合隐藏；分视图空态（active=AppEmptyState+AI 次链接；其余=纯文案）；卡片骨架。
+  - §4 目标详情：DetailPageShell（back+badges+meta 单行元数据）；四宫格压缩；进度环缩小与 KR 完成数并排概览行；主操作「记录进度」= KR 下拉 → `GoalRecordDialog`（此前该对话框无任何入口的缺口修复；无 KR 时禁用+tooltip 原因）；「创建复盘」移入复盘 Tab 首位；⋯ 菜单=编辑+危险区删除；KR 空态升级主引导；目标不存在=整页空态；`goal-detail`/`goal-detail-title` testid 保留（DetailPageShell 增加 `titleTestid` prop）。
+  - 验证：web vue-tsc + app-vue 179 tests + lint 0 error 全绿。
+  - 遗留（后续切片）：§13 设置分组重构 + 账户合并；§5 子页面（focus/compare/review/KR 详情）壳对齐；治理详情/编辑/历史三子页 DetailPageShell 套壳；§8 视图三拆分（ReminderGroupSidebar/TemplateList/GlobalBanner）；`NotificationPermissionWarning` 挂载（现无权限管理 plumbing，属新功能不在本轮）。

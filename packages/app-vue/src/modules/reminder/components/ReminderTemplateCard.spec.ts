@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it, vi } from 'vitest';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import TemplateDesktopCard from './TemplateDesktopCard.vue';
+import ReminderTemplateCard from './ReminderTemplateCard.vue';
 
 const i18n = createI18n({
   legacy: false,
@@ -193,7 +193,7 @@ function createTemplate(
 }
 
 function mountCard(template: ReminderTemplateClientDTO) {
-  return mount(TemplateDesktopCard, {
+  return mount(ReminderTemplateCard, {
     props: {
       template,
     },
@@ -203,7 +203,7 @@ function mountCard(template: ReminderTemplateClientDTO) {
   });
 }
 
-describe('TemplateDesktopCard', () => {
+describe('ReminderTemplateCard', () => {
   it('uses selfEnabled for the switch and explains higher-level control', async () => {
     const wrapper = mountCard(createTemplate());
 

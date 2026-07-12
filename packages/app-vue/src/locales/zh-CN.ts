@@ -1649,10 +1649,11 @@ export default {
 
   // ── Notification module ─────────────────────────────────
   notification: {
-    title: '通知中心',
+    title: '通知',
     loading: '加载中...',
     empty: '暂无通知',
     emptyDescription: '所有通知将在这里显示',
+    allCaughtUp: '已全部处理 ✓',
 
     item: {
       priorityVital: '紧急',
@@ -1726,6 +1727,27 @@ export default {
       day: '日',
       week: '周',
       month: '月',
+    },
+
+    source: {
+      schedule: '日程',
+      task: '任务',
+      goal: '目标',
+    },
+
+    dayDetail: {
+      subtitle: '{count} 个安排',
+      noEvents: '无安排',
+      viewInDayView: '在日视图中查看',
+    },
+
+    eventDetail: {
+      subtitle: '日程详情',
+      time: '时间',
+      allDay: '全天',
+      source: '来源',
+      conflictHint: '该时段存在日程冲突',
+      readOnlyHint: '日程事件编辑能力将在后续版本提供。',
     },
 
     dashboard: {
@@ -2002,8 +2024,8 @@ export default {
     },
 
     list: {
-      title: '治理规则',
-      subtitle: '浏览和管理团队编码标准与最佳实践',
+      title: '编码规范',
+      subtitle: '个人编码标准与最佳实践',
       newRule: '新建规则',
       statusAll: '全部',
       statusActive: '已发布',
@@ -2012,13 +2034,15 @@ export default {
       severityAll: '全部',
       severityMandatory: '强制',
       severityRecommended: '推荐',
-      filterApplied: '已应用过滤条件 · 共 {total} 条结果',
+      tagFilterLabel: '标签',
+      totalCount: '共 {total} 条',
+      filteredCount: '共 {total} 条 · 已过滤',
       clearFilter: '清除',
-      emptyTitle: '暂无规则',
+      emptyTitle: '还没有规范条目',
       emptyFilterHint: '当前过滤条件下没有匹配的规则',
-      emptyHint: '还没有创建任何治理规则',
+      emptyHint: '沉淀你的个人编码标准与最佳实践',
       clearFilters: '清除过滤',
-      createFirst: '创建第一条规则',
+      createFirst: '新建规则',
       prevPage: '上一页',
       nextPage: '下一页',
     },
@@ -2290,9 +2314,11 @@ export default {
       searchGoals: '搜索目标...',
       compare: '对比',
       newGoal: '新建目标',
-      noGoalsFound: '未找到目标',
+      noGoalsFound: '还没有进行中的目标',
       createToStart: '创建一个新目标开始追踪。',
       createGoal: '创建目标',
+      askAi: '让 AI 帮我规划 →',
+      viewEmpty: '此视图暂无目标',
     },
     systemFolders: {
       active: '所有目标',
@@ -2310,6 +2336,8 @@ export default {
     detail: {
       back: '返回',
       title: '目标详情',
+      notFound: '目标不存在',
+      backToList: '回到目标列表',
       noDescription: '暂无描述',
       startDate: '开始日期',
       targetDate: '目标日期',
@@ -2319,6 +2347,11 @@ export default {
       keyResults: '关键结果',
       addKR: '添加 KR',
       noKR: '暂无关键结果',
+      noKrTitle: '先添加一个关键结果',
+      noKrDescription: '关键结果是目标的量化抓手，添加后才能记录进度。',
+      recordProgress: '记录进度',
+      recordNeedsKr: '还没有关键结果，先添加 KR 才能记录进度',
+      krCompleted: 'KR 完成 {done}/{total}',
       progressRecords: '进度记录',
       review: '复盘',
       recordValue: '记录值:',

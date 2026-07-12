@@ -82,6 +82,9 @@
       @complete-task="handleCompleteTask"
     />
 
+    <!-- 非任务事件只读详情（补交互断层，§7-5） -->
+    <EventDetailSheet v-model:open="eventDetailOpen" :event="selectedDetailEvent" />
+
     <CreateScheduleDialog v-model="showCreateDialog" @submit="handleCreateSchedule" />
 
     <!-- DEV debug panel (only rendered in development) -->
@@ -101,6 +104,7 @@ import WeekViewCalendar from '../components/WeekViewCalendar.vue';
 import MonthViewCalendar from '../components/MonthViewCalendar.vue';
 import DayDetailSheet from '../components/DayDetailSheet.vue';
 import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
+import EventDetailSheet from '../components/EventDetailSheet.vue';
 import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
 import { toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
 import { useSchedule } from '../composables/useSchedule';
@@ -124,6 +128,10 @@ const selectedDate = ref<Date | null>(null);
 const taskPanelOpen = ref(false);
 const selectedTaskEvent = ref<CalendarEventItem | null>(null);
 
+// Non-task event detail sheet state（§7-5）
+const eventDetailOpen = ref(false);
+const selectedDetailEvent = ref<CalendarEventItem | null>(null);
+
 const selectedDayEvents = computed<CalendarEventItem[]>(() => {
   if (!selectedDate.value) return [];
   const dateStr = toLocalDateKey(selectedDate.value);
@@ -141,7 +149,9 @@ function handleEventClick(event: CalendarEventItem) {
     selectedTaskEvent.value = event;
     taskPanelOpen.value = true;
   } else {
-    toast.info(t('schedule.weekViewPage.eventToast', { name: event.title }));
+    // 只读详情替代此前的 toast（交互断层补位，§7-5）
+    selectedDetailEvent.value = event;
+    eventDetailOpen.value = true;
   }
 }
 

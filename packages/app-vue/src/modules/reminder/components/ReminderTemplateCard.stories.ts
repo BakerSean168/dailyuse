@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref } from 'vue';
-import TemplateDesktopCard from './TemplateDesktopCard.vue';
+import ReminderTemplateCard from './ReminderTemplateCard.vue';
 
 const meta = {
-  title: 'Business/Reminder/TemplateDesktopCard',
-  component: TemplateDesktopCard,
+  title: 'Business/Reminder/ReminderTemplateCard',
+  component: ReminderTemplateCard,
   tags: ['autodocs'],
   parameters: { layout: 'fullscreen' },
-} satisfies Meta<typeof TemplateDesktopCard>;
+} satisfies Meta<typeof ReminderTemplateCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -32,7 +32,7 @@ const mockTemplate = {
 
 export const ActiveTemplate: Story = {
   render: () => ({
-    components: { TemplateDesktopCard },
+    components: { ReminderTemplateCard },
     setup() {
       const dialogRef = ref();
       const open = () => dialogRef.value?.open();
@@ -41,7 +41,7 @@ export const ActiveTemplate: Story = {
     template: `
       <div class="p-8">
         <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">查看模板详情</button>
-        <TemplateDesktopCard ref="dialogRef" :template="template" />
+        <ReminderTemplateCard ref="dialogRef" :template="template" />
       </div>
     `,
   }),
@@ -49,7 +49,7 @@ export const ActiveTemplate: Story = {
 
 export const PausedTemplate: Story = {
   render: () => ({
-    components: { TemplateDesktopCard },
+    components: { ReminderTemplateCard },
     setup() {
       const dialogRef = ref();
       const pausedTemplate = { ...mockTemplate, id: 'tpl-2', name: '午休提醒', description: '已暂停的午休时间提醒。', effectiveEnabled: false, groupId: null, triggerText: '每天 12:30', trigger: { type: 'FIXED_TIME', fixedTime: { time: '12:30' }, interval: null } };
@@ -59,7 +59,7 @@ export const PausedTemplate: Story = {
     template: `
       <div class="p-8">
         <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md" @click="open">查看已暂停模板</button>
-        <TemplateDesktopCard ref="dialogRef" :template="template" />
+        <ReminderTemplateCard ref="dialogRef" :template="template" />
       </div>
     `,
   }),

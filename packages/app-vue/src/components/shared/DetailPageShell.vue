@@ -16,6 +16,8 @@ const props = defineProps<{
   title: string;
   /** 显式返回目标路径；缺省时走 history back。 */
   backTo?: string;
+  /** 标题元素的 data-testid（e2e 契约随组件迁移用） */
+  titleTestid?: string;
 }>();
 
 const router = useRouter();
@@ -44,7 +46,10 @@ function goBack() {
         <ArrowLeft class="h-4 w-4" />
       </Button>
       <div class="flex min-w-0 flex-1 items-center gap-2">
-        <h1 class="truncate text-base font-semibold tracking-tight text-foreground">
+        <h1
+          class="truncate text-base font-semibold tracking-tight text-foreground"
+          :data-testid="titleTestid"
+        >
           {{ title }}
         </h1>
         <slot name="badges" />
