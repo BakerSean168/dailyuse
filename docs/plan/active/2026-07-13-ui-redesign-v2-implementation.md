@@ -6,7 +6,7 @@ tags:
   - frontend
 description: UI 重构 V2 方案（ChatGPT 桌面式壳）的执行记录
 created: 2026-07-13T00:00:00
-updated: 2026-07-13T16:30:00
+updated: 2026-07-13T18:00:00
 ---
 
 # UI 重构 V2 — 实施记录
@@ -109,7 +109,19 @@ updated: 2026-07-13T16:30:00
 
 ### S4 Note 阶段 0 收尾（含 Governance 并入）
 
-V1 P3 已完成 Note 阶段 0 大部分（TabManager/EditorSplitView/导出批量导入退役、文件树/编辑器收敛、预览优先）。本阶段主要工作 = **Governance 以"规范"分区并入 Note 面板**（`/governance/**` 渲染到规范分区，V2 §6 表）+ P3 遗留项（如 `BatchImportDialog`/`SelfContainedExportDialog` 若未完全退役则补完、侧栏三模式图标条改造）。
+- [x] **S4（§6 Note / §3 Governance 并入）— PR #184**：面板顶部分区 **[笔记 | 规范]**（`NoteModuleLayout` + `NoteSegmentBar`）；`/repository`、`/note/:id`、`/governance/**` 路径契约保留，深链 `/governance/**` 自动落「规范」；窄档侧栏 mode 收敛顶栏、宽档完整侧栏；编辑器反链/图谱窄档提示最大化；阶段 0 残留入口（TabManager/批量导入/自包含导出）隐藏；governance 表单网格改 `@*/panel` 容器查询。验证：app-vue 205 测试 + web vue-tsc + MSW 冒烟 18/18（#184）。
+
+### S5 重构收尾 / 验收（S0–S4 功能切片已全部合入 main）
+
+功能主线已结束。本阶段不做新模块面板化，只做稳定性与门槛补齐：
+
+- [ ] **MSW 缺口**：补 `GET /api/v1/task-templates/graph`（及模板 update 的 `PATCH` 对齐 adapter），消除 mock 下 Task 冷加载/图谱白屏
+- [ ] **面板级错误边界**：BusinessPanel 内容区 `onErrorCaptured` 兜底，单模块崩溃不拖垮 AI 常驻层与壳
+- [ ] **Playwright 核心回归适配新壳**：5 份 config 入口保持；helpers 旧路径（如 `/tasks/one-time`）改 `/tasks`；导航优先 `capsule-nav-*` / `business-panel*`；默认 `web:e2e` 核心 flow 在真 API 环境可跑
+- [ ] **S1 门槛剩余项（需真环境，本切片尽量铺路）**：Playwright 5 配置全绿、Electron 手动回归、AI 三工作流 E2E
+- [ ] **plan 归档**：收尾 PR 合入并验收通过后，将本文件移至 `docs/plan/archive/`，并在 archive 文首注明结果
+
+**非阻塞（V2 §11，可另开 plan）**：胶囊计数数据源统一、会话分组时区边界、Tab 集合恢复策略微调、KeepAlive 内存上界实测。
 
 ## 与 P3 分支的收敛（已解决 2026-07-13）
 
@@ -141,3 +153,6 @@ V1 P3 已完成 Note 阶段 0 大部分（TabManager/EditorSplitView/导出批�
 - 2026-07-13：**S2-Reminder 完成（PR #180）**，分支 `refactor/ui-v2-s2-reminder` @ `2b264aedf`。复用 S2 面板两档基建：窄档分组侧栏收为 `ReminderGroupSwitcherBar`，宽档恢复完整侧栏；全局提醒总开关始终在面板头（`reminder-master-switch`）；搜索/网格改容器查询。验证：app-vue lint/typecheck/test 199 通过 + web vue-tsc + MSW 冒烟 14/14。**下一步：S2-Notification（§6.6）**——胶囊预览浮层（最近 N 条 + 全部已读 + 查看全部）+ 完整信箱归档页；既有 bug 仍按用户策略留到重构收尾统一修。
 - 2026-07-13：**S2 全模块完成**（Notification #182、Settings #181 与更早 Goal/Task/Schedule/Reminder 均已合入 main）。
 - 2026-07-13：**S3 完成（PR #183）**，分支 `refactor/ui-v2-s3-ai-workspace` @ `f83df2c31`。欢迎态四快捷卡 + 今日概览迁入主列；工作流生命周期按钮挂 Composer 上方条、状态贴近消息时间线；产物（目标创建/草稿就绪/笔记创建）经 shell deeplink 新开业务 Tab；空闲右栏概览移除。状态机：`AIChatView.spec` 29 + 新增 `AIMessagePanel.spec` 4，全包 208 通过。MSW 冒烟 18/18。**下一步：S4 Note 阶段 0 收尾（Governance 并入「规范」分区，若并行 PR 已开则合并后做全量回归）**；S1 遗留的分栏态 AI 列被右栏挤压问题本切片通过「操作条离右栏、今日概览离右栏」实质缓解；既有 MSW/错误边界 bug 仍留重构收尾统一修。
+
+- 2026-07-13：**S3/S4 已合入 main**（#183 `f1aeb3d53` / #184 `82cca35e1`）。S0–S4 功能切片全部完成。
+- 2026-07-13：**进入 S5 重构收尾**（用户拍板顺序 A→B→C）：A 更新本 plan 勾选 S4 + 收尾清单；B MSW graph/patch + 面板错误边界；C Playwright helpers/核心 flow 对新壳适配。不新开模块面板化切片。既有 MSW 白屏与面板级错误边界按用户策略在本阶段统一修。
