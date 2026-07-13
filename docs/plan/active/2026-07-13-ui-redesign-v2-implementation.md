@@ -100,12 +100,12 @@ updated: 2026-07-13T16:30:00
 - [x] **Task（§6.2）— PR #178**：`TaskManagementView` 以 `usePanelWidth()` 替换视口断点；窄档禁用拖拽建依赖 + 图谱/DAG 并提示最大化（`task-drag-narrow-hint` / `task-graph-narrow-hint`），宽档恢复；`TaskFilterBar`/`TaskDetailView`/`TaskDependencyGraph`/`TaskTemplateGrid` 网格与搜索改容器查询；testid 契约保留。验证：app-vue lint/typecheck/test 193 通过 + web vue-tsc + MSW 冒烟 15/15（同 1280 视口 split=拖拽/图谱禁用+1 列、focus=恢复+3 列）
 - [x] **Schedule（§6.3）— PR #179**：进入默认 focus（`shouldOpenInFocus`）；`ScheduleCalendarView` 窄档强制日视图+提示、宽档日/周/月；头部日程胶囊接 `useCalendarView` 当前/下一事件（每分钟刷新）；容器查询收尾。验证：app-vue 194 测试 + web vue-tsc + MSW 冒烟 9/9
 - [x] **Reminder（§6.4）— PR #180**：窄档 `ReminderGroupSwitcherBar`（分组下拉+新建）↔ 宽档完整分组侧栏；全局 master switch 任何档位面板头可达；模板网格/搜索改 `@*/panel` 容器查询；`create-reminder-template-button` testid 随迁。验证：app-vue 199 测试 + web vue-tsc + MSW 冒烟 14/14（同 1280 视口 split=switcher+master、focus=sidebar+master）
-- [ ] **Notification（§6.5）**：胶囊预览浮层 = 铃铛弹层（最近 N + 全部已读 + 查看全部）；完整面板 = 信箱归档页
-- [ ] **Settings（§6.6）**：默认 focus 打开；6 分组 + 账户中心迁入 + `?tab=` 契约（S1 已验证 `/account/center` 深链）
+- [x] **Notification（§6.5）— PR #182**：胶囊预览浮层（最近 N + 全部已读 + 查看全部）+ 完整信箱归档面板；testid 契约随迁。验证见 #182。
+- [x] **Settings（§6.6）— PR #181**：进入默认 focus；6 分组 + 账户中心迁入 + `?tab=` 契约保留。验证见 #181。
 
 ### S3 AI 工作区精修
 
-V2 §6.0：欢迎态 + 今日概览三 widget + 工作流按钮内嵌消息卡 + 产物自动新开面板 Tab + legacy 分支删除。状态机回归为重点。
+- [x] **S3（§6.0）— PR #183**：欢迎态 + 四快捷指令卡 + 今日概览三 widget；`AIWorkflowActionBar` 迁 Composer 上方条 + 消息时间线状态内嵌；产物就绪 `openTab({ intent: 'deeplink' })` 新开业务 Tab 不抢占；空闲右栏概览退役；`useAIChatView`/4 workflow composable 契约零改。验证：app-vue 208 测试 + web vue-tsc + MSW 冒烟 18/18。
 
 ### S4 Note 阶段 0 收尾（含 Governance 并入）
 
@@ -139,3 +139,5 @@ V1 P3 已完成 Note 阶段 0 大部分（TabManager/EditorSplitView/导出批�
 - 2026-07-13：**S2-Task 完成（PR #178）**，分支 `refactor/ui-v2-s2-task` @ `7b23db243`。复用 S2 面板两档基建：`TaskManagementView` 拖拽建依赖/图谱仅 focus（wide）启用，split 窄档禁用并提示最大化；FilterBar/Detail/DependencyGraph/TemplateGrid 视口断点改 `@*/panel` 容器查询；i18n 补 `dragRequiresFocus`。验证：app-vue 193 测试 + web vue-tsc + MSW 冒烟 15/15（同 1280 视口 split 1 列+禁用拖拽/图谱、focus 3 列+恢复交互）。**下一步：S2-Schedule（§6.3）**——进入即建议 focus、split 只渲日视图、`ScheduleDashboardView` → `ScheduleCalendarView` 更名、日程胶囊接 `useCalendarView`；既有 bug（MSW 缺 `/task-templates/graph` 白屏、面板级错误边界等）仍按用户策略留到重构收尾统一修。
 - 2026-07-13：**S2-Schedule 完成（PR #179）**，分支 `refactor/ui-v2-s2-schedule` @ `5e248f33d`。进入日程默认 focus；split 仅日视图；`useCalendarView` 驱动头部日程胶囊实时文案；更名/EventDetailSheet 已在 main。验证：app-vue 194 测试 + web vue-tsc + MSW 冒烟 9/9。**下一步：S2-Reminder（§6.4）**——分组侧栏在 split 窄档收为下拉；全局开关任何档位保持面板头可达。
 - 2026-07-13：**S2-Reminder 完成（PR #180）**，分支 `refactor/ui-v2-s2-reminder` @ `2b264aedf`。复用 S2 面板两档基建：窄档分组侧栏收为 `ReminderGroupSwitcherBar`，宽档恢复完整侧栏；全局提醒总开关始终在面板头（`reminder-master-switch`）；搜索/网格改容器查询。验证：app-vue lint/typecheck/test 199 通过 + web vue-tsc + MSW 冒烟 14/14。**下一步：S2-Notification（§6.6）**——胶囊预览浮层（最近 N 条 + 全部已读 + 查看全部）+ 完整信箱归档页；既有 bug 仍按用户策略留到重构收尾统一修。
+- 2026-07-13：**S2 全模块完成**（Notification #182、Settings #181 与更早 Goal/Task/Schedule/Reminder 均已合入 main）。
+- 2026-07-13：**S3 完成（PR #183）**，分支 `refactor/ui-v2-s3-ai-workspace` @ `f83df2c31`。欢迎态四快捷卡 + 今日概览迁入主列；工作流生命周期按钮挂 Composer 上方条、状态贴近消息时间线；产物（目标创建/草稿就绪/笔记创建）经 shell deeplink 新开业务 Tab；空闲右栏概览移除。状态机：`AIChatView.spec` 29 + 新增 `AIMessagePanel.spec` 4，全包 208 通过。MSW 冒烟 18/18。**下一步：S4 Note 阶段 0 收尾（Governance 并入「规范」分区，若并行 PR 已开则合并后做全量回归）**；S1 遗留的分栏态 AI 列被右栏挤压问题本切片通过「操作条离右栏、今日概览离右栏」实质缓解；既有 MSW/错误边界 bug 仍留重构收尾统一修。
