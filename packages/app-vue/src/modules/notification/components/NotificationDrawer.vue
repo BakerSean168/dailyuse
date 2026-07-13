@@ -1,19 +1,21 @@
 <template>
   <Sheet :open="modelValue" @update:open="$emit('update:modelValue', $event)">
-    <SheetContent side="right" class="w-[400px] sm:w-[540px]">
+    <SheetContent side="right" class="w-[400px] @2xl/panel:w-[540px]">
       <SheetHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
         <SheetTitle>{{ t('notification.drawer.title') }}</SheetTitle>
         <div class="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
+            class="h-8"
+            data-testid="notification-drawer-mark-all-read"
             :disabled="unreadCount === 0"
             @click="$emit('mark-all-read')"
           >
-            {{ t('notification.drawer.viewAll') }}
+            {{ t('notification.action.markAllRead') }}
           </Button>
           <SheetClose as-child>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" data-testid="notification-drawer-close">
               <X class="h-4 w-4" />
             </Button>
           </SheetClose>
@@ -24,8 +26,13 @@
         <slot />
       </div>
 
-      <SheetFooter class="pt-4 border-t">
-        <Button variant="ghost" class="w-full" @click="handleViewAll">
+      <SheetFooter class="border-t pt-4">
+        <Button
+          variant="ghost"
+          class="w-full"
+          data-testid="notification-drawer-view-all"
+          @click="handleViewAll"
+        >
           {{ t('notification.drawer.viewAll') }}
         </Button>
       </SheetFooter>
