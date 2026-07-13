@@ -63,7 +63,7 @@ updated: 2026-07-13T16:30:00
 
 **S0 验证**：`pnpm nx run app-vue:typecheck` ✅（唯一报错 TS2742 是 radix-vue `TagsInput` 既有可移植性警告，非本次代码，target 成功）+ `app-vue:lint` ✅ 0 error（本次新增代码 0 warning）。未跑 e2e（S0 未挂载）。
 
-### S1 切换 PR（一次性替换 MainLayout）— ✅ 代码完成 2026-07-13（门槛项 1/3/5 待环境）
+### S1 切换 PR（一次性替换 MainLayout）— ✅ 代码完成 2026-07-13，PR #176（门槛项 1/3/5 待环境）
 
 拆两个 commit 但同 PR：
 
