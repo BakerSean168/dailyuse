@@ -9,8 +9,8 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- 搜索：目标数为 0 时隐藏（§3-5 空集合搜索无意义） -->
-        <div v-if="goals.length > 0" class="relative mr-2 hidden w-64 lg:block">
+        <!-- 搜索：目标数为 0 时隐藏（§3-5 空集合搜索无意义）；宽档才显示（窄档收在下拉外，靠列表精简） -->
+        <div v-if="goals.length > 0" class="relative mr-2 hidden w-64 @3xl/panel:block">
           <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             v-model="searchQuery"
@@ -53,7 +53,7 @@
         <!-- 加载 = 卡片骨架 ×6（§0.3） -->
         <div
           v-if="isLoading"
-          class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+          class="grid grid-cols-1 gap-4 @2xl/panel:grid-cols-2 @5xl/panel:grid-cols-3"
           data-testid="goal-list-skeleton"
         >
           <div v-for="i in 6" :key="i" class="space-y-3 rounded-lg border border-border/50 p-4">
@@ -65,7 +65,7 @@
 
         <div
           v-else-if="filteredGoals.length > 0"
-          class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+          class="grid grid-cols-1 gap-4 @2xl/panel:grid-cols-2 @5xl/panel:grid-cols-3"
           data-testid="goal-list"
         >
           <GoalCard
