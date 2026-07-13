@@ -1,19 +1,104 @@
 <!--
-  RepositoryWorkspaceView - Obsidian-style workspace layout
+  RepositoryWorkspaceView - Note workspace (UI 重构 V2 §6 Note / §7)
   Left: resizable sidebar with mode switcher (Files / Search / Bookmarks)
-  Right: TabManager + CodeMirror 6 editor (EditorToolbar + EditorSplitView + EditorPreview) / MediaViewer
+  Right: CodeMirror 6 editor (EditorToolbar + ActiveDocumentPane / MediaViewer)
+  面板两档：窄档收敛侧栏为顶部 mode 下拉；宽档恢复完整侧栏。
+  阶段 0：模块内 TabManager / 批量导入 / 自包含导出入口隐藏（壳级 Note Tab 承接多开）。
 -->
 
 <template>
-  <div class="flex h-full overflow-hidden bg-background">
-    <ResizablePanelGroup direction="horizontal">
-      <!-- ─── Left Sidebar ─── -->
+  <div
+    class="flex h-full overflow-hidden bg-background"
+    :class="isNarrow ? 'flex-col' : 'flex-row'"
+    data-testid="repository-workspace-view"
+  >
+    <!-- 窄档：侧栏 mode 收敛为顶部下拉（V2 §7） -->
+    <div
+      v-if="isNarrow"
+      class="flex h-10 shrink-0 items-center gap-1 border-b bg-sidebar/60 px-2"
+      data-testid="repository-sidebar-switcher"
+    >
+      <Button
+        v-for="mode in workspaceScene.sidebar.modes"
+        :key="mode.key"
+        variant="ghost"
+        size="sm"
+        class="h-8 gap-1.5 px-2"
+        :class="{ 'bg-accent font-medium': workspaceScene.sidebar.mode === mode.key }"
+        :data-testid="`repository-sidebar-mode-${mode.key}`"
+        @click="workspaceScene.sidebar.actions.setMode(mode.key)"
+      >
+        <component :is="mode.icon" class="h-4 w-4" />
+        <span class="text-xs">{{ mode.label }}</span>
+      </Button>
+      <div class="flex-1" />
+      <Button
+        size="sm"
+        class="h-8"
+        data-testid="repository-create-note-narrow"
+        @click="workspaceScene.sidebar.files.actions.createNote"
+      >
+        <FilePlus class="mr-1 h-4 w-4" />
+        {{ t('repository.workspace.createNote') }}
+      </Button>
+    </div>
+
+
+    <!-- 窄档：mode 内容区（文件树/搜索/书签），高度有限 -->
+    <div
+      v-if="isNarrow"
+      class="max-h-[40%] min-h-[160px] shrink-0 overflow-hidden border-b"
+      data-testid="repository-sidebar-narrow-body"
+    >
+      <TypedFileTree
+        v-if="workspaceScene.sidebar.mode === 'files'"
+        :resources-by-type="workspaceScene.sidebar.files.resourcesByType"
+        :tree-nodes="workspaceScene.sidebar.files.treeNodes"
+        :is-loading="workspaceScene.status.isLoading"
+        :selected-id="workspaceScene.sidebar.files.selectedId"
+        @create-note="workspaceScene.sidebar.files.actions.createNote"
+        @refresh="workspaceScene.sidebar.files.actions.refresh"
+        @open="workspaceScene.sidebar.files.actions.open"
+        @rename="workspaceScene.sidebar.files.actions.rename"
+        @delete="workspaceScene.sidebar.files.actions.delete"
+      />
+      <SearchPanel
+        v-else-if="workspaceScene.sidebar.mode === 'search'"
+        :repository-id="workspaceScene.sidebar.search.repositoryId || ''"
+        :results="workspaceScene.sidebar.search.results"
+        :searching="workspaceScene.sidebar.search.status.isSearching"
+        :has-searched="workspaceScene.sidebar.search.status.hasSearched"
+        :total-results="workspaceScene.sidebar.search.status.totalResults"
+        :total-matches="workspaceScene.sidebar.search.status.totalMatches"
+        :search-time="workspaceScene.sidebar.search.status.searchTime"
+        @close="workspaceScene.sidebar.search.actions.close"
+        @select="workspaceScene.sidebar.search.actions.select"
+        @search="workspaceScene.sidebar.search.actions.search"
+      />
+      <BookmarksPanel
+        v-else-if="workspaceScene.sidebar.mode === 'bookmarks'"
+        :bookmarks="workspaceScene.sidebar.bookmarks.items"
+        :can-rename="workspaceScene.sidebar.bookmarks.capabilities.canRename"
+        :can-reorder="workspaceScene.sidebar.bookmarks.capabilities.canReorder"
+        :can-remove="workspaceScene.sidebar.bookmarks.capabilities.canRemove"
+        @select="workspaceScene.sidebar.bookmarks.actions.select"
+        @rename="workspaceScene.sidebar.bookmarks.actions.rename"
+        @move-up="workspaceScene.sidebar.bookmarks.actions.moveUp"
+        @move-down="workspaceScene.sidebar.bookmarks.actions.moveDown"
+        @remove="workspaceScene.sidebar.bookmarks.actions.remove"
+      />
+    </div>
+
+    <ResizablePanelGroup direction="horizontal" class="min-h-0 flex-1">
+      <!-- ─── Left Sidebar（宽档） ─── -->
       <ResizablePanel
+        v-if="!isNarrow"
         :default-size="22"
         :min-size="15"
         :max-size="40"
         :collapsed-size="0"
         :collapsible="true"
+        data-testid="repository-group-sidebar"
         @collapse="workspaceScene.sidebar.actions.setCollapsed(true)"
         @expand="workspaceScene.sidebar.actions.setCollapsed(false)"
       >
@@ -63,7 +148,6 @@
               :is-loading="workspaceScene.status.isLoading"
               :selected-id="workspaceScene.sidebar.files.selectedId"
               @create-note="workspaceScene.sidebar.files.actions.createNote"
-              @import="workspaceScene.dialogs.import.open = true"
               @refresh="workspaceScene.sidebar.files.actions.refresh"
               @open="workspaceScene.sidebar.files.actions.open"
               @rename="workspaceScene.sidebar.files.actions.rename"
@@ -102,23 +186,12 @@
         </aside>
       </ResizablePanel>
 
-      <ResizableHandle with-handle />
+      <ResizableHandle v-if="!isNarrow" with-handle />
 
       <!-- ─── Main Content Area ─── -->
       <ResizablePanel :default-size="78">
         <main class="flex h-full flex-col overflow-hidden">
-          <!-- Tab Bar -->
-          <TabManager
-            v-if="workspaceScene.main.tabs.items.length > 0"
-            :tabs="(workspaceScene.main.tabs.items as import('../components/TabManager.vue').ResourceTab[])"
-            :active-tab-id="workspaceScene.main.tabs.activeId"
-            @switch-tab="workspaceScene.main.tabs.actions.switch"
-            @close-tab="workspaceScene.main.tabs.actions.close"
-            @toggle-pin="workspaceScene.main.tabs.actions.togglePin"
-            @close-others="workspaceScene.main.tabs.actions.closeOthers"
-            @close-right="workspaceScene.main.tabs.actions.closeRight"
-            @close-all="workspaceScene.main.tabs.actions.closeAll"
-          />
+          <!-- 阶段 0：模块内 TabManager 退役；多开笔记 = 壳级 Note Tab（V2 §6 Note / §9） -->
 
           <!-- Editor / Viewer -->
           <div class="flex-1 overflow-hidden relative">
@@ -149,7 +222,6 @@
                 @insert-text="workspaceScene.main.editor.actions.insertText"
                 @insert-resource="workspaceScene.main.editor.actions.openResourcePicker"
                 @insert-existing-image="workspaceScene.main.editor.actions.openImagePicker"
-                @export-self-contained="workspaceScene.main.editor.actions.exportSelfContained"
                 @wrap-selection="workspaceScene.main.editor.actions.wrapSelection"
                 @view-mode-change="workspaceScene.main.editor.actions.setViewMode"
                 @save="workspaceScene.main.editor.actions.save"
@@ -233,29 +305,13 @@
                   <FilePlus class="h-4 w-4 mr-2" />
                   {{ t('repository.workspace.createNote') }}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  @click="workspaceScene.dialogs.import.open = true"
-                >
-                  <Upload class="h-4 w-4 mr-2" />
-                  {{ t('repository.import.title') }}
-                </Button>
               </div>
             </div>
           </div>
         </main>
       </ResizablePanel>
     </ResizablePanelGroup>
-
-    <!-- Batch Import Dialog -->
-    <BatchImportDialog
-      v-model:open="workspaceScene.dialogs.import.open"
-      :importing="workspaceScene.dialogs.import.isUploading"
-      :progress="workspaceScene.dialogs.import.progress"
-      :summary="workspaceScene.dialogs.import.summary"
-      @import="workspaceScene.dialogs.import.actions.submit"
-    />
+    <!-- 阶段 0：BatchImportDialog 退役（V2 §6 Note / V1 §9） -->
 
     <ImageResourcePickerDialog
       v-model:open="workspaceScene.main.editor.dialogs.imagePicker.open"
@@ -270,13 +326,7 @@
       :recent-items="workspaceScene.main.editor.resources.recentResourceItems"
       @select="workspaceScene.main.editor.actions.insertResource"
     />
-
-    <SelfContainedExportDialog
-      v-model:open="workspaceScene.main.editor.dialogs.export.open"
-      :result="workspaceScene.main.editor.dialogs.export.result"
-      @copy="workspaceScene.main.editor.actions.copyExport"
-      @download="workspaceScene.main.editor.actions.downloadExport"
-    />
+    <!-- 阶段 0：SelfContainedExportDialog 入口隐藏（V2 §6 Note / V1 §9） -->
 
     <ReferenceRepairDialog
       v-model:open="workspaceScene.main.editor.dialogs.repair.open"
@@ -318,7 +368,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BookOpen, FilePlus, PanelLeftClose, Upload } from 'lucide-vue-next';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
+import { BookOpen, FilePlus, PanelLeftClose } from 'lucide-vue-next';
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -339,12 +390,9 @@ import {
 import TypedFileTree from '../components/TypedFileTree.vue';
 import SearchPanel from '../components/SearchPanel.vue';
 import BookmarksPanel from '../components/BookmarksPanel.vue';
-import TabManager from '../components/TabManager.vue';
-import BatchImportDialog from '../components/BatchImportDialog.vue';
 import ImageResourcePickerDialog from '../../editor/components/ImageResourcePickerDialog.vue';
 import ReferenceRepairDialog from '../../editor/components/ReferenceRepairDialog.vue';
 import ResourcePickerDialog from '../../editor/components/ResourcePickerDialog.vue';
-import SelfContainedExportDialog from '../../editor/components/SelfContainedExportDialog.vue';
 import MediaViewer from '../../editor/components/MediaViewer.vue';
 import ActiveDocumentPane from '../../editor/components/ActiveDocumentPane.vue';
 import { useRepositoryWorkspaceScene } from '../../editor/composables';
@@ -367,6 +415,8 @@ const props = withDefaults(
 );
 
 const { t } = useI18n();
+// 面板两档（V2 §7）：窄档收敛文件树侧栏为顶部 mode 下拉。
+const { isNarrow } = usePanelWidth();
 const workspaceScene = useRepositoryWorkspaceScene(
   computed(() => props.initialSidebarMode as EditorWorkspaceSidebarMode),
 );

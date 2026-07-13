@@ -1,13 +1,18 @@
 /**
- * Governance module routes
+ * Governance module routes（并入 Note「规范」分区，V2 §3 / §6 Note）
+ *
+ * 路径契约不变：`/governance/**`。挂到 NoteModuleLayout 下，
+ * 顶部分区自动落「规范」。
  */
 
 import type { RouteRecordRaw } from 'vue-router';
 
+const NoteModuleLayout = () => import('../../repository/views/NoteModuleLayout.vue');
+
 export const governanceRoutes: RouteRecordRaw[] = [
   {
     path: '/governance',
-    name: 'governance',
+    component: NoteModuleLayout,
     meta: {
       title: 'governance.route.ruleList',
       showInNav: true,

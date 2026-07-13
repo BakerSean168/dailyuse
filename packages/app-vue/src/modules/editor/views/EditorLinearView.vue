@@ -33,9 +33,10 @@
 
     <div
       v-else-if="linearScene.editor.resource"
-      class="flex-1 overflow-hidden flex flex-col lg:flex-row"
+      class="flex flex-1 flex-col overflow-hidden"
+      :class="isNarrow ? 'flex-col' : 'flex-row'"
     >
-      <div class="min-w-0 flex-1 overflow-hidden flex flex-col lg:border-r">
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden" :class="isNarrow ? '' : 'border-r'">
         <ActiveDocumentPane
           :ref="linearScene.editor.bindPaneRef"
           :content="linearScene.editor.content"
@@ -54,7 +55,6 @@
           @insert-text="linearScene.editor.actions.insertText"
           @insert-resource="linearScene.editor.actions.openResourcePicker"
           @insert-existing-image="linearScene.editor.actions.openImagePicker"
-          @export-self-contained="linearScene.editor.actions.exportSelfContained"
           @wrap-selection="linearScene.editor.actions.wrapSelection"
           @view-mode-change="linearScene.editor.actions.setViewMode"
           @save="linearScene.editor.actions.save"
@@ -79,16 +79,25 @@
       </div>
 
       <aside
-        class="flex w-full flex-col border-t bg-muted/10 max-lg:max-h-[320px] lg:w-[360px] lg:border-t-0 xl:w-[400px]"
+        v-if="!isNarrow"
+        class="flex w-[360px] shrink-0 flex-col border-l bg-muted/10 @3xl/panel:w-[400px]"
+        data-testid="note-context-panel-host"
       >
-        <!-- 反链/图谱 Tabs：图谱点击才渲染；<lg 图谱不渲染（§10-5/§10-8） -->
+        <!-- 反链/图谱：窄档（split）隐藏并提示最大化（V2 §7） -->
         <NoteContextPanel
           :note-id="linearScene.sidecar.noteId"
-          :show-graph="isLgUp"
+          :show-graph="isWide"
           @navigate="linearScene.sidecar.actions.navigate"
           @close="linearScene.sidecar.actions.close"
         />
       </aside>
+      <div
+        v-else
+        class="border-t px-3 py-2 text-xs text-muted-foreground"
+        data-testid="note-context-narrow-hint"
+      >
+        {{ t('editor.linear.contextRequiresFocus') }}
+      </div>
     </div>
 
     <ImageResourcePickerDialog
@@ -104,13 +113,7 @@
       :recent-items="linearScene.editor.resources.recentResourceItems"
       @select="linearScene.editor.actions.insertResource"
     />
-
-    <SelfContainedExportDialog
-      v-model:open="linearScene.editor.dialogs.export.open"
-      :result="linearScene.editor.dialogs.export.result"
-      @copy="linearScene.editor.actions.copyExport"
-      @download="linearScene.editor.actions.downloadExport"
-    />
+    <!-- 阶段 0：SelfContainedExportDialog 入口隐藏（V2 §6 Note） -->
 
     <ReferenceRepairDialog
       v-model:open="linearScene.editor.dialogs.repair.open"
@@ -131,12 +134,12 @@ import ReferenceRepairDialog from '../components/ReferenceRepairDialog.vue';
 import LinkSuggestion from '../components/LinkSuggestion.vue';
 import NoteContextPanel from '../components/NoteContextPanel.vue';
 import ResourcePickerDialog from '../components/ResourcePickerDialog.vue';
-import SelfContainedExportDialog from '../components/SelfContainedExportDialog.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
-import { useViewportBreakpoint } from '../../../shared/composables/useViewportBreakpoint';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import { useEditorLinearScene } from '../composables/useEditorLinearScene';
 
 const { t } = useI18n();
-const { isLgUp } = useViewportBreakpoint();
+// 面板两档（V2 §7）：窄档隐藏反链/图谱侧栏重交互。
+const { isNarrow, isWide } = usePanelWidth();
 const linearScene = useEditorLinearScene();
 </script>

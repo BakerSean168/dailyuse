@@ -19,16 +19,6 @@
         <FilePlus class="h-4 w-4" />
       </Button>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :title="t('repository.import.title')"
-        @click="$emit('import')"
-      >
-        <Upload class="h-4 w-4" />
-      </Button>
-
       <div class="flex-1" />
 
       <Button
@@ -69,10 +59,6 @@
           <Button size="sm" variant="outline" @click="$emit('create-note')">
             <FilePlus class="mr-2 h-4 w-4" />
             {{ t('repository.workspace.createNote') }}
-          </Button>
-          <Button size="sm" variant="outline" @click="$emit('import')">
-            <Upload class="mr-2 h-4 w-4" />
-            {{ t('repository.import.title') }}
           </Button>
         </div>
       </div>
@@ -320,12 +306,6 @@ function getGroupActions(groupKey: string): MenuAction[] {
   }
 
   return [
-    {
-      key: 'import',
-      label: t('repository.import.title'),
-      icon: Upload,
-      handler: () => emit('import'),
-    },
     {
       key: 'refresh',
       label: t('common.retry'),

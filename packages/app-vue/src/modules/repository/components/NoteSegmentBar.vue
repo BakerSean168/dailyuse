@@ -1,0 +1,60 @@
+<template>
+  <div
+    class="flex h-10 shrink-0 items-center gap-1 border-b bg-sidebar/60 px-2"
+    data-testid="note-segment-bar"
+  >
+    <button
+      v-for="segment in segments"
+      :key="segment.value"
+      type="button"
+      :data-testid="`note-segment-${segment.value}`"
+      class="rounded-md px-3 py-1.5 text-sm transition-colors"
+      :class="
+        active === segment.value
+          ? 'bg-secondary font-medium text-foreground'
+          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+      "
+      @click="$emit('select', segment.value)"
+    >
+      <component :is="segment.icon" class="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
+      {{ segment.label }}
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+/**
+ * NoteSegmentBar — Note 面板顶部 [笔记 | 规范] 分区切换（UI 重构 V2 §3 / §6 Note）
+ *
+ * 笔记 = RepositoryWorkspaceView / /note/:id；规范 = /governance/**。
+ * 路由 path 不变，仅在 Note 壳内切换分区导航。
+ */
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { BookOpen, ShieldCheck } from 'lucide-vue-next';
+
+export type NoteSegment = 'notes' | 'governance';
+
+defineProps<{
+  active: NoteSegment;
+}>();
+
+defineEmits<{
+  select: [segment: NoteSegment];
+}>();
+
+const { t } = useI18n();
+
+const segments = computed(() => [
+  {
+    value: 'notes' as const,
+    label: t('repository.segments.notes'),
+    icon: BookOpen,
+  },
+  {
+    value: 'governance' as const,
+    label: t('repository.segments.governance'),
+    icon: ShieldCheck,
+  },
+]);
+</script>

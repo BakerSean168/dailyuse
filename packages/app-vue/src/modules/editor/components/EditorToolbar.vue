@@ -75,17 +75,7 @@
       >
         <Images class="h-4 w-4" />
       </Button>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :title="t('editor.toolbar.exportSelfContained')"
-        :aria-label="t('editor.toolbar.exportSelfContained')"
-        @click="exportSelfContained"
-      >
-        <Share2 class="h-4 w-4" />
-      </Button>
+    <!-- 阶段 0：自包含导出入口隐藏（V2 §6 Note） -->
 
       <Separator orientation="vertical" class="h-6" />
 
