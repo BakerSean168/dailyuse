@@ -1,6 +1,25 @@
 <template>
-  <div class="flex h-full min-h-0 w-full overflow-hidden bg-background">
+  <div
+    class="flex h-full min-h-0 w-full overflow-hidden bg-background"
+    :class="isNarrow ? 'flex-col' : 'flex-row'"
+  >
+    <!-- 宽档（focus）：第二侧栏；窄档（split）：收敛为顶部下拉栏（V2 §6.1/§7） -->
+    <GoalViewSwitcherBar
+      v-if="isNarrow"
+      :system-views="visibleSystemViews"
+      :active-system-view="systemView"
+      :folders="goalFolders"
+      :selected-folder-id="selectedFolderId"
+      :focus-mode="currentFocusMode"
+      @create-goal="openGoalDialog"
+      @create-folder="openFolderDialog"
+      @select-system-view="selectSystemView"
+      @select-folder="selectFolder"
+      @open-focus="openFocusDialog"
+      @go-focus="goFocus"
+    />
     <GoalSidebar
+      v-else
       :system-views="visibleSystemViews"
       :active-system-view="systemView"
       :folders="goalFolders"
@@ -45,6 +64,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createLogger } from '@dailyuse/utils/logger';
 import { useGoal } from '../composables/useGoal';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type {
   GoalClientDTO,
   GoalSystemView,
@@ -52,11 +72,14 @@ import type {
 } from '@dailyuse/contracts/goal';
 import { GoalDialog, GoalFolderDialog, ActivateFocusModeDialog } from '../components';
 import GoalSidebar from '../components/GoalSidebar.vue';
+import GoalViewSwitcherBar from '../components/GoalViewSwitcherBar.vue';
 
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const logger = createLogger('goal:layout');
+// 面板两档（V2 §7）：窄档收侧栏为顶部下拉，宽档恢复完整侧栏。
+const { isNarrow } = usePanelWidth();
 const stringify = (value: unknown): string => {
   try {
     return JSON.stringify(value);

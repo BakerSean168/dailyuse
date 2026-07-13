@@ -4,12 +4,14 @@
  *
  * 多 Tab 业务工作区（V2 §2.3，参照 Codex 桌面端右侧面板）。
  * Tab 条 [模块图标 + 标题] ×N + 右侧 Maximize/Minimize + ✕(关面板)；
- * 内容区 S0 为 <slot>，S1 放 <router-view> + <KeepAlive :include>。
+ * 内容区放 <router-view> + KeepAlive（由 AppShell 通过 slot 注入）。
  *
- * S0 骨架：Tab 增删/激活/关闭交互 emit + B⇄C 切换 + 拖宽把手；
- * 不含 router-view（接线在 S1）。Tab 数据由 AppShell 从 store 透传。
+ * 面板两档（V2 §7）：内容区用 ResizeObserver 实测宽度并 provide
+ * （usePanelWidth），同时挂 Tailwind 命名容器 `@container/panel`——
+ * 结构性切换（第二侧栏 ↔ 下拉）走 JS 档位，纯样式（网格列数）走
+ * CSS 容器查询（`@2xl/panel:` 等）。
  */
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   AlarmClock,
@@ -25,6 +27,7 @@ import {
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import type { BusinessTab, ShellLayout, ShellModule } from './useAppShellStore';
+import { providePanelWidth } from './usePanelWidth';
 
 const props = defineProps<{
   tabs: BusinessTab[];
@@ -41,6 +44,26 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+// ── 面板宽度上下文（V2 §7 两档；面板内业务视图 usePanelWidth 消费） ──
+const { width: panelContentWidth } = providePanelWidth();
+const contentEl = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  if (!contentEl.value || typeof ResizeObserver === 'undefined') return;
+  panelContentWidth.value = contentEl.value.clientWidth;
+  resizeObserver = new ResizeObserver((entries) => {
+    const entry = entries[0];
+    if (entry) panelContentWidth.value = entry.contentRect.width;
+  });
+  resizeObserver.observe(contentEl.value);
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+});
 
 const moduleIcons: Record<ShellModule, Component> = {
   goal: Target,
@@ -112,8 +135,8 @@ const isFocused = computed(() => props.layout === 'focus');
       </div>
     </div>
 
-    <!-- 内容区（S1 放 router-view + KeepAlive） -->
-    <div class="min-h-0 flex-1 overflow-auto">
+    <!-- 内容区（router-view 由 AppShell slot 注入；命名容器供 CSS 容器查询） -->
+    <div ref="contentEl" class="@container/panel min-h-0 flex-1 overflow-auto">
       <slot />
     </div>
 
