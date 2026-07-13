@@ -1,7 +1,25 @@
 <template>
-  <div class="flex h-full overflow-hidden bg-background">
-    <!-- Sidebar: Groups -->
-    <aside class="hidden w-64 shrink-0 flex-col overflow-hidden border-r bg-sidebar md:flex">
+  <div
+    class="flex h-full overflow-hidden bg-background"
+    :class="isNarrow ? 'flex-col' : 'flex-row'"
+  >
+    <!-- 窄档（split）：分组侧栏收顶部下拉（V2 §6.4 / §7） -->
+    <ReminderGroupSwitcherBar
+      v-if="isNarrow"
+      :groups="groups"
+      :selected-group-id="selectedGroupId"
+      :template-count="templates.length"
+      @select-group="selectedGroupId = $event"
+      @create-template="handleCreateTemplate(selectedGroupId)"
+      @create-group="openCreateGroup()"
+    />
+
+    <!-- 宽档（focus）：完整分组侧栏 -->
+    <aside
+      v-else
+      class="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-sidebar"
+      data-testid="reminder-group-sidebar"
+    >
       <div class="flex h-14 items-center border-b p-4">
         <div class="flex items-center gap-2 font-semibold">
           <BellRing class="h-5 w-5 text-primary" />
@@ -77,14 +95,18 @@
     <!-- Main -->
     <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <header
-        class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
+        class="z-10 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/50 px-4 backdrop-blur-sm @2xl/panel:px-6"
       >
-        <h1 data-testid="reminder-linear-heading" class="text-lg font-medium text-foreground">
+        <h1 data-testid="reminder-linear-heading" class="truncate text-lg font-medium text-foreground">
           {{ t('reminder.linear.templateTitle') }}
         </h1>
-        <div class="flex items-center gap-2">
-          <div class="hidden items-center gap-3 rounded-full border bg-card px-3 py-1.5 md:flex">
-            <span class="text-xs text-muted-foreground">{{
+        <div class="flex min-w-0 items-center gap-2">
+          <!-- 全局开关任何档位保持面板头可达（V2 §6.4） -->
+          <div
+            class="flex items-center gap-2 rounded-full border bg-card px-2.5 py-1.5 @2xl/panel:gap-3 @2xl/panel:px-3"
+            data-testid="reminder-master-switch"
+          >
+            <span class="hidden text-xs text-muted-foreground @2xl/panel:inline">{{
               t('reminder.linear.masterSwitch')
             }}</span>
             <Switch
@@ -93,7 +115,7 @@
               @update:checked="handleToggleGlobalReminder"
             />
           </div>
-          <div class="relative hidden w-64 lg:block">
+          <div class="relative hidden w-48 @3xl/panel:block @5xl/panel:w-64">
             <Search
               class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             />
@@ -188,7 +210,10 @@
             </Button>
           </div>
 
-          <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div
+            v-else
+            class="grid grid-cols-2 gap-4 @2xl/panel:grid-cols-3 @3xl/panel:grid-cols-4 @5xl/panel:grid-cols-5"
+          >
             <GridTemplateItem
               v-for="tpl in filteredTemplates"
               :key="tpl.id"
@@ -270,10 +295,12 @@ import {
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
+import ReminderGroupSwitcherBar from '../components/ReminderGroupSwitcherBar.vue';
 import ReminderTemplateCard from '../components/ReminderTemplateCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
 import GroupDialog from '../components/GroupDialog.vue';
 import TemplateMoveDialog from '../components/TemplateMoveDialog.vue';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import { useReminder } from '../composables/useReminder';
 import {
   getGroupActiveStatusLabel,
@@ -315,6 +342,8 @@ const {
 } = useReminder();
 
 const { t } = useI18n();
+// 面板两档（V2 §7）：窄档收分组侧栏为顶部下拉，宽档恢复完整侧栏；全局开关始终在面板头。
+const { isNarrow } = usePanelWidth();
 
 const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
