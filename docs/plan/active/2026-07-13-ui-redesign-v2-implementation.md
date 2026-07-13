@@ -6,7 +6,7 @@ tags:
   - frontend
 description: UI 重构 V2 方案（ChatGPT 桌面式壳）的执行记录
 created: 2026-07-13T00:00:00
-updated: 2026-07-13T04:30:00
+updated: 2026-07-13T16:30:00
 ---
 
 # UI 重构 V2 — 实施记录
@@ -59,26 +59,34 @@ updated: 2026-07-13T04:30:00
 - [x] 壳级 UI store（Pinia，`layouts/shell/useAppShellStore.ts`）：`tabs` / `activeTabId` / `layout` / `sidebarCollapsed` / `sidebarWidth` / `panelWidth`；`openTab`(capsule/deeplink intent + LRU 8 淘汰候选返回) / `activateTab` / `closeTab`(相邻切换) / `closeAllTabs` / `toggleFocus` 等 action；`keepAliveInclude` getter；`persist.pick` 持久化 `tabs/activeTabId/layout/宽度`（会话恢复）
 - [x] `NavigationItem` → 新增 `ModuleCapsule` 接口（`di/types.ts`，**保留** `NavigationItem` 供 MainLayout 用到 S1 删）；`MODULE_CAPSULES_KEY`（`di/keys.ts`）；`defaultModuleCapsules` 5 项（`di/navigation.ts`）；barrel 导出（`di/index.ts`）。两端 `di-app.ts` 的 provide 留 S1（S0 用 inject fallback 到 default，不阻塞）
 - [x] 桌面窗控：`WindowHeader` 已渲染窗控按钮 + 拖拽区（`window-header--drag`/`no-drag`），`isDesktop` 分支门控。确认主窗口已 `titleBarStyle:'hidden'`（`desktop-chrome.ts`）+ `attachWindowControlStateSync`——**宿主无需新工作**；`useDesktopWindowControls` 实际接线 = S1（composable 在 `apps/desktop`，窗控 emit 已就位）
-- [ ] `AIChatView` → 常驻层拆解设计（不改 composable 契约，仅调整消费方从路由页面变为壳层组件）——**移至 S1**（属接线设计，S0 骨架已用 slot 预留 `ai-workspace` / `composer` 挂载点）
+- [x] `AIChatView` → 常驻层拆解设计（不改 composable 契约，仅调整消费方从路由页面变为壳层组件）——**已在 S1 落地**（整组件常驻 + `hideConversationSidebar`/`composerOnly` prop + defineExpose，见 S1 节）
 
 **S0 验证**：`pnpm nx run app-vue:typecheck` ✅（唯一报错 TS2742 是 radix-vue `TagsInput` 既有可移植性警告，非本次代码，target 成功）+ `app-vue:lint` ✅ 0 error（本次新增代码 0 warning）。未跑 e2e（S0 未挂载）。
 
-### S1 切换 PR（一次性替换 MainLayout）
+### S1 切换 PR（一次性替换 MainLayout）— ✅ 代码完成 2026-07-13（门槛项 1/3/5 待环境）
 
 拆两个 commit 但同 PR：
 
-**Commit 1 — 壳骨架**：S0 全部内容 + 空 `AppShell` 未接线。
+**Commit 1 — 壳骨架**（`feat(app-vue): V2 shell skeleton (S0)`）：S0 全部内容，未接线。
 
-**Commit 2 — 接线切换**：
-- 删除 `MainLayout.vue`，`App.vue` 挂 `AppShell`
-- `<router-view>` 移入 `BusinessPanel`；AI 常驻层挂 `AIWorkspaceLayer`
-- Router ↔ Tab 双向同步：`beforeEach` 落 Tab、切 Tab `router.replace`（V2 §4）
-- Redirect：`/dashboard` → `/`、`/ai/chat` → `/`、`/account/center` → `/settings?tab=account`
-- 各模块视图**原样**入面板（允许窄档难看，S2 再改内容）
-- E2E 全量修复（testid 不动，布局断言按新壳更新）
-- i18n 新 key（胶囊标题、面板头、日程胶囊空态）zh/en 两份
+**Commit 2 — 接线切换**（`refactor(app-vue)!: S1 switch`）+ **Commit 3**（KeepAlive 修复）：
 
-验收清单见 V2 §10 "S1 切换 PR 的门槛" 6 条。
+- [x] 删除 `MainLayout.vue`；**AppShell 直接作为 `/` 父路由组件**（比"App.vue 挂壳"更贴合既有路由结构：`/auth`、`/custom-notification` 天然留在壳外，auth guard/meta 不动）。`DashboardView`/`WelcomeView` 一并删除
+- [x] `<router-view>` 移入 `BusinessPanel`，`<KeepAlive :max="8">` 按 Tab 保活；**缓存键 = `{owningTabId}:{routeName}`**（KeepAlive 同 key 不同组件类型会复用错实例 → `ctx.deactivate` 崩溃，路由身份必须编进 key——上过一次真浏览器才抓到）
+- [x] AI 常驻层：**保留 `AIChatView` 组件整体**（新增 `hideConversationSidebar` / `composerOnly` 两个 prop + `defineExpose` 会话状态），AppShell 单实例挂载、三态用 CSS order/v-show 切换（专注态收成底部 Composer 条），**实例永不卸载**——流式回复跨 B⇄C 存活；useAIChatView 及 4 workflow composable 契约零改动（**43 用例状态机 spec 原样通过**）。壳侧栏消费 expose 的会话列表（今天/近 7 天/更早本地时区分组）。独立 `AIWorkspaceLayer` 组件不再需要——S3 精修时再拆
+- [x] Router ↔ Tab 双向同步（`useShellRouterSync`，V2 §4）：afterEach 落 Tab（精确路由激活 / 活动 Tab 同模块回写 / 其余新开不抢占）；`/` = STATE A 清空面板；**导航先行**（关活动 Tab/面板先 replace/push，成功才改 store→未保存守卫有效）；挂载时会话恢复（`/` + 持久化 Tab → replace 回活动 Tab 路由）
+- [x] Redirect：`/dashboard` → `/` 新增；`/ai/chat`、`/account/center` 已在 main。设置深链自动 focus（V2 §3）、<1024px 新开面板自动 focus（§1.1）
+- [x] 导航 DI 重定义：`NavigationItem` / `MAIN_NAVIGATION_KEY` / `BOTTOM_NAVIGATION_KEY` 删除，两端 `di-app.ts` 改 provide `MODULE_CAPSULES_KEY`（破坏性接口变更，V2 §8-5）
+- [x] 桌面端：`useDesktopWindowControls` 迁入 app-vue（WindowHeader 接窗控 + 拖拽区 + mac 交通灯留位）；宿主 `desktop-titlebar` 收缩为仅 `/auth`；`shouldRedirectAuthenticatedDesktopEntry` 收窄为仅 auth/未解析入口（否则会与 Tab 会话恢复竞态互踩）
+- [x] 各模块视图原样入面板（路由一条未删）；i18n 新增 `shell.panel.tabLimitHint` zh/en
+- [x] E2E：dashboard 套件重写为"退役 redirect + 胶囊壳"契约（`capsule-nav-*` 取代 `main-nav-*`）；其余 spec 的模块 testid 未动
+- [x] 新增单测：`useAppShellStore.spec`（Tab 语义/LRU/关闭规则）+ `useShellRouterSync.spec`（模块映射）
+
+**S1 验证**：
+- app-vue / web / desktop 的 typecheck + lint + test 全绿（web 走 vue-tsc 覆盖 SFC 类型）；web/desktop vite build 通过
+- **MSW mock 模式真浏览器冒烟 30/30**：登录 → STATE A（胶囊/AI 层/无面板）→ 胶囊预览进入 → split → focus 切换（Composer 条可达）→ 双 Tab → reload 会话恢复 → boot-at-`/` 恢复 → 新对话回地面 → 三条 redirect → settings focus → 关面板回 STATE A，0 页面错误；三态截图核对与 V2 §1.1 一致
+- **待环境的门槛项**（V2 §10 验收 6 条中）：#1 Playwright 5 配置全量（需真实 API+DB）、#3 Electron 手动回归、#5 AI 三工作流端到端。mock 冒烟已覆盖 #2 深链、#4 Web 形态、#6 i18n 无缺 key（部分）
+- 已知转移项：mock 模式下 `TaskManagementView` 冷加载因 MSW 缺 handler 500 后白屏（**非本次回归**，视图与 mock 均未动；错误边界粒度收进 S2 面板化改造考虑）
 
 ### S2 面板内容改造（每模块独立 PR）
 
@@ -114,3 +122,4 @@ V1 P3 已完成 Note 阶段 0 大部分（TabManager/EditorSplitView/导出批�
 - 2026-07-13：本分支自 `main @ 84b51173e` 切出。V2 §11 三项待细化拍板（LRU 8 / localStorage 恢复 / 直接删 MainLayout）落记录。S0 待启动。
 - 2026-07-13：**S0 完成**（分支 `refactor/ui-redesign-v2-shell`）：壳级 Pinia store（多 Tab + LRU 8 + 会话恢复持久化）+ `ModuleCapsule` DI 接口（types/keys/navigation/barrel）+ 5 个壳组件（`AppShell` 三态容器 / `WindowHeader` 胶囊+窗控 / `ConversationSidebar` 纯会话列表 / `BusinessPanel` 多 Tab / `GlobalComposer`）+ i18n `shell.*`/`nav.capsule.*` zh/en 两份。`AppShell` 已把子组件接到 store（可交互），router/AI/IPC 接线用 slot + noop 预留 S1。确认桌面主窗口已 frameless（`titleBarStyle:'hidden'` + 窗控状态同步），宿主无需新工作。typecheck + lint 全绿（0 error）。**未挂载**（`App.vue`/router 不变，`MainLayout` 仍生效）——切换在 S1。下一步 S1 切换 PR。
 - 2026-07-13：S0 调研完成（读 `di/types.ts`、`di/navigation.ts`、`di/keys.ts`、web/desktop 两端 `App.vue` 与 `di-app.ts`、`useDesktopWindowControls.ts`）。关键结论：桌面窗控 IPC 全套已存在（任务 #5 降级为"迁移到 WindowHeader"）；新壳取代 `MainLayout` 路由位置；`ModuleCapsule` 重定义需同步 5 处（`di/types.ts` + `di/keys.ts` + web/desktop 两 `di-app.ts` + 新壳消费）。**下一步：S0 开始写代码——先建 5 个空壳组件 + `useAppShellStore` + `ModuleCapsule` 接口，均不接线、不改 `App.vue`。**
+- 2026-07-13：**S1 切换完成**（3 commits：S0 骨架 / S1 接线切换 / KeepAlive 键修复）。关键实现取舍：① AppShell 直接坐进 `/` 父路由位（不动 App.vue，auth/custom-notification 天然壳外）；② AIChatView 不拆成 AIWorkspaceLayer 而是整组件常驻 + 两 prop + defineExpose——43 用例 AI 状态机 spec 零改动通过，S3 再精修；③ KeepAlive 缓存键必须含路由 name（同 key 换组件类型 = Vue 复用错实例崩溃，真浏览器冒烟抓到后修复）；④ 桌面 entry redirect 收窄防止与会话恢复竞态。全链路验证 = 三项目 typecheck/lint/test/build + MSW 真浏览器冒烟 30/30（三态/多 Tab/恢复/redirect/0 报错）。**待环境项**：真实 API Playwright 全量、Electron 手动回归、AI 三工作流 e2e。**下一步：S2 面板内容改造（Goal 首个）**；S1 期间发现的 S2 输入：分栏态 AI 列被 AIContextPanel 挤压（S3 拆）、Goal 面板窄档第二侧栏待收敛（§6.1）、面板级错误边界（业务视图崩溃不应吃掉整壳）、<768 侧栏 overlay 未做、日程胶囊实时文案未接（useCalendarView，S2-Schedule）。
