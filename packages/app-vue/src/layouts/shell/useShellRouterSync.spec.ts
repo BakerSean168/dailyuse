@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { moduleForPath, MODULE_TITLE_KEYS } from './useShellRouterSync';
+import { moduleForPath, MODULE_TITLE_KEYS, shouldOpenInFocus } from './useShellRouterSync';
 
 describe('moduleForPath (V2 §3 module matrix)', () => {
   it('maps every business route family to its shell module', () => {
@@ -38,5 +38,14 @@ describe('moduleForPath (V2 §3 module matrix)', () => {
     for (const key of Object.values(MODULE_TITLE_KEYS)) {
       expect(key).toMatch(/^nav\./);
     }
+  });
+});
+
+describe('shouldOpenInFocus (V2 §3 / §6.3)', () => {
+  it('marks settings and schedule for default focus entry', () => {
+    expect(shouldOpenInFocus('setting')).toBe(true);
+    expect(shouldOpenInFocus('schedule')).toBe(true);
+    expect(shouldOpenInFocus('task')).toBe(false);
+    expect(shouldOpenInFocus('goal')).toBe(false);
   });
 });

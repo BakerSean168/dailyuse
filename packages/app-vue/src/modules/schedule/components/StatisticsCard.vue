@@ -44,7 +44,7 @@
         <!-- Overall Statistics -->
         <div>
           <h4 class="text-sm font-semibold mb-3">{{ t('schedule.statistics.overallOverview') }}</h4>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="grid grid-cols-2 @2xl/panel:grid-cols-4 gap-3">
             <Card class="bg-primary/10 hover:-translate-y-0.5 transition-transform">
               <CardContent class="text-center p-4">
                 <div class="text-3xl font-bold text-primary">{{ statistics.totalTasks }}</div>
@@ -139,7 +139,7 @@
           <h4 class="text-sm font-semibold mb-3">
             {{ t('schedule.statistics.moduleDistribution') }}
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 @2xl/panel:grid-cols-3 gap-3">
             <Card
               v-for="(stats, moduleName) in moduleStatistics"
               :key="moduleName"

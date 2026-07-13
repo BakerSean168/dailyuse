@@ -49,6 +49,11 @@ export const MODULE_TITLE_KEYS: Record<ShellModule, string> = {
   setting: 'nav.settings',
 };
 
+/** 进入即建议 focus 的模块（V2 §3 Settings / §6.3 Schedule）。 */
+export function shouldOpenInFocus(module: ShellModule): boolean {
+  return module === 'setting' || module === 'schedule';
+}
+
 /** 判定一条路由路径归属哪个业务模块；壳外/未知路径返回 null。 */
 export function moduleForPath(path: string): ShellModule | null {
   for (const [prefix, module] of MODULE_PREFIXES) {
@@ -68,8 +73,9 @@ export function useShellRouterSync() {
   }
 
   function maybeAutoFocus(module: ShellModule): void {
-    // Settings 默认专注态打开（V2 §3）；窄窗口分栏放不下时自动升专注态。
-    if (module === 'setting') {
+    // Settings 默认 focus（V2 §3）；Schedule 日历天然要宽度，进入即建议 focus（V2 §6.3）。
+    // 窄窗口分栏放不下时，其它模块也自动升专注态。
+    if (shouldOpenInFocus(module)) {
       store.setLayout('focus');
       return;
     }
@@ -171,7 +177,7 @@ export function useShellRouterSync() {
     const existing = store.tabs.find((tab) => tab.module === module);
     if (existing) {
       await activateTab(existing.id);
-      if (module === 'setting') store.setLayout('focus');
+      if (shouldOpenInFocus(module)) store.setLayout('focus');
       return;
     }
     await router.push(landingRoute).catch(() => {});

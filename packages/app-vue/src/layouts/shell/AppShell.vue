@@ -28,6 +28,7 @@ import { useAppShellStore, MAX_BUSINESS_TABS, type ShellModule } from './useAppS
 import { useShellRouterSync } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { useNotification } from '../../modules/notification/composables/useNotification';
+import { formatScheduleCapsuleLabel, useCalendarView } from '../../modules/schedule/composables/useCalendarView';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
 import type { ConversationSummary } from '../../modules/ai/composables/types';
@@ -145,16 +146,34 @@ const userName = computed<string | undefined>(() => {
 // ── 通知未读角标（SSE 启动钩子推流，胶囊消费；V2 §8-7） ──
 const notification = useNotification();
 
+// 日程胶囊实时文案（V2 §2 / §6.3）：当前时段或下一事件，每分钟刷新。
+const calendarView = useCalendarView();
+const scheduleNowMs = ref(Date.now());
+let scheduleTickTimer: ReturnType<typeof setInterval> | null = null;
+const scheduleLabel = computed(() =>
+  formatScheduleCapsuleLabel(calendarView.getScheduleCapsuleSnapshot(scheduleNowMs.value), t),
+);
+
+
 // ── 桌面窗控（既有 IPC 通道，V2 §9；Web 分支不渲染按钮） ──
 const windowControls = useDesktopWindowControls();
 
 onMounted(() => {
   void notification.refreshStats();
   if (isDesktop) windowControls.startListening();
+  void calendarView.ensureTodayLoaded(scheduleNowMs.value);
+  scheduleTickTimer = setInterval(() => {
+    scheduleNowMs.value = Date.now();
+    void calendarView.ensureTodayLoaded(scheduleNowMs.value);
+  }, 60_000);
 });
 
 onBeforeUnmount(() => {
   if (isDesktop) windowControls.stopListening();
+  if (scheduleTickTimer) {
+    clearInterval(scheduleTickTimer);
+    scheduleTickTimer = null;
+  }
 });
 
 // ── 拖拽调宽（侧栏 / 面板），状态回写 store ──
@@ -188,8 +207,11 @@ function enterModule(id: string) {
 }
 
 function openSchedule() {
+  // 日程进入即建议 focus（V2 §6.3）；openModule 内 shouldOpenInFocus 也会兜底。
+  store.setLayout('focus');
   void sync.openModule('schedule', '/schedule/calendar');
 }
+
 
 function openSettings() {
   void sync.openModule('setting', '/settings');
@@ -220,7 +242,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
       :sidebar-collapsed="sidebarCollapsed"
       :active-module="activeModule"
       :unread-count="notification.unreadCount.value"
-      :schedule-label="null"
+      :schedule-label="scheduleLabel"
       :is-desktop="isDesktop"
       :is-mac="isMac"
       :window-controls="windowControls.windowControlsState"

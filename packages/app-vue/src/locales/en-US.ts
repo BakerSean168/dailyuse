@@ -155,6 +155,9 @@ export default {
     aiWorkspacePlaceholder: 'AI workspace (pending wiring)',
     schedule: {
       empty: 'Nothing scheduled today',
+      current: '{start}–{end} · {title}',
+      upcoming: '{start} · {title} (in {minutes} min)',
+      currentAllDay: 'Today · {title}',
     },
     conversation: {
       today: 'Today',
@@ -1967,6 +1970,7 @@ export default {
     },
 
     calendar: {
+      narrowDayOnly: 'Day view only in split — maximize for week/month',
       today: 'Today',
       createSchedule: 'New Schedule',
       weekRange: '{start} - {end}',

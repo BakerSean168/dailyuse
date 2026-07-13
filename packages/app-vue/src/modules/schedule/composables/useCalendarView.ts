@@ -34,6 +34,79 @@ export function toLocalDateKey(value: Date | number): string {
   return `${year}-${month}-${day}`;
 }
 
+/** HH:mm in local time for shell schedule capsule. */
+export function formatCapsuleTime(ms: number): string {
+  const date = new Date(ms);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+export type ScheduleCapsuleSnapshot = {
+  kind: 'empty' | 'current' | 'upcoming';
+  event: CalendarEventItem | null;
+  /** Minutes until start (upcoming only). */
+  minutesUntilStart: number | null;
+};
+
+/**
+ * Pick the "current / next" event for the header schedule capsule (V2 §2).
+ * Prefers an in-progress timed event; otherwise the next upcoming event today.
+ */
+export function resolveScheduleCapsule(
+  events: CalendarEventItem[],
+  nowMs: number = Date.now(),
+): ScheduleCapsuleSnapshot {
+  const todayKey = toLocalDateKey(nowMs);
+  const todays = events
+    .filter((event) => toLocalDateKey(event.startTime) === todayKey || toLocalDateKey(event.endTime) === todayKey)
+    .sort((a, b) => a.startTime - b.startTime);
+
+  const current = todays.find(
+    (event) => event.displayMode === 'timed' && event.startTime <= nowMs && event.endTime > nowMs,
+  );
+  if (current) {
+    return { kind: 'current', event: current, minutesUntilStart: null };
+  }
+
+  const upcoming = todays.find((event) => event.startTime > nowMs);
+  if (upcoming) {
+    const minutesUntilStart = Math.max(0, Math.round((upcoming.startTime - nowMs) / 60000));
+    return { kind: 'upcoming', event: upcoming, minutesUntilStart };
+  }
+
+  // All-day only (or nothing timed left) still counts as "has schedule" when present.
+  const allDay = todays.find((event) => event.displayMode === 'all-day');
+  if (allDay) {
+    return { kind: 'current', event: allDay, minutesUntilStart: null };
+  }
+
+  return { kind: 'empty', event: null, minutesUntilStart: null };
+}
+
+export function formatScheduleCapsuleLabel(
+  snapshot: ScheduleCapsuleSnapshot,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): string | null {
+  if (snapshot.kind === 'empty' || !snapshot.event) return null;
+  const event = snapshot.event;
+  if (snapshot.kind === 'current') {
+    if (event.displayMode === 'all-day') {
+      return t('shell.schedule.currentAllDay', { title: event.title });
+    }
+    return t('shell.schedule.current', {
+      start: formatCapsuleTime(event.startTime),
+      end: formatCapsuleTime(event.endTime),
+      title: event.title,
+    });
+  }
+  return t('shell.schedule.upcoming', {
+    start: formatCapsuleTime(event.startTime),
+    title: event.title,
+    minutes: snapshot.minutesUntilStart ?? 0,
+  });
+}
+
 // ============ 转换工具函数 ============
 
 /** TaskInstance → CalendarEventItem（用 instanceDate + timeRange 分钟偏移） */
@@ -137,12 +210,29 @@ export function useCalendarView() {
     ]);
   }
 
+  /** Ensure today's events are loaded (shell capsule). */
+  async function ensureTodayLoaded(nowMs: number = Date.now()) {
+    const start = startOfDay(new Date(nowMs)).getTime();
+    const end = endOfDay(new Date(nowMs)).getTime();
+    // Avoid refetch thrash if window already covers today.
+    if (windowStart.value <= start && windowEnd.value >= end && windowEnd.value > 0) {
+      return;
+    }
+    await fetchForRange(start, end);
+  }
+
+  function getScheduleCapsuleSnapshot(nowMs: number = Date.now()): ScheduleCapsuleSnapshot {
+    return resolveScheduleCapsule(events.value, nowMs);
+  }
+
   return {
     events,
     isLoading,
     windowStart,
     windowEnd,
     fetchForRange,
+    ensureTodayLoaded,
+    getScheduleCapsuleSnapshot,
     // expose sub-composables for DEV panel access
     scheduleTasks: schedule.tasks,
   };
