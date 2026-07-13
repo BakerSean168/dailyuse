@@ -20,16 +20,19 @@
 
 import {
   AlarmClock,
+  Bell,
   BookMarked,
   Calendar,
+  FileText,
   LayoutDashboard,
   ListChecks,
+  ListTodo,
   NotebookText,
   Settings,
   Sparkles,
   Target,
 } from 'lucide-vue-next';
-import type { NavigationItem } from './types';
+import type { ModuleCapsule, NavigationItem } from './types';
 
 /**
  * 主导航项（侧边栏上方）——按「工作台 / 计划 / 执行 / 知识」分组。
@@ -51,4 +54,29 @@ export const defaultMainNavigation: NavigationItem[] = [
  */
 export const defaultBottomNavigation: NavigationItem[] = [
   { path: '/settings', title: 'nav.settings', icon: Settings },
+];
+
+/**
+ * V2 shell module capsules (WindowHeader center).
+ *
+ * Five business modules surfaced as top-of-window capsules (UI_REDESIGN_V2_PLAN
+ * §0 decision #3). Schedule is a special "current time slot" capsule rendered
+ * separately (§2.4); Dashboard is retired (→ AI idle state), Governance folds
+ * into the Note panel, Settings lives at the sidebar-bottom avatar.
+ *
+ * `route` is the panel landing route; `badgeSource` is a semantic token the
+ * shell resolves to a count (S1 wires notification unread only).
+ */
+export const defaultModuleCapsules: ModuleCapsule[] = [
+  { id: 'goal', title: 'nav.capsule.goal', icon: Target, route: '/goals' },
+  { id: 'task', title: 'nav.capsule.task', icon: ListTodo, route: '/tasks' },
+  { id: 'note', title: 'nav.capsule.note', icon: FileText, route: '/repository' },
+  { id: 'reminder', title: 'nav.capsule.reminder', icon: AlarmClock, route: '/reminders' },
+  {
+    id: 'notification',
+    title: 'nav.capsule.notification',
+    icon: Bell,
+    route: '/notifications',
+    badgeSource: 'notification.unread',
+  },
 ];

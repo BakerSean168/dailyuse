@@ -64,3 +64,32 @@ export interface NavigationItem {
    */
   badge?: string;
 }
+
+// ── Module Capsules (UI Redesign V2 shell) ──
+/**
+ * A top-level business module surfaced as a capsule in the V2 shell's
+ * WindowHeader. Clicking a capsule opens (or activates) that module's
+ * business panel tab.
+ *
+ * Replaces the grouped `NavigationItem` sidebar model of the V1 shell.
+ * The V1 `NavigationItem` type is retained until `MainLayout.vue` is
+ * removed in the S1 switch commit.
+ *
+ * @see docs/UI_REDESIGN_V2_PLAN.md §2.1, §5
+ */
+export interface ModuleCapsule {
+  /** Stable module id, e.g. 'goal' | 'task' | 'note' | 'reminder' | 'notification'. */
+  id: string;
+  /** i18n key for the capsule label (e.g. 'nav.capsule.goal'). */
+  title: string;
+  /** Icon component (lucide-vue-next). */
+  icon: Component;
+  /** Landing route opened in the business panel when the capsule is entered. */
+  route: string;
+  /**
+   * Semantic token naming the source of a numeric badge (e.g.
+   * 'notification.unread'). Resolved by the shell; unresolved tokens render
+   * no badge. S1 wires only the notification unread source.
+   */
+  badgeSource?: string;
+}

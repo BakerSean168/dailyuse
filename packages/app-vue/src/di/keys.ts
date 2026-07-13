@@ -23,6 +23,7 @@ import type {
   IRuleService,
   IDashboardService,
   NavigationItem,
+  ModuleCapsule,
 } from './types';
 
 // ── Domain Service Keys ──
@@ -46,6 +47,11 @@ export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('Da
 // ── UI / Navigation Keys ──
 export const MAIN_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('MainNavigation');
 export const BOTTOM_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('BottomNavigation');
+/**
+ * V2 shell: ordered list of module capsules rendered in WindowHeader.
+ * Hosts may override to add/remove/reorder capsules (Brief §12-4).
+ */
+export const MODULE_CAPSULES_KEY: InjectionKey<ModuleCapsule[]> = Symbol('ModuleCapsules');
 export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
 

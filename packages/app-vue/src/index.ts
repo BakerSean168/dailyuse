@@ -29,6 +29,8 @@ export { createI18nPlugin, loadLocaleMessages } from './plugins/i18n';
 // ── Layouts ──
 export { default as MainLayout } from './layouts/MainLayout.vue';
 export { default as AuthLayout } from './layouts/AuthLayout.vue';
+// V2 shell (UI redesign) — exists on tree, wired in S1
+export * from './layouts/shell';
 export { default as DesktopAuthView } from './views/DesktopAuthView.vue';
 
 // ── Shared ──
