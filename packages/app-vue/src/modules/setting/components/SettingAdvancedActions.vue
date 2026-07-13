@@ -11,7 +11,7 @@
 
     <CardContent class="p-4 space-y-6">
       <!-- Export/Import Settings -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="w-full">
@@ -38,7 +38,7 @@
       </div>
 
       <!-- Export/Import All User Data -->
-      <div v-if="dataPortabilityAvailable" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div v-if="dataPortabilityAvailable" class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
         <Button variant="outline" class="w-full" :disabled="exportingData" @click="emit('exportAllData')">
           <Download class="h-4 w-4 mr-2" />
           {{ exportingData ? 'Exporting...' : 'Export All Data' }}
@@ -53,7 +53,7 @@
       <p v-if="dataPortabilityResult" class="text-xs text-muted-foreground">{{ dataPortabilityResult }}</p>
 
       <!-- Backup & Restore -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
         <Button variant="outline" class="w-full" @click="emit('createBackup')">
           <Save class="h-4 w-4 mr-2" />
           {{ t('setting.advanced.createBackup') }}
@@ -94,7 +94,7 @@
           {{ t('setting.advanced.cloudSync') }}
         </h3>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
           <Button variant="outline" class="w-full" :disabled="syncing" @click="emit('cloudSync')">
             <CloudUpload class="h-4 w-4 mr-2" />
             {{ syncing ? t('setting.advanced.syncing') : t('setting.advanced.syncAllDevices') }}

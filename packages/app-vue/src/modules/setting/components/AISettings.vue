@@ -5,7 +5,7 @@
       <CardDescription>{{ t('setting.ai.description') }}</CardDescription>
     </CardHeader>
     <CardContent class="space-y-6">
-      <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <div class="grid gap-6 @3xl/panel:grid-cols-[1.05fr_0.95fr]">
         <div class="space-y-6">
           <div class="space-y-3 rounded-lg border border-border/70 bg-muted/20 p-4">
             <div class="space-y-1">
@@ -90,7 +90,7 @@
                 </a>
               </div>
 
-              <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+              <div class="mt-3 flex flex-col gap-2 @2xl/panel:flex-row">
                 <Input
                   v-model="presetApiKeys[template.id]"
                   type="password"
