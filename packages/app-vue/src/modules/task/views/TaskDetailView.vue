@@ -44,7 +44,7 @@
           <CardHeader>
             <CardTitle>{{ t('task.detail.basicInfo') }}</CardTitle>
           </CardHeader>
-          <CardContent class="grid gap-4 sm:grid-cols-2">
+          <CardContent class="grid gap-4 @2xl/panel:grid-cols-2">
             <div>
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.importance') }}
@@ -81,19 +81,19 @@
               </p>
               <p class="text-sm">{{ getTimeTypeLabel(currentTemplate?.timeConfig?.timeType) }}</p>
             </div>
-            <div class="sm:col-span-2">
+            <div class="@2xl/panel:col-span-2">
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.timeValue') }}
               </p>
               <p class="text-sm">{{ getTimeValueLabel(detailViewModel.timeConfig) }}</p>
             </div>
-            <div v-if="detailViewModel.description" class="sm:col-span-2">
+            <div v-if="detailViewModel.description" class="@2xl/panel:col-span-2">
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.description') }}
               </p>
               <p class="text-sm">{{ detailViewModel.description }}</p>
             </div>
-            <div class="sm:col-span-2">
+            <div class="@2xl/panel:col-span-2">
               <p class="mb-1 text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.tags') }}
               </p>
@@ -112,7 +112,7 @@
             <CardTitle>{{ t('task.detail.relations') }}</CardTitle>
           </CardHeader>
           <CardContent class="space-y-5">
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-4 @2xl/panel:grid-cols-2">
               <div>
                 <p class="text-sm font-medium text-muted-foreground">
                   {{ t('task.detail.parentTask') }}
@@ -164,7 +164,7 @@
               <p v-else class="mt-2 text-sm">{{ t('task.detail.noSubtasks') }}</p>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-4 @2xl/panel:grid-cols-2">
               <div>
                 <p class="text-sm font-medium text-muted-foreground">
                   {{ t('task.detail.predecessors') }}
@@ -223,7 +223,7 @@
           <CardHeader>
             <CardTitle>{{ t('task.detail.executionStats') }}</CardTitle>
           </CardHeader>
-          <CardContent class="grid gap-4 sm:grid-cols-3">
+          <CardContent class="grid gap-4 @2xl/panel:grid-cols-3">
             <div class="rounded-lg border p-4 text-center">
               <p class="text-2xl font-bold">{{ detailViewModel.instanceCount ?? 0 }}</p>
               <p class="text-xs text-muted-foreground">{{ t('task.detail.totalInstances') }}</p>

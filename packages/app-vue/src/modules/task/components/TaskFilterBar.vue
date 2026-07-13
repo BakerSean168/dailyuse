@@ -92,7 +92,7 @@ const activeRelationLabel = computed(
     </template>
 
     <template #search>
-      <div class="relative hidden w-56 md:block">
+      <div class="relative hidden w-56 @3xl/panel:block">
         <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           v-model="search"

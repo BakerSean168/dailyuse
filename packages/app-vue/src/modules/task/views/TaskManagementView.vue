@@ -40,33 +40,41 @@
       </template>
 
       <div id="task-template-management">
-        <!-- 卡片视图 -->
-        <TaskTemplateGrid
-          v-if="viewMode === 'card'"
-          :templates="filteredViewModels"
-          :total-count="viewModels.length"
-          :loading="isLoading"
-          :has-active-filters="hasActiveFilters"
-          :status-empty-text="statusEmptyText"
-          :highlighted-template-id="highlightedTemplateId"
-          :enable-drag="isLgUp"
-          :on-create-dependency="handleCardCreateDependency"
-          @create-template="handleCreate"
-          @ai-generate="router.push('/')"
-          @clear-filters="clearFilters"
-          @click-template="handleClickTemplate"
-          @edit-template="handleEdit"
-          @delete-template="handleDelete"
-          @pause-template="handlePause"
-          @resume-template="handleResume"
-          @relation-filter-click="(filter) => (currentRelation = filter)"
-          @locate-graph="handleLocateGraph"
-        />
+        <!-- 卡片视图；拖拽建依赖仅宽档（focus）启用（V2 §6.2 / §7） -->
+        <template v-if="viewMode === 'card'">
+          <p
+            v-if="isNarrow && !isLoading && filteredViewModels.length > 0"
+            class="mb-3 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+            data-testid="task-drag-narrow-hint"
+          >
+            {{ t('task.templateMgmt.dragRequiresFocus') }}
+          </p>
+          <TaskTemplateGrid
+            :templates="filteredViewModels"
+            :total-count="viewModels.length"
+            :loading="isLoading"
+            :has-active-filters="hasActiveFilters"
+            :status-empty-text="statusEmptyText"
+            :highlighted-template-id="highlightedTemplateId"
+            :enable-drag="!isNarrow"
+            :on-create-dependency="handleCardCreateDependency"
+            @create-template="handleCreate"
+            @ai-generate="router.push('/')"
+            @clear-filters="clearFilters"
+            @click-template="handleClickTemplate"
+            @edit-template="handleEdit"
+            @delete-template="handleDelete"
+            @pause-template="handlePause"
+            @resume-template="handleResume"
+            @relation-filter-click="(filter) => (currentRelation = filter)"
+            @locate-graph="handleLocateGraph"
+          />
+        </template>
 
-        <!-- 图谱视图：从 1400px Dialog 升级为与卡片平级的视图模式（§6） -->
+        <!-- 图谱/DAG：窄档禁用重交互，提示最大化后可用（V2 §6.2 / §7） -->
         <template v-else>
           <div
-            v-if="isMdUp"
+            v-if="!isNarrow"
             class="h-[600px] rounded-lg border border-border/50"
             data-testid="task-graph-view"
           >
@@ -77,7 +85,11 @@
               @node-click="handleGraphNodeClick"
             />
           </div>
-          <p v-else class="py-16 text-center text-sm text-muted-foreground">
+          <p
+            v-else
+            class="py-16 text-center text-sm text-muted-foreground"
+            data-testid="task-graph-narrow-hint"
+          >
             {{ t('task.templateMgmt.graphNarrowViewport') }}
           </p>
         </template>
@@ -188,7 +200,7 @@ import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
-import { useViewportBreakpoint } from '../../../shared/composables/useViewportBreakpoint';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type {
   TaskForDAGViewModel,
   TaskRelationFilter,
@@ -209,7 +221,8 @@ import { buildTaskGraphData } from '../types/task-dag.types';
 
 const router = useRouter();
 const { t } = useI18n();
-const { isMdUp, isLgUp } = useViewportBreakpoint();
+// 面板两档（V2 §7）：拖拽/图谱等重交互仅宽档（focus）启用。
+const { isNarrow } = usePanelWidth();
 const {
   templates,
   dependencies,
