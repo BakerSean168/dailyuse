@@ -196,6 +196,8 @@ export default {
       eyebrow: 'AI Workspace',
       title: 'AI 对话',
       subtitle: '像 Gemini 或 GPT 一样，把会话、模型选择和输入区固定在同一工作区里。',
+      welcomeTitle: '今天想推进哪件事？',
+      welcomeDescription: '选一张快捷指令卡开始，或直接在下方输入。有会话消息时这里会切换为消息时间线。',
       emptyTitle: '从一个问题开始',
       emptyDescription:
         '选择提供商和模型，然后直接在这里持续对话。历史会话会保留在左侧，方便随时继续。',
@@ -231,6 +233,29 @@ export default {
           description: '先把主题、来源和想保留的重点聊清楚，确认后会直接在后台创建 Markdown 笔记。',
         },
       },
+      shortcuts: {
+        chat: {
+          title: '随便聊聊',
+          description: '没有固定流程，直接和 AI 对话整理思路。',
+          prefill: '我想先聊聊最近在推进的事……',
+        },
+        goalCreate: {
+          title: '规划一个目标',
+          description: '用对话澄清范围、成功标准与时间，再生成结构化草稿。',
+          prefill: '帮我规划一个目标：',
+        },
+        knowledgeGenerate: {
+          title: '写一篇知识笔记',
+          description: '先聊清主题、来源和要点，再落到知识库。',
+          prefill: '帮我把下面内容整理成一篇知识笔记：',
+        },
+        knowledgeQa: {
+          title: '问知识库',
+          description: '基于已索引笔记提问，有证据时会带引用。',
+          prefill: '基于我的知识库，回答：',
+        },
+      },
+
       workflow: {
         activeMode: '当前意图',
         toolButton: '意图',

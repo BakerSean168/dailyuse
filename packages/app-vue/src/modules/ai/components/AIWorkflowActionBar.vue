@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * AIWorkflowActionBar — 工作流生命周期操作条（UI_PAGE_REDESIGN_PLAN §1）
+ * AIWorkflowActionBar — 工作流生命周期操作条（V2 §6.0）
  *
- * 整体从 AIFooterComposer 的 action-rail 迁入右栏顶部，与产物同屏；
- * composer 回归纯对话。状态机分支逻辑一行不改（Brief §12-5），
- * `goal-agent-*` 等 testid 随迁。legacy workflow 调试分支已删除（§1-5）。
+ * 状态机按钮组挂在 Composer 上方条 + 消息时间线工作流卡片附近；
+ * 状态机分支逻辑一行不改（Brief §12-5），`goal-agent-*` 等 testid 随迁。
+ * legacy workflow 调试分支已删除（§1-5）。
  *
  * 处理器以函数 props 传入（与本模块 `:format-*` 既有约定一致），
  * 避免在中间层重写状态机事件。
@@ -75,7 +75,7 @@ const { t } = useI18n();
 <template>
   <div
     v-if="toolMode !== 'chat'"
-    class="border-b bg-muted/30 px-4 py-3"
+    class="rounded-2xl border bg-muted/30 px-4 py-3"
     data-testid="ai-workflow-action-bar"
   >
     <p class="text-sm leading-6 text-muted-foreground">

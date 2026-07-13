@@ -198,6 +198,8 @@ export default {
       title: 'AI Chat',
       subtitle:
         'Keep conversations, model selection, and the composer in one dedicated workspace, similar to Gemini or GPT.',
+      welcomeTitle: 'What do you want to move forward today?',
+      welcomeDescription: 'Pick a shortcut card to start, or type below. Once messages exist, this becomes the conversation timeline.',
       emptyTitle: 'Start with a prompt',
       emptyDescription:
         'Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.',
@@ -238,6 +240,29 @@ export default {
             'Use the conversation to clarify the topic, source, and key takeaways, then create the markdown note directly in the background.',
         },
       },
+      shortcuts: {
+        chat: {
+          title: 'Just chat',
+          description: 'No fixed workflow—talk with AI to organize your thoughts.',
+          prefill: 'I want to talk through what I am working on…',
+        },
+        goalCreate: {
+          title: 'Plan a goal',
+          description: 'Clarify scope, success criteria, and timing, then draft a structured goal.',
+          prefill: 'Help me plan a goal:',
+        },
+        knowledgeGenerate: {
+          title: 'Write a knowledge note',
+          description: 'Clarify topic, sources, and takeaways, then save to the knowledge base.',
+          prefill: 'Turn the following into a knowledge note:',
+        },
+        knowledgeQa: {
+          title: 'Ask knowledge base',
+          description: 'Ask from indexed notes; grounded answers include citations.',
+          prefill: 'Using my knowledge base, answer:',
+        },
+      },
+
       workflow: {
         activeMode: 'Active Intent',
         toolButton: 'Intent',
