@@ -1267,6 +1267,8 @@ export default {
       list: '提醒列表',
     },
     linear: {
+      contextRequiresFocus: '最大化后可查看反链与图谱',
+
       allReminders: '全部提醒',
       templateTitle: '提醒模板',
       searchPlaceholder: '搜索提醒...',
@@ -3836,6 +3838,10 @@ export default {
     route: {
       workspace: '笔记',
       noteEdit: '编辑笔记',
+    },
+    segments: {
+      notes: '笔记',
+      governance: '规范',
     },
     sidebar: {
       files: '文件',

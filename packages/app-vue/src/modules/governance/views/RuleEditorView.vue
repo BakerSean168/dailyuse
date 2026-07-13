@@ -29,7 +29,7 @@
     </div>
 
     <form @submit.prevent="handleSubmit">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
+      <div class="grid grid-cols-1 gap-6 @3xl/panel:grid-cols-[1fr_300px]">
         <!-- Left column: Main Info -->
         <div class="space-y-6">
           <!-- Basic Info Card -->
@@ -38,7 +38,7 @@
               <h2 class="text-sm font-medium">{{ t('governance.editor.basicInfo') }}</h2>
             </div>
             <div class="p-4 space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-4">
+              <div class="grid grid-cols-1 gap-4 @2xl/panel:grid-cols-[1fr_2fr]">
                 <div>
                   <label class="block text-sm font-medium mb-1.5">
                     {{ t('governance.editor.ruleCode') }} <span class="text-destructive">*</span>
@@ -90,7 +90,7 @@
                 </p>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 gap-4 @2xl/panel:grid-cols-2">
                 <div>
                   <label class="block text-sm font-medium mb-1.5">
                     {{ t('governance.editor.severity') }} <span class="text-destructive">*</span>

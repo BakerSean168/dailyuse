@@ -14,3 +14,4 @@ export { default as TabManager } from './TabManager.vue';
 // Dialogs
 export { default as CreateResourceDialog } from './dialogs/CreateResourceDialog.vue';
 export { default as BatchImportDialog } from './BatchImportDialog.vue';
+export { default as NoteSegmentBar } from './NoteSegmentBar.vue';

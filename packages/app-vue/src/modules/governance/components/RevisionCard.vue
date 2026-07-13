@@ -21,7 +21,7 @@
         class="rounded-md border border-muted p-3"
       >
         <p class="text-xs font-medium mb-2">{{ field }}</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+        <div class="grid grid-cols-1 gap-2 text-xs @2xl/panel:grid-cols-2">
           <div class="rounded bg-destructive/5 p-2">
             <p class="text-muted-foreground mb-1">Before</p>
             <pre class="whitespace-pre-wrap break-words">{{ stringifyValue(revision.previousValues[field]) }}</pre>

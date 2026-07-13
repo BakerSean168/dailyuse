@@ -1306,6 +1306,8 @@ export default {
       list: 'Reminder List',
     },
     linear: {
+      contextRequiresFocus: 'Maximize the panel to view backlinks and the graph',
+
       allReminders: 'All Reminders',
       templateTitle: 'Reminder Templates',
       searchPlaceholder: 'Search reminders...',
@@ -3897,6 +3899,10 @@ export default {
     route: {
       workspace: 'Notes',
       noteEdit: 'Edit Note',
+    },
+    segments: {
+      notes: 'Notes',
+      governance: 'Standards',
     },
     sidebar: {
       files: 'Files',
