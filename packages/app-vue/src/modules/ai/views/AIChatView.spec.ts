@@ -58,6 +58,10 @@ const i18n = createI18n({
       nav: {
         aiChat: 'AI Chat',
         settings: 'Settings',
+        capsule: {
+          goal: 'Goal',
+          note: 'Notes',
+        },
       },
       common: {
         unknown: 'Unknown',
@@ -207,6 +211,8 @@ const i18n = createI18n({
           creatingGoal: 'Creating goal',
         },
         chatPage: {
+          welcomeTitle: 'What do you want to move forward today?',
+          welcomeDescription: 'Pick a shortcut card.',
           emptyTitle: 'Start a conversation',
           emptyDescription: 'Describe what you want to do.',
           emptyModels: 'No models available',
@@ -214,6 +220,13 @@ const i18n = createI18n({
             title: 'Context',
             show: 'Show context',
             hide: 'Hide context',
+            todayOverview: 'Today',
+          },
+          shortcuts: {
+            chat: { title: 'Just chat', description: 'Chat', prefill: 'chat prefill' },
+            goalCreate: { title: 'Plan a goal', description: 'Goal', prefill: 'goal prefill' },
+            knowledgeGenerate: { title: 'Write a note', description: 'Note', prefill: 'note prefill' },
+            knowledgeQa: { title: 'Ask KB', description: 'QA', prefill: 'qa prefill' },
           },
           sidebar: {
             open: 'Open sidebar',
@@ -259,6 +272,7 @@ const i18n = createI18n({
             hideGoalEditor: 'Hide goal editor',
             createKnowledgeNote: 'Create Knowledge Note',
             exitTool: 'Exit tool',
+            ungroundedHint: 'Not grounded enough to draft a note.',
             openCreatedNote: 'Open note',
             startAnotherNote: 'Start another note',
             defaultConversationNames: {
