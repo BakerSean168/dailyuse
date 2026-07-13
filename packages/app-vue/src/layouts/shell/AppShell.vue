@@ -196,13 +196,17 @@ function openSettings() {
 }
 
 /**
- * KeepAlive 缓存键 = 拥有该路由的 Tab id（同模块多 Tab 各自保活）。
+ * KeepAlive 缓存键 = 拥有该路由的 Tab id + 路由 name。
+ * - Tab 维度：同模块多 Tab 各自保活（两个 note Tab 互不串状态）；
+ * - 路由 name 维度：KeepAlive 对"同 key 不同组件类型"会复用错组件实例
+ *   （parentComponent.ctx.deactivate 崩溃），Tab 内导航（列表 → 详情）
+ *   组件类型会变，必须把视图身份编进 key。
  * 过渡帧里路由还停在旧 Tab 的路由上时，归属仍解析到旧 Tab，避免缓存串键。
  */
-function panelTabKey(fullPath: string): string {
-  return (
-    tabs.value.find((tab) => tab.route === fullPath)?.id ?? activeTabId.value ?? 'panel'
-  );
+function panelCacheKey(fullPath: string, routeName: unknown): string {
+  const owner =
+    tabs.value.find((tab) => tab.route === fullPath)?.id ?? activeTabId.value ?? 'panel';
+  return `${owner}:${String(routeName ?? fullPath)}`;
 }
 </script>
 
@@ -295,7 +299,11 @@ function panelTabKey(fullPath: string): string {
           >
             <router-view v-slot="{ Component }">
               <KeepAlive :max="MAX_BUSINESS_TABS">
-                <component :is="Component" v-if="Component" :key="panelTabKey($route.fullPath)" />
+                <component
+                  :is="Component"
+                  v-if="Component"
+                  :key="panelCacheKey($route.fullPath, $route.name)"
+                />
               </KeepAlive>
             </router-view>
           </BusinessPanel>
