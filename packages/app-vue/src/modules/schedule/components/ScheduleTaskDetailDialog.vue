@@ -131,7 +131,7 @@
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 @2xl/panel:grid-cols-4 gap-4">
               <div>
                 <p class="text-sm text-muted-foreground mb-1">
                   {{ t('schedule.detailDialog.cronExpression') }}

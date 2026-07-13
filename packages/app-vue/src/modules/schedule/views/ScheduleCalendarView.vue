@@ -7,8 +7,8 @@
       <div class="flex items-center gap-4">
         <h1 class="text-lg font-medium text-foreground">{{ t('schedule.dashboard.title') }}</h1>
         <Separator orientation="vertical" class="h-4" />
-        <!-- View Mode Tabs: Day / Week / Month -->
-        <div class="flex items-center gap-1">
+        <!-- 宽档：日/周/月切换；窄档（split）只渲日视图（V2 §6.3 / §7） -->
+        <div v-if="!isNarrow" class="flex items-center gap-1" data-testid="schedule-view-tabs">
           <Button
             v-for="tab in viewTabs"
             :key="tab.value"
@@ -18,12 +18,20 @@
               'h-7 px-3 text-muted-foreground hover:text-foreground',
               activeView === tab.value ? 'bg-secondary font-medium text-foreground' : '',
             ]"
+            :data-testid="`schedule-view-tab-${tab.value}`"
             @click="activeView = tab.value"
           >
             <component :is="tab.icon" class="mr-1.5 h-3.5 w-3.5" />
             {{ tab.label }}
           </Button>
         </div>
+        <p
+          v-else
+          class="text-xs text-muted-foreground"
+          data-testid="schedule-narrow-day-hint"
+        >
+          {{ t('schedule.calendar.narrowDayOnly') }}
+        </p>
       </div>
 
       <div class="flex items-center gap-2">
@@ -36,9 +44,9 @@
 
     <!-- Calendar Content -->
     <div class="flex-1 overflow-hidden">
-      <!-- Day View -->
+      <!-- Day View（窄档强制日视图） -->
       <DayViewCalendar
-        v-if="activeView === 'day'"
+        v-if="effectiveView === 'day'"
         :schedules="events"
         :loading="isLoading"
         @event-click="handleEventClick"
@@ -47,7 +55,7 @@
 
       <!-- Week View -->
       <WeekViewCalendar
-        v-else-if="activeView === 'week'"
+        v-else-if="effectiveView === 'week'"
         :schedules="events"
         :loading="isLoading"
         @event-click="handleEventClick"
@@ -56,7 +64,7 @@
 
       <!-- Month View -->
       <MonthViewCalendar
-        v-else-if="activeView === 'month'"
+        v-else-if="effectiveView === 'month'"
         :schedules="events"
         :loading="isLoading"
         @event-click="handleEventClick"
@@ -93,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { CalendarDays, Calendar, CalendarRange, Plus } from 'lucide-vue-next';
@@ -109,6 +117,7 @@ import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
 import { toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
@@ -116,9 +125,22 @@ const { t } = useI18n();
 const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
 const { tasks: scheduleTasks, createCalendarEntry } = useSchedule();
 const task = useTask();
+// 面板两档（V2 §6.3/§7）：窄档只渲日视图；宽档允许日/周/月。
+const { isNarrow } = usePanelWidth();
 
 const showCreateDialog = ref(false);
 const activeView = ref<'day' | 'week' | 'month'>('week');
+const effectiveView = computed<'day' | 'week' | 'month'>(() =>
+  isNarrow.value ? 'day' : activeView.value,
+);
+
+watch(
+  isNarrow,
+  (narrow) => {
+    if (narrow) activeView.value = 'day';
+  },
+  { immediate: true },
+);
 
 // Day detail sheet state
 const dayDetailOpen = ref(false);
@@ -205,8 +227,13 @@ async function handleCreateSchedule(data: CreateScheduleRequest) {
 }
 
 onMounted(async () => {
-  // Load current week by default
   const now = new Date();
+  if (isNarrow.value) {
+    // split 窄档：只加载当日窗口
+    handleDayChange(now);
+    return;
+  }
+  // 宽档默认周视图窗口
   const weekStart = new Date(now);
   const day = weekStart.getDay();
   const diff = day === 0 ? -6 : 1 - day;

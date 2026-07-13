@@ -155,6 +155,9 @@ export default {
     aiWorkspacePlaceholder: 'AI 工作区（待接线）',
     schedule: {
       empty: '今日无安排',
+      current: '{start}–{end} · {title}',
+      upcoming: '{start} · {title}（{minutes} 分钟后）',
+      currentAllDay: '今日 · {title}',
     },
     conversation: {
       today: '今天',
@@ -1919,6 +1922,7 @@ export default {
     },
 
     calendar: {
+      narrowDayOnly: '分栏态仅显示日视图，最大化后可切换周/月',
       today: '今天',
       createSchedule: '新建日程',
       weekRange: '{start} - {end}',
