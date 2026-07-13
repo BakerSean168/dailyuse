@@ -52,3 +52,13 @@ pnpm nx run web:e2e:report
 - 文档只解释目录边界和入口，不维护测试数量、覆盖率统计或历史规划。
 - helper 的实现理由应写在 helper 或配置文件注释里。
 - 如果某类场景已经迁到 `sync` 或被删除，应先改目录和配置，再同步这里的简述。
+
+## V2 shell anchors (UI redesign)
+
+- 顶部模块胶囊：`capsule-nav-{goal|task|note|reminder|notification}`
+- 胶囊预览进入：`capsule-preview-enter-{module}`
+- 业务面板：`business-panel` / `business-panel-close`
+- 面板错误兜底：`panel-error-boundary` / `panel-error-fallback` / `panel-error-retry`
+- 任务库路由：`/tasks`（无 `/tasks/one-time`）
+- AI 常驻层：`ai-chat-view`（不经业务路由卸载）
+

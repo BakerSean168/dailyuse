@@ -411,15 +411,25 @@ export async function clearSSEEvents(page: Page) {
  * 导航到 Reminder 页面
  */
 export async function navigateToReminder(page: Page) {
-  console.log('[Navigation] 导航到 Reminder 页面');
+  console.log('[Navigation] 导航到 Reminder 页面（V2 shell 业务面板）');
 
-  // 尝试多种方式导航
   try {
-    // 方式1: 直接访问
     await page.goto('/reminder', { waitUntil: 'networkidle' });
+    await page.getByTestId('business-panel').waitFor({
+      state: 'visible',
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
   } catch {
-    // 方式2: 通过菜单点击
-    await page.click('a[href="/reminder"], a:has-text("Reminder"), a:has-text("提醒")');
+    const capsule = page.getByTestId('capsule-nav-reminder');
+    if (await capsule.count()) {
+      await capsule.click();
+      const enter = page.getByTestId('capsule-preview-enter-reminder');
+      if (await enter.count()) {
+        await enter.click();
+      }
+    } else {
+      await page.click('a[href="/reminder"], a:has-text("Reminder"), a:has-text("提醒")');
+    }
     await page.waitForURL(/\/reminder/);
   }
 
@@ -600,24 +610,70 @@ export async function cleanupReminder(page: Page, reminderName: string) {
 /**
  * 导航到 Task 页面
  */
+
+/**
+ * V2 shell: open a module business panel via deep link (preferred) or capsule.
+ * Capsule preview + enter is a secondary path for UI contract checks.
+ */
+export async function openModulePanel(
+  page: Page,
+  module: 'goal' | 'task' | 'note' | 'reminder' | 'notification',
+  route: string,
+) {
+  await page.goto(route, { waitUntil: 'networkidle' });
+  await page.getByTestId('business-panel').waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
+export async function openModuleViaCapsule(
+  page: Page,
+  module: 'goal' | 'task' | 'note' | 'reminder' | 'notification',
+) {
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.getByTestId(`capsule-nav-${module}`).click();
+  const enter = page.getByTestId(`capsule-preview-enter-${module}`);
+  if (await enter.count()) {
+    await enter.click();
+  }
+  await page.getByTestId('business-panel').waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
 export async function navigateToTasks(page: Page) {
-  console.log('[Navigation] 导航到 Task 页面');
+  console.log('[Navigation] 导航到 Task 页面（V2 shell: /tasks 业务面板）');
 
   try {
-    // 直接访问一次性任务列表页面（这是实际的任务CRUD页面）
-    await page.goto('/tasks/one-time', { waitUntil: 'networkidle' });
-    // 等待页面加载完成
-    await page.waitForTimeout(1000);
+    // V2: 任务库路由是 /tasks（已无 /tasks/one-time）
+    await page.goto('/tasks', { waitUntil: 'networkidle' });
+    await page.getByTestId('business-panel').waitFor({
+      state: 'visible',
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
   } catch (error) {
-    console.log('[Navigation] 导航失败，尝试通过菜单:', error);
-    // 方式2: 通过菜单点击
-    await page.click('a[href="/tasks"], a:has-text("Task"), a:has-text("任务")');
+    console.log('[Navigation] 直达失败，尝试胶囊导航:', error);
+    // 方式2: 顶部模块胶囊（取代 V1 侧栏链接）
+    const capsule = page.getByTestId('capsule-nav-task');
+    if (await capsule.count()) {
+      await capsule.click();
+      const enter = page.getByTestId('capsule-preview-enter-task');
+      if (await enter.count()) {
+        await enter.click();
+      }
+    } else {
+      await page.goto('/tasks', { waitUntil: 'networkidle' });
+    }
     await page.waitForURL(/\/tasks/);
-    // 再导航到one-time页面
-    await page.goto('/tasks/one-time', { waitUntil: 'networkidle' });
+    await page.getByTestId('business-panel').waitFor({
+      state: 'visible',
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
   }
 
-  console.log('[Navigation] 已到达 Task 页面 (/tasks/one-time)');
+  console.log('[Navigation] 已到达 Task 页面 (/tasks)');
 }
 
 /**

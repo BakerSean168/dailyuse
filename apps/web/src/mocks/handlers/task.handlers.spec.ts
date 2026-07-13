@@ -180,4 +180,26 @@ describe('task handlers contracts', () => {
     expect(requestConfig.params).not.toHaveProperty('folderId');
     expect(requestConfig.params).not.toHaveProperty('urgency');
   });
+
+  it('uses the graph route shape as the template adapter', async () => {
+    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+    const httpClient = createHttpClientSpy();
+    const adapter = new TaskTemplateHttpAdapter(httpClient);
+
+    await adapter.getTaskGraph({ page: 1, limit: 1000 });
+
+    expect(httpClient.get).toHaveBeenCalledWith('/task-templates/graph', {
+      params: { page: 1, limit: 1000 },
+    });
+  });
+
+  it('updates templates via PATCH to match the HTTP adapter', async () => {
+    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+    const httpClient = createHttpClientSpy();
+    const adapter = new TaskTemplateHttpAdapter(httpClient);
+
+    await adapter.updateTaskTemplate('template-1', { name: 'Renamed' } as never);
+
+    expect(httpClient.patch).toHaveBeenCalledWith('/task-templates/template-1', { name: 'Renamed' });
+  });
 });

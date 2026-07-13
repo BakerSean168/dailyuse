@@ -115,11 +115,11 @@ updated: 2026-07-13T18:00:00
 
 功能主线已结束。本阶段不做新模块面板化，只做稳定性与门槛补齐：
 
-- [ ] **MSW 缺口**：补 `GET /api/v1/task-templates/graph`（及模板 update 的 `PATCH` 对齐 adapter），消除 mock 下 Task 冷加载/图谱白屏
-- [ ] **面板级错误边界**：BusinessPanel 内容区 `onErrorCaptured` 兜底，单模块崩溃不拖垮 AI 常驻层与壳
-- [ ] **Playwright 核心回归适配新壳**：5 份 config 入口保持；helpers 旧路径（如 `/tasks/one-time`）改 `/tasks`；导航优先 `capsule-nav-*` / `business-panel*`；默认 `web:e2e` 核心 flow 在真 API 环境可跑
-- [ ] **S1 门槛剩余项（需真环境，本切片尽量铺路）**：Playwright 5 配置全绿、Electron 手动回归、AI 三工作流 E2E
-- [ ] **plan 归档**：收尾 PR 合入并验收通过后，将本文件移至 `docs/plan/archive/`，并在 archive 文首注明结果
+- [x] **MSW 缺口**：补 `GET /api/v1/task-templates/graph` + 模板 update `PATCH`（保留 PUT 兼容），消除 mock 下 Task 冷加载/图谱白屏（PR S5）
+- [x] **面板级错误边界**：`PanelErrorBoundary` 包住 BusinessPanel 内容区；`onErrorCaptured` 拦截面板致命错误，重试/切 Tab 可恢复；testid：`panel-error-boundary` / `panel-error-fallback` / `panel-error-retry`
+- [x] **Playwright 核心回归适配新壳**：helpers `navigateToTasks/Reminder` 与 `TaskPage` 改 `/tasks`；新增 `openModulePanel`/`openModuleViaCapsule`；dashboard capsule enter 优先 `capsule-preview-enter-*`；e2e README 补 V2 锚点。**5 份 config 真 API 全绿仍待环境**
+- [ ] **S1 门槛剩余项（需真环境）**：Playwright 5 配置全绿、Electron 手动回归、AI 三工作流 E2E
+- [ ] **plan 归档**：S1 门槛补齐后，将本文件移至 `docs/plan/archive/`，并在 archive 文首注明结果
 
 **非阻塞（V2 §11，可另开 plan）**：胶囊计数数据源统一、会话分组时区边界、Tab 集合恢复策略微调、KeepAlive 内存上界实测。
 
@@ -156,3 +156,5 @@ updated: 2026-07-13T18:00:00
 
 - 2026-07-13：**S3/S4 已合入 main**（#183 `f1aeb3d53` / #184 `82cca35e1`）。S0–S4 功能切片全部完成。
 - 2026-07-13：**进入 S5 重构收尾**（用户拍板顺序 A→B→C）：A 更新本 plan 勾选 S4 + 收尾清单；B MSW graph/patch + 面板错误边界；C Playwright helpers/核心 flow 对新壳适配。不新开模块面板化切片。既有 MSW 白屏与面板级错误边界按用户策略在本阶段统一修。
+
+- 2026-07-13：**S5 收尾切片完成（代码，PR 待合）**——分支 `refactor/ui-v2-s5-cleanup`。A plan 勾选 S4 + 收尾清单已推 main（`efc163c8f`）。B：MSW `GET /task-templates/graph` + `PATCH` update；`PanelErrorBoundary` 接入 AppShell + 4 单测 + i18n。C：e2e helpers/TaskPage/dashboard capsule 适配新壳。验证：app-vue lint/typecheck/test **213** 通过（0 lint error）；web vue-tsc 通过；web task.handlers **8** 通过；MSW 冒烟 **15/15**（`/tasks` 面板健康、边界挂载无 fallback、胶囊/关面板回 AI）。**下一步**：合入本 PR 后，真环境跑 5 份 Playwright + Electron 手动 + AI 三工作流 E2E，再归档 plan。
