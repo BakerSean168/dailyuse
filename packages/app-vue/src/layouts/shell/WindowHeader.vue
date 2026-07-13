@@ -7,14 +7,14 @@
  * - 中：模块胶囊 ×5（图标 + 计数角标；点击出预览浮层，浮层内「进入」开面板）
  * - 右：日程"当前时段"胶囊 · [桌面端] 最小化/最大化/关闭
  *
- * S0 骨架：胶囊渲染 + 点击 emit；预览浮层为空占位（内容 S2 填）；
+ * 胶囊渲染 + 点击出预览浮层；notification 胶囊挂 NotificationCapsulePreview（V2 §6.5）；
  * 桌面窗控复用既有 useDesktopWindowControls（apps/desktop 已落地 IPC）。
  * 交互逻辑不接业务数据，只 emit 给 AppShell。
  *
  * 契约：胶囊按钮 data-testid = `capsule-nav-{id}`（延续 main-nav-* 生成风格，
  * Playwright 锚定，V2 §8-1）。
  */
-import { computed, inject, ref } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ArrowLeft,
@@ -30,6 +30,7 @@ import {
 import { MODULE_CAPSULES_KEY } from '../../di/keys';
 import { defaultModuleCapsules } from '../../di/navigation';
 import type { ModuleCapsule } from '../../di/types';
+import NotificationCapsulePreview from '../../modules/notification/components/NotificationCapsulePreview.vue';
 
 interface WindowControlsState {
   isMaximized: boolean;
@@ -72,8 +73,9 @@ const capsules = computed<ModuleCapsule[]>(
   () => inject(MODULE_CAPSULES_KEY, defaultModuleCapsules) ?? defaultModuleCapsules,
 );
 
-/** 当前展开预览浮层的胶囊 id（S0 占位，S2 填内容）。 */
+/** 当前展开预览浮层的胶囊 id。 */
 const previewOpenId = ref<string | null>(null);
+const headerRootEl = ref<HTMLElement | null>(null);
 
 function capsuleTestId(id: string): string {
   return `capsule-nav-${id}`;
@@ -88,14 +90,40 @@ function enterModule(id: string): void {
   emit('enter-module', id);
 }
 
+function closePreview(): void {
+  previewOpenId.value = null;
+}
+
 function badgeFor(capsule: ModuleCapsule): number {
   if (capsule.badgeSource === 'notification.unread') return props.unreadCount ?? 0;
   return 0;
 }
+
+function onDocumentPointerDown(event: MouseEvent): void {
+  if (!previewOpenId.value) return;
+  const target = event.target as Node | null;
+  if (target && headerRootEl.value?.contains(target)) return;
+  closePreview();
+}
+
+function onDocumentKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') closePreview();
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocumentPointerDown, true);
+  document.addEventListener('keydown', onDocumentKeydown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocumentPointerDown, true);
+  document.removeEventListener('keydown', onDocumentKeydown);
+});
 </script>
 
 <template>
   <header
+    ref="headerRootEl"
     class="window-header flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 text-xs"
     :class="[isDesktop ? 'window-header--drag' : '', isMac ? 'pl-20' : '']"
   >
@@ -154,25 +182,33 @@ function badgeFor(capsule: ModuleCapsule): number {
           </span>
         </button>
 
-        <!-- 预览浮层（S0 空占位；内容 S2 填） -->
+        <!-- 预览浮层：notification 走铃铛弹层能力，其余模块保留摘要占位 + 进入 -->
         <div
           v-if="previewOpenId === capsule.id"
           class="absolute left-1/2 z-50 mt-2 w-64 -translate-x-1/2 rounded-xl border border-border bg-popover p-3.5 text-popover-foreground shadow-2xl"
           role="dialog"
+          :data-testid="`capsule-preview-${capsule.id}`"
         >
-          <p class="mb-2 border-b border-border/40 pb-1 text-xs font-bold">
-            {{ t(capsule.title) }}
-          </p>
-          <p class="py-2 text-[11px] text-muted-foreground">
-            {{ t('shell.previewPlaceholder') }}
-          </p>
-          <button
-            type="button"
-            class="mt-2 block w-full rounded-lg border border-border/60 bg-accent py-1.5 text-center text-xs font-medium transition-colors hover:bg-accent/80"
-            @click="enterModule(capsule.id)"
-          >
-            {{ t('shell.enterModule') }}
-          </button>
+          <NotificationCapsulePreview
+            v-if="capsule.id === 'notification'"
+            @view-all="enterModule(capsule.id)"
+          />
+          <template v-else>
+            <p class="mb-2 border-b border-border/40 pb-1 text-xs font-bold">
+              {{ t(capsule.title) }}
+            </p>
+            <p class="py-2 text-[11px] text-muted-foreground">
+              {{ t('shell.previewPlaceholder') }}
+            </p>
+            <button
+              type="button"
+              class="mt-2 block w-full rounded-lg border border-border/60 bg-accent py-1.5 text-center text-xs font-medium transition-colors hover:bg-accent/80"
+              :data-testid="`capsule-preview-enter-${capsule.id}`"
+              @click="enterModule(capsule.id)"
+            >
+              {{ t('shell.enterModule') }}
+            </button>
+          </template>
         </div>
       </div>
     </nav>
