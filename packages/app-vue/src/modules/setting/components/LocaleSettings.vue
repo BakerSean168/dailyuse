@@ -4,7 +4,7 @@
       <CardTitle>{{ t('setting.locale.title') }}</CardTitle>
     </CardHeader>
     <CardContent class="space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 gap-6 @2xl/panel:grid-cols-2">
         <!-- Language -->
         <div class="space-y-2">
           <Label for="language-select">{{ t('setting.locale.language') }}</Label>

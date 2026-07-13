@@ -51,7 +51,7 @@
         <AlertDescription>{{ t('setting.experimental.noFeatures') }}</AlertDescription>
       </Alert>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-else class="grid grid-cols-1 gap-4 @2xl/panel:grid-cols-2">
         <Card
           v-for="feature in availableFeatures"
           :key="feature.key"

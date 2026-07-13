@@ -50,7 +50,7 @@
       </div>
 
       <!-- Actions -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+      <div class="grid grid-cols-1 gap-3 pt-2 @2xl/panel:grid-cols-3">
         <Button variant="outline" class="w-full" :disabled="loading" @click="pickDirectory">
           <Loader2 v-if="pickLoading" class="h-4 w-4 mr-2 animate-spin" />
           <FolderInput v-else class="h-4 w-4 mr-2" />

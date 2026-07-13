@@ -117,7 +117,7 @@
           <Settings class="h-4 w-4 mr-2" />
           {{ t('setting.privacy.dataManagement') }}
         </Label>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-3">
           <Button variant="outline" class="w-full" @click="emit('exportData')">
             <Download class="h-4 w-4 mr-2" />
             {{ t('setting.privacy.exportData') }}

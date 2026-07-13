@@ -1,12 +1,15 @@
 <script setup lang="ts">
 /**
- * UserSettingsView — 设置页（UI_PAGE_REDESIGN_PLAN §13）
+ * UserSettingsView — 设置页（UI 重构 V2 § Settings / §7；沿 V1 §13 分组方案）
  *
- * 10 个平铺 Tab 重组为 6 组，左侧垂直分组导航（w-48）+ 右侧内容 max-w-3xl：
+ * 10 个平铺 Tab 重组为 6 组：
  *   外观与语言 / AI / 通知与提醒 / 账户与隐私（账户中心迁入）/ 数据 / 高级
+ * 面板两档（V2 §7）：
+ *   - 窄档（split）：顶部分组横向 tabs
+ *   - 宽档（focus）：左侧垂直分组导航（w-48）+ 右侧内容 max-w-3xl
  * `?tab=` 查询参数为分组深链契约（/account/center redirect 依赖）。
- * <md 分组导航转顶部横向滚动条。
  * `settings-tab-{value}` testid 保留（appearance / notifications 被 e2e 锚定）。
+ * 进入 Settings 默认 focus 由 shell `shouldOpenInFocus('setting')` 承担。
  */
 
 import { ref, onMounted, computed, watch } from 'vue';
@@ -30,6 +33,7 @@ import { useUserSetting } from '../composables/useUserSetting';
 import { useDataPortability } from '../composables/useDataPortability';
 import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
+import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
 import { inject } from 'vue';
@@ -40,6 +44,8 @@ const route = useRoute();
 const router = useRouter();
 const presentationStore = usePresentationPreferenceStore();
 const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
+// 面板两档（V2 §7）：窄档顶部分组横向 tabs，宽档恢复左侧垂直分组导航。
+const { isNarrow } = usePanelWidth();
 
 const {
   userSetting,
@@ -355,10 +361,21 @@ onMounted(async () => {
         <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
 
-      <div v-else class="mt-6 flex flex-col gap-6 md:flex-row">
-        <!-- 左侧分组导航（<md 转顶部横向滚动条，§13-8） -->
+      <div
+        v-else
+        class="mt-6 flex gap-6"
+        :class="isNarrow ? 'flex-col' : 'flex-row'"
+        data-testid="settings-panel-layout"
+      >
+        <!-- 窄档：顶部分组横向 tabs；宽档：左侧垂直分组导航（V2 §7 / V1 §13-8） -->
         <nav
-          class="flex shrink-0 gap-1 overflow-x-auto md:w-48 md:flex-col md:overflow-visible"
+          class="flex shrink-0 gap-1"
+          :class="
+            isNarrow
+              ? 'overflow-x-auto'
+              : 'w-48 flex-col overflow-visible'
+          "
+          :data-testid="isNarrow ? 'settings-group-tabs' : 'settings-group-sidebar'"
           :aria-label="t('setting.title')"
         >
           <button
