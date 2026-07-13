@@ -1631,14 +1631,20 @@ export default {
       keyboardHints: '↑↓ 导航 | Enter 选择 | Esc 取消',
     },
     linear: {
-      openWorkspace: '打开仓库工作区',
+      openWorkspace: '打开笔记库',
       untitled: '未命名笔记',
       notFound: '未找到笔记',
+      noteUnavailable: '笔记不存在',
+      backToNotes: '回到笔记库',
       loadFailed: '加载笔记失败',
       saveSuccess: '笔记已保存',
       saveFailed: '保存笔记失败',
       createLinkedSuccess: '已创建 "{name}"',
       createLinkedFailed: '创建链接笔记失败',
+    },
+    noteContext: {
+      backlinks: '反链',
+      graph: '图谱',
     },
     mediaViewer: {
       videoNotSupported: '您的浏览器不支持视频播放',

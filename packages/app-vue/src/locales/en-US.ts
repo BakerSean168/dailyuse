@@ -1679,14 +1679,20 @@ export default {
       keyboardHints: '↑↓ Navigate | Enter Select | Esc Cancel',
     },
     linear: {
-      openWorkspace: 'Open workspace',
+      openWorkspace: 'Open Notes',
       untitled: 'Untitled note',
       notFound: 'Note not found',
+      noteUnavailable: 'Note not found',
+      backToNotes: 'Back to Notes',
       loadFailed: 'Failed to load note',
       saveSuccess: 'Note saved',
       saveFailed: 'Failed to save note',
       createLinkedSuccess: 'Created "{name}"',
       createLinkedFailed: 'Failed to create linked note',
+    },
+    noteContext: {
+      backlinks: 'Backlinks',
+      graph: 'Graph',
     },
     mediaViewer: {
       videoNotSupported: 'Your browser does not support video playback',

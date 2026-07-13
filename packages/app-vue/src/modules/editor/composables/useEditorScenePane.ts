@@ -11,9 +11,12 @@ export interface EditorScenePaneController {
   focus(): void;
 }
 
-export function useEditorScenePane(documentState: ReturnType<typeof useActiveEditorDocument>) {
+export function useEditorScenePane(
+  documentState: ReturnType<typeof useActiveEditorDocument>,
+  options: { initialViewMode?: 'source' | 'live' | 'preview' } = {},
+) {
   const activeDocumentPaneRef = ref<EditorScenePaneController | null>(null);
-  const viewMode = ref<'source' | 'live' | 'preview'>('live');
+  const viewMode = ref<'source' | 'live' | 'preview'>(options.initialViewMode ?? 'live');
   const editorContent = computed({
     get: () => documentState.content.value,
     set: (value: string) => documentState.updateContent(value),
