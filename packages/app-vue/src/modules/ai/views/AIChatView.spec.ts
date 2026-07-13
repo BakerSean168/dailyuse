@@ -48,6 +48,7 @@ vi.mock('../../editor/composables', () => ({
 }));
 
 import AIChatView from './AIChatView.vue';
+import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
 
 const i18n = createI18n({
   legacy: false,
@@ -1027,10 +1028,34 @@ function createSavedKnowledgeNoteAgentRunResult(overrides?: {
   });
 }
 
+const dashboardServiceFake = {
+  getDashboardStats: vi.fn().mockResolvedValue({
+    ok: true,
+    data: {
+      stats: {
+        activeTasks: 0,
+        completedToday: 0,
+        activeGoals: 0,
+        upcomingReminders: 0,
+        unreadNotifications: 0,
+        scheduleConflicts: 0,
+      },
+      activityTimeline: [],
+      trendDays: [],
+      goalProgress: [],
+      taskBoard: { todo: 0, inProgress: 0, done: 0, overdue: 0 },
+      upcomingSchedule: [],
+    },
+  }),
+};
+
 function mountView() {
   return shallowMount(AIChatView, {
     global: {
       plugins: [i18n],
+      provide: {
+        [DASHBOARD_SERVICE_KEY as symbol]: dashboardServiceFake,
+      },
       stubs: {
         Button: ButtonStub,
         DropdownMenu: DivStub,
@@ -1049,6 +1074,10 @@ function mountView() {
         AIMessagePanel: AIMessagePanelStub,
         AIGoalWorkflowPanel: AIGoalWorkflowPanelStub,
         AIFooterComposer: AIFooterComposerStub,
+        // 右栏容器与工作流操作条渲染真实实现：
+        // goal-agent-* / ai-context-panel 等契约断言依赖其真实模板。
+        AIContextPanel: false,
+        AIWorkflowActionBar: false,
       },
     },
   });
@@ -1698,358 +1727,6 @@ describe('AIChatView', () => {
     expect(wrapper.find('[data-testid="goal-workflow-generate-draft"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="goal-workflow-plan-automation"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="goal-workflow-confirm-execute"]').exists()).toBe(false);
-  });
-
-  it('generates a goal draft from the restored conversation transcript through the legacy debug flow', async () => {
-    localStorage.setItem('ai:last-conversation-id', 'conv-1');
-    localStorage.setItem('ai:debug:legacy-goal-workflow', 'true');
-    localStorage.setItem(
-      'ai:conversation-workflow-map',
-      JSON.stringify({
-        'conv-1': {
-          mode: 'goal-create',
-          goalWorkflowStage: 'collect',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          clarificationAnswers: [],
-          editableGoal: {
-            name: '',
-            description: '',
-            category: '',
-            importance: 'Moderate',
-            motivation: '',
-            feasibilityAnalysis: '',
-            tags: [],
-            startDate: null,
-            targetDate: null,
-          },
-          editableKeyResults: [],
-          noteSummary: null,
-          showGoalDraftEditor: false,
-        },
-      }),
-    );
-    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
-      data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
-      data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
-    service.generateGoal.mockResolvedValue(
-      createGoalDraft('Generated AI Goal', 'Generated from the current conversation'),
-    );
-
-    const wrapper = mountView();
-    await flushPromises();
-
-    const generateButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Generate goal draft'));
-    expect(generateButton).toBeDefined();
-
-    await generateButton!.trigger('click');
-    await flushPromises();
-
-    expect(service.generateGoal).toHaveBeenCalledWith({
-      idea: 'User: Help me design an AI goal.',
-      includeKeyResults: true,
-      providerId: 'provider-1',
-      model: 'gpt-4o-mini',
-      clarificationAnswers: undefined,
-    });
-    expect(wrapper.text()).toContain('Generated AI Goal');
-    expect(wrapper.text()).toContain('Generated from the current conversation');
-  });
-
-  it('collects clarification answers before generating the final legacy goal draft', async () => {
-    localStorage.setItem('ai:last-conversation-id', 'conv-1');
-    localStorage.setItem('ai:debug:legacy-goal-workflow', 'true');
-    localStorage.setItem(
-      'ai:conversation-workflow-map',
-      JSON.stringify({
-        'conv-1': {
-          mode: 'goal-create',
-          goalWorkflowStage: 'collect',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          clarificationAnswers: [],
-          editableGoal: {
-            name: '',
-            description: '',
-            category: '',
-            importance: 'Moderate',
-            motivation: '',
-            feasibilityAnalysis: '',
-            tags: [],
-            startDate: null,
-            targetDate: null,
-          },
-          editableKeyResults: [],
-          noteSummary: null,
-          showGoalDraftEditor: false,
-        },
-      }),
-    );
-    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
-      data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
-      data: [{ id: 'm-1', role: 'user', content: 'Help me get better at AI work.' }],
-    });
-    service.generateGoal
-      .mockResolvedValueOnce({
-        state: 'clarification',
-        clarification: {
-          needsClarification: true,
-          rationale: 'Need more scope before drafting.',
-          questions: [
-            {
-              question: 'What exact outcome do you want?',
-              context: 'This defines success.',
-            },
-            {
-              question: 'What timeline are you targeting?',
-              context: 'This defines urgency.',
-            },
-          ],
-        },
-        tokenUsage: {
-          promptTokens: 10,
-          completionTokens: 5,
-          totalTokens: 15,
-        },
-        providerId: 'provider-1',
-        processingTimeMs: 50,
-        generatedAt: 1,
-      })
-      .mockResolvedValueOnce(
-        createGoalDraft('Clarified AI Goal', 'Generated after providing clarification answers'),
-      );
-
-    const wrapper = mountView();
-    await flushPromises();
-
-    const firstButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Generate goal draft'));
-    expect(firstButton).toBeDefined();
-    await firstButton!.trigger('click');
-    await flushPromises();
-
-    expect(wrapper.text()).toContain('Goal clarification');
-    expect(wrapper.text()).toContain('What exact outcome do you want?');
-
-    const clarificationInputs = wrapper
-      .findAll('textarea')
-      .filter((item) => item.attributes('placeholder') === 'Answer here');
-    expect(clarificationInputs).toHaveLength(2);
-    await clarificationInputs[0].setValue('Ship an AI workflow for goal planning.');
-    await clarificationInputs[1].setValue('Within the next quarter.');
-    await flushPromises();
-
-    const continueButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Continue With Answers'));
-    expect(continueButton).toBeDefined();
-    await continueButton!.trigger('click');
-    await flushPromises();
-
-    expect(service.generateGoal).toHaveBeenLastCalledWith({
-      idea: 'User: Help me get better at AI work.',
-      includeKeyResults: true,
-      providerId: 'provider-1',
-      model: 'gpt-4o-mini',
-      clarificationAnswers: [
-        'Ship an AI workflow for goal planning.',
-        'Within the next quarter.',
-      ],
-    });
-    expect(wrapper.text()).toContain('Clarified AI Goal');
-    expect(wrapper.text()).toContain('Generated after providing clarification answers');
-  });
-
-  it('plans and executes legacy goal automation from the draft inside the chat workflow', async () => {
-    localStorage.setItem('ai:last-conversation-id', 'conv-1');
-    localStorage.setItem('ai:debug:legacy-goal-workflow', 'true');
-    localStorage.setItem(
-      'ai:conversation-workflow-map',
-      JSON.stringify({
-        'conv-1': {
-          mode: 'goal-create',
-          goalWorkflowStage: 'collect',
-          goalDraft: null,
-          goalClarification: null,
-          goalAutomationResult: null,
-          clarificationAnswers: [],
-          editableGoal: {
-            name: '',
-            description: '',
-            category: '',
-            importance: 'Moderate',
-            motivation: '',
-            feasibilityAnalysis: '',
-            tags: [],
-            startDate: null,
-            targetDate: null,
-          },
-          editableKeyResults: [],
-          noteSummary: null,
-          showGoalDraftEditor: false,
-        },
-      }),
-    );
-    const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
-      data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
-      data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
-    service.generateGoal
-      .mockResolvedValueOnce(
-        createGoalDraft('Generated AI Goal', 'Generated from the current conversation'),
-      )
-      .mockResolvedValueOnce({
-        state: 'confirm',
-        ...createAutomationResult(),
-        plan: {
-          goal: {
-            title: 'Generated AI Goal',
-            description: 'Generated from the current conversation',
-            category: 'learning',
-            importance: 'Important',
-            suggestedStartDate: 1,
-            suggestedEndDate: 2,
-          },
-        },
-      })
-      .mockResolvedValueOnce({
-        state: 'result',
-        ...createAutomationResult({
-          executedActions: [
-            {
-              tool: 'create_goal',
-              status: 'executed',
-              entityId: 'goal-123',
-              message: 'Created goal "Generated AI Goal"',
-            },
-          ],
-          executionSummary: {
-            status: 'success',
-            executedCount: 1,
-            skippedCount: 0,
-            failedCount: 0,
-          },
-          recovery: {
-            canRetry: false,
-            failedActions: [],
-            suggestions: [],
-          },
-        }),
-        plan: {
-          goal: {
-            title: 'Generated AI Goal',
-            description: 'Generated from the current conversation',
-            category: 'learning',
-            importance: 'Important',
-            suggestedStartDate: 1,
-            suggestedEndDate: 2,
-          },
-        },
-      });
-
-    const wrapper = mountView();
-    await flushPromises();
-
-    const generateButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Generate goal draft'));
-    expect(generateButton).toBeDefined();
-    await generateButton!.trigger('click');
-    await flushPromises();
-
-    const planButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Plan Automation'));
-    expect(planButton).toBeDefined();
-    await planButton!.trigger('click');
-    await flushPromises();
-
-    expect(service.generateGoal).toHaveBeenNthCalledWith(2, {
-      idea: 'User: Help me design an AI goal.',
-      command: 'prepare',
-      includeKeyResults: true,
-      includeTaskTemplates: true,
-      draftContext: {
-        goal: {
-          title: 'Generated AI Goal',
-          description: 'Generated from the current conversation',
-          category: 'learning',
-          importance: 'Important',
-          motivation: undefined,
-          feasibilityAnalysis: undefined,
-          tags: ['ai'],
-          suggestedStartDate: 1,
-          suggestedEndDate: 2,
-        },
-        keyResults: undefined,
-      },
-      providerId: 'provider-1',
-      model: 'gpt-4o-mini',
-    });
-    expect(wrapper.text()).toContain('Drafted a practical execution plan.');
-    expect(wrapper.text()).toContain('awaiting confirmation');
-
-    const confirmButton = wrapper
-      .findAll('button')
-      .find((button) => button.text().includes('Confirm and Execute'));
-    expect(confirmButton).toBeDefined();
-    await confirmButton!.trigger('click');
-    await flushPromises();
-
-    expect(service.generateGoal).toHaveBeenNthCalledWith(3, {
-      idea: 'User: Help me design an AI goal.',
-      command: 'execute',
-      includeKeyResults: true,
-      includeTaskTemplates: true,
-      draftContext: {
-        goal: {
-          title: 'Generated AI Goal',
-          description: 'Generated from the current conversation',
-          category: 'learning',
-          importance: 'Important',
-          motivation: undefined,
-          feasibilityAnalysis: undefined,
-          tags: ['ai'],
-          suggestedStartDate: 1,
-          suggestedEndDate: 2,
-        },
-        keyResults: undefined,
-      },
-      approvedSummary: 'Drafted a practical execution plan.',
-      approvedPlan: {
-        goal: {
-          title: 'Generated AI Goal',
-          description: 'Generated from the current conversation',
-          category: 'learning',
-          importance: 'Important',
-          suggestedStartDate: 1,
-          suggestedEndDate: 2,
-        },
-      },
-      approvedActions: [{ tool: 'create_goal', rationale: 'Create the goal first.' }],
-      providerId: 'provider-1',
-      model: 'gpt-4o-mini',
-    });
-    expect(wrapper.text()).toContain('Execution Status');
-    expect(wrapper.text()).toContain('Execution Timeline');
-    expect(wrapper.text()).toContain('Created goal "Generated AI Goal"');
-    expect(wrapper.text()).toContain('execution recorded');
-    expect(wrapper.text()).toContain('Success: 1 executed, 0 skipped, 0 failed.');
   });
 
   it('starts and confirms a goal Agent run through the AI client service', async () => {

@@ -1,14 +1,17 @@
 <script setup lang="ts">
 /**
- * UserSettingsView — Full settings page with internal tab navigation.
+ * UserSettingsView — 设置页（UI_PAGE_REDESIGN_PLAN §13）
  *
- * Assembles all 10 setting section components inside a single Tabs container.
- * Uses useUserSetting() composable for data loading and persistence.
+ * 10 个平铺 Tab 重组为 6 组，左侧垂直分组导航（w-48）+ 右侧内容 max-w-3xl：
+ *   外观与语言 / AI / 通知与提醒 / 账户与隐私（账户中心迁入）/ 数据 / 高级
+ * `?tab=` 查询参数为分组深链契约（/account/center redirect 依赖）。
+ * <md 分组导航转顶部横向滚动条。
+ * `settings-tab-{value}` testid 保留（appearance / notifications 被 e2e 锚定）。
  */
 
 import { ref, onMounted, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Loader2 } from 'lucide-vue-next';
 import { SystemChannels } from '@dailyuse/contracts/electron';
 
@@ -21,6 +24,7 @@ import NotificationSettings from '../components/NotificationSettings.vue';
 import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
 import UserFilesSettings from '../components/UserFilesSettings.vue';
+import { AccountProfileSection } from '../../account/components';
 
 import { useUserSetting } from '../composables/useUserSetting';
 import { useDataPortability } from '../composables/useDataPortability';
@@ -32,6 +36,8 @@ import { inject } from 'vue';
 import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const presentationStore = usePresentationPreferenceStore();
 const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 
@@ -54,7 +60,51 @@ const {
   importAllData,
 } = useDataPortability();
 
-const activeTab = ref('appearance');
+// ── 分组导航（§13-3）──
+type SettingsGroup = 'appearance' | 'ai' | 'notifications' | 'account' | 'data' | 'advanced';
+
+const GROUP_VALUES: SettingsGroup[] = [
+  'appearance',
+  'ai',
+  'notifications',
+  'account',
+  'data',
+  'advanced',
+];
+
+function normalizeGroup(value: unknown): SettingsGroup {
+  return GROUP_VALUES.includes(value as SettingsGroup) ? (value as SettingsGroup) : 'appearance';
+}
+
+const activeTab = ref<SettingsGroup>(normalizeGroup(route.query.tab));
+
+const groups = computed(() => [
+  { value: 'appearance' as const, label: t('setting.groups.appearance') },
+  { value: 'ai' as const, label: t('setting.groups.ai') },
+  { value: 'notifications' as const, label: t('setting.groups.notifications') },
+  { value: 'account' as const, label: t('setting.groups.account') },
+  { value: 'data' as const, label: t('setting.groups.data') },
+  { value: 'advanced' as const, label: t('setting.groups.advanced') },
+]);
+
+// `?tab=` 双向同步（深链契约）
+watch(
+  () => route.query.tab,
+  (tab) => {
+    const next = normalizeGroup(tab);
+    if (next !== activeTab.value) {
+      activeTab.value = next;
+    }
+  },
+);
+
+function selectGroup(group: SettingsGroup) {
+  activeTab.value = group;
+  if (route.query.tab !== group) {
+    void router.replace({ query: { ...route.query, tab: group } });
+  }
+}
+
 const isHydratingAppearance = ref(true);
 const fileInput = ref<HTMLInputElement | null>(null);
 type LocaleFormState = Required<UserSettingPreferences['locale']>;
@@ -283,19 +333,6 @@ onMounted(async () => {
   await loadSettings();
   hydrateFromStore();
 });
-
-// ── Tab definitions ──
-const tabs = computed(() => [
-  { value: 'appearance', label: t('setting.tabs.appearance') },
-  { value: 'locale', label: t('setting.tabs.locale') },
-  { value: 'ai', label: t('setting.tabs.ai') },
-  { value: 'privacy', label: t('setting.tabs.privacy') },
-  { value: 'shortcuts', label: t('setting.tabs.shortcuts') },
-  { value: 'notifications', label: t('setting.tabs.notifications') },
-  { value: 'experimental', label: t('setting.tabs.experimental') },
-  { value: 'userFiles', label: t('setting.tabs.userFiles') },
-  { value: 'advanced', label: t('setting.tabs.advanced') },
-]);
 </script>
 
 <template>
@@ -310,68 +347,59 @@ const tabs = computed(() => [
       @change="onFileSelected"
     />
 
-    <div class="mx-auto max-w-4xl px-6 py-8 space-y-6">
-      <!-- Page header -->
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">{{ t('setting.title') }}</h1>
-      </div>
+    <div class="mx-auto max-w-5xl px-6 py-8">
+      <h1 class="text-2xl font-bold tracking-tight">{{ t('setting.title') }}</h1>
 
       <!-- Loading state -->
       <div v-if="isLoading" class="flex items-center justify-center py-12">
         <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
 
-      <!-- Main content -->
-      <Tabs v-else v-model="activeTab" class="w-full">
-        <TabsList class="w-full flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            v-for="tab in tabs"
-            :key="tab.value"
-            :value="tab.value"
-            :data-testid="`settings-tab-${tab.value}`"
+      <div v-else class="mt-6 flex flex-col gap-6 md:flex-row">
+        <!-- 左侧分组导航（<md 转顶部横向滚动条，§13-8） -->
+        <nav
+          class="flex shrink-0 gap-1 overflow-x-auto md:w-48 md:flex-col md:overflow-visible"
+          :aria-label="t('setting.title')"
+        >
+          <button
+            v-for="group in groups"
+            :key="group.value"
+            :data-testid="`settings-tab-${group.value}`"
+            type="button"
+            class="whitespace-nowrap rounded-md px-3 py-2 text-left text-sm transition-colors"
+            :class="
+              activeTab === group.value
+                ? 'bg-secondary font-medium text-foreground'
+                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+            "
+            @click="selectGroup(group.value)"
           >
-            {{ tab.label }}
-          </TabsTrigger>
-        </TabsList>
+            {{ group.label }}
+          </button>
+        </nav>
 
-        <div class="mt-6">
-          <TabsContent value="appearance">
+        <!-- 右侧内容 max-w-3xl（§13-3） -->
+        <div class="min-w-0 max-w-3xl flex-1 space-y-8">
+          <template v-if="activeTab === 'appearance'">
             <AppearanceSettings v-model="appearance" />
-          </TabsContent>
-
-          <TabsContent value="locale">
             <LocaleSettings :model-value="locale" @update:model-value="handleLocaleUpdate" />
-          </TabsContent>
+          </template>
 
-          <TabsContent value="ai">
+          <template v-else-if="activeTab === 'ai'">
             <AISettings />
-          </TabsContent>
+          </template>
 
-          <TabsContent value="privacy">
-            <PrivacySettings v-model="privacy" />
-          </TabsContent>
-
-          <TabsContent value="shortcuts">
-            <ShortcutSettings
-              :categories="shortcutCategories"
-              :editing-shortcut="editingShortcut"
-              :editing-key="editingKey"
-            />
-          </TabsContent>
-
-          <TabsContent value="notifications">
+          <template v-else-if="activeTab === 'notifications'">
             <NotificationSettings />
-          </TabsContent>
+          </template>
 
-          <TabsContent value="experimental">
-            <ExperimentalSettings v-model="experimental" />
-          </TabsContent>
+          <template v-else-if="activeTab === 'account'">
+            <AccountProfileSection />
+            <PrivacySettings v-model="privacy" />
+          </template>
 
-          <TabsContent value="userFiles">
+          <template v-else-if="activeTab === 'data'">
             <UserFilesSettings />
-          </TabsContent>
-
-          <TabsContent value="advanced">
             <SettingAdvancedActions
               :backups="backups"
               :sync-status="syncStatus"
@@ -385,9 +413,18 @@ const tabs = computed(() => [
               @export-all-data="exportAllData"
               @import-all-data="importAllData"
             />
-          </TabsContent>
+          </template>
+
+          <template v-else-if="activeTab === 'advanced'">
+            <ShortcutSettings
+              :categories="shortcutCategories"
+              :editing-shortcut="editingShortcut"
+              :editing-key="editingKey"
+            />
+            <ExperimentalSettings v-model="experimental" />
+          </template>
         </div>
-      </Tabs>
+      </div>
     </div>
   </div>
 </template>

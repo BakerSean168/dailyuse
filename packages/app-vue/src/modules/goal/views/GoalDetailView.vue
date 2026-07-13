@@ -1,115 +1,146 @@
 <template>
-  <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="goal-detail">
-    <div class="flex items-center gap-3 border-b px-6 py-4">
-      <Button variant="ghost" size="sm" @click="$router.back()">
-        <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.detail.back') }}
-      </Button>
-      <Separator orientation="vertical" class="h-6" />
-      <h2 class="text-lg font-semibold" data-testid="goal-detail-title">
-        {{ goal?.name || t('goal.detail.title') }}
-      </h2>
-      <Button class="ml-auto" size="sm" @click="handleCreateReview">
-        <Plus class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.create') }}
-      </Button>
-    </div>
+  <div class="h-full" data-testid="goal-detail">
+    <!-- 目标不存在 = 整页空态 + 返回（§4-7） -->
+    <AppEmptyState
+      v-if="!goal && !isInitialLoading"
+      :icon="Target"
+      :title="t('goal.detail.notFound')"
+      :action-label="t('goal.detail.backToList')"
+      testid="goal-detail-not-found"
+      @action="router.push({ name: 'goal-list' })"
+    />
 
-    <ScrollArea v-if="goal" class="min-h-0 flex-1">
-      <div class="mx-auto max-w-4xl space-y-6 p-6">
-        <!-- 目标概览 -->
-        <Card>
-          <CardHeader>
-            <div class="flex items-center justify-between">
-              <div>
-                <CardTitle>{{ goal.name }}</CardTitle>
-                <CardDescription>{{
-                  goal.description || t('goal.detail.noDescription')
-                }}</CardDescription>
-              </div>
-              <div class="flex gap-2">
-                <Badge :variant="goal.status === 'Active' ? 'default' : 'secondary'">{{
-                  getStatusLabel(goal.status)
-                }}</Badge>
-                <Badge variant="outline">{{ getImportanceLabel(goal.importance) }}</Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div class="flex flex-col gap-6 md:flex-row md:items-center">
-              <div
-                class="flex shrink-0 flex-col items-center justify-center rounded-2xl border bg-muted/20 px-6 py-5 md:w-56"
-              >
-                <div class="relative flex h-34 w-34 items-center justify-center">
-                  <svg class="h-34 w-34 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
-                    <circle cx="60" cy="60" r="48" fill="none" stroke="hsl(var(--muted))" stroke-width="10" />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="48"
-                      fill="none"
-                      :stroke="goalAccentColor"
-                      stroke-width="10"
-                      stroke-linecap="round"
-                      :stroke-dasharray="ringCircumference"
-                      :stroke-dashoffset="ringDashOffset"
-                    />
-                  </svg>
-                  <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span class="text-3xl font-semibold leading-none">{{ goalProgress }}%</span>
-                    <span class="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Progress
-                    </span>
-                  </div>
-                </div>
-              </div>
+    <DetailPageShell
+      v-else
+      :title="goal?.name || t('goal.detail.title')"
+      back-to="/goals"
+      title-testid="goal-detail-title"
+    >
+      <template #badges>
+        <template v-if="goal">
+          <Badge :variant="goal.status === 'Active' ? 'default' : 'secondary'">
+            {{ getStatusLabel(goal.status) }}
+          </Badge>
+          <Badge variant="outline">{{ getImportanceLabel(goal.importance) }}</Badge>
+        </template>
+      </template>
 
-              <div class="min-w-0 flex-1 space-y-4">
-                <div class="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
-                  <div>
-                    <span class="text-muted-foreground">{{ t('goal.detail.startDate') }}</span>
-                    <p class="font-medium">
-                      {{
-                        goal.startDate
-                          ? new Date(goal.startDate).toLocaleDateString()
-                          : t('goal.detail.notSet')
-                      }}
-                    </p>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">{{ t('goal.detail.targetDate') }}</span>
-                    <p class="font-medium">
-                      {{
-                        goal.targetDate
-                          ? new Date(goal.targetDate).toLocaleDateString()
-                          : t('goal.detail.notSet')
-                      }}
-                    </p>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">{{ t('goal.detail.category') }}</span>
-                    <p class="font-medium">{{ goal.category || t('goal.detail.uncategorized') }}</p>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">KRs</span>
-                    <p class="font-medium">{{ completedKeyResultCount }}/{{ totalKeyResultCount }}</p>
-                  </div>
-                </div>
+      <template #actions>
+        <!-- 主操作：记录进度（选择 KR → GoalRecordDialog；无 KR 禁用并提示原因，§4-7） -->
+        <DropdownMenu v-if="keyResults.length > 0">
+          <DropdownMenuTrigger as-child>
+            <Button size="sm" class="h-8" data-testid="goal-record-progress-button">
+              <Plus class="mr-1.5 h-4 w-4" />
+              {{ t('goal.detail.recordProgress') }}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-56">
+            <DropdownMenuItem
+              v-for="kr in keyResults"
+              :key="kr.id"
+              class="text-xs"
+              @click="openRecordDialog(kr.id)"
+            >
+              {{ kr.title }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Tooltip v-else>
+          <TooltipTrigger as-child>
+            <span>
+              <Button size="sm" class="h-8" disabled data-testid="goal-record-progress-button">
+                <Plus class="mr-1.5 h-4 w-4" />
+                {{ t('goal.detail.recordProgress') }}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent class="text-xs">
+            {{ t('goal.detail.recordNeedsKr') }}
+          </TooltipContent>
+        </Tooltip>
 
-                <div v-if="goal.tags?.length" class="flex flex-wrap gap-1">
-                  <Badge v-for="tag in goal.tags" :key="tag" variant="outline" class="text-xs">
-                    {{ tag }}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <!-- 次操作 ⋯：编辑 + 危险区删除（§0.1） -->
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="goal-detail-more">
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-44">
+            <DropdownMenuItem @click="handleEditGoal">
+              <Pencil class="mr-2 h-4 w-4" />
+              {{ t('common.edit') }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              class="text-destructive focus:text-destructive"
+              @click="handleDeleteGoal"
+            >
+              <Trash2 class="mr-2 h-4 w-4" />
+              {{ t('common.delete') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </template>
 
-        <!-- 关键结果 -->
+      <!-- 单行元数据：起止 · 分类 · #标签（四宫格压缩，§4-5） -->
+      <template v-if="goal" #meta>
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          <span>
+            {{ formatDate(goal.startDate) }} ~ {{ formatDate(goal.targetDate) }}
+          </span>
+          <span>·</span>
+          <span>{{ goal.category || t('goal.detail.uncategorized') }}</span>
+          <template v-if="goal.tags?.length">
+            <span>·</span>
+            <span v-for="tag in goal.tags" :key="tag" class="text-info">#{{ tag }}</span>
+          </template>
+        </div>
+      </template>
+
+      <!-- 加载 = 详情骨架（§4-7） -->
+      <div v-if="isInitialLoading" class="space-y-4" data-testid="goal-detail-skeleton">
+        <Skeleton class="h-16 w-full rounded-lg" />
+        <Skeleton class="h-24 w-full rounded-lg" />
+        <Skeleton class="h-24 w-full rounded-lg" />
+      </div>
+
+      <div v-else-if="goal" class="space-y-6">
+        <!-- 概览行：小进度环 + KR 完成数 + 描述摘要（大环缩小，§4-5） -->
+        <div class="flex items-center gap-4 rounded-lg border bg-muted/20 px-4 py-3">
+          <div class="relative hidden h-14 w-14 shrink-0 items-center justify-center md:flex">
+            <svg class="h-14 w-14 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="hsl(var(--muted))" stroke-width="12" />
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                fill="none"
+                :stroke="goalAccentColor"
+                stroke-width="12"
+                stroke-linecap="round"
+                :stroke-dasharray="ringCircumference"
+                :stroke-dashoffset="ringDashOffset"
+              />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-foreground">
+              {{ goalProgress }}% ·
+              {{ t('goal.detail.krCompleted', { done: completedKeyResultCount, total: totalKeyResultCount }) }}
+            </p>
+            <p v-if="goal.description" class="mt-0.5 truncate text-xs text-muted-foreground">
+              {{ goal.description }}
+            </p>
+          </div>
+        </div>
+
+        <!-- 关键结果（本页正文，§4-4） -->
         <Card>
           <CardHeader>
             <div class="flex items-center justify-between">
               <CardTitle class="text-base">{{ t('goal.detail.keyResults') }}</CardTitle>
-              <Button size="sm" @click="handleOpenAddKR">
+              <Button v-if="keyResults.length > 0" size="sm" variant="outline" @click="handleOpenAddKR">
                 <Plus class="mr-1 h-4 w-4" /> {{ t('goal.detail.addKR') }}
               </Button>
             </div>
@@ -118,7 +149,7 @@
             <div
               v-for="kr in keyResults"
               :key="kr.id"
-              class="rounded-lg border p-4 hover:bg-accent/50"
+              class="cursor-pointer rounded-lg border p-4 hover:bg-accent/50"
               @click="$router.push(`/goals/${goalId}/key-results/${kr.id}`)"
             >
               <div class="mb-2 flex items-center justify-between">
@@ -130,16 +161,19 @@
               <Progress :model-value="calculateKRProgress(kr)" class="h-2" />
             </div>
 
-            <p
+            <!-- 无 KR：区块空态升级为页面主引导（§4-7） -->
+            <AppEmptyState
               v-if="keyResults.length === 0"
-              class="py-4 text-center text-sm text-muted-foreground"
-            >
-              {{ t('goal.detail.noKR') }}
-            </p>
+              :title="t('goal.detail.noKrTitle')"
+              :description="t('goal.detail.noKrDescription')"
+              :action-label="t('goal.detail.addKR')"
+              testid="goal-kr-empty-state"
+              @action="handleOpenAddKR"
+            />
           </CardContent>
         </Card>
 
-        <!-- 标签页 -->
+        <!-- 记录 / 复盘 双 Tab（保留） -->
         <Tabs default-value="records">
           <TabsList>
             <TabsTrigger value="records">{{ t('goal.detail.progressRecords') }}</TabsTrigger>
@@ -203,6 +237,16 @@
           </TabsContent>
 
           <TabsContent value="reviews" class="mt-4 space-y-2">
+            <!-- 创建复盘：从页头移到复盘 Tab 内首位（§4-5） -->
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="goal-create-review-button"
+              @click="handleCreateReview"
+            >
+              <Plus class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.create') }}
+            </Button>
+
             <Card
               v-for="review in goalReviews"
               :key="review.id"
@@ -230,13 +274,10 @@
           </TabsContent>
         </Tabs>
       </div>
-    </ScrollArea>
-
-    <div v-else class="flex flex-1 items-center justify-center">
-      <p class="text-muted-foreground">{{ t('goal.detail.loading') }}</p>
-    </div>
+    </DetailPageShell>
 
     <KeyResultDialog ref="keyResultDialogRef" @save="handleSaveKR" />
+    <GoalRecordDialog ref="recordDialogRef" />
   </div>
 </template>
 
@@ -244,25 +285,43 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ArrowLeft, Plus, ChevronDown, ChevronUp } from 'lucide-vue-next';
 import {
+  ChevronDown,
+  ChevronUp,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Target,
+  Trash2,
+} from 'lucide-vue-next';
+import {
+  Badge,
   Button,
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  Badge,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   Progress,
-  ScrollArea,
-  Separator,
+  Skeleton,
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
-  TabsContent,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useConfirm,
 } from '@dailyuse/ui-vue-shadcn';
+import DetailPageShell from '../../../components/shared/DetailPageShell.vue';
+import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGoal } from '../composables/useGoal';
 import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
+import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
 import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
 import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
@@ -281,10 +340,13 @@ const {
   fetchRecords,
   fetchReviews,
   addKeyResult,
+  deleteGoal,
 } = useGoal();
 
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
+const recordDialogRef = ref<InstanceType<typeof GoalRecordDialog> | null>(null);
 const expandedRecordId = ref<string | null>(null);
+const isInitialLoading = ref(true);
 const ringRadius = 48;
 const ringCircumference = 2 * Math.PI * ringRadius;
 
@@ -298,12 +360,39 @@ const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );
 
+function formatDate(value: number | null | undefined): string {
+  return value ? new Date(value).toLocaleDateString() : t('goal.detail.notSet');
+}
+
+function openRecordDialog(keyResultId: string) {
+  recordDialogRef.value?.openDialog(goalId, keyResultId);
+}
+
 function handleOpenAddKR() {
   keyResultDialogRef.value?.openForCreateKeyResult(goalId);
 }
 
 function handleCreateReview() {
   router.push(`/goals/${goalId}/review/create`);
+}
+
+function handleEditGoal() {
+  router.push({ name: 'goal-list', query: { dialog: 'goal', goalId } });
+}
+
+async function handleDeleteGoal() {
+  const confirmed = await useConfirm({
+    title: t('goal.list.confirmDeleteTitle'),
+    description: t('goal.list.confirmDelete'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+  if (!confirmed) return;
+  const ok = await deleteGoal(goalId);
+  if (ok) {
+    router.push({ name: 'goal-list' });
+  }
 }
 
 async function handleSaveKR(payload: {
@@ -382,7 +471,11 @@ function getImportanceLabel(importance: string): string {
 }
 
 onMounted(async () => {
-  await fetchGoal(goalId);
-  await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId), fetchReviews(goalId)]);
+  try {
+    await fetchGoal(goalId);
+    await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId), fetchReviews(goalId)]);
+  } finally {
+    isInitialLoading.value = false;
+  }
 });
 </script>

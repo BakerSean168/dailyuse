@@ -1,6 +1,6 @@
 /**
  * Repository 模块路由配置
- * Obsidian 风格仓库工作区
+ * Obsidian 风格笔记工作区
  */
 
 import type { RouteRecordRaw } from 'vue-router';
@@ -11,9 +11,9 @@ export const repositoryRoutes: RouteRecordRaw[] = [
     name: 'repository',
     component: () => import('../views/RepositoryWorkspaceView.vue'),
     meta: {
-      title: '仓库',
+      title: 'repository.route.workspace',
       showInNav: true,
-      icon: 'lucide:book-open',
+      icon: 'lucide:notebook-text',
       order: 7,
       requiresAuth: true,
     },
@@ -23,7 +23,7 @@ export const repositoryRoutes: RouteRecordRaw[] = [
     name: 'note-edit',
     component: () => import('../../editor/views/EditorLinearView.vue'),
     meta: {
-      title: '编辑笔记',
+      title: 'repository.route.noteEdit',
       requiresAuth: true,
       hideSidebar: true,
     },

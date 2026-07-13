@@ -1,376 +1,34 @@
 <script setup lang="ts">
 /**
- * DashboardView - Linear-style aggregated dashboard
+ * DashboardView — 完整统计与回顾页（UI_PAGE_REDESIGN_PLAN §2）
  *
- * Sections: stat cards, trend chart, activity timeline,
- * goal progress, task board summary, upcoming schedule, quick actions.
+ * 从「第二首页」降级：今日概览高频职责由 AI 首页右栏承接（Plan §1），
+ * 本页保留全量统计、趋势与活动回顾。
+ *
+ * 结构：StatStrip → 三列 widget（今日待办 / 即将提醒 / 目标进度）
+ *       → 趋势图（Collapsible 收起）→ 活动时间线（Collapsible 收起）。
+ * 快捷操作条已删除（与主导航 100% 重复，Brief §4.2）。
  */
-
-import { onMounted, onBeforeUnmount, computed, nextTick, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { Alert, AlertDescription, Button } from '@dailyuse/ui-vue-shadcn';
+import { AlertTriangle, RefreshCw } from 'lucide-vue-next';
 import { useDashboard } from '../modules/dashboard/composables/useDashboard';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Progress,
-  Skeleton,
-  Button,
-  ScrollArea,
-} from '@dailyuse/ui-vue-shadcn';
-import {
-  CheckCircle2,
-  Target,
-  Bell,
-  ListTodo,
-  AlertTriangle,
-  Calendar,
-  ArrowRight,
-  TrendingUp,
-  Plus,
-  RefreshCw,
-  Activity,
-} from 'lucide-vue-next';
-import VChart from 'vue-echarts';
-import { use } from 'echarts/core';
-import { LineChart, BarChart } from 'echarts/charts';
-import {
-  TitleComponent,
-  TooltipComponent,
-  GridComponent,
-  LegendComponent,
-} from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
+import ListPageShell from '../components/shared/ListPageShell.vue';
+import DashboardStatsStrip from '../modules/dashboard/components/DashboardStatsStrip.vue';
+import DashboardTrendPanel from '../modules/dashboard/components/DashboardTrendPanel.vue';
+import DashboardActivityTimeline from '../modules/dashboard/components/DashboardActivityTimeline.vue';
+import GoalProgressWidget from '../modules/goal/components/widgets/GoalProgressWidget.vue';
 import DailyTodoWidget from '../modules/task/components/widgets/DailyTodoWidget.vue';
 import UpcomingRemindersWidget from '../modules/reminder/components/widgets/UpcomingRemindersWidget.vue';
 
-use([
-  TitleComponent,
-  TooltipComponent,
-  GridComponent,
-  LegendComponent,
-  LineChart,
-  BarChart,
-  CanvasRenderer,
-]);
-
 const router = useRouter();
 const { t } = useI18n();
-const {
-  stats,
-  activityTimeline,
-  trendDays,
-  goalProgress,
-  isLoading,
-  error,
-  fetchDashboard,
-} = useDashboard();
+const { stats, activityTimeline, trendDays, goalProgress, isLoading, error, fetchDashboard } =
+  useDashboard();
 
-const chartReady = ref(false);
-const chartContainerRef = ref<HTMLElement | null>(null);
 const reminderWidgetRefreshKey = ref(0);
-let chartFrameId: number | null = null;
-let themeObserver: MutationObserver | null = null;
-
-type ChartThemeTokens = {
-  border: string;
-  mutedForeground: string;
-  popover: string;
-  popoverForeground: string;
-  chartBar: string;
-  chartLine: string;
-};
-
-const fallbackThemeTokens = {
-  border: '240 5.9% 90%',
-  mutedForeground: '240 3.8% 46.1%',
-  popover: '0 0% 100%',
-  popoverForeground: '240 10% 3.9%',
-  chartBar: '12 76% 61%',
-  chartLine: '173 58% 39%',
-} satisfies Record<string, string>;
-
-const chartTheme = ref<ChartThemeTokens>({
-  border: `hsl(${fallbackThemeTokens.border})`,
-  mutedForeground: `hsl(${fallbackThemeTokens.mutedForeground})`,
-  popover: `hsl(${fallbackThemeTokens.popover})`,
-  popoverForeground: `hsl(${fallbackThemeTokens.popoverForeground})`,
-  chartBar: `hsl(${fallbackThemeTokens.chartBar})`,
-  chartLine: `hsl(${fallbackThemeTokens.chartLine})`,
-});
-
-function resolveThemeColor(cssVariableName: string, fallbackToken: string, alpha?: number): string {
-  if (typeof window === 'undefined') {
-    return alpha === undefined
-      ? `hsl(${fallbackToken})`
-      : `hsl(${fallbackToken} / ${alpha})`;
-  }
-
-  const token =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue(cssVariableName)
-      .trim() || fallbackToken;
-
-  return alpha === undefined ? `hsl(${token})` : `hsl(${token} / ${alpha})`;
-}
-
-function syncChartTheme() {
-  chartTheme.value = {
-    border: resolveThemeColor('--border', fallbackThemeTokens.border),
-    mutedForeground: resolveThemeColor('--muted-foreground', fallbackThemeTokens.mutedForeground),
-    popover: resolveThemeColor('--popover', fallbackThemeTokens.popover),
-    popoverForeground: resolveThemeColor(
-      '--popover-foreground',
-      fallbackThemeTokens.popoverForeground,
-    ),
-    chartBar: resolveThemeColor('--chart-1', fallbackThemeTokens.chartBar),
-    chartLine: resolveThemeColor('--chart-2', fallbackThemeTokens.chartLine),
-  };
-}
-
-function cancelChartInit() {
-  if (chartFrameId !== null) {
-    cancelAnimationFrame(chartFrameId);
-    chartFrameId = null;
-  }
-}
-
-function ensureChartReady() {
-  cancelChartInit();
-
-  const attempt = () => {
-    const container = chartContainerRef.value;
-    if (!container) {
-      chartReady.value = false;
-      return;
-    }
-
-    if (container.clientWidth > 0 && container.clientHeight > 0) {
-      chartReady.value = true;
-      chartFrameId = null;
-      return;
-    }
-
-    chartReady.value = false;
-    chartFrameId = requestAnimationFrame(attempt);
-  };
-
-  chartFrameId = requestAnimationFrame(attempt);
-}
-
-onMounted(() => {
-  syncChartTheme();
-  themeObserver = new MutationObserver(() => {
-    syncChartTheme();
-  });
-  themeObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['class', 'data-theme', 'style'],
-  });
-
-  void refreshDashboard();
-  void nextTick(() => {
-    ensureChartReady();
-  });
-});
-
-watch(isLoading, (loading) => {
-  if (loading) {
-    chartReady.value = false;
-    cancelChartInit();
-    return;
-  }
-
-  void nextTick(() => {
-    ensureChartReady();
-  });
-});
-
-onBeforeUnmount(() => {
-  cancelChartInit();
-  themeObserver?.disconnect();
-  themeObserver = null;
-  chartReady.value = false;
-});
-
-// ── Stat cards config ──
-const statCards = computed(() => [
-  {
-    testId: 'dashboard-stat-card-active-tasks',
-    label: t('dashboard.stats.activeTasks'),
-    value: stats.value.activeTasks,
-    icon: ListTodo,
-    color: 'text-info',
-    bg: 'bg-info/15',
-    route: '/tasks',
-  },
-  {
-    testId: 'dashboard-stat-card-completed-today',
-    label: t('dashboard.stats.completedToday'),
-    value: stats.value.completedToday,
-    icon: CheckCircle2,
-    color: 'text-success',
-    bg: 'bg-success/15',
-    route: '/tasks',
-  },
-  {
-    testId: 'dashboard-stat-card-active-goals',
-    label: t('dashboard.stats.activeGoals'),
-    value: stats.value.activeGoals,
-    icon: Target,
-    color: 'text-primary',
-    bg: 'bg-primary/15',
-    route: '/goals',
-  },
-  {
-    testId: 'dashboard-stat-card-upcoming-reminders',
-    label: t('dashboard.stats.upcomingReminders'),
-    value: stats.value.upcomingReminders,
-    icon: Bell,
-    color: 'text-warning',
-    bg: 'bg-warning/15',
-    route: '/reminders',
-  },
-  {
-    testId: 'dashboard-stat-card-unread-notifications',
-    label: t('dashboard.stats.unreadNotifications'),
-    value: stats.value.unreadNotifications,
-    icon: Activity,
-    color: 'text-destructive',
-    bg: 'bg-destructive/15',
-    route: '/notifications',
-  },
-  {
-    testId: 'dashboard-stat-card-schedule-conflicts',
-    label: t('dashboard.stats.scheduleConflicts'),
-    value: stats.value.scheduleConflicts,
-    icon: AlertTriangle,
-    color: 'text-warning',
-    bg: 'bg-warning/15',
-    route: '/schedule',
-  },
-]);
-
-// ── Trend chart option ──
-const trendChartOption = computed(() => ({
-  tooltip: {
-    trigger: 'axis',
-    backgroundColor: chartTheme.value.popover,
-    borderColor: chartTheme.value.border,
-    textStyle: { color: chartTheme.value.popoverForeground, fontSize: 12 },
-    axisPointer: {
-      type: 'line',
-      lineStyle: {
-        color: chartTheme.value.border,
-        width: 1,
-      },
-      label: {
-        show: false,
-      },
-    },
-  },
-  legend: {
-    bottom: 0,
-    textStyle: { color: chartTheme.value.mutedForeground, fontSize: 11 },
-  },
-  grid: { top: 16, right: 16, bottom: 36, left: 40 },
-  xAxis: {
-    type: 'category',
-    data: trendDays.value.map((d) => d.date.slice(5)),
-    axisLine: { lineStyle: { color: chartTheme.value.border } },
-    axisTick: { show: false },
-    axisLabel: { color: chartTheme.value.mutedForeground, fontSize: 11 },
-  },
-  yAxis: {
-    type: 'value',
-    splitLine: { lineStyle: { color: chartTheme.value.border, type: 'dashed' } },
-    axisLabel: { color: chartTheme.value.mutedForeground, fontSize: 11 },
-  },
-  series: [
-    {
-      name: t('dashboard.chart.completed'),
-      type: 'bar',
-      data: trendDays.value.map((d) => d.tasksCompleted),
-      itemStyle: { color: chartTheme.value.chartBar, borderRadius: [4, 4, 0, 0] },
-      emphasis: {
-        focus: 'none',
-        itemStyle: {
-          color: chartTheme.value.chartBar,
-          borderRadius: [4, 4, 0, 0],
-        },
-      },
-      barMaxWidth: 24,
-    },
-    {
-      name: t('dashboard.chart.created'),
-      type: 'line',
-      data: trendDays.value.map((d) => d.tasksCreated),
-      smooth: true,
-      lineStyle: { color: chartTheme.value.chartLine, width: 2.5 },
-      itemStyle: { color: chartTheme.value.chartLine },
-      showSymbol: false,
-      emphasis: {
-        focus: 'none',
-        lineStyle: {
-          color: chartTheme.value.chartLine,
-          width: 2.5,
-        },
-        itemStyle: {
-          color: chartTheme.value.chartLine,
-        },
-      },
-    },
-  ],
-}));
-
-// ── Quick actions ──
-const quickActions = computed(() => [
-  { label: t('dashboard.quickActions.newTask'), icon: Plus, route: '/tasks' },
-  { label: t('dashboard.quickActions.viewSchedule'), icon: Calendar, route: '/schedule' },
-  { label: t('dashboard.quickActions.goalOverview'), icon: Target, route: '/goals' },
-  { label: t('dashboard.quickActions.notificationCenter'), icon: Bell, route: '/notifications' },
-]);
-
-// ── Helpers ──
-function formatTime(ts: number): string {
-  const date = new Date(ts);
-  const now = Date.now();
-  const diff = now - ts;
-  if (diff < 60_000) return t('dashboard.time.justNow');
-  if (diff < 3_600_000) {
-    return t('dashboard.time.minutesAgo', { count: Math.floor(diff / 60_000) });
-  }
-  if (diff < 86_400_000) {
-    return t('dashboard.time.hoursAgo', { count: Math.floor(diff / 3_600_000) });
-  }
-  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
-function activityIcon(type: string) {
-  const map: Record<string, typeof CheckCircle2> = {
-    task_completed: CheckCircle2,
-    goal_updated: Target,
-    reminder_fired: Bell,
-    task_created: Plus,
-    review_added: TrendingUp,
-    schedule_created: Calendar,
-  };
-  return map[type] ?? Activity;
-}
-
-function activityColor(type: string): string {
-  const map: Record<string, string> = {
-    task_completed: 'text-success',
-    goal_updated: 'text-primary',
-    reminder_fired: 'text-warning',
-    task_created: 'text-info',
-    review_added: 'text-info',
-    schedule_created: 'text-primary',
-  };
-  return map[type] ?? 'text-muted-foreground';
-}
 
 function navigateTo(path: string) {
   router.push(path);
@@ -380,21 +38,16 @@ async function refreshDashboard() {
   reminderWidgetRefreshKey.value += 1;
   await fetchDashboard();
 }
+
+onMounted(() => {
+  void refreshDashboard();
+});
 </script>
 
 <template>
-  <div class="flex flex-col h-full bg-background" data-testid="dashboard-view">
-    <!-- Page Header -->
-    <div
-      class="flex items-center justify-between px-6 py-3 border-b border-border bg-background sticky top-0 z-10"
-    >
-      <div>
-        <h1 class="text-base font-semibold tracking-tight text-foreground">
-          {{ t('dashboard.title') }}
-        </h1>
-        <p class="text-xs text-muted-foreground mt-0.5">{{ t('dashboard.subtitle') }}</p>
-      </div>
-      <div class="flex items-center gap-2">
+  <div class="h-full" data-testid="dashboard-view">
+    <ListPageShell :title="t('dashboard.title')" :description="t('dashboard.subtitle')">
+      <template #actions>
         <Button
           data-testid="dashboard-refresh-button"
           variant="ghost"
@@ -402,204 +55,45 @@ async function refreshDashboard() {
           :disabled="isLoading"
           @click="refreshDashboard"
         >
-          <RefreshCw class="w-4 h-4 mr-1" :class="{ 'animate-spin': isLoading }" />
+          <RefreshCw class="mr-1 h-4 w-4" :class="{ 'animate-spin': isLoading }" />
           {{ t('common.refresh') }}
         </Button>
-      </div>
-    </div>
+      </template>
 
-    <!-- Content -->
-    <ScrollArea class="flex-1">
-      <div class="p-6 space-y-6 max-w-[1400px] mx-auto">
-        <!-- Error banner -->
-        <div
-          v-if="error"
-          class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-3 text-sm text-destructive flex items-center gap-2"
-        >
-          <AlertTriangle class="w-4 h-4 shrink-0" />
-          {{ error }}
-        </div>
+      <div class="space-y-6">
+        <!-- Error: inline alert + retry（区块级错误约定，§0.3） -->
+        <Alert v-if="error" variant="destructive">
+          <AlertTriangle class="h-4 w-4" />
+          <AlertDescription class="flex items-center justify-between gap-4">
+            <span>{{ error }}</span>
+            <Button variant="outline" size="sm" class="h-7 shrink-0" @click="refreshDashboard">
+              {{ t('common.retry') }}
+            </Button>
+          </AlertDescription>
+        </Alert>
 
-        <!-- ═══ Stat Cards ═══ -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <template v-if="isLoading">
-            <Card v-for="i in 6" :key="i" class="border-border/50">
-              <CardContent class="p-4">
-                <Skeleton class="h-4 w-20 mb-3" />
-                <Skeleton class="h-8 w-12" />
-              </CardContent>
-            </Card>
-          </template>
-          <template v-else>
-            <Card
-              v-for="card in statCards"
-              :key="card.label"
-              :data-testid="card.testId"
-              class="border-border/50 hover:border-border transition-colors cursor-pointer group"
-              @click="navigateTo(card.route)"
-            >
-              <CardContent class="p-4">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs text-muted-foreground font-medium">{{ card.label }}</span>
-                  <div :class="[card.bg, 'rounded-md p-1.5']">
-                    <component :is="card.icon" :class="[card.color, 'w-3.5 h-3.5']" />
-                  </div>
-                </div>
-                <p class="text-2xl font-bold tracking-tight text-foreground">
-                  {{ card.value }}
-                </p>
-              </CardContent>
-            </Card>
-          </template>
-        </div>
+        <!-- StatStrip：6 数字一行，点击跳转（testid 保留） -->
+        <DashboardStatsStrip :stats="stats" :loading="isLoading" @navigate="navigateTo" />
 
-        <!-- ═══ Main Grid: Chart + Activity ═══ -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <!-- Trend Chart -->
-          <Card class="lg:col-span-2 border-border/50">
-            <CardHeader class="pb-2 px-4 pt-4">
-              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
-                <TrendingUp class="w-4 h-4 text-muted-foreground" />
-                {{ t('dashboard.chart.title') }}
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="px-4 pb-4">
-              <div ref="chartContainerRef" class="h-[220px] w-full">
-                <template v-if="isLoading">
-                  <Skeleton class="h-[220px] w-full rounded-lg" />
-                </template>
-                <template v-else-if="chartReady">
-                  <v-chart class="h-[220px] w-full" :option="trendChartOption" autoresize />
-                </template>
-                <template v-else>
-                  <Skeleton class="h-[220px] w-full rounded-lg" />
-                </template>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Activity Timeline -->
-          <Card class="border-border/50">
-            <CardHeader class="pb-2 px-4 pt-4">
-              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
-                <Activity class="w-4 h-4 text-muted-foreground" />
-                {{ t('dashboard.activity.title') }}
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="px-4 pb-4">
-              <template v-if="isLoading">
-                <div class="space-y-3">
-                  <div v-for="i in 5" :key="i" class="flex items-start gap-2">
-                    <Skeleton class="w-5 h-5 rounded-full shrink-0" />
-                    <div class="flex-1 space-y-1">
-                      <Skeleton class="h-3 w-full" />
-                      <Skeleton class="h-3 w-16" />
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <template v-else>
-                <ScrollArea class="h-[220px]">
-                  <div class="space-y-1">
-                    <div
-                      v-for="item in activityTimeline"
-                      :key="item.id"
-                      class="flex items-start gap-2.5 py-1.5 rounded-md hover:bg-muted/50 px-1 transition-colors"
-                    >
-                      <component
-                        :is="activityIcon(item.type)"
-                        :class="[activityColor(item.type), 'w-4 h-4 mt-0.5 shrink-0']"
-                      />
-                      <div class="flex-1 min-w-0">
-                        <p class="text-xs text-foreground leading-relaxed truncate">
-                          {{ item.description }}
-                        </p>
-                        <p class="text-[11px] text-muted-foreground">
-                          {{ formatTime(item.timestamp) }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </template>
-            </CardContent>
-          </Card>
-        </div>
-
-        <!-- ═══ Second Row: Goals + Task Board + Schedule ═══ -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <!-- Goal Progress -->
-          <Card class="border-border/50">
-            <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
-              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
-                <Target class="w-4 h-4 text-muted-foreground" />
-                {{ t('dashboard.goalProgress.title') }}
-              </CardTitle>
-              <Button variant="ghost" size="sm" class="h-7 text-xs" @click="navigateTo('/goals')">
-                {{ t('dashboard.viewAll') }}
-                <ArrowRight class="w-3 h-3 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent class="px-4 pb-4">
-              <template v-if="isLoading">
-                <div class="space-y-4">
-                  <div v-for="i in 4" :key="i" class="space-y-1.5">
-                    <Skeleton class="h-3 w-32" />
-                    <Skeleton class="h-2 w-full" />
-                  </div>
-                </div>
-              </template>
-              <template v-else>
-                <div class="space-y-3">
-                  <div v-for="goal in goalProgress" :key="goal.id" class="space-y-1.5">
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs text-foreground font-medium truncate max-w-[60%]">
-                        {{ goal.name }}
-                      </span>
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-[11px] text-muted-foreground font-mono">
-                          {{ goal.progress }}%
-                        </span>
-                      </div>
-                    </div>
-                    <Progress :model-value="goal.progress" class="h-1.5" />
-                  </div>
-                </div>
-              </template>
-            </CardContent>
-          </Card>
-
-          <!-- Daily Todo Widget -->
+        <!-- 三列 widget：今日待办 / 即将提醒 / 目标进度 -->
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
           <DailyTodoWidget @view-all="navigateTo('/tasks')" />
-
           <UpcomingRemindersWidget
             :refresh-key="reminderWidgetRefreshKey"
             @view-all="navigateTo('/reminders')"
           />
+          <GoalProgressWidget
+            :goals="goalProgress"
+            :loading="isLoading"
+            @view-all="navigateTo('/goals')"
+            @select="(id) => navigateTo(`/goals/${id}`)"
+          />
         </div>
 
-        <!-- ═══ Quick Actions Bar ═══ -->
-        <Card class="border-border/50">
-          <CardContent class="px-4 py-3">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs text-muted-foreground mr-1">
-                {{ t('dashboard.quickActions.label') }}
-              </span>
-              <Button
-                v-for="action in quickActions"
-                :key="action.label"
-                variant="outline"
-                size="sm"
-                class="h-7 text-xs"
-                @click="navigateTo(action.route)"
-              >
-                <component :is="action.icon" class="w-3.5 h-3.5 mr-1" />
-                {{ action.label }}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <!-- 趋势图 / 活动时间线：Collapsible 默认收起 -->
+        <DashboardTrendPanel :trend-days="trendDays" :loading="isLoading" />
+        <DashboardActivityTimeline :items="activityTimeline" :loading="isLoading" />
       </div>
-    </ScrollArea>
+    </ListPageShell>
   </div>
 </template>

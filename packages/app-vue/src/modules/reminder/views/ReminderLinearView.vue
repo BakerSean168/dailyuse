@@ -93,20 +93,6 @@
               @update:checked="handleToggleGlobalReminder"
             />
           </div>
-          <div
-            v-if="selectedGroup"
-            class="hidden items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-xs text-muted-foreground md:flex"
-          >
-            <span>{{ selectedGroup.name }}</span>
-            <Badge variant="outline">{{ getGroupControlModeText(t, selectedGroup) }}</Badge>
-            <Badge :variant="selectedGroup.enabled ? 'default' : 'secondary'">
-              {{
-                selectedGroup.enabled
-                  ? t('reminder.linear.groupEnabled')
-                  : t('reminder.linear.groupPaused')
-              }}
-            </Badge>
-          </div>
           <div class="relative hidden w-64 lg:block">
             <Search
               class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -146,41 +132,35 @@
           </div>
 
           <div v-if="selectedGroup" class="mb-4 rounded-2xl border bg-card px-4 py-4 shadow-sm">
-            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div class="space-y-2">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h2 class="text-sm font-semibold text-foreground">{{ selectedGroup.name }}</h2>
-                  <Badge variant="outline">{{ getGroupControlModeText(t, selectedGroup) }}</Badge>
-                  <Badge :variant="selectedGroup.enabled ? 'default' : 'secondary'">
-                    {{
-                      selectedGroup.enabled
-                        ? t('reminder.linear.groupEnabled')
-                        : t('reminder.linear.groupPaused')
-                    }}
-                  </Badge>
-                </div>
-                <p class="text-xs text-muted-foreground">
-                  {{ getGroupPolicyText(t, selectedGroup) }}
-                </p>
-                <p v-if="selectedGroup.description" class="text-xs text-muted-foreground">
-                  {{ selectedGroup.description }}
-                </p>
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-sm font-semibold text-foreground">{{ selectedGroup.name }}</h2>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Badge variant="outline" class="cursor-help">
+                      {{ getGroupControlModeText(t, selectedGroup) }}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent class="max-w-xs text-xs leading-5">
+                    {{ getGroupPolicyText(t, selectedGroup) }}
+                  </TooltipContent>
+                </Tooltip>
+                <Badge :variant="selectedGroup.enabled ? 'default' : 'secondary'">
+                  {{
+                    selectedGroup.enabled
+                      ? t('reminder.linear.groupEnabled')
+                      : t('reminder.linear.groupPaused')
+                  }}
+                </Badge>
               </div>
-
-              <div class="grid grid-cols-2 gap-2 text-xs text-muted-foreground md:min-w-72">
-                <div class="rounded-xl border bg-background px-3 py-2">
-                  <p class="font-medium text-foreground">
-                    {{ t('reminder.linear.templateCount') }}
-                  </p>
-                  <p class="mt-1">{{ getGroupTemplateCountLabel(t, selectedGroup) }}</p>
-                </div>
-                <div class="rounded-xl border bg-background px-3 py-2">
-                  <p class="font-medium text-foreground">
-                    {{ t('reminder.linear.currentStatus') }}
-                  </p>
-                  <p class="mt-1">{{ getGroupActiveStatusLabel(t, selectedGroup) }}</p>
-                </div>
-              </div>
+              <p v-if="selectedGroup.description" class="text-xs text-muted-foreground">
+                {{ selectedGroup.description }}
+              </p>
+              <!-- 统计压成一行内联数字（§8-5） -->
+              <p class="text-xs text-muted-foreground">
+                {{ getGroupTemplateCountLabel(t, selectedGroup) }} ·
+                {{ getGroupActiveStatusLabel(t, selectedGroup) }}
+              </p>
             </div>
           </div>
 
@@ -225,7 +205,7 @@
     </main>
 
     <!-- Template Detail Card -->
-    <TemplateDesktopCard
+    <ReminderTemplateCard
       ref="templateCardRef"
       :template="selectedTemplate"
       @edit-template="handleEditTemplate"
@@ -276,11 +256,21 @@ import {
   Trash2,
   Power,
 } from 'lucide-vue-next';
-import { Button, Badge, ScrollArea, Input, Switch, useConfirm } from '@dailyuse/ui-vue-shadcn';
+import {
+  Badge,
+  Button,
+  Input,
+  ScrollArea,
+  Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useConfirm,
+} from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
-import TemplateDesktopCard from '../components/TemplateDesktopCard.vue';
+import ReminderTemplateCard from '../components/ReminderTemplateCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
 import GroupDialog from '../components/GroupDialog.vue';
 import TemplateMoveDialog from '../components/TemplateMoveDialog.vue';
@@ -334,7 +324,7 @@ const selectedTemplate = computed(
 );
 const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const defaultTemplateGroupId = ref<string | null>(null);
-const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard> | null>(null);
+const templateCardRef = ref<InstanceType<typeof ReminderTemplateCard> | null>(null);
 const templateDialogRef = ref<InstanceType<typeof TemplateDialog> | null>(null);
 const templateMoveDialogRef = ref<InstanceType<typeof TemplateMoveDialog> | null>(null);
 const groupDialogRef = ref<InstanceType<typeof GroupDialog> | null>(null);

@@ -15,12 +15,15 @@ describe('createAppRouter', () => {
     expect(route.meta.title).toBe('aiAssistant.chatPage.title');
   });
 
-  it('keeps /ai/chat as an AI workspace entry route', () => {
+  it('redirects the legacy /ai/chat entry to the AI workspace root', async () => {
     const router = createAppRouter({
       history: createMemoryHistory(),
       isAuthenticated: () => true,
     });
 
-    expect(router.resolve('/ai/chat').name).toBe('ai-chat');
+    await router.push('/ai/chat');
+
+    expect(router.currentRoute.value.name).toBe('ai-workspace');
+    expect(router.currentRoute.value.path).toBe('/');
   });
 });

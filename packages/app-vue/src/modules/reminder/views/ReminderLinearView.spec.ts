@@ -101,6 +101,9 @@ vi.mock('@dailyuse/ui-vue-shadcn', async () => {
     ScrollArea: passthrough('ScrollArea'),
     Input: passthrough('Input'),
     Switch,
+    Tooltip: passthrough('Tooltip'),
+    TooltipContent: passthrough('TooltipContent'),
+    TooltipTrigger: passthrough('TooltipTrigger'),
     useConfirm: vi.fn().mockResolvedValue(true),
   };
 });
@@ -332,7 +335,7 @@ function mountView() {
       plugins: [i18n],
       stubs: {
         GridTemplateItem: true,
-        TemplateDesktopCard: TemplateDesktopCardStub,
+        ReminderTemplateCard: TemplateDesktopCardStub,
         TemplateDialog: TemplateDialogStub,
         GroupDialog: GroupDialogStub,
         TemplateMoveDialog: TemplateMoveDialogStub,
@@ -448,7 +451,7 @@ describe('ReminderLinearView', () => {
         plugins: [i18n],
         stubs: {
           GridTemplateItem: true,
-          TemplateDesktopCard: TemplateDesktopCardInteractiveStub,
+          ReminderTemplateCard: TemplateDesktopCardInteractiveStub,
           TemplateDialog: TemplateDialogStub,
           GroupDialog: GroupDialogStub,
           TemplateMoveDialog: TemplateMoveDialogInteractiveStub,
@@ -516,7 +519,7 @@ describe('ReminderLinearView', () => {
         plugins: [i18n],
         stubs: {
           GridTemplateItem: true,
-          TemplateDesktopCard: TemplateDesktopCardInteractiveStub,
+          ReminderTemplateCard: TemplateDesktopCardInteractiveStub,
           TemplateDialog: TemplateDialogStub,
           GroupDialog: GroupDialogStub,
           TemplateMoveDialog: TemplateMoveDialogStub,

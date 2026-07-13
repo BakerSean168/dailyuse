@@ -40,37 +40,59 @@
 
       <!-- Empty state -->
       <div v-else class="flex min-h-[20rem] items-center justify-center">
-        <div class="max-w-xl rounded-3xl border bg-card p-6 text-left">
-          <div
-            class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground"
-          >
-            <component
-              :is="
-                toolMode === 'knowledge-generate'
-                  ? NotebookPen
-                  : toolMode === 'goal-create'
-                    ? Sparkles
-                    : toolMode === 'knowledge-qa'
-                      ? Search
-                      : Bot
-              "
-              class="h-5 w-5"
-            />
+        <div class="w-full max-w-xl space-y-4">
+          <div class="rounded-3xl border bg-card p-6 text-left">
+            <div
+              class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground"
+            >
+              <component
+                :is="
+                  toolMode === 'knowledge-generate'
+                    ? NotebookPen
+                    : toolMode === 'goal-create'
+                      ? Sparkles
+                      : toolMode === 'knowledge-qa'
+                        ? Search
+                        : Bot
+                "
+                class="h-5 w-5"
+              />
+            </div>
+            <h2 class="text-base font-medium text-foreground">
+              {{
+                toolMode === 'chat'
+                  ? t('aiAssistant.chatPage.emptyTitle')
+                  : t(`aiAssistant.chatPage.toolIntro.${getToolLocaleKey(toolMode)}.title`)
+              }}
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-muted-foreground">
+              {{
+                toolMode === 'chat'
+                  ? t('aiAssistant.chatPage.emptyDescription')
+                  : t(`aiAssistant.chatPage.toolIntro.${getToolLocaleKey(toolMode)}.description`)
+              }}
+            </p>
           </div>
-          <h2 class="text-base font-medium text-foreground">
-            {{
-              toolMode === 'chat'
-                ? t('aiAssistant.chatPage.emptyTitle')
-                : t(`aiAssistant.chatPage.toolIntro.${getToolLocaleKey(toolMode)}.title`)
-            }}
-          </h2>
-          <p class="mt-2 text-sm leading-6 text-muted-foreground">
-            {{
-              toolMode === 'chat'
-                ? t('aiAssistant.chatPage.emptyDescription')
-                : t(`aiAssistant.chatPage.toolIntro.${getToolLocaleKey(toolMode)}.description`)
-            }}
-          </p>
+
+          <!-- 三个工作流入口卡（仅 chat 模式空态，点击即设定工具模式，§1-4） -->
+          <div v-if="toolMode === 'chat'" class="grid gap-2 sm:grid-cols-3">
+            <button
+              v-for="entry in workflowEntries"
+              :key="entry.mode"
+              type="button"
+              class="rounded-2xl border bg-card p-4 text-left transition-colors hover:border-ring hover:bg-muted/40"
+              :data-testid="`ai-welcome-entry-${entry.mode}`"
+              @click="$emit('select-tool', entry.mode)"
+            >
+              <component :is="entry.icon" class="h-4 w-4 text-muted-foreground" />
+              <p class="mt-2 text-sm font-medium text-foreground">
+                {{ t(`aiAssistant.chatPage.toolIntro.${entry.localeKey}.title`) }}
+              </p>
+              <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                {{ t(`aiAssistant.chatPage.toolIntro.${entry.localeKey}.description`) }}
+              </p>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -89,6 +111,16 @@ defineProps<{
   timeline: ChatItem[];
   toolMode: WorkflowMode;
 }>();
+
+defineEmits<{
+  'select-tool': [mode: WorkflowMode];
+}>();
+
+const workflowEntries = [
+  { mode: 'goal-create', localeKey: getToolLocaleKey('goal-create'), icon: Sparkles },
+  { mode: 'knowledge-generate', localeKey: getToolLocaleKey('knowledge-generate'), icon: NotebookPen },
+  { mode: 'knowledge-qa', localeKey: getToolLocaleKey('knowledge-qa'), icon: Search },
+] as const;
 
 const viewport = ref<HTMLElement | null>(null);
 

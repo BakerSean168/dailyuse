@@ -40,6 +40,8 @@ export default {
     operationFailed: 'Operation failed',
     saving: 'Saving...',
     refresh: 'Refresh',
+    collapse: 'Collapse',
+    expand: 'Expand',
     colors: {
       red: 'Red',
       orange: 'Orange',
@@ -119,11 +121,17 @@ export default {
     schedule: 'Schedule',
     reminders: 'Reminders',
     notifications: 'Notifications',
-    repositories: 'Repository',
-    governance: 'Governance',
+    repositories: 'Notes',
+    governance: 'Standards',
     settings: 'Settings',
     accountCenter: 'Account',
     logout: 'Log Out',
+    group: {
+      workbench: 'Workbench',
+      plan: 'Plan',
+      execute: 'Execute',
+      knowledge: 'Knowledge',
+    },
   },
 
   aiAssistant: {
@@ -154,6 +162,7 @@ export default {
         title: 'Context',
         show: 'Show context',
         hide: 'Hide context',
+        todayOverview: 'Today',
       },
       sidebar: {
         open: 'Open sidebar',
@@ -206,6 +215,8 @@ export default {
         openCreatedNote: 'Open Note',
         startAnotherNote: 'New Note Chat',
         exitTool: 'Exit Intent',
+        ungroundedHint:
+          'The answer is not sufficiently grounded in your note evidence, so note creation is disabled. Add sources or rephrase the question.',
         goalClarificationTitle: 'Goal Clarification',
         goalClarificationAnswerPlaceholder: 'Add the missing detail here...',
         goalDraftTitle: 'Goal Draft',
@@ -575,6 +586,16 @@ export default {
   setting: {
     title: 'App Settings',
     userSettings: 'User Settings',
+
+    // Group navigation (10 tabs -> 6 groups, Plan §13)
+    groups: {
+      appearance: 'Appearance & Language',
+      ai: 'AI',
+      notifications: 'Notifications & Reminders',
+      account: 'Account & Privacy',
+      data: 'Data',
+      advanced: 'Advanced',
+    },
 
     // Tab labels
     tabs: {
@@ -1196,7 +1217,7 @@ export default {
   // ── Dashboard module ────────────────────────────────────
   dashboard: {
     title: 'Dashboard',
-    subtitle: 'Global overview and quick actions',
+    subtitle: 'Full statistics and review',
     viewAll: 'View All',
     error: {
       loadFailed: 'Failed to load dashboard data',
@@ -1216,16 +1237,11 @@ export default {
     },
     activity: {
       title: 'Recent Activity',
+      empty: 'No recent activity',
     },
     goalProgress: {
       title: 'Goal Progress',
-    },
-    quickActions: {
-      label: 'Quick Actions:',
-      newTask: 'New Task',
-      viewSchedule: 'View Schedule',
-      goalOverview: 'Goal Overview',
-      notificationCenter: 'Notification Center',
+      empty: 'No active goals yet',
     },
     time: {
       justNow: 'Just now',
@@ -1663,14 +1679,20 @@ export default {
       keyboardHints: '↑↓ Navigate | Enter Select | Esc Cancel',
     },
     linear: {
-      openWorkspace: 'Open workspace',
+      openWorkspace: 'Open Notes',
       untitled: 'Untitled note',
       notFound: 'Note not found',
+      noteUnavailable: 'Note not found',
+      backToNotes: 'Back to Notes',
       loadFailed: 'Failed to load note',
       saveSuccess: 'Note saved',
       saveFailed: 'Failed to save note',
       createLinkedSuccess: 'Created "{name}"',
       createLinkedFailed: 'Failed to create linked note',
+    },
+    noteContext: {
+      backlinks: 'Backlinks',
+      graph: 'Graph',
     },
     mediaViewer: {
       videoNotSupported: 'Your browser does not support video playback',
@@ -1691,10 +1713,11 @@ export default {
 
   // ── Notification module ─────────────────────────────────
   notification: {
-    title: 'Notification Center',
+    title: 'Notifications',
     loading: 'Loading...',
     empty: 'No notifications',
     emptyDescription: 'All notifications will appear here',
+    allCaughtUp: 'All caught up ✓',
 
     item: {
       priorityVital: 'Urgent',
@@ -1768,6 +1791,27 @@ export default {
       day: 'Day',
       week: 'Week',
       month: 'Month',
+    },
+
+    source: {
+      schedule: 'Schedule',
+      task: 'Task',
+      goal: 'Goal',
+    },
+
+    dayDetail: {
+      subtitle: '{count} items',
+      noEvents: 'Nothing scheduled',
+      viewInDayView: 'View in Day View',
+    },
+
+    eventDetail: {
+      subtitle: 'Schedule details',
+      time: 'Time',
+      allDay: 'All day',
+      source: 'Source',
+      conflictHint: 'This time slot has a schedule conflict',
+      readOnlyHint: 'Editing schedule events will arrive in a later release.',
     },
 
     dashboard: {
@@ -2044,8 +2088,8 @@ export default {
     },
 
     list: {
-      title: 'Governance Rules',
-      subtitle: 'Browse and manage team coding standards and best practices',
+      title: 'Coding Standards',
+      subtitle: 'Personal coding standards and best practices',
       newRule: 'New Rule',
       statusAll: 'All',
       statusActive: 'Active',
@@ -2054,13 +2098,15 @@ export default {
       severityAll: 'All',
       severityMandatory: 'Mandatory',
       severityRecommended: 'Recommended',
-      filterApplied: 'Filters applied · {total} results',
+      tagFilterLabel: 'Tags',
+      totalCount: '{total} rules',
+      filteredCount: '{total} rules · filtered',
       clearFilter: 'Clear',
-      emptyTitle: 'No rules',
+      emptyTitle: 'No standards yet',
       emptyFilterHint: 'No rules match the current filters',
-      emptyHint: 'No governance rules have been created yet',
+      emptyHint: 'Capture your personal coding standards and best practices',
       clearFilters: 'Clear Filters',
-      createFirst: 'Create First Rule',
+      createFirst: 'New Rule',
       prevPage: 'Previous',
       nextPage: 'Next',
     },
@@ -2337,9 +2383,11 @@ export default {
       searchGoals: 'Search goals...',
       compare: 'Compare',
       newGoal: 'New Goal',
-      noGoalsFound: 'No goals found',
+      noGoalsFound: 'No active goals yet',
       createToStart: 'Create a new goal to get started with tracking.',
       createGoal: 'Create Goal',
+      askAi: 'Let AI plan it with me →',
+      viewEmpty: 'No goals in this view',
     },
     systemFolders: {
       active: 'All Goals',
@@ -2357,6 +2405,8 @@ export default {
     detail: {
       back: 'Back',
       title: 'Goal Detail',
+      notFound: 'Goal not found',
+      backToList: 'Back to Goals',
       noDescription: 'No description',
       startDate: 'Start Date',
       targetDate: 'Target Date',
@@ -2366,6 +2416,12 @@ export default {
       keyResults: 'Key Results',
       addKR: 'Add KR',
       noKR: 'No key results',
+      noKrTitle: 'Add your first key result',
+      noKrDescription:
+        'Key results quantify the goal — progress can only be recorded once one exists.',
+      recordProgress: 'Record Progress',
+      recordNeedsKr: 'Add a key result first to record progress',
+      krCompleted: 'KRs {done}/{total} done',
       progressRecords: 'Progress Records',
       review: 'Review',
       recordValue: 'Record value:',
@@ -3194,12 +3250,13 @@ export default {
     },
 
     management: {
-      title: 'Task Management',
-      searchPlaceholder: 'Search task templates...',
+      title: 'Task Library',
+      searchPlaceholder: 'Search tasks...',
       loading: 'Loading...',
-      createSuccess: 'Template created successfully',
-      editSuccess: 'Template updated successfully',
-      confirmDelete: 'Confirm delete template "{name}"?',
+      createSuccess: 'Task created successfully',
+      editSuccess: 'Task updated successfully',
+      deleteTemplate: 'Delete Task',
+      confirmDelete: 'Confirm delete task "{name}"?',
       confirmDeleteAll: 'Confirm delete all templates? This cannot be undone!',
       pauseTitle: 'Pause this template?',
       pauseDescription:
@@ -3602,17 +3659,28 @@ export default {
 
     templateMgmt: {
       viewDependencyGraph: 'View Dependency Graph',
-      deleteAll: 'Delete All Templates',
-      createNew: 'Create New Template',
-      createFirst: 'Create First Template',
-      noActive: 'No active templates',
-      noPaused: 'No paused templates',
-      noArchived: 'No archived templates',
-      noTemplates: 'No templates',
+      deleteAll: 'Delete All Tasks',
+      createNew: 'New Task',
+      createFirst: 'Create First Task',
+      countLabel: '{count} tasks',
+      viewCard: 'Cards',
+      viewGraph: 'Graph',
+      relationFilterLabel: 'Relations',
+      emptyTitle: 'No task definitions yet',
+      emptyDescription:
+        'The task library holds repeatable task definitions: recurrence rules, dependencies, and goal bindings.',
+      emptyAiLink: 'Let AI generate them →',
+      noMatch: 'No matching tasks',
+      clearFilter: 'Clear Filters',
+      graphNarrowViewport: 'Open a wider window to view the dependency graph',
+      noActive: 'No active tasks',
+      noPaused: 'No paused tasks',
+      noArchived: 'No archived tasks',
+      noTemplates: 'No tasks',
       dependencyGraphTitle: 'Task Dependency Graph',
-      confirmDeleteAll: 'Confirm Delete All Templates',
+      confirmDeleteAll: 'Confirm Delete All Tasks',
       cannotUndo: 'This cannot be undone!',
-      confirmText: 'This will delete all {count} task templates and their instance data.',
+      confirmText: 'This will delete all {count} task definitions and their instance data.',
       inputDeletePlaceholder: "Type 'DELETE' to confirm",
       cancel: 'Cancel',
       confirmDeleteAllBtn: 'Confirm Delete All',
@@ -3775,7 +3843,11 @@ export default {
 
   // ── Repository module ───────────────────────────────────
   repository: {
-    title: 'Repository',
+    title: 'Notes',
+    route: {
+      workspace: 'Notes',
+      noteEdit: 'Edit Note',
+    },
     sidebar: {
       files: 'Files',
       search: 'Search',

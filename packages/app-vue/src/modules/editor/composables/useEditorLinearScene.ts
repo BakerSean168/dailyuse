@@ -16,6 +16,8 @@ export function useEditorLinearScene() {
 
   const noteId = computed(() => String(route.params.id || ''));
   const editor = useEditorScene(noteId, {
+    // 着陆场景第一动作是「看 AI 生成了什么」：默认预览（Plan §10-4）
+    initialViewMode: 'preview',
     onOpenLinkedResource: async (id) => {
       void router.push({ name: 'note-edit', params: { id } });
     },

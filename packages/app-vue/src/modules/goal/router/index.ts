@@ -44,15 +44,20 @@ export const goalRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
         },
       },
-      {
-        path: 'rules-demo',
-        name: 'goal-rules-demo',
-        component: () => import('../views/StatusRulesDemoView.vue'),
-        meta: {
-          title: 'goal.route.rulesTester',
-          requiresAuth: true,
-        },
-      },
+      // 状态规则演示页：仅开发构建注册，不进生产路由（Brief §8-P3）
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: 'rules-demo',
+              name: 'goal-rules-demo',
+              component: () => import('../views/StatusRulesDemoView.vue'),
+              meta: {
+                title: 'goal.route.rulesTester',
+                requiresAuth: true,
+              },
+            } satisfies RouteRecordRaw,
+          ]
+        : []),
       {
         path: ':id',
         name: 'goal-detail',

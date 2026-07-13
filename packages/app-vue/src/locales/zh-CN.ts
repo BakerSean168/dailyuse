@@ -40,6 +40,8 @@ export default {
     operationFailed: '操作失败',
     saving: '保存中...',
     refresh: '刷新',
+    collapse: '收起',
+    expand: '展开',
     colors: {
       red: '红色',
       orange: '橙色',
@@ -119,11 +121,17 @@ export default {
     schedule: '日程',
     reminders: '提醒',
     notifications: '通知',
-    repositories: '仓库',
-    governance: '治理',
+    repositories: '笔记',
+    governance: '规范',
     settings: '设置',
     accountCenter: '个人中心',
     logout: '退出登录',
+    group: {
+      workbench: '工作台',
+      plan: '计划',
+      execute: '执行',
+      knowledge: '知识',
+    },
   },
 
   aiAssistant: {
@@ -150,6 +158,7 @@ export default {
         title: '上下文',
         show: '显示上下文',
         hide: '隐藏上下文',
+        todayOverview: '今日概览',
       },
       sidebar: {
         open: '打开侧栏',
@@ -194,6 +203,7 @@ export default {
         openCreatedNote: '打开笔记',
         startAnotherNote: '新建笔记对话',
         exitTool: '退出意图',
+        ungroundedHint: '当前回答未能充分命中你的笔记证据，暂不能生成笔记；可补充资料后重新提问。',
         goalClarificationTitle: '目标澄清',
         goalClarificationAnswerPlaceholder: '在这里补充必要信息...',
         goalDraftTitle: '目标草稿',
@@ -551,6 +561,16 @@ export default {
   setting: {
     title: '应用设置',
     userSettings: '用户设置',
+
+    // 分组导航（10 Tab → 6 组，Plan §13）
+    groups: {
+      appearance: '外观与语言',
+      ai: 'AI',
+      notifications: '通知与提醒',
+      account: '账户与隐私',
+      data: '数据',
+      advanced: '高级',
+    },
 
     // Tab labels
     tabs: {
@@ -1158,7 +1178,7 @@ export default {
   // ── Dashboard module ────────────────────────────────────
   dashboard: {
     title: '仪表盘',
-    subtitle: '全局概览与快速操作',
+    subtitle: '全量统计与回顾',
     viewAll: '查看全部',
     error: {
       loadFailed: '加载仪表盘数据失败',
@@ -1178,16 +1198,11 @@ export default {
     },
     activity: {
       title: '最近动态',
+      empty: '暂无动态',
     },
     goalProgress: {
       title: '目标进度',
-    },
-    quickActions: {
-      label: '快速操作:',
-      newTask: '新建任务',
-      viewSchedule: '查看日程',
-      goalOverview: '目标总览',
-      notificationCenter: '通知中心',
+      empty: '还没有进行中的目标',
     },
     time: {
       justNow: '刚刚',
@@ -1616,14 +1631,20 @@ export default {
       keyboardHints: '↑↓ 导航 | Enter 选择 | Esc 取消',
     },
     linear: {
-      openWorkspace: '打开仓库工作区',
+      openWorkspace: '打开笔记库',
       untitled: '未命名笔记',
       notFound: '未找到笔记',
+      noteUnavailable: '笔记不存在',
+      backToNotes: '回到笔记库',
       loadFailed: '加载笔记失败',
       saveSuccess: '笔记已保存',
       saveFailed: '保存笔记失败',
       createLinkedSuccess: '已创建 "{name}"',
       createLinkedFailed: '创建链接笔记失败',
+    },
+    noteContext: {
+      backlinks: '反链',
+      graph: '图谱',
     },
     mediaViewer: {
       videoNotSupported: '您的浏览器不支持视频播放',
@@ -1644,10 +1665,11 @@ export default {
 
   // ── Notification module ─────────────────────────────────
   notification: {
-    title: '通知中心',
+    title: '通知',
     loading: '加载中...',
     empty: '暂无通知',
     emptyDescription: '所有通知将在这里显示',
+    allCaughtUp: '已全部处理 ✓',
 
     item: {
       priorityVital: '紧急',
@@ -1721,6 +1743,27 @@ export default {
       day: '日',
       week: '周',
       month: '月',
+    },
+
+    source: {
+      schedule: '日程',
+      task: '任务',
+      goal: '目标',
+    },
+
+    dayDetail: {
+      subtitle: '{count} 个安排',
+      noEvents: '无安排',
+      viewInDayView: '在日视图中查看',
+    },
+
+    eventDetail: {
+      subtitle: '日程详情',
+      time: '时间',
+      allDay: '全天',
+      source: '来源',
+      conflictHint: '该时段存在日程冲突',
+      readOnlyHint: '日程事件编辑能力将在后续版本提供。',
     },
 
     dashboard: {
@@ -1997,8 +2040,8 @@ export default {
     },
 
     list: {
-      title: '治理规则',
-      subtitle: '浏览和管理团队编码标准与最佳实践',
+      title: '编码规范',
+      subtitle: '个人编码标准与最佳实践',
       newRule: '新建规则',
       statusAll: '全部',
       statusActive: '已发布',
@@ -2007,13 +2050,15 @@ export default {
       severityAll: '全部',
       severityMandatory: '强制',
       severityRecommended: '推荐',
-      filterApplied: '已应用过滤条件 · 共 {total} 条结果',
+      tagFilterLabel: '标签',
+      totalCount: '共 {total} 条',
+      filteredCount: '共 {total} 条 · 已过滤',
       clearFilter: '清除',
-      emptyTitle: '暂无规则',
+      emptyTitle: '还没有规范条目',
       emptyFilterHint: '当前过滤条件下没有匹配的规则',
-      emptyHint: '还没有创建任何治理规则',
+      emptyHint: '沉淀你的个人编码标准与最佳实践',
       clearFilters: '清除过滤',
-      createFirst: '创建第一条规则',
+      createFirst: '新建规则',
       prevPage: '上一页',
       nextPage: '下一页',
     },
@@ -2285,9 +2330,11 @@ export default {
       searchGoals: '搜索目标...',
       compare: '对比',
       newGoal: '新建目标',
-      noGoalsFound: '未找到目标',
+      noGoalsFound: '还没有进行中的目标',
       createToStart: '创建一个新目标开始追踪。',
       createGoal: '创建目标',
+      askAi: '让 AI 帮我规划 →',
+      viewEmpty: '此视图暂无目标',
     },
     systemFolders: {
       active: '所有目标',
@@ -2305,6 +2352,8 @@ export default {
     detail: {
       back: '返回',
       title: '目标详情',
+      notFound: '目标不存在',
+      backToList: '回到目标列表',
       noDescription: '暂无描述',
       startDate: '开始日期',
       targetDate: '目标日期',
@@ -2314,6 +2363,11 @@ export default {
       keyResults: '关键结果',
       addKR: '添加 KR',
       noKR: '暂无关键结果',
+      noKrTitle: '先添加一个关键结果',
+      noKrDescription: '关键结果是目标的量化抓手，添加后才能记录进度。',
+      recordProgress: '记录进度',
+      recordNeedsKr: '还没有关键结果，先添加 KR 才能记录进度',
+      krCompleted: 'KR 完成 {done}/{total}',
       progressRecords: '进度记录',
       review: '复盘',
       recordValue: '记录值:',
@@ -3140,12 +3194,13 @@ export default {
     },
 
     management: {
-      title: '任务管理',
-      searchPlaceholder: '搜索任务模板...',
+      title: '任务库',
+      searchPlaceholder: '搜索任务...',
       loading: '加载中...',
-      createSuccess: '模板创建成功',
-      editSuccess: '模板更新成功',
-      confirmDelete: '确认删除模板「{name}」？',
+      createSuccess: '任务创建成功',
+      editSuccess: '任务更新成功',
+      deleteTemplate: '删除任务',
+      confirmDelete: '确认删除任务「{name}」？',
       confirmDeleteAll: '确认删除所有模板？此操作不可撤销！',
       pauseTitle: '确认暂停该模板？',
       pauseDescription:
@@ -3544,17 +3599,27 @@ export default {
 
     templateMgmt: {
       viewDependencyGraph: '查看依赖关系图',
-      deleteAll: '删除所有模板',
-      createNew: '创建新模板',
-      createFirst: '创建第一个模板',
-      noActive: '暂无进行中的模板',
-      noPaused: '暂无暂停的模板',
-      noArchived: '暂无归档的模板',
-      noTemplates: '暂无模板',
+      deleteAll: '删除所有任务',
+      createNew: '新建任务',
+      createFirst: '创建第一个任务',
+      countLabel: '{count} 个任务',
+      viewCard: '卡片',
+      viewGraph: '图谱',
+      relationFilterLabel: '关系',
+      emptyTitle: '还没有任务定义',
+      emptyDescription: '任务库管理可重复的任务定义：循环规则、依赖关系与目标绑定。',
+      emptyAiLink: '让 AI 帮我生成 →',
+      noMatch: '没有匹配的任务',
+      clearFilter: '清除过滤',
+      graphNarrowViewport: '请在更宽的窗口查看依赖图谱',
+      noActive: '暂无进行中的任务',
+      noPaused: '暂无暂停的任务',
+      noArchived: '暂无归档的任务',
+      noTemplates: '暂无任务',
       dependencyGraphTitle: '任务依赖关系图',
-      confirmDeleteAll: '确认删除所有模板',
+      confirmDeleteAll: '确认删除所有任务',
       cannotUndo: '此操作不可撤销！',
-      confirmText: '将会删除所有 {count} 个任务模板及其所有实例数据。',
+      confirmText: '将会删除所有 {count} 个任务定义及其所有实例数据。',
       inputDeletePlaceholder: "请输入 'DELETE' 确认删除",
       cancel: '取消',
       confirmDeleteAllBtn: '确认删除全部',
@@ -3717,7 +3782,11 @@ export default {
 
   // ── Repository module ───────────────────────────────────
   repository: {
-    title: '仓库',
+    title: '笔记',
+    route: {
+      workspace: '笔记',
+      noteEdit: '编辑笔记',
+    },
     sidebar: {
       files: '文件',
       search: '搜索',

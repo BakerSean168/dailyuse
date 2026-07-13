@@ -21,7 +21,7 @@ export const scheduleRoutes: RouteRecordRaw[] = [
       {
         path: 'calendar',
         name: 'ScheduleCalendar',
-        component: () => import('../views/ScheduleDashboardView.vue'),
+        component: () => import('../views/ScheduleCalendarView.vue'),
         meta: {
           title: 'schedule.route.calendar',
           requiresAuth: true,
