@@ -60,7 +60,7 @@ const { t } = useI18n();
   <!-- 首次加载：卡片骨架（§0.3 禁整页 spinner） -->
   <div
     v-if="loading"
-    class="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-6"
+    class="grid grid-cols-1 gap-6 @2xl/panel:grid-cols-2 @5xl/panel:grid-cols-3"
     data-testid="task-grid-skeleton"
   >
     <div v-for="i in 6" :key="i" class="space-y-3 rounded-lg border border-border/50 p-4">
@@ -109,7 +109,7 @@ const { t } = useI18n();
   </div>
 
   <!-- 卡片网格（拖拽建依赖保留） -->
-  <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-6">
+  <div v-else class="grid grid-cols-1 gap-6 @2xl/panel:grid-cols-2 @5xl/panel:grid-cols-3">
     <DraggableTaskCard
       v-for="template in templates"
       :key="template.id"

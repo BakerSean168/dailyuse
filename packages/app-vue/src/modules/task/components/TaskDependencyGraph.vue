@@ -87,7 +87,7 @@
     <CardContent v-if="hasData && !loading" class="pt-0">
       <Separator class="mb-4" />
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 gap-4 @2xl/panel:grid-cols-2">
         <!-- 统计信息 -->
         <div>
           <div class="text-sm font-medium mb-2">{{ t('task.dependencyGraph.stats') }}</div>
