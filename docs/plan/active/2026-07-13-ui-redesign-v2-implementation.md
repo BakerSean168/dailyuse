@@ -92,6 +92,17 @@ updated: 2026-07-13T16:30:00
 
 顺序：Goal → Task → Schedule → Reminder → Notification → Settings。V1 对应章节的"主/次操作、删减清单、拆分/退役、空态设计"已落地在 main，本分支上的改造 = **保留 V1 成果 + 面板化差异**（V2 §6.1–6.7 表）。
 
+**面板两档基建（S2 通用，Goal 切片建立，后续模块复用）**：
+- `usePanelWidth` / `providePanelWidth`（`layouts/shell`）：`BusinessPanel` 用 ResizeObserver 实测内容宽度并 provide `{ width, tier, isNarrow, isWide }`；`tier` = narrow(<900px，split) / wide(focus)。**这是 V2 §7"视口四档 → 面板两档"的落地机制**——业务视图不再用 `md:`/`lg:`/`xl:` 视口断点，改用面板宽度档位。
+- `BusinessPanel` 内容区 = Tailwind v4 命名容器 `@container/panel`：结构切换（侧栏↔下拉）走 JS 档位，纯样式（网格列）走 CSS 容器查询（`@2xl/panel:` 等）。
+
+- [x] **Goal（§6.1）— PR #177**：`GoalViewSwitcherBar`（窄档收第二侧栏为顶部下拉，系统视图计数+文件夹+专注+新建）↔ `GoalSidebar`（宽档）按档位二选一；`GoalListView` 网格改容器查询；testid 契约（`goal-system-view-*`/`goal-focus-entry`/`create-goal-entry`）随迁。验证：app-vue lint/typecheck/test 189 通过 + web vue-tsc + MSW 冒烟 10/10（同 1280 视口 split=1 列/focus=3 列）
+- [ ] **Task（§6.2）**：任务库更名、FilterBar、图谱视图模式、全部删除入危险区；拖拽建依赖**仅 focus 档启用**（split 档 450px 内误操作率高）
+- [ ] **Schedule（§6.3）**：日历天然要宽度→进入即建议 focus 档（split 只渲日视图）；`EventDetailSheet` 补位；`ScheduleDashboardView`→`ScheduleCalendarView` 更名；日程胶囊实时文案接 `useCalendarView`
+- [ ] **Reminder（§6.4）**：分组侧栏窄档收下拉；全局开关任何档位保持面板头可达
+- [ ] **Notification（§6.5）**：胶囊预览浮层 = 铃铛弹层（最近 N + 全部已读 + 查看全部）；完整面板 = 信箱归档页
+- [ ] **Settings（§6.6）**：默认 focus 打开；6 分组 + 账户中心迁入 + `?tab=` 契约（S1 已验证 `/account/center` 深链）
+
 ### S3 AI 工作区精修
 
 V2 §6.0：欢迎态 + 今日概览三 widget + 工作流按钮内嵌消息卡 + 产物自动新开面板 Tab + legacy 分支删除。状态机回归为重点。
@@ -123,3 +134,4 @@ V1 P3 已完成 Note 阶段 0 大部分（TabManager/EditorSplitView/导出批�
 - 2026-07-13：**S0 完成**（分支 `refactor/ui-redesign-v2-shell`）：壳级 Pinia store（多 Tab + LRU 8 + 会话恢复持久化）+ `ModuleCapsule` DI 接口（types/keys/navigation/barrel）+ 5 个壳组件（`AppShell` 三态容器 / `WindowHeader` 胶囊+窗控 / `ConversationSidebar` 纯会话列表 / `BusinessPanel` 多 Tab / `GlobalComposer`）+ i18n `shell.*`/`nav.capsule.*` zh/en 两份。`AppShell` 已把子组件接到 store（可交互），router/AI/IPC 接线用 slot + noop 预留 S1。确认桌面主窗口已 frameless（`titleBarStyle:'hidden'` + 窗控状态同步），宿主无需新工作。typecheck + lint 全绿（0 error）。**未挂载**（`App.vue`/router 不变，`MainLayout` 仍生效）——切换在 S1。下一步 S1 切换 PR。
 - 2026-07-13：S0 调研完成（读 `di/types.ts`、`di/navigation.ts`、`di/keys.ts`、web/desktop 两端 `App.vue` 与 `di-app.ts`、`useDesktopWindowControls.ts`）。关键结论：桌面窗控 IPC 全套已存在（任务 #5 降级为"迁移到 WindowHeader"）；新壳取代 `MainLayout` 路由位置；`ModuleCapsule` 重定义需同步 5 处（`di/types.ts` + `di/keys.ts` + web/desktop 两 `di-app.ts` + 新壳消费）。**下一步：S0 开始写代码——先建 5 个空壳组件 + `useAppShellStore` + `ModuleCapsule` 接口，均不接线、不改 `App.vue`。**
 - 2026-07-13：**S1 切换完成**（3 commits：S0 骨架 / S1 接线切换 / KeepAlive 键修复）。关键实现取舍：① AppShell 直接坐进 `/` 父路由位（不动 App.vue，auth/custom-notification 天然壳外）；② AIChatView 不拆成 AIWorkspaceLayer 而是整组件常驻 + 两 prop + defineExpose——43 用例 AI 状态机 spec 零改动通过，S3 再精修；③ KeepAlive 缓存键必须含路由 name（同 key 换组件类型 = Vue 复用错实例崩溃，真浏览器冒烟抓到后修复）；④ 桌面 entry redirect 收窄防止与会话恢复竞态。全链路验证 = 三项目 typecheck/lint/test/build + MSW 真浏览器冒烟 30/30（三态/多 Tab/恢复/redirect/0 报错）。**待环境项**：真实 API Playwright 全量、Electron 手动回归、AI 三工作流 e2e。**下一步：S2 面板内容改造（Goal 首个）**；S1 期间发现的 S2 输入：分栏态 AI 列被 AIContextPanel 挤压（S3 拆）、Goal 面板窄档第二侧栏待收敛（§6.1）、面板级错误边界（业务视图崩溃不应吃掉整壳）、<768 侧栏 overlay 未做、日程胶囊实时文案未接（useCalendarView，S2-Schedule）。
+- 2026-07-13：**S2-Goal 完成（PR #177）**，S1 已 squash-merge 到 main（#176，`33e9429a0`）。建立 S2 通用的**面板两档基建**（`usePanelWidth` + `BusinessPanel` 的 `@container/panel` 命名容器）——V2 §7 落地机制，后续每模块复用。Goal 切片：窄档 `GoalViewSwitcherBar`（第二侧栏收顶部下拉）↔ 宽档 `GoalSidebar` 按档位切换，`GoalListView` 网格改容器查询，testid 契约随迁。验证：app-vue 189 测试 + web vue-tsc + MSW 冒烟 10/10（同 1280 视口下 split=1 列+切换栏、focus=3 列+完整侧栏，真截图核对）。**下一步：S2-Task（§6.2）**——任务库更名、FilterBar、图谱视图、拖拽建依赖仅 focus 档启用；用户策略 = 前端重构基本完成后再统一修 S1/S2 途中的既有 bug（MSW 缺 handler 白屏、面板级错误边界等），S2 各切片只做结构性面板化、不夹带 bug 修复。
