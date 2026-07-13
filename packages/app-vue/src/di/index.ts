@@ -5,8 +5,4 @@
  */
 export * from './keys';
 export type * from './types';
-export {
-  defaultMainNavigation,
-  defaultBottomNavigation,
-  defaultModuleCapsules,
-} from './navigation';
+export { defaultModuleCapsules } from './navigation';

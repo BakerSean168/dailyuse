@@ -6,7 +6,8 @@ import {
 } from 'vue-router';
 import { createAuthGuard } from './guards';
 
-import MainLayout from '../layouts/MainLayout.vue';
+import AppShell from '../layouts/shell/AppShell.vue';
+import ShellHomeRoute from '../layouts/shell/ShellHomeRoute';
 
 // Module routes
 import { accountRoutes } from '../modules/account/router';
@@ -47,20 +48,21 @@ export function createAppRouter(options?: {
     },
     {
       path: '/',
-      component: MainLayout,
+      component: AppShell,
       meta: { requiresAuth: true },
       children: [
         {
+          // STATE A（纯 AI 态）：AI 工作区是壳常驻层，此路由不渲染内容（V2 §2.1）。
           path: '',
           name: 'ai-workspace',
-          component: () => import('../modules/ai/views/AIChatView.vue'),
+          component: ShellHomeRoute,
           meta: { title: 'aiAssistant.chatPage.title' },
         },
         {
+          // Dashboard 退役：今日概览由 AI 空闲态承接（V2 §3）。
           path: 'dashboard',
           name: 'dashboard',
-          component: () => import('../views/DashboardView.vue'),
-          meta: { title: 'dashboard.title' },
+          redirect: '/',
         },
         // Module routes
         ...accountRoutes,

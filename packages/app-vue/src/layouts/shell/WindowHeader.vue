@@ -49,6 +49,8 @@ const props = defineProps<{
   scheduleLabel?: string | null;
   /** 是否桌面环境（渲染窗控 + 拖拽区）。 */
   isDesktop?: boolean;
+  /** macOS：原生交通灯占左上角——左侧留位、不渲染自绘窗控。 */
+  isMac?: boolean;
   /** 桌面窗控状态（isDesktop 时由 AppShell 透传）。 */
   windowControls?: WindowControlsState;
 }>();
@@ -95,7 +97,7 @@ function badgeFor(capsule: ModuleCapsule): number {
 <template>
   <header
     class="window-header flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 text-xs"
-    :class="isDesktop ? 'window-header--drag' : ''"
+    :class="[isDesktop ? 'window-header--drag' : '', isMac ? 'pl-20' : '']"
   >
     <!-- 左：侧栏折叠 + 前进后退 -->
     <div class="flex shrink-0 items-center gap-2 no-drag">
@@ -187,7 +189,7 @@ function badgeFor(capsule: ModuleCapsule): number {
         <span>{{ scheduleLabel || t('shell.schedule.empty') }}</span>
       </button>
 
-      <div v-if="isDesktop" class="flex items-center gap-1">
+      <div v-if="isDesktop && !isMac" class="flex items-center gap-1">
         <button
           type="button"
           class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"

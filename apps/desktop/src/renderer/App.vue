@@ -2,28 +2,32 @@
 /**
  * Desktop App Root Component
  *
- * Same global overlays as the web app, with a custom desktop title bar
- * on Windows/Linux and native traffic lights preserved on macOS.
+ * Same global overlays as the web app. Since the V2 shell switch
+ * (UI_REDESIGN_V2_PLAN §2), the authenticated route tree renders AppShell,
+ * whose WindowHeader owns the drag region and window controls — so the
+ * host titlebar here only remains for the auth screen (outside the shell).
+ * The custom notification window stays chrome-less.
  */
-import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import { APP_TITLE_NAME, logo48 } from '@dailyuse/assets';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { Copy, Minus, Square, X } from 'lucide-vue-next';
 import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
 import {
   GlobalErrorBoundary,
   GlobalProgressBar,
+  useDesktopWindowControls,
   useLocaleSync,
   usePresentationBootstrap,
   useThemeSync,
 } from '@dailyuse/app-vue';
 import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
-import { useDesktopWindowControls } from './useDesktopWindowControls';
 
 const route = useRoute();
-const router = useRouter();
 const isCustomNotificationRoute = computed(() => route.name === 'custom-notification');
-const showDesktopTitlebar = computed(() => route.name !== 'custom-notification');
+// V2 shell: WindowHeader (inside AppShell) is the titlebar for all
+// authenticated routes; the host titlebar only covers the auth screen.
+const showDesktopTitlebar = computed(() => route.name === 'auth');
 const isMacPlatform =
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 const showCustomWindowControls = computed(() => !isMacPlatform && showDesktopTitlebar.value);
@@ -37,22 +41,31 @@ const {
   stopListening,
 } = useDesktopWindowControls();
 
-function navigateHome() {
-  if (route.path !== '/') {
-    void router.push('/');
-  }
-}
+let listening = false;
+
+watch(
+  showCustomWindowControls,
+  (show) => {
+    if (show && !listening) {
+      listening = true;
+      startListening();
+    }
+  },
+  { immediate: false },
+);
 
 onMounted(() => {
-  if (!showCustomWindowControls.value) {
-    return;
+  if (showCustomWindowControls.value && !listening) {
+    listening = true;
+    startListening();
   }
-
-  startListening();
 });
 
 onBeforeUnmount(() => {
-  stopListening();
+  if (listening) {
+    stopListening();
+    listening = false;
+  }
 });
 
 useThemeSync();
@@ -75,14 +88,14 @@ usePresentationBootstrap();
   >
     <header v-if="showDesktopTitlebar" class="desktop-titlebar">
       <div class="desktop-titlebar__content">
-        <button type="button" class="desktop-titlebar__brand" @click="navigateHome">
+        <div class="desktop-titlebar__brand">
           <span class="desktop-titlebar__logo-shell">
             <img :src="logo48" alt="" class="desktop-titlebar__logo" />
           </span>
           <span class="desktop-titlebar__brand-copy">
             <span class="desktop-titlebar__brand-name">{{ APP_TITLE_NAME }}</span>
           </span>
-        </button>
+        </div>
 
         <div
           v-if="showCustomWindowControls"

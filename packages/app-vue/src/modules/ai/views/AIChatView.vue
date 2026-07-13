@@ -1,6 +1,11 @@
 <template>
-  <div class="flex h-full min-h-0 overflow-hidden bg-background" data-testid="ai-chat-view">
+  <div
+    class="flex min-h-0 overflow-hidden bg-background"
+    :class="composerOnly ? 'h-auto' : 'h-full'"
+    data-testid="ai-chat-view"
+  >
     <AIConversationSidebar
+      v-if="!hideConversationSidebar && !composerOnly"
       :conversations="conversationList"
       :agent-runs="agentRunList"
       :recent-goals="recentGoalList"
@@ -55,7 +60,7 @@
     </div>
 
     <section class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <header class="border-b bg-background px-4 py-3 sm:px-6">
+      <header v-show="!composerOnly" class="border-b bg-background px-4 py-3 sm:px-6">
         <div class="flex items-center justify-between gap-3">
           <h1 class="truncate text-lg font-medium text-foreground">
             {{ currentConversationLabel }}
@@ -83,6 +88,7 @@
       </header>
 
       <AIMessagePanel
+        v-show="!composerOnly"
         ref="messagePanelRef"
         :timeline="chatTimeline"
         :tool-mode="toolMode"
@@ -107,6 +113,7 @@
     </section>
 
     <AIContextPanel
+      v-show="!composerOnly"
       :has-workflow-context="hasWorkflowContext"
       :open="contextPanelOpen"
       :tool-label="currentToolLabel"
@@ -249,6 +256,26 @@ import type { ConversationSummary } from '../composables/types';
 const { t } = useI18n();
 const router = useRouter();
 const { isXlUp } = useViewportBreakpoint();
+
+/**
+ * V2 shell integration props (UI_REDESIGN_V2_PLAN §2.1).
+ *
+ * AIChatView is no longer a routed page: the AppShell mounts it once as the
+ * persistent AI workspace layer. The shell owns the conversation sidebar
+ * (`ConversationSidebar`) and hides the built-in one; in the focus state
+ * (STATE C) only the composer strip stays visible ("AI 一句话可达").
+ * Both props default to false so the component keeps working standalone
+ * (unit specs mount it without the shell).
+ */
+withDefaults(
+  defineProps<{
+    /** Shell provides its own conversation sidebar — hide the built-in one. */
+    hideConversationSidebar?: boolean;
+    /** STATE C (focus): render only the composer strip, keep state alive. */
+    composerOnly?: boolean;
+  }>(),
+  { hideConversationSidebar: false, composerOnly: false },
+);
 
 const messagePanelRef = ref<InstanceType<typeof AIMessagePanel> | null>(null);
 const composerRef = ref<InstanceType<typeof AIFooterComposer> | null>(null);
@@ -424,5 +451,20 @@ onMounted(() => {
   if (viewport) {
     messagesViewport.value = viewport;
   }
+});
+
+/**
+ * Surface exposed to the V2 AppShell (template ref):
+ * feeds the shell-level ConversationSidebar and its actions without
+ * duplicating `useAIChatView` state (single chat session instance).
+ */
+defineExpose({
+  conversationList,
+  conversationListLoading,
+  chatConversationId,
+  selectConversation,
+  deleteConversation,
+  startNewConversation,
+  loadConversationList,
 });
 </script>

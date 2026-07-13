@@ -12,7 +12,8 @@
  * - KeepAlive :include 由 tabs 派生，Tab 保活编辑器脏状态。
  *
  * 本 store 只存视图状态；URL 是活动 Tab 路由的持久化形式（§4），
- * router ↔ store 的双向同步在 AppShell 接线（S1），不在此处直连 router。
+ * router ↔ store 的双向同步在 useShellRouterSync（AppShell 消费），
+ * 不在此处直连 router。
  */
 import { defineStore } from 'pinia';
 

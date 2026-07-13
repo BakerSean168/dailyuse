@@ -2,10 +2,10 @@
 /**
  * GlobalComposer (UI 重构 V2 壳)
  *
- * 常驻 AI 输入条。三态下都在 AI 列底部（专注态浮在业务面板底部——由
- * AppShell 决定挂载位置）。S0 为纯骨架：输入框 + 模式占位 + 发送按钮，
- * emit 事件；S1 接 AIFooterComposer 的真实逻辑（模式/模型 ⚙、发送、
- * 流式 stop）。此处不直连 AI 服务（走 composable 门面，S1 接线）。
+ * 常驻 AI 输入条骨架。S1 切换后暂未挂载：真实 Composer 仍是 AIChatView
+ * 内的 AIFooterComposer（常驻层单实例，专注态由 composer-only 模式收缩）。
+ * 本组件是 S3「AI 工作区精修」的落点——届时 AIFooterComposer 的模式/
+ * 模型选择逻辑收敛进来，成为壳级 Composer（V2 §6.0）。
  */
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';

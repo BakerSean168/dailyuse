@@ -23,11 +23,9 @@ import {
   AI_SERVICE_KEY,
   TASK_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
-  MAIN_NAVIGATION_KEY,
-  BOTTOM_NAVIGATION_KEY,
+  MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
-  defaultMainNavigation,
-  defaultBottomNavigation,
+  defaultModuleCapsules,
   useAuthenticationStore,
 } from '@dailyuse/app-vue/web-core';
 import { setEditorRuntimeService } from '@dailyuse/app-vue';
@@ -124,8 +122,8 @@ export function installAppServices(app: App): void {
   app.provide(DASHBOARD_SERVICE_KEY, dashboardService);
   setEditorRuntimeService(editorService);
 
-  app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
-  app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
+  // V2 shell capsule navigation (UI_REDESIGN_V2_PLAN §2.2 / Brief §12-4)
+  app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
   app.provide(LOGOUT_HANDLER_KEY, async () => {
     const authStore = useAuthenticationStore();
     authStore.reset();

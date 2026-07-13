@@ -16,26 +16,26 @@ export {
   DESKTOP_AUTH_API_KEY,
   DESKTOP_BRIDGE_KEY,
   type DesktopBridge,
-  MAIN_NAVIGATION_KEY,
-  BOTTOM_NAVIGATION_KEY,
+  MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
 } from './di/keys';
 export type {} from './di/types';
-export { defaultMainNavigation, defaultBottomNavigation } from './di/navigation';
+export { defaultModuleCapsules } from './di/navigation';
 
 // ── Plugins ──
 export { createI18nPlugin, loadLocaleMessages } from './plugins/i18n';
 
 // ── Layouts ──
-export { default as MainLayout } from './layouts/MainLayout.vue';
+// V2 shell (UI redesign): AppShell replaced MainLayout as the root of the
+// authenticated route tree (S1 switch, UI_REDESIGN_V2_PLAN §10).
 export { default as AuthLayout } from './layouts/AuthLayout.vue';
-// V2 shell (UI redesign) — exists on tree, wired in S1
 export * from './layouts/shell';
 export { default as DesktopAuthView } from './views/DesktopAuthView.vue';
 
 // ── Shared ──
 export { hydrateDesktopBootstrapAuthState } from './shared/utils/desktop-bootstrap-auth';
 export { GlobalErrorBoundary, GlobalProgressBar } from './shared/components';
+export { useDesktopWindowControls } from './shared/composables/useDesktopWindowControls';
 
 // ── Router ──
 export { createAppRouter } from './router';

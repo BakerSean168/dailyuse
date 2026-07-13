@@ -7,8 +7,14 @@ describe('shouldRedirectAuthenticatedDesktopEntry', () => {
     expect(shouldRedirectAuthenticatedDesktopEntry('custom-notification')).toBe(false);
   });
 
-  it('keeps the authenticated redirect for normal app routes', () => {
-    expect(shouldRedirectAuthenticatedDesktopEntry('home')).toBe(true);
+  it('redirects authenticated users away from the auth screen or an unresolved entry', () => {
+    expect(shouldRedirectAuthenticatedDesktopEntry('auth')).toBe(true);
     expect(shouldRedirectAuthenticatedDesktopEntry(undefined)).toBe(true);
+    expect(shouldRedirectAuthenticatedDesktopEntry(null)).toBe(true);
+  });
+
+  it('keeps shell routes in place so tab session restore is not clobbered', () => {
+    expect(shouldRedirectAuthenticatedDesktopEntry('ai-workspace')).toBe(false);
+    expect(shouldRedirectAuthenticatedDesktopEntry('goal-list')).toBe(false);
   });
 });

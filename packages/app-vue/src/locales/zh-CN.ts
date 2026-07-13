@@ -166,6 +166,7 @@ export default {
       closePanel: '关闭面板',
       enterFocus: '专注模式',
       exitFocus: '退出专注',
+      tabLimitHint: '标签数已达上限——建议关闭最久未用的「{title}」。',
     },
     window: {
       minimize: '最小化',

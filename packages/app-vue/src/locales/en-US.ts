@@ -166,6 +166,7 @@ export default {
       closePanel: 'Close panel',
       enterFocus: 'Focus mode',
       exitFocus: 'Exit focus',
+      tabLimitHint: 'Tab limit reached — consider closing "{title}" (least recently used).',
     },
     window: {
       minimize: 'Minimize',
