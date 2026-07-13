@@ -34,11 +34,9 @@ import {
   DATA_PORTABILITY_SERVICE_KEY,
   DESKTOP_AUTH_API_KEY,
   DESKTOP_BRIDGE_KEY,
-  MAIN_NAVIGATION_KEY,
-  BOTTOM_NAVIGATION_KEY,
+  MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
-  defaultMainNavigation,
-  defaultBottomNavigation,
+  defaultModuleCapsules,
 } from '@dailyuse/app-vue/di';
 import { createDashboardIpcAdapter } from '@dailyuse/app-vue/modules/dashboard/adapters';
 import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
@@ -81,8 +79,8 @@ export function installDesktopAppServices(app: App): void {
   app.provide(DATA_PORTABILITY_SERVICE_KEY, createDataPortabilityIpcClient(resultIpcClient));
 
   app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));
-  app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
-  app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
+  // V2 shell capsule navigation (UI_REDESIGN_V2_PLAN §2.2 / Brief §12-4)
+  app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
 
   // Provide desktop auth API for automatic auth recovery in composables
   app.provide(DESKTOP_AUTH_API_KEY, bridge);

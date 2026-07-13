@@ -132,6 +132,51 @@ export default {
       execute: 'Execute',
       knowledge: 'Knowledge',
     },
+    capsule: {
+      goal: 'Goals',
+      task: 'Tasks',
+      note: 'Notes',
+      reminder: 'Reminders',
+      notification: 'Notifications',
+    },
+  },
+
+  shell: {
+    newChat: 'New Chat',
+    search: 'Search',
+    help: 'Help',
+    guest: 'Guest',
+    back: 'Back',
+    forward: 'Forward',
+    moduleNav: 'Module navigation',
+    enterModule: 'Enter',
+    previewPlaceholder: 'Preview coming soon.',
+    openSchedule: 'Open schedule',
+    aiWorkspacePlaceholder: 'AI workspace (pending wiring)',
+    schedule: {
+      empty: 'Nothing scheduled today',
+    },
+    conversation: {
+      today: 'Today',
+      last7Days: 'Last 7 days',
+      earlier: 'Earlier',
+    },
+    panel: {
+      closeTab: 'Close tab',
+      closePanel: 'Close panel',
+      enterFocus: 'Focus mode',
+      exitFocus: 'Exit focus',
+      tabLimitHint: 'Tab limit reached — consider closing "{title}" (least recently used).',
+    },
+    window: {
+      minimize: 'Minimize',
+      maximize: 'Maximize',
+      close: 'Close',
+    },
+    composer: {
+      placeholder: 'Message Zhixing AI…',
+      send: 'Send',
+    },
   },
 
   aiAssistant: {

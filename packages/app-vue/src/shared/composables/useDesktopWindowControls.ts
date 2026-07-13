@@ -3,12 +3,16 @@
  *
  * Composable for desktop window control operations (minimize, maximize, close).
  * Receives the desktop bridge via Vue inject, falling back to window.electronAPI.
+ *
+ * Moved from apps/desktop (UI redesign V2 S1): the shell's WindowHeader renders
+ * the window controls on every desktop route, while the desktop host still uses
+ * it for the auth-screen titlebar.
  */
 import { inject, reactive } from 'vue';
-import { DESKTOP_BRIDGE_KEY, type DesktopBridge } from '@dailyuse/app-vue/di';
+import { DESKTOP_BRIDGE_KEY, type DesktopBridge } from '../../di/keys';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 
-interface WindowControlsState {
+export interface WindowControlsState {
   isMaximized: boolean;
   isMinimizable: boolean;
   isMaximizable: boolean;
@@ -16,7 +20,10 @@ interface WindowControlsState {
 }
 
 function getBridge(): DesktopBridge | undefined {
-  return inject(DESKTOP_BRIDGE_KEY, undefined) ?? (window.electronAPI as DesktopBridge | undefined);
+  return (
+    inject(DESKTOP_BRIDGE_KEY, undefined) ??
+    ((window as { electronAPI?: DesktopBridge }).electronAPI as DesktopBridge | undefined)
+  );
 }
 
 export function useDesktopWindowControls() {

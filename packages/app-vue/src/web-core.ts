@@ -13,11 +13,10 @@ export {
   AI_SERVICE_KEY,
   TASK_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
-  MAIN_NAVIGATION_KEY,
-  BOTTOM_NAVIGATION_KEY,
+  MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
 } from './di/keys';
 
-export { defaultMainNavigation, defaultBottomNavigation } from './di/navigation';
+export { defaultModuleCapsules } from './di/navigation';
 
 export { useAuthenticationStore } from './modules/authentication/stores/authentication-store';

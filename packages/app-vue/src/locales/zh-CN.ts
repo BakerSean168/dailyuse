@@ -132,6 +132,51 @@ export default {
       execute: '执行',
       knowledge: '知识',
     },
+    capsule: {
+      goal: '目标',
+      task: '任务',
+      note: '笔记',
+      reminder: '提醒',
+      notification: '通知',
+    },
+  },
+
+  shell: {
+    newChat: '新对话',
+    search: '搜索',
+    help: '帮助',
+    guest: '未登录',
+    back: '后退',
+    forward: '前进',
+    moduleNav: '模块导航',
+    enterModule: '进入',
+    previewPlaceholder: '预览内容即将到来。',
+    openSchedule: '打开日程',
+    aiWorkspacePlaceholder: 'AI 工作区（待接线）',
+    schedule: {
+      empty: '今日无安排',
+    },
+    conversation: {
+      today: '今天',
+      last7Days: '近 7 天',
+      earlier: '更早',
+    },
+    panel: {
+      closeTab: '关闭标签',
+      closePanel: '关闭面板',
+      enterFocus: '专注模式',
+      exitFocus: '退出专注',
+      tabLimitHint: '标签数已达上限——建议关闭最久未用的「{title}」。',
+    },
+    window: {
+      minimize: '最小化',
+      maximize: '最大化',
+      close: '关闭',
+    },
+    composer: {
+      placeholder: '给知行 AI 发消息…',
+      send: '发送',
+    },
   },
 
   aiAssistant: {

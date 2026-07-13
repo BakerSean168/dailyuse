@@ -45,22 +45,31 @@ export type IRuleService = GovernanceClientPort;
 // ── Dashboard（纯接口，无 private）──
 export type { IDashboardApiClient as IDashboardService } from '../modules/dashboard/types';
 
-// ── Navigation ──
-export interface NavigationItem {
-  path: string;
-  /** i18n key for the item label (e.g. 'nav.home'). */
+// ── Module Capsules (UI Redesign V2 shell) ──
+/**
+ * A top-level business module surfaced as a capsule in the V2 shell's
+ * WindowHeader. Clicking a capsule opens (or activates) that module's
+ * business panel tab.
+ *
+ * Replaced the grouped `NavigationItem` sidebar model of the V1 shell
+ * (removed with `MainLayout.vue` in the S1 switch commit). Hosts override
+ * via `MODULE_CAPSULES_KEY` to add/remove/reorder capsules.
+ *
+ * @see docs/UI_REDESIGN_V2_PLAN.md §2.1, §5
+ */
+export interface ModuleCapsule {
+  /** Stable module id, e.g. 'goal' | 'task' | 'note' | 'reminder' | 'notification'. */
+  id: string;
+  /** i18n key for the capsule label (e.g. 'nav.capsule.goal'). */
   title: string;
+  /** Icon component (lucide-vue-next). */
+  icon: Component;
+  /** Landing route opened in the business panel when the capsule is entered. */
+  route: string;
   /**
-   * i18n key of the navigation group this item belongs to
-   * (e.g. 'nav.group.workbench'). Items sharing the same group render
-   * under one group label, in array order. Ungrouped items render first.
+   * Semantic token naming the source of a numeric badge (e.g.
+   * 'notification.unread'). Resolved by the shell; unresolved tokens render
+   * no badge. S1 wires only the notification unread source.
    */
-  group?: string;
-  /** Icon component (lucide-vue-next), rendered before the label. */
-  icon?: Component;
-  /**
-   * Semantic badge token resolved by the layout (reserved; e.g. an
-   * unread-count source). Currently unused by the default layout.
-   */
-  badge?: string;
+  badgeSource?: string;
 }

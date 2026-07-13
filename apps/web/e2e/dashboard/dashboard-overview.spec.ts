@@ -1,54 +1,37 @@
 /**
- * Dashboard Overview E2E Test
+ * Dashboard Retirement E2E Test (UI redesign V2)
  *
- * Current web shell contract:
- * - `/` is the welcome page
- * - `/dashboard` is the authenticated dashboard
- * - app navigation is button-based inside MainLayout
+ * V2 shell contract (docs/UI_REDESIGN_V2_PLAN.md §3):
+ * - Dashboard is retired: `/dashboard` redirects to `/` (AI workspace ground)
+ * - `/` renders the persistent AI layer inside the AppShell
+ * - top-of-window capsule navigation replaces the V1 grouped sidebar
+ *   (`capsule-nav-*` testids replace `main-nav-*` / `bottom-nav-*`)
  */
 import { test, expect } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
 import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
-const DASHBOARD_STAT_CARDS = [
-  'dashboard-stat-card-active-tasks',
-  'dashboard-stat-card-completed-today',
-  'dashboard-stat-card-active-goals',
-  'dashboard-stat-card-upcoming-reminders',
-  'dashboard-stat-card-unread-notifications',
-  'dashboard-stat-card-schedule-conflicts',
+const CAPSULE_TESTIDS = [
+  'capsule-nav-goal',
+  'capsule-nav-task',
+  'capsule-nav-note',
+  'capsule-nav-reminder',
+  'capsule-nav-notification',
 ] as const;
 
-test.describe('Dashboard Overview', () => {
+test.describe('Dashboard retirement (V2 shell)', () => {
   test.beforeEach(async ({ page }) => {
     await login(page, TEST_USER.username, TEST_USER.password);
   });
 
-  test('[P0] should load Dashboard page successfully', async ({ page }) => {
+  test('[P0] should redirect /dashboard to the AI workspace ground', async ({ page }) => {
     await page.goto(WEB_CONFIG.DASHBOARD_PATH, {
       waitUntil: 'networkidle',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
-    await expect(page).toHaveURL(new RegExp(`${WEB_CONFIG.DASHBOARD_PATH}$`));
-    await expect(page.getByTestId('dashboard-view')).toBeVisible();
-
-    const errorMessage = page.locator('text=/错误|Error|失败|Failed/i');
-    const hasError = await errorMessage.isVisible().catch(() => false);
-    expect(hasError).toBe(false);
-  });
-
-  test('[P0] should set correct page title', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-
-    await expect(page).toHaveTitle(/仪表盘|Dashboard/);
-    await expect(page).toHaveTitle(/Memoflow/);
-  });
-
-  test('[P0] should display Dashboard in navigation menu', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-
-    await expect(page.getByTestId('main-nav-dashboard')).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId('ai-chat-view')).toBeVisible();
   });
 
   test('[P0] should require authentication', async ({ page, context }) => {
@@ -66,91 +49,41 @@ test.describe('Dashboard Overview', () => {
     expect(page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
   });
 
-  test('[P0] should display main statistics', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-    await expect(page.getByTestId('dashboard-view')).toBeVisible();
+  test('[P0] should expose the five module capsules in the window header', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' });
 
-    for (const cardId of DASHBOARD_STAT_CARDS) {
-      await expect(page.getByTestId(cardId)).toBeVisible();
+    for (const testId of CAPSULE_TESTIDS) {
+      await expect(page.getByTestId(testId)).toBeVisible();
     }
   });
 
-  test('[P1] should have responsive layout', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
+  test('[P1] should open a business panel from a capsule preview', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' });
 
-    const firstCard = page.getByTestId(DASHBOARD_STAT_CARDS[0]);
+    await page.getByTestId('capsule-nav-goal').click();
+    await page.getByRole('dialog').getByRole('button').click();
 
-    await page.setViewportSize({ width: 375, height: 667 });
-    await expect(firstCard).toBeVisible();
-
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await expect(firstCard).toBeVisible();
-
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await expect(firstCard).toBeVisible();
+    await page.waitForURL('**/goals', { timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expect(page.getByTestId('business-panel')).toBeVisible();
   });
 
-  test('[P1] should navigate to Dashboard from other pages', async ({ page }) => {
-    await page.goto(WEB_CONFIG.TASKS_PATH, { waitUntil: 'networkidle' });
+  test('[P1] should keep legacy deep-link redirects working', async ({ page }) => {
+    await page.goto('/ai/chat', { waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId('ai-chat-view')).toBeVisible();
 
-    await page.getByTestId('main-nav-dashboard').click();
-    await page.waitForURL(`**${WEB_CONFIG.DASHBOARD_PATH}`, {
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
-
-    await expect(page.getByTestId('dashboard-view')).toBeVisible();
+    await page.goto('/account/center', { waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/\/settings\?tab=account$/);
+    await expect(page.getByTestId('business-panel')).toBeVisible();
   });
 
-  test('[P2] should expose stable main navigation order', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
+  test('[P2] should return to STATE A when the panel is closed', async ({ page }) => {
+    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await expect(page.getByTestId('business-panel')).toBeVisible();
 
-    const navButtons = page.locator('[data-testid^="main-nav-"]');
-    await expect(navButtons.first()).toHaveAttribute('data-testid', 'main-nav-home');
-    await expect(navButtons.nth(1)).toHaveAttribute('data-testid', 'main-nav-dashboard');
-  });
-
-  test('[P1] should display settings navigation button', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-
-    await expect(page.getByTestId('bottom-nav-settings')).toBeVisible();
-  });
-
-  test('[P1] should display refresh button', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-
-    const refreshButton = page.getByTestId('dashboard-refresh-button');
-    await expect(refreshButton).toBeVisible();
-    await refreshButton.click();
-
-    await expect(page.getByTestId('dashboard-view')).toBeVisible();
-  });
-
-  test('[P2] should support keyboard navigation', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-
-    await page.keyboard.press('Tab');
-
-    const focusedElement = page.locator(':focus');
-    await expect(focusedElement).toBeVisible({ timeout: 2000 });
-  });
-
-  test('[P2] should maintain state after browser refresh', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-
-    await page.reload({ waitUntil: 'networkidle' });
-    await expect(page.getByTestId('dashboard-stat-card-active-tasks')).toBeVisible();
-  });
-
-  test('[P1] should handle network errors gracefully', async ({ page }) => {
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
-    await expect(page.getByTestId('dashboard-view')).toBeVisible();
-
-    await page.context().setOffline(true);
-    await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
-    await page.context().setOffline(false);
-
-    await page.reload({ waitUntil: 'networkidle' });
-    await expect(page.getByTestId('dashboard-view')).toBeVisible();
-    await expect(page.getByTestId(DASHBOARD_STAT_CARDS[0])).toBeVisible();
+    await page.getByTestId('business-panel-close').click();
+    await page.waitForURL(/\/$/, { timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await expect(page.getByTestId('business-panel')).toHaveCount(0);
+    await expect(page.getByTestId('ai-chat-view')).toBeVisible();
   });
 });
