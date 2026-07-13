@@ -170,6 +170,8 @@ export default {
       enterFocus: '专注模式',
       exitFocus: '退出专注',
       tabLimitHint: '标签数已达上限——建议关闭最久未用的「{title}」。',
+      contentErrorTitle: '面板内容出错了',
+      contentErrorDescription: '此业务面板暂时无法显示。可重试，或关闭面板继续使用 AI 工作区。',
     },
     window: {
       minimize: '最小化',

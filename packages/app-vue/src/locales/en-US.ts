@@ -170,6 +170,8 @@ export default {
       enterFocus: 'Focus mode',
       exitFocus: 'Exit focus',
       tabLimitHint: 'Tab limit reached — consider closing "{title}" (least recently used).',
+      contentErrorTitle: 'This panel ran into a problem',
+      contentErrorDescription: 'This business panel failed to render. Retry, or close the panel and keep using the AI workspace.',
     },
     window: {
       minimize: 'Minimize',

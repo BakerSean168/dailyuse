@@ -9,6 +9,7 @@ export { default as AppShell } from './AppShell.vue';
 export { default as WindowHeader } from './WindowHeader.vue';
 export { default as ConversationSidebar } from './ConversationSidebar.vue';
 export { default as BusinessPanel } from './BusinessPanel.vue';
+export { default as PanelErrorBoundary } from './PanelErrorBoundary.vue';
 export { default as GlobalComposer } from './GlobalComposer.vue';
 export { default as ShellHomeRoute } from './ShellHomeRoute';
 

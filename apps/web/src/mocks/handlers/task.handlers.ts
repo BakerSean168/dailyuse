@@ -100,6 +100,30 @@ export const taskHandlers = [
     });
   }),
 
+  // Graph projection used by TaskManagementView cold load (adapter: GET /task-templates/graph)
+  http.get(`${TEMPLATES}/graph`, () => {
+    const templates = createMockTaskTemplateList(10);
+    const dependencies = templates.length >= 2
+      ? [
+          createMockTaskDependency({
+            predecessorTaskId: templates[0]!.id,
+            successorTaskId: templates[1]!.id,
+          }),
+        ]
+      : [];
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: {
+        templates,
+        dependencies,
+        total: templates.length,
+      },
+      timestamp: Date.now(),
+    });
+  }),
+
   http.post(TEMPLATES, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
@@ -260,6 +284,17 @@ export const taskHandlers = [
       code: 200,
       message: 'Success',
       data: createMockTaskTemplate({ id: toTaskTemplateId(params.id) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.patch(`${TEMPLATES}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: createMockTaskTemplate({ id: toTaskTemplateId(params.id), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),

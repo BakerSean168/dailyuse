@@ -27,15 +27,18 @@ export class TaskPage {
 
   // Navigation
   async goto() {
-    // 访问一次性任务列表页面（实际的任务CRUD页面）
-    await this.page.goto('/tasks/one-time');
+    // V2 shell: task library lives at /tasks inside the business panel
+    await this.page.goto('/tasks');
     await this.page.waitForLoadState('networkidle');
-    
-    // Wait for page to be fully loaded
-    await this.page.waitForTimeout(1000);
-    
-    // Wait for the create button to be visible
-    await this.createTaskButton.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
+    await this.page.getByTestId('business-panel').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
+      console.log('[TaskPage] business-panel not found; auth or shell may not be ready');
+    });
+
+    // Prefer the stable create button testid used by TaskManagementView
+    const createBtn = this.page
+      .getByTestId('create-task-template-button')
+      .or(this.createTaskButton);
+    await createBtn.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
       console.log('[TaskPage] Create button not found, page might need authentication or different route');
     });
   }

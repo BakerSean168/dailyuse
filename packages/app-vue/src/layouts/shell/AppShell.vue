@@ -35,6 +35,7 @@ import type { ConversationSummary } from '../../modules/ai/composables/types';
 import WindowHeader from './WindowHeader.vue';
 import ConversationSidebar from './ConversationSidebar.vue';
 import BusinessPanel from './BusinessPanel.vue';
+import PanelErrorBoundary from './PanelErrorBoundary.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -319,15 +320,17 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
             @toggle-focus="store.toggleFocus()"
             @start-resize="startPanelResize"
           >
-            <router-view v-slot="{ Component }">
-              <KeepAlive :max="MAX_BUSINESS_TABS">
-                <component
-                  :is="Component"
-                  v-if="Component"
-                  :key="panelCacheKey($route.fullPath, $route.name)"
-                />
-              </KeepAlive>
-            </router-view>
+            <PanelErrorBoundary :reset-key="activeTabId">
+              <router-view v-slot="{ Component }">
+                <KeepAlive :max="MAX_BUSINESS_TABS">
+                  <component
+                    :is="Component"
+                    v-if="Component"
+                    :key="panelCacheKey($route.fullPath, $route.name)"
+                  />
+                </KeepAlive>
+              </router-view>
+            </PanelErrorBoundary>
           </BusinessPanel>
         </div>
       </div>
