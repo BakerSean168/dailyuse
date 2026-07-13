@@ -33,7 +33,7 @@ import { translateResultError } from '../../../shared/utils/translate-result-err
 const { t } = useI18n();
 const logout = inject(LOGOUT_HANDLER_KEY);
 
-const { currentAccount, isLoading, isGuest, loadMyProfile, updateMyProfile } = useAccount();
+const { currentAccount, isLoading, error, isGuest, loadMyProfile, updateMyProfile } = useAccount();
 
 const form = reactive({
   nickname: '',
@@ -160,7 +160,29 @@ onMounted(() => {
         </div>
       </CardContent>
 
-      <CardContent v-else class="text-sm text-muted-foreground">
+      <CardContent
+        v-else-if="error"
+        data-testid="account-profile-error"
+        class="space-y-3 text-sm text-muted-foreground"
+        role="alert"
+      >
+        <p>{{ error }}</p>
+        <Button
+          data-testid="account-profile-retry"
+          variant="outline"
+          size="sm"
+          :disabled="isLoading"
+          @click="loadMyProfile"
+        >
+          {{ t('common.retry') }}
+        </Button>
+      </CardContent>
+
+      <CardContent
+        v-else
+        data-testid="account-profile-loading"
+        class="text-sm text-muted-foreground"
+      >
         {{ t('account.status.loading') }}
       </CardContent>
 

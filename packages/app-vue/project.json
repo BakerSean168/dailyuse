@@ -39,6 +39,14 @@
         "cwd": "packages/app-vue"
       }
     },
+    "test:package-exports": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node scripts/verify-package-exports.mjs",
+        "cwd": "packages/app-vue"
+      }
+    },
     "test:watch": {
       "executor": "nx:run-commands",
       "cache": false,

@@ -38,9 +38,38 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: {
+        index: path.resolve(__dirname, 'src/index.ts'),
+        'web-overlays': path.resolve(__dirname, 'src/web-overlays.ts'),
+        'di/index': path.resolve(__dirname, 'src/di/index.ts'),
+        desktop: path.resolve(__dirname, 'src/desktop.ts'),
+        'plugins/i18n': path.resolve(__dirname, 'src/plugins/i18n.ts'),
+        'router/index': path.resolve(__dirname, 'src/router/index.ts'),
+        'modules/authentication/index': path.resolve(
+          __dirname,
+          'src/modules/authentication/index.ts',
+        ),
+        'modules/account/index': path.resolve(__dirname, 'src/modules/account/index.ts'),
+        'modules/goal/index': path.resolve(__dirname, 'src/modules/goal/index.ts'),
+        'modules/task/index': path.resolve(__dirname, 'src/modules/task/index.ts'),
+        'modules/schedule/index': path.resolve(__dirname, 'src/modules/schedule/index.ts'),
+        'modules/reminder/index': path.resolve(__dirname, 'src/modules/reminder/index.ts'),
+        'modules/notification/index': path.resolve(
+          __dirname,
+          'src/modules/notification/index.ts',
+        ),
+        'modules/repository/index': path.resolve(__dirname, 'src/modules/repository/index.ts'),
+        'modules/setting/index': path.resolve(__dirname, 'src/modules/setting/index.ts'),
+        'modules/governance/index': path.resolve(__dirname, 'src/modules/governance/index.ts'),
+        'modules/dashboard/adapters/index': path.resolve(
+          __dirname,
+          'src/modules/dashboard/adapters/index.ts',
+        ),
+        'modules/editor/index': path.resolve(__dirname, 'src/modules/editor/index.ts'),
+        'modules/ai/index': path.resolve(__dirname, 'src/modules/ai/index.ts'),
+      },
       formats: ['es'],
-      fileName: 'index',
+      fileName: (_format, entryName) => `${entryName}.js`,
     },
     rollupOptions: {
       external: (id) => external.some((dep) => id === dep || id.startsWith(dep + '/')),

@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import { fail, map as mapResult } from '@dailyuse/contracts/result';
 import type { IAccountApiClient } from '../ports/account-api-client.port';
 import type {
   UpdateAccountReq,
@@ -42,6 +42,14 @@ function accountFromDTO(dto: AccountClientDTO): Account {
   });
 }
 
+function mapAccountResult(result: Result<AccountClientDTO>): Result<Account> {
+  if (result.ok && !result.data) {
+    return fail({ code: 'NOT_FOUND', message: 'Account not found' }, result.meta);
+  }
+
+  return mapResult(result, (dto) => accountFromDTO(dto));
+}
+
 // ─── Client Application Port ────────────────────────────────────────────────
 
 /** High-level client-side operations for the account module. */
@@ -64,12 +72,12 @@ export class AccountClientService implements AccountClientPort {
 
   async getMyProfile(): Promise<Result<Account>> {
     const result = await this.apiClient.getMyProfile();
-    return mapResult(result, (dto) => accountFromDTO(dto));
+    return mapAccountResult(result);
   }
 
   async updateMyProfile(request: UpdateAccountReq): Promise<Result<Account>> {
     const result = await this.apiClient.updateMyProfile(request);
-    return mapResult(result, (dto) => accountFromDTO(dto));
+    return mapAccountResult(result);
   }
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {

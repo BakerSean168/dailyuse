@@ -21,6 +21,7 @@ import {
   type AccountModuleInstance,
   type Transactional,
 } from '../server/infrastructure';
+import { AccountController } from '../server/transport';
 import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 export { Account } from '../server/domain';
@@ -49,6 +50,7 @@ export const AccountElectronModule: IElectronModule = {
 
   register(ctx: IElectronModuleContext): void {
     const accountModule = createAccountPowerSyncModule(ctx.db as unknown as Transactional);
+    const controller = new AccountController(accountModule.api);
     activeAccountModule = accountModule;
     accountModule.start();
 
@@ -58,19 +60,19 @@ export const AccountElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.GET, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
-        accountModule.api.getProfile({ identityId }),
+        controller.getProfile({ identityId }),
       );
     });
 
     ipcMain.handle(Ch.GET_CURRENT, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
-        accountModule.api.getProfile({ identityId }),
+        controller.getProfile({ identityId }),
       );
     });
 
     ipcMain.handle(Ch.GET_CURRENT_ALIAS, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
-        accountModule.api.getProfile({ identityId }),
+        controller.getProfile({ identityId }),
       );
     });
 

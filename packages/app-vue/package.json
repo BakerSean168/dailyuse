@@ -11,76 +11,76 @@
       "import": "./dist/index.js"
     },
     "./web-overlays": {
-      "types": "./src/web-overlays.ts",
-      "import": "./src/web-overlays.ts"
+      "types": "./dist/web-overlays.d.ts",
+      "import": "./dist/web-overlays.js"
     },
     "./di": {
-      "types": "./src/di/index.ts",
-      "import": "./src/di/index.ts"
+      "types": "./dist/di/index.d.ts",
+      "import": "./dist/di/index.js"
     },
     "./desktop": {
-      "types": "./src/desktop.ts",
-      "import": "./src/desktop.ts"
+      "types": "./dist/desktop.d.ts",
+      "import": "./dist/desktop.js"
     },
     "./plugins/i18n": {
-      "types": "./src/plugins/i18n.ts",
-      "import": "./src/plugins/i18n.ts"
+      "types": "./dist/plugins/i18n.d.ts",
+      "import": "./dist/plugins/i18n.js"
     },
     "./router": {
-      "types": "./src/router/index.ts",
-      "import": "./src/router/index.ts"
+      "types": "./dist/router/index.d.ts",
+      "import": "./dist/router/index.js"
     },
     "./modules/authentication": {
-      "types": "./src/modules/authentication/index.ts",
-      "import": "./src/modules/authentication/index.ts"
+      "types": "./dist/modules/authentication/index.d.ts",
+      "import": "./dist/modules/authentication/index.js"
     },
     "./modules/account": {
-      "types": "./src/modules/account/index.ts",
-      "import": "./src/modules/account/index.ts"
+      "types": "./dist/modules/account/index.d.ts",
+      "import": "./dist/modules/account/index.js"
     },
     "./modules/goal": {
-      "types": "./src/modules/goal/index.ts",
-      "import": "./src/modules/goal/index.ts"
+      "types": "./dist/modules/goal/index.d.ts",
+      "import": "./dist/modules/goal/index.js"
     },
     "./modules/task": {
-      "types": "./src/modules/task/index.ts",
-      "import": "./src/modules/task/index.ts"
+      "types": "./dist/modules/task/index.d.ts",
+      "import": "./dist/modules/task/index.js"
     },
     "./modules/schedule": {
-      "types": "./src/modules/schedule/index.ts",
-      "import": "./src/modules/schedule/index.ts"
+      "types": "./dist/modules/schedule/index.d.ts",
+      "import": "./dist/modules/schedule/index.js"
     },
     "./modules/reminder": {
-      "types": "./src/modules/reminder/index.ts",
-      "import": "./src/modules/reminder/index.ts"
+      "types": "./dist/modules/reminder/index.d.ts",
+      "import": "./dist/modules/reminder/index.js"
     },
     "./modules/notification": {
-      "types": "./src/modules/notification/index.ts",
-      "import": "./src/modules/notification/index.ts"
+      "types": "./dist/modules/notification/index.d.ts",
+      "import": "./dist/modules/notification/index.js"
     },
     "./modules/repository": {
-      "types": "./src/modules/repository/index.ts",
-      "import": "./src/modules/repository/index.ts"
+      "types": "./dist/modules/repository/index.d.ts",
+      "import": "./dist/modules/repository/index.js"
     },
     "./modules/setting": {
-      "types": "./src/modules/setting/index.ts",
-      "import": "./src/modules/setting/index.ts"
+      "types": "./dist/modules/setting/index.d.ts",
+      "import": "./dist/modules/setting/index.js"
     },
     "./modules/governance": {
-      "types": "./src/modules/governance/index.ts",
-      "import": "./src/modules/governance/index.ts"
+      "types": "./dist/modules/governance/index.d.ts",
+      "import": "./dist/modules/governance/index.js"
     },
     "./modules/dashboard/adapters": {
-      "types": "./src/modules/dashboard/adapters/index.ts",
-      "import": "./src/modules/dashboard/adapters/index.ts"
+      "types": "./dist/modules/dashboard/adapters/index.d.ts",
+      "import": "./dist/modules/dashboard/adapters/index.js"
     },
     "./modules/editor": {
-      "types": "./src/modules/editor/index.ts",
-      "import": "./src/modules/editor/index.ts"
+      "types": "./dist/modules/editor/index.d.ts",
+      "import": "./dist/modules/editor/index.js"
     },
     "./modules/ai": {
-      "types": "./src/modules/ai/index.ts",
-      "import": "./src/modules/ai/index.ts"
+      "types": "./dist/modules/ai/index.d.ts",
+      "import": "./dist/modules/ai/index.js"
     }
   },
   "dependencies": {

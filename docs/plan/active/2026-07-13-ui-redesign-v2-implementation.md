@@ -6,7 +6,7 @@ tags:
   - frontend
 description: UI 重构 V2 方案（ChatGPT 桌面式壳）的执行记录
 created: 2026-07-13T00:00:00
-updated: 2026-07-13T18:00:00
+updated: 2026-07-14T00:00:00
 ---
 
 # UI 重构 V2 — 实施记录
@@ -77,7 +77,7 @@ updated: 2026-07-13T18:00:00
 - [x] Router ↔ Tab 双向同步（`useShellRouterSync`，V2 §4）：afterEach 落 Tab（精确路由激活 / 活动 Tab 同模块回写 / 其余新开不抢占）；`/` = STATE A 清空面板；**导航先行**（关活动 Tab/面板先 replace/push，成功才改 store→未保存守卫有效）；挂载时会话恢复（`/` + 持久化 Tab → replace 回活动 Tab 路由）
 - [x] Redirect：`/dashboard` → `/` 新增；`/ai/chat`、`/account/center` 已在 main。设置深链自动 focus（V2 §3）、<1024px 新开面板自动 focus（§1.1）
 - [x] 导航 DI 重定义：`NavigationItem` / `MAIN_NAVIGATION_KEY` / `BOTTOM_NAVIGATION_KEY` 删除，两端 `di-app.ts` 改 provide `MODULE_CAPSULES_KEY`（破坏性接口变更，V2 §8-5）
-- [x] 桌面端：`useDesktopWindowControls` 迁入 app-vue（WindowHeader 接窗控 + 拖拽区 + mac 交通灯留位）；宿主 `desktop-titlebar` 收缩为仅 `/auth`；`shouldRedirectAuthenticatedDesktopEntry` 收窄为仅 auth/未解析入口（否则会与 Tab 会话恢复竞态互踩）
+- [x] 桌面端：`useDesktopWindowControls` 迁入 app-vue（WindowHeader 接窗控 + 拖拽区 + mac 交通灯留位）；认证 renderer 独立 bootstrap 并自带无边框窗控，宿主 `App.vue` 的旧 `desktop-titlebar` 已移除；`shouldRedirectAuthenticatedDesktopEntry` 收窄为仅 auth/未解析入口（否则会与 Tab 会话恢复竞态互踩）
 - [x] 各模块视图原样入面板（路由一条未删）；i18n 新增 `shell.panel.tabLimitHint` zh/en
 - [x] E2E：dashboard 套件重写为"退役 redirect + 胶囊壳"契约（`capsule-nav-*` 取代 `main-nav-*`）；其余 spec 的模块 testid 未动
 - [x] 新增单测：`useAppShellStore.spec`（Tab 语义/LRU/关闭规则）+ `useShellRouterSync.spec`（模块映射）
@@ -118,6 +118,7 @@ updated: 2026-07-13T18:00:00
 - [x] **MSW 缺口**：补 `GET /api/v1/task-templates/graph` + 模板 update `PATCH`（保留 PUT 兼容），消除 mock 下 Task 冷加载/图谱白屏（PR S5）
 - [x] **面板级错误边界**：`PanelErrorBoundary` 包住 BusinessPanel 内容区；`onErrorCaptured` 拦截面板致命错误，重试/切 Tab 可恢复；testid：`panel-error-boundary` / `panel-error-fallback` / `panel-error-retry`
 - [x] **Playwright 核心回归适配新壳**：helpers `navigateToTasks/Reminder` 与 `TaskPage` 改 `/tasks`；新增 `openModulePanel`/`openModuleViaCapsule`；dashboard capsule enter 优先 `capsule-preview-enter-*`；e2e README 补 V2 锚点。**5 份 config 真 API 全绿仍待环境**
+- [x] **桌面宿主标题栏收尾**：认证窗口由独立 `DesktopAuthApp` bootstrap 渲染并自带无边框菜单/关闭；删除主 renderer `App.vue` 中不可达的 auth host titlebar、窗控订阅及样式，主窗口继续由 `WindowHeader` 负责窗控，custom notification 保持 chrome-less
 - [ ] **S1 门槛剩余项（需真环境）**：Playwright 5 配置全绿、Electron 手动回归、AI 三工作流 E2E
 - [ ] **plan 归档**：S1 门槛补齐后，将本文件移至 `docs/plan/archive/`，并在 archive 文首注明结果
 

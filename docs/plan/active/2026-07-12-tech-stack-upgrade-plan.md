@@ -366,3 +366,54 @@ pnpm 11 把本次事故涉及的构建审批机制正式化，升级本身是收
 **语言/工具链**：[TypeScript 7.0 公告](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/) ｜ [TypeScript 6.0 公告](https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/) ｜ [typescript-eslint 依赖版本](https://typescript-eslint.io/users/dependency-versions/) ｜ [vue-tsc tsgo 跟踪](https://github.com/vuejs/language-tools/issues/5381) ｜ [Vue 3.6 beta](https://github.com/vuejs/core/releases/tag/v3.6.0-beta.1) ｜ [pnpm 11 发布](https://pnpm.io/blog/releases/11.0) ｜ [pnpm 迁移指南](https://pnpm.io/migration) ｜ [Node 发布日程](https://github.com/nodejs/release) ｜ [ESLint 10 发布](https://eslint.org/blog/2026/02/eslint-v10.0.0-released/) ｜ [ESLint 10 迁移](https://eslint.org/docs/latest/use/migrate-to-10.0.0) ｜ [Tailwind 4.3](https://tailwindcss.com/blog/tailwindcss-v4-3) ｜ [zod releases](https://github.com/colinhacks/zod/releases)
 
 **框架收尾**：[vue-router v4→v5 迁移](https://router.vuejs.org/guide/migration/v4-to-v5) ｜ [lucide 迁移指南](https://lucide.dev/guide/vue/migration) ｜ [AI SDK 7 迁移](https://ai-sdk.dev/docs/migration-guides/migration-guide-7-0)（已确认本仓库未使用，仅存档） ｜ [Expo SDK 57](https://expo.dev/changelog/sdk-57) ｜ [Expo 升级指引](https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/)
+
+--- 
+## 补充更新
+
+### 需求
+
+docs\plan\active\2026-07-12-tech-stack-upgrade-plan.md 分析一下这篇文档，看一下有没有可能先尝试一次性升级所有的依赖版本到目标版本，然后同时修改相关需要更改的代码（比如使用新的 API 之类的），然后再统一进行一次测试，完成本次的依赖版本更新。
+否则，如果分批次、每次都重新进行验证部署的话，会消耗比较多的时间。希望能尽可能快速。
+
+
+### 分析
+
+结论
+可行，而且对这个仓库来说，集中升级大概率更快。
+建议把原计划的“11 个批次、每批一个 PR、每批全量验证”改为：
+一个集成分支、一个主 PR、按技术栈分 commit、开发期间只跑定向检查，最后统一进行一次完整验证周期和一次发布。
+
+这里的“统一测试”应理解为一次最终验证矩阵，不能只跑一次 pnpm test。
+为什么集中升级更合适
+根 [package.json](D:/home/projects/dailyuse/package.json) 和 [pnpm-workspace.yaml](D:/home/projects/dailyuse/pnpm-workspace.yaml) 被放进 [nx.json (line 18)](D:/home/projects/dailyuse/nx.json:18) 的 sharedGlobals。实测修改 package、lockfile、workspace 或 Nx 配置都会让全部 39 个项目进入 affected 范围。拆成多个依赖 PR 并不能获得多少增量 CI 收益。
+当前 CI 每个 PR 都会重新安装、验证，且 [web-flow (line 221)](D:/home/projects/dailyuse/.github/workflows/ci.yml:221) 无条件执行；CI 只缓存 pnpm store，没有跨运行的 Nx task cache。因此减少 PR 数量确实能明显省时间。
+普通 PR 不会生产部署。[docker-deploy.yml (line 3)](D:/home/projects/dailyuse/.github/workflows/docker-deploy.yml:3) 只监听正式 v* tag；[发布说明 (line 51)](D:/home/projects/dailyuse/docs/guides/development/release-workflow.md:51) 也明确 main 推进不会直接发生产镜像。
+目标依赖闭包没有发现硬 peer 冲突：Nx 23 支持 Vite 8，typescript-eslint 8.63 支持 ESLint 10 + TS 6，vue-tsc 3.3.7 支持 TS 6，@nxlv/python@22.2.1 也没有排除 Nx 23。
+推荐合并边界
+范围	建议
+B0–B6	全部放进同一个主 PR，一次性写入最终目标版本并生成最终 lockfile
+B3 Electron	可留在同一 PR 以避免重复桌面打包，但必须是可单独撤销的 commit，并保留桌面专项验收
+B10 pnpm 11	作为主 PR 最后一个可拔插 commit；若 clean install 阻塞，再单独后置
+B8 生态小 major	可一起尝试，但保持独立 commit；Lucide 替换实际命中约 168 个文件，若成为唯一阻塞项就摘出
+B7 PG18/Redis8	不纳入普通统一测试；PG18 保留独立迁移演练和维护窗口
+B9 Mobile	独立并行处理；现有 mobile 没有 build/test/e2e target，官方也建议 Expo SDK 逐级升级验证，见 Expo 指南
+
+最快执行方式
+如果 main 最新 CI 已绿，直接把它作为基线，不再额外做一次完整部署。
+在同一分支按顺序保留 commit：卫生清理 → 最终依赖清单/Nx migration → TS/ESLint/Vite 代码适配 → Electron → pnpm 11 → B8。
+开发过程中只跑便宜的近端检查，例如 Nx graph、ai-service:lint、相关项目的 lint/typecheck/build/test、desktop native rebuild；不跑 Docker、不做完整部署。
+所有代码适配完成后，只跑一次最终验证：Node 24 + pnpm 11 全新安装；
+governance、全量 lint/typecheck/test/build；
+boundary tests、Web E2E、Storybook build；
+desktop:dist:windows、安装包冷启动、实际加载 better-sqlite3/argon2/PowerSync；
+一次 local prod-like Docker 验证；
+最后推一个 PR，让 GitHub Actions 再做一次干净环境复核。
+
+Vite 计划里的 rolldown-vite 一周预演可以跳过，直接上 Vite 8；官方也把它定义为可选渐进路径。Vite 8 迁移指南
+文档里还需要补充的风险
+[electron-builder.json5 (line 17)](D:/home/projects/dailyuse/apps/desktop/electron-builder.json5:17) 还硬编码着 Electron 39.2.6，且第 94 行关闭了自动 native rebuild；只改 package.json 不够。
+TS 6 的 baseUrl 实际命中 31 份 tsconfig；Vite 配置改造也不只 desktop。
+PG18 计划漏了 [ci.yml (line 177)](D:/home/projects/dailyuse/.github/workflows/ci.yml:177) 中两处 postgres:15。另外，切换后新库一旦接受写入，简单切回旧卷会丢新增数据；迁移时必须停止所有写入者。PG18 的卷布局变化也确实需要独立处理，官方镜像变更。
+pnpm 11 不只是移动 package.json#pnpm：.npmrc 中除 registry/auth 外的大量配置也要迁入 workspace yaml，同时还有 Dockerfile、devcontainer 和文档里的 pnpm 10 钉住点。pnpm 迁移指南
+Redis 目前只有服务、配置和 external 声明，没有找到真实 ioredis 调用。按最小化原则，应先确认能否直接移除，而不是为了版本表升级。
+所以，我建议采用“一次性核心升级”的方案，但保留 PG18 和 Mobile 的独立验收边界。这能消除绝大多数重复 CI/部署成本，同时避免把数据迁移和原生产物验证压缩成一次普通测试。此次仅做了分析，没有修改文件。
