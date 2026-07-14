@@ -792,3 +792,11 @@ ormalizeOpenAICompatibleBaseUrl
   - Python openai_provider 对齐：multipart content、max_tokens floor 常量、空内容 warning 含 finish_reason
   - 单测：TS gateway normalize **11/11**；Python helpers **3/3**
 
+## 18.2 AI goal-workflow 再验证（2026-07-14 夜）
+
+- 命令：`node node_modules/@playwright/test/cli.js test e2e/ai/goal-workflow.spec.ts --reporter=list`（cwd `apps/web`；preflight `e2e`；测试库 `Memoflow-test-db:5433`）
+- 结果：`.last-run.json` **status=passed / failedTests=[]**（8/8；约 2.3m；产物 `apps/web/test-results/ai-goal-workflow-*`）
+- 硬化（提交 `8e0f54d82`）：
+  - auth/bootstrap 路径 `networkidle` → `domcontentloaded` + 显式认证 UI wait（避免 Vite HMR 卡死）
+  - goal.create mock：先 `fulfill` 并写入 `telemetry.lastGoalAgentStart`，断言挪到测试体
+- 附注：若 `pnpm install` 曾以 production 模式跑过导致 `@dailyuse/*` 链丢失，需清 `.package-map.json` / `.pnpm-workspace-state-v1.json` 后 `pnpm install --prod=false` 恢复；Playwright 长任务须 unsandboxed 启动以免 webServer 进程被杀。
