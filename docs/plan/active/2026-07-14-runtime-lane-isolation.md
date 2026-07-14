@@ -6,7 +6,7 @@ tags:
   - engineering
 description: Runtime lane isolation SSOT, preflight, Playwright anti-poisoning
 created: 2026-07-14T00:00:00
-updated: 2026-07-14T00:00:00
+updated: 2026-07-14T22:50:00
 ---
 
 # Runtime lane isolation (2026-07-14)
@@ -44,8 +44,8 @@ Eliminate host port / env-lane confusion between `host-dev`, Playwright `e2e`, a
 - [x] Core Playwright on isolated e2e lane: **45 passed** (auth/goal/reminder/user-settings/dashboard-retirement/notification/task-template)
 - [x] Live healthz during run reported `lane=e2e` on host `:3000`
 - [x] Preflight: e2e requires free API/Web; test PG `5433` owned by test stack
-- [ ] local-docker rebuild after Nx cycle fix (api build cycle cleared; rebuild pending) (host maps: API `53080`, WEB `58080`, AI `58100`, PS `58081`, PG `55432`, REDIS `56379`)
-- [ ] post-up: `runtime:preflight:local-docker` pass; e2e preflight still free of docker API on `:3000`
+- [x] local-docker rebuild after Nx cycle fix (host maps: API `53080`, WEB `58080`, AI `58100`, PS `58081`, PG `55432`, REDIS `56379`; `up exit 0`; all containers healthy)
+- [x] post-up: `runtime:preflight:local-docker` pass; e2e preflight still free of docker API on `:3000` (note: local-docker API `:53080` isolated)
 
 ## Follow-up engineering (Nx graph poison)
 
@@ -59,3 +59,15 @@ Mitigations applied:
 
 - Verified: `nx build api --skip-nx-cache` → SUCCESS (no circular dependency; 23 deps).
 
+## Live verification notes (2026-07-14 ~22:48)
+
+```
+node ./tools/docker/local-compose.mjs up   # after nx cycle fix → up exit 0
+node ./tools/runtime/preflight.mjs --profile local-docker  # OK
+node ./tools/runtime/preflight.mjs --profile e2e           # OK (:3000 closed)
+curl http://localhost:53080/healthz  → {"status":"ok"}
+curl http://localhost:58080/         → 200
+curl http://localhost:58100/healthz  → healthy
+```
+
+Test infra `Memoflow-test-db` on `:5433` remains up alongside local-docker (orphan-compatible; not a port conflict).
