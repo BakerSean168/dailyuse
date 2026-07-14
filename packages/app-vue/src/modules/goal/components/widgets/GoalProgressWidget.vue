@@ -16,7 +16,7 @@ import {
   Skeleton,
   Button,
 } from '@dailyuse/ui-vue-shadcn';
-import { Target, ArrowRight } from 'lucide-vue-next';
+import { Target, ArrowRight } from '@lucide/vue';
 import type { GoalProgressItem } from '@dailyuse/contracts/dashboard';
 
 withDefaults(

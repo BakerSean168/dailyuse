@@ -11,7 +11,7 @@ export { default as ConversationSidebar } from './ConversationSidebar.vue';
 export { default as BusinessPanel } from './BusinessPanel.vue';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary.vue';
 export { default as GlobalComposer } from './GlobalComposer.vue';
-export { default as ShellHomeRoute } from './ShellHomeRoute';
+export { default as ShellHomeRoute } from './shell-home-route';
 
 export {
   useAppShellStore,

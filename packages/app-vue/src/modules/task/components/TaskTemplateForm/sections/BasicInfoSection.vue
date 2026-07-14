@@ -60,7 +60,7 @@ import {
   Textarea,
   Label,
 } from '@dailyuse/ui-vue-shadcn';
-import { Info } from 'lucide-vue-next';
+import { Info } from '@lucide/vue';
 import { useBasicInfoValidation } from '../../../composables/useBasicInfoValidation';
 import type { TaskTemplateViewModel } from '../../types';
 

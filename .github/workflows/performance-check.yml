@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 30
 
     env:
-      NODE_VERSION: '22'
+      NODE_VERSION: '24'
       PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
     steps:

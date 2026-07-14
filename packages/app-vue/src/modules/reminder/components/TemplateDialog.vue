@@ -319,7 +319,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Info, Clock, Palette, Settings, Bell, ChevronDown, Timer } from 'lucide-vue-next';
+import { Info, Clock, Palette, Settings, Bell, ChevronDown, Timer } from '@lucide/vue';
 import {
   Dialog,
   DialogContent,

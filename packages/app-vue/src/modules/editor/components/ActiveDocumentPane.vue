@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 import MarkdownEditor from './MarkdownEditor.vue';
 import BrokenResourceDiagnostics from './BrokenResourceDiagnostics.vue';
 import EditorToolbar from './EditorToolbar.vue';

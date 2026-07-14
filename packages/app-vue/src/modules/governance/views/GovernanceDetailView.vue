@@ -264,7 +264,7 @@ import {
   CheckCircle,
   XCircle,
   History,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
 import { RuleStatusBadge, CodeSnippetView } from '../components';

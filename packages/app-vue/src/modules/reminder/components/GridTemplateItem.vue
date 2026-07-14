@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bell, FolderInput, Pencil, Power, Trash2 } from 'lucide-vue-next';
+import { Bell, FolderInput, Pencil, Power, Trash2 } from '@lucide/vue';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';

@@ -148,7 +148,7 @@ import {
   AlertDescription,
   Separator,
 } from '@dailyuse/ui-vue-shadcn';
-import { Bot, Check, Circle, Lightbulb, List } from 'lucide-vue-next';
+import { Bot, Check, Circle, Lightbulb, List } from '@lucide/vue';
 import {
   weightRecommendationService,
   type WeightStrategy,

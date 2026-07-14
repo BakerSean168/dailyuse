@@ -105,7 +105,7 @@ import {
   Clock,
   ExternalLink,
   AlertCircle,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
 import type { BacklinkItem } from '../utils/link-index';
 

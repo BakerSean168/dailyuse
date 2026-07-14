@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertCircle, Calendar, CheckCircle2 } from 'lucide-vue-next';
+import { AlertCircle, Calendar, CheckCircle2 } from '@lucide/vue';
 import {
   Sheet,
   SheetContent,

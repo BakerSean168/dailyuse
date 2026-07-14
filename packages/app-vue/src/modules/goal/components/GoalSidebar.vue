@@ -114,7 +114,7 @@
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Crosshair, FolderPlus, LayoutGrid, Plus, Target } from 'lucide-vue-next';
+import { Crosshair, FolderPlus, LayoutGrid, Plus, Target } from '@lucide/vue';
 import {
   Button,
   LinearSidebarItem,

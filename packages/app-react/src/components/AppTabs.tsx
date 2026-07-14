@@ -183,11 +183,11 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(15, 20, 28, 0.24)',
   },
   overlayLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'flex-end',
   },
   menuSheet: {

@@ -153,7 +153,7 @@ import {
   Sparkles,
   Square,
   WandSparkles,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import {
   Button,

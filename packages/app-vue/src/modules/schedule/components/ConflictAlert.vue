@@ -48,7 +48,7 @@
 import { ref } from 'vue';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { AlertCircle, X } from 'lucide-vue-next';
+import { AlertCircle, X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import {
   ConflictSuggestionType,

@@ -122,7 +122,7 @@ describe('MarkdownEditor', () => {
     (wrapper.vm as unknown as { insertTextAtSelection: (text: string, range: { from: number; to: number }) => void }).insertTextAtSelection('daily', { from: 6, to: 11 });
 
     const updates = wrapper.emitted('update:modelValue');
-    expect(updates?.at(-1)?.[0]).toBe('hello daily');
+    expect(updates?.[updates.length - 1]?.[0]).toBe('hello daily');
 
     wrapper.unmount();
   });
@@ -145,7 +145,7 @@ describe('MarkdownEditor', () => {
     checkbox?.click();
 
     const updates = wrapper.emitted('update:modelValue');
-    expect(updates?.at(-1)?.[0]).toBe('- [x] ship live preview');
+    expect(updates?.[updates.length - 1]?.[0]).toBe('- [x] ship live preview');
 
     wrapper.unmount();
   });
@@ -167,7 +167,7 @@ describe('MarkdownEditor', () => {
 
     wikiChip?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 
-    expect(wrapper.emitted('link-click')?.at(-1)?.[0]).toBe('Roadmap');
+    expect(wrapper.emitted('link-click')?.slice(-1)[0]?.[0]).toBe('Roadmap');
 
     wrapper.unmount();
   });

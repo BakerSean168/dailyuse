@@ -222,7 +222,7 @@ import {
   CheckSquare,
   Square,
   XCircle,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';

@@ -319,7 +319,7 @@ import {
   Archive,
   Circle,
   Network,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const props = withDefaults(
   defineProps<{

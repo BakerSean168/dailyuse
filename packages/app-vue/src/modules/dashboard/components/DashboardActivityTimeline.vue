@@ -24,7 +24,7 @@ import {
   Plus,
   Target,
   TrendingUp,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { ActivityItem } from '@dailyuse/contracts/dashboard';
 
 withDefaults(

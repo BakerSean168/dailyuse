@@ -111,7 +111,7 @@ import {
   Alert,
   AlertDescription,
 } from '@dailyuse/ui-vue-shadcn';
-import { Plus, Trash2 } from 'lucide-vue-next';
+import { Plus, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

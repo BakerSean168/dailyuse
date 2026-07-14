@@ -140,7 +140,7 @@ import {
   FileText,
   ExternalLink,
   AlertCircle,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
   Dialog,

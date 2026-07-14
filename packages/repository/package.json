@@ -31,10 +31,10 @@
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "gray-matter": "4.0.3",
     "multer": "2.0.2",
-    "zod": "^4.3.6",
+    "zod": "^4.4.3",
     "@dailyuse/patterns": "workspace:*"
   },
   "devDependencies": {

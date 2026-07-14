@@ -2,7 +2,7 @@
 import type { NumberFieldIncrementProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
-import { Plus } from 'lucide-vue-next'
+import { Plus } from '@lucide/vue'
 import { NumberFieldIncrement, useForwardProps } from 'radix-vue'
 import { computed } from 'vue'
 

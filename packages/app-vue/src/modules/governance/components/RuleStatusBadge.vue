@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CheckCircle, Pencil, AlertTriangle } from 'lucide-vue-next';
+import { CheckCircle, Pencil, AlertTriangle } from '@lucide/vue';
 
 // Rule status enum
 enum RuleStatus {

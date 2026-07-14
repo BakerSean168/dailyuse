@@ -19,13 +19,11 @@
     "@dailyuse/domain-shared": "workspace:*",
     "@vue/test-utils": "^2.4.6",
     "pinia": "^3.0.3",
-    "vitest": "^4.0.15"
+    "vitest": "4.1.10"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.9.3",
-    "vue": "^3.4.0"
+    "@types/node": "24.13.3",
+    "typescript": "~6.0.3",
+    "vue": "^3.5.39"
   }
 }
-
-

@@ -86,7 +86,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 

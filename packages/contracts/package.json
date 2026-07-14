@@ -92,15 +92,14 @@
     }
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.4.1",
-    "zod": "^4.3.6"
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@faker-js/faker": "10.3.0",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3"
   }
 }
-

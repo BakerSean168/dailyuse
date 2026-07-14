@@ -293,7 +293,7 @@ import {
   Plus,
   Target,
   Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
   Badge,
   Button,

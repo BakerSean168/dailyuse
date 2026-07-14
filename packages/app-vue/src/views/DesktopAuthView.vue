@@ -17,7 +17,7 @@ import {
   Lock,
   EyeOff,
   Eye,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
   Button,
   Checkbox,

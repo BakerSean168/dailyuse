@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { Target } from 'lucide-vue-next';
+import { Target } from '@lucide/vue';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import ScheduleTasksCard from './ScheduleTasksCard.vue';
 

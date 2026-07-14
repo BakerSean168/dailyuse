@@ -151,7 +151,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Bot, MessageSquare, NotebookPen, Search, Sparkles } from 'lucide-vue-next';
+import { Bot, MessageSquare, NotebookPen, Search, Sparkles } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { getToolLocaleKey, type ChatItem, type WorkflowMode } from '../composables/types';
 import { useAIFormatters } from '../composables/useAIFormatters';

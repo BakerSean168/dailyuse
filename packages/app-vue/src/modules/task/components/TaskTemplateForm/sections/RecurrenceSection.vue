@@ -191,7 +191,7 @@ import {
   PopoverContent,
   Calendar,
 } from '@dailyuse/ui-vue-shadcn';
-import { Repeat, Info, Calendar as CalendarIcon } from 'lucide-vue-next';
+import { Repeat, Info, Calendar as CalendarIcon } from '@lucide/vue';
 
 const { t } = useI18n();
 

@@ -16,7 +16,7 @@ import {
   Input,
   Label,
 } from '@dailyuse/ui-vue-shadcn';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { useAuth } from '../modules/authentication/composables/useAuth';
 import {

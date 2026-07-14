@@ -62,7 +62,7 @@ export interface ModuleCapsule {
   id: string;
   /** i18n key for the capsule label (e.g. 'nav.capsule.goal'). */
   title: string;
-  /** Icon component (lucide-vue-next). */
+  /** Icon component (@lucide/vue). */
   icon: Component;
   /** Landing route opened in the business panel when the capsule is entered. */
   route: string;

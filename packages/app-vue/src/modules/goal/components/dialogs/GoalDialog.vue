@@ -456,7 +456,7 @@ import {
   Pencil,
   Trash2,
   Target,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { useGoal } from '../../composables/useGoal';
 import KeyResultDialog from './KeyResultDialog.vue';

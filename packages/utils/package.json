@@ -51,12 +51,12 @@
     "@dailyuse/contracts": "workspace:*",
     "date-fns": "^4.1.0",
     "mitt": "^3.0.1",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.1",
     "winston": "3.19.0",
     "winston-daily-rotate-file": "5.0.0"
   },
   "peerDependencies": {
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -64,9 +64,9 @@
     }
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3"
   }
 }

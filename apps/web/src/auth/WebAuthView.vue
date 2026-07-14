@@ -10,7 +10,7 @@ import {
 import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
 import { Input } from '@dailyuse/ui-vue-shadcn/components/ui/input';
 import { Label } from '@dailyuse/ui-vue-shadcn/components/ui/label';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 
 import { useWebAuth } from './useWebAuth';
 import {

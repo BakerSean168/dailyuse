@@ -114,7 +114,7 @@ import {
   AlertTitle,
   AlertDescription,
 } from '@dailyuse/ui-vue-shadcn';
-import { Download, Image, SquareDashedKanban, FileText, Info, Loader2 } from 'lucide-vue-next';
+import { Download, Image, SquareDashedKanban, FileText, Info, Loader2 } from '@lucide/vue';
 
 const emit = defineEmits<{
   export: [options: ExportOptions];

@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from 'lucide-vue-next';
+import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from '@lucide/vue';
 import RuleStatusBadge from './RuleStatusBadge.vue';
 import type { RuleClientDTO } from '../types';
 

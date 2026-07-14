@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bookmark, Folder, FileText, Pencil, ArrowUp, ArrowDown, Trash2 } from 'lucide-vue-next';
+import { Bookmark, Folder, FileText, Pencil, ArrowUp, ArrowDown, Trash2 } from '@lucide/vue';
 import {
   Badge,
   Button,

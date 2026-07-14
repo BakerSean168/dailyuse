@@ -68,7 +68,7 @@ export default defineConfig({
       fileName: (format, entryName) => `${entryName}.js`,
     },
     sourcemap: true,
-    rollupOptions: {
+    rolldownOptions: {
       external,
       output: {
         exports: 'named',

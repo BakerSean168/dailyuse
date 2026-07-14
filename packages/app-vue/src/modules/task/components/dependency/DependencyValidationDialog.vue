@@ -111,7 +111,7 @@ import {
   AlertDescription,
   Separator,
 } from '@dailyuse/ui-vue-shadcn';
-import { AlertCircle, CheckCircle, ArrowDown, RefreshCw, Info, Network } from 'lucide-vue-next';
+import { AlertCircle, CheckCircle, ArrowDown, RefreshCw, Info, Network } from '@lucide/vue';
 import type { TaskDependencyValidationError, TaskForDAGViewModel } from '../types';
 
 const props = defineProps<{

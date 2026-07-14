@@ -106,7 +106,7 @@ import {
   Button,
   Checkbox,
 } from '@dailyuse/ui-vue-shadcn';
-import { CheckCircle, Clock, Plus } from 'lucide-vue-next';
+import { CheckCircle, Clock, Plus } from '@lucide/vue';
 import type { TaskInstanceViewModel } from '../types';
 import { useI18n } from 'vue-i18n';
 import { getTaskTimeValueDisplay } from '../../utils/task-template-presentation';

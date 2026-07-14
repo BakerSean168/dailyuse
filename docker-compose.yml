@@ -17,11 +17,11 @@ services:
   # profile: dev
   # ============================================================
 
-  # 开发数据库 - PostgreSQL 16 + pgvector，持久化存储
+  # 开发数据库 - PostgreSQL 18 + pgvector，持久化存储
   # wal_level=logical 为 PowerSync 实时同步所必需
   postgres-dev:
     profiles: [dev]
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:0.8.5-pg18
     container_name: Memoflow-dev-db
     environment:
       POSTGRES_USER: Memoflow
@@ -30,7 +30,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - postgres-dev-data:/var/lib/postgresql/data
+      - postgres-dev-data:/var/lib/postgresql
     command:
       - postgres
       - -c
@@ -46,7 +46,7 @@ services:
   # 开发 Redis - 端口 6384，避免与系统 Redis 冲突
   redis-dev:
     profiles: [dev]
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: Memoflow-dev-redis
     ports:
       - '6384:6379'
@@ -98,10 +98,10 @@ services:
   # profile: test
   # ============================================================
 
-  # 测试数据库 - PostgreSQL 15 + pgvector，tmpfs 内存模式，关闭 fsync 提速
+  # 测试数据库 - PostgreSQL 18 + pgvector，tmpfs 内存模式，关闭 fsync 提速
   postgres-test:
     profiles: [test]
-    image: pgvector/pgvector:pg15
+    image: pgvector/pgvector:0.8.5-pg18
     container_name: ${TEST_DB_CONTAINER:-Memoflow-test-db}
     environment:
       POSTGRES_USER: ${TEST_DB_USER:-test_user}
@@ -110,7 +110,7 @@ services:
     ports:
       - '${TEST_DB_PORT:-5433}:5432'
     tmpfs:
-      - /var/lib/postgresql/data:rw
+      - /var/lib/postgresql:rw
     command:
       - postgres
       - -c

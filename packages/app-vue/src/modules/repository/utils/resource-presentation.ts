@@ -1,4 +1,4 @@
-import { File, FileAudio, FileImage, FileText, FileVideo, type LucideIcon } from 'lucide-vue-next';
+import { File, FileAudio, FileImage, FileText, FileVideo, type LucideIcon } from '@lucide/vue';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 type ResourcePresentationInput = Pick<

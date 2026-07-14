@@ -216,7 +216,7 @@ import {
   Plane,
   DollarSign,
   Users,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
   Dialog,
   DialogContent,

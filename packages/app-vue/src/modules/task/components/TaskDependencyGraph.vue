@@ -166,7 +166,7 @@ import {
   ArrowRight,
   Timer,
   Route,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 // Props
 const props = withDefaults(

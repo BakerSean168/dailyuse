@@ -15,7 +15,7 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 import { SystemChannels } from '@dailyuse/contracts/electron';
 
 import AppearanceSettings from '../components/AppearanceSettings.vue';

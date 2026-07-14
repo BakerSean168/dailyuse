@@ -83,7 +83,7 @@ export default defineConfig({
     emptyOutDir: true,
     // 复制静态资源
     copyPublicDir: false,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         // 保持资源文件结构
         assetFileNames: 'assets/[name]-[hash][extname]',

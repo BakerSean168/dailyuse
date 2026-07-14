@@ -106,7 +106,7 @@ import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { FlaskConical, AlertCircle, Info } from 'lucide-vue-next';
+import { FlaskConical, AlertCircle, Info } from '@lucide/vue';
 
 const { t } = useI18n();
 

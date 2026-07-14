@@ -133,7 +133,7 @@ import {
   AlertDescription,
   Label,
 } from '@dailyuse/ui-vue-shadcn';
-import { Link2, ArrowRight, ArrowRightLeft, Trash2, Plus, AlertTriangle } from 'lucide-vue-next';
+import { Link2, ArrowRight, ArrowRightLeft, Trash2, Plus, AlertTriangle } from '@lucide/vue';
 import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';
 import type {

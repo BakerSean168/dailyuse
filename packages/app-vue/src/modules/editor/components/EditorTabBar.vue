@@ -36,7 +36,7 @@
 import { computed } from 'vue';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { FileText, Image, Video, Music, File, X } from 'lucide-vue-next';
+import { FileText, Image, Video, Music, File, X } from '@lucide/vue';
 import type { EditorTab } from '../types';
 
 const props = withDefaults(

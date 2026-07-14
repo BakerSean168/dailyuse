@@ -79,7 +79,7 @@ import {
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
 import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
-import { File, FileImage } from 'lucide-vue-next';
+import { File, FileImage } from '@lucide/vue';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { ResolvedMarkdownResourceReference } from '../utils/markdown-resource-references';
 

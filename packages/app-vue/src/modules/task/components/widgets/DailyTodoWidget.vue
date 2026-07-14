@@ -120,7 +120,7 @@ import {
   Skeleton,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
-import { ListTodo, ArrowRight, CheckCircle2, Check, Loader2 } from 'lucide-vue-next';
+import { ListTodo, ArrowRight, CheckCircle2, Check, Loader2 } from '@lucide/vue';
 import { useTask } from '../../composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 

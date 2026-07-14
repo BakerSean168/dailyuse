@@ -148,7 +148,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@dailyuse/ui-vue-shadcn';
-import { GitBranch, Dumbbell, Zap, RefreshCw, Download, Loader2, Circle } from 'lucide-vue-next';
+import { GitBranch, Dumbbell, Zap, RefreshCw, Download, Loader2, Circle } from '@lucide/vue';
 import type {
   GetGoalAggregateRes,
   GoalClientDTO,

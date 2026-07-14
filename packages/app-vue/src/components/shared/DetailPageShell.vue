@@ -10,7 +10,7 @@
  */
 import { useRouter } from 'vue-router';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft } from '@lucide/vue';
 
 const props = defineProps<{
   title: string;

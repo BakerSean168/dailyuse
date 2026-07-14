@@ -34,21 +34,32 @@ import {
  * 让上层（Store / Composable）可以按需 try-catch。
  */
 export class HttpClientError extends Error {
+  readonly code: string;
+  readonly status: number;
+  readonly details?: unknown;
+  readonly cause?: unknown;
+  readonly context?: Record<string, unknown>;
+
   constructor(
     message: string,
     /** 后端错误码（如 'NOT_FOUND', 'UNAUTHORIZED'）或空字符串 */
-    public readonly code: string,
+    code: string,
     /** HTTP 状态码（网络异常时为 0） */
-    public readonly status: number,
+    status: number,
     /** 后端返回的完整错误详情 */
-    public readonly details?: unknown,
+    details?: unknown,
     /** 原始错误对象 */
-    public readonly cause?: unknown,
+    cause?: unknown,
     /** 结构化业务上下文 */
-    public readonly context?: Record<string, unknown>,
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'HttpClientError';
+    this.code = code;
+    this.status = status;
+    this.details = details;
+    this.cause = cause;
+    this.context = context;
   }
 }
 

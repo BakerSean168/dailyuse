@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
-import { Plus, Clock, FileText } from 'lucide-vue-next';
+import { Plus, Clock, FileText } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';

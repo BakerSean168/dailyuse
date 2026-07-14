@@ -154,7 +154,7 @@ import {
   Input,
   Label,
 } from '@dailyuse/ui-vue-shadcn';
-import { Plus, BarChart3, X, Loader2, Info } from 'lucide-vue-next';
+import { Plus, BarChart3, X, Loader2, Info } from '@lucide/vue';
 
 /** Minimal tooltip formatter params for ECharts axis-triggered tooltip */
 interface TooltipAxisParams {

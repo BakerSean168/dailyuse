@@ -281,7 +281,7 @@ import {
   ArrowDownCircle,
   RefreshCw,
   Hash,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const { t } = useI18n();
 

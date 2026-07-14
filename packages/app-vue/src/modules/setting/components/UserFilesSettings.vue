@@ -82,7 +82,7 @@
 import { ref, computed, inject, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Label } from '@dailyuse/ui-vue-shadcn';
-import { FolderOpen, FolderInput, ExternalLink, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-vue-next';
+import { FolderOpen, FolderInput, ExternalLink, RotateCcw, Loader2, CheckCircle2, AlertCircle } from '@lucide/vue';
 import { SystemChannels } from '@dailyuse/contracts/electron';
 import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 

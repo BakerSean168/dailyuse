@@ -88,7 +88,7 @@ import {
   Skeleton,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
-import { Bell, BellOff, ArrowRight, AlertTriangle } from 'lucide-vue-next';
+import { Bell, BellOff, ArrowRight, AlertTriangle } from '@lucide/vue';
 import { useReminder } from '../../composables/useReminder';
 import type { ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
 

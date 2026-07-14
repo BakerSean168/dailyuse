@@ -64,7 +64,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { GripVertical, PlusCircle, XCircle } from 'lucide-vue-next';
+import { GripVertical, PlusCircle, XCircle } from '@lucide/vue';
 import TaskTemplateCard from './TaskTemplateCard.vue';
 import type { TaskTemplateViewModel } from '../types';
 import { useI18n } from 'vue-i18n';

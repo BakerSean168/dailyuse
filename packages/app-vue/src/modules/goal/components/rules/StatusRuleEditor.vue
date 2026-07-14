@@ -339,7 +339,7 @@ import {
   AlertDescription,
   useConfirm,
 } from '@dailyuse/ui-vue-shadcn';
-import { Bot, Plus, Pencil, Trash2, GitBranch, Zap, AlertCircle } from 'lucide-vue-next';
+import { Bot, Plus, Pencil, Trash2, GitBranch, Zap, AlertCircle } from '@lucide/vue';
 
 const { config, getRuleEngine } = useAutoStatusRules();
 

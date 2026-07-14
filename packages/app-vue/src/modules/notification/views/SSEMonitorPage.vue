@@ -73,7 +73,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowLeft, Radio } from 'lucide-vue-next';
+import { ArrowLeft, Radio } from '@lucide/vue';
 import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
 
 interface SSEMessage {

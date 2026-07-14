@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { marked } from 'marked';
-import { FileText, Image as ImageIcon, Music, Video, FileType } from 'lucide-vue-next';
+import { FileText, Image as ImageIcon, Music, Video, FileType } from '@lucide/vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 
 interface PreviewContent {

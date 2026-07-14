@@ -135,7 +135,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
-import { Loader2, CheckCircle, Clock } from 'lucide-vue-next';
+import { Loader2, CheckCircle, Clock } from '@lucide/vue';
 
 const props = defineProps<{
   modelValue: boolean;

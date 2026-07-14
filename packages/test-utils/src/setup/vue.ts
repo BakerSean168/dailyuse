@@ -19,7 +19,7 @@ export function installVuePiniaTestHarness(): Pinia {
 export function mountWithPinia<T extends Component>(
   component: T,
   options?: ComponentMountingOptions<T>,
-) {
+): any {
   const pinia = createTestPinia();
   const existingPlugins = (options?.global?.plugins ?? []) as Plugin[];
 

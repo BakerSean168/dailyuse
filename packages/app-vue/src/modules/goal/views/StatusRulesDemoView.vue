@@ -63,7 +63,7 @@
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { Settings, Clock, ArrowRight } from 'lucide-vue-next';
+import { Settings, Clock, ArrowRight } from '@lucide/vue';
 import {
   Card,
   CardHeader,

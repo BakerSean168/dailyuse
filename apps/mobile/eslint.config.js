@@ -1,13 +1,12 @@
-// Baseline: ../../eslint.config.ts
-// https://docs.expo.dev/guides/using-eslint/
+// Baseline monorepo ESLint 10 config.
+// eslint-config-expo currently pulls eslint-plugin-react@7 which does not support ESLint 10
+// (react/display-name crashes on context.getFilename).
 import { defineConfig } from 'eslint/config';
-import expoConfig from 'eslint-config-expo/flat.js';
 import baseConfig from '../../eslint.config.ts';
 
 export default defineConfig([
   ...baseConfig,
-  expoConfig,
   {
-    ignores: ['dist/*'],
+    ignores: ['dist/*', '.expo/*', 'node_modules/*'],
   },
 ]);

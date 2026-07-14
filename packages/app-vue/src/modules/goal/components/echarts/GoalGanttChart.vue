@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { GanttChartSquare } from 'lucide-vue-next';
+import { GanttChartSquare } from '@lucide/vue';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';

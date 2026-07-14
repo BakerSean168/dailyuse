@@ -141,7 +141,7 @@ import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Sparkles, Info, AlertCircle } from 'lucide-vue-next';
+import { Sparkles, Info, AlertCircle } from '@lucide/vue';
 
 const props = withDefaults(
   defineProps<{

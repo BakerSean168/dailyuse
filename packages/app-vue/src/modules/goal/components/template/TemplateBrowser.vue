@@ -321,7 +321,7 @@ import {
   Megaphone,
   Briefcase,
   Folder,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 // Emits
 const emit = defineEmits<{

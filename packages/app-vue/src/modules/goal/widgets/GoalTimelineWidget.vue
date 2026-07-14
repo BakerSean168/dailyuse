@@ -22,7 +22,7 @@ import {
   Badge,
   Progress,
 } from '@dailyuse/ui-vue-shadcn';
-import { TrendingUp, CalendarDays, Flag, FlagOff, ArrowRight, Loader2 } from 'lucide-vue-next';
+import { TrendingUp, CalendarDays, Flag, FlagOff, ArrowRight, Loader2 } from '@lucide/vue';
 
 // ===== Props =====
 interface Props {

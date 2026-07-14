@@ -91,7 +91,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
-import { Bell, CheckCheck } from 'lucide-vue-next';
+import { Bell, CheckCheck } from '@lucide/vue';
 import { Badge, Button, Skeleton } from '@dailyuse/ui-vue-shadcn';
 import ListPageShell from '../../../components/shared/ListPageShell.vue';
 import FilterBar from '../../../components/shared/FilterBar.vue';

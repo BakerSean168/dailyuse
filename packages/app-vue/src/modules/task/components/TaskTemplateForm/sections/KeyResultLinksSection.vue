@@ -201,7 +201,7 @@ import {
   Input,
   Badge,
 } from '@dailyuse/ui-vue-shadcn';
-import { Target, CheckCircle, Info, Flag, PlusCircle, Link2 } from 'lucide-vue-next';
+import { Target, CheckCircle, Info, Flag, PlusCircle, Link2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

@@ -98,7 +98,7 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { ToggleGroup, ToggleGroupItem } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Network, RotateCw, X, AlertCircle } from 'lucide-vue-next';
+import { Network, RotateCw, X, AlertCircle } from '@lucide/vue';
 import * as echarts from 'echarts';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
 import type { LinkGraphData, LinkGraphEdge, LinkGraphNode } from '../utils/link-index';

@@ -70,7 +70,7 @@ import {
   Input,
   Label,
 } from '@dailyuse/ui-vue-shadcn';
-import { Clock, Info, X } from 'lucide-vue-next';
+import { Clock, Info, X } from '@lucide/vue';
 import type { TaskTemplateViewModel } from '../../types';
 import { useI18n } from 'vue-i18n';
 

@@ -71,7 +71,7 @@ export default defineConfig({
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}.js`,
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => external.some((dep) => id === dep || id.startsWith(dep + '/')),
       output: {
         exports: 'named',

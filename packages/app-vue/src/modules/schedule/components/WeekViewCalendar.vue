@@ -105,7 +105,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Card, CardContent, CardHeader } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 

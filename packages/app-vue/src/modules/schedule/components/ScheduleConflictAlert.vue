@@ -91,7 +91,7 @@ import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from 'lucide-vue-next';
+import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import {
   ConflictSeverity,
