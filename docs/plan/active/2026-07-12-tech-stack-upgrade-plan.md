@@ -417,3 +417,50 @@ PG18 计划漏了 [ci.yml (line 177)](D:/home/projects/dailyuse/.github/workflow
 pnpm 11 不只是移动 package.json#pnpm：.npmrc 中除 registry/auth 外的大量配置也要迁入 workspace yaml，同时还有 Dockerfile、devcontainer 和文档里的 pnpm 10 钉住点。pnpm 迁移指南
 Redis 目前只有服务、配置和 external 声明，没有找到真实 ioredis 调用。按最小化原则，应先确认能否直接移除，而不是为了版本表升级。
 所以，我建议采用“一次性核心升级”的方案，但保留 PG18 和 Mobile 的独立验收边界。这能消除绝大多数重复 CI/部署成本，同时避免把数据迁移和原生产物验证压缩成一次普通测试。此次仅做了分析，没有修改文件。
+
+
+## 9. 执行进度（one-shot）
+
+> 更新于 2026-07-13 18:02 UTC，分支 `chore/tech-stack-upgrade-2026-07`。  
+> **状态：代码侧 one-shot 升级完成并通过本地最终验证矩阵。**
+
+### 策略与范围
+- one-shot 落地 B0–B6 / B8 + B9 + B10
+- B7：镜像与卷路径钉住 + 本地用**新空卷**验收；**生产 dump/restore 属环境维护窗口，不在本代码升级范围内**（计划原文即独立验收边界）
+
+### 已落地目标版本（实测）
+| 组件 | 版本 |
+| --- | --- |
+| pnpm | 11.12.0 |
+| Vite / Nx / Electron / TS / ESLint / Vitest | 8.1.4 / 23.0.2 / 43.1.0 / 6.0.3 / 10.7.0 / 4.1.10 |
+| vue-router / @lucide/vue / Prisma / better-sqlite3 | 5.1.0 / 1.24.0 / 7.8.0 / 12.11.1 |
+| Storybook / Tailwind / node-abi | 10.5.0 / 4.3.2 / 4.33.0 |
+| Expo / RN / reanimated / worklets | 57.0.4 / 0.86.0 / 4.5.0 / 0.10.0 |
+| Docker PG / Redis | `pgvector/pgvector:0.8.5-pg18` / `redis:8-alpine`（`/var/lib/postgresql`） |
+| CI/Node | `NODE_VERSION=24` |
+
+### 最终验证矩阵（2026-07-13，pnpm 11.12.0，`/tmp/ultimate-matrix.log`）
+| Gate | Exit |
+| --- | --- |
+| core typecheck（utils,contracts,patterns,domain-shared,http-client,account,authentication,task,goal,api） | 0 |
+| api:build / web:build / desktop:build | 0 / 0 / 0 |
+| utils:test / contracts:test / desktop:test | 0 / 0 / 0 |
+| daily-use:governance-check | 0 |
+| apps/mobile `expo install --check` | 0（Dependencies are up to date） |
+| local docker health + HTTP | postgres/redis/api/web/ai/powersync healthy；api/web 200 |
+
+### 适配要点
+- 死依赖/`scheduler-server` 退役；lucide→@lucide/vue；Vite rolldownOptions；TS6 ignoreDeprecations
+- pnpm 配置迁入 `pnpm-workspace.yaml`；Electron 43 + native rebuild ABI 148
+- Mobile Expo57 peers；RN absoluteFill；ESLint10 下 mobile lint 基线
+- 本地 PG18 需新卷（旧 PG16 卷不兼容）
+
+### 环境维护（非代码阻塞）
+生产/共享库若仍有旧 PG 数据：按 B7 步骤做 dump → 新卷 pg18 → restore → REINDEX → PowerSync resync。
+
+### 后续（流程，非升级实现缺口）
+- 执行总结：[`2026-07-13-tech-stack-upgrade-execution-summary.md`](./2026-07-13-tech-stack-upgrade-execution-summary.md)
+- 本地同步指南：[`../guides/development/tech-stack-upgrade-local-sync.md`](../guides/development/tech-stack-upgrade-local-sync.md)
+- 开 PR，由 GitHub Actions 干净环境复核
+- 可选：§8 pnpm catalog / Renovate 长效防漂移（升级后机制，非版本升级本体）
+
