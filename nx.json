@@ -2,10 +2,7 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "parallel": 2,
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
@@ -23,118 +20,66 @@
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ],
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
       "cache": true,
-      "syncGenerators": [
-        "@dailyuse/nx-test-system:sync-test-targets"
-      ]
+      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
     },
     "serve": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "cache": false
     },
     "test": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": true,
-      "syncGenerators": [
-        "@dailyuse/nx-test-system:sync-test-targets"
-      ]
+      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
     },
     "test:watch": {
       "cache": false,
-      "syncGenerators": [
-        "@dailyuse/nx-test-system:sync-test-targets"
-      ]
+      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
     },
     "test:coverage": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": true,
-      "syncGenerators": [
-        "@dailyuse/nx-test-system:sync-test-targets"
-      ]
+      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
     },
     "test:integration": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": false,
       "parallelism": false
     },
     "test:smoke": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": true
     },
     "test:bench": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": false
     },
     "e2e": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": false
     },
     "lint": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/eslint.config.ts"
-      ],
+      "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
       "cache": true,
-      "syncGenerators": [
-        "@dailyuse/nx-test-system:sync-test-targets"
-      ]
+      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
     },
     "@nx/js:tsc": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     },
     "typecheck": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ],
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
       "cache": true,
-      "syncGenerators": [
-        "@dailyuse/nx-test-system:sync-test-targets"
-      ]
+      "syncGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
     }
   },
   "sync": {
     "applyChanges": true,
-    "globalGenerators": [
-      "@dailyuse/nx-test-system:sync-test-targets"
-    ]
+    "globalGenerators": ["@dailyuse/nx-test-system:sync-test-targets"]
   },
   "plugins": [
     {
@@ -170,5 +115,6 @@
     "version": {
       "preVersionCommand": "pnpm dlx nx run-many -t build"
     }
-  }
+  },
+  "analytics": true
 }
