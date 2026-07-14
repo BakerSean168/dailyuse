@@ -7,6 +7,8 @@ export const electronJsExternalPackages = [
   '@powersync/common',
   'date-fns',
   'gray-matter',
+  'winston',
+  'winston-daily-rotate-file',
 ];
 
 export const electronExternalWorkspacePackages = ['@dailyuse/database'];

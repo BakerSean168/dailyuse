@@ -658,6 +658,12 @@ importers:
       undici:
         specifier: ^8.7.0
         version: 8.7.0
+      winston:
+        specifier: 3.19.0
+        version: 3.19.0
+      winston-daily-rotate-file:
+        specifier: 5.0.0
+        version: 5.0.0(winston@3.19.0)
       xtend:
         specifier: 4.0.2
         version: 4.0.2

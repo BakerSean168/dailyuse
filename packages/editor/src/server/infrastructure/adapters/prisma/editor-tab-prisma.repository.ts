@@ -2,7 +2,7 @@ import type {
   PrismaClient,
   EditorWorkspaceSessionGroupTab as PrismaEditorWorkspaceSessionGroupTab,
 } from '@dailyuse/database';
-import { Prisma } from '@dailyuse/database';
+import { Prisma } from '@dailyuse/database/prisma';
 import type {
   EditorGroupId,
   EditorSessionId,

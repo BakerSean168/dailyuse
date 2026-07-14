@@ -63,6 +63,7 @@ export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode !== 'production';
   const workspaceRoot = path.resolve(__dirname, '../..');
   const env = loadEnv(mode, workspaceRoot, '');
+  Object.assign(process.env, env);
   const devWorkspaceAliases = isDev
     ? [
         ...createAppVueSourceAliasEntries(workspaceRoot),
