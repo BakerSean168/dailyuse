@@ -111,16 +111,16 @@ has_prisma_migration_dirs() {
 }
 
 if has_prisma_migration_dirs; then
-  echo "   Command: pnpm --dir /app/packages/database exec prisma migrate deploy --config ./prisma/prisma.config.ts"
+  echo "   Command: /app/node_modules/.bin/prisma migrate deploy --config ./prisma/prisma.config.ts"
   echo ""
   MIGRATION_RESULT=0
-  MIGRATION_OUTPUT=$(pnpm --dir /app/packages/database exec prisma migrate deploy --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
+  MIGRATION_OUTPUT=$(cd /app/packages/database && /app/node_modules/.bin/prisma migrate deploy --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
 else
   echo "${YELLOW}⚠️  No Prisma migration directories found, falling back to schema push${NC}"
-  echo "   Command: pnpm --dir /app/packages/database exec prisma db push --config ./prisma/prisma.config.ts"
+  echo "   Command: /app/node_modules/.bin/prisma db push --config ./prisma/prisma.config.ts"
   echo ""
   MIGRATION_RESULT=0
-  MIGRATION_OUTPUT=$(pnpm --dir /app/packages/database exec prisma db push --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
+  MIGRATION_OUTPUT=$(cd /app/packages/database && /app/node_modules/.bin/prisma db push --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
 fi
 
 echo "$MIGRATION_OUTPUT"
