@@ -89,8 +89,35 @@ function getCorsOrigins(): string {
   return [...new Set([getWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(',');
 }
 
-const sharedServerOptions = {
-  reuseExistingServer: !process.env.CI,
+/**
+ * API must not silently reuse Docker/host-dev on :3000.
+ * Opt in only with E2E_REUSE_SERVERS=1 (and never on CI).
+ * Web may still reuse an existing Vite server locally.
+ */
+function shouldReuseApiServer(): boolean {
+  if (process.env.CI) {
+    return false;
+  }
+  return process.env.E2E_REUSE_SERVERS === '1';
+}
+
+function shouldReuseWebServer(): boolean {
+  if (process.env.CI) {
+    return false;
+  }
+  if (process.env.E2E_REUSE_SERVERS === '0') {
+    return false;
+  }
+  return true;
+}
+
+const apiServerOptions = {
+  reuseExistingServer: shouldReuseApiServer(),
+  timeout: 300 * 1000,
+} as const;
+
+const webServerOptions = {
+  reuseExistingServer: shouldReuseWebServer(),
   timeout: 300 * 1000,
 } as const;
 
@@ -99,15 +126,17 @@ export function createApiServer() {
 
   return {
     // Ensure the local test database is ready before booting the built API entrypoint.
+    // Probe + RUNTIME_LANE=e2e happen inside start-api-server.ts so wrong owners fail loudly.
     command: 'pnpm exec tsx ./e2e/helpers/start-api-server.ts',
     cwd: '.',
     url: `${apiOrigin}/healthz`,
     env: {
       ...process.env,
       NODE_ENV: 'test',
+      RUNTIME_LANE: 'e2e',
       CORS_ORIGIN: getCorsOrigins(),
     },
-    ...sharedServerOptions,
+    ...apiServerOptions,
   };
 }
 
@@ -126,7 +155,7 @@ export function createWebServer(url = `${getWebOrigin()}/auth`) {
       NODE_ENV: 'test',
       PROXY_TARGET_URL: apiOrigin,
     },
-    ...sharedServerOptions,
+    ...webServerOptions,
   };
 }
 

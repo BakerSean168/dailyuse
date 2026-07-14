@@ -7,12 +7,80 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');
 const apiDistDir = path.resolve(workspaceRoot, 'apps', 'api', 'dist');
 
+const DEFAULT_API_ORIGIN = 'http://localhost:3000';
+
+function normalizeOrigin(origin: string): string {
+  return origin.replace(/\/+$/, '');
+}
+
+async function probeExistingApi(apiOrigin: string): Promise<{
+  occupied: boolean;
+  lane?: string;
+  status?: number;
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${apiOrigin}/healthz`, {
+      signal: AbortSignal.timeout(1500),
+    });
+    let lane: string | undefined;
+    try {
+      const body = (await response.json()) as { lane?: string };
+      if (typeof body.lane === 'string' && body.lane.trim()) {
+        lane = body.lane.trim();
+      }
+    } catch {
+      // non-JSON health body is still "something is listening"
+    }
+    return {
+      occupied: true,
+      lane,
+      status: response.status,
+    };
+  } catch (error) {
+    return {
+      occupied: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 async function main(): Promise<void> {
+  const apiOrigin = normalizeOrigin(process.env.E2E_API_BASE_URL ?? DEFAULT_API_ORIGIN);
+  const existing = await probeExistingApi(apiOrigin);
+
+  if (existing.occupied) {
+    const lane = existing.lane ?? '(missing)';
+    console.error(
+      `[playwright-api-server] ${apiOrigin} is already occupied (HTTP ${existing.status ?? '?'}, lane=${lane}).`,
+    );
+    if (existing.lane === 'e2e') {
+      console.error(
+        '[playwright-api-server] An e2e API is already running. Stop it, or set E2E_REUSE_SERVERS=1 to reuse intentionally.',
+      );
+    } else {
+      console.error(
+        '[playwright-api-server] This is almost certainly Docker local-docker or host-dev, NOT the Playwright API dist.',
+      );
+      console.error(
+        '[playwright-api-server] Fix: free :3000 (e.g. pnpm docker:local:down if API_HOST_PORT was 3000), ensure local-docker uses 53080, then re-run e2e.',
+      );
+      console.error(
+        '[playwright-api-server] See docs/guides/development/runtime-lanes.md and pnpm runtime:preflight --profile e2e',
+      );
+    }
+    process.exit(1);
+  }
+
   await ensureTestDatabase(workspaceRoot);
 
   const apiProcess = spawn(process.execPath, ['main.js'], {
     cwd: apiDistDir,
-    env: process.env,
+    env: {
+      ...process.env,
+      RUNTIME_LANE: 'e2e',
+      NODE_ENV: process.env.NODE_ENV ?? 'test',
+    },
     stdio: 'inherit',
   });
 

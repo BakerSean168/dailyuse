@@ -28,6 +28,7 @@
 ## 本地验证与发布主线
 
 - 本地容器验证入口：[`docs/guides/development/local.docker.md`](docs/guides/development/local.docker.md)
+- 本机运行时车道 / 端口契约：[`docs/guides/development/runtime-lanes.md`](docs/guides/development/runtime-lanes.md)
 - 标准发布链路入口：[`docs/guides/development/release-workflow.md`](docs/guides/development/release-workflow.md)
 - 默认顺序固定为：
   1. 本地用 `docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build` 验证
@@ -75,3 +76,5 @@
 
 桌面端在 Windows 开发模式下的日志目录：
 `C:\Users\xx\AppData\Roaming\Memoflow-Dev\logs`
+
+

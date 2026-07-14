@@ -1,0 +1,108 @@
+{
+  "$schema": "./profiles.schema.json",
+  "version": 1,
+  "description": "Single source of truth for Memoflow local runtime host ports and lane rules. Compose defaults, preflight, Playwright, and docs must not invent conflicting host ports.",
+  "reservedHostPorts": {
+    "3000": ["host-dev", "e2e"],
+    "5173": ["host-dev", "e2e"],
+    "5432": ["host-dev", "dev-infra"],
+    "5433": ["e2e", "test-infra"],
+    "6384": ["host-dev", "dev-infra"],
+    "8080": ["host-dev", "dev-infra"],
+    "8081": ["host-dev"]
+  },
+  "profiles": {
+    "host-dev": {
+      "title": "Host development (hot reload)",
+      "description": "pnpm dev for API+Web; docker:dev:up for infra only.",
+      "commands": {
+        "infra": "pnpm docker:dev:up",
+        "app": "pnpm dev"
+      },
+      "ports": {
+        "api": 3000,
+        "web": 5173,
+        "postgres": 5432,
+        "redis": 6384,
+        "powersync": 8080
+      },
+      "urls": {
+        "api": "http://localhost:3000",
+        "web": "http://localhost:5173",
+        "powersync": "http://localhost:8080"
+      },
+      "mutexWith": ["local-docker"]
+    },
+    "e2e": {
+      "title": "Playwright core e2e",
+      "description": "Playwright owns API dist + Vite. Requires test DB on 5433. Do not reuse Docker API on :3000.",
+      "commands": {
+        "infra": "pnpm docker:test:up",
+        "app": "pnpm e2e"
+      },
+      "ports": {
+        "api": 3000,
+        "web": 5173,
+        "postgres": 5433
+      },
+      "urls": {
+        "api": "http://localhost:3000",
+        "web": "http://127.0.0.1:5173"
+      },
+      "runtimeLane": "e2e",
+      "mutexWith": ["local-docker"]
+    },
+    "local-docker": {
+      "title": "Local prod-like Docker stack",
+      "description": "docker-compose.local.yml full stack. Host ports MUST stay isolated from host-dev/e2e.",
+      "commands": {
+        "app": "pnpm docker:local:up"
+      },
+      "ports": {
+        "api": 53080,
+        "web": 58080,
+        "ai": 58100,
+        "powersync": 58081,
+        "postgres": 55432,
+        "redis": 56379
+      },
+      "hostPortEnv": {
+        "API_HOST_PORT": 53080,
+        "WEB_HOST_PORT": 58080,
+        "AI_SERVICE_HOST_PORT": 58100,
+        "POWERSYNC_HOST_PORT": 58081,
+        "POSTGRES_HOST_PORT": 55432,
+        "REDIS_HOST_PORT": 56379
+      },
+      "urls": {
+        "api": "http://localhost:53080",
+        "web": "http://localhost:58080",
+        "ai": "http://localhost:58100",
+        "powersync": "http://localhost:58081"
+      },
+      "mutexWith": ["host-dev", "e2e"]
+    },
+    "dev-infra": {
+      "title": "Dev infrastructure only",
+      "description": "docker compose --profile dev (postgres/redis/powersync).",
+      "commands": {
+        "infra": "pnpm docker:dev:up"
+      },
+      "ports": {
+        "postgres": 5432,
+        "redis": 6384,
+        "powersync": 8080
+      }
+    },
+    "test-infra": {
+      "title": "Test infrastructure only",
+      "description": "docker compose --profile test (e2e/integration DB).",
+      "commands": {
+        "infra": "pnpm docker:test:up"
+      },
+      "ports": {
+        "postgres": 5433
+      }
+    }
+  }
+}

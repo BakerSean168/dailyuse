@@ -6,7 +6,7 @@ tags:
   - local
 description: 使用 docker-compose.local.yml 做 prod-like 本地验证的统一入口
 created: 2026-05-19T00:00:00
-updated: 2026-05-19T00:00:00
+updated: 2026-07-14T00:00:00
 ---
 
 # Local Docker 验证
@@ -18,6 +18,7 @@ updated: 2026-05-19T00:00:00
 - 尽量贴近生产拓扑：`postgres + redis + ai-service + api + powersync + web`
 - 强制本地构建 `api` / `web` / `ai-service` 镜像
 - 在进入 PR 和 release 链路前，先验证本地容器运行结果
+- **host 端口与 host-dev / Playwright e2e 隔离**（SSOT：`tools/runtime/profiles.json`）
 
 ## 适用场景
 
@@ -32,11 +33,21 @@ updated: 2026-05-19T00:00:00
 
 ## 启动命令
 
-首次或代码有改动时：
+推荐统一入口（会强制隔离 host 端口）：
+
+```bash
+pnpm runtime:preflight:local-docker
+pnpm docker:local:up
+```
+
+等价底层命令：
 
 ```bash
 docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
 ```
+
+> 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与 `pnpm dev` / Playwright 抢口。  
+> `pnpm docker:local:*` 会按 SSOT 纠正冲突端口（见 [runtime-lanes.md](./runtime-lanes.md)）。
 
 默认本地访问端口：
 
@@ -50,20 +61,32 @@ docker compose -f docker-compose.local.yml --env-file .env.production.local up -
 仅重启已有容器：
 
 ```bash
+pnpm docker:local:up
+# 或（不跑 build-prep 时请自知风险）
 docker compose -f docker-compose.local.yml --env-file .env.production.local up -d
 ```
 
 查看日志：
 
 ```bash
-docker compose -f docker-compose.local.yml --env-file .env.production.local logs -f
+pnpm docker:local:logs
 ```
 
 停止并移除容器：
 
 ```bash
-docker compose -f docker-compose.local.yml --env-file .env.production.local down
+pnpm docker:local:down
 ```
+
+## 与 host-dev / e2e 的关系
+
+| 车道 | API | Web | PG | 说明 |
+| --- | --- | --- | --- | --- |
+| local-docker | 53080 | 58080 | 55432 | 本文件 |
+| host-dev | 3000 | 5173 | 5432 | `pnpm dev` |
+| e2e | 3000 | 5173 | 5433 | Playwright |
+
+完整互斥规则与排障见 [runtime-lanes.md](./runtime-lanes.md)。
 
 ## 本地验证最低要求
 
@@ -73,7 +96,7 @@ docker compose -f docker-compose.local.yml --env-file .env.production.local down
 - `web` healthy
 - `ai-service` healthy
 - `powersync` healthy
-- 关键改动相关的 env / volume 已在本地 compose 中接通
+- 相关改动相关的 env / volume 已在本地 compose 中接通
 - 关键用户链路在本地容器环境下能跑通
 
 如果改动涉及 snapshot / PowerSync / cron，额外确认：
@@ -97,6 +120,7 @@ docker compose -f docker-compose.local.yml --env-file .env.production.local down
 
 相关入口：
 
+- 运行时车道说明见 [runtime-lanes.md](./runtime-lanes.md)
 - 发布链路说明见 [release-workflow.md](./release-workflow.md)
 - Git/PR 约定见 [git-workflow.md](./git-workflow.md)
 - 生产部署说明见 [deployment README](../../deployment/README.md)

@@ -1,5 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import {
+  getRuntimeProfile,
+  resolveLocalDockerHostPorts,
+} from '../runtime/load-profiles.mjs';
 
 const command = process.argv[2] ?? 'up';
 const envFile = '.env.production.local';
@@ -58,12 +62,66 @@ function run(bin, args, env) {
   }
 }
 
+/**
+ * Force local-docker host ports from SSOT so local stack never steals host-dev/e2e ports.
+ * Secrets and service env still come from .env.production.local.
+ */
+function applyLocalDockerHostPortIsolation(env, envFileMap) {
+  /** @type {Record<string, string>} */
+  const fromFile = {};
+  const profile = getRuntimeProfile('local-docker');
+  for (const key of Object.keys(profile.hostPortEnv ?? {})) {
+    if (envFileMap.has(key)) {
+      fromFile[key] = envFileMap.get(key) ?? '';
+    } else if (env[key]) {
+      fromFile[key] = String(env[key]);
+    }
+  }
+
+  const resolved = resolveLocalDockerHostPorts(fromFile);
+  for (const warning of resolved.warnings) {
+    console.warn(`[docker:local] ${warning}`);
+  }
+  for (const error of resolved.errors) {
+    console.error(`[docker:local] ${error}`);
+  }
+  if (!resolved.ok) {
+    process.exit(1);
+  }
+
+  for (const [key, value] of Object.entries(resolved.forced)) {
+    env[key] = value;
+  }
+
+  // Keep public PowerSync URL aligned with isolated host port when unset or still pointing at classic ports.
+  const powersyncHostPort = resolved.forced.POWERSYNC_HOST_PORT ?? '58081';
+  const isolatedPowerSyncUrl = `http://localhost:${powersyncHostPort}`;
+  const currentPowerSyncUrl = env.POWERSYNC_URL || envFileMap.get('POWERSYNC_URL') || '';
+  if (
+    !currentPowerSyncUrl ||
+    /localhost:8080\b/u.test(currentPowerSyncUrl) ||
+    /localhost:8081\b/u.test(currentPowerSyncUrl)
+  ) {
+    env.POWERSYNC_URL = isolatedPowerSyncUrl;
+    if (currentPowerSyncUrl && currentPowerSyncUrl !== isolatedPowerSyncUrl) {
+      console.warn(
+        `[docker:local] POWERSYNC_URL=${currentPowerSyncUrl} looks like host-dev; using ${isolatedPowerSyncUrl}`,
+      );
+    }
+  }
+
+  console.log(
+    `[docker:local] host ports: API=${env.API_HOST_PORT} WEB=${env.WEB_HOST_PORT} AI=${env.AI_SERVICE_HOST_PORT} PS=${env.POWERSYNC_HOST_PORT} PG=${env.POSTGRES_HOST_PORT} REDIS=${env.REDIS_HOST_PORT}`,
+  );
+}
+
 function createRuntimeEnv() {
   const env = {
     ...process.env,
     NX_DAEMON: 'false',
     NX_ISOLATE_PLUGINS: 'false',
   };
+  const envFileMap = readEnvFileMap(envFile);
   const envKeys = readEnvFileKeys(envFile);
   const developmentEnv = readEnvFileMap('.env.development');
 
@@ -86,6 +144,8 @@ function createRuntimeEnv() {
       console.log(`[docker:local] ${key} is not set in .env.production.local, using a local default.`);
     }
   }
+
+  applyLocalDockerHostPortIsolation(env, envFileMap);
 
   return env;
 }

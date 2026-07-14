@@ -72,12 +72,18 @@ export const healthController = {
    * 
    * 极简检查，只要进程在运行就返回 ok。
    * 用于 K8s 判断是否需要重启容器。
+   * 当设置 RUNTIME_LANE 时附带 lane，供 Playwright / preflight 识别进程身份，避免误复用 Docker API。
    * 
    * @route GET /healthz
    * @route GET /livez
    */
   liveness: (_req: Request, res: Response): void => {
-    res.status(200).json({ status: 'ok' });
+    const payload: { status: 'ok'; lane?: string } = { status: 'ok' };
+    const lane = process.env.RUNTIME_LANE?.trim();
+    if (lane) {
+      payload.lane = lane;
+    }
+    res.status(200).json(payload);
   },
 
   /**
