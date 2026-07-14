@@ -127,7 +127,7 @@ async function bootstrapGoalWorkflowSession(
   });
 
   await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 
@@ -198,7 +198,7 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
 
     await expect(agentPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -256,6 +256,9 @@ test.describe('AI Goal Workflow', () => {
       /Recovery suggestions|恢复建议|关键结果创建失败/i,
     );
     expect(telemetry.goalAgentStartCount).toBe(1);
+    expect(telemetry.lastGoalAgentStart?.idea ?? '').toMatch(/Agent runtime/i);
+    expect(telemetry.lastGoalAgentStart?.providerId).toBe('provider-e2e-openai');
+    expect(telemetry.lastGoalAgentStart?.model).toBe('gpt-4.1-mini');
     expect(telemetry.goalAgentApprovalResumeCount).toBe(1);
     expect(telemetry.goalAgentExecuteRequestCount).toBe(1);
     expect(telemetry.goalAgentCompletionResumeCount).toBe(1);
@@ -415,7 +418,7 @@ test.describe('AI Goal Workflow', () => {
 
     const composer = page.getByTestId('ai-chat-composer');
     await composer.fill(
-      'Create a structured AI workflow goal through the Agent runtime, then cancel before approving execution.',
+      'Create a structured AI workflow goal through the Agent runtime and cancel before approving execution.',
     );
     await page.getByTestId('ai-chat-send-message').click();
 
@@ -441,6 +444,9 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('goal-agent-confirm-run')).toHaveCount(0);
     await expect(page.getByTestId('goal-agent-cancel-run')).toHaveCount(0);
     expect(telemetry.goalAgentStartCount).toBe(1);
+    expect(telemetry.lastGoalAgentStart?.idea ?? '').toMatch(/Agent runtime/i);
+    expect(telemetry.lastGoalAgentStart?.providerId).toBe('provider-e2e-openai');
+    expect(telemetry.lastGoalAgentStart?.model).toBe('gpt-4.1-mini');
     expect(telemetry.goalAgentCancelCount).toBe(1);
     expect(telemetry.goalAgentApprovalResumeCount).toBe(0);
   });
@@ -452,6 +458,11 @@ type GoalWorkflowMockOptions = {
 
 type GoalWorkflowMockTelemetry = {
   goalAgentStartCount: number;
+  lastGoalAgentStart?: {
+    idea?: string;
+    providerId?: string;
+    model?: string;
+  };
   goalAgentApprovalResumeCount: number;
   goalAgentRetryResumeCount: number;
   goalAgentCancelCount: number;
@@ -1746,9 +1757,11 @@ async function installGoalWorkflowMocks(
 
     if (request.agentType === 'goal.create') {
       telemetry.goalAgentStartCount += 1;
-      expect(request.input?.idea).toMatch(/Agent runtime/i);
-      expect(request.input?.providerId).toBe('provider-e2e-openai');
-      expect(request.input?.model).toBe('gpt-4.1-mini');
+      telemetry.lastGoalAgentStart = {
+        idea: request.input?.idea,
+        providerId: request.input?.providerId,
+        model: request.input?.model,
+      };
 
       const mockRun = createGoalAgentMockRun(request);
       goalAgentRunsByRunId.set(mockRun.runId, mockRun);

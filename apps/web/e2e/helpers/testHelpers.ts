@@ -99,7 +99,12 @@ async function prepareAuthPage(page: Page): Promise<void> {
   await openAuthPage(page);
   await clearAuthState(page);
   console.log('[Auth] 已清理旧的认证状态');
-  await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  // Avoid networkidle: Vite HMR / long-polling can keep the network busy forever.
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  await page
+    .locator('#email, #reg-email, [data-testid="register-submit-button"], button:has-text("Sign In")')
+    .first()
+    .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
 }
 
@@ -155,17 +160,17 @@ export async function ensureLoginScene(page: Page): Promise<void> {
 
 async function navigateAfterAuth(page: Page, landingPath?: string): Promise<void> {
   if (!landingPath) {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     return;
   }
 
   if (page.url() !== WEB_CONFIG.getFullUrl(landingPath)) {
     await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   } else {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   }
 }
 
@@ -194,7 +199,7 @@ export async function registerAndLogin(
 
   await prepareAuthPage(page);
   await registerViaAuth(page, email, password);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
   await navigateAfterAuth(page, options.landingPath);
 
@@ -294,7 +299,7 @@ export async function login(
       const errorText = await errorBanner.textContent();
       console.warn(`[Auth] 登录失败，尝试注册测试账号: ${errorText}`);
       await registerViaAuth(page, email, password);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       return;
     }
 
@@ -302,7 +307,7 @@ export async function login(
   }
 
   // 等待页面稳定
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
 
   console.log('[Auth] 登录成功');
