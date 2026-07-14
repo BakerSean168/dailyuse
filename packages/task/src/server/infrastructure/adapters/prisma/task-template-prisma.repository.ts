@@ -26,26 +26,17 @@ interface TaskTemplateDb {
   taskTemplate: PrismaClient['taskTemplate'];
 }
 
-type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
-type TaskTemplateRootDb = TaskTemplateDb & PrismaTransactionRoot;
-
-function isTaskTemplateRootDb(db: TaskTemplateDb | TaskTemplateRootDb): db is TaskTemplateRootDb {
-  return '$transaction' in db;
-}
-
 export class TaskTemplatePrismaRepository
   extends AggregateRepositoryBase<TaskTemplate>
   implements ITaskTemplateRepository
 {
   private readonly db: TaskTemplateDb;
-  private readonly rootClient: PrismaTransactionRoot | null;
 
   constructor(prisma: PrismaClient, eventBus?: IEventBus);
   constructor(prisma: TaskTemplateDb, eventBus?: IEventBus);
   constructor(prisma: TaskTemplateDb | PrismaClient, eventBus: IEventBus = eventBusAdapter) {
     super(eventBus);
     this.db = prisma;
-    this.rootClient = isTaskTemplateRootDb(prisma) ? prisma : null;
   }
 
   /**
@@ -323,28 +314,14 @@ export class TaskTemplatePrismaRepository
     });
   }
 
+  /**
+   * Persist templates sequentially on the bound client.
+   * Avoid nested `$transaction` when already inside an interactive transaction.
+   */
   async saveBatch(templates: TaskTemplate[]): Promise<void> {
-    const persistTemplate = (template: TaskTemplate) => {
-      const data = this.toWriteData(template);
-      return this.db.taskTemplate.upsert({
-        where: { id: template.id },
-        create: {
-          id: template.id,
-          ...data,
-          createdAt: new Date(template.createdAt),
-        },
-        update: data,
-      });
-    };
-
-    if (!this.rootClient) {
-      for (const template of templates) {
-        await persistTemplate(template);
-      }
-      return;
+    for (const template of templates) {
+      await this.persist(template);
     }
-
-    await this.rootClient.$transaction(templates.map((template) => persistTemplate(template)));
   }
 
   async deleteBatch(ids: string[]): Promise<void> {
@@ -353,3 +330,4 @@ export class TaskTemplatePrismaRepository
     });
   }
 }
+

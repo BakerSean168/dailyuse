@@ -24,26 +24,17 @@ interface TaskInstanceDb {
   taskInstance: PrismaClient['taskInstance'];
 }
 
-type PrismaTransactionRoot = Pick<PrismaClient, '$transaction'>;
-type TaskInstanceRootDb = TaskInstanceDb & PrismaTransactionRoot;
-
-function isTaskInstanceRootDb(db: TaskInstanceDb | TaskInstanceRootDb): db is TaskInstanceRootDb {
-  return '$transaction' in db;
-}
-
 export class TaskInstancePrismaRepository
   extends AggregateRepositoryBase<TaskInstance>
   implements ITaskInstanceRepository
 {
   private readonly db: TaskInstanceDb;
-  private readonly rootClient: PrismaTransactionRoot | null;
 
   constructor(prisma: PrismaClient, eventBus?: IEventBus);
   constructor(prisma: TaskInstanceDb, eventBus?: IEventBus);
   constructor(prisma: TaskInstanceDb | PrismaClient, eventBus: IEventBus = eventBusAdapter) {
     super(eventBus);
     this.db = prisma;
-    this.rootClient = isTaskInstanceRootDb(prisma) ? prisma : null;
   }
 
   /**
@@ -77,28 +68,19 @@ export class TaskInstancePrismaRepository
     });
   }
 
+  /**
+   * Persist instances sequentially on the bound client.
+   *
+   * Never open a nested `$transaction` here. When this repository is constructed
+   * with an interactive transaction client (`tx`), that client may still expose
+   * `$transaction`. A nested/batch transaction cannot see uncommitted rows from
+   * the outer interactive transaction (e.g. template insert before instance
+   * insert → P2003 on `task_instances_template_id_fkey`).
+   */
   async saveMany(instances: TaskInstance[]): Promise<void> {
-    const persistInstance = (instance: TaskInstance) => {
-      const data = this.toWriteData(instance);
-      return this.db.taskInstance.upsert({
-        where: { id: instance.id },
-        create: {
-          id: instance.id,
-          ...data,
-          createdAt: new Date(instance.createdAt),
-        },
-        update: data,
-      });
-    };
-
-    if (!this.rootClient) {
-      for (const instance of instances) {
-        await persistInstance(instance);
-      }
-      return;
+    for (const instance of instances) {
+      await this.persist(instance);
     }
-
-    await this.rootClient.$transaction(instances.map((instance) => persistInstance(instance)));
   }
 
   async findById(id: string): Promise<TaskInstance | null> {

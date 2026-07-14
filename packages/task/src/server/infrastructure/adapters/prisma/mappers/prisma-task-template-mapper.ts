@@ -163,8 +163,9 @@ export class PrismaTaskTemplateMapper {
       importance: dto.importance,
       color: dto.color,
       tags: typeof dto.tags === 'string' ? dto.tags : JSON.stringify(dto.tags),
-      folderId: dto.folderId,
-      parentTaskId: dto.parentTaskId,
+      // Empty strings must become null; Prisma FK columns reject '' as invalid UUID refs.
+      folderId: dto.folderId ? dto.folderId : null,
+      parentTaskId: dto.parentTaskId ? dto.parentTaskId : null,
       timeConfigType,
       timeConfigStartTime,
       timeConfigEndTime,
