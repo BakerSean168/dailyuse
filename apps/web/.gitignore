@@ -2,4 +2,7 @@
 /test-results/
 /playwright-report/
 /playwright-sync-report/
+/playwright-shell-report/
+/playwright-*-report/
 /playwright/.cache/
+
