@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   CI: 'true'
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
@@ -174,7 +174,7 @@ jobs:
             --health-interval 5s \
             --health-timeout 5s \
             --health-retries 10 \
-            postgres:15
+            pgvector/pgvector:0.8.5-pg18
 
           for _ in $(seq 1 30); do
             status="$(docker inspect --format='{{.State.Health.Status}}' ci-postgres)"
@@ -231,7 +231,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:0.8.5-pg18
         env:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_pass

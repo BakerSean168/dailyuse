@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
 jobs:
