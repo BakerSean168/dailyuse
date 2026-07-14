@@ -12,6 +12,7 @@ updated: 2026-07-14T00:00:00
 # UI 重构 V2 — 实施记录
 
 > 方案真值：`docs/UI_REDESIGN_V2_PLAN.md`（下称 V2），上游分析 `docs/UI_REDESIGN_BRIEF.md`（下称 Brief）。
+> 2026-07-14 Electron 实机诊断后的壳层修订见 [`2026-07-14-ui-shell-diagnostic-followup.md`](./2026-07-14-ui-shell-diagnostic-followup.md)；Settings、Schedule、面板拖拽、Composer、用户入口和胶囊预览的后续实施以该文档为准。
 > V1 方案 `docs/UI_PAGE_REDESIGN_PLAN.md` 及其实施记录 `2026-07-12-ui-page-redesign-implementation.md` 由 V2 §1.2 表格明确取代/保留，本文不重复其内容。
 > 分支：`refactor/ui-redesign-v2-shell`（自 `main @ 5584baf07` 切出，含 V1 P0–P3 全部落地）。
 > 范围：`packages/app-vue`（新壳）+ `apps/desktop`（无边框窗口/IPC）+ `apps/web`（同壳去窗饰）。
