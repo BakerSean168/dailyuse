@@ -46,7 +46,6 @@ export default defineConfig({
       './packages/setting/vitest.config.ts',
       './packages/task/vitest.config.ts',
       './packages/task/vitest.integration.config.ts',
-      './packages/scheduler-server/vitest.config.ts',
       './apps/api/vitest.config.ts',
       './apps/api/vitest.smoke.config.ts',
       './packages/app-vue/vitest.config.ts',

@@ -15,7 +15,7 @@
 
 ## 技术基线
 
-- 包管理：`pnpm@10`
+- 包管理：`pnpm@11`
 - 工作区编排：`nx@22`
 - 语言：TypeScript 5
 - 桌面端：Electron 39 + Vue 3

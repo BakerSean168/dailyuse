@@ -29,7 +29,7 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "express": "^4.21.0",
+    "express": "^5.2.1",
     "tslib": "^2.3.0",
     "@dailyuse/patterns": "workspace:*"
   },

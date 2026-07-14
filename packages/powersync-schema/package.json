@@ -17,11 +17,11 @@
     "src"
   ],
   "dependencies": {
-    "@powersync/common": "^1.47.0"
+    "@powersync/common": "1.57.2"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3"
   },
   "sideEffects": false
 }

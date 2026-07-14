@@ -32,9 +32,9 @@
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "express": "^4.21.0",
+    "express": "^5.2.1",
     "tslib": "^2.3.0",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": ["ES2020", "DOM"],
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
     "moduleResolution": "Bundler",
     "strict": true,
     "noImplicitReturns": true,
@@ -20,7 +23,10 @@
     "allowJs": false,
     "baseUrl": ".",
     "paths": {
-      "@dailyuse/nx-test-system": ["tools/nx-test-system/index.js"]
-    }
+      "@dailyuse/nx-test-system": [
+        "tools/nx-test-system/index.js"
+      ]
+    },
+    "ignoreDeprecations": "6.0"
   }
 }
