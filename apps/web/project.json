@@ -156,6 +156,25 @@
         }
       }
     },
+        "e2e:shell": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/apps/web/playwright-shell-report",
+        "{workspaceRoot}/apps/web/test-results"
+      ],
+      "options": {
+        "command": "playwright test --config playwright.shell.config.ts",
+        "cwd": "apps/web"
+      },
+      "configurations": {
+        "headed": {
+          "command": "playwright test --config playwright.shell.config.ts --headed"
+        },
+        "debug": {
+          "command": "playwright test --config playwright.shell.config.ts --debug"
+        }
+      }
+    },
     "e2e:desktop-screenshots": {
       "executor": "nx:run-commands",
       "outputs": [

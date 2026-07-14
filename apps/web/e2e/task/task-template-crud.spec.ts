@@ -50,9 +50,23 @@ test.describe('Task Template CRUD Operations', () => {
 
     await taskTitleInput(page).fill(updatedTitle);
     await expect(saveButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await saveButton.click();
 
-    await expect(taskTitleInput(page)).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    const patchResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/task-templates/') &&
+        response.request().method() === 'PATCH',
+      { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
+    );
+    await saveButton.click();
+    const patchResponse = await patchResponsePromise;
+    expect(
+      patchResponse.ok(),
+      `Expected task template update to succeed, got ${patchResponse.status()}`,
+    ).toBeTruthy();
+
+    await expect(page.getByTestId('task-template-dialog')).toBeHidden({
+      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+    });
     await expect(taskCardByTitle(page, updatedTitle)).toBeVisible();
     await expect(taskCardByTitle(page, originalTitle)).toHaveCount(0);
   });
@@ -88,6 +102,9 @@ async function openCreateTaskDialog(page: Page) {
     await page.getByTestId('create-first-task-template-button').click();
   }
 
+  await expect(page.getByTestId('task-template-dialog')).toBeVisible({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
   await expect(taskTitleInput(page)).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
@@ -100,24 +117,44 @@ async function createTaskTemplate(page: Page, title: string) {
   await taskTitleInput(page).fill(title);
   await taskDescriptionInput(page).fill(`Description for ${title}`);
   await expect(saveButton).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-  await saveButton.click();
 
-  await expect(taskTitleInput(page)).toBeHidden({
+  const createResponsePromise = page.waitForResponse(
+    (response) =>
+      /\/task-templates\/?(\?|$)/.test(new URL(response.url()).pathname) &&
+      response.request().method() === 'POST' &&
+      !response.url().includes('/activate') &&
+      !response.url().includes('/pause') &&
+      !response.url().includes('/archive') &&
+      !response.url().includes('/generate-instances') &&
+      !response.url().includes('/bind-goal') &&
+      !response.url().includes('/unbind-goal'),
+    { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
+  );
+  await saveButton.click();
+  const createResponse = await createResponsePromise;
+  if (!createResponse.ok()) {
+    const body = await createResponse.text();
+    throw new Error(
+      `Task template create failed: ${createResponse.status()} ${body.slice(0, 500)}`,
+    );
+  }
+
+  await expect(page.getByTestId('task-template-dialog')).toBeHidden({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
   await expect(taskCardByTitle(page, title)).toBeVisible();
 }
 
 function taskTitleInput(page: Page): Locator {
-  return page.getByRole('textbox', { name: /任务标题|task title/i });
+  return page.getByTestId('task-template-title-input');
 }
 
 function taskDescriptionInput(page: Page): Locator {
-  return page.getByRole('textbox', { name: /任务描述|description/i });
+  return page.getByTestId('task-template-description-input');
 }
 
 function taskPrimaryActionButton(page: Page): Locator {
-  return page.getByRole('button', { name: /创建模板|保存更改|create template|save changes/i });
+  return page.getByTestId('task-dialog-save-button');
 }
 
 function taskCardByTitle(page: Page, title: string): Locator {

@@ -6,59 +6,53 @@ import {
   createMockUserSetting,
 } from '@dailyuse/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
+import { registerAndLogin } from '../helpers/testHelpers';
 
 const generateTestEmail = () =>
   `e2e-ai-goal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
 const e2eConversationId = 'conv-e2e-goal-1';
+const e2ePassword = 'Test123456!';
 
-async function seedAuthenticatedSession(
+type GoalWorkflowSessionOptions = {
+  email?: string;
+  conversationId?: string | null;
+  modelKey?: string | null;
+  workflowEntry?: Record<string, unknown> | null;
+  legacyGoalWorkflow?: boolean;
+  seedConversation?: boolean;
+  landingPath?: string;
+};
+
+/**
+ * Seed only AI workspace local state after a real authenticated session exists.
+ * Do not plant fake access/refresh tokens — auth must come from registerAndLogin.
+ */
+async function seedAiLocalState(
   page: Page,
-  options?: {
-    email?: string;
-    conversationId?: string;
-    modelKey?: string;
-    workflowEntry?: Record<string, unknown>;
+  options: {
+    conversationId?: string | null;
+    modelKey?: string | null;
+    workflowEntry?: Record<string, unknown> | null;
     legacyGoalWorkflow?: boolean;
-  },
-) {
-  const email = options?.email ?? generateTestEmail();
-  const authState = {
-    accessToken: 'e2e-access-token',
-    refreshToken: 'e2e-refresh-token',
-    authMode: 'password',
-    currentIdentity: {
-      id: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      email,
-      displayName: 'E2E Agent Workspace User',
-      status: 'active',
-    },
-  };
-  const conversationId = options?.conversationId ?? null;
-  const modelKey = options?.modelKey ?? null;
-  const workflowEntry = options?.workflowEntry ?? null;
-  const legacyGoalWorkflow = options?.legacyGoalWorkflow ?? false;
+  } = {},
+): Promise<void> {
+  const conversationId = options.conversationId ?? null;
+  const modelKey = options.modelKey ?? null;
+  const workflowEntry = options.workflowEntry ?? null;
+  const legacyGoalWorkflow = options.legacyGoalWorkflow ?? false;
 
-  await page.addInitScript(
-    (
-      {
-        authenticationKey,
-        accessTokenKey,
-        refreshTokenKey,
-        auth,
-        lastConversationStorageKey,
-        conversationWorkflowStorageKey,
-        lastModelStorageKey,
-        conversationModelStorageKey,
-        legacyGoalWorkflowStorageKey,
-        seededConversationId,
-        seededModelKey,
-        seededWorkflowEntry,
-        seededLegacyGoalWorkflow,
-      },
-    ) => {
-      window.localStorage.setItem(authenticationKey, JSON.stringify(auth));
-      window.localStorage.setItem(accessTokenKey, auth.accessToken);
-      window.localStorage.setItem(refreshTokenKey, auth.refreshToken);
+  await page.evaluate(
+    ({
+      lastConversationStorageKey,
+      conversationWorkflowStorageKey,
+      lastModelStorageKey,
+      conversationModelStorageKey,
+      legacyGoalWorkflowStorageKey,
+      seededConversationId,
+      seededModelKey,
+      seededWorkflowEntry,
+      seededLegacyGoalWorkflow,
+    }) => {
       window.localStorage.removeItem(lastModelStorageKey);
       if (seededLegacyGoalWorkflow) {
         window.localStorage.setItem(legacyGoalWorkflowStorageKey, 'true');
@@ -92,10 +86,6 @@ async function seedAuthenticatedSession(
       }
     },
     {
-      authenticationKey: 'authentication',
-      accessTokenKey: 'access_token',
-      refreshTokenKey: 'refresh_token',
-      auth: authState,
       lastConversationStorageKey: 'ai:last-conversation-id',
       conversationWorkflowStorageKey: 'ai:conversation-workflow-map',
       lastModelStorageKey: 'ai:last-model-key',
@@ -109,16 +99,44 @@ async function seedAuthenticatedSession(
   );
 }
 
+/**
+ * Real JWT via register/login, then AI route mocks, then optional AI local state, then navigate.
+ * Mocks are installed after auth so register/login/settings are not blocked incorrectly.
+ */
+async function bootstrapGoalWorkflowSession(
+  page: Page,
+  options: GoalWorkflowSessionOptions = {},
+): Promise<GoalWorkflowMockTelemetry> {
+  const email = options.email ?? generateTestEmail();
+  const landingPath = options.landingPath ?? '/';
+
+  await registerAndLogin(page, {
+    email,
+    password: e2ePassword,
+  });
+
+  const telemetry = await installGoalWorkflowMocks(page, {
+    seedConversation: options.seedConversation,
+  });
+
+  await seedAiLocalState(page, {
+    conversationId: options.conversationId,
+    modelKey: options.modelKey,
+    workflowEntry: options.workflowEntry,
+    legacyGoalWorkflow: options.legacyGoalWorkflow,
+  });
+
+  await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
+    waitUntil: 'networkidle',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+
+  return telemetry;
+}
+
 test.describe('AI Goal Workflow', () => {
   test('[P0] loads the AI Agent Workspace from the root route', async ({ page }) => {
-    await seedAuthenticatedSession(page, { email: generateTestEmail() });
-
-    await installGoalWorkflowMocks(page);
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    await bootstrapGoalWorkflowSession(page);
 
     await expect(page.getByTestId('ai-chat-view')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -130,15 +148,8 @@ test.describe('AI Goal Workflow', () => {
   });
 
   test('[P0] keeps the AI Agent Workspace usable on mobile', async ({ page }) => {
-    await seedAuthenticatedSession(page, { email: generateTestEmail() });
-
-    await installGoalWorkflowMocks(page);
     await page.setViewportSize({ width: 390, height: 844 });
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    await bootstrapGoalWorkflowSession(page);
 
     await expect(page.getByTestId('ai-chat-view')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -170,18 +181,11 @@ test.describe('AI Goal Workflow', () => {
   test('[P0] restores a pending Goal Agent approval run after refresh', async ({
     page,
   }) => {
-    await seedAuthenticatedSession(page, {
-      email: generateTestEmail(),
+    await bootstrapGoalWorkflowSession(page, {
       conversationId: e2eConversationId,
       modelKey: 'provider-e2e-openai::gpt-4.1-mini',
       workflowEntry: createPendingApprovalWorkflowEntry(),
-    });
-
-    await installGoalWorkflowMocks(page, { seedConversation: true });
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
+      seedConversation: true,
     });
 
     const agentPanel = page.getByTestId('goal-agent-panel');
@@ -208,14 +212,7 @@ test.describe('AI Goal Workflow', () => {
   test('[P0] completes Goal Agent confirmation through the controlled executor and retries failed actions', async ({
     page,
   }) => {
-    await seedAuthenticatedSession(page, { email: generateTestEmail() });
-
-    const telemetry = await installGoalWorkflowMocks(page);
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal-create').click();
@@ -285,14 +282,7 @@ test.describe('AI Goal Workflow', () => {
   test('[P0] asks the personal knowledge base with citations from the workspace', async ({
     page,
   }) => {
-    await seedAuthenticatedSession(page, { email: generateTestEmail() });
-
-    await installGoalWorkflowMocks(page);
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
@@ -339,14 +329,7 @@ test.describe('AI Goal Workflow', () => {
   test('[P0] generates and saves a knowledge note from the current conversation', async ({
     page,
   }) => {
-    await seedAuthenticatedSession(page, { email: generateTestEmail() });
-
-    await installGoalWorkflowMocks(page);
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-generate').click();
@@ -385,14 +368,7 @@ test.describe('AI Goal Workflow', () => {
   test('[P0] shows insufficient evidence when knowledge citations are missing', async ({
     page,
   }) => {
-    await seedAuthenticatedSession(page, { email: generateTestEmail() });
-
-    await installGoalWorkflowMocks(page);
-
-    await page.goto(WEB_CONFIG.getFullUrl('/'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    await bootstrapGoalWorkflowSession(page);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
@@ -419,80 +395,54 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('knowledge-qa-draft-note')).toBeDisabled();
   });
 
-  test('[P0] completes clarification -> draft -> confirm -> result inside AI chat', async ({
+  test('[P0] starts Goal Agent from goal-create tool and cancels at approval', async ({
     page,
   }) => {
-    await seedAuthenticatedSession(page, {
-      email: generateTestEmail(),
-      legacyGoalWorkflow: true,
-    });
-
-    await installGoalWorkflowMocks(page);
-
-    await page.goto(WEB_CONFIG.getFullUrl('/ai/chat'), {
-      waitUntil: 'networkidle',
-      timeout: TIMEOUT_CONFIG.NAVIGATION,
-    });
+    const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await expect(page.getByTestId('ai-chat-view')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-
-    // Wait for providers to load and composer to become enabled
     await expect(page.getByTestId('ai-chat-composer')).toBeEnabled({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
+
+    // Product path is Goal Agent runtime only; legacy generate-draft UI is gone.
+    await expect(page.getByTestId('goal-workflow-generate-draft')).toHaveCount(0);
 
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal-create').click();
 
     const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill('我想在两个月内建立稳定的 AI agent 工作流，并落地到日常目标执行中。');
+    await composer.fill(
+      'Create a structured AI workflow goal through the Agent runtime, then cancel before approving execution.',
+    );
     await page.getByTestId('ai-chat-send-message').click();
 
-    await expect(page.getByText(/先把目标拆清楚/i)).toBeVisible({
+    const startButton = page.getByTestId('goal-agent-start-run');
+    await expect(startButton).toBeEnabled({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
+    await startButton.click();
 
-    await page.getByTestId('goal-workflow-generate-draft').click();
-
-    const clarificationPanel = page.getByTestId('goal-clarification-panel');
-    await expect(clarificationPanel).toBeVisible({
+    const agentPanel = page.getByTestId('goal-agent-panel');
+    await expect(agentPanel).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(clarificationPanel).toContainText(/你最想先改善哪一段/i);
+    await expect(agentPanel).toContainText(/waiting_approval/i);
+    await expect(page.getByTestId('goal-agent-confirm-run')).toBeVisible();
+    await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
 
-    await page.getByTestId('goal-clarification-answer-0').fill('先把 goal workflow 跑通，并能稳定执行。');
-    await page.getByTestId('goal-clarification-answer-1').fill('重点是每天复盘、每周校准。');
+    await page.getByTestId('goal-agent-cancel-run').click();
 
-    await page.getByTestId('goal-workflow-submit-clarification').click();
-
-    const draftPanel = page.getByTestId('goal-draft-panel');
-    await expect(draftPanel).toBeVisible({
+    await expect(agentPanel).toContainText(/cancelled/i, {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
-    await expect(draftPanel).toContainText(/建立稳定的 AI agent 工作流/i);
-    await expect(draftPanel).toContainText(/每周复盘 workflow 结果/i);
-
-    await page.getByTestId('goal-workflow-plan-automation').click();
-
-    const automationPanel = page.getByTestId('goal-automation-panel');
-    await expect(automationPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await expect(automationPanel).toContainText(/先创建目标与关键结果/i);
-
-    await page.getByTestId('goal-workflow-confirm-execute').click();
-
-    await expect(automationPanel).toContainText(/Execution Status|执行状态/i, {
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
-    await expect(automationPanel).toContainText(/Partial|部分成功/i);
-    await expect(automationPanel).toContainText(/Execution Timeline|执行时间线/i);
-    await expect(automationPanel).toContainText(/创建目标|Create Goal/i);
-    await expect(automationPanel).toContainText(/创建关键结果|Create Key Result/i);
-    await expect(automationPanel).toContainText(/Recovery|恢复建议/i);
-    await expect(automationPanel).toContainText(/重试执行|retry execution/i);
+    await expect(page.getByTestId('goal-agent-confirm-run')).toHaveCount(0);
+    await expect(page.getByTestId('goal-agent-cancel-run')).toHaveCount(0);
+    expect(telemetry.goalAgentStartCount).toBe(1);
+    expect(telemetry.goalAgentCancelCount).toBe(1);
+    expect(telemetry.goalAgentApprovalResumeCount).toBe(0);
   });
 });
 
@@ -504,11 +454,12 @@ type GoalWorkflowMockTelemetry = {
   goalAgentStartCount: number;
   goalAgentApprovalResumeCount: number;
   goalAgentRetryResumeCount: number;
+  goalAgentCancelCount: number;
   goalAgentExecuteRequestCount: number;
   goalAgentCompletionResumeCount: number;
 };
 
-type GoalAgentMockStatus = 'waiting_approval' | 'waiting_execution' | 'completed';
+type GoalAgentMockStatus = 'waiting_approval' | 'waiting_execution' | 'completed' | 'cancelled';
 
 type GoalAgentMockRun = {
   runId: string;
@@ -1030,7 +981,9 @@ function createGoalAgentRunResult(
       retrievedContext: [],
       pendingActions: status === 'waiting_approval' ? mockRun.pendingActions : [],
       approvedActions:
-        status === 'waiting_approval' ? [] : mockRun.approvedActions,
+        status === 'waiting_approval' || status === 'cancelled'
+          ? []
+          : mockRun.approvedActions,
       executedActions: hasExecution ? mockRun.executedActions : [],
       usage: {
         promptTokens: 90,
@@ -1116,6 +1069,7 @@ async function installGoalWorkflowMocks(
     goalAgentStartCount: 0,
     goalAgentApprovalResumeCount: 0,
     goalAgentRetryResumeCount: 0,
+    goalAgentCancelCount: 0,
     goalAgentExecuteRequestCount: 0,
     goalAgentCompletionResumeCount: 0,
   };
@@ -1792,7 +1746,7 @@ async function installGoalWorkflowMocks(
 
     if (request.agentType === 'goal.create') {
       telemetry.goalAgentStartCount += 1;
-      expect(request.input?.idea).toContain('Agent runtime');
+      expect(request.input?.idea).toMatch(/Agent runtime/i);
       expect(request.input?.providerId).toBe('provider-e2e-openai');
       expect(request.input?.model).toBe('gpt-4.1-mini');
 
@@ -2041,6 +1995,15 @@ async function installGoalWorkflowMocks(
           actions?: Array<Record<string, unknown>>;
         };
       };
+
+      if (request.userDecision === 'cancel') {
+        telemetry.goalAgentCancelCount += 1;
+        goalAgentRun.approvedActions = [];
+        goalAgentRun.executedActions = [];
+        await fulfillJson(route, createGoalAgentRunResult(goalAgentRun, 'cancelled'));
+        return;
+      }
+
       expect(request.userDecision).toBe('confirm');
 
       if (request.executedActions?.length) {

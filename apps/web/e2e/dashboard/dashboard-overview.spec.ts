@@ -77,9 +77,11 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId('ai-chat-view')).toBeVisible();
 
+    // Account center redirects into standalone Settings (STATE D), not BusinessPanel.
     await page.goto('/account/center', { waitUntil: 'networkidle' });
     await expect(page).toHaveURL(/\/settings\?tab=account$/);
-    await expect(page.getByTestId('business-panel')).toBeVisible();
+    await expect(page.getByTestId('standalone-settings-layout')).toBeVisible();
+    await expect(page.getByTestId('settings-scene-rail')).toBeVisible();
   });
 
   test('[P2] should return to STATE A when the panel is closed', async ({ page }) => {

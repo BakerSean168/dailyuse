@@ -66,13 +66,13 @@ test.describe('Notification Center', () => {
   });
 
   test('[P2] should filter notifications by type', async ({ page }) => {
+    // UI only exposes all/unread tabs (see NotificationListPage filterTabs).
     await page.getByTestId('notification-filter-unread').click();
     await expect(page.getByTestId('notification-center')).toBeVisible();
-
-    await page.getByTestId('notification-filter-read').click();
-    await expect(page.getByTestId('notification-center')).toBeVisible();
+    await expect(page.getByTestId('notification-filter-unread')).toBeVisible();
 
     await page.getByTestId('notification-filter-all').click();
     await expect(page.getByTestId('notification-center')).toBeVisible();
+    await expect(page.getByTestId('notification-filter-all')).toBeVisible();
   });
 });
