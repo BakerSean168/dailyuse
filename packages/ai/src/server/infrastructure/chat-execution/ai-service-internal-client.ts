@@ -104,10 +104,11 @@ export class AIServiceInternalClient {
   }): Promise<Response> {
     const requestId = request.requestId ?? randomUUID();
     const timestamp = Math.floor(Date.now() / 1000);
+    const requestUrl = new URL(request.path, this.options.baseUrl);
     const signing = signInternalRequest({
       serviceName: this.options.serviceName,
       method: request.method,
-      path: request.path,
+      path: requestUrl.pathname,
       timestamp,
       body: request.body,
       secret: this.options.serviceSecret,
@@ -126,7 +127,7 @@ export class AIServiceInternalClient {
         timeoutMs: this.timeoutMs,
         bodyPreview: previewText(request.body),
       });
-      const response = await fetch(new URL(request.path, this.options.baseUrl).toString(), {
+      const response = await fetch(requestUrl.toString(), {
         method: request.method,
         headers: {
           'Content-Type': 'application/json',

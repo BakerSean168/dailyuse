@@ -131,7 +131,7 @@ describe('AIServiceAgentRuntimeAdapter', () => {
     expect(init.body).toBeUndefined();
     expectSignedRequest(init, {
       method: 'GET',
-      path,
+      path: '/internal/agents/runs',
       requestId: 'request-list',
       identityId: 'identity-1',
       body: '',
